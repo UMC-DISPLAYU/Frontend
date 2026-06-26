@@ -1,0 +1,9 @@
+# Ignore artifacts:
+build
+dist
+coverage
+node_modules
+
+# MSW auto-generated files
+public/mockServiceWorker.js
+

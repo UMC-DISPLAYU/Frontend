@@ -1,0 +1,14 @@
+branch=$(git rev-parse --abbrev-ref HEAD)
+[ "$branch" = "main" ] || [ "$branch" = "develop" ] && exit 0
+
+allowed="feat|fix|docs|style|design|test|refactor|ci|perf|chore|rename|remove"
+if ! echo "$branch" | grep -qE "^($allowed)/.+-[0-9]+$"; then
+  echo "❌ 브랜치 형식 오류: type/설명-이슈번호 (예: feat/login-12)"
+  exit 1
+fi
+if echo "$branch" | grep -qE "[A-Z]"; then
+  echo "❌ 브랜치는 소문자만"
+  exit 1
+fi
+exit 0
+
