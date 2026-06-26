@@ -59,7 +59,7 @@ type/설명-이슈번호
 | `develop`   | 기능이 모이는 통합 브랜치. 평소 작업의 기준점 |
 | 작업 브랜치 | 기능/수정 단위로 `develop`에서 분기           |
 
-허용 타입: `feat` `fix` `refactor` `design` `chore` `docs` `ci`
+허용 타입 (커밋과 동일한 12종): `feat` `fix` `docs` `style` `design` `test` `refactor` `ci` `perf` `chore` `rename` `remove`
 
 > 위 규칙은 `.husky/pre-push` 로 push 시 검사됩니다.
 
