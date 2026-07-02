@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+@import 'pretendard/dist/web/static/pretendard.css';
+@import './tokens/primitive.css';
+@import './tokens/semantic.css';
+@import './typography.css';
