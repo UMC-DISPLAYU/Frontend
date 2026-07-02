@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 
 import archiveIcon from '../../assets/ArchiveIcon.png';
 import archiveIconActive from '../../assets/ArchiveIconActive.svg';
@@ -12,20 +12,25 @@ import searchIconActive from '../../assets/SearchIconActive.svg';
 type NavId = 'archive' | 'home' | 'my' | 'search';
 
 const NAV_ITEMS = [
-  { activeIcon: homeIconActive, icon: homeIcon, id: 'home', label: '홈' },
-  { activeIcon: searchIconActive, icon: searchIcon, id: 'search', label: '검색' },
-  { activeIcon: archiveIconActive, icon: archiveIcon, id: 'archive', label: '저장' },
-  { activeIcon: myIconActive, icon: myIcon, id: 'my', label: '마이' },
+  { activeIcon: homeIconActive, icon: homeIcon, id: 'home', label: '홈', path: '/' },
+  { activeIcon: searchIconActive, icon: searchIcon, id: 'search', label: '검색', path: '/search' },
+  {
+    activeIcon: archiveIconActive,
+    icon: archiveIcon,
+    id: 'archive',
+    label: '저장',
+    path: '/archive',
+  },
+  { activeIcon: myIconActive, icon: myIcon, id: 'my', label: '마이', path: '/my' },
 ] satisfies Array<{
   activeIcon: string;
   icon: string;
   id: NavId;
   label: string;
+  path: string;
 }>;
 
 export function Navbar() {
-  const [active, setActive] = useState<NavId>('home');
-
   return (
     <div className="relative rounded-[250px] px-5 py-1.5 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06)] overflow-hidden">
       <div
@@ -46,28 +51,30 @@ export function Navbar() {
       />
 
       <div className="relative flex items-center justify-center">
-        {NAV_ITEMS.map(({ activeIcon, icon, id, label }) => {
-          const isActive = active === id;
+        {NAV_ITEMS.map(({ activeIcon, icon, id, label, path }) => {
           return (
-            <button
+            <NavLink
               key={id}
-              onClick={() => setActive(id)}
-              className="flex flex-col items-center justify-center w-20 h-[60px] cursor-pointer bg-transparent border-0 outline-none"
+              end={path === '/'}
+              className="flex flex-col items-center justify-center w-20 h-[60px] cursor-pointer rounded-[24px] border-0 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#fcfcfc] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              to={path}
             >
-              <div className="flex flex-col items-center gap-1">
-                <img alt="" className="h-5 w-5" src={isActive ? activeIcon : icon} />
-                <span
-                  className="text-[12px] leading-[1.4] tracking-[-0.36px] whitespace-nowrap transition-colors duration-150"
-                  style={{
-                    color: isActive ? '#FCFCFC' : '#E5E5E5',
-                    fontFamily: "'Pretendard', sans-serif",
-                    fontWeight: isActive ? 700 : 400,
-                  }}
-                >
-                  {label}
-                </span>
-              </div>
-            </button>
+              {({ isActive }) => (
+                <div className="flex flex-col items-center gap-1">
+                  <img alt="" className="h-5 w-5" src={isActive ? activeIcon : icon} />
+                  <span
+                    className="text-[12px] leading-[1.4] tracking-[-0.36px] whitespace-nowrap transition-colors duration-150"
+                    style={{
+                      color: isActive ? '#FCFCFC' : '#E5E5E5',
+                      fontFamily: "'Pretendard', sans-serif",
+                      fontWeight: isActive ? 700 : 400,
+                    }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              )}
+            </NavLink>
           );
         })}
       </div>
