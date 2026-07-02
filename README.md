@@ -90,34 +90,38 @@ pnpm dev
 |---|---|
 | 온보딩 | 온보딩 → 비회원 둘러보기 또는 로그인 → (신규가입 시 닉네임 설정 → 가입완료) → 홈 |
 | 관람 | 홈/탐색 → 전시 상세 → 작품 상세 / 콘텐츠 갤러리 / 후기·방명록·Q&A → 저장·기록(아카이브) |
-| 전시 등록(대표자) | 전시 등록하기 → 작가 인증 → 전시 작가명 설정 → 기본정보 입력 → 전시 관리(대시보드) → 전시 작업(콘텐츠 등록 + 전시작 등록) / 팀원 초대 / 공개 시점 설정 → 등록 완료 |
+| 전시 등록 | 전시 등록하기 → 작가 인증 → 기본정보 입력 → 전시 작가명 설정 → 전시 관리(대시보드) → 전시 등록 |
 | 팀원 초대 | 전시 관리에서 초대 → 팀원이 초대 수락 → 작가명 설정 → 참여 완료 |
-| 전시작 등록 | 전시 작업 → 내 작품 등록 또는 대신 등록 → 기본정보·이미지 입력 → 등록 완료 |
+| 전시작 등록 | 전시 작업 → 작품 등록 → 기본정보·이미지 입력 → 등록 완료 |
 
 ---
 
 ### 화면 흐름도 (Mermaid)
 
-> GitHub README.md는 ```mermaid``` 코드 블록을 별도 설정 없이 자동으로 렌더링합니다.
-
 ```mermaid
 flowchart LR
     Onboard["온보딩"] --> Home["홈"]
-    Home --> Explore["탐색"]
-    Home --> ExhDetail["전시 상세"]
-    Explore --> ExhDetail
-    ExhDetail --> ArtDetail["작품 상세"]
-    ExhDetail --> Review["후기/방명록/Q&A"]
-    ExhDetail --> Archive["아카이브"]
 
+    Home --> Explore["탐색"]
     Home --> Lounge["라운지"]
     Home --> My["마이"]
+    Home --> Archive["아카이브"]
+    Home --> ExhCreate["전시 등록"]
 
-    My --> ExhCreate["전시 등록"]
-    Home --> ExhCreate
+    Explore --> ExhDetail["전시 상세"]
+    Home --> ExhDetail
+
+    Archive --> ExhDetail
+    Archive --> ArtDetail["작품 상세"]
+
+    ExhDetail --> ArtDetail
+
+    My --> ExhCreate
+
     ExhCreate --> ExhManage["전시 관리"]
     ExhManage --> ExhWork["전시 작업(콘텐츠/전시작)"]
     ExhManage --> Team["팀원 초대"]
     ExhManage --> Publish["등록 완료"]
+
     Publish --> ExhDetail
 ```
