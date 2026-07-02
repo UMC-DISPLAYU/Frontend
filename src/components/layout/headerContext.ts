@@ -1,21 +1,15 @@
 import { createContext, type ReactNode, useContext } from 'react';
 
 export type HeaderConfig = {
-  title: string;
-  left: ReactNode;
-  right: ReactNode;
+  title?: ReactNode;
+  left?: ReactNode;
+  right?: ReactNode;
 };
 
 export type HeaderContextValue = {
   header: HeaderConfig;
   resetHeader: () => void;
   setHeader: (header: HeaderConfig) => void;
-};
-
-export const DEFAULT_HEADER: HeaderConfig = {
-  title: 'DISPLAYU',
-  left: null,
-  right: null,
 };
 
 export const HeaderContext = createContext<HeaderContextValue | null>(null);
