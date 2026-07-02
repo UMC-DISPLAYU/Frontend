@@ -4,6 +4,7 @@ import { FNB } from './FNB';
 import { Header } from './Header';
 import { useHeaderContext } from './headerContext';
 import { HeaderProvider } from './HeaderProvider';
+import { Navbar } from './Navbar';
 
 function LayoutContent() {
   const { header } = useHeaderContext();
@@ -14,6 +15,9 @@ function LayoutContent() {
       <main>
         <Outlet />
       </main>
+      <div className="fixed right-0 bottom-[34px] left-0 z-50 flex justify-center px-4">
+        <Navbar />
+      </div>
       <FNB />
     </>
   );
