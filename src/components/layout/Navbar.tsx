@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import archiveIcon from '../../assets/ArchiveIcon.png';
 import archiveIconActive from '../../assets/ArchiveIconActive.svg';
 import homeIcon from '../../assets/HomeIcon.svg';
-import homeIconActive from '../../assets/HoneIconActive.svg';
+import homeIconActive from '../../assets/HomeIconActive.svg';
 import myIcon from '../../assets/MyIcon.svg';
 import myIconActive from '../../assets/MyIconActive.svg';
 import searchIcon from '../../assets/SearchIcon.svg';
@@ -63,12 +63,9 @@ export function Navbar() {
                 <div className="flex flex-col items-center gap-1">
                   <img alt="" className="h-5 w-5" src={isActive ? activeIcon : icon} />
                   <span
-                    className="text-[12px] leading-[1.4] tracking-[-0.36px] whitespace-nowrap transition-colors duration-150"
-                    style={{
-                      color: isActive ? '#FCFCFC' : '#E5E5E5',
-                      fontFamily: "'Pretendard', sans-serif",
-                      fontWeight: isActive ? 700 : 400,
-                    }}
+                    className={`text-[12px] leading-[1.4] tracking-[-0.36px] whitespace-nowrap transition-colors duration-150 ${
+                      isActive ? 'font-bold text-[#fcfcfc]' : 'font-normal text-[#e5e5e5]'
+                    }`}
                   >
                     {label}
                   </span>
