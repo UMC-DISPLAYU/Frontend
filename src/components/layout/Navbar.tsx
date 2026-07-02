@@ -1,9 +1,76 @@
+import { useState } from 'react';
+
+import archiveIcon from '../../assets/ArchiveIcon.png';
+import archiveIconActive from '../../assets/ArchiveIconActive.svg';
+import homeIcon from '../../assets/HomeIcon.svg';
+import homeIconActive from '../../assets/HoneIconActive.svg';
+import myIcon from '../../assets/MyIcon.svg';
+import myIconActive from '../../assets/MyIconActive.svg';
+import searchIcon from '../../assets/SearchIcon.svg';
+import searchIconActive from '../../assets/SearchIconActive.svg';
+
+type NavId = 'archive' | 'home' | 'my' | 'search';
+
+const NAV_ITEMS = [
+  { activeIcon: homeIconActive, icon: homeIcon, id: 'home', label: '홈' },
+  { activeIcon: searchIconActive, icon: searchIcon, id: 'search', label: '검색' },
+  { activeIcon: archiveIconActive, icon: archiveIcon, id: 'archive', label: '저장' },
+  { activeIcon: myIconActive, icon: myIcon, id: 'my', label: '마이' },
+] satisfies Array<{
+  activeIcon: string;
+  icon: string;
+  id: NavId;
+  label: string;
+}>;
+
 export function Navbar() {
+  const [active, setActive] = useState<NavId>('home');
+
   return (
-    <nav aria-label="Primary navigation">
-      <a href="/">홈</a>
-      <a href="/">전시</a>
-      <a href="/">작품</a>
-    </nav>
+    <div className="relative rounded-[250px] px-5 py-1.5 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06)] overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute inset-0 rounded-[250px] backdrop-blur-[10px] pointer-events-none"
+        style={{
+          backgroundImage:
+            'linear-gradient(90deg, rgba(182,178,178,0.2) 0%, rgba(182,178,178,0.2) 100%), linear-gradient(90deg, rgba(182,178,178,0.5) 0%, rgba(182,178,178,0.5) 100%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 rounded-[inherit] pointer-events-none"
+        style={{
+          boxShadow:
+            'inset 2px 2px 4px -2px #f5f5f5, inset -2px -2px 4px -2px rgba(241,241,241,0.6)',
+        }}
+      />
+
+      <div className="relative flex items-center justify-center">
+        {NAV_ITEMS.map(({ activeIcon, icon, id, label }) => {
+          const isActive = active === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setActive(id)}
+              className="flex flex-col items-center justify-center w-20 h-[60px] cursor-pointer bg-transparent border-0 outline-none"
+            >
+              <div className="flex flex-col items-center gap-1">
+                <img alt="" className="h-5 w-5" src={isActive ? activeIcon : icon} />
+                <span
+                  className="text-[12px] leading-[1.4] tracking-[-0.36px] whitespace-nowrap transition-colors duration-150"
+                  style={{
+                    color: isActive ? '#FCFCFC' : '#E5E5E5',
+                    fontFamily: "'Pretendard', sans-serif",
+                    fontWeight: isActive ? 700 : 400,
+                  }}
+                >
+                  {label}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
