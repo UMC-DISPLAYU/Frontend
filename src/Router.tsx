@@ -10,7 +10,7 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Homepage /> },
-      // 새 페이지는 여기에 추가
+      // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],
   },
