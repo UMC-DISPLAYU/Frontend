@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { HeaderLogo } from './HeaderLogo';
+import logo from '../../assets/logo.svg';
 
 type HeaderProps = {
   title?: ReactNode;
@@ -14,9 +14,9 @@ export function Header({ title, left, right }: HeaderProps) {
       <div className="absolute top-1/2 left-[37px] flex size-[34px] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
         {left}
       </div>
-      <h1 className="absolute top-1/2 left-1/2 m-0 flex h-[34px] -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center text-[20px] leading-[30px] font-extrabold tracking-normal text-[#06032d]">
-        {title ?? <HeaderLogo />}
-      </h1>
+      <div className="absolute top-1/2 left-1/2 m-0 flex h-[34px] -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center text-[20px] leading-[30px] font-extrabold tracking-normal text-[#06032d]">
+        {title ?? <img alt="DISPLAYU" className="h-[34px] w-[57px]" src={logo} />}
+      </div>
       <div className="absolute top-1/2 right-[37px] flex size-[34px] translate-x-1/2 -translate-y-1/2 items-center justify-center">
         {right}
       </div>
