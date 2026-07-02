@@ -52,8 +52,7 @@ src/
 ├── styles/                 # 글로벌 스타일, 디자인 토큰
 │   ├── tokens/             #   디자인 토큰
 │   │   ├── primitive.css   #     원시 팔레트 (색상, 폰트 크기 등 원시 값)
-│   │   ├── semantic.css    #     의미 토큰 (용도 기반)
-│   │   └── theme.css       #     라이트/다크 테마 매핑
+│   │   └── semantic.css    #     의미 토큰 (용도 기반)
 │   ├── typography.css      #   타이포그래피 유틸 클래스
 │   └── index.css           #   스타일 진입점
 ├── types/                  # 공통 타입 정의
