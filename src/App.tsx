@@ -1,13 +1,11 @@
-import './App.css';
+import { Outlet } from 'react-router-dom';
 
 export function App() {
   return (
     <main className="app-shell">
-      <section className="intro">
-        <p className="eyebrow">DISPLAYU</p>
-        <h1>React + TypeScript setup is ready.</h1>
-        <p>Start building the frontend from this clean pnpm workspace.</p>
-      </section>
+      {/* 공통 헤더, 네비게이션 등은 여기에 추가 */}
+      <Outlet />
+      {/* 공통 푸터는 여기에 추가 */}
     </main>
   );
 }
