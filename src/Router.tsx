@@ -1,21 +1,21 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { Layout } from './components/layout';
-import { App } from './App';
-import { NotFound } from './NotFound';
+import { Homepage } from './pages/Homepage';
+import { NotFound } from './pages/NotFound';
 
 export const router = createBrowserRouter([
   {
+    path: '/',
     element: <Layout />,
     children: [
-      {
-        path: '/',
-        element: <App />,
-      },
-      {
-        path: '*',
-        element: <NotFound />,
-      },
+      { index: true, element: <Homepage /> },
+      // 새 페이지 여기에 추가
+      // { path: 'about', element: <About /> },
     ],
+  },
+  {
+    path: '*',
+    element: <NotFound />,
   },
 ]);
