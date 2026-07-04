@@ -10,6 +10,7 @@ export function DuPickBanner({ items }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
+    if (items.length === 0) return;
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % items.length);
     }, 4000);
@@ -17,6 +18,7 @@ export function DuPickBanner({ items }: Props) {
   }, [items.length]);
 
   const current = items[activeIndex];
+  if (!current) return null;
 
   return (
     <section className="pb-7">
