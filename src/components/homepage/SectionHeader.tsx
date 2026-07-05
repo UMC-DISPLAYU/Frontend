@@ -13,7 +13,7 @@ export function SectionHeader({ title }: SectionHeaderProps) {
         className="flex items-center gap-px text-xs leading-none text-neutral-500 bg-transparent border-none cursor-pointer p-0"
       >
         더보기
-        <img src={ChevronRightIcon} className="size-2.5 " />
+        <img src={ChevronRightIcon} className="size-2.5" />
       </button>
     </div>
   );

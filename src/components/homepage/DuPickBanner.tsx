@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import plusIcon from '@/assets/iconoir_plus.svg';
+import logo from '@/assets/logo.svg';
 import type { DuPickItem } from '@/types/home';
 
 type Props = {
@@ -22,15 +24,21 @@ export function DuPickBanner({ items }: Props) {
 
   return (
     <section className="pb-7">
-      <div className="px-4 mb-2.5">
-        <h2 className="text-3xl font-bold leading-snug text-[#111111]">DU Pick</h2>
+      <div className="px-4 mb-2.5 flex justify-between items-center">
+        <h2 className="flex items-center gap-1.5 text-4xl font-semibold leading-none text-[#111111]">
+          <img src={logo} alt="DU" className="h-8 w-auto" />
+          <span>Pick</span>
+        </h2>
+        <button type="button" className="cursor-pointer p-0 bg-transparent border-none">
+          <img src={plusIcon} alt="더보기" className="size-10" />
+        </button>
       </div>
 
       <div className="px-4">
-        <div className="relative h-[513px] rounded-xl overflow-hidden bg-[#D1D5DB]">
+        <div className="relative h-128.25 overflow-hidden bg-[#D1D5DB]">
           <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/20 to-transparent" />
 
-          <div className="absolute left-4 right-4 bottom-9">
+          <div className="absolute left-7 right-4 bottom-9">
             <p className="text-xl font-bold text-neutral-50 leading-snug mb-1.5">{current.name}</p>
             <p className="text-xs text-neutral-400">
               {current.date}&nbsp;&nbsp;{current.location}
@@ -44,7 +52,7 @@ export function DuPickBanner({ items }: Props) {
                 type="button"
                 aria-label={`슬라이드 ${i + 1}`}
                 onClick={() => setActiveIndex(i)}
-                className={`w-[7px] h-[7px] rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200 ${
+                className={`w-1.75 h-1.75 rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200 ${
                   i === activeIndex ? 'bg-blue-500' : 'bg-white/50'
                 }`}
               />

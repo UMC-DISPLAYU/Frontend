@@ -25,20 +25,18 @@ export function ArtworkPreviewSection({ items }: Props) {
       <div
         ref={scrollRef}
         onWheel={handleWheel}
-        className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-none"
+        className="flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-none"
       >
         {items.map((item) => (
           <div
             key={item.id}
-            className="relative shrink-0 w-[280px] h-[190px] rounded-xl overflow-hidden bg-[#D1D5DB]"
+            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-[#D1D5DB]"
           >
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/15 to-transparent" />
 
             <div className="absolute left-4 right-4 bottom-4">
-              <p className="text-[15px] font-bold text-white leading-snug mb-1">{item.name}</p>
-              <p className="text-[11px] text-white/80">
-                {item.date}&nbsp;&nbsp;{item.location}
-              </p>
+              <p className="text-sm font-bold text-white leading-snug mb-1">{item.name}</p>
+              <p className="text-[10px] text-white/80">{item.date}</p>
             </div>
           </div>
         ))}

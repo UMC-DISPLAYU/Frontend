@@ -16,7 +16,6 @@ export interface ArtworkPreviewItem {
   id: string;
   name: string;
   date: string;
-  location: string;
 }
 
 export interface LoungePost {

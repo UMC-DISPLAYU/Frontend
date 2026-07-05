@@ -72,21 +72,18 @@ export const DEADLINE_EXHIBITIONS: ExhibitionCardData[] = [
 export const ARTWORK_ITEMS: ArtworkPreviewItem[] = [
   {
     id: '1',
-    name: '색과 형태, 우리가 마주한 순간들',
+    name: '머문 자리의 온기',
     date: '2026.05.23 – 05.30',
-    location: '중앙대학교 301관',
   },
   {
     id: '2',
-    name: '색과 형태, 우리가 마주한 순간들 2',
+    name: '머문 자리의 온기',
     date: '2026.05.23 – 05.30',
-    location: '중앙대학교 301관',
   },
   {
     id: '3',
-    name: '색과 형태, 우리가 마주한 순간들 3',
+    name: '머문 자리의 온기',
     date: '2026.05.23 – 05.30',
-    location: '중앙대학교 301관',
   },
 ];
 

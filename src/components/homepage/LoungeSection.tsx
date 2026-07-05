@@ -3,7 +3,7 @@ import type { LoungePost } from '@/types/home';
 
 function LoungePostItem({ post }: { post: LoungePost }) {
   return (
-    <div className="mx-4 mb-3 rounded-2xl border border-[#F0F0F0] bg-white p-4 flex flex-col gap-2.5">
+    <div className="mx-4 mb-4 rounded-lg shadow-sm border border-zinc-300 bg-white p-4 flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
         <span
           className="inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-bold

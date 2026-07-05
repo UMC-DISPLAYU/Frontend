@@ -12,7 +12,7 @@ import {
 
 export const Homepage = () => {
   return (
-    <div className="w-full max-w-[480px] mx-auto bg-white min-h-dvh overflow-x-hidden pt-2.5 pb-10 font-[Pretendard,sans-serif]">
+    <div className="w-full max-w-105 mx-auto bg-white min-h-dvh overflow-x-hidden pt-2.5 pb-10 font-[Pretendard,sans-serif]">
       <DuPickBanner items={DU_PICK_ITEMS} />
       <ExhibitionSection title="졸업전시" items={GRADUATION_EXHIBITIONS} />
       <ExhibitionSection title="놓치기 전에 볼 전시" items={DEADLINE_EXHIBITIONS} />
