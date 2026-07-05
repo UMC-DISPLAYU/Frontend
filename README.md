@@ -8,11 +8,16 @@
 
 <!-- TODO: 실제 팀원 정보로 채워주세요 (GitHub 링크, 담당 화면/기능 등) -->
 
-|                   프로필                    | 이름  | GitHub | 담당 (화면 / 기능) |
-| :-----------------------------------------: | :---: | :----: | :----------------- |
-| <img src="" width="80" /> |       | [@아이디](https://github.com/) |                    |
-| <img src="" width="80" /> |       | [@아이디](https://github.com/) |                    |
-| <img src="" width="80" /> |       | [@아이디](https://github.com/) |                    |
+<div align="center">
+
+| 이름 | 담당 (화면 / 기능) |
+| :--: | :----------------: |
+| [서현민](https://github.com/hyunmin1756) | 탐색 페이지 |
+| [안재인](https://github.com/anjaein) | 마이페이지 |
+| [이승철](https://github.com/chulee-53) | 홈페이지 |
+| [정아람](https://github.com/aram426) | 아카이브 |
+
+</div>
 
 ## 기술 스택
 
