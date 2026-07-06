@@ -1,0 +1,13 @@
+language: ko-KR
+reviews:
+  profile: chill            # chill = 덜 깐깐, assertive = 더 깐깐
+  high_level_summary: true
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+      - develop
+chat:
+  auto_reply: true
