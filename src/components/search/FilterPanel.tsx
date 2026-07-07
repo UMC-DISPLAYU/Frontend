@@ -89,7 +89,7 @@ function FilterGroup({ children, label }: FilterGroupProps) {
   return (
     <div className="flex flex-col items-start">
       <span className="text-[10px] font-bold tracking-tight text-gray-400">{label}</span>
-      <div className="no-scrollbar flex w-full gap-1.5 overflow-x-auto pt-1.5">{children}</div>
+      <div className="flex w-full gap-1.5 overflow-x-auto pt-1.5">{children}</div>
     </div>
   );
 }
