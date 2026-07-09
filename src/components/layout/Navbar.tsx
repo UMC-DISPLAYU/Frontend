@@ -1,30 +1,23 @@
+import { Bookmark, House, User } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
-import archiveIcon from '../../assets/ArchiveIcon.png';
-import archiveIconActive from '../../assets/ArchiveIconActive.svg';
-import homeIcon from '../../assets/HomeIcon.svg';
-import homeIconActive from '../../assets/HomeIconActive.svg';
-import myIcon from '../../assets/MyIcon.svg';
-import myIconActive from '../../assets/MyIconActive.svg';
 import searchIcon from '../../assets/SearchIcon.svg';
 import searchIconActive from '../../assets/SearchIconActive.svg';
 
 type NavId = 'archive' | 'home' | 'my' | 'search';
 
 const NAV_ITEMS = [
-  { activeIcon: homeIconActive, icon: homeIcon, id: 'home', label: '홈', path: '/' },
+  { id: 'home', label: '홈', path: '/' },
   { activeIcon: searchIconActive, icon: searchIcon, id: 'search', label: '검색', path: '/search' },
   {
-    activeIcon: archiveIconActive,
-    icon: archiveIcon,
     id: 'archive',
     label: '저장',
     path: '/archive',
   },
-  { activeIcon: myIconActive, icon: myIcon, id: 'my', label: '마이', path: '/my' },
+  { id: 'my', label: '마이', path: '/my' },
 ] satisfies Array<{
-  activeIcon: string;
-  icon: string;
+  activeIcon?: string;
+  icon?: string;
   id: NavId;
   label: string;
   path: string;
@@ -61,7 +54,21 @@ export function Navbar() {
             >
               {({ isActive }) => (
                 <div className="flex flex-col items-center gap-1">
-                  <img alt="" className="h-5 w-5" src={isActive ? activeIcon : icon} />
+                  {id === 'home' ? (
+                    <House
+                      aria-hidden
+                      className={isActive ? 'fill-[#fcfcfc] text-[#fcfcfc]' : ''}
+                    />
+                  ) : id === 'archive' ? (
+                    <Bookmark
+                      aria-hidden
+                      className={isActive ? 'fill-[#fcfcfc] text-[#fcfcfc]' : ''}
+                    />
+                  ) : id === 'my' ? (
+                    <User aria-hidden className={isActive ? 'fill-[#fcfcfc] text-[#fcfcfc]' : ''} />
+                  ) : (
+                    <img alt="" className="h-5 w-5" src={isActive ? activeIcon : icon} />
+                  )}
                   <span
                     className={`text-[12px] leading-[1.4] tracking-[-0.36px] whitespace-nowrap transition-colors duration-150 ${
                       isActive ? 'font-bold text-[#fcfcfc]' : 'font-normal text-[#e5e5e5]'

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import plusIcon from '@/assets/iconoir_plus.svg';
+import { Plus } from 'lucide-react';
+
 import logo from '@/assets/logo.svg';
 import type { DuPickItem } from '@/types/home';
 
@@ -30,7 +31,7 @@ export function DuPickBanner({ items }: Props) {
           <span>Pick</span>
         </h2>
         <button type="button" className="cursor-pointer p-0 bg-transparent border-none">
-          <img src={plusIcon} alt="더보기" className="size-10" />
+          <Plus aria-label="더보기" />
         </button>
       </div>
 

@@ -1,12 +1,9 @@
-import { useState } from 'react';
+import { type ComponentType, type SVGProps, useState } from 'react';
+
+import { BookmarkX, ChevronRight, Pencil, PenLine, Trash2 } from 'lucide-react';
 
 // SVG Icon imports
-import ChevronRightIcon from '../assets/ChevronRightIcon.svg';
-import EditClubIcon from '../assets/EditClubIcon.svg';
-import BookmarkIcon from '../assets/Icon.svg';
 import MemberIcon from '../assets/MemberIcon.svg';
-import PencilIcon from '../assets/PencilIcon.svg';
-import TrashIcon from '../assets/TrashIcon.svg';
 
 /* ------------------------------------------------------------------ */
 /* 타입 & 목데이터                                                       */
@@ -223,7 +220,7 @@ function ExhibitionCard({ item }: { item: ExhibitionItem }) {
               </span>
             </div>
             <button type="button" aria-label="북마크" className="shrink-0">
-              <img src={BookmarkIcon} alt="" className="size-5" />
+              <BookmarkX aria-hidden />
             </button>
           </div>
 
@@ -251,7 +248,7 @@ function ExhibitionCard({ item }: { item: ExhibitionItem }) {
       <section className="px-4 py-2 bg-gray-200 flex flex-col justify-start items-start gap-1.5">
         <div className="self-stretch flex justify-between items-center">
           <div className="flex justify-start items-center gap-1.5">
-            <img src={PencilIcon} alt="" className="size-2.5 shrink-0" />
+            <Pencil aria-hidden />
             <span className="text-neutral-400 text-xs font-semibold font-['Pretendard'] leading-4">
               내 메모
             </span>
@@ -297,7 +294,7 @@ function ArtworkCard({ item }: { item: ArtworkItem }) {
             <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
           </div>
           <button type="button" aria-label="북마크" className="absolute bottom-2 right-2">
-            <img src={BookmarkIcon} alt="" className="size-5" />
+            <BookmarkX aria-hidden />
           </button>
         </div>
       </div>
@@ -337,7 +334,7 @@ function ArtistCard({ item }: { item: ArtistItem }) {
 
         <div className="flex items-center gap-1 shrink-0">
           <button type="button" aria-label="북마크">
-            <img src={BookmarkIcon} alt="" className="size-5" />
+            <BookmarkX aria-hidden />
           </button>
           <svg
             className="size-4 text-gray-400"
@@ -362,7 +359,7 @@ function ArtistCard({ item }: { item: ArtistItem }) {
 
 interface SettingsMenu {
   key: string;
-  icon: string;
+  icon: string | ComponentType<SVGProps<SVGSVGElement>>;
   iconWrapClass: string;
   title: string;
   titleClass: string;
@@ -373,7 +370,7 @@ interface SettingsMenu {
 const SETTINGS_MENUS: SettingsMenu[] = [
   {
     key: 'edit',
-    icon: EditClubIcon,
+    icon: PenLine,
     iconWrapClass: 'bg-[#f8fafb] border border-[#e9eced]',
     title: '동호회 정보 수정',
     titleClass: 'text-[#202020]',
@@ -391,7 +388,7 @@ const SETTINGS_MENUS: SettingsMenu[] = [
   },
   {
     key: 'delete',
-    icon: TrashIcon,
+    icon: Trash2,
     iconWrapClass: 'bg-[#f03f40]/10',
     title: '동호회 삭제',
     titleClass: 'text-[#f03f40]',
@@ -430,36 +427,44 @@ function SettingsSheet({
           </div>
 
           <ul className="w-full px-5">
-            {SETTINGS_MENUS.map((menu, index) => (
-              <li key={menu.key}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(menu.key)}
-                  className={`w-full h-17 flex items-center gap-3 py-2 ${
-                    index < SETTINGS_MENUS.length - 1 ? 'border-b border-[#e9eced]' : ''
-                  }`}
-                >
-                  <span
-                    className={`shrink-0 flex items-center justify-center p-3 rounded-xl ${menu.iconWrapClass}`}
+            {SETTINGS_MENUS.map((menu, index) => {
+              const Icon = menu.icon;
+
+              return (
+                <li key={menu.key}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(menu.key)}
+                    className={`w-full h-17 flex items-center gap-3 py-2 ${
+                      index < SETTINGS_MENUS.length - 1 ? 'border-b border-[#e9eced]' : ''
+                    }`}
                   >
-                    <img src={menu.icon} alt="" className="size-7" />
-                  </span>
-                  <span className="flex-1 min-w-0 flex flex-col gap-1 items-start text-left">
                     <span
-                      className={`text-lg font-semibold leading-tight truncate ${menu.titleClass}`}
+                      className={`shrink-0 flex items-center justify-center p-3 rounded-xl ${menu.iconWrapClass}`}
                     >
-                      {menu.title}
+                      {typeof Icon === 'string' ? (
+                        <img src={Icon} alt="" className="size-7" />
+                      ) : (
+                        <Icon aria-hidden />
+                      )}
                     </span>
-                    <span
-                      className={`text-sm font-medium leading-5 truncate ${menu.descriptionClass}`}
-                    >
-                      {menu.description}
+                    <span className="flex-1 min-w-0 flex flex-col gap-1 items-start text-left">
+                      <span
+                        className={`text-lg font-semibold leading-tight truncate ${menu.titleClass}`}
+                      >
+                        {menu.title}
+                      </span>
+                      <span
+                        className={`text-sm font-medium leading-5 truncate ${menu.descriptionClass}`}
+                      >
+                        {menu.description}
+                      </span>
                     </span>
-                  </span>
-                  <img src={ChevronRightIcon} alt="" className="size-6 shrink-0" />
-                </button>
-              </li>
-            ))}
+                    <ChevronRight aria-hidden />
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>
