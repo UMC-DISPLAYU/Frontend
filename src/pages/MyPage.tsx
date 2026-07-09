@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
-import { useHeaderContext } from '../components/layout/headerContext';
 
 // SVG Icon imports
 import ChevronRightIcon from '../assets/ChevronRightIcon.svg';
+import CycleIcon from '../assets/entypo_cycle.svg';
+import AvatarImage from '../assets/Icon (1).svg';
 import BookmarkIcon from '../assets/Icon.svg';
 import PencilIcon from '../assets/PencilIcon.svg';
-import CycleIcon from '../assets/entypo_cycle.svg';
 import ListIcon from '../assets/ph_list-bold.svg';
-import AvatarImage from '../assets/Icon (1).svg';
+import { useHeaderContext } from '../components/layout/headerContext';
 
 /* ------------------------------------------------------------------ */
 /* 타입 & 목데이터                                                       */

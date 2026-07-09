@@ -1,11 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { Layout } from './components/layout';
-import { Mypage } from './pages/MyPage';
-import { Homepage } from './pages/Homepage';
-import { NotFound } from './pages/NotFound';
 import { AuthMyPage } from './pages/AuthMyPage';
 import { AuthPage } from './pages/AuthPage';
+import { Homepage } from './pages/Homepage';
+import { Mypage } from './pages/MyPage';
+import { NotFound } from './pages/NotFound';
 
 export const router = createBrowserRouter([
   {
