@@ -15,7 +15,7 @@ import FieldIcon from '../assets/image 3673.svg';
 import MemberIcon from '../assets/MemberIcon.svg';
 import PencilIcon from '../assets/PencilIcon.svg';
 import ListIcon from '../assets/ph_list-bold.svg';
-import Profileicon from '../assets/Profileicon.svg';
+import Profileicon from '../assets/profileicon.svg';
 import TrashIcon from '../assets/TrashIcon.svg';
 import { useHeaderContext } from '../components/layout/headerContext';
 

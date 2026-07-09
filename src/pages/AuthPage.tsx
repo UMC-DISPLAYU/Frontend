@@ -11,7 +11,7 @@ import BookmarkIcon from '../assets/Icon.svg';
 import SchoolIcon from '../assets/image 3666.svg';
 import FieldIcon from '../assets/image 3673.svg';
 import PencilIcon from '../assets/PencilIcon.svg';
-import Profileicon from '../assets/Profileicon.svg';
+import Profileicon from '../assets/profileicon.svg';
 import { useHeaderContext } from '../components/layout/headerContext';
 
 /* ------------------------------------------------------------------ */
