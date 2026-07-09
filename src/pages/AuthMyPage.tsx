@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useHeaderContext } from '../components/layout/headerContext';
 
 // SVG Icon imports
-import ChevronRightIcon from '../assets/ChevronRightIcon.svg';
 import EditClubIcon from '../assets/EditClubIcon.svg';
 import BookmarkIcon from '../assets/Icon.svg';
 import BookmarkFilledIcon from '../assets/Icon (2).svg';

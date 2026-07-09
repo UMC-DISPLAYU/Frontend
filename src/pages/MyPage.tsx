@@ -4,11 +4,8 @@ import { useHeaderContext } from '../components/layout/headerContext';
 
 // SVG Icon imports
 import ChevronRightIcon from '../assets/ChevronRightIcon.svg';
-import EditClubIcon from '../assets/EditClubIcon.svg';
 import BookmarkIcon from '../assets/Icon.svg';
-import MemberIcon from '../assets/MemberIcon.svg';
 import PencilIcon from '../assets/PencilIcon.svg';
-import TrashIcon from '../assets/TrashIcon.svg';
 import CycleIcon from '../assets/entypo_cycle.svg';
 import ListIcon from '../assets/ph_list-bold.svg';
 import AvatarImage from '../assets/Icon (1).svg';
