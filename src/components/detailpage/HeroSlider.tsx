@@ -28,10 +28,11 @@ export function HeroSlider({ images, onBack }: Props) {
         id="detail-back-btn"
         aria-label="뒤로가기"
         onClick={onBack}
-        className="absolute top-3.5 left-3.5 z-20 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 active:scale-90"
-        style={{ background: 'rgba(0,0,0,0.32)', backdropFilter: 'blur(4px)' }}
+        className="absolute top-4 left-4 z-20 flex items-center justify-center size-10 bg-white/10 rounded-[100px] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.08)] shadow-[inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60)] shadow-[inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px]"
       >
-        <ChevronLeft size={20} color="#fff" strokeWidth={2.5} />
+        <div className="size-10 flex items-center justify-center pr-1">
+          <ChevronLeft size={35} strokeWidth={1.5} />
+        </div>
       </button>
 
       {/* 인디케이터 — 고정 크기 원형 점 */}
