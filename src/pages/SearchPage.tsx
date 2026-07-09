@@ -17,20 +17,9 @@ import {
 
 type ExploreTab = 'list' | 'map';
 
-function toggleSetValue(set: Set<string>, value: string) {
-  const next = new Set(set);
-  if (next.has(value)) {
-    next.delete(value);
-  } else {
-    next.add(value);
-  }
-  return next;
-}
-
 export function SearchPage() {
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<ExploreTab>('list');
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [modalOpen, setModalOpen] = useState(false);
@@ -45,10 +34,6 @@ export function SearchPage() {
   const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string]>).filter(
     ([, value]) => value !== '전체',
   );
-
-  const toggleBookmark = (id: string) => {
-    setBookmarkedIds((prev) => toggleSetValue(prev, id));
-  };
 
   const updateFilter = (tab: FilterTab, value: string) => {
     setFilters((prev) => ({ ...prev, [tab]: prev[tab] === value ? '전체' : value }));
@@ -121,7 +106,7 @@ export function SearchPage() {
               ) : null}
             </button>
 
-            <div className="flex gap-1.5 overflow-x-auto">
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
               {FIELD_OPTIONS.map((field) => (
                 <FilterChip
                   key={field}
@@ -157,18 +142,15 @@ export function SearchPage() {
             </div>
           ) : null}
 
-          <div className="flex flex-col gap-2.5 px-5 pt-4 pb-24">
+          <div className="px-5 pt-4 pb-24">
             {filteredExhibitions.length === 0 ? (
               <p className="py-10 text-center text-sm text-gray-400">검색 결과가 없어요</p>
             ) : (
-              filteredExhibitions.map((exhibition) => (
-                <ExhibitionCard
-                  bookmarked={bookmarkedIds.has(exhibition.id)}
-                  exhibition={exhibition}
-                  key={exhibition.id}
-                  onToggleBookmark={toggleBookmark}
-                />
-              ))
+              <div className="grid grid-cols-2 gap-x-2.5 gap-y-5">
+                {filteredExhibitions.map((exhibition) => (
+                  <ExhibitionCard exhibition={exhibition} key={exhibition.id} />
+                ))}
+              </div>
             )}
           </div>
         </>
