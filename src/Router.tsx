@@ -4,6 +4,8 @@ import { Layout } from './components/layout';
 import { Mypage } from './pages/MyPage';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
+import { AuthMyPage } from './pages/AuthMyPage';
+import { AuthPage } from './pages/AuthPage';
 
 export const router = createBrowserRouter([
   {
@@ -12,6 +14,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Homepage /> },
       { path: 'my', element: <Mypage /> },
+      { path: 'authmy', element: <AuthMyPage /> },
+      { path: 'auth', element: <AuthPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],

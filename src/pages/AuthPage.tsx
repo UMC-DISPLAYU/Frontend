@@ -6,18 +6,24 @@ import { useHeaderContext } from '../components/layout/headerContext';
 import ChevronRightIcon from '../assets/ChevronRightIcon.svg';
 import EditClubIcon from '../assets/EditClubIcon.svg';
 import BookmarkIcon from '../assets/Icon.svg';
+import BookmarkFilledIcon from '../assets/Icon (2).svg';
 import MemberIcon from '../assets/MemberIcon.svg';
 import PencilIcon from '../assets/PencilIcon.svg';
 import TrashIcon from '../assets/TrashIcon.svg';
 import CycleIcon from '../assets/entypo_cycle.svg';
 import ListIcon from '../assets/ph_list-bold.svg';
+import ShareIcon from '../assets/akar-icons_share-box.svg';
+import SchoolIcon from '../assets/image 3666.svg';
+import FieldIcon from '../assets/image 3673.svg';
 import AvatarImage from '../assets/Icon (1).svg';
+import Profileicon from '../assets/Profileicon.svg';
+import ExhibitionIcon from '../assets/exhibit.svg';
 
 /* ------------------------------------------------------------------ */
 /* 타입 & 목데이터                                                       */
 /* ------------------------------------------------------------------ */
 
-type TabKey = 'exhibition' | 'artwork' | 'artist';
+type TabKey = 'exhibition' | 'artwork';
 
 interface ExhibitionItem {
   id: string;
@@ -38,26 +44,37 @@ interface ArtworkItem {
   memo?: string;
 }
 
-interface ArtistItem {
-  id: string;
+interface ArtistProfile {
   name: string;
+  isVerified: boolean;
+  avatar: string;
+  school: string;
+  schoolIcon: string;
   field: string;
-  registeration: string;
-  exhibition: string;
-  thumbnail: string;
-  memo?: string;
+  fieldIcon: string;
+  exhibit: string;
+  exhibitionIcon: string;
+  bio: string;
+  portfolioUrl: string;
 }
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'exhibition', label: '전시' },
   { key: 'artwork', label: '작품' },
-  { key: 'artist', label: '작가' },
 ];
 
-const PROFILE = {
+const PROFILE: ArtistProfile = {
   name: '김지원 님',
-  caption: '내가 저장한 작품 확인하기',
+  isVerified: true,
   avatar: AvatarImage,
+  school: '중앙대학교',
+  schoolIcon: SchoolIcon,
+  field: '회화 · 일러스트',
+  fieldIcon: FieldIcon,
+  exhibit: '4',
+  exhibitionIcon: ExhibitionIcon,
+  bio: '빛과 색의 경계를 탐구하며, 일상에서 발견한 순간들을 작품으로 표현합니다.',
+  portfolioUrl: 'portfolio.sangjun.com',
 };
 
 const EXHIBITIONS: ExhibitionItem[] = [
@@ -119,44 +136,16 @@ const ARTWORKS: ArtworkItem[] = [
   },
 ];
 
-const ARTISTS: ArtistItem[] = [
-  {
-    id: '1',
-    name: '작가 닉네임',
-    field: '분야',
-    registeration: '3',
-    exhibition: '8',
-    thumbnail: 'https://placehold.co/112x140',
-  },
-  {
-    id: '2',
-    name: '작가 닉네임',
-    field: '분야',
-    registeration: '3',
-    exhibition: '8',
-    thumbnail: 'https://placehold.co/112x140',
-  },
-  {
-    id: '3',
-    name: '작가 닉네임',
-    field: '분야',
-    registeration: '3',
-    exhibition: '8',
-    thumbnail: 'https://placehold.co/112x140',
-  },
-];
-
 /* ------------------------------------------------------------------ */
 /* 상태 뱃지 색상 헬퍼                                                   */
 /* ------------------------------------------------------------------ */
 
 function statusBadgeClass(status: string) {
-  // 진행 중 계열은 파랑, 그 외(전시종료 등)는 회색
   return status.includes('종료') ? 'bg-neutral-400' : 'bg-sky-600';
 }
 
 /* ------------------------------------------------------------------ */
-/* 헤더(타이틀 + 프로필) + 탭                                            */
+/* 헤더(타이틀 + 작가 프로필) + 탭                                        */
 /* ------------------------------------------------------------------ */
 
 function MyPageHeader({
@@ -164,61 +153,117 @@ function MyPageHeader({
   onTabChange,
   onOpenMenu,
   onRefresh,
-  onVerifyArtist,
+  onRegister,
+  onManage,
+  onShare,
   profile,
 }: {
   activeTab: TabKey;
   onTabChange: (key: TabKey) => void;
   onOpenMenu: () => void;
   onRefresh: () => void;
-  onVerifyArtist: () => void;
-  profile: { name: string; caption: string; avatar: string };
+  onRegister: () => void;
+  onManage: () => void;
+  onShare: () => void;
+  profile: ArtistProfile;
 }) {
   return (
     <header className="shrink-0 bg-white">
-      {/* 타이틀 + 우측 아이콘 */}
-      <div className="px-5 pt-2 flex bg-gray-200 justify-between items-center">
-        <h1 className="text-slate-900 text-3xl font-normal font-['Aldrich'] leading-10">
-          My Page
-        </h1>
-        <div className="flex items-center gap-3.5 text-neutral-900">
-          <button type="button" aria-label="새로고침" onClick={onRefresh}>
-            <img src={CycleIcon} alt="" className="size-5" />
-          </button>
-          <button type="button" aria-label="메뉴" onClick={onOpenMenu}>
-            <img src={ListIcon} alt="" className="size-5" />
-          </button>
+      {/* 타이틀 + 작가인증 뱃지 + 우측 아이콘 */}
+      <div className="px-5 pt-2 flex justify-between items-center">
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-slate-900 text-3xl font-normal font-['Aldrich'] leading-10">
+            My Page
+          </h1>
+          {profile.isVerified && (
+            <span className="px-1.5 py-0.5 bg-blue-100 rounded-sm">
+              <span className="text-blue-600 text-[10px] font-normal font-['Pretendard'] leading-3">
+                작가인증
+              </span>
+            </span>
+          )}
         </div>
       </div>
 
       {/* 프로필 */}
-      <div className="px-5 pt-5 pb-5 bg-gray-200 flex items-center gap-3.5">
-        <img
-          className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
-          src={profile.avatar}
-          alt={profile.name}
-        />
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
-          <div className="text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7 truncate">
-            {profile.name}
-          </div>
-          <div className="text-slate-950 text-xs font-normal font-['Pretendard'] leading-4 truncate">
-            {profile.caption}
+      <div className="px-5 pt-5 pb-5 flex flex-col gap-3.5">
+        {/* 아바타 + 이름 + 학교/분야 */}
+        <div className="flex items-center gap-6">
+          <img
+            className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
+            src={profile.avatar}
+            alt={profile.name}
+          />
+          <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div className="text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7 truncate">
+              {profile.name}
+            </div>
+            <div className="flex items-center gap-5.5">
+              <div className="w-17.5 flex flex-col items-center gap-0.5">
+                <img className="w-12 h-9 object-contain" src={profile.schoolIcon} alt="" />
+                <span className="text-neutral-500 text-xs font-normal font-['Pretendard'] leading-4">
+                  {profile.school}
+                </span>
+              </div>
+              <div className="w-18 flex flex-col items-center gap-0.5">
+                <img className="w-12 h-9 object-contain" src={profile.fieldIcon} alt="" />
+                <span className="text-neutral-500 text-xs font-normal font-['Pretendard'] leading-4">
+                  {profile.field}
+                </span>
+              </div>
+              <div className="w-17.5 flex flex-col items-center gap-0.5">
+                <img className="w-12 h-9 object-contain" src={profile.exhibitionIcon} alt="" />
+                <span className="text-neutral-500 text-xs font-normal font-['Pretendard'] leading-4">
+                  {profile.exhibit}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onVerifyArtist}
-          className="shrink-0 px-6 py-1.5 bg-gray-300 rounded-lg outline outline-1 -outline-offset-1 outline-gray-200"
-        >
-          <span className="text-neutral-900 text-xs font-normal font-['Pretendard'] underline leading-4">
-            작가 인증하기
-          </span>
-        </button>
+
+        {/* 소개 + 포트폴리오 링크 */}
+        <div className="flex flex-col gap-2">
+          <p className="text-neutral-800 text-xs font-semibold font-['Pretendard'] leading-4">
+            {profile.bio}
+          </p>
+          <a
+            href={`https://${profile.portfolioUrl}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1 text-blue-600 text-xs font-medium font-['Pretendard'] leading-5"
+          >
+            <img src={Profileicon} alt="" className="size-4" />
+            {profile.portfolioUrl}
+          </a>
+        </div>
+
+        {/* 액션 버튼 */}
+          <div className="flex items-center gap-3">
+            <button
+            type="button"
+            onClick={onRegister}
+            className="flex-1 h-11 bg-gray-200 rounded-xl flex justify-center items-center gap-1.5"
+          >
+            <img src={BookmarkIcon} alt="" className="size-5" />
+            <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
+              작가 저장
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={onShare}
+            className="flex-1 h-11 bg-neutral-800 rounded-xl flex justify-center items-center gap-1.5"
+          >
+            <span className="text-white text-sm font-normal font-['Pretendard'] leading-5">
+              프로필 공유
+            </span>
+            <img src={ShareIcon} alt="" className="size-5" />
+          </button>
+        </div>
       </div>
 
       {/* 탭 */}
-      <nav className="border-b-2 border-zinc-300 flex bg-gray-200 shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
+      <nav className="border-b-2 border-zinc-300 flex shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
         {TABS.map((tab) => {
           const isActive = tab.key === activeTab;
           return (
@@ -232,7 +277,7 @@ function MyPageHeader({
             >
               {tab.label}
               {isActive && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-30.25 h-0.5 bg-neutral-900" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-0.5 bg-neutral-900" />
               )}
             </button>
           );
@@ -264,7 +309,7 @@ function ExhibitionCard({ item }: { item: ExhibitionItem }) {
               </span>
             </div>
             <button type="button" aria-label="북마크" className="shrink-0">
-              <img src={BookmarkIcon} alt="" className="size-4" />
+              <img src={BookmarkFilledIcon} alt="" className="size-10" />
             </button>
           </div>
 
@@ -347,36 +392,6 @@ function ArtworkCard({ item }: { item: ArtworkItem }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 작가 카드                                                           */
-/* ------------------------------------------------------------------ */
-
-function ArtistCard({ item }: { item: ArtistItem }) {
-  return (
-    <article className="w-full bg-neutral-50 rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] outline outline-1 -outline-offset-1 outline-neutral-400 overflow-hidden font-['Pretendard']">
-      <div className="flex items-center gap-3.5 px-3 py-3.5">
-        <div className="size-12 rounded-full bg-neutral-200 overflow-hidden shrink-0">
-          <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.name} />
-        </div>
-
-        <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-          <div className="text-gray-900 text-sm font-bold leading-5 truncate">{item.name}</div>
-          <div className="text-gray-500 text-xs font-normal leading-4 truncate">
-            {item.field} · 등록 작품 수 {item.registeration} · (전시 수 {item.exhibition})
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1 shrink-0">
-          <button type="button" aria-label="북마크">
-            <img src={BookmarkIcon} alt="" className="size-4" />
-          </button>
-          <img src={ChevronRightIcon} alt="" className="size-4" />
-        </div>
-      </div>
-    </article>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* 설정 바텀시트                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -412,7 +427,6 @@ function SettingsSheet({
           onClick={onClose}
           className="absolute inset-0 bg-black/50"
         />
-
       </div>
     </div>
   );
@@ -422,7 +436,7 @@ function SettingsSheet({
 /* 화면 전체 조립                                                        */
 /* ------------------------------------------------------------------ */
 
-export function Mypage() {
+export function AuthPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const navigate = useNavigate();
@@ -432,6 +446,7 @@ export function Mypage() {
   useEffect(() => {
     setHeader({ title: '' });
     return () => resetHeader();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSelectSetting = (_key: string) => {
@@ -439,19 +454,25 @@ export function Mypage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-gray-70 flex flex-col">
+    <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex flex-col">
       <MyPageHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onOpenMenu={() => setIsSettingsOpen(true)}
-        onRefresh={() => navigate('/authmy')}
-        onVerifyArtist={() => {
-
+        onRefresh={() => navigate('/my')}
+        onRegister={() => {
+          // TODO: 전시/작품 등록 플로우 연결
+        }}
+        onManage={() => {
+          // TODO: 전시/작품 관리 플로우 연결
+        }}
+        onShare={() => {
+          // TODO: 프로필 공유 동작 연결
         }}
         profile={PROFILE}
       />
 
-      <section className="flex-1 min-h-0 bg-gray-70 overflow-y-auto px-4 py-6">
+      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
         {activeTab === 'exhibition' && (
           <div className="flex flex-col gap-3">
             {EXHIBITIONS.map((item) => (
@@ -464,14 +485,6 @@ export function Mypage() {
           <div className="grid grid-cols-2 gap-x-1.5 gap-y-3">
             {ARTWORKS.map((item) => (
               <ArtworkCard key={item.id} item={item} />
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'artist' && (
-          <div className="flex flex-col gap-3">
-            {ARTISTS.map((item) => (
-              <ArtistCard key={item.id} item={item} />
             ))}
           </div>
         )}
