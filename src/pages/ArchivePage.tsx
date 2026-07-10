@@ -475,7 +475,7 @@ export function ArchivePage() {
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const handleSelectSetting = (_key: string) => {
+  const handleSelectSetting = () => {
     // TODO: 각 메뉴(정보 수정/멤버 관리/삭제) 라우팅·동작 연결
     setIsSettingsOpen(false);
   };
