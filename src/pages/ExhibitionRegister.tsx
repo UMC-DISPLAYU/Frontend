@@ -1,4 +1,5 @@
 import React, { useCallback,useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const EXHIBITION_TYPES = [
   { label: "졸업 전시", group: "institution" },
@@ -47,6 +48,7 @@ const Chip = React.memo(({ label, selected, onClick }: { label: string; selected
 Chip.displayName = "Chip";
 
 export function ExhibitionRegister() {
+  const navigate = useNavigate();
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -120,7 +122,12 @@ export function ExhibitionRegister() {
 
         {/* 헤더 */}
         <div className="relative flex items-center justify-center px-5 py-4 flex-shrink-0">
-          <button type="button" className="absolute left-5" aria-label="뒤로가기">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="absolute left-5"
+            aria-label="뒤로가기"
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M15 5l-7 7 7 7" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
