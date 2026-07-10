@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "lucide-react": "^1.23.0",
+    "@fontsource/aldrich": "^5.2.7",
     "pretendard": "^1.3.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
