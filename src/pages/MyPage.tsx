@@ -3,13 +3,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // SVG Icon imports
-import ChevronRightIcon from '../assets/ChevronRightIcon.svg';
-import CycleIcon from '../assets/entypo_cycle.svg';
-import AvatarImage from '../assets/Icon (1).svg';
-import BookmarkIcon from '../assets/Icon.svg';
-import PencilIcon from '../assets/PencilIcon.svg';
-import ListIcon from '../assets/ph_list-bold.svg';
+import {Menu, RefreshCcw, Upload, ChevronRight, Pencil, Bookmark, ExternalLink} from 'lucide-react';
 import { useHeaderContext } from '../components/layout/headerContext';
+import { useUserProfile, UserProfile } from '../hooks/useUserProfile';
 
 /* ------------------------------------------------------------------ */
 /* 타입 & 목데이터                                                       */
@@ -52,11 +48,6 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'artist', label: '작가' },
 ];
 
-const PROFILE = {
-  name: '김지원 님',
-  caption: '내가 저장한 작품 확인하기',
-  avatar: AvatarImage,
-};
 
 const EXHIBITIONS: ExhibitionItem[] = [
   {
@@ -161,63 +152,165 @@ function MyPageHeader({
   activeTab,
   onTabChange,
   onOpenMenu,
-  onRefresh,
+  onToggleView,
   onVerifyArtist,
+  onRegister,
+  onManage,
+  onShare,
   profile,
+  isArtistVerified,
+  isArtistView,
 }: {
   activeTab: TabKey;
   onTabChange: (key: TabKey) => void;
   onOpenMenu: () => void;
-  onRefresh: () => void;
-  onVerifyArtist: () => void;
-  profile: { name: string; caption: string; avatar: string };
+  onToggleView: () => void;
+  onVerifyArtist?: () => void;
+  onRegister?: () => void;
+  onManage?: () => void;
+  onShare?: () => void;
+  profile: UserProfile;
+  isArtistVerified: boolean;
+  isArtistView: boolean;
 }) {
   return (
     <header className="shrink-0 bg-white">
-      {/* 타이틀 + 우측 아이콘 */}
-      <div className="px-5 pt-2 flex bg-gray-200 justify-between items-center">
-        <h1 className="text-slate-900 text-3xl font-normal font-['Aldrich'] leading-10">
-          My Page
-        </h1>
+      {/* 타이틀 + 작가인증 뱃지 + 우측 아이콘 */}
+      <div className="px-5 pt-2 flex justify-between items-center">
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-slate-900 text-3xl font-normal font-['Aldrich'] leading-10">
+            My Page
+          </h1>
+          {isArtistVerified && isArtistView && (
+            <span className="px-1.5 py-0.5 bg-blue-100 rounded-sm">
+              <span className="text-blue-600 text-[10px] font-normal font-['Pretendard'] leading-3">
+                작가인증
+              </span>
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-3.5 text-neutral-900">
-          <button type="button" aria-label="새로고침" onClick={onRefresh}>
-            <img src={CycleIcon} alt="" className="size-5" />
+          <button type="button" aria-label="전환" onClick={onToggleView}>
+            <RefreshCcw className="size-5" />
           </button>
           <button type="button" aria-label="메뉴" onClick={onOpenMenu}>
-            <img src={ListIcon} alt="" className="size-5" />
+            <Menu className="size-5" />
           </button>
         </div>
       </div>
 
       {/* 프로필 */}
-      <div className="px-5 pt-5 pb-5 bg-gray-200 flex items-center gap-3.5">
-        <img
-          className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
-          src={profile.avatar}
-          alt={profile.name}
-        />
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
-          <div className="text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7 truncate">
-            {profile.name}
+      <div className="px-5 pt-5 pb-5 flex flex-col gap-3.5">
+        {/* 아바타 + 이름 + 학교/분야 또는 캡션 */}
+        <div className="flex items-center gap-6">
+          <img
+            className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
+            src={profile.avatar}
+            alt={profile.name}
+          />
+          <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div className="text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7 truncate">
+              {profile.name}
+            </div>
+            {isArtistView ? (
+              <div className="flex items-center gap-5.5">
+                <div className="w-17.5 flex flex-col items-center gap-0.5">
+                  <img className="w-12 h-9 object-contain" src={profile.schoolIcon} alt="" />
+                  <span className="text-neutral-500 text-xs font-normal font-['Pretendard'] leading-4">
+                    {profile.school}
+                  </span>
+                </div>
+                <div className="w-18 flex flex-col items-center gap-0.5">
+                  <img className="w-12 h-9 object-contain" src={profile.fieldIcon} alt="" />
+                  <span className="text-neutral-500 text-xs font-normal font-['Pretendard'] leading-4">
+                    {profile.field}
+                  </span>
+                </div>
+                <div className="w-17.5 flex flex-col items-center gap-0.5">
+                  <img className="w-12 h-9 object-contain" src={profile.exhibitionIcon} alt="" />
+                  <span className="text-neutral-500 text-xs font-normal font-['Pretendard'] leading-4">
+                    {profile.exhibit}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-slate-950 text-xs font-normal font-['Pretendard'] leading-4 truncate">
+                {profile.caption || '내가 저장한 작품 확인하기'}
+              </div>
+            )}
           </div>
-          <div className="text-slate-950 text-xs font-normal font-['Pretendard'] leading-4 truncate">
-            {profile.caption}
-          </div>
+          {!isArtistVerified && !isArtistView && (
+            <button
+              type="button"
+              onClick={onVerifyArtist}
+              className="shrink-0 px-6 py-1.5 bg-gray-300 rounded-lg outline outline-1 -outline-offset-1 outline-gray-200"
+            >
+              <span className="text-neutral-900 text-xs font-normal font-['Pretendard'] underline leading-4">
+                작가 인증하기
+              </span>
+            </button>
+          )}
         </div>
-        <button
-          type="button"
-          onClick={onVerifyArtist}
-          className="shrink-0 px-6 py-1.5 bg-gray-300 rounded-lg outline outline-1 -outline-offset-1 outline-gray-200"
-        >
-          <span className="text-neutral-900 text-xs font-normal font-['Pretendard'] underline leading-4">
-            작가 인증하기
-          </span>
-        </button>
+
+        {/* 소개 + 포트폴리오 링크 (작가 뷰일 경우만) */}
+        {isArtistView && profile.bio && (
+          <div className="flex flex-col gap-2">
+            <p className="text-neutral-800 text-xs font-semibold font-['Pretendard'] leading-4">
+              {profile.bio}
+            </p>
+            {profile.portfolioUrl && (
+              <a
+                href={`https://${profile.portfolioUrl}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 text-blue-600 text-xs font-medium font-['Pretendard'] leading-5"
+              >
+                <ExternalLink className="size-4" />
+                {profile.portfolioUrl}
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* 액션 버튼 (작가 뷰일 경우만) */}
+        {isArtistView && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onRegister}
+              className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
+            >
+              <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
+                전시/작품등록
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={onManage}
+              className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
+            >
+              <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
+                전시/작품관리
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-label="공유"
+              onClick={onShare}
+              className="size-11 shrink-0 bg-neutral-800 rounded-xl flex justify-center items-center"
+            >
+              <Upload color="#ffffff" className="size-5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 탭 */}
-      <nav className="border-b-2 border-zinc-300 flex bg-gray-200 shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
+      <nav className="border-b-2 border-zinc-300 flex shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
         {TABS.map((tab) => {
+          // 작가 뷰일 경우 '작가' 탭 숨김
+          if (isArtistView && tab.key === 'artist') return null;
+
           const isActive = tab.key === activeTab;
           return (
             <button
@@ -230,7 +323,7 @@ function MyPageHeader({
             >
               {tab.label}
               {isActive && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-30.25 h-0.5 bg-neutral-900" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-0.5 bg-neutral-900" />
               )}
             </button>
           );
@@ -244,7 +337,7 @@ function MyPageHeader({
 /* 전시 카드                                                            */
 /* ------------------------------------------------------------------ */
 
-function ExhibitionCard({ item }: { item: ExhibitionItem }) {
+function ExhibitionCard({ item, isArtistView }: { item: ExhibitionItem; isArtistView: boolean }) {
   const hasMemo = Boolean(item.memo);
 
   return (
@@ -262,7 +355,7 @@ function ExhibitionCard({ item }: { item: ExhibitionItem }) {
               </span>
             </div>
             <button type="button" aria-label="북마크" className="shrink-0">
-              <img src={BookmarkIcon} alt="" className="size-4" />
+              <Bookmark fill="#D70004" color={isArtistView ? "#D70004" : "#D70004"} className={isArtistView ? 'size-4' : 'size-4'} />
             </button>
           </div>
 
@@ -288,7 +381,7 @@ function ExhibitionCard({ item }: { item: ExhibitionItem }) {
       <footer className="px-4 py-2 bg-gray-200 flex flex-col justify-start items-start gap-1.5">
         <div className="self-stretch flex justify-between items-center">
           <div className="flex justify-start items-center gap-1.5">
-            <img src={PencilIcon} alt="" className="size-2.5 shrink-0" />
+            <Pencil color="#99A1AF" className="size-2.5 shrink-0" />
             <span className="text-neutral-400 text-xs font-semibold leading-4">내 메모</span>
           </div>
           {hasMemo && (
@@ -331,7 +424,7 @@ function ArtworkCard({ item }: { item: ArtworkItem }) {
             <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
           </div>
           <button type="button" aria-label="북마크" className="absolute bottom-2 right-2">
-            <img src={BookmarkIcon} alt="" className="size-4" />
+            <Bookmark color= "#D70004" fill = "#D70004" className="size-4-10" />
           </button>
         </div>
       </div>
@@ -365,9 +458,9 @@ function ArtistCard({ item }: { item: ArtistItem }) {
 
         <div className="flex items-center gap-1 shrink-0">
           <button type="button" aria-label="북마크">
-            <img src={BookmarkIcon} alt="" className="size-4" />
+            <Bookmark color="#D70004" fill="#D70004" className="size-4" />
           </button>
-          <img src={ChevronRightIcon} alt="" className="size-4" />
+          <ChevronRight color="#99A1AF" className="size-4" />
         </div>
       </div>
     </article>
@@ -420,40 +513,84 @@ function SettingsSheet({
 /* 화면 전체 조립                                                        */
 /* ------------------------------------------------------------------ */
 
-export function Mypage() {
+export function MyPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isArtistView, setIsArtistView] = useState(true); // 뷰 모드 상태 (작가 뷰 / 일반 뷰)
   const navigate = useNavigate();
 
   const { setHeader, resetHeader } = useHeaderContext();
+  const { data: userData, isLoading, error } = useUserProfile();
 
   useEffect(() => {
     setHeader({ title: '' });
     return () => resetHeader();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSelectSetting = (_key: string) => {
     setIsSettingsOpen(false);
   };
 
+  const handleToggleView = () => {
+    setIsArtistView((prev) => !prev);
+    // 작가 탭에 있을 때 일반 뷰로 전환하면 전시 탭으로 이동
+    if (isArtistView && activeTab === 'artist') {
+      setActiveTab('exhibition');
+    }
+  };
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
+        <div className="text-neutral-500 text-sm font-['Pretendard']">로딩 중...</div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (error || !userData) {
+    return (
+      <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
+        <div className="text-red-500 text-sm font-['Pretendard']">
+          프로필을 불러오는데 실패했습니다.
+        </div>
+      </div>
+    );
+  }
+
+  const { isArtistVerified, profile } = userData;
+
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-gray-70 flex flex-col">
+    <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex flex-col">
       <MyPageHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onOpenMenu={() => setIsSettingsOpen(true)}
-        onRefresh={() => navigate('/authmy')}
+        onToggleView={handleToggleView}
         onVerifyArtist={() => {
-
+          // TODO: 작가 인증 플로우 연결
         }}
-        profile={PROFILE}
+        onRegister={() => {
+          // TODO: 전시/작품 등록 플로우 연결
+        }}
+        onManage={() => {
+          // TODO: 전시/작품 관리 플로우 연결
+        }}
+        onShare={() => {
+          // TODO: 프로필 공유 동작 연결
+        }}
+        profile={profile}
+        isArtistVerified={isArtistVerified}
+        isArtistView={isArtistView}
       />
 
-      <section className="flex-1 min-h-0 bg-gray-70 overflow-y-auto px-4 py-6">
+      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
         {activeTab === 'exhibition' && (
           <div className="flex flex-col gap-3">
             {EXHIBITIONS.map((item) => (
-              <ExhibitionCard key={item.id} item={item} />
+              <ExhibitionCard key={item.id} item={item} isArtistView={isArtistView} />
             ))}
           </div>
         )}
@@ -466,7 +603,7 @@ export function Mypage() {
           </div>
         )}
 
-        {activeTab === 'artist' && (
+        {activeTab === 'artist' && !isArtistView && (
           <div className="flex flex-col gap-3">
             {ARTISTS.map((item) => (
               <ArtistCard key={item.id} item={item} />

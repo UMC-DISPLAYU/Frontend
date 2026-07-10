@@ -2,16 +2,11 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import ShareIcon from '../assets/akar-icons_share-box.svg';
+import {Upload, ExternalLink, Bookmark, Pencil} from 'lucide-react';
 import ExhibitionIcon from '../assets/exhibit.svg';
 import AvatarImage from '../assets/Icon (1).svg';
-import BookmarkFilledIcon from '../assets/Icon (2).svg';
-// SVG Icon imports
-import BookmarkIcon from '../assets/Icon.svg';
 import SchoolIcon from '../assets/image 3666.svg';
 import FieldIcon from '../assets/image 3673.svg';
-import PencilIcon from '../assets/PencilIcon.svg';
-import Profileicon from '../assets/profileicon.svg';
 import { useHeaderContext } from '../components/layout/headerContext';
 
 /* ------------------------------------------------------------------ */
@@ -227,7 +222,7 @@ function MyPageHeader({
             rel="noreferrer"
             className="flex items-center gap-1 text-blue-600 text-xs font-medium font-['Pretendard'] leading-5"
           >
-            <img src={Profileicon} alt="" className="size-4" />
+            <ExternalLink className="size-4" />
             {profile.portfolioUrl}
           </a>
         </div>
@@ -239,7 +234,7 @@ function MyPageHeader({
             onClick={onRegister}
             className="flex-1 h-11 bg-gray-200 rounded-xl flex justify-center items-center gap-1.5"
           >
-            <img src={BookmarkIcon} alt="" className="size-5" />
+            <Bookmark className="size-5" />
             <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
               작가 저장
             </span>
@@ -252,7 +247,7 @@ function MyPageHeader({
             <span className="text-white text-sm font-normal font-['Pretendard'] leading-5">
               프로필 공유
             </span>
-            <img src={ShareIcon} alt="" className="size-5" />
+            <Upload color="#ffffff" className="size-5" />
           </button>
         </div>
       </div>
@@ -304,7 +299,7 @@ function ExhibitionCard({ item }: { item: ExhibitionItem }) {
               </span>
             </div>
             <button type="button" aria-label="북마크" className="shrink-0">
-              <img src={BookmarkFilledIcon} alt="" className="size-10" />
+              <Bookmark fill="#D70004" color="#D70004" className="size-4" />
             </button>
           </div>
 
@@ -330,7 +325,7 @@ function ExhibitionCard({ item }: { item: ExhibitionItem }) {
       <footer className="px-4 py-2 bg-gray-200 flex flex-col justify-start items-start gap-1.5">
         <div className="self-stretch flex justify-between items-center">
           <div className="flex justify-start items-center gap-1.5">
-            <img src={PencilIcon} alt="" className="size-2.5 shrink-0" />
+            <Pencil color="#99A1AF" className="size-2.5 shrink-0" />
             <span className="text-neutral-400 text-xs font-semibold leading-4">내 메모</span>
           </div>
           {hasMemo && (
@@ -373,7 +368,7 @@ function ArtworkCard({ item }: { item: ArtworkItem }) {
             <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
           </div>
           <button type="button" aria-label="북마크" className="absolute bottom-2 right-2">
-            <img src={BookmarkIcon} alt="" className="size-4" />
+            <Bookmark className="size-4" />
           </button>
         </div>
       </div>
