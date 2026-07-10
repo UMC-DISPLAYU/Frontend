@@ -34,10 +34,11 @@ export function DuPickBanner({ items }: Props) {
         </h2>
         <button
           type="button"
+          aria-label="전시 등록"
           onClick={() => navigate('/exhibition-register')}
           className="cursor-pointer p-0 bg-transparent border-none"
         >
-          <Plus className="size-10" />
+          <Plus strokeWidth={1.5} className="size-10" />
         </button>
       </div>
 

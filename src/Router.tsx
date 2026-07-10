@@ -15,12 +15,10 @@ export const router = createBrowserRouter([
       { index: true, element: <Homepage /> },
       { path: 'archive', element: <ArchivePage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
+      { path: 'exhibition-register', element: <ExhibitionRegister /> },
     ],
   },
-  {
-    path: 'exhibition-register',
-    element: <ExhibitionRegister />
-  },
+
   {
     path: '*',
     element: <NotFound />,
