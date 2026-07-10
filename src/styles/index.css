@@ -1,12 +1,5 @@
 @import 'tailwindcss';
 @import 'pretendard/dist/web/static/pretendard.css';
-@import '@fontsource/aldrich/400.css';
-
-@utility scrollbar-none {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
+@import './tokens/primitive.css';
+@import './tokens/semantic.css';
+@import './typography.css';
