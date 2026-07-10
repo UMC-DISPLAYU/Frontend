@@ -1,0 +1,143 @@
+.typo-heading-3xl {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-3xl);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-heading-2xl {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-2xl);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-heading-xl {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-xl);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-3xl-bold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-3xl-semibold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-3xl-regular {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3xl);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-2xl-bold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-2xl-semibold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-2xl-regular {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-2xl);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-xl-bold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-xl-semibold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-xl-regular {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-xl);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-md-bold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-md-semibold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-md-regular {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-xs-bold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-xs-semibold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.typo-body-xs-regular {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-xs);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
