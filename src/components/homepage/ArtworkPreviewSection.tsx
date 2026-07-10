@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 
 import { SectionHeader } from '@/components/homepage/SectionHeader';
-import type { ArtworkPreviewItem } from '@/types/home';
+import type { ArtworkPreviewItem } from '@/types/exhibition';
 
 type Props = {
   items: ArtworkPreviewItem[];
