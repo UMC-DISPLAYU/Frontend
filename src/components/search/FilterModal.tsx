@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 import cancelIcon from '../../assets/cancel.svg';
 
 import { FilterChip } from './FilterChip';
@@ -23,6 +25,11 @@ export function FilterModal({
   onResetAndApply,
 }: FilterModalProps) {
   const activeValue = filters[activeTab];
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    modalRef.current?.focus();
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col justify-end">
@@ -33,9 +40,21 @@ export function FilterModal({
         type="button"
       />
 
-      <div className="relative mx-auto flex h-[701px] w-full max-w-[402px] flex-col overflow-hidden rounded-t-xl bg-white">
+      <div
+        aria-labelledby="filter-modal-title"
+        aria-modal="true"
+        className="relative mx-auto flex h-[701px] w-full max-w-[402px] flex-col overflow-hidden rounded-t-xl bg-white"
+        ref={modalRef}
+        role="dialog"
+        tabIndex={-1}
+      >
         <div className="flex items-center justify-between px-5 pt-6 pb-5">
-          <h2 className="text-xl leading-6 font-bold tracking-wide text-neutral-900">필터</h2>
+          <h2
+            className="text-xl leading-6 font-bold tracking-wide text-neutral-900"
+            id="filter-modal-title"
+          >
+            필터
+          </h2>
           <button aria-label="닫기" onClick={onClose} type="button">
             <img alt="" className="size-[26px]" src={cancelIcon} />
           </button>
