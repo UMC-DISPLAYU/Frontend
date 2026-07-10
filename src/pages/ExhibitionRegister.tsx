@@ -46,7 +46,7 @@ const Chip = React.memo(({ label, selected, onClick }: { label: string; selected
 ));
 Chip.displayName = "Chip";
 
-export default function ExhibitionRegister() {
+export function ExhibitionRegister() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
