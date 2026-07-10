@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import plusIcon from '@/assets/iconoir_plus.svg';
+import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 import logo from '@/assets/logo.svg';
-import type { DuPickItem } from '@/types/home';
+import type { DuPickItem } from '@/types/exhibition';
 
 type Props = {
   items: DuPickItem[];
@@ -10,6 +12,7 @@ type Props = {
 
 export function DuPickBanner({ items }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -29,8 +32,13 @@ export function DuPickBanner({ items }: Props) {
           <img src={logo} alt="DU" className="h-8 w-auto" />
           <span>Pick</span>
         </h2>
-        <button type="button" className="cursor-pointer p-0 bg-transparent border-none">
-          <img src={plusIcon} alt="더보기" className="size-10" />
+        <button
+          type="button"
+          aria-label="전시 등록"
+          onClick={() => navigate('/exhibition-register')}
+          className="cursor-pointer p-0 bg-transparent border-none"
+        >
+          <Plus strokeWidth={1.5} className="size-10" />
         </button>
       </div>
 
