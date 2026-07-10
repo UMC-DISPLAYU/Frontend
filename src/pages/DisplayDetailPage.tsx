@@ -49,8 +49,8 @@ export function DisplayDetailPage() {
 
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && <IntroTab exhibition={exhibition} />}
-      {activeTab === 'artwork' && <ArtworkTab artworks={ARTWORKS} />}
-      {activeTab === 'review' && <ReviewTab reviews={REVIEWS} />}
+      {activeTab === 'artwork' && <ArtworkTab artworks={id ? ARTWORKS[id] || [] : []} />}
+      {activeTab === 'review' && <ReviewTab reviews={id ? REVIEWS[id] || [] : []} />}
 
       {/* 하단 고정: 공유 & 전시 저장 버튼 */}
       <BottomFixedBar />
