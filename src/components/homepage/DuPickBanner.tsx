@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import plusIcon from '@/assets/iconoir_plus.svg';
 import logo from '@/assets/logo.svg';
-import type { DuPickItem } from '@/types/home';
+import type { DuPickItem } from '@/types/exhibition';
 
 type Props = {
   items: DuPickItem[];

@@ -1,5 +1,5 @@
 import { SectionHeader } from '@/components/homepage/SectionHeader';
-import type { LoungePost } from '@/types/home';
+import type { LoungePost } from '@/types/exhibition';
 
 function LoungePostItem({ post }: { post: LoungePost }) {
   return (

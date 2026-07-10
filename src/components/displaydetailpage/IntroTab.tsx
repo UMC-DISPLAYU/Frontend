@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { CircleAlert } from 'lucide-react';
 
-import type { ExhibitionDetail } from '@/types/detail';
+import type { ExhibitionDetail } from '@/types/exhibition';
 
 type Props = {
   exhibition: ExhibitionDetail;
