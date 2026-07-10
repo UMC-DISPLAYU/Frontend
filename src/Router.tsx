@@ -3,7 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { Layout } from './components/layout';
 import { ArchivePage } from './pages/ArchivePage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
-import ExhibitionRegister from './pages/ExhibitionRegister';
+import { ExhibitionRegister} from './pages/ExhibitionRegister';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
 
