@@ -20,6 +20,7 @@ export const router = createBrowserRouter([
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
+      
     ],
   },
 
