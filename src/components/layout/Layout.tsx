@@ -6,16 +6,15 @@ import { Navbar } from './Navbar';
 
 function LayoutContent() {
   const location = useLocation();
-  const isDetailPage = location.pathname.startsWith('/display/');
-  const isRegisterPage = location.pathname.startsWith('/exhibition-register');
+  const hideNavbarPaths = ['/display/', '/artwork/', '/exhibition-register/'];
+  const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
 
   return (
     <>
-      {/* <Header title={header.title} left={header.left} right={header.right} /> */}
       <main>
         <Outlet />
       </main>
-      {!isDetailPage || !isRegisterPage && (
+      {!shouldHideNavbar && (
         <div className="fixed right-0 bottom-[34px] left-0 z-50 flex justify-center px-4">
           <Navbar />
         </div>

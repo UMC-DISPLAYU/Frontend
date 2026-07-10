@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
 // SVG Icon imports
-import ChevronRightIcon from '../assets/ChevronRightIcon.svg';
+import {ChevronRight} from 'lucide-react';
+
 import EditClubIcon from '../assets/EditClubIcon.svg';
 import BookmarkIcon from '../assets/Icon.svg';
 import MemberIcon from '../assets/MemberIcon.svg';
@@ -456,7 +457,7 @@ function SettingsSheet({
                       {menu.description}
                     </span>
                   </span>
-                  <img src={ChevronRightIcon} alt="" className="size-6 shrink-0" />
+                  <ChevronRight color="#99A1AF" className="size-6 shrink-0" />
                 </button>
               </li>
             ))}
