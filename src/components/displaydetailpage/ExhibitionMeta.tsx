@@ -22,9 +22,14 @@ export function ExhibitionMeta({ exhibition: ex }: Props) {
         <button
           type="button"
           id="meta-heart-btn"
+          onClick={() => setBookmarked((v) => !v)}
           className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95"
         >
-          <Heart size={17} fill="#ef4444" color="#ef4444" />
+          <Heart
+            size={17}
+            fill={bookmarked ? '#ef4444' : 'none'}
+            color={bookmarked ? '#ef4444' : '#888'}
+          />
           <span className="text-[13px] text-[#888]">{likeCount}</span>
         </button>
       </div>

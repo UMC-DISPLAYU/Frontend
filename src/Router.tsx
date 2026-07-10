@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import { Layout } from './components/layout';
 import { ArchivePage } from './pages/ArchivePage';
-import { DetailPage } from './pages/DetailPage';
+import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { Homepage } from './pages/Homepage';
 import { NotFound } from './pages/NotFound';
 
@@ -13,7 +13,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Homepage /> },
       { path: 'archive', element: <ArchivePage /> },
-      { path: 'exhibition/:id', element: <DetailPage /> },
+      { path: 'display/:id', element: <DisplayDetailPage /> },
     ],
   },
   {

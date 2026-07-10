@@ -1,6 +1,6 @@
-export type DetailTabKey = 'intro' | 'artwork' | 'review';
+import type { DetailTabKey } from '@/types/detail';
 
-export const DETAIL_TABS: { key: DetailTabKey; label: string }[] = [
+const DETAIL_TABS: { key: DetailTabKey; label: string }[] = [
   { key: 'intro', label: '소개' },
   { key: 'artwork', label: '작품' },
   { key: 'review', label: '후기' },

@@ -1,3 +1,5 @@
+export type DetailTabKey = 'intro' | 'artwork' | 'review';
+
 export interface ExhibitionDetail {
   id: string;
   title: string;

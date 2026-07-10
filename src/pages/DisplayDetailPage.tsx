@@ -2,19 +2,17 @@ import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import type { DetailTabKey } from '@/components/detailpage';
-import {
-  ArtworkTab,
-  BottomFixedBar,
-  DetailTabNav,
-  ExhibitionMeta,
-  HeroSlider,
-  IntroTab,
-  ReviewTab,
-} from '@/components/detailpage';
+import { ArtworkTab } from '@/components/displaydetailpage/ArtworkTab';
+import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
+import { DetailTabNav } from '@/components/displaydetailpage/DetailTabNav';
+import { ExhibitionMeta } from '@/components/displaydetailpage/ExhibitionMeta';
+import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
+import { IntroTab } from '@/components/displaydetailpage/IntroTab';
+import { ReviewTab } from '@/components/displaydetailpage/ReviewTab';
 import { ARTWORKS, EXHIBITION_DETAIL, REVIEWS } from '@/mocks/detail';
+import type { DetailTabKey } from '@/types/detail';
 
-export function DetailPage() {
+export function DisplayDetailPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<DetailTabKey>('intro');
 

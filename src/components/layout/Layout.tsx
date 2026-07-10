@@ -1,15 +1,12 @@
 import { Outlet, useLocation } from 'react-router-dom';
 
 import { FNB } from './FNB';
-import { Header } from './Header';
-import { useHeaderContext } from './headerContext';
 import { HeaderProvider } from './HeaderProvider';
 import { Navbar } from './Navbar';
 
 function LayoutContent() {
-  const { header } = useHeaderContext();
   const location = useLocation();
-  const isDetailPage = location.pathname.startsWith('/exhibition/');
+  const isDetailPage = location.pathname.startsWith('/display/');
 
   return (
     <>
