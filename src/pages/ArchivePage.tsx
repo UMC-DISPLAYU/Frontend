@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 // SVG Icon imports
 import {ChevronRight} from 'lucide-react';
+
 import EditClubIcon from '../assets/EditClubIcon.svg';
 import BookmarkIcon from '../assets/Icon.svg';
 import MemberIcon from '../assets/MemberIcon.svg';

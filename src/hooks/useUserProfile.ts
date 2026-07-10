@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useEffect,useState } from 'react';
 
-import SchoolIcon from '../assets/image 3666.svg';
-import FieldIcon from '../assets/image 3673.svg';
 import ExhibitionIcon from '../assets/exhibit.svg';
 import AvatarImage from '../assets/Icon (1).svg';
+import SchoolIcon from '../assets/image 3666.svg';
+import FieldIcon from '../assets/image 3673.svg';
 
 export interface UserProfile {
   name: string;

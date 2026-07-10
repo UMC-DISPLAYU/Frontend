@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
+import {Bookmark, ExternalLink, Pencil,Upload} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import {Upload, ExternalLink, Bookmark, Pencil} from 'lucide-react';
 import ExhibitionIcon from '../assets/exhibit.svg';
 import AvatarImage from '../assets/Icon (1).svg';
 import SchoolIcon from '../assets/image 3666.svg';
