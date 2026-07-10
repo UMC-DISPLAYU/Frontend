@@ -1,6 +1,6 @@
-export const FILTER_TABS = ['전시분야', '전시상태', '지역', '전시유형'] as const;
+import type { FilterState, FilterTab } from '@/types/search';
 
-export type FilterTab = (typeof FILTER_TABS)[number];
+export const FILTER_TABS: readonly FilterTab[] = ['전시분야', '전시상태', '지역', '전시유형'];
 
 export const FIELD_OPTIONS = [
   '전체',
@@ -35,8 +35,6 @@ export const FILTER_TAB_OPTIONS: Record<FilterTab, string[]> = {
   전시유형: TYPE_OPTIONS,
   지역: REGION_OPTIONS,
 };
-
-export type FilterState = Record<FilterTab, string>;
 
 export const DEFAULT_FILTER_STATE: FilterState = {
   전시분야: '전체',

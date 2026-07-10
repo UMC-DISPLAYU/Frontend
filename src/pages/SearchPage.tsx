@@ -7,13 +7,13 @@ import searchIcon from '../assets/search.svg';
 import {
   DEFAULT_FILTER_STATE,
   ExhibitionCard,
-  EXHIBITIONS,
   FIELD_OPTIONS,
   FilterChip,
   FilterModal,
   type FilterState,
   type FilterTab,
 } from '../components/search';
+import { EXHIBITIONS } from '../mocks/search';
 
 type ExploreTab = 'list' | 'map';
 
@@ -27,9 +27,21 @@ export function SearchPage() {
 
   const filteredExhibitions = useMemo(() => {
     const keyword = query.trim();
-    if (!keyword) return EXHIBITIONS;
-    return EXHIBITIONS.filter((exhibition) => exhibition.title.includes(keyword));
-  }, [query]);
+
+    return EXHIBITIONS.filter((exhibition) => {
+      const matchesKeyword = !keyword || exhibition.title.includes(keyword);
+
+      const matchesField =
+        filters['전시분야'] === '전체' || exhibition.department === filters['전시분야'];
+
+      const matchesStatus =
+        filters['전시상태'] === '전체' || exhibition.status === filters['전시상태'];
+
+      const matchesLocation = filters['지역'] === '전체' || exhibition.location === filters['지역'];
+
+      return matchesKeyword && matchesField && matchesStatus && matchesLocation;
+    });
+  }, [query, filters]);
 
   const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string]>).filter(
     ([, value]) => value !== '전체',
@@ -45,7 +57,7 @@ export function SearchPage() {
     <div className="mx-auto flex w-full min-w-[320px] max-w-[402px] flex-col bg-gray-100">
       <div className="flex flex-col bg-gray-100 px-5 pt-5">
         <div className="flex h-[62px] flex-col justify-start gap-1 self-stretch">
-          <h1 className="font-['Aldrich'] text-[32px] leading-[140%] font-normal tracking-[-0.96px] text-[#06032D]">
+          <h1 className="font-['Aldrich'] text-[32px] leading-[140%] font-normal tracking-[-0.96px] text-[var(--color-logo-navy)]">
             Explore
           </h1>
           <p className="text-xs text-neutral-500">저장한 전시와 작품, 작가를 다시 꺼내보세요.</p>

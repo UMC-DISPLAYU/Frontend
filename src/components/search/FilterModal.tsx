@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 
+import type { FilterState, FilterTab } from '@/types/search';
+
 import cancelIcon from '../../assets/cancel.svg';
 
 import { FilterChip } from './FilterChip';
-import { FILTER_TAB_OPTIONS, FILTER_TABS, type FilterState, type FilterTab } from './filterOptions';
+import { FILTER_TAB_OPTIONS, FILTER_TABS } from './filterOptions';
 
 type FilterModalProps = {
   activeTab: FilterTab;
@@ -43,7 +45,7 @@ export function FilterModal({
       <div
         aria-labelledby="filter-modal-title"
         aria-modal="true"
-        className="relative mx-auto flex h-[701px] w-full max-w-[402px] flex-col overflow-hidden rounded-t-xl bg-white"
+        className="relative mx-auto flex h-[701px] w-full max-w-[402px] flex-col overflow-hidden rounded-t-xl bg-[var(--color-gray-0)]"
         ref={modalRef}
         role="dialog"
         tabIndex={-1}

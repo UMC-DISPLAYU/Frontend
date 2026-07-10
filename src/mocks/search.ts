@@ -1,4 +1,4 @@
-import type { Exhibition } from './types';
+import type { Exhibition } from '@/components/search/types';
 
 export const EXHIBITIONS: Exhibition[] = [
   {
