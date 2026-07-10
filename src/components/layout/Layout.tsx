@@ -7,6 +7,7 @@ import { Navbar } from './Navbar';
 function LayoutContent() {
   const location = useLocation();
   const isDetailPage = location.pathname.startsWith('/display/');
+  const isRegisterPage = location.pathname.startsWith('/exhibition-register');
 
   return (
     <>
@@ -14,7 +15,7 @@ function LayoutContent() {
       <main>
         <Outlet />
       </main>
-      {!isDetailPage && (
+      {!isDetailPage || !isRegisterPage && (
         <div className="fixed right-0 bottom-[34px] left-0 z-50 flex justify-center px-4">
           <Navbar />
         </div>
