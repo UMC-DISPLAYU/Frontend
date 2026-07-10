@@ -1,7 +1,7 @@
-import AvatarImage from '@/assets/Icon (1).svg';
 import ExhibitionIcon from '@/assets/exhibit.svg';
-import FieldIcon from '@/assets/image 3673.svg';
+import AvatarImage from '@/assets/Icon (1).svg';
 import SchoolIcon from '@/assets/image 3666.svg';
+import FieldIcon from '@/assets/image 3673.svg';
 import type { ArtistProfile } from '@/types/mypage';
 
 export const AUTH_PAGE_PROFILE: ArtistProfile = {

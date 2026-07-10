@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { useHeaderContext } from '@/components/layout/headerContext';
 import {
   ArtistCard,
   ArtworkCard,
@@ -7,7 +8,6 @@ import {
   MyPageHeader,
   SettingsSheet,
 } from '@/components/mypage';
-import { useHeaderContext } from '@/components/layout/headerContext';
 import { ARTISTS, ARTWORKS, EXHIBITIONS } from '@/constants/mypage';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { TabKey } from '@/types/mypage';

@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { AuthPageHeader } from '@/components/mypage/AuthPageHeader';
-import { ArtworkCard, ExhibitionCard, SettingsSheet } from '@/components/mypage';
 import { useHeaderContext } from '@/components/layout/headerContext';
+import { ArtworkCard, ExhibitionCard, SettingsSheet } from '@/components/mypage';
+import { AuthPageHeader } from '@/components/mypage/AuthPageHeader';
 import { AUTH_PAGE_PROFILE } from '@/constants/authPage';
 import { ARTWORKS, EXHIBITIONS } from '@/constants/mypage';
 import type { TabKey } from '@/types/mypage';

@@ -1,7 +1,6 @@
 import { Bookmark, Pencil } from 'lucide-react';
 
 import type { ExhibitionItem } from '@/types/mypage';
-
 import { statusBadgeClass } from '@/utils/mypage';
 
 interface ExhibitionCardProps {
