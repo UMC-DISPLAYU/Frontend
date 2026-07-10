@@ -175,22 +175,6 @@ export function ArtworkGuestbookTab({ reviews, questions }: Props) {
           )}
         </div>
       )}
-
-      {/* 푸터 */}
-      <section className="px-5 pt-6 pb-4">
-        <div className="flex items-center gap-2 mb-1">
-          <img src={duLogo} alt="DU" className="h-8" />
-          <div>
-            <p className="text-[11px] text-[#888] font-[Pretendard,sans-serif]">전시공유 플랫폼</p>
-          </div>
-        </div>
-        <div className="flex gap-4 mt-3 text-[11px] text-[#aaa] font-[Pretendard,sans-serif]">
-          <span>PM 고상준</span>
-          <span>DESIGN 최유성</span>
-          <span>FrontEnd</span>
-          <span>BackEnd</span>
-        </div>
-      </section>
     </div>
   );
 }

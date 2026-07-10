@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArtworkTab } from '@/components/displaydetailpage/ArtworkTab';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { DetailTabNav } from '@/components/displaydetailpage/DetailTabNav';
+import { DisplaySaveButton } from '@/components/displaydetailpage/DisplaySaveButton';
 import { ExhibitionMeta } from '@/components/displaydetailpage/ExhibitionMeta';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
 import { IntroTab } from '@/components/displaydetailpage/IntroTab';
@@ -53,7 +54,7 @@ export function DisplayDetailPage() {
       {activeTab === 'review' && <ReviewTab reviews={id ? REVIEWS[id] || [] : []} />}
 
       {/* 하단 고정: 공유 & 전시 저장 버튼 */}
-      <BottomFixedBar />
+      <BottomFixedBar button={<DisplaySaveButton className="w-full" />} />
     </div>
   );
 }

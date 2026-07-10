@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
+import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
@@ -56,7 +57,7 @@ export function ArtworkDetailPage() {
       {activeTab === 'guestbook' && <ArtworkGuestbookTab reviews={reviews} questions={questions} />}
 
       {/* 하단 고정 바 */}
-      <BottomFixedBar />
+      <BottomFixedBar button={<ArtworkSaveButton className="w-full" />} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
+import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import type { ArtworkDetail } from '@/types/exhibition';
 
 type Props = {
@@ -13,7 +14,7 @@ export function ArtworkMeta({ artwork }: Props) {
     <div className="bg-[#F0F0F3] px-5 pt-5 pb-4">
       {/* 제목 + 북마크 */}
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h1 className="text-[20px] font-bold text-[#111] leading-snug font-[Pretendard,sans-serif]">
+        <h1 className="text-body-2xl font-bold text-gray-900 leading-snug font-body">
           {artwork.artworkName}
         </h1>
         <div className="flex flex-col items-center shrink-0">
@@ -77,15 +78,7 @@ export function ArtworkMeta({ artwork }: Props) {
       </button>
 
       {/* 작품 저장 버튼 */}
-      <button
-        type="button"
-        className="w-full py-3.5 rounded-xl bg-white border border-[#e0e0e0] text-[#111] text-[15px] font-bold font-[Pretendard,sans-serif] flex items-center justify-center gap-2"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-        </svg>
-        작품 저장
-      </button>
+      <ArtworkSaveButton />
     </div>
   );
 }
