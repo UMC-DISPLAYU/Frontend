@@ -19,7 +19,7 @@ export const MOCK_EXHIBITIONS: HomeExhibitionDto[] = [
   },
   {
     displayId: 3,
-    title: 'NEW OFFICE',
+    title: '절벽 위에서',
     posterImageUrl: 'https://picsum.photos/seed/no1/300/400',
     isBookmarked: false,
     startedAt: '2026-06-02',
