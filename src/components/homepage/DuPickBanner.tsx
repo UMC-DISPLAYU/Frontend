@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 import logo from '@/assets/logo.svg';
 import type { DuPickItem } from '@/types/exhibition';
 
