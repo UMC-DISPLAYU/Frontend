@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { Calendar, Clock, Heart, MapPin } from 'lucide-react';
 
-import type { ExhibitionDetail } from '@/types/detail';
+import type { ExhibitionDetail } from '@/types/exhibition';
 
 import { DisplaySaveButton } from './DisplaySaveButton';
 

@@ -8,7 +8,7 @@ import {
   DU_PICK_ITEMS,
   GRADUATION_EXHIBITIONS,
   LOUNGE_POSTS,
-} from '@/mocks/home';
+} from '@/mocks/exhibition';
 
 export const Homepage = () => {
   return (

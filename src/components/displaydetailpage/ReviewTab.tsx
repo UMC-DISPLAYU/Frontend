@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { Heart, MoreHorizontal, SquarePen } from 'lucide-react';
 
-import type { ReviewItem } from '@/types/detail';
+import type { ReviewItem } from '@/types/exhibition';
 
 import defaultProfileIcon from '../../assets/DefaultProfileIcon.svg';
 

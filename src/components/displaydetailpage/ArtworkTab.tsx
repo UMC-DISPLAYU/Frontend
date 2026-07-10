@@ -1,4 +1,4 @@
-import type { ArtworkItem } from '@/types/detail';
+import type { ArtworkItem } from '@/types/exhibition';
 
 type ArtworkCardProps = {
   item: ArtworkItem;

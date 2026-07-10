@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { ChevronLeft } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 
 type Props = {
   images: string[];
@@ -23,17 +23,7 @@ export function HeroSlider({ images, onBack }: Props) {
       ))}
 
       {/* 뒤로가기 버튼 */}
-      <button
-        type="button"
-        id="display-back-btn"
-        aria-label="뒤로가기"
-        onClick={onBack}
-        className="absolute top-4 left-4 z-20 flex items-center justify-center size-10 bg-white/10 rounded-[100px] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.08),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px]"
-      >
-        <div className="size-10 flex items-center justify-center pr-1">
-          <ChevronLeft size={35} strokeWidth={1.5} />
-        </div>
-      </button>
+      <BackButton id="display-back-btn" onClick={onBack} className="absolute top-4 left-4 z-20" />
 
       {/* 인디케이터 — 고정 크기 원형 점 */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
