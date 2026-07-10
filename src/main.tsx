@@ -19,10 +19,17 @@ const enableMocking = async () => {
   });
 };
 
-enableMocking().then(() => {
+const renderApp = () => {
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
       <RouterProvider router={router} />
     </React.StrictMode>,
   );
-});
+};
+
+enableMocking()
+  .catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+  })
+  .finally(renderApp);

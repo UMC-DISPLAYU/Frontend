@@ -44,9 +44,14 @@ export const Homepage = () => {
 
   useEffect(() => {
     const fetchGraduationDisplays = async () => {
-      const exhibitions = await getGraduationDisplays();
+      try {
+        const exhibitions = await getGraduationDisplays();
 
-      setGraduationExhibitions(exhibitions.map(toExhibitionCard));
+        setGraduationExhibitions(exhibitions.map(toExhibitionCard));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
     };
 
     void fetchGraduationDisplays();
