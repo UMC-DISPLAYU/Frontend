@@ -1,7 +1,5 @@
 import type { ArtworkDetail } from '@/types/exhibition';
 
-import duLogo from '../../assets/logo.svg';
-
 type Props = {
   artwork: ArtworkDetail;
 };
@@ -10,29 +8,31 @@ export function ArtworkIntroTab({ artwork }: Props) {
   return (
     <div className="pb-6">
       {/* 작품소개 */}
-      <section className="px-5 pt-6 pb-5">
+      <section className="px-5 pt-7 pb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[16px] font-bold text-[#111] font-[Pretendard,sans-serif]">
+          <h2 className="text-xl font-bold text-neutral-900 font-[Pretendard,sans-serif]">
             작품소개
           </h2>
-          <button type="button" className="text-[12px] text-[#888] font-[Pretendard,sans-serif]">
+        </div>
+        <p className="text-sm text-neutral-900 leading-relaxed font-[Pretendard,sans-serif] line-clamp-4">
+          {artwork.content}
+        </p>
+        <div className="flex items-center justify-end pt-3">
+          <button
+            type="button"
+            className="text-xs text-neutral-400 font-[Pretendard,sans-serif] justify-end"
+          >
             더보기 &gt;
           </button>
         </div>
-        <p className="text-[13px] text-[#555] leading-relaxed font-[Pretendard,sans-serif] line-clamp-4">
-          {artwork.content}
-        </p>
       </section>
 
       {/* 작업과정 */}
       <section className="px-5 pt-5 pb-5 bg-gray-200">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[16px] font-bold text-[#111] font-[Pretendard,sans-serif]">
+          <h2 className="text-xl font-bold text-neutral-900 font-[Pretendard,sans-serif]">
             작업과정
           </h2>
-          <button type="button" className="text-[12px] text-[#888] font-[Pretendard,sans-serif]">
-            더보기 &gt;
-          </button>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {artwork.images
@@ -43,7 +43,7 @@ export function ArtworkIntroTab({ artwork }: Props) {
                 key={idx}
                 src={img.imageUrl}
                 alt={`작업과정 ${idx + 1}`}
-                className="w-full aspect-video object-cover rounded-lg"
+                className="w-full h-40 object-cover rounded-xl"
               />
             ))}
         </div>
@@ -51,10 +51,10 @@ export function ArtworkIntroTab({ artwork }: Props) {
 
       {/* 감상 포인트 */}
       <section className="px-5 pt-5 pb-5">
-        <h2 className="text-[16px] font-bold text-[#111] mb-3 font-[Pretendard,sans-serif]">
+        <h2 className="text-xl font-bold text-neutral-900 mb-3 font-[Pretendard,sans-serif]">
           감상 포인트
         </h2>
-        <p className="text-[13px] text-[#555] leading-relaxed font-[Pretendard,sans-serif]">
+        <p className="text-sm text-neutral-900 leading-relaxed font-[Pretendard,sans-serif]">
           {artwork.point}
         </p>
       </section>
@@ -69,10 +69,10 @@ export function ArtworkIntroTab({ artwork }: Props) {
           />
         </div>
         <div>
-          <p className="text-[14px] font-bold text-[#111] font-[Pretendard,sans-serif]">
+          <p className="text-xl font-bold text-neutral-900 font-[Pretendard,sans-serif]">
             {artwork.artist}
           </p>
-          <p className="text-[12px] text-[#888] font-[Pretendard,sans-serif]">
+          <p className="text-xs text-neutral-400 font-[Pretendard,sans-serif]">
             {artwork.productionYear} · {artwork.size} · {artwork.materialMedia}
           </p>
         </div>

@@ -10,7 +10,7 @@ export function ArtworkTabNav({ activeTab, onTabChange }: Props) {
   ];
 
   return (
-    <nav className="bg-[#F0F0F3] sticky top-0 z-10 border-b-2 border-[#e5e5e5] flex px-5 gap-10">
+    <nav className="bg-[#F0F0F3] sticky top-0 z-10 border-b-2 border-[#e5e5e5] flex px-5 gap-19">
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;
         return (
@@ -26,7 +26,7 @@ export function ArtworkTabNav({ activeTab, onTabChange }: Props) {
             }}
           >
             {tab.label}
-            {isActive && <span className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-[#111]" />}
+            {isActive && <span className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-[#111]" />}
           </button>
         );
       })}

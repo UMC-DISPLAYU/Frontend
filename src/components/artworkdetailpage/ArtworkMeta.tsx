@@ -1,3 +1,4 @@
+import { Calendar, ChevronRight, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
@@ -14,70 +15,72 @@ export function ArtworkMeta({ artwork }: Props) {
     <div className="bg-[#F0F0F3] px-5 pt-5 pb-4">
       {/* 제목 + 북마크 */}
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h1 className="text-body-2xl font-bold text-gray-900 leading-snug font-body">
-          {artwork.artworkName}
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900">{artwork.artworkName}</h1>
         <div className="flex flex-col items-center shrink-0">
           <button type="button" aria-label="저장" className="cursor-pointer">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#888"
-              strokeWidth="1.8"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
+            <Heart strokeWidth={1.2} className="size-6" />
           </button>
-          <span className="text-[11px] text-[#888] mt-0.5 font-[Pretendard,sans-serif]">
-            {artwork.bookmarkCount}
-          </span>
+          <span className="text-xs text-[#111111]">{artwork.bookmarkCount}</span>
         </div>
       </div>
 
       {/* 작가명 */}
-      <p className="text-[14px] text-[#555] mb-4 font-[Pretendard,sans-serif]">{artwork.artist}</p>
+      <p className="text-sm text-[#111111] mb-4">{artwork.artist}</p>
 
       {/* 소속 전시 카드 */}
       <button
         type="button"
         onClick={() => navigate(`/display/${artwork.exhibitionId}`)}
-        className="w-full flex items-center gap-3 bg-white rounded-xl px-3 py-2.5 mb-4 cursor-pointer"
+        className="w-full flex items-center p-3 bg-[#F0F0F3] rounded-xl mb-4 cursor-pointer"
+        style={{
+          boxShadow:
+            '8px 8px 18px 0px rgba(67, 0, 209, 0.04), inset 2.5px 2.5px 4px 0px rgba(0, 0, 0, 0.15), inset -2.5px -2.5px 4px 0px rgba(255, 255, 255, 1.00)',
+        }}
       >
-        <div className="text-[10px] text-[#888] whitespace-nowrap font-[Pretendard,sans-serif] shrink-0">
-          소속전시
+        <div className="flex items-center gap-3 w-full min-w-0">
+          {/* 썸네일 이미지 */}
+          <div className="w-15.25 h-21.5 shrink-0 rounded-sm overflow-hidden bg-gray-200">
+            <img
+              src={artwork.exhibitionThumbnail}
+              alt="전시 썸네일"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* 텍스트 영역 */}
+          <div className="flex flex-col justify-start items-start gap-2 min-w-0 flex-1 text-left">
+            {/* 소속전시 배지 */}
+            <div className="px-2 py-0.5 bg-[#DEDEE6] rounded-sm inline-flex justify-start items-start">
+              <span className="text-sky-600 text-[10px] font-bold font-['Pretendard']">
+                소속전시
+              </span>
+            </div>
+
+            {/* 제목, 설명, 날짜 */}
+            <div className="self-stretch flex flex-col justify-start items-start gap-1.5 min-w-0">
+              <div className="self-stretch flex flex-col justify-start items-start gap-0.5 min-w-0">
+                <h2 className="self-stretch text-neutral-900 text-sm font-bold font-['Pretendard'] leading-5 truncate">
+                  {artwork.exhibitionTitle}
+                </h2>
+                <p className="self-stretch text-neutral-600 text-xs font-normal font-['Pretendard'] leading-4 truncate">
+                  {artwork.exhibitionOrganizer}
+                </p>
+              </div>
+              <div className="self-stretch flex justify-start items-center gap-1 text-neutral-400">
+                <Calendar size={12} className="shrink-0" />
+                <span className="text-[10px] font-normal font-['Pretendard'] leading-3">
+                  {artwork.exhibitionPeriod}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            <ChevronRight size={25} className="text-[#0068D9]" strokeWidth={2} />
+          </div>
         </div>
-        <img
-          src={artwork.exhibitionThumbnail}
-          alt="전시 썸네일"
-          className="w-10 h-8 object-cover rounded shrink-0"
-        />
-        <div className="flex flex-col min-w-0 text-left">
-          <p className="text-[13px] font-bold text-[#111] truncate font-[Pretendard,sans-serif]">
-            {artwork.exhibitionTitle}
-          </p>
-          <p className="text-[11px] text-[#666] truncate font-[Pretendard,sans-serif]">
-            {artwork.exhibitionOrganizer}
-          </p>
-          <p className="text-[11px] text-[#aaa] font-[Pretendard,sans-serif]">
-            🗓 {artwork.exhibitionPeriod}
-          </p>
-        </div>
-        <svg
-          className="shrink-0 ml-auto"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#bbb"
-          strokeWidth="2"
-        >
-          <path d="M9 18l6-6-6-6" />
-        </svg>
       </button>
 
-      {/* 작품 저장 버튼 */}
       <ArtworkSaveButton />
     </div>
   );
