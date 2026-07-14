@@ -3,4 +3,5 @@
 @import '@fontsource/aldrich';
 @import './tokens/primitive.css';
 @import './tokens/semantic.css';
+@import './tokens/theme.css';
 @import './typography.css';
