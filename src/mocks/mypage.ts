@@ -1,7 +1,7 @@
 import type {
   ArtistItem,
-  ArtworkItem,
   ExhibitionItem,
+  SavedArtworkItem,
   TabKey,
 } from '@/types/mypage';
 
@@ -43,7 +43,7 @@ export const EXHIBITIONS: ExhibitionItem[] = [
   },
 ];
 
-export const ARTWORKS: ArtworkItem[] = [
+export const ARTWORKS: SavedArtworkItem[] = [
   {
     id: '1',
     title: 'FROM 2026',

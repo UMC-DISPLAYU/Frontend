@@ -8,8 +8,8 @@ import {
   MyPageHeader,
   SettingsSheet,
 } from '@/components/mypage';
-import { ARTISTS, ARTWORKS, EXHIBITIONS } from '@/constants/mypage';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { ARTISTS, ARTWORKS, EXHIBITIONS } from '@/mocks/mypage';
 import type { TabKey } from '@/types/mypage';
 
 export function MyPage() {

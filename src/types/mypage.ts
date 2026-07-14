@@ -11,7 +11,7 @@ export interface ExhibitionItem {
   memo?: string;
 }
 
-export interface ArtworkItem {
+export interface SavedArtworkItem {
   id: string;
   title: string;
   artist: string;

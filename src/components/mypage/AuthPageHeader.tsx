@@ -1,7 +1,7 @@
 import { Bookmark, ChevronLeft, ExternalLink, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { TABS } from '@/constants/mypage';
+import { TABS } from '@/mocks/mypage';
 import type { ArtistProfile, TabKey } from '@/types/mypage';
 
 interface AuthPageHeaderProps {
