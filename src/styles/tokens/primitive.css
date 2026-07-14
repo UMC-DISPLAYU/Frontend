@@ -40,10 +40,10 @@
   --font-size-heading-2xl: 24px;
   --font-size-heading-xl: 20px;
 
-  --font-size-body-3xl: 20px;
-  --font-size-body-2xl: 18px;
-  --font-size-body-xl: 16px;
-  --font-size-body-md: 14px;
+  --font-size-body-2xl: 24px;
+  --font-size-body-xl: 20px;
+  --font-size-body-md: 16px;
+  --font-size-body-sm: 14px;
   --font-size-body-xs: 12px;
 
   --font-weight-regular: 400;
