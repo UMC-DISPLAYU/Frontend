@@ -8,7 +8,7 @@ import {
   MyPageHeader,
   SettingsSheet,
 } from '@/components/mypage';
-import { ARTISTS, ARTWORKS, EXHIBITIONS } from '@/constants/mypage';
+import { ARTISTS, ARTWORKS, EXHIBITIONS } from '@/mocks/mypage';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { TabKey } from '@/types/mypage';
 

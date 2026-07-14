@@ -1,6 +1,6 @@
 import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
 
-import { TABS } from '@/constants/mypage';
+import { TABS } from '@/mocks/mypage';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import type { TabKey } from '@/types/mypage';
 
