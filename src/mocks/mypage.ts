@@ -1,7 +1,7 @@
 import type {
   ArtistItem,
-  SavedArtworkItem,
   ExhibitionItem,
+  SavedArtworkItem,
   TabKey,
 } from '@/types/mypage';
 
