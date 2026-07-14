@@ -1,21 +1,43 @@
+/**
+ * 원시 토큰 — 값이 정의되는 유일한 곳.
+ *
+ * 접두어가 --color-* 가 아니라 --palette-* 인 이유:
+ * Tailwind v4는 --color-* 를 자기 팔레트 네임스페이스로 쓴다.
+ * --color-gray-900 으로 두면 Tailwind 기본 gray-900 과 이름이 충돌해
+ * 로드 순서에 따라 승자가 바뀐다. 네임스페이스를 분리해 충돌을 없앤다.
+ *
+ * 이 파일의 값은 디자이너가 정의한 것이다. 임의로 늘리지 않는다.
+ */
 :root {
-  /* Color */
-  --color-primary-blue: #2f8dcc;
-  --color-primary-red: #c32427;
+  /* Brand */
+  --palette-blue: #2f8dcc;
+  --palette-red: #c32427;
+  --palette-navy: #06032d;
 
-  --color-gray-0: #ffffff;
-  --color-gray-50: #f7f7f7;
-  --color-gray-100: #eeeeee;
-  --color-gray-200: #dddddd;
-  --color-gray-300: #c9c9c9;
-  --color-gray-400: #a8a8a8;
-  --color-gray-500: #858585;
-  --color-gray-600: #5f5f5f;
-  --color-gray-700: #3d3d3d;
-  --color-gray-800: #222222;
-  --color-gray-900: #111111;
+  /* Gray */
+  --palette-gray-0: #ffffff;
+  --palette-gray-50: #f7f7f7;
+  --palette-gray-100: #eeeeee;
+  --palette-gray-200: #dddddd;
+  --palette-gray-300: #c9c9c9;
+  --palette-gray-400: #a8a8a8;
+  --palette-gray-500: #858585;
+  --palette-gray-600: #5f5f5f;
+  --palette-gray-700: #3d3d3d;
+  --palette-gray-800: #222222;
+  --palette-gray-900: #111111;
 
-  --color-logo-navy: #06032d;
+  /* Status */
+  --palette-green-500: #22c55e;
+  --palette-green-50: #f0fdf4;
+
+  /* Alpha */
+  --palette-black-20: rgb(0 0 0 / 20%);
+  --palette-white-90: rgb(255 255 255 / 90%);
+  --palette-white-60: rgb(255 255 255 / 60%);
+  --palette-white-10: rgb(255 255 255 / 10%);
+  --palette-gray-400-50: rgb(168 168 168 / 50%);
+  --palette-gray-400-20: rgb(168 168 168 / 20%);
 
   /* Typography */
   --font-family-heading: 'Aldrich', sans-serif;
