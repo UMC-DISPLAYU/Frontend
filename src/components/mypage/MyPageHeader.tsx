@@ -35,12 +35,12 @@ export function MyPageHeader({
     <header className="shrink-0 bg-white">
       <div className="px-5 pt-2 flex justify-between items-center">
         <div className="flex items-center gap-2.5">
-          <h1 className="text-slate-900 text-3xl font-normal font-['Aldrich'] leading-10">
+          <h1 className="text-slate-900 typo-heading-3xl leading-10">
             My Page
           </h1>
           {isArtistVerified && isArtistView && (
             <span className="px-1.5 py-0.5 bg-blue-100 rounded-sm">
-              <span className="text-blue-600 text-[10px] font-normal font-['Pretendard'] leading-3">
+              <span className="text-blue-600 typo-body-xs-regular leading-3">
                 작가인증
               </span>
             </span>
@@ -64,7 +64,7 @@ export function MyPageHeader({
             alt={profile.name}
           />
           <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-            <div className="text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7 truncate">
+            <div className="text-neutral-900 typo-body-xl-bold leading-7 truncate">
               {profile.name}
             </div>
             {isArtistView ? (
@@ -75,7 +75,7 @@ export function MyPageHeader({
                     src={profile.schoolIcon}
                     alt=""
                   />
-                  <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
+                  <span className="text-neutral-900 typo-body-xs-semibold leading-4">
                     {profile.school}
                   </span>
                 </div>
@@ -85,7 +85,7 @@ export function MyPageHeader({
                     src={profile.fieldIcon}
                     alt=""
                   />
-                  <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
+                  <span className="text-neutral-900 typo-body-xs-semibold leading-4">
                     {profile.field}
                   </span>
                 </div>
@@ -95,13 +95,13 @@ export function MyPageHeader({
                     src={profile.exhibitionIcon}
                     alt=""
                   />
-                  <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
+                  <span className="text-neutral-900 typo-body-xs-semibold leading-4">
                     {profile.exhibit}
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="text-slate-950 text-xs font-normal font-['Pretendard'] leading-4 truncate">
+              <div className="text-slate-950 typo-body-xs-regular leading-4 truncate">
                 {profile.caption || '내가 저장한 작품 확인하기'}
               </div>
             )}
@@ -112,7 +112,7 @@ export function MyPageHeader({
               onClick={onVerifyArtist}
               className="shrink-0 px-6 py-1.5 bg-gray-300 rounded-lg outline outline-1 -outline-offset-1 outline-gray-200"
             >
-              <span className="text-neutral-900 text-xs font-normal font-['Pretendard'] underline leading-4">
+              <span className="text-neutral-900 typo-body-xs-regular underline leading-4">
                 작가 인증하기
               </span>
             </button>
@@ -121,7 +121,7 @@ export function MyPageHeader({
 
         {isArtistView && profile.bio && (
           <div className="flex flex-col gap-2">
-            <p className="text-neutral-800 text-xs font-semibold font-['Pretendard'] leading-4">
+            <p className="text-neutral-800 typo-body-xs-semibold leading-4">
               {profile.bio}
             </p>
             {profile.portfolioUrl && (
@@ -145,7 +145,7 @@ export function MyPageHeader({
               onClick={onRegister}
               className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
             >
-              <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
+              <span className="text-neutral-900 typo-body-md-regular">
                 전시/작품등록
               </span>
             </button>
@@ -154,7 +154,7 @@ export function MyPageHeader({
               onClick={onManage}
               className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
             >
-              <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
+              <span className="text-neutral-900 typo-body-md-regular">
                 전시/작품관리
               </span>
             </button>

@@ -40,7 +40,7 @@ export function MyPage() {
   if (isLoading) {
     return (
       <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-neutral-500 text-sm font-['Pretendard']">
+        <div className="text-neutral-500 typo-body-md-bold">
           로딩 중...
         </div>
       </div>
@@ -50,7 +50,7 @@ export function MyPage() {
   if (error || !userData) {
     return (
       <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-red-500 text-sm font-['Pretendard']">
+        <div className="text-red-500 typo-body-md-semibold">
           프로필을 불러오는데 실패했습니다.
         </div>
       </div>
@@ -60,7 +60,7 @@ export function MyPage() {
   const { isArtistVerified, profile } = userData;
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex flex-col">
+    <div className="w-full max-w-md mx-auto h-dvh bg-box flex flex-col">
       <MyPageHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
