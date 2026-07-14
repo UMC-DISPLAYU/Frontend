@@ -39,8 +39,8 @@ export function MyPage() {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-neutral-500 typo-body-md-bold">
+      <div className="w-full max-w-md mx-auto h-dvh bg-page flex items-center justify-center">
+        <div className="text-sub typo-body-md-bold">
           로딩 중...
         </div>
       </div>
@@ -49,8 +49,8 @@ export function MyPage() {
 
   if (error || !userData) {
     return (
-      <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-red-500 typo-body-md-semibold">
+      <div className="w-full max-w-md mx-auto h-dvh bg-box flex items-center justify-center">
+        <div className="text-error typo-body-md-semibold">
           프로필을 불러오는데 실패했습니다.
         </div>
       </div>
@@ -83,7 +83,7 @@ export function MyPage() {
         isArtistView={isArtistView}
       />
 
-      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
+      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6 bg-page">
         {activeTab === 'exhibition' && (
           <div className="flex flex-col gap-3">
             {EXHIBITIONS.map((item) => (
