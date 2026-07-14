@@ -1,7 +1,7 @@
 import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
 
-import { TABS } from '@/mocks/mypage';
 import type { UserProfile } from '@/hooks/useUserProfile';
+import { TABS } from '@/mocks/mypage';
 import type { TabKey } from '@/types/mypage';
 
 interface MyPageHeaderProps {
