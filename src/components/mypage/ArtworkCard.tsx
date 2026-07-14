@@ -1,9 +1,9 @@
 import { Bookmark } from 'lucide-react';
 
-import type { ArtworkItem } from '@/types/mypage';
+import type { SavedArtworkItem } from '@/types/mypage';
 
 interface ArtworkCardProps {
-  item: ArtworkItem;
+  item: SavedArtworkItem;
 }
 
 export function ArtworkCard({ item }: ArtworkCardProps) {
