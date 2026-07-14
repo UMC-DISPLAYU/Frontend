@@ -23,6 +23,10 @@
   --color-link: var(--fg-link);
   --color-error: var(--fg-error);
 
+  /* Button */
+  --color-bt-gray: var(--bt-gray);
+  --color-bt-black: var(--bt-black);
+
   /* Border */
   --color-line: var(--line);
   --color-line-soft: var(--line-soft);
