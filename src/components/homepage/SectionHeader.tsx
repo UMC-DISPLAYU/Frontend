@@ -1,4 +1,4 @@
-import ChevronRightIcon from '@/assets/ChevronRightIcon.svg';
+import { ChevronRightIcon } from 'lucide-react';
 
 type SectionHeaderProps = {
   title: string;
@@ -7,13 +7,13 @@ type SectionHeaderProps = {
 export function SectionHeader({ title }: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between px-4 mb-2.5">
-      <h2 className="text-xl font-bold leading-7 text-neutral-900">{title}</h2>
+      <h2 className="typo-body-xl-bold text-main">{title}</h2>
       <button
         type="button"
-        className="flex items-center gap-px text-xs leading-none text-neutral-500 bg-transparent border-none cursor-pointer p-0"
+        className="flex items-center gap-px typo-body-xs-regular text-hint bg-transparent border-none cursor-pointer p-0"
       >
         더보기
-        <img src={ChevronRightIcon} className="size-2.5" />
+        <ChevronRightIcon className="text-hint size-3" />
       </button>
     </div>
   );

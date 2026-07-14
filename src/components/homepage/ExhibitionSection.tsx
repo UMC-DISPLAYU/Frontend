@@ -20,9 +20,9 @@ function ExhibitionCard({ item }: { item: ExhibitionCardData }) {
         ) : null}
       </div>
       <div className="flex flex-col gap-0.5">
-        <p className="text-xs font-bold text-neutral-900 truncate">{item.title}</p>
-        <p className="text-xs text-neutral-600 truncate">{item.school}</p>
-        <p className="text-xs text-neutral-500">{item.period}</p>
+        <p className="typo-body-xs-bold text-main truncate">{item.title}</p>
+        <p className="typo-body-xs-regular text-sub truncate">{item.school}</p>
+        <p className="typo-body-xs-regular text-hint">{item.period}</p>
       </div>
     </article>
   );
