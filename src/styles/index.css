@@ -4,4 +4,4 @@
 @import './tokens/primitive.css';
 @import './tokens/semantic.css';
 @import './tokens/theme.css';
-@import './typography.css';
+@import './tokens/typography.css';
