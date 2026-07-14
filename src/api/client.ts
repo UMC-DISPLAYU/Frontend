@@ -45,14 +45,14 @@ export const apiRequest = async <TData, TBody = unknown>(
     body: body instanceof FormData ? body : body === undefined ? undefined : JSON.stringify(body),
   });
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+  const data = (await response.json().catch(() => null)) as ApiResponseDto<TData> | null;
+
+  if (data?.resultType === 'FAIL') {
+    throw new Error(data.error.message);
   }
 
-  const data = (await response.json()) as ApiResponseDto<TData>;
-
-  if (data.resultType === 'FAIL') {
-    throw new Error(data.error.message);
+  if (!response.ok || !data) {
+    throw new Error(`API request failed: ${response.status}`);
   }
 
   return data.success.data;
