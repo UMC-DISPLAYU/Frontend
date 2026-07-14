@@ -15,7 +15,8 @@
 
   /* Foreground — 텍스트와 아이콘이 같은 스케일을 공유한다 */
   --fg-main: var(--palette-gray-black);
-  --fg-sub: var(--palette-gray-600);
+  --fg-sub600: var(--palette-gray-600);
+  --fg-sub700: var(--palette-gray-700);
   --fg-hint: var(--palette-gray-500);
   --fg-faint: var(--palette-gray-400);
   --fg-white: var(--palette-gray-white);
