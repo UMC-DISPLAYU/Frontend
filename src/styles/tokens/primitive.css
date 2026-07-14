@@ -10,22 +10,20 @@
  */
 :root {
   /* Brand */
-  --palette-blue: #2f8dcc;
+  --palette-blue: #2483c3;
   --palette-red: #c32427;
-  --palette-navy: #06032d;
 
   /* Gray */
-  --palette-gray-0: #ffffff;
-  --palette-gray-50: #f7f7f7;
-  --palette-gray-100: #eeeeee;
-  --palette-gray-200: #dddddd;
-  --palette-gray-300: #c9c9c9;
-  --palette-gray-400: #a8a8a8;
-  --palette-gray-500: #858585;
-  --palette-gray-600: #5f5f5f;
-  --palette-gray-700: #3d3d3d;
-  --palette-gray-800: #222222;
-  --palette-gray-900: #111111;
+  --palette-gray-0: #f5f5f5;
+  --palette-gray-100: #e9e9e9;
+  --palette-gray-200: #d9d9d9;
+  --palette-gray-300: #c4c4c4;
+  --palette-gray-400: #9d9d9d;
+  --palette-gray-500: #7b7b7b;
+  --palette-gray-600: #555;
+  --palette-gray-700: #434343;
+  --palette-gray-800: #262626;
+  --palette-gray-900: #000;
 
   /* Status */
   --palette-green-500: #22c55e;
@@ -33,11 +31,6 @@
 
   /* Alpha */
   --palette-black-20: rgb(0 0 0 / 20%);
-  --palette-white-90: rgb(255 255 255 / 90%);
-  --palette-white-60: rgb(255 255 255 / 60%);
-  --palette-white-10: rgb(255 255 255 / 10%);
-  --palette-gray-400-50: rgb(168 168 168 / 50%);
-  --palette-gray-400-20: rgb(168 168 168 / 20%);
 
   /* Typography */
   --font-family-heading: 'Aldrich', sans-serif;
