@@ -3,31 +3,24 @@ import type { LoungePost } from '@/types/exhibition';
 
 function LoungePostItem({ post }: { post: LoungePost }) {
   return (
-    <div className="mx-4 mb-4 rounded-lg shadow-sm border border-zinc-300 bg-white p-4 flex flex-col gap-2.5">
-      <div className="flex items-center justify-between">
-        <span
-          className="inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-bold
-       text-sky-600 bg-gray-200"
-        >
-          {post.tag}
-        </span>
+    <div className="mx-4 mb-4 px-4 py-3.5 bg-card rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col gap-2.5">
+      <div className="flex justify-between items-start w-full">
+        <div className="flex flex-col gap-3 flex-1 min-w-0">
+          <div className="px-2 py-0.5 bg-bt-gray rounded-sm inline-flex items-center self-start">
+            <span className="text-link text-[10px] font-bold">{post.tag}</span>
+          </div>
 
-        <button
-          type="button"
-          className="text-[#BBBBBB] hover:text-[#999999] bg-transparent border-none cursor-pointer p-0 text-lg font-bold leading-none"
-        >
-          ···
-        </button>
-      </div>
-
-      <p className="text-[14px] font-bold text-[#111111] leading-snug">{post.content}</p>
-
-      <div className="flex items-center gap-1.5 text-[11px] text-[#9CA3AF]">
-        <span>{post.author}</span>
-        <span className="text-[#D1D5DB]">·</span>
-        <span>{post.time}</span>
-        <span className="text-[#D1D5DB]">·</span>
-        <span>{post.views}</span>
+          <div className="flex flex-col gap-1">
+            <p className="typo-body-sm-bold text-main">{post.content}</p>
+            <div className="flex items-center gap-2 typo-body-xs-regular text-faint">
+              <span>{post.author}</span>
+              <span>·</span>
+              <span>{post.time}</span>
+              <span>·</span>
+              <span>{post.views}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -39,7 +32,7 @@ type Props = {
 
 export function LoungeSection({ posts }: Props) {
   return (
-    <section className="mb-8">
+    <section>
       <SectionHeader title="라운지" />
       <div>
         {posts.map((post) => (
