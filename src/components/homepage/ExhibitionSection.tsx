@@ -8,13 +8,13 @@ function ExhibitionCard({ item }: { item: ExhibitionCardData }) {
 
   return (
     <article
-      className="flex flex-col gap-1.5 min-w-0 bg-bg cursor-pointer"
+      className="flex flex-col gap-1.5 min-w-0 bg-page cursor-pointer"
       onClick={() => navigate(`/display/${item.id}`)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && navigate(`/display/${item.id}`)}
     >
-      <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden">
+      <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden bg-box">
         {item.thumbnail ? (
           <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
         ) : null}
