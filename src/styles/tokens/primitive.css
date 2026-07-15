@@ -30,9 +30,6 @@
   --palette-green-500: #22c55e;
   --palette-green-50: #f0fdf4;
 
-  /* Alpha */
-  --palette-black-20: rgb(0 0 0 / 20%);
-
   /* Typography */
   --font-family-heading: 'Aldrich', sans-serif;
   --font-family-body: 'Pretendard', system-ui, sans-serif;
