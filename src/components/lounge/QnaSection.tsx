@@ -10,14 +10,14 @@ const QNA_CARDS = [
 export function QnaSection() {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="typo-body-3xl-bold text-neutral-900">Q&amp;A</h2>
-      <div className="flex gap-2.5">
+      <h2 className="typo-body-xl-bold text-main">Q&amp;A</h2>
+      <div className="flex justify-between">
         {QNA_CARDS.map(({ description, title }) => (
-          <LoungeCard key={title} className="flex-1 h-36 flex flex-col justify-between items-end">
-            <ArrowUpRight className="size-5 text-neutral-400" strokeWidth={1.5} />
+          <LoungeCard key={title} className="w-44 h-36 flex flex-col justify-between items-end">
+            <ArrowUpRight className="size-5 text-faint" strokeWidth={1.5} />
             <div className="w-full flex flex-col items-start gap-1">
-              <h3 className="typo-body-3xl-semibold text-neutral-900">{title}</h3>
-              <p className="typo-body-xs-regular text-neutral-600">{description}</p>
+              <h3 className="typo-body-xl-semibold text-main">{title}</h3>
+              <p className="typo-body-xs-regular text-sub600">{description}</p>
             </div>
           </LoungeCard>
         ))}
