@@ -59,8 +59,15 @@ function ReviewCard({ item }: { item: ReviewItem }) {
           onClick={() => setLiked((v) => !v)}
           className="flex items-center gap-1 transition-all duration-200 active:scale-95"
         >
-          <Heart size={14} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#888'} />
-          <span className="typo-body-xs-regular" style={{ color: liked ? '#ef4444' : '#888' }}>
+          <Heart
+            size={14}
+            fill={liked ? 'var(--bt-heart-filled)' : 'none'}
+            color={liked ? 'var(--bt-heart-filled)' : 'var(--bt-heart-border)'}
+          />
+          <span
+            className="typo-body-xs-regular"
+            style={{ color: liked ? 'var(--bt-heart-filled)' : 'var(--bt-heart-border)' }}
+          >
             {likeCount}
           </span>
         </button>

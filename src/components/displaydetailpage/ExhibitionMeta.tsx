@@ -27,8 +27,8 @@ export function ExhibitionMeta({ exhibition: ex }: Props) {
         >
           <Heart
             size={17}
-            fill={bookmarked ? '#c32427' : 'none'}
-            color={bookmarked ? '#c32427' : '#888'}
+            fill={bookmarked ? 'var(--bt-heart-filled)' : 'none'}
+            color={bookmarked ? 'var(--bt-heart-filled)' : 'var(--bt-heart-border)'}
           />
           <span className="typo-body-xs-regular text-main">{likeCount}</span>
         </button>
