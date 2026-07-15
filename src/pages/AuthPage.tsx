@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useHeaderContext } from '@/components/layout/headerContext';
 import { ArtworkCard, ExhibitionCard, SettingsSheet } from '@/components/mypage';
 import { AuthPageHeader } from '@/components/mypage/AuthPageHeader';
-import { AUTH_PAGE_PROFILE } from '@/constants/authPage';
-import { ARTWORKS, EXHIBITIONS } from '@/constants/mypage';
+import { AUTH_PAGE_PROFILE } from '@/mocks/authPage';
+import { ARTWORKS, EXHIBITIONS } from '@/mocks/mypage';
 import type { TabKey } from '@/types/mypage';
 
 export function AuthPage() {

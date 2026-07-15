@@ -16,15 +16,15 @@
 
   /* Gray */
   --palette-gray-white: #fcfcfc;
-  --palette-gray-100: #e9e9e9;
+  --palette-gray-100: #e9e9e9; /* 추후 수정(발견하면 승철에게 알려주기) */
   --palette-gray-200: #d9d9d9;
-  --palette-gray-300: #c4c4c4;
+  --palette-gray-300: #c4c4c4; /* 추후 수정(발견하면 승철에게 알려주기) */
   --palette-gray-400: #9d9d9d;
-  --palette-gray-500: #7b7b7b;
-  --palette-gray-600: #555;
-  --palette-gray-700: #434343;
-  --palette-gray-800: #262626;
-  --palette-gray-black: #111;
+  --palette-gray-500: #767676;
+  --palette-gray-600: #555555;
+  --palette-gray-700: #505050;
+  --palette-gray-800: #262626; /* 추후 수정(발견하면 승철에게 알려주기) */
+  --palette-gray-black: #111111;
 
   /* Status */
   --palette-green-500: #22c55e;

@@ -16,7 +16,8 @@
 
   /* Foreground (text + icon) */
   --color-main: var(--fg-main);
-  --color-sub: var(--fg-sub);
+  --color-sub600: var(--fg-sub600);
+  --color-sub700: var(--fg-sub700);
   --color-hint: var(--fg-hint);
   --color-faint: var(--fg-faint);
   --color-white: var(--fg-white);
