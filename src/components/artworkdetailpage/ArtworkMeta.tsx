@@ -12,20 +12,20 @@ export function ArtworkMeta({ artwork }: Props) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-[#F0F0F3] px-5 pt-5 pb-4">
-      {/* 제목 + 북마크 */}
-      <div className="flex items-start justify-between gap-3 mb-1">
-        <h1 className="text-2xl font-bold text-gray-900">{artwork.artworkName}</h1>
+    <div className="bg-[#F0F0F3] px-5 pt-5 pb-6">
+      {/* 제목/하트 */}
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="typo-body-2xl-bold text-main">{artwork.artworkName}</h1>
         <div className="flex flex-col items-center shrink-0">
-          <button type="button" aria-label="저장" className="cursor-pointer">
+          <button type="button" aria-label="좋아요" className="cursor-pointer">
             <Heart strokeWidth={1.2} className="size-6" />
           </button>
-          <span className="text-xs text-[#111111]">{artwork.bookmarkCount}</span>
+          <span className="typo-body-xs-regualr text-main">{artwork.bookmarkCount}</span>
         </div>
       </div>
 
       {/* 작가명 */}
-      <p className="text-sm text-[#111111] mb-4">{artwork.artist}</p>
+      <p className="typo-body-sm-regular text-main mb-4 -mt-1.5">{artwork.artist}</p>
 
       {/* 소속 전시 카드 */}
       <button

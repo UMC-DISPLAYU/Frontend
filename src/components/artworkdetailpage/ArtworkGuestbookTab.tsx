@@ -10,7 +10,7 @@ type Props = {
   questions: GuestbookQuestion[];
 };
 
-/* ── 감상 카드 ─────────────────────────────────────────────── */
+/* 방명록 감상 탭 */
 function ReviewCard({ review }: { review: GuestbookReview }) {
   return (
     <div>
@@ -42,7 +42,7 @@ function ReviewCard({ review }: { review: GuestbookReview }) {
   );
 }
 
-/* ── 질문 카드 ─────────────────────────────────────────────── */
+/* 방명록 질문 탭 */
 function QuestionCard({ question }: { question: GuestbookQuestion }) {
   const [expanded, setExpanded] = useState(!!question.reply);
 
@@ -117,7 +117,7 @@ function QuestionCard({ question }: { question: GuestbookQuestion }) {
   );
 }
 
-/* ── 메인 컴포넌트 ──────────────────────────────────────────── */
+/* 방명록 탭(감상/질문) */
 export function ArtworkGuestbookTab({ reviews, questions }: Props) {
   const [activeSubTab, setActiveSubTab] = useState<ArtworkGuestbookTab>('review');
 
