@@ -60,18 +60,18 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
       </div>
 
       {!isArtistView && (
-        <footer className="px-4 py-2 bg-gray-200 flex flex-col justify-start items-start gap-1.5">
+        <footer className="px-4 py-2 bg-box flex flex-col justify-start items-start gap-1.5">
           <div className="self-stretch flex justify-between items-center">
             <div className="flex justify-start items-center gap-1.5">
-              <Pencil color-faint className="size-2.5 shrink-0" />
-              <span className="text-neutral-400 text-xs font-semibold leading-4">
+              <Pencil className="size-2.5 shrink-0 text-faint" />
+              <span className="text-faint typo-body-xs-semibold leading-4">
                 내 메모
               </span>
             </div>
             {hasMemo && (
               <button
                 type="button"
-                className="text-neutral-400 text-xs font-normal underline leading-4 shrink-0"
+                className="text-faint typo-body-xs-regular underline leading-4 shrink-0"
               >
                 확인
               </button>
@@ -79,13 +79,13 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
           </div>
 
           {hasMemo ? (
-            <p className="self-stretch text-neutral-400 text-xs font-normal leading-4 line-clamp-2">
+            <p className="self-stretch text-faint typo-body-xs-regular leading-4 line-clamp-2">
               {item.memo}
             </p>
           ) : (
             <button
               type="button"
-              className="text-hint typo-body-xs-regular underline leading-4 shrink-0"
+              className="text-faint typo-body-xs-regular underline leading-4 shrink-0"
             >
               메모 작성하기
             </button>

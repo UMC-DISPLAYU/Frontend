@@ -39,7 +39,7 @@ export function MyPageHeader({
             My Page
           </h1>
           {isArtistVerified && isArtistView && (
-            <span className="px-1.5 py-0.5 bg-blue-100 rounded-sm">
+            <span className="px-1.5 py-0.5 bg-blue-100 rounded-sm"> {/*하드코딩*/}
               <span className="text-link typo-body-xs-regular leading-3">
                 작가인증
               </span>
@@ -110,7 +110,7 @@ export function MyPageHeader({
             <button
               type="button"
               onClick={onVerifyArtist}
-              className="shrink-0 px-6 py-1.5 line rounded-lg outline outline-1 -outline-offset-1 outline-line"
+              className="shrink-0 px-6 py-1.5 rounded-lg border border-line"
             >
               <span className="text-main typo-body-xs-regular underline leading-4">
                 작가 인증하기
@@ -180,10 +180,10 @@ export function MyPageHeader({
               key={tab.key}
               type="button"
               onClick={() => onTabChange(tab.key)}
-              className={`relative flex-1 h-11 flex justify-center pt-3 text-sm font-['Pretendard'] leading-5 ${
+              className={`relative flex-1 h-11 flex justify-center pt-3 ${
                 isActive
-                  ? 'text-main font-bold'
-                  : 'text-hint font-normal'
+                  ? 'text-main typo-body-sm-bold'
+                  : 'text-hint typo-body-sm-regular'
               }`}
             >
               {tab.label}

@@ -25,7 +25,7 @@ export function ArtworkCard({ item, isArtistView = false }: ArtworkCardProps) {
             aria-label="북마크"
             className="absolute bottom-2 right-2"
           >
-            <Bookmark className="size-4-10 text-error fill-error" />
+            <Bookmark className="size-6 text-error fill-error" />
           </button>
           )}
         </div>
