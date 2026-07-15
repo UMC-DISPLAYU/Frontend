@@ -27,7 +27,7 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
             <div
               className={`px-2 py-0.5 rounded-sm shrink-0 ${statusBadgeClass(item.status)}`}
             >
-              <span className="text-white typo-body-xs-regular">
+              <span className="text-white typo-body-xxs-regular">
                 {item.status}
               </span>
             </div>
@@ -52,7 +52,7 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
             </div>
           </div>
           <div className="self-stretch pt-4">
-            <div className="text-hint typo-body-xs-regular leading-3 truncate">
+            <div className="text-hint typo-body-xxs-regular leading-3 truncate">
               {item.place}
             </div>
           </div>
