@@ -43,7 +43,7 @@ export function IntroTab({ exhibition: ex }: Props) {
       {/* 전시콘텐츠 */}
       <section className="py-5 bg-[#D7D7DF]">
         <h2 className="typo-body-xl-bold text-main mb-4 px-5">전시콘텐츠</h2>
-        <div className="flex gap-2 overflow-x-auto pb-2 px-5">
+        <div className="flex gap-2 overflow-x-auto pb-2 px-5" style={{ scrollbarWidth: 'none' }}>
           {ex.contentImages.map((src, idx) => (
             <div
               key={idx}
