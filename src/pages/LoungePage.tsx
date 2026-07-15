@@ -1,4 +1,4 @@
-import { CommunitySection, MyActivitySection, QnaSection } from '@/components/lounge';
+import { CommunitySection, MyActivitySection } from '@/components/lounge';
 
 export const LoungePage = () => {
   return (
@@ -9,10 +9,6 @@ export const LoungePage = () => {
           <p className="typo-body-xs-regular text-hint">자유롭게 대화를 나눠보세요.</p>
         </div>
         <CommunitySection />
-      </div>
-
-      <div className="mt-5">
-        <QnaSection />
       </div>
 
       <div className="mt-5">
