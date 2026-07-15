@@ -11,7 +11,7 @@ export function HeroSlider({ images, onBack }: Props) {
   const [current, setCurrent] = useState(0);
 
   return (
-    <div className="relative w-full overflow-hidden bg-[#111]" style={{ height: '500px' }}>
+    <div className="relative w-full overflow-hidden bg-[#111]" style={{ height: '568px' }}>
       {images.map((src, idx) => (
         <img
           key={src}

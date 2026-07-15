@@ -15,10 +15,10 @@ export function ExhibitionMeta({ exhibition: ex }: Props) {
   const likeCount = ex.bookmarkCount;
 
   return (
-    <section className="px-5 pt-4 pb-4 font-[Pretendard,sans-serif]">
-      {/* 제목 + 하트 */}
+    <section className="px-5 pt-6 pb-4 font-[Pretendard,sans-serif]">
+      {/* 제목/하트 */}
       <div className="flex items-start justify-between gap-2">
-        <h1 className="flex-1 text-neutral-900 text-xl font-bold leading-snug">{ex.title}</h1>
+        <h1 className="flex-1 typo-body-xl-bold text-main">{ex.title}</h1>
         <button
           type="button"
           id="meta-heart-btn"
@@ -27,29 +27,29 @@ export function ExhibitionMeta({ exhibition: ex }: Props) {
         >
           <Heart
             size={17}
-            fill={bookmarked ? '#ef4444' : 'none'}
-            color={bookmarked ? '#ef4444' : '#888'}
+            fill={bookmarked ? '#c32427' : 'none'}
+            color={bookmarked ? '#c32427' : '#888'}
           />
-          <span className="text-[13px] text-[#888]">{likeCount}</span>
+          <span className="typo-body-xs-regular text-main">{likeCount}</span>
         </button>
       </div>
-      <p className="mt-0.5 text-neutral-600 text-sm">{ex.subtitle}</p>
+      <p className="typo-body-sm-regular text-sub600">{ex.subtitle}</p>
 
-      {/* 메타 정보 행: 일정/운영/장소 라벨 포함 */}
-      <div className="mt-3 flex flex-col gap-1.5">
-        <div className="flex items-center gap-2 text-[13px] text-[#444]">
-          <Calendar size={13} className="text-[#888] shrink-0" />
-          <span className="text-[#999] font-medium w-6 shrink-0">일정</span>
+      {/* 일정/운영/장소 */}
+      <div className="mt-5 flex flex-col gap-1.5">
+        <div className="flex items-center gap-2 typo-body-sm-regular">
+          <Calendar size={13} className="text-faint shrink-0" />
+          <span className="text-faint font-medium w-6 shrink-0">일정</span>
           <span>{ex.period}</span>
         </div>
-        <div className="flex items-center gap-2 text-[13px] text-[#444]">
-          <Clock size={13} className="text-[#888] shrink-0" />
-          <span className="text-[#999] font-medium w-6 shrink-0">운영</span>
+        <div className="flex items-center gap-2 typo-body-sm-regular">
+          <Clock size={13} className="text-faint shrink-0" />
+          <span className="text-faint font-medium w-6 shrink-0">운영</span>
           <span>{ex.hours}</span>
         </div>
-        <div className="flex items-center gap-2 text-[13px] text-[#444]">
-          <MapPin size={13} className="text-[#888] shrink-0" />
-          <span className="text-[#999] font-medium w-6 shrink-0">장소</span>
+        <div className="flex items-center gap-2 typo-body-sm-regular">
+          <MapPin size={13} className="text-faint shrink-0" />
+          <span className="text-faint font-medium w-6 shrink-0">장소</span>
           <span>{ex.location}</span>
         </div>
       </div>
