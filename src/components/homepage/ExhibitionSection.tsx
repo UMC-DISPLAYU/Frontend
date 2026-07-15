@@ -8,21 +8,21 @@ function ExhibitionCard({ item }: { item: ExhibitionCardData }) {
 
   return (
     <article
-      className="flex flex-col gap-1.5 min-w-0 bg-white cursor-pointer"
+      className="flex flex-col gap-1.5 min-w-0 bg-page cursor-pointer"
       onClick={() => navigate(`/display/${item.id}`)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && navigate(`/display/${item.id}`)}
     >
-      <div className="w-full aspect-3/4 rounded-xl bg-[#D1D5DB] shrink-0 overflow-hidden">
+      <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden bg-box">
         {item.thumbnail ? (
           <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
         ) : null}
       </div>
-      <div className="flex flex-col gap-0.5">
-        <p className="text-xs font-bold text-neutral-900 truncate">{item.title}</p>
-        <p className="text-xs text-neutral-600 truncate">{item.school}</p>
-        <p className="text-xs text-neutral-500">{item.period}</p>
+      <div className="flex flex-col">
+        <p className="typo-body-xs-bold text-main truncate">{item.title}</p>
+        <p className="typo-body-xs-regular text-sub700 truncate">{item.school}</p>
+        <p className="typo-body-xs-regular text-hint mt-0.5">{item.period}</p>
       </div>
     </article>
   );
