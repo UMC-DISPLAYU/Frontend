@@ -3,7 +3,8 @@ import { createBrowserRouter } from 'react-router-dom';
 import { Layout } from './components/layout';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
-import { ExhibitionRegister} from './pages/ExhibitionRegister';
+import { ExhibitionRegister } from './pages/ExhibitionRegister';
+import { ExhibitionReviewPage } from './pages/ExhibitionReviewPage';
 import { Homepage } from './pages/Homepage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
@@ -18,9 +19,9 @@ export const router = createBrowserRouter([
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
+      { path: 'lounge/review', element: <ExhibitionReviewPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
-      
     ],
   },
 

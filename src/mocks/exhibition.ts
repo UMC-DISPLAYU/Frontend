@@ -4,6 +4,7 @@ import type {
   DuPickItem,
   ExhibitionCardData,
   ExhibitionDetail,
+  ExhibitionReviewPost,
   LoungePost,
   ReviewItem,
 } from '@/types/exhibition';
@@ -210,6 +211,64 @@ export const LOUNGE_POSTS: LoungePost[] = [
     author: 'lens_mina',
     time: '어제',
     views: '댓글 6',
+  },
+];
+
+export const EXHIBITION_REVIEW_POSTS: ExhibitionReviewPost[] = [
+  {
+    id: '1',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '2',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+    images: [
+      'https://placehold.co/112x128',
+      'https://placehold.co/112x128',
+      'https://placehold.co/112x128',
+    ],
+  },
+  {
+    id: '3',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '4',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '5',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
   },
 ];
 
