@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import type { ExhibitionReviewPost } from '@/types/exhibition';
 
 type Props = {
@@ -5,14 +7,20 @@ type Props = {
 };
 
 export function ReviewPostCard({ post }: Props) {
+  const navigate = useNavigate();
+
   return (
     <article
-      className={`px-4 py-3.5 bg-stone-50 rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.02)] outline outline-2 outline-offset-[-2px] outline-neutral-50 flex flex-col gap-3 overflow-hidden ${
+      className={`px-4 py-3.5 bg-stone-50 rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.02)] outline outline-2 outline-offset-[-2px] outline-neutral-50 flex flex-col gap-3 overflow-hidden cursor-pointer ${
         post.images && post.images.length > 0 ? 'h-72' : 'h-36'
       }`}
+      onClick={() => navigate(`/lounge/review/${post.id}`)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && navigate(`/lounge/review/${post.id}`)}
     >
-      <span className="w-12 h-5 px-2 py-0.5 bg-tag-gray rounded-sm inline-flex items-center">
-        <span className="typo-body-xxs-bold text-tag-blue">{post.tag}</span>
+      <span className="self-start h-5 px-2 py-0.5 bg-tag-gray rounded-sm inline-flex items-center">
+        <span className="typo-body-xxs-bold text-tag-blue whitespace-nowrap">{post.tag}</span>
       </span>
 
       <div className="flex flex-col gap-2">

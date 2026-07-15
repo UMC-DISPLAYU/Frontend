@@ -41,6 +41,26 @@ export interface ExhibitionReviewPost {
   images?: string[];
 }
 
+export interface ExhibitionReviewComment {
+  id: string;
+  author: string;
+  time: string;
+  content: string;
+  likeCount: number;
+}
+
+export interface ExhibitionReviewDetail {
+  id: string;
+  tag: string;
+  title: string;
+  author: string;
+  date: string;
+  content: string[];
+  likeCount: number;
+  images?: string[];
+  comments: ExhibitionReviewComment[];
+}
+
 // ─── Detail Types ──────────────────────────────────────────────────────────
 
 export type DetailTabKey = 'intro' | 'artwork' | 'review';
