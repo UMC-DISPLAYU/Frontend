@@ -10,7 +10,7 @@
   /* Background */
   --bg-page: var(--palette-bg);
   --bg-card: var(--palette-gray-white);
-  --bg-box: var(--palette-gray-100);
+  --bg-box: var(--palette-token-200);
   --bg-dark: var(--palette-gray-black);
 
   /* Foreground — 텍스트와 아이콘이 같은 스케일을 공유한다 */
@@ -23,15 +23,18 @@
   --fg-link: var(--palette-blue);
   --fg-error: var(--palette-red);
 
+  /* Tag */
+  --tag-blue: var(--palette-blue);
+  --tag-gray: var(--palette-token-200);
+
   /* Button */
   --bt-gray: var(--palette-gray-200);
   --bt-black: var(--palette-gray-black);
+  --bt-heart-filled: var(--palette-red);
+  --bt-heart-border: var(--palette-gray-400);
 
   /* Border */
   --line: var(--palette-gray-300);
   --line-soft: var(--palette-gray-200);
   --line-active: var(--palette-blue);
-
-  /* 이미지 위 그라데이션 오버레이에 쓰는 값 */
-  --scrim: var(--palette-black-20);
 }

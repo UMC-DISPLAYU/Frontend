@@ -24,9 +24,15 @@
   --color-link: var(--fg-link);
   --color-error: var(--fg-error);
 
+  /* Tag */
+  --color-tag-blue: var(--tag-blue);
+  --color-tag-gray: var(--tag-gray);
+
   /* Button */
   --color-bt-gray: var(--bt-gray);
   --color-bt-black: var(--bt-black);
+  --color-bt-heart-filled: var(--bt-heart-filled);
+  --color-bt-heart-border: var(--bt-heart-border);
 
   /* Border */
   --color-line: var(--line);
