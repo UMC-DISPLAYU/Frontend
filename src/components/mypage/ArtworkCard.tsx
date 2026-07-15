@@ -4,9 +4,10 @@ import type { SavedArtworkItem } from '@/types/mypage';
 
 interface ArtworkCardProps {
   item: SavedArtworkItem;
+  isArtistView?: boolean;
 }
 
-export function ArtworkCard({ item }: ArtworkCardProps) {
+export function ArtworkCard({ item, isArtistView = false }: ArtworkCardProps) {
   return (
     <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
       <div className="p-1.5 pb-0">
@@ -18,6 +19,7 @@ export function ArtworkCard({ item }: ArtworkCardProps) {
               alt={item.title}
             />
           </div>
+          {!isArtistView && (
           <button
             type="button"
             aria-label="북마크"
@@ -25,6 +27,7 @@ export function ArtworkCard({ item }: ArtworkCardProps) {
           >
             <Bookmark className="size-4-10 text-error fill-error" />
           </button>
+          )}
         </div>
       </div>
 
