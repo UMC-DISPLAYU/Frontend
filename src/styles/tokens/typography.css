@@ -1,4 +1,12 @@
-.typo-heading-3xl {
+/**
+ * 타이포그래피 유틸리티.
+ *
+ * @utility 로 선언해 Tailwind utilities 레이어에 들어간다.
+ * 일반 .class 로 두면 레이어 밖이 되어 Tailwind 유틸리티보다 항상 세지고,
+ * typo-* 에 font-bold 같은 걸 덧붙여도 덮이지 않는다.
+ */
+
+@utility typo-heading-3xl {
   font-family: var(--font-family-heading);
   font-size: var(--font-size-heading-3xl);
   font-weight: var(--font-weight-regular);
@@ -6,7 +14,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-heading-2xl {
+@utility typo-heading-2xl {
   font-family: var(--font-family-heading);
   font-size: var(--font-size-heading-2xl);
   font-weight: var(--font-weight-regular);
@@ -14,7 +22,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-heading-xl {
+@utility typo-heading-xl {
   font-family: var(--font-family-heading);
   font-size: var(--font-size-heading-xl);
   font-weight: var(--font-weight-regular);
@@ -22,31 +30,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-3xl-bold {
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-body);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.typo-body-3xl-semibold {
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3xl);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-body);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.typo-body-3xl-regular {
-  font-family: var(--font-family-body);
-  font-size: var(--font-size-body-3xl);
-  font-weight: var(--font-weight-regular);
-  line-height: var(--line-height-body);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.typo-body-2xl-bold {
+@utility typo-body-2xl-bold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-2xl);
   font-weight: var(--font-weight-bold);
@@ -54,7 +38,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-2xl-semibold {
+@utility typo-body-2xl-semibold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-2xl);
   font-weight: var(--font-weight-semibold);
@@ -62,7 +46,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-2xl-regular {
+@utility typo-body-2xl-regular {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-2xl);
   font-weight: var(--font-weight-regular);
@@ -70,7 +54,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-xl-bold {
+@utility typo-body-xl-bold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-xl);
   font-weight: var(--font-weight-bold);
@@ -78,7 +62,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-xl-semibold {
+@utility typo-body-xl-semibold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-xl);
   font-weight: var(--font-weight-semibold);
@@ -86,7 +70,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-xl-regular {
+@utility typo-body-xl-regular {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-xl);
   font-weight: var(--font-weight-regular);
@@ -94,7 +78,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-md-bold {
+@utility typo-body-md-bold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-md);
   font-weight: var(--font-weight-bold);
@@ -102,7 +86,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-md-semibold {
+@utility typo-body-md-semibold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-md);
   font-weight: var(--font-weight-semibold);
@@ -110,7 +94,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-md-regular {
+@utility typo-body-md-regular {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-md);
   font-weight: var(--font-weight-regular);
@@ -118,7 +102,31 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-xs-bold {
+@utility typo-body-sm-bold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+@utility typo-body-sm-semibold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+@utility typo-body-sm-regular {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+@utility typo-body-xs-bold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-xs);
   font-weight: var(--font-weight-bold);
@@ -126,7 +134,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-xs-semibold {
+@utility typo-body-xs-semibold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-xs);
   font-weight: var(--font-weight-semibold);
@@ -134,7 +142,7 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.typo-body-xs-regular {
+@utility typo-body-xs-regular {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-xs);
   font-weight: var(--font-weight-regular);

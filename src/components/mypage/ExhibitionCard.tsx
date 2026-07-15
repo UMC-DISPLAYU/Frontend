@@ -25,13 +25,11 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
                 {item.status}
               </span>
             </div>
-            <button type="button" aria-label="북마크" className="shrink-0">
-              <Bookmark
-                fill="#D70004"
-                color={isArtistView ? '#D70004' : '#D70004'}
-                className={isArtistView ? 'size-4' : 'size-4'}
-              />
-            </button>
+            {!isArtistView && (
+              <button type="button" aria-label="북마크" className="shrink-0">
+                <Bookmark fill="#D70004" color="#D70004" className="size-4" />
+              </button>
+            )}
           </div>
 
           <div className="self-stretch pt-2.5">
@@ -53,35 +51,37 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
         </div>
       </div>
 
-      <footer className="px-4 py-2 bg-gray-200 flex flex-col justify-start items-start gap-1.5">
-        <div className="self-stretch flex justify-between items-center">
-          <div className="flex justify-start items-center gap-1.5">
-            <Pencil color="#99A1AF" className="size-2.5 shrink-0" />
-            <span className="text-neutral-400 text-xs font-semibold leading-4">내 메모</span>
+      {!isArtistView && (
+        <footer className="px-4 py-2 bg-gray-200 flex flex-col justify-start items-start gap-1.5">
+          <div className="self-stretch flex justify-between items-center">
+            <div className="flex justify-start items-center gap-1.5">
+              <Pencil color="#99A1AF" className="size-2.5 shrink-0" />
+              <span className="text-neutral-400 text-xs font-semibold leading-4">내 메모</span>
+            </div>
+            {hasMemo && (
+              <button
+                type="button"
+                className="text-neutral-400 text-xs font-normal underline leading-4 shrink-0"
+              >
+                확인
+              </button>
+            )}
           </div>
-          {hasMemo && (
+
+          {hasMemo ? (
+            <p className="self-stretch text-neutral-400 text-xs font-normal leading-4 line-clamp-2">
+              {item.memo}
+            </p>
+          ) : (
             <button
               type="button"
-              className="text-neutral-400 text-xs font-normal underline leading-4 shrink-0"
+              className="self-stretch text-left text-stone-300 text-xs font-normal underline leading-4"
             >
-              확인
+              메모 작성하기
             </button>
           )}
-        </div>
-
-        {hasMemo ? (
-          <p className="self-stretch text-neutral-400 text-xs font-normal leading-4 line-clamp-2">
-            {item.memo}
-          </p>
-        ) : (
-          <button
-            type="button"
-            className="self-stretch text-left text-stone-300 text-xs font-normal underline leading-4"
-          >
-            메모 작성하기
-          </button>
-        )}
-      </footer>
+        </footer>
+      )}
     </article>
   );
 }

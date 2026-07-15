@@ -1,0 +1,40 @@
+/**
+ * 시멘틱 토큰을 Tailwind 유틸리티로 노출한다.
+ * 컴포넌트는 여기서 만들어지는 이름만 쓴다 — 원시 토큰과 hex 는 컴포넌트에 두지 않는다.
+ *
+ * Tailwind v4 는 --color-x 하나로 bg-x / text-x / border-x 를 전부 만든다.
+ * 그래서 이름에 용도를 남겨, 잘못된 조합이 이름만 봐도 어색하게 보이도록 한다.
+ *   bg-card   text-main   border-line   (O)
+ *   bg-main   text-card                 (X)
+ */
+@theme inline {
+  /* Background */
+  --color-page: var(--bg-page);
+  --color-card: var(--bg-card);
+  --color-box: var(--bg-box);
+  --color-dark: var(--bg-dark);
+
+  /* Foreground (text + icon) */
+  --color-main: var(--fg-main);
+  --color-sub600: var(--fg-sub600);
+  --color-sub700: var(--fg-sub700);
+  --color-hint: var(--fg-hint);
+  --color-faint: var(--fg-faint);
+  --color-white: var(--fg-white);
+  --color-link: var(--fg-link);
+  --color-error: var(--fg-error);
+
+  /* Button */
+  --color-bt-gray: var(--bt-gray);
+  --color-bt-black: var(--bt-black);
+  --color-bt-heart-filled: var(--bt-heart-filled);
+  --color-bt-heart-border: var(--bt-heart-border);
+
+  /* Border */
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-line-active: var(--line-active);
+
+  /* Overlay */
+  --color-scrim: var(--scrim);
+}

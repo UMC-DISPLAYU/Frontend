@@ -28,8 +28,8 @@ export function DuPickBanner({ items }: Props) {
   return (
     <section className="pb-7">
       <div className="px-4 mb-2.5 flex justify-between items-center">
-        <h2 className="flex items-center gap-1.5 text-4xl font-semibold leading-none text-[#111111]">
-          <img src={logo} alt="DU" className="h-8 w-auto" />
+        <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
+          <img src={logo} alt="DU" className="h-7 w-auto" />
           <span>Pick</span>
         </h2>
         <button
@@ -38,7 +38,7 @@ export function DuPickBanner({ items }: Props) {
           onClick={() => navigate('/exhibition-register')}
           className="cursor-pointer p-0 bg-transparent border-none"
         >
-          <Plus strokeWidth={1.5} className="size-10" />
+          <Plus strokeWidth={1.5} className="size-8" />
         </button>
       </div>
 
@@ -47,8 +47,8 @@ export function DuPickBanner({ items }: Props) {
           <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/20 to-transparent" />
 
           <div className="absolute left-7 right-4 bottom-9">
-            <p className="text-xl font-bold text-neutral-50 leading-snug mb-1.5">{current.name}</p>
-            <p className="text-xs text-neutral-400">
+            <p className="typo-body-xl-bold text-white mb-1.5">{current.name}</p>
+            <p className="typo-body-xs-regular text-faint">
               {current.date}&nbsp;&nbsp;{current.location}
             </p>
           </div>
@@ -61,7 +61,7 @@ export function DuPickBanner({ items }: Props) {
                 aria-label={`슬라이드 ${i + 1}`}
                 onClick={() => setActiveIndex(i)}
                 className={`w-1.75 h-1.75 rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200 ${
-                  i === activeIndex ? 'bg-blue-500' : 'bg-white/50'
+                  i === activeIndex ? 'bg-line-active' : 'bg-[#667281]'
                 }`}
               />
             ))}
