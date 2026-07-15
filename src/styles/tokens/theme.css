@@ -27,6 +27,8 @@
   /* Button */
   --color-bt-gray: var(--bt-gray);
   --color-bt-black: var(--bt-black);
+  --color-bt-heart-filled: var(--bt-heart-filled);
+  --color-bt-heart-border: var(--bt-heart-border);
 
   /* Border */
   --color-line: var(--line);

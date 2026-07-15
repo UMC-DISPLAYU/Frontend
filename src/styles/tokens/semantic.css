@@ -26,12 +26,11 @@
   /* Button */
   --bt-gray: var(--palette-gray-200);
   --bt-black: var(--palette-gray-black);
+  --bt-heart-filled: var(--palette-red);
+  --bt-heart-border: var(--palette-gray-400);
 
   /* Border */
   --line: var(--palette-gray-300);
   --line-soft: var(--palette-gray-200);
   --line-active: var(--palette-blue);
-
-  /* 이미지 위 그라데이션 오버레이에 쓰는 값 */
-  --scrim: var(--palette-black-20);
 }
