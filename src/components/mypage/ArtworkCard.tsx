@@ -17,7 +17,7 @@ export function ArtworkCard({ item, isArtistView = false }: ArtworkCardProps) {
           </div>
           {!isArtistView && (
             <button type="button" aria-label="북마크" className="absolute bottom-2 right-2">
-              <Bookmark color="#D70004" fill="#D70004" className="size-4-10" />
+              <Bookmark color="#D70004" fill="#D70004" className="size-4" />
             </button>
           )}
         </div>
