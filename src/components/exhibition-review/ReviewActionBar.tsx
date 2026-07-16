@@ -16,7 +16,7 @@ export function ReviewActionBar({ likeCount }: Props) {
       <div className="flex flex-col">
         <div className="-mx-5 border-t border-zinc-300" />
 
-        <div className="flex items-center justify-between pt-[18px]">
+        <div className="-mx-5 flex items-center justify-between pt-[18px]">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -24,7 +24,7 @@ export function ReviewActionBar({ likeCount }: Props) {
               className="px-5 py-2 rounded-[10px] flex items-center gap-1.5"
             >
               <Heart
-                className={`size-5 ${liked ? 'fill-bt-heart-filled text-bt-heart-filled' : 'text-bt-heart-border'}`}
+                className={`size-5 ${liked ? 'fill-heart text-heart' : 'text-faint'}`}
                 strokeWidth={1.5}
               />
               <span className="typo-body-sm-regular text-hint">{displayedLikeCount}</span>
@@ -36,7 +36,7 @@ export function ReviewActionBar({ likeCount }: Props) {
               className="px-5 py-2 rounded-[10px] flex items-center gap-1.5"
             >
               <Bookmark
-                className={`size-4 ${saved ? 'fill-main text-main' : 'text-zinc-300'}`}
+                className={`size-4 text-hint ${saved ? 'fill-bookmark' : ''}`}
                 strokeWidth={1.5}
               />
               <span className="typo-body-sm-regular text-hint">저장</span>
@@ -44,7 +44,7 @@ export function ReviewActionBar({ likeCount }: Props) {
           </div>
 
           <button type="button" className="px-5 py-2 rounded-[10px] flex items-center gap-1.5">
-            <Flag className="size-4 text-zinc-300" strokeWidth={1.5} />
+            <Flag className="size-4 text-hint" strokeWidth={1.5} />
             <span className="typo-body-sm-regular text-hint">신고</span>
           </button>
         </div>

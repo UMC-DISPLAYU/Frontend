@@ -14,7 +14,7 @@ export const ExhibitionReviewDetailPage = () => {
 
   if (!review) {
     return (
-      <div className="w-full max-w-105 mx-auto h-dvh bg-gray-100 flex flex-col">
+      <div className="w-full max-w-105 mx-auto h-dvh bg-page flex flex-col">
         <ReviewHeader showWriteButton={false} />
         <p className="typo-body-sm-regular text-hint px-5 pt-5">게시글을 찾을 수 없습니다.</p>
       </div>
@@ -22,7 +22,7 @@ export const ExhibitionReviewDetailPage = () => {
   }
 
   return (
-    <div className="w-full max-w-105 mx-auto h-dvh bg-gray-100 flex flex-col">
+    <div className="w-full max-w-105 mx-auto h-dvh bg-page flex flex-col">
       <ReviewHeader showWriteButton={false} className="px-5" />
 
       <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-10">

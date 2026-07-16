@@ -28,7 +28,7 @@ export function ReviewCommentItem({ comment }: Props) {
           className="w-10 h-7 px-2 py-1 rounded-sm flex items-center justify-center gap-0.5"
         >
           <Heart
-            className={`size-3 ${liked ? 'fill-bt-heart-filled text-bt-heart-filled' : 'text-bt-heart-border'}`}
+            className={`size-3 ${liked ? 'fill-heart text-heart' : 'text-faint'}`}
             strokeWidth={1.5}
           />
           <span className="typo-body-xs-regular text-faint">{displayedLikeCount}</span>
