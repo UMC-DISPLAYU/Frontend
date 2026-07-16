@@ -22,7 +22,7 @@ export function ArtistCard({ item }: ArtistCardProps) {
           <div className="text-main typo-body-md-bold leading-5 truncate">
             {item.name}
           </div>
-          <div className="text-sub typo-body-xs-regular leading-4 truncate">
+          <div className="text-hint typo-body-xs-regular leading-4 truncate">
             {item.field} · 등록 작품 수 {item.registeration} · (전시 수{' '}
             {item.exhibition})
           </div>

@@ -47,7 +47,7 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
             <div className="text-main typo-body-xs-regular leading-4 truncate">
               {item.org}
             </div>
-            <div className="text-sub typo-body-xs-regular leading-4">
+            <div className="text-hint typo-body-xs-regular leading-4">
               {item.period}
             </div>
           </div>

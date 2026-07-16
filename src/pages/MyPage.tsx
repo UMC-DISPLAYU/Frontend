@@ -46,7 +46,7 @@ export function MyPage() {
   if (isLoading) {
     return (
       <div className="w-full max-w-md mx-auto h-dvh bg-page flex items-center justify-center">
-        <div className="text-sub typo-body-md-bold">
+        <div className="text-sub600 typo-body-md-bold">
           로딩 중...
         </div>
       </div>
