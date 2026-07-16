@@ -8,9 +8,9 @@ interface ArtistCardProps {
 
 export function ArtistCard({ item }: ArtistCardProps) {
   return (
-    <article className="w-full bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] overflow-hidden">
+    <article className="w-full bg-neutral-50 rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] overflow-hidden font-['Pretendard']">
       <div className="flex items-center gap-3.5 px-3 py-3.5">
-        <div className="size-12 rounded-full bg-box overflow-hidden shrink-0">
+        <div className="size-12 rounded-full bg-neutral-200 overflow-hidden shrink-0">
           <img
             className="w-full h-full object-cover"
             src={item.thumbnail}
@@ -19,10 +19,10 @@ export function ArtistCard({ item }: ArtistCardProps) {
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-          <div className="text-main typo-body-md-bold leading-5 truncate">
+          <div className="text-gray-900 text-sm font-bold leading-5 truncate">
             {item.name}
           </div>
-          <div className="text-hint typo-body-xs-regular leading-4 truncate">
+          <div className="text-gray-500 text-xs font-normal leading-4 truncate">
             {item.field} · 등록 작품 수 {item.registeration} · (전시 수{' '}
             {item.exhibition})
           </div>
@@ -30,9 +30,9 @@ export function ArtistCard({ item }: ArtistCardProps) {
 
         <div className="flex items-center gap-1 shrink-0">
           <button type="button" aria-label="북마크">
-            <Bookmark className="size-4 text-error fill-error" />
+            <Bookmark color="#D70004" fill="#D70004" className="size-4" />
           </button>
-          <ChevronRight className="size-4 text-hint" />
+          <ChevronRight color="#99A1AF" className="size-4" />
         </div>
       </div>
     </article>

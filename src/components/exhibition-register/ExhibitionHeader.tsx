@@ -14,7 +14,7 @@ export function ExhibitionHeader() {
       >
         <ChevronLeft />
       </button>
-      <div className="text-neutral-900 typo-body-xl-bold">전시 기본 정보</div>
+      <div className="text-neutral-900 text-xl font-bold font-['Pretendard']">전시 기본 정보</div>
     </div>
   );
 }
