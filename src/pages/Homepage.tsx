@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react';
 
-import type { HomeExhibitionDto } from '@/api/dto';
-import { getGraduationDisplays } from '@/api/endpoints';
+import type { DuPickDto, HomeExhibitionDto } from '@/api/dto';
+import { getDuPicks, getGraduationDisplays } from '@/api/endpoints';
 import { ArtworkPreviewSection } from '@/components/homepage/ArtworkPreviewSection';
 import { DuPickBanner } from '@/components/homepage/DuPickBanner';
 import { ExhibitionSection } from '@/components/homepage/ExhibitionSection';
 import { LoungeSection } from '@/components/homepage/LoungeSection';
-import {
-  ARTWORK_ITEMS,
-  DEADLINE_EXHIBITIONS,
-  DU_PICK_ITEMS,
-  LOUNGE_POSTS,
-} from '@/mocks/exhibition';
+import { ARTWORK_ITEMS, DEADLINE_EXHIBITIONS, LOUNGE_POSTS } from '@/mocks/exhibition';
 import type { ExhibitionCardData } from '@/types/exhibition';
 
 const SCHOOL_BY_DISPLAY_ID: Record<number, string> = {
@@ -41,6 +36,7 @@ export const Homepage = () => {
   ///v1/display/graduation 엔드포인트 연결
   //일단은 훅 없이 그대로 가져왔으니 나중에 최적화할 때 참고하세요
   const [graduationExhibitions, setGraduationExhibitions] = useState<ExhibitionCardData[]>([]);
+  const [duPickItems, setDuPickItems] = useState<DuPickDto[]>([]);
 
   useEffect(() => {
     const fetchGraduationDisplays = async () => {
@@ -54,12 +50,24 @@ export const Homepage = () => {
       }
     };
 
+    const fetchDuPicks = async () => {
+      try {
+        const data = await getDuPicks({ cursor: 1, size: 4 });
+
+        setDuPickItems(data.duPicks);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
+    };
+
     void fetchGraduationDisplays();
+    void fetchDuPicks();
   }, []);
 
   return (
     <div className="w-full max-w-105 mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5 font-[Pretendard,sans-serif]">
-      <DuPickBanner items={DU_PICK_ITEMS} />
+      <DuPickBanner items={duPickItems} />
       <ExhibitionSection title="졸업전시" items={graduationExhibitions} />
       <ExhibitionSection title="놓치기 전에 볼 전시" items={DEADLINE_EXHIBITIONS} />
       <ArtworkPreviewSection items={ARTWORK_ITEMS} />

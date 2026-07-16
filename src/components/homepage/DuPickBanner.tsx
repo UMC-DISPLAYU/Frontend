@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import type { DuPickDto } from '@/api/dto';
 import logo from '@/assets/logo.svg';
-import type { DuPickItem } from '@/types/exhibition';
 
 type Props = {
-  items: DuPickItem[];
+  items: DuPickDto[];
 };
 
 export function DuPickBanner({ items }: Props) {
@@ -44,13 +44,18 @@ export function DuPickBanner({ items }: Props) {
 
       <div className="px-4">
         <div className="relative h-128.25 overflow-hidden bg-[#D1D5DB]">
+          {current.bannerImageUrl && (
+            <img
+              src={current.bannerImageUrl}
+              alt={current.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
           <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/20 to-transparent" />
 
           <div className="absolute left-7 right-4 bottom-9">
-            <p className="typo-body-xl-bold text-white mb-1.5">{current.name}</p>
-            <p className="typo-body-xs-regular text-faint">
-              {current.date}&nbsp;&nbsp;{current.location}
-            </p>
+            <p className="typo-body-xl-bold text-white mb-1.5">{current.title}</p>
+            <p className="typo-body-xs-regular text-faint">{current.subtitle}</p>
           </div>
 
           <div className="absolute bottom-3.5 inset-x-0 flex justify-center items-center gap-1.5">

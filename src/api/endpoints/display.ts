@@ -17,6 +17,7 @@ import type {
   GetDisplayMapResponseDataDto,
   GetDisplayReviewsResponseDataDto,
   GetDisplaysRequestDto,
+  GetDuPicksRequestDto,
   GetDuPicksResponseDataDto,
   HomeExhibitionDto,
   PublishDisplayResponseDataDto,
@@ -49,8 +50,9 @@ export const getClosingSoonDisplays = async (): Promise<ClosingSoonExhibitionDto
 };
 
 // GET /v1/display/du-picks
-export const getDuPicks = async (): Promise<GetDuPicksResponseDataDto> =>
-  apiRequest('/v1/display/du-picks');
+export const getDuPicks = async (
+  params: GetDuPicksRequestDto = {},
+): Promise<GetDuPicksResponseDataDto> => apiRequest('/v1/display/du-picks', { query: params });
 
 // GET /v1/display
 export const getDisplays = async (

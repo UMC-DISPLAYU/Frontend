@@ -31,12 +31,23 @@ export interface DuPickDto {
   title: string;
   subtitle: string;
   bannerImageUrl: string;
-  authorName: string;
   createdAt: string;
+}
+
+export interface GetDuPicksRequestDto {
+  cursor?: number | null;
+  size?: number;
+}
+
+export interface DuPickPaginationDto {
+  nextCursor: number | null;
+  size: number;
+  hasNext: boolean;
 }
 
 export interface GetDuPicksResponseDataDto {
   duPicks: DuPickDto[];
+  pagination: DuPickPaginationDto;
 }
 
 export type GetDuPicksResponseDto = ApiResponseDto<GetDuPicksResponseDataDto>;
