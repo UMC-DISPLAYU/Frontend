@@ -8,7 +8,7 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './Router';
 
 const enableMocking = async () => {
-  if (!import.meta.env.DEV) {
+  if (!import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK !== 'true') {
     return;
   }
 
