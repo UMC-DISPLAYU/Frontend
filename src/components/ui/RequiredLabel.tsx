@@ -13,10 +13,10 @@ export const RequiredLabel = memo(function RequiredLabel({
 }: RequiredLabelProps) {
   return (
     <label htmlFor={htmlFor} className="inline-flex items-center gap-1">
-      <span className="text-neutral-900 text-sm font-bold leading-5">
+      <span className="text-dark typo-body-sm-bold leading-5">
         {children}
       </span>
-      {required && <span className="text-red-400 text-xs leading-5">*</span>}
+      {required && <span className="text-red-400 typo-body-xs-regular leading-5">*</span>}
     </label>
   );
 });

@@ -13,7 +13,7 @@ import {
 } from '@/constants/exhibition';
 
 const BASE_INPUT_CLASS =
-  'px-3 py-2.5 bg-neutral-50 rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 text-xs text-neutral-900 placeholder:text-neutral-400 leading-4';
+  'px-3 py-2.5 bg-card rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-line typo-body-xs-regular text-main placeholder:text-faint leading-4';
 
 export function ExhibitionRegister() {
   const [title, setTitle] = useState('');
@@ -32,7 +32,7 @@ export function ExhibitionRegister() {
   }, [type]);
 
   return (
-    <div className="w-full bg-neutral-50 relative flex flex-col h-screen">
+    <div className="w-full bg-page relative flex flex-col h-screen">
       <ExhibitionHeader />
 
       <main className="flex-1 overflow-y-auto overflow-x-hidden px-5 pb-28">
@@ -66,16 +66,16 @@ export function ExhibitionRegister() {
 
         <div className="mt-5 flex flex-col gap-3">
           <RequiredLabel htmlFor="exhibition-intro">전시소개</RequiredLabel>
-          <div className="px-3 py-2.5 bg-neutral-50 rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 flex flex-col gap-2">
+          <div className="px-3 py-2.5 bg-card rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-line flex flex-col gap-2">
             <textarea
               id="exhibition-intro"
               value={intro}
               maxLength={500}
               onChange={(e) => setIntro(e.target.value)}
               placeholder="전시에 대해 소개해주세요"
-              className="h-24 resize-none bg-transparent text-xs text-neutral-900 placeholder:text-neutral-400 leading-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
+              className="h-24 resize-none bg-transparent typo-body-xs-regular text-faint placeholder:text-hint leading-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
             />
-            <div className="text-right text-neutral-400 text-xs leading-4">
+            <div className="text-right text-faint typo-body-xs-regular leading-4">
               {intro.length}/500
             </div>
           </div>
@@ -90,13 +90,16 @@ export function ExhibitionRegister() {
             role="radiogroup"
             aria-labelledby="exhibition-type-label"
           >
-            {EXHIBITION_TYPES.map((t) => (
-              <Chip
-                key={t.label}
-                label={t.label}
-                selected={type === t.label}
-                onClick={() => setType(t.label)}
-              />
+            {EXHIBITION_TYPES.map((t, index) => (
+              <>
+                <Chip
+                  key={t.label}
+                  label={t.label}
+                  selected={type === t.label}
+                  onClick={() => setType(t.label)}
+                />
+                {index === 2 && <div className="basis-full h-0" />}
+              </>
             ))}
           </div>
         </div>
@@ -140,11 +143,11 @@ export function ExhibitionRegister() {
         )}
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 z-40 bg-neutral-50 border-t border-stone-300 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <footer className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
         <div className="px-5 pt-4 pb-4">
           <button
             type="button"
-            className="w-full py-3 bg-neutral-900 rounded-xl text-neutral-50 text-sm font-bold leading-5"
+            className="w-full py-3 bg-dark rounded-xl text-card typo-body-sm-bold leading-5"
           >
             다음
           </button>
