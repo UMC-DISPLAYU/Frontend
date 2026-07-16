@@ -8,14 +8,18 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './Router';
 
 const enableMocking = async () => {
-  if (!import.meta.env.DEV) {
+  if (!import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK !== 'true') {
     return;
   }
 
   const { worker } = await import('./mocks/browser');
 
   return worker.start({
-    onUnhandledRequest: 'bypass',
+    onUnhandledRequest(request, print) {
+      if (new URL(request.url).pathname.startsWith('/v1/')) {
+        print.warning();
+      }
+    },
   });
 };
 
