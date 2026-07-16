@@ -15,7 +15,11 @@ const enableMocking = async () => {
   const { worker } = await import('./mocks/browser');
 
   return worker.start({
-    onUnhandledRequest: 'bypass',
+    onUnhandledRequest(request, print) {
+      if (new URL(request.url).pathname.startsWith('/v1/')) {
+        print.warning();
+      }
+    },
   });
 };
 
