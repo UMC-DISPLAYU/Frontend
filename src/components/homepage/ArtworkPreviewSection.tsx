@@ -30,7 +30,7 @@ export function ArtworkPreviewSection({ items }: Props) {
         {items.map((item) => (
           <div
             key={item.id}
-            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box"
+            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box200"
           >
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/15 to-transparent" />
 
