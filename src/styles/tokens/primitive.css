@@ -13,12 +13,17 @@
   --palette-blue: #2483c3;
   --palette-red: #c32427;
   --palette-bg: #f0f0f3;
+  --palette-navy: #06032d;
+
+  /* token */
+  --palette-token: #e6e6ee;
+  --palette-token-100: #ececf2;
+  --palette-token-200: #d7d7df;
 
   /* Gray */
   --palette-gray-white: #fcfcfc;
   --palette-gray-100: #e9e9e9; /* 추후 수정(발견하면 승철에게 알려주기) */
   --palette-gray-200: #d9d9d9;
-  --palette-token-200: #d7d7df;
   --palette-gray-300: #c4c4c4; /* 추후 수정(발견하면 승철에게 알려주기) */
   --palette-gray-400: #9d9d9d;
   --palette-gray-500: #767676;

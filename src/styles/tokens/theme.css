@@ -12,7 +12,11 @@
   --color-page: var(--bg-page);
   --color-card: var(--bg-card);
   --color-box: var(--bg-box);
+  --color-box100: var(--bg-box100);
+  --color-box200: var(--bg-box200);
   --color-dark: var(--bg-dark);
+  --color-logo: var(--bg-logo);
+  --color-selected: var(--bg-selected);
 
   /* Foreground (text + icon) */
   --color-main: var(--fg-main);
