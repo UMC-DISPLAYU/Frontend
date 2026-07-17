@@ -13,31 +13,19 @@ export function ArtworkCard({ item, isArtistView = false }: ArtworkCardProps) {
       <div className="p-1.5 pb-0">
         <div className="relative rounded-xl overflow-hidden">
           <div className="w-full h-44 bg-neutral-200">
-            <img
-              className="w-full h-full object-cover"
-              src={item.thumbnail}
-              alt={item.title}
-            />
+            <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
           </div>
           {!isArtistView && (
-            <button
-              type="button"
-              aria-label="북마크"
-              className="absolute bottom-2 right-2"
-            >
-              <Bookmark color="#D70004" fill="#D70004" className="size-4-10" />
+            <button type="button" aria-label="북마크" className="absolute bottom-2 right-2">
+              <Bookmark color="#D70004" fill="#D70004" className="size-4" />
             </button>
           )}
         </div>
       </div>
 
       <div className="px-2.5 pt-2 pb-3 flex flex-col gap-1">
-        <div className="text-neutral-900 text-sm font-bold leading-5 truncate">
-          {item.title}
-        </div>
-        <div className="text-neutral-900 text-xs font-normal leading-4 truncate">
-          {item.artist}
-        </div>
+        <div className="text-neutral-900 text-sm font-bold leading-5 truncate">{item.title}</div>
+        <div className="text-neutral-900 text-xs font-normal leading-4 truncate">{item.artist}</div>
       </div>
     </article>
   );

@@ -46,9 +46,7 @@ export function MyPage() {
   if (isLoading) {
     return (
       <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-neutral-500 text-sm font-['Pretendard']">
-          로딩 중...
-        </div>
+        <div className="text-neutral-500 text-sm font-['Pretendard']">로딩 중...</div>
       </div>
     );
   }
@@ -92,25 +90,17 @@ export function MyPage() {
       <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
         {activeTab === 'exhibition' && (
           <div className="flex flex-col gap-3">
-            {(isArtistView
-              ? MY_PARTICIPATED_EXHIBITIONS
-              : MY_BOOKMARKED_EXHIBITIONS
-            ).map((item) => (
-              <ExhibitionCard
-                key={item.id}
-                item={item}
-                isArtistView={isArtistView}
-              />
-            ))}
+            {(isArtistView ? MY_PARTICIPATED_EXHIBITIONS : MY_BOOKMARKED_EXHIBITIONS).map(
+              (item) => (
+                <ExhibitionCard key={item.id} item={item} isArtistView={isArtistView} />
+              ),
+            )}
           </div>
         )}
 
         {activeTab === 'artwork' && (
           <div className="grid grid-cols-2 gap-x-1.5 gap-y-3">
-            {(isArtistView
-              ? MY_REGISTERED_ARTWORKS
-              : MY_BOOKMARKED_ARTWORKS
-            ).map((item) => (
+            {(isArtistView ? MY_REGISTERED_ARTWORKS : MY_BOOKMARKED_ARTWORKS).map((item) => (
               <ArtworkCard key={item.id} item={item} isArtistView={isArtistView} />
             ))}
           </div>

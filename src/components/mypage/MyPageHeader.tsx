@@ -70,31 +70,19 @@ export function MyPageHeader({
             {isArtistView ? (
               <div className="flex items-center gap-5.5">
                 <div className="w-17.5 flex flex-col items-center gap-0.5">
-                  <img
-                    className="w-12 h-9 object-contain"
-                    src={profile.schoolIcon}
-                    alt=""
-                  />
+                  <img className="w-12 h-9 object-contain" src={profile.schoolIcon} alt="" />
                   <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
                     {profile.school}
                   </span>
                 </div>
                 <div className="w-18 flex flex-col items-center gap-0.5">
-                  <img
-                    className="w-12 h-9 object-contain"
-                    src={profile.fieldIcon}
-                    alt=""
-                  />
+                  <img className="w-12 h-9 object-contain" src={profile.fieldIcon} alt="" />
                   <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
                     {profile.field}
                   </span>
                 </div>
                 <div className="w-17.5 flex flex-col items-center gap-0.5">
-                  <img
-                    className="w-12 h-9 object-contain"
-                    src={profile.exhibitionIcon}
-                    alt=""
-                  />
+                  <img className="w-12 h-9 object-contain" src={profile.exhibitionIcon} alt="" />
                   <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
                     {profile.exhibit}
                   </span>
@@ -181,9 +169,7 @@ export function MyPageHeader({
               type="button"
               onClick={() => onTabChange(tab.key)}
               className={`relative flex-1 h-11 flex justify-center pt-3 text-sm font-['Pretendard'] leading-5 ${
-                isActive
-                  ? 'text-neutral-900 font-bold'
-                  : 'text-neutral-400 font-normal'
+                isActive ? 'text-neutral-900 font-bold' : 'text-neutral-400 font-normal'
               }`}
             >
               {tab.label}
