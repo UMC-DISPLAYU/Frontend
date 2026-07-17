@@ -39,11 +39,14 @@ export const Homepage = () => {
   const [duPickItems, setDuPickItems] = useState<DuPickDto[]>([]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchGraduationDisplays = async () => {
       try {
         const exhibitions = await getGraduationDisplays();
-
-        setGraduationExhibitions(exhibitions.map(toExhibitionCard));
+        if (isMounted) {
+          setGraduationExhibitions(exhibitions.map(toExhibitionCard));
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
@@ -53,8 +56,9 @@ export const Homepage = () => {
     const fetchDuPicks = async () => {
       try {
         const data = await getDuPicks({ cursor: 1, size: 4 });
-
-        setDuPickItems(data.duPicks);
+        if (isMounted) {
+          setDuPickItems(data.duPicks);
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
@@ -63,6 +67,10 @@ export const Homepage = () => {
 
     void fetchGraduationDisplays();
     void fetchDuPicks();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
