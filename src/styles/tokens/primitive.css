@@ -13,6 +13,12 @@
   --palette-blue: #2483c3;
   --palette-red: #c32427;
   --palette-bg: #f0f0f3;
+  --palette-navy: #06032d;
+
+  /* token */
+  --palette-token: #e6e6ee;
+  --palette-token-100: #ececf2;
+  --palette-token-200: #d7d7df;
 
   /* Gray */
   --palette-gray-white: #fcfcfc;
@@ -43,9 +49,9 @@
   --font-size-body-md: 16px;
   --font-size-body-sm: 14px;
   --font-size-body-xs: 12px;
+  --font-size-body-xxs: 10px;
 
   --font-weight-regular: 400;
-  --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
