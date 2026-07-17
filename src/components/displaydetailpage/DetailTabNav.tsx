@@ -1,4 +1,4 @@
-import type { DetailTabKey } from '@/types/detail';
+import type { DetailTabKey } from '@/types/exhibition';
 
 const DETAIL_TABS: { key: DetailTabKey; label: string }[] = [
   { key: 'intro', label: '소개' },
