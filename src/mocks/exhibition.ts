@@ -34,9 +34,9 @@ export const EXHIBITION_DETAILS: Record<string, ExhibitionDetail> = {
       'https://picsum.photos/seed/ct3/400/300',
     ],
     notices: [
-      '관람료는 사전에 예약하시면 16:00까지만 입장이 가능합니다.',
-      '전시품 손수건 임의로 접지하시면 안됩니다.',
-      '날씨에 문제 발생 시 다른 다른 3 일정이 있으실 경우에는 확인해주세요.',
+      '금요일은 전시 마감으로 16:00까지만 진행합니다.',
+      '작품을 손으로 만지지 말아주세요.',
+      '날짜별 운영 시간이 다를 수 있으니 방문 전 확인해주세요.',
     ],
     host: '중앙대학교 OO동아리',
     sns: '@displayu_oo (인스타그램 DM)',

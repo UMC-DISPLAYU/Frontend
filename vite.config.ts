@@ -10,4 +10,13 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/v1': {
+        target: 'https://api.displayu.co.kr',
+        changeOrigin: true,
+        rewrite: (path) => `/api${path}`,
+      },
+    },
+  },
 });
