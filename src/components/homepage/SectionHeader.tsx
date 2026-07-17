@@ -10,10 +10,10 @@ export function SectionHeader({ title }: SectionHeaderProps) {
       <h2 className="typo-body-xl-bold text-main">{title}</h2>
       <button
         type="button"
-        className="flex items-center gap-px typo-body-xs-regular text-hint bg-transparent border-none cursor-pointer p-0"
+        className="flex items-center typo-body-xs-regular text-faint bg-transparent border-none cursor-pointer p-0"
       >
         더보기
-        <ChevronRightIcon className="text-hint size-3" />
+        <ChevronRightIcon className="text-faint size-3" />
       </button>
     </div>
   );

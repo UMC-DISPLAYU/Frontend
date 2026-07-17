@@ -7,6 +7,7 @@ import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewDetailPage } from './pages/ExhibitionReviewDetailPage';
 import { ExhibitionReviewPage } from './pages/ExhibitionReviewPage';
 import { Homepage } from './pages/Homepage';
+import { LoungePage } from './pages/LoungePage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
 
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
+      { path: 'lounge', element: <LoungePage /> },
       { path: 'lounge/review', element: <ExhibitionReviewPage /> },
       { path: 'lounge/review/:id', element: <ExhibitionReviewDetailPage /> },
       // 새 페이지 여기에 추가

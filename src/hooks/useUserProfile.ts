@@ -1,4 +1,4 @@
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import ExhibitionIcon from '../assets/exhibit.svg';
 import AvatarImage from '../assets/Icon (1).svg';

@@ -1,9 +1,4 @@
-import type {
-  ArtistItem,
-  ExhibitionItem,
-  SavedArtworkItem,
-  TabKey,
-} from '@/types/mypage';
+import type { ArtistItem, ExhibitionItem, SavedArtworkItem, TabKey } from '@/types/mypage';
 
 export const TABS: { key: TabKey; label: string }[] = [
   { key: 'exhibition', label: '전시' },
