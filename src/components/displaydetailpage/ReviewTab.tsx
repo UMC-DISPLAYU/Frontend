@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Heart, MoreHorizontal, SquarePen } from 'lucide-react';
 
 import type { ReviewItem } from '@/types/exhibition';
+import { cn } from '@/utils/cn';
 
 import defaultProfileIcon from '../../assets/DefaultProfileIcon.svg';
 
@@ -57,17 +58,16 @@ function ReviewCard({ item }: { item: ReviewItem }) {
           type="button"
           id={`review-like-${item.id}`}
           onClick={() => setLiked((v) => !v)}
-          className="flex items-center gap-1 transition-all duration-200 active:scale-95"
+          className="flex items-center gap-1 transition-all duration-200 active:scale-95 cursor-pointer"
         >
           <Heart
             size={14}
-            fill={liked ? 'var(--bt-heart-filled)' : 'none'}
-            color={liked ? 'var(--bt-heart-filled)' : 'var(--bt-heart-border)'}
+            className={cn(
+              'transition-colors duration-200',
+              liked ? 'fill-heart text-heart' : 'fill-none text-sub700',
+            )}
           />
-          <span
-            className="typo-body-xs-regular"
-            style={{ color: liked ? 'var(--bt-heart-filled)' : 'var(--bt-heart-border)' }}
-          >
+          <span className={cn('typo-body-xs-regular', liked ? 'text-heart' : 'text-sub700')}>
             {likeCount}
           </span>
         </button>

@@ -10,7 +10,7 @@ function ArtworkCard({ item }: ArtworkCardProps) {
       <div className="aspect-square w-full rounded-xl overflow-hidden bg-page">
         <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
       </div>
-      <div className="pt-3 font-[Pretendard,sans-serif] flex flex-col">
+      <div className="pt-3 flex flex-col">
         <p className="typo-body-sm-bold truncate text-main">{item.title}</p>
         <p className="typo-body-xs-regular truncate text-main">{item.artist}</p>
       </div>

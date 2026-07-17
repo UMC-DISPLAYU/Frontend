@@ -1,4 +1,5 @@
 import type { DetailTabKey } from '@/types/exhibition';
+import { cn } from '@/utils/cn';
 
 const DETAIL_TABS: { key: DetailTabKey; label: string }[] = [
   { key: 'intro', label: '소개' },
@@ -22,7 +23,10 @@ export function DetailTabNav({ activeTab, onTabChange }: Props) {
             id={`tab-${tab.key}`}
             type="button"
             onClick={() => onTabChange(tab.key)}
-            className={`py-4 typo-body-sm-regular transition-all duration-150 relative whitespace-nowrap ${isActive ? 'text-main' : 'text-faint'}`}
+            className={cn(
+              'py-4 typo-body-sm-regular transition-all duration-150 relative whitespace-nowrap',
+              isActive ? 'text-main' : 'text-faint',
+            )}
           >
             {tab.label}
             {isActive && <span className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-main" />}

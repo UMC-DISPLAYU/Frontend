@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { BackButton } from '@/components/ui/BackButton';
+import { cn } from '@/utils/cn';
 
 type Props = {
   images: string[];
@@ -33,9 +34,10 @@ export function HeroSlider({ images, onBack }: Props) {
             type="button"
             aria-label={`슬라이드 ${idx + 1}`}
             onClick={() => setCurrent(idx)}
-            className={`w-1.75 h-1.75 rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200 ${
-              idx === current ? 'bg-line-active' : 'bg-[#667281]'
-            }`}
+            className={cn(
+              'w-1.75 h-1.75 rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200',
+              idx === current ? 'bg-line-active' : 'bg-[#667281]',
+            )}
           />
         ))}
       </div>

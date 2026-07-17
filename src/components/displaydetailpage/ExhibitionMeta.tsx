@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Calendar, Clock, Heart, MapPin } from 'lucide-react';
 
 import type { ExhibitionDetail } from '@/types/exhibition';
+import { cn } from '@/utils/cn';
 
 import { DisplaySaveButton } from './DisplaySaveButton';
 
@@ -15,7 +16,7 @@ export function ExhibitionMeta({ exhibition: ex }: Props) {
   const likeCount = ex.bookmarkCount;
 
   return (
-    <section className="px-5 pt-6 pb-4 font-[Pretendard,sans-serif]">
+    <section className="px-5 pt-6 pb-4">
       {/* 제목/하트 */}
       <div className="flex items-start justify-between gap-2">
         <h1 className="flex-1 typo-body-xl-bold text-main">{ex.title}</h1>
@@ -23,12 +24,14 @@ export function ExhibitionMeta({ exhibition: ex }: Props) {
           type="button"
           id="meta-heart-btn"
           onClick={() => setBookmarked((v) => !v)}
-          className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95"
+          className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95 cursor-pointer"
         >
           <Heart
             size={17}
-            fill={bookmarked ? 'var(--bt-heart-filled)' : 'none'}
-            color={bookmarked ? 'var(--bt-heart-filled)' : 'var(--bt-heart-border)'}
+            className={cn(
+              'transition-colors duration-200',
+              bookmarked ? 'fill-heart text-heart' : 'fill-none text-sub700',
+            )}
           />
           <span className="typo-body-xs-regular text-main">{likeCount}</span>
         </button>
