@@ -19,14 +19,14 @@ export function MyActivitySection() {
           image ? (
             <LoungeCard
               key={title}
-              className="w-28 h-32 flex flex-col items-center justify-between"
+              className="flex-1 h-32 flex flex-col items-center justify-between"
             >
               <ArrowUpRight className="size-5 text-faint self-end" strokeWidth={1.5} />
               <img alt="" className="w-16 h-14 object-cover" src={image} />
               <h3 className="w-full typo-body-xl-semibold text-main text-left">{title}</h3>
             </LoungeCard>
           ) : (
-            <LoungeCard key={title} className="w-28 h-32 flex flex-col justify-between items-end">
+            <LoungeCard key={title} className="flex-1 h-32 flex flex-col justify-between items-end">
               <ArrowUpRight className="size-5 text-faint" strokeWidth={1.5} />
               <h3 className="w-full typo-body-xl-semibold text-main text-left">{title}</h3>
             </LoungeCard>
