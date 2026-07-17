@@ -24,7 +24,7 @@ type Props = {
 
 export function ArtworkTab({ artworks }: Props) {
   return (
-    <div className="px-5 py-6 min-h-100 font-[Pretendard,sans-serif]">
+    <div className="px-5 py-6 min-h-100">
       <h1 className="mb-3 typo-body-xl-bold text-main">작품 미리보기</h1>
       <div className="grid grid-cols-2 gap-3">
         {artworks.map((item) => (
