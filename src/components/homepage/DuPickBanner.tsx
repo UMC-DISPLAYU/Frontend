@@ -4,7 +4,6 @@ import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { DuPickDto } from '@/api/dto';
-import logo from '@/assets/logo.svg';
 
 type Props = {
   items: DuPickDto[];
@@ -28,13 +27,12 @@ export function DuPickBanner({ items }: Props) {
   return (
     <section className="pb-7">
       <div className="px-4 mb-2.5 flex justify-between items-center">
-        <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
-          <img src={logo} alt="DU" className="h-7 w-auto" />
-          <span>Pick</span>
+        <h2 className="flex items-center gap-1.5 typo-heading-3xl text-logo">
+          <span>DU Pick</span>
         </h2>
         <button
           type="button"
-          aria-label="전시 등록"
+          aria-label="전시 등록 버튼"
           onClick={() => navigate('/exhibition-register')}
           className="cursor-pointer p-0 bg-transparent border-none"
         >

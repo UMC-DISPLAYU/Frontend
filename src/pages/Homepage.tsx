@@ -1,19 +1,28 @@
 import { useEffect, useState } from 'react';
 
-import type { ArtworkPreviewItemDto, DuPickDto, HomeExhibitionDto } from '@/api/dto';
-import { getArtworkPreview, getDuPicks, getGraduationDisplays } from '@/api/endpoints';
+import type {
+  ArtworkPreviewItemDto,
+  DuPickDto,
+  HomeExhibitionDto,
+  LoungePostSummaryDto,
+} from '@/api/dto';
+import {
+  getArtworkPreview,
+  getDuPicks,
+  getGraduationDisplays,
+  getLoungePosts,
+} from '@/api/endpoints';
 import { ArtworkPreviewSection } from '@/components/homepage/ArtworkPreviewSection';
 import { DuPickBanner } from '@/components/homepage/DuPickBanner';
 import { ExhibitionSection } from '@/components/homepage/ExhibitionSection';
 import { LoungeSection } from '@/components/homepage/LoungeSection';
-import { DEADLINE_EXHIBITIONS, LOUNGE_POSTS } from '@/mocks/exhibition';
+import { DEADLINE_EXHIBITIONS } from '@/mocks/exhibition';
 
 export const Homepage = () => {
-  ///v1/display/graduation 엔드포인트 연결
-  //일단은 훅 없이 그대로 가져왔으니 나중에 최적화할 때 참고하세요
-  const [graduationExhibitions, setGraduationExhibitions] = useState<HomeExhibitionDto[]>([]);
   const [duPickItems, setDuPickItems] = useState<DuPickDto[]>([]);
+  const [graduationExhibitions, setGraduationExhibitions] = useState<HomeExhibitionDto[]>([]);
   const [previewArtworks, setPreviewArtworks] = useState<ArtworkPreviewItemDto[]>([]);
+  const [loungePosts, setLoungePosts] = useState<LoungePostSummaryDto[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -54,9 +63,22 @@ export const Homepage = () => {
       }
     };
 
+    const fetchLoungePosts = async () => {
+      try {
+        const data = await getLoungePosts({ size: 3 });
+        if (isMounted) {
+          setLoungePosts(data.posts);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
+    };
+
     void fetchGraduationDisplays();
     void fetchDuPicks();
     void fetchPreviewArtworks();
+    void fetchLoungePosts();
 
     return () => {
       isMounted = false;
@@ -69,7 +91,7 @@ export const Homepage = () => {
       <ExhibitionSection title="졸업전시" items={graduationExhibitions} />
       <ExhibitionSection title="놓치기 전에 볼 전시" items={DEADLINE_EXHIBITIONS} />
       <ArtworkPreviewSection items={previewArtworks} />
-      <LoungeSection posts={LOUNGE_POSTS} />
+      <LoungeSection posts={loungePosts} />
     </div>
   );
 };
