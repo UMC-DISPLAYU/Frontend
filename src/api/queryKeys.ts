@@ -36,8 +36,10 @@ export const queryKeys = {
     duPicks: () => [...queryKeys.displays.lists(), 'du-picks'] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
+    reviewLists: (displayId: number) =>
+      [...queryKeys.displays.detail(displayId), 'reviews'] as const,
     reviews: (displayId: number, params: { page: number; size: number }) =>
-      [...queryKeys.displays.detail(displayId), 'reviews', params] as const,
+      [...queryKeys.displays.reviewLists(displayId), params] as const,
   },
 
   displayArtworks: {
