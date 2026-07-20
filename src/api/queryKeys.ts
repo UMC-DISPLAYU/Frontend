@@ -1,5 +1,9 @@
 import type { CursorPageRequestDto } from '@/api/dto';
 import type {
+  GetArchiveCalendarDayRequestDto,
+  GetArchiveCalendarRequestDto,
+} from '@/api/dto/archive.dto';
+import type {
   GetDisplayArtworksRequestDto,
   GetDisplayMapRequestDto,
   GetDisplaysRequestDto,
@@ -101,8 +105,9 @@ export const queryKeys = {
 
   archives: {
     all: ['archives'] as const,
-    calendar: (params: ListParams) => [...queryKeys.archives.all, 'calendar', params] as const,
-    calendarDay: (params: ListParams) =>
+    calendar: (params: GetArchiveCalendarRequestDto) =>
+      [...queryKeys.archives.all, 'calendar', params] as const,
+    calendarDay: (params: GetArchiveCalendarDayRequestDto) =>
       [...queryKeys.archives.all, 'calendar-day', params] as const,
 
     displays: {
