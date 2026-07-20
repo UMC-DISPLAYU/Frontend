@@ -93,8 +93,10 @@ export const queryKeys = {
     listPrefix: (postId: number) => [...queryKeys.loungeComments.lists(), postId] as const,
     list: (postId: number, params?: CursorPageRequestDto) =>
       [...queryKeys.loungeComments.listPrefix(postId), params ?? {}] as const,
+    replyLists: (commentId: number) =>
+      [...queryKeys.loungeComments.all, 'replies', commentId] as const,
     replies: (commentId: number, params?: CursorPageRequestDto) =>
-      [...queryKeys.loungeComments.all, 'replies', commentId, params ?? {}] as const,
+      [...queryKeys.loungeComments.replyLists(commentId), params ?? {}] as const,
   },
 
   archives: {
