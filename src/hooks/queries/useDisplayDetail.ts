@@ -35,7 +35,6 @@ export const useToggleDisplayLike = () => {
   return useMutation({
     mutationFn: (displayId: number) => toggleDisplayLike(displayId),
     onSuccess: (data, displayId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.lists() });
       queryClient.setQueryData(
@@ -46,10 +45,6 @@ export const useToggleDisplayLike = () => {
     },
   });
 };
-
-export const useLikeDisplay = useToggleDisplayLike;
-
-export const useCancelLikeDisplay = useToggleDisplayLike;
 
 export const useCreateDisplayReview = () => {
   const queryClient = useQueryClient();

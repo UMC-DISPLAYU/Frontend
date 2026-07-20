@@ -8,48 +8,40 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
-export const useGraduationDisplays = () =>
-  useQuery({
-    queryKey: queryKeys.displays.graduation(),
-    queryFn: getGraduationDisplays,
-  });
+const graduationDisplaysQuery = () => ({
+  queryKey: queryKeys.displays.graduation(),
+  queryFn: getGraduationDisplays,
+});
 
-export const useClosingSoonDisplays = () =>
-  useQuery({
-    queryKey: queryKeys.displays.closingSoon(),
-    queryFn: getClosingSoonDisplays,
-  });
+const closingSoonDisplaysQuery = () => ({
+  queryKey: queryKeys.displays.closingSoon(),
+  queryFn: getClosingSoonDisplays,
+});
 
-export const useDuPicks = () =>
-  useQuery({
-    queryKey: queryKeys.displays.duPicks(),
-    queryFn: getDuPicks,
-  });
+const duPicksQuery = () => ({
+  queryKey: queryKeys.displays.duPicks(),
+  queryFn: getDuPicks,
+});
 
-export const useHomeArtworkPreview = () =>
-  useQuery({
-    queryKey: queryKeys.displayArtworks.preview(),
-    queryFn: () => getArtworkPreview(),
-  });
+const homeArtworkPreviewQuery = () => ({
+  queryKey: queryKeys.displayArtworks.preview(),
+  queryFn: () => getArtworkPreview(),
+});
+
+export const useGraduationDisplays = () => useQuery(graduationDisplaysQuery());
+
+export const useClosingSoonDisplays = () => useQuery(closingSoonDisplaysQuery());
+
+export const useDuPicks = () => useQuery(duPicksQuery());
+
+export const useHomeArtworkPreview = () => useQuery(homeArtworkPreviewQuery());
 
 export const useHome = () =>
   useQueries({
     queries: [
-      {
-        queryKey: queryKeys.displays.graduation(),
-        queryFn: getGraduationDisplays,
-      },
-      {
-        queryKey: queryKeys.displays.closingSoon(),
-        queryFn: getClosingSoonDisplays,
-      },
-      {
-        queryKey: queryKeys.displays.duPicks(),
-        queryFn: getDuPicks,
-      },
-      {
-        queryKey: queryKeys.displayArtworks.preview(),
-        queryFn: () => getArtworkPreview(),
-      },
+      graduationDisplaysQuery(),
+      closingSoonDisplaysQuery(),
+      duPicksQuery(),
+      homeArtworkPreviewQuery(),
     ],
   });

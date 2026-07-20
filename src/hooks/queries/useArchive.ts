@@ -50,12 +50,13 @@ export const useArchiveExhibition = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (exhibitionId: number) => archiveExhibition(exhibitionId),
-    onSuccess: (_, exhibitionId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(exhibitionId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
-    },
+    mutationFn: archiveExhibition,
+    onSuccess: (_, exhibitionId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(exhibitionId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() }),
+      ]),
   });
 };
 
@@ -63,12 +64,13 @@ export const useUnarchiveExhibition = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (exhibitionId: number) => unarchiveExhibition(exhibitionId),
-    onSuccess: (_, exhibitionId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(exhibitionId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
-    },
+    mutationFn: unarchiveExhibition,
+    onSuccess: (_, exhibitionId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(exhibitionId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() }),
+      ]),
   });
 };
 
@@ -76,12 +78,13 @@ export const useArchiveArtwork = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (artworkId: number) => archiveArtwork(artworkId),
-    onSuccess: (_, artworkId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.detail(artworkId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
-    },
+    mutationFn: archiveArtwork,
+    onSuccess: (_, artworkId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.detail(artworkId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() }),
+      ]),
   });
 };
 
@@ -89,12 +92,13 @@ export const useUnarchiveArtwork = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (artworkId: number) => unarchiveArtwork(artworkId),
-    onSuccess: (_, artworkId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.detail(artworkId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
-    },
+    mutationFn: unarchiveArtwork,
+    onSuccess: (_, artworkId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.detail(artworkId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() }),
+      ]),
   });
 };
 
@@ -102,10 +106,8 @@ export const useArchiveArtist = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (artistId: number) => archiveArtist(artistId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.artists.all() });
-    },
+    mutationFn: archiveArtist,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.archives.artists.all() }),
   });
 };
 
@@ -113,9 +115,7 @@ export const useUnarchiveArtist = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (artistId: number) => unarchiveArtist(artistId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.artists.all() });
-    },
+    mutationFn: unarchiveArtist,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.archives.artists.all() }),
   });
 };
