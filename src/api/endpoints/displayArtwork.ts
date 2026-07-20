@@ -131,4 +131,4 @@ export const deleteArtwork = async (artworkId: number): Promise<DeleteArtworkRes
 export const getArtworkPreview = async (
   params: GetArtworkPreviewRequestDto = {},
 ): Promise<GetArtworkPreviewResponseDataDto> =>
-  apiRequest('/v1/display-artwork/preview', { query: params });
+  apiRequest('/v1/artworks/preview', { query: params });

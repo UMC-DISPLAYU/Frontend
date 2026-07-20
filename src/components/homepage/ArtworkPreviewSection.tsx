@@ -1,10 +1,10 @@
 import { useRef } from 'react';
 
+import type { ArtworkPreviewItemDto } from '@/api/dto';
 import { SectionHeader } from '@/components/homepage/SectionHeader';
-import type { ArtworkPreviewItem } from '@/types/exhibition';
 
 type Props = {
-  items: ArtworkPreviewItem[];
+  items: ArtworkPreviewItemDto[];
 };
 
 export function ArtworkPreviewSection({ items }: Props) {
@@ -29,14 +29,23 @@ export function ArtworkPreviewSection({ items }: Props) {
       >
         {items.map((item) => (
           <div
-            key={item.id}
+            key={item.artworkId}
             className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box"
           >
+            {item.artworkImageUrl && (
+              <img
+                src={item.artworkImageUrl}
+                alt={item.artworkName}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/15 to-transparent" />
 
             <div className="absolute left-3 right-3 bottom-3">
-              <p className="typo-body-sm-bold text-white">{item.name}</p>
-              <p className="typo-body-xs-regular text-faint">{item.date}</p>
+              <p className="typo-body-sm-bold text-white">{item.artworkName}</p>
+              <p className="typo-body-xs-regular text-faint">
+                {item.exhibitionInfo.exhibitionPeriod}
+              </p>
             </div>
           </div>
         ))}
