@@ -1,8 +1,8 @@
+import type { HomeExhibitionDto } from '@/api/dto';
 import type {
   ArtworkItem,
   ArtworkPreviewItem,
   DuPickItem,
-  ExhibitionCardData,
   ExhibitionDetail,
   LoungePost,
   ReviewItem,
@@ -91,51 +91,57 @@ export const EXHIBITION_DETAILS: Record<string, ExhibitionDetail> = {
 
 // ─── 홈 카드 데이터 (id는 EXHIBITION_DETAILS와 일치) ────────────────────────
 
-export const GRADUATION_EXHIBITIONS: ExhibitionCardData[] = [
+export const GRADUATION_EXHIBITIONS: HomeExhibitionDto[] = [
   {
-    id: '1',
+    displayId: 1,
     title: '색과 형태, 우리가 마주한 순간들',
-    school: '중앙대학교 OO학과',
-    period: '05.23 – 05.30',
-    thumbnail: 'https://picsum.photos/seed/ex1/300/400',
+    startedAt: '2026-05-23',
+    endedAt: '2026-05-30',
+    posterImageUrl: 'https://picsum.photos/seed/ex1/300/400',
+    isBookmarked: false,
   },
   {
-    id: '2',
+    displayId: 2,
     title: 'VISUAL WAVE',
-    school: '홍익대학교 시각디자인',
-    period: '06.02 – 06.10',
-    thumbnail: 'https://picsum.photos/seed/vw1/300/400',
+    startedAt: '2026-06-02',
+    endedAt: '2026-06-10',
+    posterImageUrl: 'https://picsum.photos/seed/vw1/300/400',
+    isBookmarked: false,
   },
   {
-    id: '3',
+    displayId: 3,
     title: 'NEW OFFICE',
-    school: '홍익대학교 시각디자인',
-    period: '06.02 – 06.10',
-    thumbnail: 'https://picsum.photos/seed/no1/300/400',
+    startedAt: '2026-06-02',
+    endedAt: '2026-06-10',
+    posterImageUrl: 'https://picsum.photos/seed/no1/300/400',
+    isBookmarked: false,
   },
 ];
 
-export const DEADLINE_EXHIBITIONS: ExhibitionCardData[] = [
+export const DEADLINE_EXHIBITIONS: HomeExhibitionDto[] = [
   {
-    id: '1',
+    displayId: 1,
     title: '색과 형태, 우리가 마주한 순간들',
-    school: '중앙대학교 OO학과',
-    period: '05.23 – 05.30',
-    thumbnail: 'https://picsum.photos/seed/ex2/300/400',
+    startedAt: '2026-05-23',
+    endedAt: '2026-05-30',
+    posterImageUrl: 'https://picsum.photos/seed/ex2/300/400',
+    isBookmarked: false,
   },
   {
-    id: '2',
+    displayId: 2,
     title: 'VISUAL WAVE',
-    school: '홍익대학교 시각디자인',
-    period: '06.02 – 06.10',
-    thumbnail: 'https://picsum.photos/seed/vw2/300/400',
+    startedAt: '2026-06-02',
+    endedAt: '2026-06-10',
+    posterImageUrl: 'https://picsum.photos/seed/vw2/300/400',
+    isBookmarked: false,
   },
   {
-    id: '3',
+    displayId: 3,
     title: 'NEW OFFICE',
-    school: '홍익대학교 시각디자인',
-    period: '06.02 – 06.10',
-    thumbnail: 'https://picsum.photos/seed/no2/300/400',
+    startedAt: '2026-06-02',
+    endedAt: '2026-06-10',
+    posterImageUrl: 'https://picsum.photos/seed/no2/300/400',
+    isBookmarked: false,
   },
 ];
 

@@ -36,8 +36,12 @@ import type {
 import { apiRequest } from '../client';
 
 // GET /v1/display/graduation
-export const getGraduationDisplays = async (): Promise<HomeExhibitionDto[]> => {
-  const data = await apiRequest<{ exhibitions: HomeExhibitionDto[] }>('/v1/display/graduation');
+export const getGraduationDisplays = async (params?: {
+  size?: number;
+}): Promise<HomeExhibitionDto[]> => {
+  const data = await apiRequest<{ exhibitions: HomeExhibitionDto[] }>('/v1/display/graduation', {
+    query: params,
+  });
 
   return data.exhibitions;
 };

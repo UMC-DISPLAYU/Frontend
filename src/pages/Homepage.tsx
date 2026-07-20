@@ -7,35 +7,11 @@ import { DuPickBanner } from '@/components/homepage/DuPickBanner';
 import { ExhibitionSection } from '@/components/homepage/ExhibitionSection';
 import { LoungeSection } from '@/components/homepage/LoungeSection';
 import { ARTWORK_ITEMS, DEADLINE_EXHIBITIONS, LOUNGE_POSTS } from '@/mocks/exhibition';
-import type { ExhibitionCardData } from '@/types/exhibition';
-
-const SCHOOL_BY_DISPLAY_ID: Record<number, string> = {
-  1: '중앙대학교 디자인학부',
-  2: '홍익대학교 시각디자인',
-  3: '홍익대학교 시각디자인',
-};
-
-const formatMonthDay = (date: string) => {
-  const [, month, day] = date.split('-');
-
-  return `${month}.${day}`;
-};
-
-const toExhibitionCard = (exhibition: HomeExhibitionDto): ExhibitionCardData => ({
-  id: String(exhibition.displayId),
-  title: exhibition.title,
-  school: SCHOOL_BY_DISPLAY_ID[exhibition.displayId] ?? '',
-  period: `${formatMonthDay(exhibition.startedAt)} - ${formatMonthDay(exhibition.endedAt)}`,
-  thumbnail: exhibition.posterImageUrl,
-});
-//컴포넌트가 DTO에 맞춰야 하는데, 지금 여기서까지 건드는 건 과한 거 같아서 일단 두겠습니다.
-//위 코드는 DTO를 ExhibitionCardData로 변환하는 함수입니다.
-//나중에 컴포넌트 꼭 수정해주세요
 
 export const Homepage = () => {
   ///v1/display/graduation 엔드포인트 연결
   //일단은 훅 없이 그대로 가져왔으니 나중에 최적화할 때 참고하세요
-  const [graduationExhibitions, setGraduationExhibitions] = useState<ExhibitionCardData[]>([]);
+  const [graduationExhibitions, setGraduationExhibitions] = useState<HomeExhibitionDto[]>([]);
   const [duPickItems, setDuPickItems] = useState<DuPickDto[]>([]);
 
   useEffect(() => {
@@ -43,9 +19,9 @@ export const Homepage = () => {
 
     const fetchGraduationDisplays = async () => {
       try {
-        const exhibitions = await getGraduationDisplays();
+        const exhibitions = await getGraduationDisplays({ size: 3 });
         if (isMounted) {
-          setGraduationExhibitions(exhibitions.map(toExhibitionCard));
+          setGraduationExhibitions(exhibitions);
         }
       } catch (error) {
         // eslint-disable-next-line no-console
