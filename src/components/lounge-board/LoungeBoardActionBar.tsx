@@ -8,7 +8,7 @@ type Props = {
   isSaved: boolean;
 };
 
-export function ReviewActionBar({ likeCount, isLiked, isSaved }: Props) {
+export function LoungeBoardActionBar({ likeCount, isLiked, isSaved }: Props) {
   const [liked, setLiked] = useState(isLiked);
   const [saved, setSaved] = useState(isSaved);
   const displayedLikeCount = likeCount + (liked ? 1 : 0) - (isLiked ? 1 : 0);

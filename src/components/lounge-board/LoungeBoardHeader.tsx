@@ -2,11 +2,12 @@ import { ChevronLeft, SquarePen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type Props = {
+  title: string;
   showWriteButton?: boolean;
   className?: string;
 };
 
-export function ReviewHeader({ showWriteButton = true, className = '' }: Props) {
+export function LoungeBoardHeader({ title, showWriteButton = true, className = '' }: Props) {
   const navigate = useNavigate();
 
   return (
@@ -15,7 +16,7 @@ export function ReviewHeader({ showWriteButton = true, className = '' }: Props) 
         <button type="button" aria-label="뒤로가기" onClick={() => navigate(-1)}>
           <ChevronLeft className="size-7 text-main" />
         </button>
-        <h1 className="typo-body-xl-bold text-main">전시 후기</h1>
+        <h1 className="typo-body-xl-bold text-main">{title}</h1>
       </div>
 
       {showWriteButton && (
