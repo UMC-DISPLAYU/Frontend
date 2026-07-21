@@ -47,6 +47,7 @@ export interface ExhibitionReviewComment {
   time: string;
   content: string;
   likeCount: number;
+  isLiked: boolean;
 }
 
 export interface ExhibitionReviewDetail {
@@ -57,6 +58,8 @@ export interface ExhibitionReviewDetail {
   date: string;
   content: string[];
   likeCount: number;
+  isLiked: boolean;
+  isSaved: boolean;
   images?: string[];
   comments: ExhibitionReviewComment[];
 }

@@ -9,8 +9,8 @@ type Props = {
 };
 
 export function ReviewCommentItem({ comment }: Props) {
-  const [liked, setLiked] = useState(false);
-  const displayedLikeCount = comment.likeCount + (liked ? 1 : 0);
+  const [liked, setLiked] = useState(comment.isLiked);
+  const displayedLikeCount = comment.likeCount + (liked ? 1 : 0) - (comment.isLiked ? 1 : 0);
 
   return (
     <div className="w-full flex flex-col gap-2">

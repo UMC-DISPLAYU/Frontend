@@ -11,7 +11,7 @@ export function ReviewPostDetail({ review }: Props) {
       <div className="flex items-center gap-2">
         <img
           alt=""
-          className="size-10 rounded-full shrink-0 outline outline-[1.33px] outline-offset-[-1.33px] outline-stone-300"
+          className="size-10 rounded-full shrink-0 border-[1.33px] border-stone-300"
           src={defaultProfileIcon}
         />
         <div className="flex flex-col items-start gap-1">
@@ -26,7 +26,7 @@ export function ReviewPostDetail({ review }: Props) {
         {review.images && review.images.length > 0 && (
           <div className="flex gap-1">
             {review.images.map((src, index) => (
-              <div key={index} className="w-28 h-32 rounded-sm overflow-hidden shrink-0">
+              <div key={index} className="flex-1 h-32 rounded-sm overflow-hidden">
                 <img alt="" className="w-full h-full object-cover" src={src} />
               </div>
             ))}

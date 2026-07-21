@@ -287,6 +287,7 @@ const REVIEW_DETAIL_COMMENTS = [
     time: '1시간 전',
     content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
     likeCount: 5,
+    isLiked: false,
   },
   {
     id: '2',
@@ -294,6 +295,7 @@ const REVIEW_DETAIL_COMMENTS = [
     time: '1시간 전',
     content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
     likeCount: 5,
+    isLiked: false,
   },
   {
     id: '3',
@@ -301,6 +303,7 @@ const REVIEW_DETAIL_COMMENTS = [
     time: '1시간 전',
     content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
     likeCount: 5,
+    isLiked: false,
   },
   {
     id: '4',
@@ -308,6 +311,7 @@ const REVIEW_DETAIL_COMMENTS = [
     time: '1시간 전',
     content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
     likeCount: 5,
+    isLiked: false,
   },
 ];
 
@@ -320,6 +324,8 @@ export const EXHIBITION_REVIEW_DETAILS: Record<string, ExhibitionReviewDetail> =
     date: '2026.05.24',
     content: REVIEW_DETAIL_CONTENT,
     likeCount: 24,
+    isLiked: false,
+    isSaved: false,
     comments: REVIEW_DETAIL_COMMENTS,
   },
   '2': {
@@ -330,6 +336,8 @@ export const EXHIBITION_REVIEW_DETAILS: Record<string, ExhibitionReviewDetail> =
     date: '2026.05.24',
     content: REVIEW_DETAIL_CONTENT,
     likeCount: 24,
+    isLiked: false,
+    isSaved: false,
     images: [
       'https://placehold.co/214x139',
       'https://placehold.co/218x137',
@@ -345,6 +353,8 @@ export const EXHIBITION_REVIEW_DETAILS: Record<string, ExhibitionReviewDetail> =
     date: '2026.05.24',
     content: REVIEW_DETAIL_CONTENT,
     likeCount: 24,
+    isLiked: false,
+    isSaved: false,
     comments: REVIEW_DETAIL_COMMENTS,
   },
   '4': {
@@ -355,6 +365,8 @@ export const EXHIBITION_REVIEW_DETAILS: Record<string, ExhibitionReviewDetail> =
     date: '2026.05.24',
     content: REVIEW_DETAIL_CONTENT,
     likeCount: 24,
+    isLiked: false,
+    isSaved: false,
     comments: REVIEW_DETAIL_COMMENTS,
   },
   '5': {
@@ -365,6 +377,8 @@ export const EXHIBITION_REVIEW_DETAILS: Record<string, ExhibitionReviewDetail> =
     date: '2026.05.24',
     content: REVIEW_DETAIL_CONTENT,
     likeCount: 24,
+    isLiked: false,
+    isSaved: false,
     comments: REVIEW_DETAIL_COMMENTS,
   },
 };

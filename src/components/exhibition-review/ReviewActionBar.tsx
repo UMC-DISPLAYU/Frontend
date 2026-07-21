@@ -4,12 +4,14 @@ import { Bookmark, Flag, Heart } from 'lucide-react';
 
 type Props = {
   likeCount: number;
+  isLiked: boolean;
+  isSaved: boolean;
 };
 
-export function ReviewActionBar({ likeCount }: Props) {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const displayedLikeCount = likeCount + (liked ? 1 : 0);
+export function ReviewActionBar({ likeCount, isLiked, isSaved }: Props) {
+  const [liked, setLiked] = useState(isLiked);
+  const [saved, setSaved] = useState(isSaved);
+  const displayedLikeCount = likeCount + (liked ? 1 : 0) - (isLiked ? 1 : 0);
 
   return (
     <div className="w-full flex flex-col gap-5">

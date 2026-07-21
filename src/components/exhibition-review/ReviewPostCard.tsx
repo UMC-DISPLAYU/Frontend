@@ -11,9 +11,7 @@ export function ReviewPostCard({ post }: Props) {
 
   return (
     <article
-      className={`px-4 py-3.5 bg-stone-50 rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.02)] outline outline-2 outline-offset-[-2px] outline-neutral-50 flex flex-col gap-3 overflow-hidden cursor-pointer ${
-        post.images && post.images.length > 0 ? 'h-72' : 'h-36'
-      }`}
+      className="px-4 py-3.5 bg-stone-50 rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.02)] outline outline-2 outline-offset-[-2px] outline-neutral-50 flex flex-col gap-3 overflow-hidden cursor-pointer"
       onClick={() => navigate(`/lounge/review/${post.id}`)}
       role="button"
       tabIndex={0}
@@ -30,7 +28,7 @@ export function ReviewPostCard({ post }: Props) {
           {post.images && post.images.length > 0 && (
             <div className="flex gap-1">
               {post.images.map((src, index) => (
-                <div key={index} className="w-28 h-32 rounded-sm overflow-hidden shrink-0">
+                <div key={index} className="flex-1 h-32 rounded-sm overflow-hidden">
                   <img alt="" className="w-full h-full object-cover" src={src} />
                 </div>
               ))}
