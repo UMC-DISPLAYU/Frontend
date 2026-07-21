@@ -8,6 +8,7 @@ import { Homepage } from './pages/Homepage';
 import { LoungePage } from './pages/LoungePage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
+import  SettingPage  from './pages/Settingpage';
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
+      { path: 'setting', element: <SettingPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],
