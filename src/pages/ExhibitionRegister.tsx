@@ -52,9 +52,7 @@ export function ExhibitionRegister() {
         </div>
 
         <div className="mt-5 flex flex-col gap-3">
-          <RequiredLabel htmlFor="exhibition-subtitle">
-            전시 부제목
-          </RequiredLabel>
+          <RequiredLabel htmlFor="exhibition-subtitle">전시 부제목</RequiredLabel>
           <input
             id="exhibition-subtitle"
             value={subtitle}
@@ -113,12 +111,7 @@ export function ExhibitionRegister() {
             aria-labelledby="exhibition-field-label"
           >
             {EXHIBITION_FIELDS.map((f) => (
-              <Chip
-                key={f}
-                label={f}
-                selected={field === f}
-                onClick={() => setField(f)}
-              />
+              <Chip key={f} label={f} selected={field === f} onClick={() => setField(f)} />
             ))}
           </div>
         </div>
