@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 
 import {
   AffiliationInput,
@@ -91,15 +91,14 @@ export function ExhibitionRegister() {
             aria-labelledby="exhibition-type-label"
           >
             {EXHIBITION_TYPES.map((t, index) => (
-              <>
+              <Fragment key={t.label}>
                 <Chip
-                  key={t.label}
                   label={t.label}
                   selected={type === t.label}
                   onClick={() => setType(t.label)}
                 />
                 {index === 2 && <div className="basis-full h-0" />}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>
