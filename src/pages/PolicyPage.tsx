@@ -25,7 +25,6 @@ export default function PolicyPage() {
         <div className="typo-body-xl-bold text-main">약관 및 개인정보</div>
       </header>
 
-      {/* List card */}
       <main className="px-5 pt-2">
         <div className="overflow-hidden rounded-2xl bg-card">
           {ITEMS.map((item, i) => (
