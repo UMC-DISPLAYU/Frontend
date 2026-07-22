@@ -11,6 +11,7 @@ import { NotFound } from './pages/NotFound';
 import  SettingPage from './pages/Settingpage';
 import EditBasicInfoPage from './pages/EditBasicInfoPage';
 import EditArtistProfilePage from './pages/EditArtistProfilePage';
+import AnswerQuestions from './pages/AnswerPage';
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
       { path: 'setting', element: <SettingPage /> },
       { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
       { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
+      { path: 'answer-questions', element: <AnswerQuestions /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],

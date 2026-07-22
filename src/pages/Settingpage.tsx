@@ -23,7 +23,7 @@ export default function SettingPage() {
         <SettingSection title="전시 관리">
           <SettingRow title="내 전시 관리" desc="대표자 또는 팀원으로 참여 중인 전시를 관리해요." onClick={() => navigate('/display/manage')} />
           <SettingRow title="초대 요청" desc="받은 전시 초대를 확인해요." badge={1} />
-          <SettingRow title="답변할 질문" desc="내가 담당한 작품 질문에 답변해요." badge={2} />
+          <SettingRow title="답변할 질문" desc="내가 담당한 작품 질문에 답변해요." badge={2} onClick={() => navigate('/answer-questions')} />
           <SettingRow title="전시 등록하기" desc="전시를 직접 등록하려면 작가 인증이 필요해요." onClick={() => navigate('/exhibitions-register')} last />
         </SettingSection>
 
