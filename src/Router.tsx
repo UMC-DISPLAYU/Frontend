@@ -19,7 +19,7 @@ import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
 import { MyRoungePage } from './pages/MyRoungePage';
 import { NotFound } from './pages/NotFound';
-import PolicyPage from './pages/PolicyPage';
+import { PolicyPage } from './pages/PolicyPage';
 import { SettingPage } from './pages/Settingpage';
 
 export const router = createBrowserRouter([
