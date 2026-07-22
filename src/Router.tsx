@@ -9,6 +9,8 @@ import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
+import { ExhibitionReviewDetailPage } from './pages/ExhibitionReviewDetailPage';
+import { ExhibitionReviewPage } from './pages/ExhibitionReviewPage';
 import { Homepage } from './pages/Homepage';
 import { InvitationRequestPage } from './pages/InvitationRequestPage';
 import { LoungePage } from './pages/LoungePage';
@@ -42,6 +44,8 @@ export const router = createBrowserRouter([
       { path: 'my-review', element: <MyReviewPage /> },
       { path: 'my-lounge', element: <MyRoungePage /> },
       { path: 'policy', element: <PolicyPage /> },
+      { path: 'lounge/review', element: <ExhibitionReviewPage /> },
+      { path: 'lounge/review/:id', element: <ExhibitionReviewDetailPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],
