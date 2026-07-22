@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { useHeaderContext } from '@/components/layout/headerContext';
 
