@@ -51,7 +51,7 @@ function ProfilePhotoField({
   );
 }
 
-export default function EditBasicInfoPage() {
+export function EditBasicInfoPage() {
   const navigate = useNavigate();
   const { setHeader, resetHeader } = useHeaderContext();
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -71,20 +71,8 @@ export default function EditBasicInfoPage() {
   };
 
   return (
-    <div className="flex min-h-dvh w-full flex-col bg-page">
-      <header className="sticky top-0 z-10 flex items-center gap-3 bg-page px-5 pb-3 pt-4">
-        <button
-          type="button"
-          aria-label="뒤로 가기"
-          onClick={() => navigate(-1)}
-          className="-ml-1 flex size-7 items-center justify-center text-main"
-        >
-          <ChevronLeft className="size-5" strokeWidth={2} />
-        </button>
-        <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>
-      </header>
-
-      <main className="flex-1 overflow-y-auto px-5 pb-40">
+    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-40">
         <div className="mt-10 flex justify-center">
           <ProfilePhotoField image={profileImage} onChange={setProfileImage} />
         </div>

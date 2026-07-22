@@ -1,17 +1,20 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { Layout } from './components/layout';
+import { AnswerPage } from './pages/AnswerPage';
 import { AuthPage } from './pages/AuthPage';
+import { DisplayAcceptPage } from './pages/DisplayAcceptPage';
+import { DisplayArtistNamePage } from './pages/DisplayArtistNamePage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
+import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
+import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { Homepage } from './pages/Homepage';
+import { InvitationRequestPage } from './pages/InvitationRequestPage';
 import { LoungePage } from './pages/LoungePage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
-import  SettingPage from './pages/Settingpage';
-import EditBasicInfoPage from './pages/EditBasicInfoPage';
-import EditArtistProfilePage from './pages/EditArtistProfilePage';
-import AnswerQuestions from './pages/AnswerPage';
+import { SettingPage } from './pages/Settingpage';
 
 export const router = createBrowserRouter([
   {
@@ -27,7 +30,10 @@ export const router = createBrowserRouter([
       { path: 'setting', element: <SettingPage /> },
       { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
       { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
-      { path: 'answer-questions', element: <AnswerQuestions /> },
+      { path: 'answer-questions', element: <AnswerPage /> },
+      { path: 'invitation-request', element: <InvitationRequestPage /> },
+      { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
+      { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],

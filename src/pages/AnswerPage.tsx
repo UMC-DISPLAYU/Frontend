@@ -133,7 +133,7 @@ function Tabs({ value, onChange }: TabsProps) {
   );
 }
 
-export default function AnswerPage() {
+export function AnswerPage() {
   const navigate = useNavigate();
   const { setHeader, resetHeader } = useHeaderContext();
   const [tab, setTab] = useState<TabKey>('done');
@@ -151,25 +151,12 @@ export default function AnswerPage() {
   };
 
   return (
-    <div className="flex min-h-dvh w-full flex-col overflow-hidden bg-gray">
-      <header className="inline-flex h-9 items-center justify-between px-5 mt-14.5">
-        <div className="flex h-9 items-center justify-start gap-3">
-          <button
-            type="button"
-            aria-label="뒤로 가기"
-            onClick={() => navigate(-1)}
-            className="flex size-7 items-center justify-center text-main"
-          >
-            <ChevronLeft className="size-5" strokeWidth={2.2} />
-          </button>
-          <h1 className="typo-body-xl-bold text-main">답변할 질문</h1>
-        </div>
-      </header>
+    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col overflow-hidden">
       <div className="mt-3">
         <Tabs value={tab} onChange={setTab} />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-5">
+      <section className="flex-1 min-h-0 overflow-y-auto px-5 py-5">
         <div className="flex flex-col gap-[10px]">
           {items.length === 0 ? (
             <div className="py-20 text-center typo-body-sm-regular text-faint">
@@ -179,7 +166,7 @@ export default function AnswerPage() {
             items.map((item) => <QuestionCard key={item.id} item={item} />)
           )}
         </div>
-      </div>
+      </section>
 
       <div className="bg-gradient-to-b from-transparent via-page/75 to-page px-5 pb-2 pt-3">
         <button
