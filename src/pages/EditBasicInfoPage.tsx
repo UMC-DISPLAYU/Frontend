@@ -58,7 +58,7 @@ export function EditBasicInfoPage() {
   const [activityName, setActivityName] = useState('');
 
   useEffect(() => {
-    setHeader({ title: '기본 정보 수정' });
+    setHeader({ title: '' });
     return () => resetHeader();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -72,6 +72,18 @@ export function EditBasicInfoPage() {
 
   return (
     <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+      <header className="flex items-center gap-3 px-5 pt-4 pb-3">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="뒤로가기"
+          className="-ml-1"
+        >
+          <ChevronLeft className="size-7 text-main" strokeWidth={2} />
+        </button>
+        <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>
+      </header>
+
       <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-40">
         <div className="mt-10 flex justify-center">
           <ProfilePhotoField image={profileImage} onChange={setProfileImage} />

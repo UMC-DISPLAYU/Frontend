@@ -13,7 +13,11 @@ import { Homepage } from './pages/Homepage';
 import { InvitationRequestPage } from './pages/InvitationRequestPage';
 import { LoungePage } from './pages/LoungePage';
 import { MyPage } from './pages/MyPage';
+import { MyQuestionsPage } from './pages/MyQuestionsPage';
+import { MyReviewPage } from './pages/MyReviewPage';
+import { MyRoungePage } from './pages/MyRoungePage';
 import { NotFound } from './pages/NotFound';
+import PolicyPage from './pages/PolicyPage';
 import { SettingPage } from './pages/Settingpage';
 
 export const router = createBrowserRouter([
@@ -34,6 +38,10 @@ export const router = createBrowserRouter([
       { path: 'invitation-request', element: <InvitationRequestPage /> },
       { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
       { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },
+      { path: 'my-questions', element: <MyQuestionsPage /> },
+      { path: 'my-review', element: <MyReviewPage /> },
+      { path: 'my-lounge', element: <MyRoungePage /> },
+      { path: 'policy', element: <PolicyPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],

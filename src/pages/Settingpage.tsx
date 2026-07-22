@@ -37,15 +37,16 @@ export function SettingPage() {
         </SettingSection>
 
         <SettingSection title="내 활동">
-          <SettingRow title="내 라운지 활동" desc="작성한 글, 댓글, 스크랩을 확인해요." />
-          <SettingRow title="내가 남긴 감상" desc="전시 후기와 방명록을 모아봐요." />
-          <SettingRow title="내가 한 질문" desc="작품에 남긴 질문과 답변 상태를 확인해요." last />
+          <SettingRow title="내 라운지 활동" desc="작성한 글, 댓글, 스크랩을 확인해요." onClick={() => navigate('/my-lounge')} />
+          <SettingRow title="내가 남긴 감상" desc="전시 후기와 방명록을 모아봐요." onClick={() => navigate('/my-review')} />
+          <SettingRow title="내가 한 질문" desc="작품에 남긴 질문과 답변 상태를 확인해요." onClick={() => navigate('/my-questions')} last />
         </SettingSection>
 
         <SettingSection title="서비스 및 계정">
           <button
             type="button"
             className="flex h-14 w-full items-center justify-between px-4"
+            onClick={() => navigate('/policy')}
           >
             <span className="typo-body-sm-semibold text-sub600">약관 및 개인정보</span>
             <ChevronRight className="size-5 text-faint" strokeWidth={1.67} />
