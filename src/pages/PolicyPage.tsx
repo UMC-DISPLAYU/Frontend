@@ -8,7 +8,7 @@ const ITEMS = [
   { label: '개인정보 처리방침', href: '#' },
 ];
 
-export default function PolicyPage() {
+export function PolicyPage() {
   const navigate = useNavigate();
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-page">
