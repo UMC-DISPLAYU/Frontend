@@ -6,7 +6,12 @@ import { Navbar } from './Navbar';
 
 function LayoutContent() {
   const location = useLocation();
-  const hideNavbarPaths = ['/display/', '/artwork/', '/exhibition-register/'];
+  const hideNavbarPaths = [
+    '/display/',
+    '/artwork/',
+    '/exhibition-register/',
+    '/lounge/review/write',
+  ];
   const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
 
   return (

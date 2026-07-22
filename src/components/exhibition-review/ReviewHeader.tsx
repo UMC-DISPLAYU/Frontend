@@ -19,7 +19,11 @@ export function ReviewHeader({ showWriteButton = true, className = '' }: Props) 
       </div>
 
       {showWriteButton && (
-        <button type="button" className="w-10 flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={() => navigate('/lounge/review/write')}
+          className="w-10 flex flex-col items-center gap-1"
+        >
           <SquarePen className="size-3.5 text-faint" />
           <span className="typo-body-xs-regular text-faint">글 작성</span>
         </button>
