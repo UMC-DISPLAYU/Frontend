@@ -8,6 +8,7 @@ import { Homepage } from './pages/Homepage';
 import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
 import { LoungeBoardPage } from './pages/LoungeBoardPage';
 import { LoungePage } from './pages/LoungePage';
+import { MyActivityPage } from './pages/MyActivityPage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
 
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
+      { path: 'lounge/my-activity', element: <MyActivityPage /> },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
       { path: 'lounge/:category/:id', element: <LoungeBoardDetailPage /> },
       // 새 페이지 여기에 추가
