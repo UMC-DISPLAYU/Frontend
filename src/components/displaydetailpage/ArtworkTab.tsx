@@ -10,7 +10,10 @@ function ArtworkCard({ item }: ArtworkCardProps) {
   const navigate = useNavigate();
 
   return (
-    <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col px-2 py-3">
+    <article
+      className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col px-2 py-3 cursor-pointer"
+      onClick={() => navigate(`/artwork/${item.id}`)}
+    >
       <div className="aspect-square w-full rounded-xl overflow-hidden bg-page">
         <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
       </div>
