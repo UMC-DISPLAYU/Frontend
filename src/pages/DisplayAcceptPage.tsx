@@ -131,15 +131,6 @@ export function DisplayAcceptPage() {
       </div>
 
       <div className="flex flex-col gap-2 px-5 pb-8 pt-4">
-        <button
-          type="button"
-          onClick={handleComplete}
-          className="typo-body-sm-bold w-full rounded-xl bg-bt-black py-3.5 text-white"
-        >
-          참여 완료하기
-        </button>
-
-        {!isVerified && (
           <button
             type="button"
             onClick={handleGoManage}
@@ -147,7 +138,7 @@ export function DisplayAcceptPage() {
           >
             내 전시 관리로 이동
           </button>
-        )}
+
       </div>
     </div>
   );
