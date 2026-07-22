@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
 
@@ -16,15 +16,15 @@ export default function SettingPage() {
 
       <div className="flex flex-col gap-8 px-5 pb-10">
         <SettingSection title="프로필 및 계정">
-          <SettingRow title="기본 정보 수정" desc="프로필 이미지와 닉네임을 수정해요." />
-          <SettingRow title="작가 프로필 편집" desc="공개 작가 프로필명과 소개 정보를 수정해요." last />
+          <SettingRow title="기본 정보 수정" desc="프로필 이미지와 닉네임을 수정해요." onClick={() => navigate('/edit-basic-info')} />
+          <SettingRow title="작가 프로필 편집" desc="공개 작가 프로필명과 소개 정보를 수정해요." onClick={() => navigate('/edit-artist-profile')} last />
         </SettingSection>
 
         <SettingSection title="전시 관리">
-          <SettingRow title="내 전시 관리" desc="대표자 또는 팀원으로 참여 중인 전시를 관리해요." />
+          <SettingRow title="내 전시 관리" desc="대표자 또는 팀원으로 참여 중인 전시를 관리해요." onClick={() => navigate('/display/manage')} />
           <SettingRow title="초대 요청" desc="받은 전시 초대를 확인해요." badge={1} />
           <SettingRow title="답변할 질문" desc="내가 담당한 작품 질문에 답변해요." badge={2} />
-          <SettingRow title="전시 등록하기" desc="새로운 전시를 직접 등록해요." last />
+          <SettingRow title="전시 등록하기" desc="전시를 직접 등록하려면 작가 인증이 필요해요." onClick={() => navigate('/exhibitions-register')} last />
         </SettingSection>
 
         <SettingSection title="내 활동">

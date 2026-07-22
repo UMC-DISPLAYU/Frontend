@@ -8,7 +8,9 @@ import { Homepage } from './pages/Homepage';
 import { LoungePage } from './pages/LoungePage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
-import  SettingPage  from './pages/Settingpage';
+import  SettingPage from './pages/Settingpage';
+import EditBasicInfoPage from './pages/EditBasicInfoPage';
+import EditArtistProfilePage from './pages/EditArtistProfilePage';
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +24,8 @@ export const router = createBrowserRouter([
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'setting', element: <SettingPage /> },
+      { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
+      { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],
