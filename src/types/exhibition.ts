@@ -30,6 +30,40 @@ export interface LoungePost {
   views: string;
 }
 
+export interface ExhibitionReviewPost {
+  id: string;
+  tag: string;
+  title: string;
+  description: string;
+  author: string;
+  time: string;
+  commentCount: number;
+  images?: string[];
+}
+
+export interface ExhibitionReviewComment {
+  id: string;
+  author: string;
+  time: string;
+  content: string;
+  likeCount: number;
+  isLiked: boolean;
+}
+
+export interface ExhibitionReviewDetail {
+  id: string;
+  tag: string;
+  title: string;
+  author: string;
+  date: string;
+  content: string[];
+  likeCount: number;
+  isLiked: boolean;
+  isSaved: boolean;
+  images?: string[];
+  comments: ExhibitionReviewComment[];
+}
+
 // ─── Detail Types ──────────────────────────────────────────────────────────
 
 export type DetailTabKey = 'intro' | 'artwork' | 'review';

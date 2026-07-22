@@ -14,7 +14,7 @@ function ExhibitionCard({ item }: { item: ExhibitionCardData }) {
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && navigate(`/display/${item.id}`)}
     >
-      <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden bg-box">
+      <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden bg-box200">
         {item.thumbnail ? (
           <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
         ) : null}

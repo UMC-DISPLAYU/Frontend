@@ -52,7 +52,7 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
       {imageUrls.map((url, index) => (
         <div
           key={index}
-          className="relative size-24 bg-neutral-50 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-300 overflow-hidden"
+          className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
         >
           <img
             src={url}
@@ -75,10 +75,10 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
         <button
           type="button"
           onClick={handleImageClick}
-          className="size-24 bg-neutral-50 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-300 flex flex-col items-center justify-center gap-3"
+          className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
           aria-label="이미지 업로드"
         >
-          <div className="size-10 bg-gray-100 rounded-full flex items-center justify-center">
+          <div className="size-10 bg-box rounded-full flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <rect
                 x="2.25"
@@ -99,7 +99,7 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
               <circle cx="6" cy="6" r="1" stroke="#d4d4d4" strokeWidth="1.5" />
             </svg>
           </div>
-          <span className="text-neutral-900 text-xs">
+          <span className="text-main typo-body-xs-regular">
             {imageUrls.length}/{maxImages}
           </span>
         </button>

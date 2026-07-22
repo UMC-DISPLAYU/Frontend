@@ -5,8 +5,8 @@ import type {
   DuPickItem,
   ExhibitionCardData,
   ExhibitionDetail,
-  GuestbookQuestion,
-  GuestbookReview,
+  ExhibitionReviewDetail,
+  ExhibitionReviewPost,
   LoungePost,
   ReviewItem,
 } from '@/types/exhibition';
@@ -37,9 +37,9 @@ export const EXHIBITION_DETAILS: Record<string, ExhibitionDetail> = {
       'https://picsum.photos/seed/ct3/400/300',
     ],
     notices: [
-      '관람료는 사전에 예약하시면 16:00까지만 입장이 가능합니다.',
-      '전시품 손수건 임의로 접지하시면 안됩니다.',
-      '날씨에 문제 발생 시 다른 다른 3 일정이 있으실 경우에는 확인해주세요.',
+      '금요일은 전시 마감으로 16:00까지만 진행합니다.',
+      '작품을 손으로 만지지 말아주세요.',
+      '날짜별 운영 시간이 다를 수 있으니 방문 전 확인해주세요.',
     ],
     host: '중앙대학교 OO동아리',
     sns: '@displayu_oo (인스타그램 DM)',
@@ -215,6 +215,174 @@ export const LOUNGE_POSTS: LoungePost[] = [
     views: '댓글 6',
   },
 ];
+
+export const EXHIBITION_REVIEW_POSTS: ExhibitionReviewPost[] = [
+  {
+    id: '1',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '2',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+    images: [
+      'https://placehold.co/112x128',
+      'https://placehold.co/112x128',
+      'https://placehold.co/112x128',
+    ],
+  },
+  {
+    id: '3',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '4',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '5',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+];
+
+const REVIEW_DETAIL_CONTENT = [
+  '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었어요.',
+  '특히 빛과 그림자를 활용한 작품들이 정말 인상적이었고, 전시장 자체가 사진 찍기 좋게 구성되어 있어서 인증샷 남기기에도 좋더라구요.',
+  '도슨트 시간에 맞춰서 갔는데 정말 잘한 선택이었어요. 작품만 봤을 때는 이해가 어려웠던 부분들이 설명을 듣고 나니 확 와닿더라구요.',
+  '평일 오후에 방문했는데 사람도 많지 않아서 조용하게 관람할 수 있었어요. 전시 기간이 얼마 남지 않았으니 관심 있으신 분들은 서두르세요!',
+];
+
+const REVIEW_DETAIL_COMMENTS = [
+  {
+    id: '1',
+    author: '미술애호가',
+    time: '1시간 전',
+    content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
+    likeCount: 5,
+    isLiked: false,
+  },
+  {
+    id: '2',
+    author: '미술애호가',
+    time: '1시간 전',
+    content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
+    likeCount: 5,
+    isLiked: false,
+  },
+  {
+    id: '3',
+    author: '미술애호가',
+    time: '1시간 전',
+    content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
+    likeCount: 5,
+    isLiked: false,
+  },
+  {
+    id: '4',
+    author: '미술애호가',
+    time: '1시간 전',
+    content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
+    likeCount: 5,
+    isLiked: false,
+  },
+];
+
+export const EXHIBITION_REVIEW_DETAILS: Record<string, ExhibitionReviewDetail> = {
+  '1': {
+    id: '1',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: REVIEW_DETAIL_COMMENTS,
+  },
+  '2': {
+    id: '2',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    images: [
+      'https://placehold.co/214x139',
+      'https://placehold.co/218x137',
+      'https://placehold.co/218x137',
+    ],
+    comments: REVIEW_DETAIL_COMMENTS,
+  },
+  '3': {
+    id: '3',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: REVIEW_DETAIL_COMMENTS,
+  },
+  '4': {
+    id: '4',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: REVIEW_DETAIL_COMMENTS,
+  },
+  '5': {
+    id: '5',
+    tag: '전시 후기',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: REVIEW_DETAIL_COMMENTS,
+  },
+};
 
 // ─── 작품·후기 데이터 ────────────────────────────────────────────────────────
 
