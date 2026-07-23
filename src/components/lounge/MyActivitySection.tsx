@@ -5,11 +5,11 @@ import loungeVenueThumbnail from '@/assets/LoungeVenueThumbnail.svg';
 
 import { LoungeCard } from './LoungeCard';
 
-const ACTIVITY_CARDS = [
+const ACTIVITY_CARDS: { image?: string; title: string; tab: string }[] = [
   { image: loungeVenueThumbnail, title: '작성한 글', tab: 'written' },
   { title: '내 댓글', tab: 'comments' },
   { title: '스크랩', tab: 'scraps' },
-] as const;
+];
 
 export function MyActivitySection() {
   const navigate = useNavigate();
