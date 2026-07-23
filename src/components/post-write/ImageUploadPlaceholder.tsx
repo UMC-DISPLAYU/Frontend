@@ -4,54 +4,64 @@ import { Image } from 'lucide-react';
 
 type Props = {
   maxImages?: number;
+  onFilesChange?: (files: File[]) => void;
 };
 
-export function ImageUploadPlaceholder({ maxImages = 4 }: Props) {
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+export function ImageUploadPlaceholder({ maxImages = 4, onFilesChange }: Props) {
+  const [items, setItems] = useState<{ file: File; url: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
-      imageUrls.forEach((url) => URL.revokeObjectURL(url));
+      items.forEach(({ url }) => URL.revokeObjectURL(url));
     };
-  }, [imageUrls]);
+  }, [items]);
 
   const handleUploadClick = useCallback(() => {
-    if (imageUrls.length < maxImages) {
+    if (items.length < maxImages) {
       fileInputRef.current?.click();
     }
-  }, [imageUrls.length, maxImages]);
+  }, [items.length, maxImages]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (!files) return;
 
-      const remainingSlots = maxImages - imageUrls.length;
-      const filesToAdd = Math.min(files.length, remainingSlots);
-      const newUrls = Array.from({ length: filesToAdd }, (_, i) => URL.createObjectURL(files[i]));
+      const remainingSlots = maxImages - items.length;
+      const filesToAdd = Array.from(files)
+        .slice(0, remainingSlots)
+        .map((file) => ({ file, url: URL.createObjectURL(file) }));
 
-      setImageUrls((prev) => [...prev, ...newUrls]);
+      setItems((prev) => {
+        const next = [...prev, ...filesToAdd];
+        onFilesChange?.(next.map((item) => item.file));
+        return next;
+      });
 
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     },
-    [imageUrls.length, maxImages],
+    [items.length, maxImages, onFilesChange],
   );
 
-  const handleRemoveImage = useCallback((index: number) => {
-    setImageUrls((prev) => {
-      const newUrls = [...prev];
-      URL.revokeObjectURL(newUrls[index]);
-      newUrls.splice(index, 1);
-      return newUrls;
-    });
-  }, []);
+  const handleRemoveImage = useCallback(
+    (index: number) => {
+      setItems((prev) => {
+        const next = [...prev];
+        URL.revokeObjectURL(next[index].url);
+        next.splice(index, 1);
+        onFilesChange?.(next.map((item) => item.file));
+        return next;
+      });
+    },
+    [onFilesChange],
+  );
 
   return (
     <div className="flex gap-2 flex-wrap">
-      {imageUrls.map((url, index) => (
+      {items.map(({ url }, index) => (
         <div
           key={index}
           className="relative size-24 bg-neutral-50 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-300 overflow-hidden"
@@ -73,7 +83,7 @@ export function ImageUploadPlaceholder({ maxImages = 4 }: Props) {
           </button>
         </div>
       ))}
-      {imageUrls.length < maxImages && (
+      {items.length < maxImages && (
         <button
           type="button"
           onClick={handleUploadClick}
