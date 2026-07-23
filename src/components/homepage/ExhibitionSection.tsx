@@ -46,7 +46,7 @@ export function ExhibitionSection({ title, items }: Props) {
       <SectionHeader title={title} />
       <div className="grid grid-cols-3 gap-2 px-4">
         {items.map((item) => (
-          <ExhibitionCard key={item.id} item={item} />
+          <ExhibitionCard key={item.displayId} item={item} />
         ))}
       </div>
     </section>
