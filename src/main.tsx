@@ -11,7 +11,7 @@ import { queryClient } from './queryClient';
 import { router } from './Router';
 
 const enableMocking = async () => {
-  if (!import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK !== 'true') {
+  if (import.meta.env.VITE_ENABLE_MOCK !== 'true') {
     return;
   }
 
