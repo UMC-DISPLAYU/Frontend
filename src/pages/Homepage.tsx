@@ -30,11 +30,15 @@ export const Homepage = () => {
   return (
     <div className="w-full max-w-105 mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5 font-[Pretendard,sans-serif]">
       <DuPickBanner items={duPicksData?.duPicks ?? []} />
-      <ExhibitionSection title="졸업전시" items={graduationExhibitions} linkTo="/search" />
+      <ExhibitionSection
+        title="졸업전시"
+        items={graduationExhibitions}
+        linkTo="/search?type=졸업 전시"
+      />
       <ExhibitionSection
         title="놓치기 전에 볼 전시"
         items={closingSoonExhibitions}
-        linkTo="/search"
+        linkTo="/search?status=종료예정"
       />
       <ArtworkPreviewSection
         items={artworkPreviewItems}

@@ -22,7 +22,7 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
 
   return (
     <section className="mb-7">
-      <SectionHeader title="작품 미리보기" onLinkClick={onMoreClick} />
+      <SectionHeader title="작품" onLinkClick={onMoreClick} />
       <div
         ref={scrollRef}
         onWheel={handleWheel}
