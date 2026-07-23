@@ -40,8 +40,10 @@ export function ExhibitionReviewWritePage() {
       });
 
       setIsSubmitted(true);
-    } catch {
-      setSubmitError('후기 등록에 실패했습니다. 다시 시도해주세요.');
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      setSubmitError(`후기 등록에 실패했습니다. (${message})`);
     }
   };
 
