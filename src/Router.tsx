@@ -14,9 +14,9 @@ import { LoungePage } from './pages/LoungePage';
 import { MyActivityPage } from './pages/MyActivityPage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
+import { SearchPage } from './pages/SearchPage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
-import { SearchPage } from './pages/SearchPage';
 
 export const router = createBrowserRouter([
   {
@@ -30,8 +30,6 @@ export const router = createBrowserRouter([
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
-      { path: 'lounge/review', element: <ExhibitionReviewPage /> },
-      { path: 'lounge/review/:id', element: <ExhibitionReviewDetailPage /> },
       { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },
       { path: 'exhibition/artist', element: <ArtistNameSetup /> },
       { path: 'exhibition/manage', element: <ExhibitionManage /> },

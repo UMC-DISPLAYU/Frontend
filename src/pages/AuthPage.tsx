@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -26,9 +26,6 @@ export function AuthPage() {
         onRefresh={() => navigate('/my')}
         onRegister={() => {
           // TODO: 전시/작품 등록 플로우 연결
-        }}
-        onManage={() => {
-          // TODO: 전시/작품 관리 플로우 연결
         }}
         onShare={() => {
           // TODO: 프로필 공유 동작 연결

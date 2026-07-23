@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, Copy, Link2, Search, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 
 type MemberStatus = 'owner' | 'verified' | 'unverified' | 'pending';
 
@@ -88,16 +87,10 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 export function TeamManage() {
   const navigate = useNavigate();
-  const { setHeader, resetHeader } = useHeaderContext();
   const [query, setQuery] = useState('');
   const [linkEnabled, setLinkEnabled] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const members = MEMBERS.filter(
     (m) => m.name.includes(query.trim()) || m.nickname.includes(query.trim()),

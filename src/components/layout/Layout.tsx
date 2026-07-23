@@ -5,12 +5,12 @@ import { Navbar } from './Navbar';
 
 function LayoutContent() {
   const location = useLocation();
-  const hideNavbarPaths = ['/display/', '/artwork/', '/exhibition-register/'];
+  const hideNavbarPaths = ['/display/', '/artwork/', '/exhibition-register/', '/exhibition/', '/team/'];
   const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
-      <main className="flex-1 pb-20 md:pb-24 lg:pb-28">
+      <main className={shouldHideNavbar ? "flex-1" : "pb-20 md:pb-24 lg:pb-28"}>
         <Outlet />
       </main>
       <FNB />

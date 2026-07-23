@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import {
   formatStartDate,
   VISIBILITY_LABEL,
@@ -51,7 +50,6 @@ interface VisibilityState {
 export function VisibilitySettings() {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: VisibilityState | null };
-  const { setHeader, resetHeader } = useHeaderContext();
 
   const startDateLabel = formatStartDate(state?.startDate);
 
@@ -59,11 +57,6 @@ export function VisibilitySettings() {
     state?.artworkVisibility ?? 'startDate',
   );
 
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const save = () => {
     // 뒤로 돌아가면서 선택값을 전시관리 화면에 전달한다

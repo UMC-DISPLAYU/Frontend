@@ -1,6 +1,7 @@
 interface SettingsSheetProps {
   open: boolean;
   onClose: () => void;
+  onSelect: (key: string) => void;
 }
 
 export function SettingsSheet({ open, onClose }: SettingsSheetProps) {

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, Info } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 
 interface SummaryRowProps {
   label: string;
@@ -22,13 +21,10 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 export function ArtistNameSetup() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { setHeader, resetHeader } = useHeaderContext();
   const [artistName, setArtistName] = useState('');
 
   useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const info = {

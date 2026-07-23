@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import { VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
 
 interface StatPillProps {
@@ -41,13 +40,7 @@ function OutlineButton({ children, onClick, weight = 'bold' }: OutlineButtonProp
 export function ExhibitionManage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { setHeader, resetHeader } = useHeaderContext();
 
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const exhibition = {
     title: state?.placeName || '형태의 침묵',
@@ -182,7 +175,7 @@ const goVisibility = () => {
         </div>
       </div>
 
-      <div className="flex gap-2.5 border-t border-line bg-card px-5 pt-4 pb-8 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <div className="sticky bottom-0 flex gap-2.5 border-t border-line bg-card px-5 pt-4 pb-8 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
         <button
           type="button"
           className="typo-body-sm-bold h-11 w-24 shrink-0 rounded-xl bg-bt-gray text-main"

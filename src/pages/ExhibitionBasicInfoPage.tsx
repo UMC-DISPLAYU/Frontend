@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Calendar, ChevronLeft, Clock, MapPin } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import { CalenderSheet } from '@/components/ui/CalenderSheet';
 import { TimeSheet } from '@/components/ui/TimeSheet';
 
@@ -42,7 +41,6 @@ type SheetType = 'date' | 'time-start' | 'time-end' | null;
 export function ExhibitionBasicInfo() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { setHeader, resetHeader } = useHeaderContext();
 
   const [period, setPeriod] = useState<DateValue | null>(null);
   const [openStart, setOpenStart] = useState<TimeValue | null>(null);
@@ -54,11 +52,7 @@ export function ExhibitionBasicInfo() {
 
   const [sheet, setSheet] = useState<SheetType>(null);
 
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
 
   const canNext = period && placeName.trim() && address.trim();
 
@@ -220,7 +214,7 @@ export function ExhibitionBasicInfo() {
         </div>
       </div>
 
-      <div className="border-t border-line bg-card px-5 pt-4 pb-8 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <div className="sticky bottom-0 border-t border-line bg-card px-5 pt-4 pb-8 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
         <button
           type="button"
           disabled={!canNext}
