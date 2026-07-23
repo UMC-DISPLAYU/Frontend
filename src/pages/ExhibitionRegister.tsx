@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   AffiliationInput,
@@ -30,6 +31,8 @@ export function ExhibitionRegister() {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
     return found?.group ?? null;
   }, [type]);
+
+  const usenavigate = useNavigate();
 
   return (
     <div className="w-full bg-page relative flex flex-col h-screen">
@@ -139,6 +142,7 @@ export function ExhibitionRegister() {
         <div className="px-5 pt-4 pb-4">
           <button
             type="button"
+            onClick={() => usenavigate('/exhibition/basic')}
             className="w-full py-3 bg-dark rounded-xl text-card typo-body-sm-bold leading-5"
           >
             다음

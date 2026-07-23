@@ -10,6 +10,11 @@ import { Homepage } from './pages/Homepage';
 import { LoungePage } from './pages/LoungePage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
+import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
+import { ArtistNameSetup } from './pages/ArtistNameSetup';
+import { ExhibitionManage } from './pages/ExhibitioionManagePage';
+import { TeamManage } from './pages/TeamManagePage';
+import { VisibilitySettings } from './pages/VisibilitysettingsPage';
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +29,11 @@ export const router = createBrowserRouter([
       { path: 'lounge', element: <LoungePage /> },
       { path: 'lounge/review', element: <ExhibitionReviewPage /> },
       { path: 'lounge/review/:id', element: <ExhibitionReviewDetailPage /> },
+      { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },
+      { path: 'exhibition/artist', element: <ArtistNameSetup /> },
+      { path: 'exhibition/manage', element: <ExhibitionManage /> },
+      { path: 'exhibition/visibility', element: <VisibilitySettings /> },
+      { path: 'team/manage', element: <TeamManage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],
