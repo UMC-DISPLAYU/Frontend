@@ -1,6 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+
 import { ChevronLeft, Copy, Link2, Search, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+import { useHeaderContext } from '@/components/layout/headerContext';
 
 type MemberStatus = 'owner' | 'verified' | 'unverified' | 'pending';
 
@@ -85,9 +88,16 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 export function TeamManage() {
   const navigate = useNavigate();
+  const { setHeader, resetHeader } = useHeaderContext();
   const [query, setQuery] = useState('');
   const [linkEnabled, setLinkEnabled] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setHeader({ title: '' });
+    return () => resetHeader();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const members = MEMBERS.filter(
     (m) => m.name.includes(query.trim()) || m.nickname.includes(query.trim()),
@@ -104,16 +114,21 @@ export function TeamManage() {
   };
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-md flex-col bg-page">
-      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-5 pb-3 pt-14.5">
-        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
+    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-5 pt-14.5 pb-3">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="뒤로가기"
+          className="-ml-1"
+        >
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <div className="typo-body-xl-bold text-center text-main">팀원 초대/관리</div>
         <div className="size-7" />
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 pt-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3 pb-8">
         {/* 닉네임 검색 */}
         <div className="flex h-10 items-center gap-2 rounded-xl bg-box px-5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.10),inset_-1px_-1px_1px_0px_rgba(255,255,255,1)]">
           <input

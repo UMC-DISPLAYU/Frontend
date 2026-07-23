@@ -1,25 +1,14 @@
-import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+
 import { ChevronLeft } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-export type VisibilityType = 'immediate' | 'startDate' | 'hidden';
-
-export const VISIBILITY_LABEL: Record<VisibilityType, string> = {
-  immediate: '전시 등록과 동시에 공개',
-  startDate: '전시 시작일에 공개',
-  hidden: '숨김',
-};
-
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
-
-/** Date → "2026.06.10 (수)" */
-export function formatStartDate(date?: Date | string | null) {
-  if (!date) return null;
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (Number.isNaN(d.getTime())) return null;
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} (${WEEKDAYS[d.getDay()]})`;
-}
+import { useHeaderContext } from '@/components/layout/headerContext';
+import {
+  formatStartDate,
+  VISIBILITY_LABEL,
+  type VisibilityType,
+} from '@/constants/visibility';
 
 interface RadioOptionProps {
   checked: boolean;
@@ -62,13 +51,19 @@ interface VisibilityState {
 export function VisibilitySettings() {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: VisibilityState | null };
+  const { setHeader, resetHeader } = useHeaderContext();
 
-  // 전시 기본 정보에서 넘어온 시작일
   const startDateLabel = formatStartDate(state?.startDate);
 
   const [selected, setSelected] = useState<VisibilityType>(
     state?.artworkVisibility ?? 'startDate',
   );
+
+  useEffect(() => {
+    setHeader({ title: '' });
+    return () => resetHeader();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const save = () => {
     // 뒤로 돌아가면서 선택값을 전시관리 화면에 전달한다
@@ -79,16 +74,21 @@ export function VisibilitySettings() {
   };
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-md flex-col bg-page">
-      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-5 pb-3 pt-4">
-        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
+    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+      <header className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-5 pt-14.5 pb-3">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="뒤로가기"
+          className="-ml-1"
+        >
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <div className="typo-body-xl-bold text-center text-main">공개 설정</div>
         <div className="size-7" />
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3 pb-6">
         {/* 상단 안내 */}
         <div className="flex flex-col gap-1">
           <h2 className="typo-body-md-bold text-main">공개 시점 설정</h2>

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect,useRef, useState } from 'react';
 
-import { BottomSheet } from './BottomSheet';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 
 const SIZE = 288;
 const C = SIZE / 2;
@@ -35,11 +35,15 @@ export function TimeSheet({ open, onClose, value, onConfirm, subtitle }: TimeShe
   // 열릴 때마다 외부 값과 동기화
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHour(value?.hour ?? 9);
+     
     setMinute(value?.minute ?? 0);
+     
     setPeriod(value?.period ?? 'AM');
+     
     setMode('hour');
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, value]);
 
   const applyAngle = (clientX: number, clientY: number, which: Mode) => {
     const el = clockRef.current;
@@ -89,6 +93,22 @@ export function TimeSheet({ open, onClose, value, onConfirm, subtitle }: TimeShe
     applyAngle(e.clientX, e.clientY, mode);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const delta = e.key === 'ArrowUp' ? 1 : -1;
+    if (mode === 'minute') {
+      setMinute((m) => (m + delta + 60) % 60);
+    } else {
+      setHour((h) => {
+        const newHour = h + delta;
+        if (newHour < 1) return 12;
+        if (newHour > 12) return 1;
+        return newHour;
+      });
+    }
+  };
+
   const hourAngle = (hour % 12) * 30 + minute * 0.5;
   const minuteAngle = minute * 6;
 
@@ -124,7 +144,7 @@ export function TimeSheet({ open, onClose, value, onConfirm, subtitle }: TimeShe
         </div>
 
         {/* 디지털 표시 — 탭해서 시/분 조작 대상 전환 */}
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2" onKeyDown={handleKeyDown}>
           <button
             type="button"
             onClick={() => setMode('hour')}

@@ -1,20 +1,9 @@
-interface SettingsMenu {
-  key: string;
-  icon: string;
-  iconWrapClass: string;
-  title: string;
-  titleClass: string;
-  description: string;
-  descriptionClass: string;
-}
-
 interface SettingsSheetProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (key: SettingsMenu['key']) => void;
 }
 
-export function SettingsSheet({ open, onClose, onSelect }: SettingsSheetProps) {
+export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   if (!open) return null;
 
   return (

@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -142,7 +143,20 @@ export function ExhibitionRegister() {
         <div className="px-5 pt-4 pb-4">
           <button
             type="button"
-            onClick={() => usenavigate('/exhibition/basic')}
+            onClick={() =>
+              usenavigate('/exhibition/basic', {
+                state: {
+                  title,
+                  subtitle,
+                  intro,
+                  type,
+                  field,
+                  school,
+                  department,
+                  organizer,
+                },
+              })
+            }
             className="w-full py-3 bg-dark rounded-xl text-card typo-body-sm-bold leading-5"
           >
             다음

@@ -1,12 +1,16 @@
 import { useMemo, useState } from 'react';
 
-import { BottomSheet } from './BottomSheet';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const MONTHS_TO_SHOW = 12;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const ymd = (d: Date) => d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate();
+const today = () => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
 
 function formatRange(start: Date | null, end: Date | null) {
   if (!start) return '';
@@ -53,6 +57,7 @@ export function CalenderSheet({ open, onClose, value, onConfirm }: CalenderSheet
   );
 
   const handlePick = (d: Date) => {
+    if (ymd(d) < ymd(today())) return;
     if (!start || (start && end)) {
       setStart(d);
       setEnd(null);
@@ -105,23 +110,27 @@ export function CalenderSheet({ open, onClose, value, onConfirm }: CalenderSheet
               {buildMonthGrid(year, month).map(({ date, inMonth }, i) => {
                 const active = inRange(date);
                 const edge = isEdge(date);
+                const isPast = ymd(date) < ymd(today());
                 return (
                   <button
                     key={i}
                     type="button"
                     onClick={() => handlePick(date)}
-                    className="flex h-9 items-center justify-center"
+                    disabled={isPast}
+                    className="flex h-9 items-center justify-center disabled:cursor-not-allowed"
                   >
                     <span
                       className={[
                         'flex size-8 items-center justify-center rounded-full typo-body-sm-regular',
-                        edge
-                          ? 'bg-dark text-white'
-                          : active
-                            ? 'bg-box200 text-main'
-                            : inMonth
-                              ? 'text-main'
-                              : 'text-faint',
+                        isPast
+                          ? 'text-faint opacity-40'
+                          : edge
+                            ? 'bg-dark text-white'
+                            : active
+                              ? 'bg-box200 text-main'
+                              : inMonth
+                                ? 'text-main'
+                                : 'text-faint',
                       ].join(' ')}
                     >
                       {date.getDate()}

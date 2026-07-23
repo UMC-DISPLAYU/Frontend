@@ -1,8 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { Layout } from './components/layout';
+import { ArtistNameSetup } from './pages/ArtistNameSetup';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
+import { ExhibitionManage } from './pages/ExhibitioionManagePage';
+import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewDetailPage } from './pages/ExhibitionReviewDetailPage';
 import { ExhibitionReviewPage } from './pages/ExhibitionReviewPage';
@@ -10,9 +13,6 @@ import { Homepage } from './pages/Homepage';
 import { LoungePage } from './pages/LoungePage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
-import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
-import { ArtistNameSetup } from './pages/ArtistNameSetup';
-import { ExhibitionManage } from './pages/ExhibitioionManagePage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
 

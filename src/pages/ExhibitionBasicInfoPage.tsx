@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { Calendar, ChevronLeft, Clock, MapPin } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useHeaderContext } from '@/components/layout/headerContext';
-import { CalenderSheet } from './CalenderSheet';
-import { TimeSheet } from './TimeSheet';
+import { CalenderSheet } from '@/components/ui/CalenderSheet';
+import { TimeSheet } from '@/components/ui/TimeSheet';
 
 interface LabelProps {
   children: React.ReactNode;
@@ -40,6 +41,7 @@ type SheetType = 'date' | 'time-start' | 'time-end' | null;
 
 export function ExhibitionBasicInfo() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { setHeader, resetHeader } = useHeaderContext();
 
   const [period, setPeriod] = useState<DateValue | null>(null);
@@ -63,6 +65,7 @@ export function ExhibitionBasicInfo() {
   const goNext = () => {
     navigate('/exhibition/artist', {
       state: {
+        ...state,
         period: period?.label ?? '',
         startDate: period?.start.toISOString() ?? null,
         endDate: period?.end.toISOString() ?? null,
@@ -92,128 +95,132 @@ export function ExhibitionBasicInfo() {
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3">
         <div className="flex flex-col gap-6">
-        {/* 전시기간 */}
-        <div className="flex flex-col gap-3">
-          <Label required>전시기간</Label>
-          <button type="button" onClick={() => setSheet('date')} className={`${inputBox} w-full`}>
-            <Calendar className="size-4 shrink-0 text-main" strokeWidth={1} />
-            <span className={`typo-body-xs-regular ${period ? 'text-main' : 'text-faint'}`}>
-              {period?.label ?? '날짜선택'}
-            </span>
-          </button>
-        </div>
-
-        {/* 운영시간 */}
-        <div className="flex flex-col gap-1.5">
+          {/* 전시기간 */}
           <div className="flex flex-col gap-3">
-            <Label>운영시간</Label>
-            <div className="flex items-start gap-3">
-              <button
-                type="button"
-                onClick={() => setSheet('time-start')}
-                className={`${inputBox} flex-1`}
-              >
-                <Calendar className="size-4 shrink-0 text-main" strokeWidth={1} />
-                <span className={`typo-body-xs-regular ${openStart ? 'text-main' : 'text-faint'}`}>
-                  {openStart?.label ?? '시작 시간'}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSheet('time-end')}
-                className={`${inputBox} flex-1`}
-              >
-                <Clock className="size-4 shrink-0 text-main" strokeWidth={1} />
-                <span className={`typo-body-xs-regular ${openEnd ? 'text-main' : 'text-faint'}`}>
-                  {openEnd?.label ?? '종료시간'}
-                </span>
-              </button>
-            </div>
-          </div>
-          <p className="typo-body-xxs-regular text-faint">
-            날짜별 운영 시간이 다르다면 유의사항에 적어주세요.
-          </p>
-        </div>
-
-        {/* 장소명 */}
-        <div className="flex flex-col gap-3">
-          <Label required>장소명</Label>
-          <div className={inputBox}>
-            <input
-              value={placeName}
-              onChange={(e) => setPlaceName(e.target.value)}
-              placeholder="전시명을 입력해주세요"
-              className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
-            />
-          </div>
-        </div>
-
-        {/* 주소 */}
-        <div className="flex flex-col gap-3">
-          <Label required>주소</Label>
-          <div className="flex items-stretch gap-3">
-            <div className={`${inputBox} flex-1`}>
-              <MapPin className="size-4 shrink-0 text-faint" strokeWidth={1} />
-              <input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="주소를 검색해주세요"
-                className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
-              />
-            </div>
+            <Label required>전시기간</Label>
             <button
               type="button"
-              className="w-14 px-3 py-2.5 typo-body-xs-bold rounded-lg bg-card px-3 outline outline-1 outline-offset-[-1px] outline-sub600 shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)]"
+              onClick={() => setSheet('date')}
+              className={`${inputBox} w-full`}
             >
-              검색
+              <Calendar className="size-4 shrink-0 text-main" strokeWidth={1} />
+              <span className={`typo-body-xs-regular ${period ? 'text-main' : 'text-faint'}`}>
+                {period?.label ?? '날짜선택'}
+              </span>
             </button>
           </div>
-        </div>
 
-        {/* 문의 방법 */}
-        <div className="flex flex-col gap-3">
-          <Label>문의 방법</Label>
+          {/* 운영시간 */}
           <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-3">
+              <Label>운영시간</Label>
+              <div className="flex items-start gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSheet('time-start')}
+                  className={`${inputBox} flex-1`}
+                >
+                  <Calendar className="size-4 shrink-0 text-main" strokeWidth={1} />
+                  <span
+                    className={`typo-body-xs-regular ${openStart ? 'text-main' : 'text-faint'}`}
+                  >
+                    {openStart?.label ?? '시작 시간'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSheet('time-end')}
+                  className={`${inputBox} flex-1`}
+                >
+                  <Clock className="size-4 shrink-0 text-main" strokeWidth={1} />
+                  <span className={`typo-body-xs-regular ${openEnd ? 'text-main' : 'text-faint'}`}>
+                    {openEnd?.label ?? '종료시간'}
+                  </span>
+                </button>
+              </div>
+            </div>
+            <p className="typo-body-xxs-regular text-faint">
+              날짜별 운영 시간이 다르다면 유의사항에 적어주세요.
+            </p>
+          </div>
+
+          {/* 장소명 */}
+          <div className="flex flex-col gap-3">
+            <Label required>장소명</Label>
             <div className={inputBox}>
               <input
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                placeholder="문의 계정 또는 연락처를 입력해주세요"
+                value={placeName}
+                onChange={(e) => setPlaceName(e.target.value)}
+                placeholder="전시명을 입력해주세요"
                 className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
               />
             </div>
-            <p className="typo-body-xs-regular text-faint">
-              @displayu_oo / example@email.com
+          </div>
+
+          {/* 주소 */}
+          <div className="flex flex-col gap-3">
+            <Label required>주소</Label>
+            <div className="flex items-stretch gap-3">
+              <div className={`${inputBox} flex-1`}>
+                <MapPin className="size-4 shrink-0 text-faint" strokeWidth={1} />
+                <input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="주소를 검색해주세요"
+                  className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
+                />
+              </div>
+              <button
+                type="button"
+                className="w-14 typo-body-xs-bold rounded-lg bg-card px-3 py-2.5 outline outline-1 outline-offset-[-1px] outline-sub600 shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)]"
+              >
+                검색
+              </button>
+            </div>
+          </div>
+
+          {/* 문의 방법 */}
+          <div className="flex flex-col gap-3">
+            <Label>문의 방법</Label>
+            <div className="flex flex-col gap-1.5">
+              <div className={inputBox}>
+                <input
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  placeholder="문의 계정 또는 연락처를 입력해주세요"
+                  className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
+                />
+              </div>
+              <p className="typo-body-xs-regular text-faint">@displayu_oo / example@email.com</p>
+            </div>
+          </div>
+
+          {/* 유의사항 */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-3">
+              <Label>유의사항</Label>
+              <div className={`${inputBox} items-start`}>
+                <div className="flex h-28 w-full flex-col justify-between">
+                  <textarea
+                    value={notice}
+                    onChange={(e) => setNotice(e.target.value.slice(0, 500))}
+                    placeholder="관람 전 알아두면 좋은 내용을 입력해주세요"
+                    className="typo-body-xs-regular w-full flex-1 resize-none bg-transparent text-main outline-none placeholder:text-faint"
+                  />
+                  <span className="typo-body-xs-regular self-end text-faint">
+                    {notice.length}/500
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p className="typo-body-xxs-regular text-faint">
+              날짜별 운영 시간이 다르거나 예약, 출입 안내가 있다면 이곳에 적어주세요.
             </p>
           </div>
         </div>
-
-        {/* 유의사항 */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex flex-col gap-3">
-            <Label>유의사항</Label>
-            <div className={`${inputBox} items-start`}>
-              <div className="flex h-28 w-full flex-col justify-between">
-                <textarea
-                  value={notice}
-                  onChange={(e) => setNotice(e.target.value.slice(0, 500))}
-                  placeholder="관람 전 알아두면 좋은 내용을 입력해주세요"
-                  className="typo-body-xs-regular w-full flex-1 resize-none bg-transparent text-main outline-none placeholder:text-faint"
-                />
-                <span className="typo-body-xs-regular self-end text-faint">
-                  {notice.length}/500
-                </span>
-              </div>
-            </div>
-          </div>
-          <p className="typo-body-xxs-regular text-faint">
-            날짜별 운영 시간이 다르거나 예약, 출입 안내가 있다면 이곳에 적어주세요.
-          </p>
-        </div>
-        </div>
       </div>
 
-      <div className="border-t border-line bg-card px-5 pb-8 pt-4 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <div className="border-t border-line bg-card px-5 pt-4 pb-8 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
         <button
           type="button"
           disabled={!canNext}
