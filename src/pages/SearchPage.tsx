@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 
+import { useLocation, useSearchParams } from 'react-router-dom';
+
 import type { SearchDisplaysRequestDto } from '@/api/dto';
 
 import cancelIcon from '../assets/cancel.svg';
@@ -37,16 +39,47 @@ const createSearchDisplayParams = (query: string, filters: FilterState) => {
 };
 
 export function SearchPage() {
+  const location = useLocation();
+  const [urlSearchParams] = useSearchParams();
+
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<ExploreTab>('list');
 
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const paramType = urlSearchParams.get('type');
+  const paramStatus = urlSearchParams.get('status');
+  const stateFilters = (location.state as { filters?: Partial<FilterState> })?.filters;
+  const targetFiltersKey = `${paramType ?? ''}_${paramStatus ?? ''}_${JSON.stringify(stateFilters ?? {})}`;
+
+  const [prevKey, setPrevKey] = useState(targetFiltersKey);
+  const [filters, setFilters] = useState<FilterState>(() => {
+    const base: FilterState = { ...DEFAULT_FILTER_STATE };
+    if (stateFilters) return { ...base, ...stateFilters };
+    if (paramType) base['전시유형'] = paramType;
+    if (paramStatus) base['전시상태'] = paramStatus;
+    return base;
+  });
+
+  if (prevKey !== targetFiltersKey) {
+    setPrevKey(targetFiltersKey);
+    const base: FilterState = { ...DEFAULT_FILTER_STATE };
+    if (stateFilters) {
+      setFilters({ ...base, ...stateFilters });
+    } else {
+      if (paramType) base['전시유형'] = paramType;
+      if (paramStatus) base['전시상태'] = paramStatus;
+      setFilters(base);
+    }
+  }
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<FilterTab>('전시분야');
 
-  const searchParams = useMemo(() => createSearchDisplayParams(query, filters), [query, filters]);
+  const searchDisplayParams = useMemo(
+    () => createSearchDisplayParams(query, filters),
+    [query, filters],
+  );
 
-  const { data, isError, isLoading } = useSearchDisplays(searchParams);
+  const { data, isError, isLoading } = useSearchDisplays(searchDisplayParams);
   const exhibitions = data?.exhibitions ?? [];
 
   const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string]>).filter(

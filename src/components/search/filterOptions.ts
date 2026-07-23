@@ -37,7 +37,7 @@ export const FILTER_CONFIG: Record<FilterTab, FilterConfig> = {
       ALL_OPTION,
       { label: '전시중', value: 'ONGOING' },
       { label: '전시예정', value: 'UPCOMING' },
-      { label: '종료예정', value: 'ONGOING' },
+      { label: '종료예정', value: 'CLOSING_SOON' },
       { label: '종료', value: 'ENDED' },
     ],
   },
