@@ -13,14 +13,26 @@ export interface ClosingSoonExhibitionDto extends HomeExhibitionDto {
   dayLeft?: number;
 }
 
+export interface GetClosingSoonDisplaysRequestDto {
+  cursor?: string;
+  size?: number;
+}
+
 export interface GetGraduationDisplaysResponseDataDto {
   exhibitions: HomeExhibitionDto[];
 }
 
 export type GetGraduationDisplaysResponseDto = ApiResponseDto<GetGraduationDisplaysResponseDataDto>;
 
+export interface ClosingSoonPaginationDto {
+  nextCursor: string | null;
+  size: number;
+  hasNext: boolean;
+}
+
 export interface GetClosingSoonDisplaysResponseDataDto {
   exhibitions: ClosingSoonExhibitionDto[];
+  pagination: ClosingSoonPaginationDto;
 }
 
 export type GetClosingSoonDisplaysResponseDto =

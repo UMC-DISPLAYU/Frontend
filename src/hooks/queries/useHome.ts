@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import type { GetClosingSoonDisplaysRequestDto } from '@/api/dto';
 import {
   getArtworkPreview,
   getClosingSoonDisplays,
@@ -20,10 +21,10 @@ export const useGraduationDisplays = () =>
     queryFn: () => getGraduationDisplays(graduationDisplaysParams),
   });
 
-export const useClosingSoonDisplays = () =>
+export const useClosingSoonDisplays = (params: GetClosingSoonDisplaysRequestDto = {}) =>
   useQuery({
-    queryKey: queryKeys.displays.closingSoon(),
-    queryFn: getClosingSoonDisplays,
+    queryKey: queryKeys.displays.closingSoon(params),
+    queryFn: () => getClosingSoonDisplays(params),
   });
 
 export const useDuPicks = () =>

@@ -10,6 +10,7 @@ import type {
   DeleteDisplayReviewResponseDataDto,
   DisplayDetailDto,
   DisplayListResponseDataDto,
+  GetClosingSoonDisplaysRequestDto,
   GetClosingSoonDisplaysResponseDataDto,
   GetDisplayArtworksRequestDto,
   GetDisplayArtworksResponseDataDto,
@@ -47,8 +48,12 @@ export const getGraduationDisplays = async (params?: {
 };
 
 // GET /v1/display/closing-soon
-export const getClosingSoonDisplays = async (): Promise<ClosingSoonExhibitionDto[]> => {
-  const data = await apiRequest<GetClosingSoonDisplaysResponseDataDto>('/v1/display/closing-soon');
+export const getClosingSoonDisplays = async (
+  params: GetClosingSoonDisplaysRequestDto = {},
+): Promise<ClosingSoonExhibitionDto[]> => {
+  const data = await apiRequest<GetClosingSoonDisplaysResponseDataDto>('/v1/display/closing-soon', {
+    query: params,
+  });
 
   return data.exhibitions;
 };

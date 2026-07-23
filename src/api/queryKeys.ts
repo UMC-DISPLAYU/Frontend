@@ -1,5 +1,6 @@
 import type {
   GetArtworkPreviewRequestDto,
+  GetClosingSoonDisplaysRequestDto,
   GetDuPicksRequestDto,
   GetLoungePostsRequestDto,
 } from '@/api/dto';
@@ -10,7 +11,8 @@ export const queryKeys = {
     lists: () => [...queryKeys.displays.all, 'list'] as const,
     graduation: (params?: { size?: number }) =>
       [...queryKeys.displays.lists(), 'graduation', params ?? {}] as const,
-    closingSoon: () => [...queryKeys.displays.lists(), 'closing-soon'] as const,
+    closingSoon: (params?: GetClosingSoonDisplaysRequestDto) =>
+      [...queryKeys.displays.lists(), 'closing-soon', params ?? {}] as const,
     duPicks: (params?: GetDuPicksRequestDto) =>
       [...queryKeys.displays.lists(), 'du-picks', params ?? {}] as const,
   },

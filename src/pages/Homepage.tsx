@@ -13,7 +13,7 @@ import {
 export const Homepage = () => {
   const { data: duPicksData } = useDuPicks();
   const { data: graduationExhibitions = [] } = useGraduationDisplays();
-  const { data: closingSoonExhibitions = [] } = useClosingSoonDisplays();
+  const { data: closingSoonExhibitions = [] } = useClosingSoonDisplays({ size: 3 });
   const { data: artworkPreviewData } = useHomeArtworkPreview();
   const { data: loungePostsData } = useHomeLoungePosts();
 
