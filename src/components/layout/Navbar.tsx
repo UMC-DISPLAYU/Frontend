@@ -80,7 +80,7 @@ export function Navbar() {
               {({ isActive }) => (
                 <div className="flex flex-col items-center gap-0.5 sm:gap-1">
                   <img
-                    alt={label}
+                    alt=""
                     className="h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 transition-transform duration-200"
                     src={isActive ? activeIcon : icon}
                   />
