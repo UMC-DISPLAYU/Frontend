@@ -9,11 +9,12 @@ import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
-import { ExhibitionReviewDetailPage } from './pages/ExhibitionReviewDetailPage';
-import { ExhibitionReviewPage } from './pages/ExhibitionReviewPage';
 import { Homepage } from './pages/Homepage';
 import { InvitationRequestPage } from './pages/InvitationRequestPage';
+import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
+import { LoungeBoardPage } from './pages/LoungeBoardPage';
 import { LoungePage } from './pages/LoungePage';
+import { MyActivityPage } from './pages/MyActivityPage';
 import { MyPage } from './pages/MyPage';
 import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
@@ -21,6 +22,7 @@ import { MyRoungePage } from './pages/MyRoungePage';
 import { NotFound } from './pages/NotFound';
 import { PolicyPage } from './pages/PolicyPage';
 import { SettingPage } from './pages/Settingpage';
+import { SearchPage } from './pages/SearchPage';
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +30,7 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Homepage /> },
+      { path: 'search', element: <SearchPage /> },
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
@@ -46,6 +49,9 @@ export const router = createBrowserRouter([
       { path: 'policy', element: <PolicyPage /> },
       { path: 'lounge/review', element: <ExhibitionReviewPage /> },
       { path: 'lounge/review/:id', element: <ExhibitionReviewDetailPage /> },
+      { path: 'lounge/my-activity', element: <MyActivityPage /> },
+      { path: 'lounge/:category', element: <LoungeBoardPage /> },
+      { path: 'lounge/:category/:id', element: <LoungeBoardDetailPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],

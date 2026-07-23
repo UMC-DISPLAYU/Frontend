@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import { ArtworkCard, ExhibitionCard, SettingsSheet } from '@/components/mypage';
 import { AuthPageHeader } from '@/components/mypage/AuthPageHeader';
 import { AUTH_PAGE_PROFILE } from '@/mocks/authPage';
@@ -13,14 +12,6 @@ export function AuthPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const navigate = useNavigate();
-
-  const { setHeader, resetHeader } = useHeaderContext();
-
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleSelectSetting = () => {
     setIsSettingsOpen(false);

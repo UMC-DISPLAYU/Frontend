@@ -3,6 +3,8 @@ dist
 .pnpm-store
 .DS_Store
 *.local
+.env
+.env.*
 my-react-router-app/
 
 // npm 커밋만 차단
@@ -11,3 +13,4 @@ package-lock.json
 
 // Vercel 로컬 연결 정보
 .vercel
+.vite/
