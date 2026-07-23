@@ -1,8 +1,5 @@
-import { useEffect } from 'react';
-
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import type { Invitation } from '@/types/invitation';
 
 type InfoRow = { label: string; value: string };
@@ -21,19 +18,12 @@ const VERIFIED_CHECKLIST = ['전시 콘텐츠 추가', '전시작 등록', 'Q&A 
 export function DisplayAcceptPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setHeader, resetHeader } = useHeaderContext();
 
   const state = location.state as { invitation?: Invitation; isVerified?: boolean } | null;
   const invitation = state?.invitation;
   const isVerified = state?.isVerified ?? false;
 
   const exhibitionInfo = buildExhibitionInfo(invitation);
-
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleComplete = () => {
     // TODO: 완료 후 이동 경로 연결 (예: 전시 콘텐츠 추가 화면)

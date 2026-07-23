@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import type { Invitation } from '@/types/invitation';
 
 type InfoRow = { label: string; value: string };
@@ -19,19 +18,12 @@ function buildExhibitionInfo(invitation?: Invitation): InfoRow[] {
 export function DisplayArtistNamePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setHeader, resetHeader } = useHeaderContext();
 
   const invitation = (location.state as { invitation?: Invitation } | null)?.invitation;
   const exhibitionInfo = buildExhibitionInfo(invitation);
 
   const [artistName, setArtistName] = useState('');
   const isValid = artistName.trim().length > 0;
-
-  useEffect(() => {
-    setHeader({ title: '전시 작가명 설정' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleSubmit = () => {
     if (!isValid) return;

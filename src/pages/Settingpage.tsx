@@ -1,20 +1,10 @@
-import { useEffect } from 'react';
-
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
 
 export function SettingPage() {
   const navigate = useNavigate();
-  const { setHeader, resetHeader } = useHeaderContext();
-
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleBack = () => {
     navigate('/my');

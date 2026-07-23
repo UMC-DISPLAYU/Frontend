@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-import { useHeaderContext } from '@/components/layout/headerContext';
 
 type TabKey = 'pending' | 'done';
 
@@ -136,14 +134,7 @@ function Tabs({ value, onChange }: TabsProps) {
 
 export function AnswerPage() {
   const navigate = useNavigate();
-  const { setHeader, resetHeader } = useHeaderContext();
   const [tab, setTab] = useState<TabKey>('done');
-
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const items = tab === 'pending' ? PENDING : DONE;
 

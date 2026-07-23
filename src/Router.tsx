@@ -16,13 +16,12 @@ import { LoungeBoardPage } from './pages/LoungeBoardPage';
 import { LoungePage } from './pages/LoungePage';
 import { MyActivityPage } from './pages/MyActivityPage';
 import { MyPage } from './pages/MyPage';
-import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
-import { MyRoungePage } from './pages/MyRoungePage';
+import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { NotFound } from './pages/NotFound';
 import { PolicyPage } from './pages/PolicyPage';
-import { SettingPage } from './pages/Settingpage';
 import { SearchPage } from './pages/SearchPage';
+import { SettingPage } from './pages/Settingpage';
 
 export const router = createBrowserRouter([
   {
@@ -43,12 +42,9 @@ export const router = createBrowserRouter([
       { path: 'invitation-request', element: <InvitationRequestPage /> },
       { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
       { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },
-      { path: 'my-questions', element: <MyQuestionsPage /> },
       { path: 'my-review', element: <MyReviewPage /> },
-      { path: 'my-lounge', element: <MyRoungePage /> },
+      { path: 'my-questions', element: <MyQuestionsPage /> },
       { path: 'policy', element: <PolicyPage /> },
-      { path: 'lounge/review', element: <ExhibitionReviewPage /> },
-      { path: 'lounge/review/:id', element: <ExhibitionReviewDetailPage /> },
       { path: 'lounge/my-activity', element: <MyActivityPage /> },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
       { path: 'lounge/:category/:id', element: <LoungeBoardDetailPage /> },

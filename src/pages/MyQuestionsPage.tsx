@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-import { useHeaderContext } from '@/components/layout/headerContext';
 
 const TABS = ['전시', '작품'];
 
@@ -66,13 +64,6 @@ function QuestionCard({ q }: QuestionCardProps) {
 export function MyQuestionsPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
-  const { setHeader, resetHeader } = useHeaderContext();
-
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">

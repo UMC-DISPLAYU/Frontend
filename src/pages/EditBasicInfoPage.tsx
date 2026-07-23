@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { ChevronLeft, ImagePlus, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-import { useHeaderContext } from '@/components/layout/headerContext';
 
 function ProfilePhotoField({
   image,
@@ -54,15 +52,8 @@ function ProfilePhotoField({
 
 export function EditBasicInfoPage() {
   const navigate = useNavigate();
-  const { setHeader, resetHeader } = useHeaderContext();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [activityName, setActivityName] = useState('');
-
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const canSubmit = activityName.trim().length > 0;
 

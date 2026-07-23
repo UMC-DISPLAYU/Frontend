@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-import { useHeaderContext } from '@/components/layout/headerContext';
 
 const EXHIBITION_FIELDS = [
   '회화',
@@ -88,7 +86,6 @@ function ProfilePhotoField({
 
 export function EditArtistProfilePage() {
   const navigate = useNavigate();
-  const { setHeader, resetHeader } = useHeaderContext();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [activityName, setActivityName] = useState('');
   const [intro, setIntro] = useState('');
@@ -96,12 +93,6 @@ export function EditArtistProfilePage() {
   const [externalLink, setExternalLink] = useState('');
   const [school, setSchool] = useState('');
   const [schoolFocused, setSchoolFocused] = useState(false);
-
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const toggleField = (field: string) => {
     setSelectedFields((prev) =>

@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import type { Invitation } from '@/types/invitation';
 
 const INVITATIONS: Invitation[] = [
@@ -120,15 +119,8 @@ function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
 
 export function InvitationRequestPage() {
   const navigate = useNavigate();
-  const { setHeader, resetHeader } = useHeaderContext();
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
-
-  useEffect(() => {
-    setHeader({ title: '초대 요청' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleAccept = (item: Invitation) => {
     navigate(`/invitations/${item.id}/artist-name`, { state: { invitation: item } });
