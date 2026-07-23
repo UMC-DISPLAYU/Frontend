@@ -73,9 +73,7 @@ export function ExhibitionRegister() {
               placeholder="전시에 대해 소개해주세요"
               className="h-24 resize-none bg-transparent typo-body-xs-regular text-faint placeholder:text-hint leading-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
             />
-            <div className="text-right text-faint typo-body-xs-regular leading-4">
-              {intro.length}/500
-            </div>
+            <div className="text-right text-neutral-400 text-xs leading-4">{intro.length}/500</div>
           </div>
         </div>
 
