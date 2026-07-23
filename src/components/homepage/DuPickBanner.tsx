@@ -27,7 +27,7 @@ export function DuPickBanner({ items }: Props) {
   return (
     <section className="pb-7">
       <div className="px-4 mb-2.5 flex justify-between items-center">
-        <h2 className="flex items-center gap-1.5 typo-heading-3xl text-logo">
+        <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
           <span>DU Pick</span>
         </h2>
         <button

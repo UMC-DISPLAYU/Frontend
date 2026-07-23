@@ -4,6 +4,8 @@ import type {
   ArtworkPreviewItem,
   DuPickItem,
   ExhibitionDetail,
+  LoungeBoardDetail,
+  LoungeBoardPost,
   LoungePost,
   ReviewItem,
 } from '@/types/exhibition';
@@ -98,7 +100,6 @@ export const GRADUATION_EXHIBITIONS: HomeExhibitionDto[] = [
     startedAt: '2026-05-23',
     endedAt: '2026-05-30',
     posterImageUrl: 'https://picsum.photos/seed/ex1/300/400',
-    isBookmarked: false,
   },
   {
     displayId: 2,
@@ -106,7 +107,6 @@ export const GRADUATION_EXHIBITIONS: HomeExhibitionDto[] = [
     startedAt: '2026-06-02',
     endedAt: '2026-06-10',
     posterImageUrl: 'https://picsum.photos/seed/vw1/300/400',
-    isBookmarked: false,
   },
   {
     displayId: 3,
@@ -114,7 +114,6 @@ export const GRADUATION_EXHIBITIONS: HomeExhibitionDto[] = [
     startedAt: '2026-06-02',
     endedAt: '2026-06-10',
     posterImageUrl: 'https://picsum.photos/seed/no1/300/400',
-    isBookmarked: false,
   },
 ];
 
@@ -125,7 +124,6 @@ export const DEADLINE_EXHIBITIONS: HomeExhibitionDto[] = [
     startedAt: '2026-05-23',
     endedAt: '2026-05-30',
     posterImageUrl: 'https://picsum.photos/seed/ex2/300/400',
-    isBookmarked: false,
   },
   {
     displayId: 2,
@@ -133,7 +131,6 @@ export const DEADLINE_EXHIBITIONS: HomeExhibitionDto[] = [
     startedAt: '2026-06-02',
     endedAt: '2026-06-10',
     posterImageUrl: 'https://picsum.photos/seed/vw2/300/400',
-    isBookmarked: false,
   },
   {
     displayId: 3,
@@ -141,7 +138,6 @@ export const DEADLINE_EXHIBITIONS: HomeExhibitionDto[] = [
     startedAt: '2026-06-02',
     endedAt: '2026-06-10',
     posterImageUrl: 'https://picsum.photos/seed/no2/300/400',
-    isBookmarked: false,
   },
 ];
 
@@ -218,6 +214,370 @@ export const LOUNGE_POSTS: LoungePost[] = [
     views: '댓글 6',
   },
 ];
+
+const GENERIC_DETAIL_COMMENTS = [
+  {
+    id: '1',
+    author: '미술애호가',
+    time: '1시간 전',
+    content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
+    likeCount: 5,
+    isLiked: false,
+  },
+  {
+    id: '2',
+    author: '미술애호가',
+    time: '1시간 전',
+    content: '저도 지난주에 다녀왔는데 정말 좋더라구요! 특히 2층 전시 공간이 인상적이었어요.',
+    likeCount: 5,
+    isLiked: false,
+  },
+];
+
+export const LOUNGE_BOARD_POSTS: LoungeBoardPost[] = [
+  {
+    id: '1',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '2',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+    images: [
+      'https://placehold.co/112x128',
+      'https://placehold.co/112x128',
+      'https://placehold.co/112x128',
+    ],
+  },
+  {
+    id: '3',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '4',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '5',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '6',
+    category: 'tips',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '7',
+    category: 'tips',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '8',
+    category: 'tips',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '9',
+    category: 'collab',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '10',
+    category: 'collab',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '11',
+    category: 'collab',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '12',
+    category: 'venue',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '13',
+    category: 'venue',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+  {
+    id: '14',
+    category: 'venue',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    description:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    author: 'artseeker_j',
+    time: '1시간 전',
+    commentCount: 8,
+  },
+];
+
+const REVIEW_DETAIL_CONTENT = [
+  '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었어요.',
+  '특히 빛과 그림자를 활용한 작품들이 정말 인상적이었고, 전시장 자체가 사진 찍기 좋게 구성되어 있어서 인증샷 남기기에도 좋더라구요.',
+  '도슨트 시간에 맞춰서 갔는데 정말 잘한 선택이었어요. 작품만 봤을 때는 이해가 어려웠던 부분들이 설명을 듣고 나니 확 와닿더라구요.',
+  '평일 오후에 방문했는데 사람도 많지 않아서 조용하게 관람할 수 있었어요. 전시 기간이 얼마 남지 않았으니 관심 있으신 분들은 서두르세요!',
+];
+
+export const LOUNGE_BOARD_DETAILS: Record<string, LoungeBoardDetail> = {
+  '1': {
+    id: '1',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '2': {
+    id: '2',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    images: [
+      'https://placehold.co/214x139',
+      'https://placehold.co/218x137',
+      'https://placehold.co/218x137',
+    ],
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '3': {
+    id: '3',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '4': {
+    id: '4',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '5': {
+    id: '5',
+    category: 'review',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '6': {
+    id: '6',
+    category: 'tips',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '7': {
+    id: '7',
+    category: 'tips',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '8': {
+    id: '8',
+    category: 'tips',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '9': {
+    id: '9',
+    category: 'collab',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '10': {
+    id: '10',
+    category: 'collab',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '11': {
+    id: '11',
+    category: 'collab',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '12': {
+    id: '12',
+    category: 'venue',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '13': {
+    id: '13',
+    category: 'venue',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+  '14': {
+    id: '14',
+    category: 'venue',
+    title: '이번 주 중앙대 회화 전시 다녀왔어요',
+    author: '달의작업실',
+    date: '2026.05.24',
+    content: REVIEW_DETAIL_CONTENT,
+    likeCount: 24,
+    isLiked: false,
+    isSaved: false,
+    comments: GENERIC_DETAIL_COMMENTS,
+  },
+};
+
+// ─── 내 활동 데이터 (게시글은 LOUNGE_BOARD_POSTS 재사용) ─────────────────────
+
+export const MY_WRITTEN_POSTS: LoungeBoardPost[] = LOUNGE_BOARD_POSTS.filter((post) =>
+  ['1', '6', '9', '12'].includes(post.id),
+);
+
+export const MY_COMMENTED_POSTS: LoungeBoardPost[] = LOUNGE_BOARD_POSTS.filter((post) =>
+  ['2', '7'].includes(post.id),
+);
+
+export const MY_SCRAPPED_POSTS: LoungeBoardPost[] = LOUNGE_BOARD_POSTS.filter((post) =>
+  ['3', '10'].includes(post.id),
+);
 
 // ─── 작품·후기 데이터 ────────────────────────────────────────────────────────
 

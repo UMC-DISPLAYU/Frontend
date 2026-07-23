@@ -25,7 +25,7 @@ function ExhibitionCard({ item }: { item: HomeExhibitionDto }) {
         }
       }}
     >
-      <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden bg-box">
+      <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden bg-box200">
         {item.posterImageUrl ? (
           <img src={item.posterImageUrl} alt={item.title} className="w-full h-full object-cover" />
         ) : null}

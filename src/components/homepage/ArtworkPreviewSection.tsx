@@ -31,7 +31,7 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
         {items.map((item) => (
           <div
             key={item.artworkId}
-            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box"
+            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box200"
           >
             {item.artworkImageUrl && (
               <img

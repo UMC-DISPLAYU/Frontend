@@ -48,15 +48,13 @@ export function SchoolSearchInput({ value, onChange }: SchoolSearchInputProps) {
   }, []);
 
   return (
-    <div className="px-4 py-3.5 border-b border-zinc-300 flex flex-col gap-2">
+    <div className="bg-card px-4 py-3.5 border-b border-line flex flex-col gap-2">
       <label htmlFor="school-search" className="flex items-center gap-1">
-        <span className="text-neutral-600 text-xs font-bold leading-4">
-          학교 / 기관명
-        </span>
+        <span className="text-neutral-600 text-xs font-bold leading-4">학교 / 기관명</span>
         <span className="text-red-400 text-xs leading-5">*</span>
       </label>
       <div className="relative">
-        <div className="h-10 px-3 bg-neutral-100 rounded-2xl outline outline-1 outline-offset-[-1px] outline-gray-200 flex items-center gap-2 overflow-hidden">
+        <div className="h-10 px-3 bg-page rounded-2xl outline outline-1 outline-offset-[-1px] outline-line-soft flex items-center gap-2 overflow-hidden">
           <input
             id="school-search"
             value={schoolQuery}
@@ -68,27 +66,16 @@ export function SchoolSearchInput({ value, onChange }: SchoolSearchInputProps) {
             onFocus={handleSchoolFocus}
             onBlur={() => setTimeout(() => setSchoolOpen(false), 200)}
             placeholder="학교명을 검색해주세요"
-            className="flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-stone-300 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
+            className="flex-1 bg-transparent typo-body-sm-regular text-main placeholder:text-hint outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
           />
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <circle cx="6" cy="6" r="4.4" stroke="#9ca3af" strokeWidth="1.25" />
-            <path
-              d="M9.5 9.5l3 3"
-              stroke="#9ca3af"
-              strokeWidth="1.25"
-              strokeLinecap="round"
-            />
+            <path d="M9.5 9.5l3 3" stroke="#9ca3af" strokeWidth="1.25" strokeLinecap="round" />
           </svg>
         </div>
 
         {schoolOpen && (
-          <div className="absolute z-50 left-0 right-0 mt-1 bg-neutral-50 rounded-2xl outline outline-1 outline-offset-[-1px] outline-zinc-300 shadow-lg overflow-hidden">
+          <div className="absolute z-50 left-0 right-0 mt-1 bg-card rounded-2xl outline outline-1 outline-offset-[-1px] outline-line shadow-lg overflow-hidden">
             <div className="max-h-56 overflow-y-auto">
               {filteredSchools.length > 0 ? (
                 filteredSchools.map((s) => (
@@ -99,15 +86,13 @@ export function SchoolSearchInput({ value, onChange }: SchoolSearchInputProps) {
                       e.preventDefault();
                       selectSchool(s);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-100"
+                    className="w-full text-left px-4 py-2.5 text-sub700 typo-body-sm-regular hover:bg-box"
                   >
                     {s}
                   </button>
                 ))
               ) : (
-                <div className="px-4 py-3 text-sm text-neutral-400">
-                  검색 결과가 없습니다
-                </div>
+                <div className="px-4 py-3 text-sm text-neutral-400">검색 결과가 없습니다</div>
               )}
             </div>
           </div>

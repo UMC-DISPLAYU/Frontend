@@ -27,9 +27,7 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
 
       const remainingSlots = maxImages - imageUrls.length;
       const filesToAdd = Math.min(files.length, remainingSlots);
-      const newUrls = Array.from({ length: filesToAdd }, (_, i) =>
-        URL.createObjectURL(files[i]),
-      );
+      const newUrls = Array.from({ length: filesToAdd }, (_, i) => URL.createObjectURL(files[i]));
 
       setImageUrls((prev) => [...prev, ...newUrls]);
 
@@ -54,7 +52,7 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
       {imageUrls.map((url, index) => (
         <div
           key={index}
-          className="relative size-24 bg-neutral-50 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-300 overflow-hidden"
+          className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
         >
           <img
             src={url}
@@ -68,12 +66,7 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
             aria-label={`이미지 ${index + 1} 삭제`}
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path
-                d="M2 2l8 8M10 2l-8 8"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
+              <path d="M2 2l8 8M10 2l-8 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
         </div>
@@ -82,17 +75,11 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
         <button
           type="button"
           onClick={handleImageClick}
-          className="size-24 bg-neutral-50 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-300 flex flex-col items-center justify-center gap-3"
+          className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
           aria-label="이미지 업로드"
         >
           <div className="size-10 bg-gray-100 rounded-full flex items-center justify-center">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              aria-hidden="true"
-            >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <rect
                 x="2.25"
                 y="2.25"
@@ -112,7 +99,7 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
               <circle cx="6" cy="6" r="1" stroke="#d4d4d4" strokeWidth="1.5" />
             </svg>
           </div>
-          <span className="text-neutral-900 text-xs">
+          <span className="text-main typo-body-xs-regular">
             {imageUrls.length}/{maxImages}
           </span>
         </button>

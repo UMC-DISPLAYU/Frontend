@@ -14,11 +14,7 @@ interface SettingsSheetProps {
   onSelect: (key: SettingsMenu['key']) => void;
 }
 
-export function SettingsSheet({
-  open,
-  onClose,
-  onSelect,
-}: SettingsSheetProps) {
+export function SettingsSheet({ open, onClose, onSelect }: SettingsSheetProps) {
   if (!open) return null;
 
   return (
