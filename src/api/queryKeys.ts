@@ -1,5 +1,10 @@
 import type { CursorPageRequestDto } from '@/api/dto';
-import type { GetDisplayMapRequestDto, SearchDisplaysRequestDto } from '@/api/dto/display.dto';
+import type {
+  GetClosingSoonDisplaysRequestDto,
+  GetDisplayMapRequestDto,
+  GetDuPicksRequestDto,
+  SearchDisplaysRequestDto,
+} from '@/api/dto/display.dto';
 import type { GetArtworkPreviewRequestDto } from '@/api/dto/displayArtwork.dto';
 import type { GetLoungePostsRequestDto } from '@/api/dto/lounge.dto';
 
@@ -31,9 +36,12 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'search', params] as const,
     map: (params: GetDisplayMapRequestDto) =>
       [...queryKeys.displays.lists(), 'map', params] as const,
-    closingSoon: () => [...queryKeys.displays.lists(), 'closing-soon'] as const,
-    graduation: () => [...queryKeys.displays.lists(), 'graduation'] as const,
-    duPicks: () => [...queryKeys.displays.lists(), 'du-picks'] as const,
+    closingSoon: (params?: GetClosingSoonDisplaysRequestDto) =>
+      [...queryKeys.displays.lists(), 'closing-soon', params ?? {}] as const,
+    graduation: (params?: { size?: number }) =>
+      [...queryKeys.displays.lists(), 'graduation', params ?? {}] as const,
+    duPicks: (params?: GetDuPicksRequestDto) =>
+      [...queryKeys.displays.lists(), 'du-picks', params ?? {}] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
   },

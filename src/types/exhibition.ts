@@ -9,14 +9,6 @@ export interface DuPickItem {
   location: string;
 }
 
-export interface ExhibitionCardData {
-  id: string;
-  title: string;
-  school: string;
-  period: string;
-  thumbnail?: string;
-}
-
 export interface ArtworkPreviewItem {
   id: string;
   name: string;
