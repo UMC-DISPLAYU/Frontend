@@ -1,11 +1,16 @@
 import type { ApiResponseDto } from '@/api/dto';
 
+import { axiosInstance } from './axios';
+
 type QueryValue = string | number | boolean | null | undefined;
 type QueryParams = object;
 
-interface ApiRequestOptions<TBody> extends Omit<RequestInit, 'body'> {
+interface ApiRequestOptions<TBody> {
   body?: TBody;
+  headers?: Record<string, string>;
+  method?: string;
   query?: QueryParams;
+  signal?: AbortSignal;
 }
 
 // Query string builder for endpoint request params
@@ -34,25 +39,27 @@ export const apiRequest = async <TData, TBody = unknown>(
   path: string,
   options: ApiRequestOptions<TBody> = {},
 ): Promise<TData> => {
-  const { body, headers, query, ...init } = options;
-
-  const response = await fetch(`${path}${createQueryString(query)}`, {
-    ...init,
+  const { body, headers, method = 'GET', query, signal } = options;
+  const response = await axiosInstance.request<ApiResponseDto<TData>>({
+    data: body,
     headers: {
       ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...headers,
     },
-    body: body instanceof FormData ? body : body === undefined ? undefined : JSON.stringify(body),
+    method,
+    params: query,
+    paramsSerializer: (params) => createQueryString(params).slice(1),
+    signal,
+    url: path,
   });
-
-  const data = (await response.json().catch(() => null)) as ApiResponseDto<TData> | null;
+  const data = response.data;
 
   if (data?.resultType === 'FAIL') {
     throw new Error(data.error.message);
   }
 
-  if (!response.ok || !data) {
-    throw new Error(`API request failed: ${response.status}`);
+  if (!data) {
+    throw new Error('API request failed');
   }
 
   return data.success.data;
