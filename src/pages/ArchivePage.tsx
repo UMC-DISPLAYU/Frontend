@@ -3,7 +3,6 @@ import { useState } from 'react';
 // SVG Icon imports
 import { ChevronRight } from 'lucide-react';
 
-import EditClubIcon from '../assets/EditClubIcon.svg';
 import BookmarkIcon from '../assets/Icon.svg';
 import MemberIcon from '../assets/MemberIcon.svg';
 import PencilIcon from '../assets/PencilIcon.svg';
@@ -372,15 +371,6 @@ interface SettingsMenu {
 }
 
 const SETTINGS_MENUS: SettingsMenu[] = [
-  {
-    key: 'edit',
-    icon: EditClubIcon,
-    iconWrapClass: 'bg-[#f8fafb] border border-[#e9eced]',
-    title: '동호회 정보 수정',
-    titleClass: 'text-[#202020]',
-    description: '이름, 소개, 사진, 카테고리 등',
-    descriptionClass: 'text-[#636970]',
-  },
   {
     key: 'member',
     icon: MemberIcon,
