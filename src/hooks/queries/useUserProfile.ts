@@ -1,7 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CheckNicknameRequestDto, UpdateNicknameRequestDto } from '@/api/dto';
-import { checkNickname, deleteUserMe, getUserMe, updateNickname } from '@/api/endpoints';
+import type {
+  CheckNicknameRequestDto,
+  CreateArtistProfileRequestDto,
+  UpdateNicknameRequestDto,
+} from '@/api/dto';
+import {
+  checkNickname,
+  createMyArtistProfile,
+  deleteUserMe,
+  getMyArtistProfile,
+  getUserArtistProfile,
+  getUserMe,
+  updateNickname,
+} from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
 export const useUserMe = () =>
@@ -17,6 +29,19 @@ export const useCheckNickname = (params: CheckNicknameRequestDto, enabled = true
     enabled: enabled && params.nickname.trim().length > 0,
   });
 
+export const useMyArtistProfile = () =>
+  useQuery({
+    queryKey: queryKeys.users.artistProfile(),
+    queryFn: getMyArtistProfile,
+  });
+
+export const useUserArtistProfile = (userId: number) =>
+  useQuery({
+    queryKey: queryKeys.users.userArtistProfile(userId),
+    queryFn: () => getUserArtistProfile(userId),
+    enabled: Number.isFinite(userId),
+  });
+
 export const useUpdateNickname = () => {
   const queryClient = useQueryClient();
 
@@ -24,6 +49,17 @@ export const useUpdateNickname = () => {
     mutationFn: (body: UpdateNicknameRequestDto) => updateNickname(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
+    },
+  });
+};
+
+export const useCreateMyArtistProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: CreateArtistProfileRequestDto) => createMyArtistProfile(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
     },
   });
 };
