@@ -5,9 +5,10 @@ import type { LoungeBoardPost } from '@/types/exhibition';
 
 type Props = {
   post: LoungeBoardPost;
+  tagLabel?: string;
 };
 
-export function LoungeBoardPostCard({ post }: Props) {
+export function LoungeBoardPostCard({ post, tagLabel }: Props) {
   const navigate = useNavigate();
   const detailPath = `/lounge/${post.category}/${post.id}`;
 
@@ -21,7 +22,7 @@ export function LoungeBoardPostCard({ post }: Props) {
     >
       <span className="self-start h-5 px-2 py-0.5 bg-tag-gray rounded-sm inline-flex items-center">
         <span className="typo-body-xxs-bold text-tag-blue whitespace-nowrap">
-          {LOUNGE_CATEGORY_TAGS[post.category]}
+          {tagLabel ?? LOUNGE_CATEGORY_TAGS[post.category]}
         </span>
       </span>
 

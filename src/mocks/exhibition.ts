@@ -565,6 +565,20 @@ export const LOUNGE_BOARD_DETAILS: Record<string, LoungeBoardDetail> = {
   },
 };
 
+// ─── 내 활동 데이터 (게시글은 LOUNGE_BOARD_POSTS 재사용) ─────────────────────
+
+export const MY_WRITTEN_POSTS: LoungeBoardPost[] = LOUNGE_BOARD_POSTS.filter((post) =>
+  ['1', '6', '9', '12'].includes(post.id),
+);
+
+export const MY_COMMENTED_POSTS: LoungeBoardPost[] = LOUNGE_BOARD_POSTS.filter((post) =>
+  ['2', '7'].includes(post.id),
+);
+
+export const MY_SCRAPPED_POSTS: LoungeBoardPost[] = LOUNGE_BOARD_POSTS.filter((post) =>
+  ['3', '10'].includes(post.id),
+);
+
 // ─── 작품·후기 데이터 ────────────────────────────────────────────────────────
 
 export const ARTWORKS: Record<string, ArtworkItem[]> = {
