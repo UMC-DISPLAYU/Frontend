@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { Layout } from './components/layout';
+import { ArchivePage } from './pages/ArchivePage';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
@@ -11,6 +12,7 @@ import { LoungePage } from './pages/LoungePage';
 import { MyActivityPage } from './pages/MyActivityPage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
+import { SearchPage } from './pages/SearchPage';
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +20,8 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Homepage /> },
+      { path: 'archive', element: <ArchivePage /> },
+      { path: 'search', element: <SearchPage /> },
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },

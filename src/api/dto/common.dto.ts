@@ -63,3 +63,28 @@ export interface CursorPageInfoDto {
   size: number;
   hasNext: boolean;
 }
+
+export interface CursorPaginationDto<TCursor = number | string> {
+  nextCursor: TCursor | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export interface ImageRequestDto {
+  imageUrl: string;
+  imageType: string;
+  width: number;
+  height: number;
+  sortOrder: number;
+}
+
+export interface ImageResponseDto {
+  imageId: number;
+  imageUrl: string;
+  isThumbnail: boolean;
+  imageType: string;
+  caption: string;
+  width: number;
+  height: number;
+  sortOrder: number;
+}
