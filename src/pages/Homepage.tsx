@@ -17,9 +17,10 @@ export const Homepage = () => {
   const [isArtworkPreviewOpen, setIsArtworkPreviewOpen] = useState(false);
   const { data: duPicksData } = useDuPicks();
   const { data: graduationExhibitions = [] } = useGraduationDisplays();
-  const { data: closingSoonExhibitions = [] } = useClosingSoonDisplays({ size: 3 });
+  const { data: closingSoonData } = useClosingSoonDisplays({ size: 3 });
   const { data: artworkPreviewData } = useHomeArtworkPreview();
   const { data: loungePostsData } = useHomeLoungePosts();
+  const closingSoonExhibitions = closingSoonData?.exhibitions ?? [];
   const artworkPreviewItems = artworkPreviewData?.artworks ?? [];
 
   if (isArtworkPreviewOpen) {

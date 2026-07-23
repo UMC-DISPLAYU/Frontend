@@ -28,12 +28,6 @@ export interface GetGraduationDisplaysResponseDataDto {
 
 export type GetGraduationDisplaysResponseDto = ApiResponseDto<GetGraduationDisplaysResponseDataDto>;
 
-export interface ClosingSoonPaginationDto {
-  nextCursor: string | null;
-  size: number;
-  hasNext: boolean;
-}
-
 export interface GetClosingSoonDisplaysResponseDataDto {
   exhibitions: ClosingSoonExhibitionDto[];
   pagination: CursorPaginationDto<string>;
@@ -53,12 +47,6 @@ export interface DuPickDto {
 export interface GetDuPicksRequestDto {
   cursor?: number | null;
   size?: number;
-}
-
-export interface DuPickPaginationDto {
-  nextCursor: number | null;
-  size: number;
-  hasNext: boolean;
 }
 
 export interface GetDuPicksResponseDataDto {

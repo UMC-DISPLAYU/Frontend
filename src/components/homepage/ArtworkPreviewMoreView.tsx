@@ -11,7 +11,7 @@ export function ArtworkPreviewMoreView({ items }: Props) {
         {items.map((item) => (
           <article
             key={item.artworkId}
-            className="relative mb-2 break-inside-avoid overflow-hidden rounded-xl bg-box"
+            className="relative mb-2 min-h-55 break-inside-avoid overflow-hidden rounded-xl bg-box"
           >
             {item.artworkImageUrl ? (
               <img

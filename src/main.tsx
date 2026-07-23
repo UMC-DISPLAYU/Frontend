@@ -4,7 +4,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RouterProvider } from 'react-router-dom';
 
 import { queryClient } from './queryClient';
@@ -26,12 +25,16 @@ const enableMocking = async () => {
   });
 };
 
-const renderApp = () => {
+const renderApp = async () => {
+  const ReactQueryDevtools = import.meta.env.DEV
+    ? (await import('@tanstack/react-query-devtools')).ReactQueryDevtools
+    : null;
+
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
-        <ReactQueryDevtools initialIsOpen={false} />
+        {ReactQueryDevtools ? <ReactQueryDevtools initialIsOpen={false} /> : null}
       </QueryClientProvider>
     </React.StrictMode>,
   );
@@ -42,4 +45,6 @@ enableMocking()
     // eslint-disable-next-line no-console
     console.error(error);
   })
-  .finally(renderApp);
+  .finally(() => {
+    void renderApp();
+  });
