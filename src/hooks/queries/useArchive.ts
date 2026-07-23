@@ -1,32 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { GetArchiveCalendarDayRequestDto, GetArchiveCalendarRequestDto } from '@/api/dto';
+import type { ArchiveMemoRequestDto } from '@/api/dto';
 import {
   archiveArtist,
   archiveArtwork,
   archiveExhibition,
-  getArchiveCalendar,
-  getArchiveCalendarDay,
+  deleteArchivedArtworkMemo,
+  deleteArchivedExhibitionMemo,
+  getArchivedArtist,
   getArchivedArtists,
+  getArchivedArtwork,
   getArchivedArtworks,
+  getArchivedExhibition,
   getArchivedExhibitions,
   unarchiveArtist,
   unarchiveArtwork,
   unarchiveExhibition,
+  updateArchivedArtworkMemo,
+  updateArchivedExhibitionMemo,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
-
-export const useArchiveCalendar = (params: GetArchiveCalendarRequestDto) =>
-  useQuery({
-    queryKey: queryKeys.archives.calendar(params),
-    queryFn: () => getArchiveCalendar(params),
-  });
-
-export const useArchiveCalendarDay = (params: GetArchiveCalendarDayRequestDto) =>
-  useQuery({
-    queryKey: queryKeys.archives.calendarDay(params),
-    queryFn: () => getArchiveCalendarDay(params),
-  });
 
 export const useArchivedExhibitions = () =>
   useQuery({
@@ -44,6 +37,27 @@ export const useArchivedArtists = () =>
   useQuery({
     queryKey: queryKeys.archives.artists.list(),
     queryFn: getArchivedArtists,
+  });
+
+export const useArchivedExhibition = (savedExhibitionId: number) =>
+  useQuery({
+    queryKey: queryKeys.archives.displays.detail(savedExhibitionId),
+    queryFn: () => getArchivedExhibition(savedExhibitionId),
+    enabled: Number.isFinite(savedExhibitionId),
+  });
+
+export const useArchivedArtwork = (savedArtworkId: number) =>
+  useQuery({
+    queryKey: queryKeys.archives.works.detail(savedArtworkId),
+    queryFn: () => getArchivedArtwork(savedArtworkId),
+    enabled: Number.isFinite(savedArtworkId),
+  });
+
+export const useArchivedArtist = (savedArtistId: number) =>
+  useQuery({
+    queryKey: queryKeys.archives.artists.detail(savedArtistId),
+    queryFn: () => getArchivedArtist(savedArtistId),
+    enabled: Number.isFinite(savedArtistId),
   });
 
 export const useArchiveExhibition = () => {
@@ -117,5 +131,56 @@ export const useUnarchiveArtist = () => {
   return useMutation({
     mutationFn: unarchiveArtist,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.archives.artists.all() }),
+  });
+};
+
+export const useUpdateArchivedExhibitionMemo = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      archiveDisplayId,
+      body,
+    }: {
+      archiveDisplayId: number;
+      body: ArchiveMemoRequestDto;
+    }) => updateArchivedExhibitionMemo(archiveDisplayId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+    },
+  });
+};
+
+export const useDeleteArchivedExhibitionMemo = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (archiveDisplayId: number) => deleteArchivedExhibitionMemo(archiveDisplayId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+    },
+  });
+};
+
+export const useUpdateArchivedArtworkMemo = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ archiveWorkId, body }: { archiveWorkId: number; body: ArchiveMemoRequestDto }) =>
+      updateArchivedArtworkMemo(archiveWorkId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
+    },
+  });
+};
+
+export const useDeleteArchivedArtworkMemo = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (archiveWorkId: number) => deleteArchivedArtworkMemo(archiveWorkId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
+    },
   });
 };
