@@ -21,8 +21,6 @@ export const router = createBrowserRouter([
       { index: true, element: <Homepage /> },
       { path: 'archive', element: <ArchivePage /> },
       { path: 'search', element: <SearchPage /> },
-      // 새 페이지 여기에 추가
-      // { path: 'about', element: <About /> },
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
