@@ -16,7 +16,7 @@ export function AlertModal({ message, confirmLabel = '확인', onConfirm }: Prop
         <button
           type="button"
           onClick={onConfirm}
-          className="w-full h-11 bg-dark rounded-full flex items-center justify-center text-card text-lg font-normal leading-6"
+          className="w-full h-11 bg-dark rounded-full flex items-center justify-center text-card typo-body-md-regular"
         >
           {confirmLabel}
         </button>

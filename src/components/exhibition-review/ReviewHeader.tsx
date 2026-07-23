@@ -21,7 +21,7 @@ export function ReviewHeader({ showWriteButton = true, className = '' }: Props) 
       {showWriteButton && (
         <button
           type="button"
-          onClick={() => navigate('/lounge/review/write')}
+          onClick={() => navigate('/lounge/review/post')}
           className="w-10 flex flex-col items-center gap-1"
         >
           <SquarePen className="size-3.5 text-faint" />

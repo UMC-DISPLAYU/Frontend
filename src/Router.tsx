@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'lounge/review', element: <ExhibitionReviewPage /> },
-      { path: 'lounge/review/write', element: <ExhibitionReviewWritePage /> },
+      { path: 'lounge/review/post', element: <ExhibitionReviewWritePage /> },
       { path: 'lounge/review/:id', element: <ExhibitionReviewDetailPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },

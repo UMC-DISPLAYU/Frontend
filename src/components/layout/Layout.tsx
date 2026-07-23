@@ -10,7 +10,7 @@ function LayoutContent() {
     '/display/',
     '/artwork/',
     '/exhibition-register/',
-    '/lounge/review/write',
+    '/lounge/review/post',
   ];
   const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
 
