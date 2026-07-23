@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 
 import { SectionHeader } from '@/components/homepage/SectionHeader';
-import type { ArtworkPreviewItem } from '@/types/home';
+import type { ArtworkPreviewItem } from '@/types/exhibition';
 
 type Props = {
   items: ArtworkPreviewItem[];
@@ -30,13 +30,13 @@ export function ArtworkPreviewSection({ items }: Props) {
         {items.map((item) => (
           <div
             key={item.id}
-            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-[#D1D5DB]"
+            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box200"
           >
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/15 to-transparent" />
 
-            <div className="absolute left-4 right-4 bottom-4">
-              <p className="text-sm font-bold text-white leading-snug mb-1">{item.name}</p>
-              <p className="text-[10px] text-white/80">{item.date}</p>
+            <div className="absolute left-3 right-3 bottom-3">
+              <p className="typo-body-sm-bold text-white">{item.name}</p>
+              <p className="typo-body-xs-regular text-faint">{item.date}</p>
             </div>
           </div>
         ))}
