@@ -12,6 +12,15 @@ import { router } from './Router';
 
 const enableMocking = async () => {
   if (import.meta.env.VITE_ENABLE_MOCK !== 'true') {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(
+        registrations
+          .filter((registration) => registration.active?.scriptURL.includes('mockServiceWorker.js'))
+          .map((registration) => registration.unregister()),
+      );
+    }
+
     return;
   }
 
