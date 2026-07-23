@@ -17,6 +17,11 @@ export interface HomeExhibitionDto {
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
 
+export interface GetClosingSoonDisplaysRequestDto {
+  cursor?: string;
+  size?: number;
+}
+
 export interface GetGraduationDisplaysResponseDataDto {
   exhibitions: HomeExhibitionDto[];
 }
@@ -37,6 +42,11 @@ export interface DuPickDto {
   subtitle: string;
   bannerImageUrl: string;
   createdAt: string;
+}
+
+export interface GetDuPicksRequestDto {
+  cursor?: number | null;
+  size?: number;
 }
 
 export interface GetDuPicksResponseDataDto {
