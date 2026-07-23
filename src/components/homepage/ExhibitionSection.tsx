@@ -18,7 +18,12 @@ function ExhibitionCard({ item }: { item: HomeExhibitionDto }) {
       onClick={() => navigate(`/display/${item.displayId}`)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && navigate(`/display/${item.displayId}`)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(`/display/${item.displayId}`);
+        }
+      }}
     >
       <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden bg-box">
         {item.posterImageUrl ? (
