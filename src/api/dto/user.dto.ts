@@ -12,6 +12,7 @@ export interface UserProfileDto {
 
 export interface SendVerificationEmailRequestDto {
   schoolEmail: string;
+  univName?: string;
 }
 
 export type SendVerificationEmailResponseDto = ApiResponseDto<null>;
@@ -31,6 +32,7 @@ export type ConfirmVerificationEmailResponseDto =
 
 export interface ResendVerificationEmailRequestDto {
   schoolEmail: string;
+  univName?: string;
 }
 
 export type ResendVerificationEmailResponseDto = ApiResponseDto<null>;
@@ -60,3 +62,15 @@ export interface UpdateNicknameResponseDataDto {
 }
 
 export type UpdateNicknameResponseDto = ApiResponseDto<UpdateNicknameResponseDataDto>;
+
+export interface ArtistProfileDto {
+  artistName: string;
+  status?: string;
+  schoolName?: string;
+  portfolioUrl?: string | null;
+  fields: string[];
+}
+
+export type GetMyArtistProfileResponseDto = ApiResponseDto<ArtistProfileDto>;
+
+export type GetUserArtistProfileResponseDto = ApiResponseDto<Omit<ArtistProfileDto, 'status'>>;
