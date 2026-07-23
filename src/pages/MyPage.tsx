@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { useHeaderContext } from '@/components/layout/headerContext';
 import {
   ArtistCard,
   ArtworkCard,
@@ -23,14 +22,7 @@ export function MyPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isArtistView, setIsArtistView] = useState(true);
 
-  const { setHeader, resetHeader } = useHeaderContext();
   const { data: userData, isLoading, error } = useUserProfile();
-
-  useEffect(() => {
-    setHeader({ title: '' });
-    return () => resetHeader();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleSelectSetting = () => {
     setIsSettingsOpen(false);

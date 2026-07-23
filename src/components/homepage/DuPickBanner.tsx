@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import logo from '@/assets/logo.svg';
 import type { DuPickItem } from '@/types/exhibition';
 
 type Props = {
@@ -29,8 +28,7 @@ export function DuPickBanner({ items }: Props) {
     <section className="pb-7">
       <div className="px-4 mb-2.5 flex justify-between items-center">
         <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
-          <img src={logo} alt="DU" className="h-7 w-auto" />
-          <span>Pick</span>
+          <span>DU Pick</span>
         </h2>
         <button
           type="button"

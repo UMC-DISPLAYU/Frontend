@@ -1,33 +1,40 @@
-import logo from '../../assets/logo.svg';
+import DUfontlogo from '../../assets/DUfontlogo.svg';
 
-interface CreditItem {
-  name: string;
+interface DUMember {
+  names: string[];
   role: string;
 }
 
-const credits: CreditItem[] = [
-  { name: '고상준', role: 'PM' },
-  { name: '최유성', role: 'DESIGN' },
-  { name: '\u200b', role: 'FrontEnd' },
-  { name: '\u200b', role: 'BackEnd' },
+const credits: DUMember[] = [
+  { names: ['고상준'], role: 'PM' },
+  { names: ['최유성'], role: 'DESIGN' },
+  { names: ['안재인', '이승철', '서현민', '정아람'], role: 'FrontEnd' },
+  { names: ['임도현', '최건희', '김승완', '김수빈', '김민지', '우서윤'], role: 'BackEnd' },
 ];
 
 export function FNB() {
   return (
-    <footer className="relative h-[246px] w-full bg-[#d9d9d9]">
-      <div className="absolute top-6 left-[30px] flex w-[318px] flex-col gap-[23px]">
-        <div className="flex flex-col gap-3">
-          <img alt="DISPLAYU" className="h-[28px] w-[57px]" src={logo} />
-          <p className="text-[12px] leading-[1.4] font-medium tracking-[-0.3px] text-[#010032]">
-            전시공유 플랫폼
-          </p>
+    <footer className="w-full bg-line-soft py-8 px-6 md:py-10 md:px-10 lg:py-12 lg:px-16">
+      <div className="mx-auto flex flex-col md:flex-row md:items-start md:justify-between gap-8 lg:gap-16 max-w-7xl">
+        <div className="flex flex-col items-start gap-2.5 md:gap-3 shrink-0">
+          <img alt="DISPLAYU" className="h-6 md:h-7 lg:h-8 w-auto self-start" src={DUfontlogo} />
+          <p className="typo-body-xs-regular md:typo-body-sm-regular text-logo">전시공유 플랫폼</p>
         </div>
 
-        <div className="flex items-center gap-7 text-[12px] font-medium tracking-[-0.3px] text-[#767676]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-7 md:gap-8 lg:gap-12">
           {credits.map((item) => (
-            <div className="shrink-0" key={item.role}>
-              <p className="leading-[1.4] whitespace-pre">{item.role}</p>
-              <p className="leading-[1.4] whitespace-pre">{item.name}</p>
+            <div className="flex shrink-0 flex-col gap-0.5" key={item.role}>
+              <p className="typo-body-xs-semibold md:typo-body-sm-semibold text-sub600 whitespace-pre">
+                {item.role}
+              </p>
+              {item.names.map((name, idx) => (
+                <p
+                  className="typo-body-xs-regular md:typo-body-sm-regular text-hint whitespace-pre"
+                  key={idx}
+                >
+                  {name}
+                </p>
+              ))}
             </div>
           ))}
         </div>
