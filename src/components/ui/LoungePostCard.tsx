@@ -1,3 +1,5 @@
+import type { LoungePostSummaryDto } from '@/api/dto';
+
 const CATEGORY_LABEL: Record<string, string> = {
   WORK_TIP: '준비·작업 팁',
   COLLABORATION: '모집·협업',
@@ -15,27 +17,12 @@ const formatRelativeTime = (createdAt: string) => {
 };
 
 type LoungePostCardProps = {
-  category: string;
-  title: string;
-  description?: string | null;
-  content?: string | null;
-  writerName: string;
-  createdAt: string;
-  commentCount: number;
+  post: LoungePostSummaryDto;
   className?: string;
 };
 
-export function LoungePostCard({
-  category,
-  title,
-  description,
-  content,
-  writerName,
-  createdAt,
-  commentCount,
-  className = '',
-}: LoungePostCardProps) {
-  const bodyText = description ?? content;
+export function LoungePostCard({ post, className = '' }: LoungePostCardProps) {
+  const { category, title, content, writer, createdAt, commentCount } = post;
 
   return (
     <div
@@ -51,11 +38,11 @@ export function LoungePostCard({
 
           <div className="flex flex-col gap-1 w-full min-w-0">
             <p className="typo-body-sm-bold text-main truncate">{title}</p>
-            {bodyText ? (
-              <p className="typo-body-xs-regular text-sub600 truncate">{bodyText}</p>
+            {content ? (
+              <p className="typo-body-xs-regular text-sub600 truncate">{content}</p>
             ) : null}
             <div className="flex items-center gap-2 typo-body-xs-regular text-faint mt-0.5">
-              <span>{writerName}</span>
+              <span>{writer?.nickname}</span>
               <span>·</span>
               <span>{formatRelativeTime(createdAt)}</span>
               <span>·</span>
