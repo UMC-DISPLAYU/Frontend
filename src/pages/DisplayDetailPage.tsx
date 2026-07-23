@@ -71,7 +71,7 @@ export function DisplayDetailPage() {
 
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && <IntroTab display={display} />}
-      {activeTab === 'artwork' && <ArtworkTab artworks={[]} />}
+      {activeTab === 'artwork' && displayId !== undefined && <ArtworkTab displayId={displayId} />}
       {activeTab === 'review' && <ReviewTab reviews={[]} />}
 
       {/* 하단 고정: 공유 & 전시 저장 버튼 */}

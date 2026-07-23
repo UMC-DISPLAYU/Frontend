@@ -136,6 +136,7 @@ export interface DisplayDetailDto {
   displayType: string;
   displayFields: string[];
   region: string;
+  likeCount: number;
   period: DisplayPeriodDto;
   artworkContentOpen: string;
   exhibitionContentOpen: string;

@@ -40,11 +40,12 @@ export function ExhibitionMeta({ display: ex }: Props) {
   }, []);
 
   const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
+  const displayedLikeCount = (ex.likeCount ?? 0) + (bookmarked ? 1 : 0);
 
   return (
     <section className="px-5 pt-6 pb-4">
       {/* 제목/하트 */}
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between pb-1.5 gap-2">
         <h1 className="flex-1 typo-body-xl-bold text-main">{ex.title}</h1>
         <button
           type="button"
@@ -59,6 +60,9 @@ export function ExhibitionMeta({ display: ex }: Props) {
               bookmarked ? 'fill-heart text-heart' : 'fill-none text-sub700',
             )}
           />
+          <span className={cn('typo-body-xs-regular', bookmarked ? 'text-heart' : 'text-sub700')}>
+            {displayedLikeCount}
+          </span>
         </button>
       </div>
       {fullSubtitle && <p className="typo-body-sm-regular text-sub600">{fullSubtitle}</p>}
