@@ -54,8 +54,8 @@ export function SearchPage() {
   const resetFilters = () => setFilters(DEFAULT_FILTER_STATE);
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-[402px] flex-col bg-gray-100">
-      <div className="flex flex-col bg-gray-100 px-5 pt-5">
+    <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-[402px] flex-col bg-page">
+      <div className="flex flex-col bg-page px-5 pt-5">
         <div className="flex h-[62px] flex-col justify-start gap-1 self-stretch">
           <h1 className="text-slate-900 text-3xl font-['Aldrich'] leading-10">Explore</h1>
           <p className="text-xs text-neutral-500">저장한 전시와 작품, 작가를 다시 꺼내보세요.</p>
