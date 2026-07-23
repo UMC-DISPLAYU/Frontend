@@ -6,11 +6,7 @@ interface ChipProps {
   onClick: () => void;
 }
 
-export const Chip = memo(function Chip({
-  label,
-  selected,
-  onClick,
-}: ChipProps) {
+export const Chip = memo(function Chip({ label, selected, onClick }: ChipProps) {
   return (
     <button
       type="button"
