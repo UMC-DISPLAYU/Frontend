@@ -6,13 +6,25 @@ type Props = {
   title?: string;
   description?: ReactNode;
   image?: string;
+  onClick?: () => void;
   children?: ReactNode;
 };
 
-export function LoungeCard({ className = '', title, description, image, children }: Props) {
+export function LoungeCard({
+  className = '',
+  title,
+  description,
+  image,
+  onClick,
+  children,
+}: Props) {
   return (
     <div
-      className={`p-3 bg-box100 rounded-lg overflow-hidden shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_2px_2px_3px_0px_rgba(0,0,0,0.20),inset_-2px_-2px_3px_0px_rgba(255,255,255,1.00)] ${className}`}
+      className={`p-3 bg-box100 rounded-lg overflow-hidden shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_2px_2px_3px_0px_rgba(0,0,0,0.20),inset_-2px_-2px_3px_0px_rgba(255,255,255,1.00)] ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => e.key === 'Enter' && onClick() : undefined}
     >
       {title ? (
         <div className="flex flex-col items-end gap-8">
