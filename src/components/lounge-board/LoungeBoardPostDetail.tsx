@@ -1,11 +1,11 @@
 import defaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
-import type { ExhibitionReviewDetail } from '@/types/exhibition';
+import type { LoungeBoardDetail } from '@/types/exhibition';
 
 type Props = {
-  review: ExhibitionReviewDetail;
+  review: LoungeBoardDetail;
 };
 
-export function ReviewPostDetail({ review }: Props) {
+export function LoungeBoardPostDetail({ review }: Props) {
   return (
     <div className="w-full flex flex-col gap-4">
       <div className="flex items-center gap-2">
