@@ -6,16 +6,13 @@ type ExhibitionCardProps = {
 
 const formatDateRange = (startedAt: string, endedAt: string) => {
   const formatDate = (dateText: string) => {
-    const date = new Date(dateText);
+    const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateText);
 
-    if (Number.isNaN(date.getTime())) {
+    if (!dateParts) {
       return dateText;
     }
 
-    return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(
-      2,
-      '0',
-    )}`;
+    return `${dateParts[2]}.${dateParts[3]}`;
   };
 
   return `${formatDate(startedAt)} - ${formatDate(endedAt)}`;
