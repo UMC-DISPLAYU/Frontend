@@ -5,9 +5,10 @@ import { SectionHeader } from '@/components/homepage/SectionHeader';
 
 type Props = {
   items: ArtworkPreviewItemDto[];
+  onMoreClick?: () => void;
 };
 
-export function ArtworkPreviewSection({ items }: Props) {
+export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -21,7 +22,7 @@ export function ArtworkPreviewSection({ items }: Props) {
 
   return (
     <section className="mb-7">
-      <SectionHeader title="작품 미리보기" />
+      <SectionHeader title="작품 미리보기" onLinkClick={onMoreClick} />
       <div
         ref={scrollRef}
         onWheel={handleWheel}
