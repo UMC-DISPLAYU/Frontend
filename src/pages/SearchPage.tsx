@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 
+import { useLocation, useSearchParams } from 'react-router-dom';
+
 import cancelIcon from '../assets/cancel.svg';
 import filterIcon from '../assets/filter.svg';
 import filterSelectedDotIcon from '../assets/filter-selected-dot.svg';
@@ -17,11 +19,46 @@ import { EXHIBITIONS } from '../mocks/search';
 
 type ExploreTab = 'list' | 'map';
 
+const STATUS_MAP: Record<string, string> = {
+  전시중: 'ongoing',
+  종료예정: 'endingSoon',
+  전시예정: 'upcoming',
+  종료: 'ended',
+};
+
 export function SearchPage() {
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<ExploreTab>('list');
 
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const paramType = searchParams.get('type');
+  const paramStatus = searchParams.get('status');
+  const stateFilters = (location.state as { filters?: Partial<FilterState> })?.filters;
+  const targetFiltersKey = `${paramType ?? ''}_${paramStatus ?? ''}_${JSON.stringify(stateFilters ?? {})}`;
+
+  const [prevKey, setPrevKey] = useState(targetFiltersKey);
+  const [filters, setFilters] = useState<FilterState>(() => {
+    const base: FilterState = { ...DEFAULT_FILTER_STATE };
+    if (stateFilters) return { ...base, ...stateFilters };
+    if (paramType) base['전시유형'] = paramType;
+    if (paramStatus) base['전시상태'] = paramStatus;
+    return base;
+  });
+
+  if (prevKey !== targetFiltersKey) {
+    setPrevKey(targetFiltersKey);
+    const base: FilterState = { ...DEFAULT_FILTER_STATE };
+    if (stateFilters) {
+      setFilters({ ...base, ...stateFilters });
+    } else {
+      if (paramType) base['전시유형'] = paramType;
+      if (paramStatus) base['전시상태'] = paramStatus;
+      setFilters(base);
+    }
+  }
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<FilterTab>('전시분야');
 
@@ -34,12 +71,21 @@ export function SearchPage() {
       const matchesField =
         filters['전시분야'] === '전체' || exhibition.department === filters['전시분야'];
 
+      const mappedStatus = STATUS_MAP[filters['전시상태']];
       const matchesStatus =
-        filters['전시상태'] === '전체' || exhibition.status === filters['전시상태'];
+        filters['전시상태'] === '전체' ||
+        exhibition.status === mappedStatus ||
+        exhibition.status === filters['전시상태'];
+
+      const matchesType =
+        filters['전시유형'] === '전체' ||
+        exhibition.exhibitionType === filters['전시유형'] ||
+        (filters['전시유형'] === '졸업 전시' &&
+          (exhibition.exhibitionType === '졸업 전시' || exhibition.title.includes('졸업')));
 
       const matchesLocation = filters['지역'] === '전체' || exhibition.location === filters['지역'];
 
-      return matchesKeyword && matchesField && matchesStatus && matchesLocation;
+      return matchesKeyword && matchesField && matchesStatus && matchesType && matchesLocation;
     });
   }, [query, filters]);
 

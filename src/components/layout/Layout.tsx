@@ -10,7 +10,7 @@ function LayoutContent() {
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
-      <main className="flex-1 pb-20 md:pb-24 lg:pb-28">
+      <main className="flex-1 pb-6 md:pb-8">
         <Outlet />
       </main>
       <FNB />

@@ -8,4 +8,5 @@ export interface Exhibition {
   posterClassName: string;
   status: ExhibitionStatus;
   title: string;
+  exhibitionType?: string;
 }
