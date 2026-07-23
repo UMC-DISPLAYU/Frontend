@@ -8,7 +8,7 @@ type Props = {
 
 export function LoungeSection({ posts }: Props) {
   return (
-    <section>
+    <section className="mb-2">
       <SectionHeader title="라운지" linkTo="/lounge" />
       <div>
         {posts.map((post) => (
@@ -16,10 +16,11 @@ export function LoungeSection({ posts }: Props) {
             key={post.loungePostId}
             category={post.category}
             title={post.title}
+            content={post.content}
             writerName={post.writer.nickname}
             createdAt={post.createdAt}
             commentCount={post.commentCount}
-            className="mx-4 mb-4"
+            className="mx-4 mb-3"
           />
         ))}
       </div>

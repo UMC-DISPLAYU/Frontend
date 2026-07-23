@@ -18,6 +18,7 @@ type LoungePostCardProps = {
   category: string;
   title: string;
   description?: string | null;
+  content?: string | null;
   writerName: string;
   createdAt: string;
   commentCount: number;
@@ -28,29 +29,32 @@ export function LoungePostCard({
   category,
   title,
   description,
+  content,
   writerName,
   createdAt,
   commentCount,
   className = '',
 }: LoungePostCardProps) {
+  const bodyText = description ?? content;
+
   return (
     <div
       className={`px-4 py-3.5 bg-card rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col gap-2.5 ${className}`}
     >
       <div className="flex justify-between items-start w-full">
-        <div className="flex flex-col gap-3 flex-1 min-w-0">
+        <div className="flex flex-col gap-2 flex-1 min-w-0">
           <div className="px-2 py-0.5 bg-bt-gray rounded-sm inline-flex items-center self-start">
             <span className="text-link text-[10px] font-bold">
               {CATEGORY_LABEL[category] ?? category}
             </span>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <p className="typo-body-sm-bold text-main">{title}</p>
-            {description ? (
-              <p className="typo-body-sm-regular text-main truncate">{description}</p>
+          <div className="flex flex-col gap-1 w-full min-w-0">
+            <p className="typo-body-sm-bold text-main truncate">{title}</p>
+            {bodyText ? (
+              <p className="typo-body-xs-regular text-sub600 truncate">{bodyText}</p>
             ) : null}
-            <div className="flex items-center gap-2 typo-body-xs-regular text-faint">
+            <div className="flex items-center gap-2 typo-body-xs-regular text-faint mt-0.5">
               <span>{writerName}</span>
               <span>·</span>
               <span>{formatRelativeTime(createdAt)}</span>
