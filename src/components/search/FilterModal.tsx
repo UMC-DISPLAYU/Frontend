@@ -27,6 +27,9 @@ export function FilterModal({
   onResetAndApply,
 }: FilterModalProps) {
   const activeValue = filters[activeTab];
+  const activeEntries = (Object.entries(filters) as Array<[FilterTab, string]>).filter(
+    ([, value]) => value !== '전체',
+  );
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,7 +37,7 @@ export function FilterModal({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col justify-end">
+    <div className="fixed inset-0 z-[60] flex flex-col">
       <button
         aria-label="필터 닫기"
         className="absolute inset-0 bg-black/60"
@@ -45,7 +48,7 @@ export function FilterModal({
       <div
         aria-labelledby="filter-modal-title"
         aria-modal="true"
-        className="relative mx-auto flex h-[701px] w-full max-w-[402px] flex-col overflow-hidden rounded-t-xl bg-[var(--color-gray-0)]"
+        className="relative mx-auto mt-[129px] flex w-full max-w-[402px] flex-1 flex-col overflow-hidden rounded-t-xl bg-white"
         ref={modalRef}
         role="dialog"
         tabIndex={-1}
@@ -79,15 +82,20 @@ export function FilterModal({
           ))}
         </div>
 
-        {activeValue !== '전체' ? (
+        {activeEntries.length > 0 ? (
           <div className="flex items-center justify-between bg-neutral-100 px-5 py-3">
-            <button
-              className="flex shrink-0 items-center gap-1 text-xs tracking-tight whitespace-nowrap text-neutral-600"
-              onClick={() => onFilterChange(activeTab, '전체')}
-              type="button"
-            >
-              {activeValue} <img alt="" className="size-4" src={cancelIcon} />
-            </button>
+            <div className="flex flex-wrap gap-2.5">
+              {activeEntries.map(([tab, value]) => (
+                <button
+                  className="flex shrink-0 items-center gap-1 text-xs tracking-tight whitespace-nowrap text-neutral-600"
+                  key={tab}
+                  onClick={() => onFilterChange(tab, '전체')}
+                  type="button"
+                >
+                  {value} <img alt="" className="size-4" src={cancelIcon} />
+                </button>
+              ))}
+            </div>
             <button
               className="shrink-0 text-xs tracking-tight whitespace-nowrap text-neutral-600 underline"
               onClick={onResetAndApply}

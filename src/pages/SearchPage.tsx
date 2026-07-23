@@ -54,16 +54,14 @@ export function SearchPage() {
   const resetFilters = () => setFilters(DEFAULT_FILTER_STATE);
 
   return (
-    <div className="mx-auto flex w-full min-w-[320px] max-w-[402px] flex-col bg-gray-100">
+    <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-[402px] flex-col bg-gray-100">
       <div className="flex flex-col bg-gray-100 px-5 pt-5">
         <div className="flex h-[62px] flex-col justify-start gap-1 self-stretch">
-          <h1 className="font-['Aldrich'] text-[32px] leading-[140%] font-normal tracking-[-0.96px] text-[var(--color-logo-navy)]">
-            Explore
-          </h1>
+          <h1 className="text-slate-900 text-3xl font-['Aldrich'] leading-10">Explore</h1>
           <p className="text-xs text-neutral-500">저장한 전시와 작품, 작가를 다시 꺼내보세요.</p>
         </div>
 
-        <div className="mt-2.5 flex h-10 items-center justify-between rounded-xl bg-[#FCFCFC] px-5 py-2.5 shadow-[-1px_-1px_1px_0px_#FFF_inset,1px_1px_1px_0px_rgba(0,0,0,0.10)_inset]">
+        <div className="mt-2.5 flex h-10 items-center justify-between rounded-xl bg-gray-200 px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.14),inset_-1px_-1px_1px_0px_rgba(255,255,255,1.00)]">
           <input
             className="h-5 flex-1 bg-transparent text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
             onChange={(event) => setQuery(event.target.value)}
@@ -74,12 +72,12 @@ export function SearchPage() {
           <img alt="" className="size-5" src={searchIcon} />
         </div>
 
-        <div className="flex h-11 items-end border-b border-[#D9D9D9] shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
+        <div className="-mx-5 flex h-11 items-end gap-5 border-b border-zinc-300 px-5">
           <button
-            className={`px-0 pr-5 pb-3 text-sm ${
+            className={`border-b-2 px-0 pb-3 text-sm ${
               activeTab === 'list'
-                ? 'border-b-2 border-neutral-900 font-bold text-neutral-900'
-                : 'font-normal text-neutral-400'
+                ? 'border-neutral-900 font-bold text-neutral-900'
+                : 'border-transparent font-normal text-neutral-400'
             }`}
             onClick={() => setActiveTab('list')}
             type="button"
@@ -87,10 +85,10 @@ export function SearchPage() {
             전시목록
           </button>
           <button
-            className={`px-0 pb-3 text-sm ${
+            className={`border-b-2 px-0 pb-3 text-sm ${
               activeTab === 'map'
-                ? 'border-b-2 border-neutral-900 font-bold text-neutral-900'
-                : 'font-normal text-neutral-400'
+                ? 'border-neutral-900 font-bold text-neutral-900'
+                : 'border-transparent font-normal text-neutral-400'
             }`}
             onClick={() => setActiveTab('map')}
             type="button"
@@ -101,7 +99,7 @@ export function SearchPage() {
       </div>
 
       {activeTab === 'list' ? (
-        <>
+        <div className="flex flex-1 flex-col">
           <div className="flex items-center gap-1.5 px-5 pt-[14px]">
             <button
               aria-label="필터"
@@ -119,7 +117,7 @@ export function SearchPage() {
             </button>
 
             <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
-              {FIELD_OPTIONS.map((field) => (
+              {FIELD_OPTIONS.filter((field) => field !== '전체').map((field) => (
                 <FilterChip
                   key={field}
                   label={field}
@@ -154,9 +152,11 @@ export function SearchPage() {
             </div>
           ) : null}
 
-          <div className="px-5 pt-4 pb-24">
+          <div className="flex flex-1 flex-col px-5 pt-4 pb-24">
             {filteredExhibitions.length === 0 ? (
-              <p className="py-10 text-center text-sm text-gray-400">검색 결과가 없어요</p>
+              <p className="flex flex-1 items-center justify-center text-center text-xl text-neutral-400">
+                결과가 없습니다
+              </p>
             ) : (
               <div className="grid grid-cols-2 gap-x-2.5 gap-y-5">
                 {filteredExhibitions.map((exhibition) => (
@@ -165,7 +165,7 @@ export function SearchPage() {
               </div>
             )}
           </div>
-        </>
+        </div>
       ) : null}
 
       {modalOpen ? (
