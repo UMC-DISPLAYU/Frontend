@@ -1,3 +1,5 @@
+import type { LoungeCategoryKey } from '@/constants/loungeCategories';
+
 // ─── Home Types ────────────────────────────────────────────────────────────
 
 export interface DuPickItem {
@@ -30,9 +32,9 @@ export interface LoungePost {
   views: string;
 }
 
-export interface ExhibitionReviewPost {
+export interface LoungeBoardPost {
   id: string;
-  tag: string;
+  category: LoungeCategoryKey;
   title: string;
   description: string;
   author: string;
@@ -41,7 +43,7 @@ export interface ExhibitionReviewPost {
   images?: string[];
 }
 
-export interface ExhibitionReviewComment {
+export interface LoungeBoardComment {
   id: string;
   author: string;
   time: string;
@@ -50,9 +52,9 @@ export interface ExhibitionReviewComment {
   isLiked: boolean;
 }
 
-export interface ExhibitionReviewDetail {
+export interface LoungeBoardDetail {
   id: string;
-  tag: string;
+  category: LoungeCategoryKey;
   title: string;
   author: string;
   date: string;
@@ -61,7 +63,7 @@ export interface ExhibitionReviewDetail {
   isLiked: boolean;
   isSaved: boolean;
   images?: string[];
-  comments: ExhibitionReviewComment[];
+  comments: LoungeBoardComment[];
 }
 
 // ─── Detail Types ──────────────────────────────────────────────────────────

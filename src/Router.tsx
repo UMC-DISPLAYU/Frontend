@@ -7,14 +7,16 @@ import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
 import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
-import { ExhibitionReviewDetailPage } from './pages/ExhibitionReviewDetailPage';
-import { ExhibitionReviewPage } from './pages/ExhibitionReviewPage';
 import { Homepage } from './pages/Homepage';
+import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
+import { LoungeBoardPage } from './pages/LoungeBoardPage';
 import { LoungePage } from './pages/LoungePage';
+import { MyActivityPage } from './pages/MyActivityPage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
+import { SearchPage } from './pages/SearchPage';
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +24,7 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Homepage /> },
+      { path: 'search', element: <SearchPage /> },
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
@@ -34,6 +37,9 @@ export const router = createBrowserRouter([
       { path: 'exhibition/manage', element: <ExhibitionManage /> },
       { path: 'exhibition/visibility', element: <VisibilitySettings /> },
       { path: 'team/manage', element: <TeamManage /> },
+      { path: 'lounge/my-activity', element: <MyActivityPage /> },
+      { path: 'lounge/:category', element: <LoungeBoardPage /> },
+      { path: 'lounge/:category/:id', element: <LoungeBoardDetailPage /> },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],

@@ -26,9 +26,7 @@ export function AffiliationInput({
 
         <div className="bg-card px-4 py-3.5 flex flex-col gap-2">
           <label htmlFor="department-input" className="flex items-center gap-1">
-            <span className="text-sub700 typo-body-xs-bold leading-4">
-              세부소속
-            </span>
+            <span className="text-sub700 typo-body-xs-bold leading-4">세부소속</span>
             <span className="text-red-400 typo-body-xs-regular leading-5">*</span>
           </label>
           <input
@@ -47,9 +45,7 @@ export function AffiliationInput({
     <div className="rounded-2xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden">
       <div className="bg-card px-4 py-3.5 flex flex-col gap-2">
         <label htmlFor="organizer-input" className="flex items-center gap-1">
-          <span className="text-sub700 typo-body-xs-bold leading-4">
-            주최 / 소속명
-          </span>
+          <span className="text-sub700 typo-body-xs-bold leading-4">주최 / 소속명</span>
           <span className="text-red-400 typo-body-xs-regular leading-5">*</span>
         </label>
         <input

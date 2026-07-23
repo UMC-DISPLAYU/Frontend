@@ -1,24 +1,29 @@
 import { useNavigate } from 'react-router-dom';
 
-import type { ExhibitionReviewPost } from '@/types/exhibition';
+import { LOUNGE_CATEGORY_TAGS } from '@/constants/loungeCategories';
+import type { LoungeBoardPost } from '@/types/exhibition';
 
 type Props = {
-  post: ExhibitionReviewPost;
+  post: LoungeBoardPost;
+  tagLabel?: string;
 };
 
-export function ReviewPostCard({ post }: Props) {
+export function LoungeBoardPostCard({ post, tagLabel }: Props) {
   const navigate = useNavigate();
+  const detailPath = `/lounge/${post.category}/${post.id}`;
 
   return (
     <article
       className="px-4 py-3.5 bg-stone-50 rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.02)] outline outline-2 outline-offset-[-2px] outline-neutral-50 flex flex-col gap-3 overflow-hidden cursor-pointer"
-      onClick={() => navigate(`/lounge/review/${post.id}`)}
+      onClick={() => navigate(detailPath)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && navigate(`/lounge/review/${post.id}`)}
+      onKeyDown={(e) => e.key === 'Enter' && navigate(detailPath)}
     >
       <span className="self-start h-5 px-2 py-0.5 bg-tag-gray rounded-sm inline-flex items-center">
-        <span className="typo-body-xxs-bold text-tag-blue whitespace-nowrap">{post.tag}</span>
+        <span className="typo-body-xxs-bold text-tag-blue whitespace-nowrap">
+          {tagLabel ?? LOUNGE_CATEGORY_TAGS[post.category]}
+        </span>
       </span>
 
       <div className="flex flex-col gap-2">
