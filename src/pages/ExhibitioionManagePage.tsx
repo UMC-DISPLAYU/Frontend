@@ -187,7 +187,7 @@ const goVisibility = () => {
           className="typo-body-sm-bold h-11 flex-1 rounded-xl bg-dark text-white"
           onClick={() => navigate('/')}
         >
-          완료
+          등록하기
         </button>
       </div>
     </div>
