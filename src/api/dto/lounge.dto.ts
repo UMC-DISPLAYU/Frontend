@@ -35,6 +35,7 @@ export interface LoungePostSummaryDto {
   loungePostId: number;
   category: string;
   title: string;
+  content: string;
   postImageUrl: string | null;
   writer: LoungeWriterDto;
   createdAt: string;
