@@ -2,12 +2,13 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import { Layout } from './components/layout';
 import { ArtistNameSetup } from './pages/ArtistNameSetup';
+import ArtworksManagePage from './pages/ArtworksManagePage';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
-import { ExhibitionManage } from './pages/ExhibitioionManagePage';
-import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
-import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import DisplayManagePage from './pages/DisplayManagePage';
+import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
+import { ExhibitionManage } from './pages/ExhibitioionManagePage';
+import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { Homepage } from './pages/Homepage';
 import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
 import { LoungeBoardPage } from './pages/LoungeBoardPage';
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'display/manage', element: <DisplayManagePage /> },
+      { path: 'artworks-manage', element: <ArtworksManagePage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },

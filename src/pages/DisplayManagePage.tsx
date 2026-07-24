@@ -18,11 +18,15 @@ type UserRole = 'owner' | 'member-verified' | 'member-unverified';
 
 export default function DisplayManagePage() {
   const [selected, setSelected] = useState<ExhibitionItem | null>(null);
-  const [userRole] = useState<UserRole>('member-verified'); // This can be dynamically set based on user data
+  const [userRole] = useState<UserRole>('owner');
   const navigate = useNavigate();
 
   const handleVerifyArtist = () => {
     console.log('작가 인증 페이지로 이동');
+  };
+
+  const handleManageArtworks = () => {
+    navigate('/artworks-manage');
   };
 
   return (
@@ -34,6 +38,7 @@ export default function DisplayManagePage() {
           onBack={() => setSelected(null)}
           userRole={userRole}
           onVerifyArtist={handleVerifyArtist}
+          onManageArtworks={handleManageArtworks}
         />
       ) : (
         <ManageScreen
