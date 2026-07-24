@@ -50,7 +50,7 @@ const NAV_ITEMS = [
 
 export function Navbar() {
   return (
-    <div className="relative rounded-[250px] px-3 py-1 sm:px-5 sm:py-1.5 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06)] overflow-hidden transition-all duration-300">
+    <div className="relative overflow-hidden rounded-[250px] px-5 py-1.5 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06)]">
       <div
         aria-hidden
         className="absolute inset-0 rounded-[250px] backdrop-blur-[10px] pointer-events-none"
@@ -68,23 +68,23 @@ export function Navbar() {
         }}
       />
 
-      <div className="relative flex items-center justify-center gap-1 sm:gap-2">
+      <div className="relative flex items-center justify-center">
         {NAV_ITEMS.map(({ activeIcon, icon, id, label, path }) => {
           return (
             <NavLink
               key={id}
               end={path === '/'}
-              className="flex flex-col items-center justify-center w-16 sm:w-20 lg:w-24 h-[52px] sm:h-[60px] lg:h-[64px] cursor-pointer rounded-[24px] border-0 bg-transparent outline-none transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#fcfcfc] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              className="flex h-[60px] w-20 cursor-pointer flex-col items-center justify-center rounded-[24px] border-0 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#fcfcfc] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
               to={path}
             >
               {({ isActive }) => (
-                <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-                  <img
-                    alt=""
-                    className="h-4.5 w-4.5 sm:h-5 sm:w-5 lg:h-6 lg:w-6 transition-transform duration-200"
-                    src={isActive ? activeIcon : icon}
-                  />
-                  <span className="whitespace-nowrap transition-colors duration-150 typo-body-xs-regular sm:typo-body-sm-regular text-white">
+                <div className="flex flex-col items-center gap-1">
+                  <img alt="" className="h-5 w-5" src={isActive ? activeIcon : icon} />
+                  <span
+                    className={`text-[12px] leading-[1.4] tracking-[-0.36px] whitespace-nowrap transition-colors duration-150 ${
+                      isActive ? 'font-bold text-[#fcfcfc]' : 'font-normal text-[#e5e5e5]'
+                    }`}
+                  >
                     {label}
                   </span>
                 </div>
