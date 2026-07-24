@@ -22,7 +22,7 @@ export function Header({ title, onBack }: { title: string; onBack?: () => void }
 }
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <div className="typo-body-sm-bold text-main mt-6 mb-3">{children}</div>;
+  return <div className="typo-body-sm-bold text-main">{children}</div>;
 }
 
 export function BottomBar({ children }: { children: React.ReactNode }) {

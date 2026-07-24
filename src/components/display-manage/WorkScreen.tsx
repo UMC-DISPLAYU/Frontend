@@ -23,12 +23,14 @@ export function WorkScreen({
   onBack,
   userRole = 'owner',
   onVerifyArtist,
+  onManageArtworks,
 }: {
   ex: ExhibitionItem;
   work: WorkData;
   onBack: () => void;
   userRole?: UserRole;
-  onVerifyArtist?: () => void;
+  onVerifyArtist: () => void;
+  onManageArtworks: () => void;
 }) {
   return (
     <Screen>
@@ -46,7 +48,12 @@ export function WorkScreen({
 
         <InfoBox userRole={userRole} onVerifyArtist={onVerifyArtist} />
 
+        <div className="flex items-center justify-between mt-6 mb-1">
         <SectionTitle>전시 콘텐츠</SectionTitle>
+        <button className="typo-body-xs-regular bg-transparent border-none cursor-pointer flex items-center gap-0.5 text-hint">
+            관리하기 <ChevronRight size={13} />
+          </button>
+        </div>
         <div className="flex flex-col gap-2">
           {work.contents.map((r) => (
             <ContentRow key={r.id} row={r} />
@@ -55,8 +62,11 @@ export function WorkScreen({
 
         <div className="flex items-center justify-between mt-6 mb-1">
           <div className="typo-body-sm-bold text-main">전시작</div>
-          <button className="typo-body-xs-regular bg-transparent border-none cursor-pointer flex items-center gap-0.5 text-hint">
-            전시작 관리 <ChevronRight size={13} />
+          <button
+            onClick={onManageArtworks}
+            className="typo-body-xs-regular bg-transparent border-none cursor-pointer flex items-center gap-0.5 text-hint"
+          >
+            관리하기 <ChevronRight size={13} />
           </button>
         </div>
         <div className="typo-body-xs-regular text-hint mb-3">
@@ -80,7 +90,7 @@ export function WorkScreen({
 
         <button
           onClick={onBack}
-          className="mt-21.5 typo-body-sm-bold w-full mt-4 p-4 rounded-xl bg-card text-main cursor-pointer"
+          className="typo-body-sm-bold w-full mt-21.5 p-4 rounded-xl bg-card text-main border-none cursor-pointer"
         >
           전시 관리로 돌아가기
         </button>
