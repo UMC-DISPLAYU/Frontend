@@ -7,6 +7,7 @@ import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
 import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
+import DisplayManagePage from './pages/DisplayManagePage';
 import { Homepage } from './pages/Homepage';
 import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
 import { LoungeBoardPage } from './pages/LoungeBoardPage';
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
+      { path: 'display/manage', element: <DisplayManagePage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },
