@@ -8,6 +8,7 @@ type Props = {
   image?: string;
   onClick?: () => void;
   children?: ReactNode;
+  bordered?: boolean;
 };
 
 export function LoungeCard({
@@ -17,10 +18,12 @@ export function LoungeCard({
   image,
   onClick,
   children,
+  bordered = false,
 }: Props) {
   return (
     <div
-      className={`p-3 bg-box100 rounded-lg overflow-hidden shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_2px_2px_3px_0px_rgba(0,0,0,0.20),inset_-2px_-2px_3px_0px_rgba(255,255,255,1.00)] ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      // bordered: --line 토큰(#c4c4c4)이 피그마 zinc-300(#d4d4d8)과 달라 임시로 피그마 값을 하드코딩함
+      className={`p-3 bg-box100 rounded-lg overflow-hidden shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_2px_2px_3px_0px_rgba(0,0,0,0.20),inset_-2px_-2px_3px_0px_rgba(255,255,255,1.00)] ${bordered ? 'outline outline-1 outline-offset-[-1px] outline-zinc-300/70' : ''} ${onClick ? 'cursor-pointer' : ''} ${className}`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}

@@ -23,7 +23,7 @@ export function MyActivitySection() {
           image ? (
             <LoungeCard
               key={title}
-              className="flex-1 h-32 flex flex-col items-center justify-between"
+              className="w-[114px] h-[126px] flex flex-col items-center justify-between"
               onClick={() => goToTab(tab)}
             >
               <ArrowUpRight className="size-5 text-faint self-end" strokeWidth={1.5} />
@@ -33,7 +33,7 @@ export function MyActivitySection() {
           ) : (
             <LoungeCard
               key={title}
-              className="flex-1 h-32 flex flex-col justify-between items-end"
+              className="w-[114px] h-[126px] flex flex-col justify-between items-end"
               onClick={() => goToTab(tab)}
             >
               <ArrowUpRight className="size-5 text-faint" strokeWidth={1.5} />
