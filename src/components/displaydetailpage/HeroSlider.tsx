@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { BackButton } from '@/components/ui/BackButton';
 import { cn } from '@/utils/cn';
@@ -10,6 +10,14 @@ type Props = {
 
 export function HeroSlider({ images, onBack }: Props) {
   const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [images.length]);
 
   return (
     <div className="relative w-full overflow-hidden bg-main" style={{ height: '568px' }}>
