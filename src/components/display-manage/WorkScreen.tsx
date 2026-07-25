@@ -1,4 +1,5 @@
 import { ChevronRight, Info, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
@@ -32,6 +33,8 @@ export function WorkScreen({
   onVerifyArtist: () => void;
   onManageArtworks: () => void;
 }) {
+  const navigate = useNavigate();
+
   return (
     <Screen>
       <Header title="전시 작업" onBack={onBack} />
@@ -50,7 +53,10 @@ export function WorkScreen({
 
         <div className="flex items-center justify-between mt-6 mb-1">
         <SectionTitle>전시 콘텐츠</SectionTitle>
-        <button className="typo-body-xs-regular bg-transparent border-none cursor-pointer flex items-center gap-0.5 text-hint">
+        <button
+          onClick={() => navigate('/display/contents-manage')}
+          className="typo-body-xs-regular bg-transparent border-none cursor-pointer flex items-center gap-0.5 text-hint"
+        >
             관리하기 <ChevronRight size={13} />
           </button>
         </div>
