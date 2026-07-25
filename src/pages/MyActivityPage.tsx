@@ -70,7 +70,7 @@ export function MyActivityPage() {
         })}
       </nav>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-10">
+      <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-10">
         <div className="flex flex-col gap-3.5">
           {TAB_POSTS[activeTab].map((post) => (
             <LoungeBoardPostCard key={post.id} post={post} tagLabel={activeTabLabel} />

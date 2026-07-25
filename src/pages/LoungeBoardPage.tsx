@@ -15,10 +15,10 @@ export const LoungeBoardPage = () => {
     <div className="w-full max-w-105 mx-auto h-dvh bg-page flex flex-col">
       <LoungeBoardHeader
         title={isValidCategory ? LOUNGE_CATEGORIES[category] : '라운지'}
-        className="px-5"
+        className="pl-5 pr-[29px]"
       />
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-10">
+      <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-[23.5px] pb-10">
         {isValidCategory ? (
           <div className="flex flex-col gap-3.5">
             {posts.map((post) => (

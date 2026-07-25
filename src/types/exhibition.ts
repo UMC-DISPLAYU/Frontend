@@ -42,6 +42,7 @@ export interface LoungeBoardComment {
   content: string;
   likeCount: number;
   isLiked: boolean;
+  replies?: LoungeBoardComment[];
 }
 
 export interface LoungeBoardDetail {

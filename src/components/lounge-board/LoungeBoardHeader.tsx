@@ -11,7 +11,7 @@ export function LoungeBoardHeader({ title, showWriteButton = true, className = '
   const navigate = useNavigate();
 
   return (
-    <div className={`flex items-center justify-between pt-3.5 ${className}`}>
+    <div className={`flex items-center justify-between pt-[11px] ${className}`}>
       <div className="h-9 flex items-center gap-3">
         <button type="button" aria-label="뒤로가기" onClick={() => navigate(-1)}>
           <ChevronLeft className="size-7 text-main" />
@@ -20,9 +20,8 @@ export function LoungeBoardHeader({ title, showWriteButton = true, className = '
       </div>
 
       {showWriteButton && (
-        <button type="button" className="w-10 flex flex-col items-center gap-1">
-          <SquarePen className="size-3.5 text-faint" />
-          <span className="typo-body-xs-regular text-faint">글 작성</span>
+        <button type="button" aria-label="글 작성" className="flex items-center justify-center">
+          <SquarePen className="size-[18px] text-faint" />
         </button>
       )}
     </div>

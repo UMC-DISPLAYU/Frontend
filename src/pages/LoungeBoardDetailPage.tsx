@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { useParams } from 'react-router-dom';
 
 import {
@@ -14,6 +16,7 @@ export const LoungeBoardDetailPage = () => {
   const isValidCategory = isLoungeCategoryKey(category);
   const review = id ? LOUNGE_BOARD_DETAILS[id] : undefined;
   const isValidPost = isValidCategory && review && review.category === category;
+  const [comments, setComments] = useState(review?.comments ?? []);
 
   return (
     <div className="w-full max-w-105 mx-auto h-dvh bg-page flex flex-col">
@@ -24,7 +27,7 @@ export const LoungeBoardDetailPage = () => {
       />
 
       {isValidPost ? (
-        <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-10">
+        <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-10">
           <div className="flex flex-col items-center gap-[30px]">
             <LoungeBoardPostDetail review={review} />
 
@@ -35,9 +38,13 @@ export const LoungeBoardDetailPage = () => {
                 isSaved={review.isSaved}
               />
 
-              <div className="w-full flex flex-col gap-4">
-                {review.comments.map((comment) => (
-                  <LoungeBoardCommentItem key={comment.id} comment={comment} />
+              <div className="w-full flex flex-col gap-[40px]">
+                {comments.map((comment) => (
+                  <LoungeBoardCommentItem
+                    key={comment.id}
+                    comment={comment}
+                    onDelete={() => setComments((prev) => prev.filter((c) => c.id !== comment.id))}
+                  />
                 ))}
               </div>
             </div>
