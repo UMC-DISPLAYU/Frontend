@@ -2,13 +2,13 @@ import { useState } from 'react';
 
 import { Heart } from 'lucide-react';
 
-import type { ExhibitionReviewComment } from '@/types/exhibition';
+import type { LoungeBoardComment } from '@/types/exhibition';
 
 type Props = {
-  comment: ExhibitionReviewComment;
+  comment: LoungeBoardComment;
 };
 
-export function ReviewCommentItem({ comment }: Props) {
+export function LoungeBoardCommentItem({ comment }: Props) {
   const [liked, setLiked] = useState(comment.isLiked);
   const displayedLikeCount = comment.likeCount + (liked ? 1 : 0) - (comment.isLiked ? 1 : 0);
 

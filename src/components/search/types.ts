@@ -1,11 +1,3 @@
-export type ExhibitionStatus = 'ended' | 'endingSoon' | 'ongoing' | 'upcoming';
+import type { DisplayListItemDto } from '@/api/dto';
 
-export interface Exhibition {
-  dateRange: string;
-  department: string;
-  id: string;
-  location: string;
-  posterClassName: string;
-  status: ExhibitionStatus;
-  title: string;
-}
+export type Exhibition = DisplayListItemDto;

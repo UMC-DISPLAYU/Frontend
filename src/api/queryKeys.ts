@@ -1,12 +1,8 @@
 import type { CursorPageRequestDto } from '@/api/dto';
 import type {
-  GetArchiveCalendarDayRequestDto,
-  GetArchiveCalendarRequestDto,
-} from '@/api/dto/archive.dto';
-import type {
-  GetDisplayArtworksRequestDto,
+  GetClosingSoonDisplaysRequestDto,
   GetDisplayMapRequestDto,
-  GetDisplaysRequestDto,
+  GetDuPicksRequestDto,
   SearchDisplaysRequestDto,
 } from '@/api/dto/display.dto';
 import type { GetArtworkPreviewRequestDto } from '@/api/dto/displayArtwork.dto';
@@ -24,50 +20,48 @@ export const queryKeys = {
     me: () => [...queryKeys.users.all, 'me'] as const,
     nicknameCheck: (nickname: string) =>
       [...queryKeys.users.all, 'nickname-check', nickname] as const,
+    artistProfile: () => [...queryKeys.users.me(), 'artist-profile'] as const,
+    userArtistProfile: (userId: number) =>
+      [...queryKeys.users.all, userId, 'artist-profile'] as const,
+  },
+
+  health: {
+    all: ['health'] as const,
   },
 
   displays: {
     all: ['displays'] as const,
     lists: () => [...queryKeys.displays.all, 'list'] as const,
-    list: (params?: GetDisplaysRequestDto) =>
-      [...queryKeys.displays.lists(), params ?? {}] as const,
     search: (params: SearchDisplaysRequestDto) =>
       [...queryKeys.displays.lists(), 'search', params] as const,
     map: (params: GetDisplayMapRequestDto) =>
       [...queryKeys.displays.lists(), 'map', params] as const,
-    closingSoon: () => [...queryKeys.displays.lists(), 'closing-soon'] as const,
-    graduation: () => [...queryKeys.displays.lists(), 'graduation'] as const,
-    duPicks: () => [...queryKeys.displays.lists(), 'du-picks'] as const,
+    closingSoon: (params?: GetClosingSoonDisplaysRequestDto) =>
+      [...queryKeys.displays.lists(), 'closing-soon', params ?? {}] as const,
+    graduation: (params?: { size?: number }) =>
+      [...queryKeys.displays.lists(), 'graduation', params ?? {}] as const,
+    duPicks: (params?: GetDuPicksRequestDto) =>
+      [...queryKeys.displays.lists(), 'du-picks', params ?? {}] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
-    reviewLists: (displayId: number) =>
-      [...queryKeys.displays.detail(displayId), 'reviews'] as const,
-    reviews: (displayId: number, params: { page: number; size: number }) =>
-      [...queryKeys.displays.reviewLists(displayId), params] as const,
   },
 
   displayArtworks: {
     all: ['displayArtworks'] as const,
     lists: () => [...queryKeys.displayArtworks.all, 'list'] as const,
-    listPrefix: (displayId: number) => [...queryKeys.displayArtworks.lists(), displayId] as const,
-    list: (displayId: number, params: GetDisplayArtworksRequestDto) =>
-      [...queryKeys.displayArtworks.listPrefix(displayId), params] as const,
     preview: (params?: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params ?? {}] as const,
     details: () => [...queryKeys.displayArtworks.all, 'detail'] as const,
     detail: (artworkId: number) => [...queryKeys.displayArtworks.details(), artworkId] as const,
   },
 
-  displayCategories: {
-    all: ['displayCategories'] as const,
-  },
-
-  displayMembers: {
-    all: ['displayMembers'] as const,
-    lists: () => [...queryKeys.displayMembers.all, 'list'] as const,
-    list: (displayId: number) => [...queryKeys.displayMembers.lists(), displayId] as const,
-    inviteLink: (displayId: number) =>
-      [...queryKeys.displayMembers.all, 'invite-link', displayId] as const,
+  personalArtworks: {
+    all: ['personalArtworks'] as const,
+    lists: () => [...queryKeys.personalArtworks.all, 'list'] as const,
+    list: () => [...queryKeys.personalArtworks.lists()] as const,
+    details: () => [...queryKeys.personalArtworks.all, 'detail'] as const,
+    detail: (personalArtworkId: number) =>
+      [...queryKeys.personalArtworks.details(), personalArtworkId] as const,
   },
 
   artworkFeelings: {
@@ -105,28 +99,30 @@ export const queryKeys = {
 
   archives: {
     all: ['archives'] as const,
-    calendar: (params: GetArchiveCalendarRequestDto) =>
-      [...queryKeys.archives.all, 'calendar', params] as const,
-    calendarDay: (params: GetArchiveCalendarDayRequestDto) =>
-      [...queryKeys.archives.all, 'calendar-day', params] as const,
 
     displays: {
       all: () => [...queryKeys.archives.all, 'displays'] as const,
       lists: () => [...queryKeys.archives.displays.all(), 'list'] as const,
       list: (params?: ListParams) =>
         [...queryKeys.archives.displays.lists(), params ?? {}] as const,
+      detail: (savedExhibitionId: number) =>
+        [...queryKeys.archives.displays.all(), 'detail', savedExhibitionId] as const,
     },
 
     works: {
       all: () => [...queryKeys.archives.all, 'works'] as const,
       lists: () => [...queryKeys.archives.works.all(), 'list'] as const,
       list: (params?: ListParams) => [...queryKeys.archives.works.lists(), params ?? {}] as const,
+      detail: (savedArtworkId: number) =>
+        [...queryKeys.archives.works.all(), 'detail', savedArtworkId] as const,
     },
 
     artists: {
       all: () => [...queryKeys.archives.all, 'artists'] as const,
       lists: () => [...queryKeys.archives.artists.all(), 'list'] as const,
       list: (params?: ListParams) => [...queryKeys.archives.artists.lists(), params ?? {}] as const,
+      detail: (savedArtistId: number) =>
+        [...queryKeys.archives.artists.all(), 'detail', savedArtistId] as const,
     },
   },
 } as const;

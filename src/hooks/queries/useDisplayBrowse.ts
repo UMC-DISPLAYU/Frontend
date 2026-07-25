@@ -1,18 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type {
-  GetDisplayMapRequestDto,
-  GetDisplaysRequestDto,
-  SearchDisplaysRequestDto,
-} from '@/api/dto';
-import { getDisplayMap, getDisplays, searchDisplays } from '@/api/endpoints';
+import type { GetDisplayMapRequestDto, SearchDisplaysRequestDto } from '@/api/dto';
+import { getDisplayMap, searchDisplays } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
-
-export const useDisplays = (params: GetDisplaysRequestDto = {}) =>
-  useQuery({
-    queryKey: queryKeys.displays.list(params),
-    queryFn: () => getDisplays(params),
-  });
 
 export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
   useQuery({

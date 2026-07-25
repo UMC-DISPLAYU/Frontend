@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react';
 
+import { useLocation, useSearchParams } from 'react-router-dom';
+
+import type { SearchDisplaysRequestDto } from '@/api/dto';
+
 import cancelIcon from '../assets/cancel.svg';
 import filterIcon from '../assets/filter.svg';
 import filterSelectedDotIcon from '../assets/filter-selected-dot.svg';
@@ -8,40 +12,75 @@ import {
   DEFAULT_FILTER_STATE,
   ExhibitionCard,
   FIELD_OPTIONS,
+  FILTER_CONFIG,
   FilterChip,
   FilterModal,
   type FilterState,
   type FilterTab,
+  getFilterOptionValue,
 } from '../components/search';
-import { EXHIBITIONS } from '../mocks/search';
+import { useSearchDisplays } from '../hooks/queries/useDisplayBrowse';
 
 type ExploreTab = 'list' | 'map';
 
+const createSearchDisplayParams = (query: string, filters: FilterState) => {
+  const params: SearchDisplaysRequestDto = {
+    cursor: 0,
+    searchWord: query.trim() || null,
+    size: 20,
+  };
+
+  (Object.entries(filters) as Array<[FilterTab, string]>).forEach(([tab, label]) => {
+    const config = FILTER_CONFIG[tab];
+    params[config.param] = getFilterOptionValue(config, label);
+  });
+
+  return params;
+};
+
 export function SearchPage() {
+  const location = useLocation();
+  const [urlSearchParams] = useSearchParams();
+
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<ExploreTab>('list');
 
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const paramType = urlSearchParams.get('type');
+  const paramStatus = urlSearchParams.get('status');
+  const stateFilters = (location.state as { filters?: Partial<FilterState> })?.filters;
+  const targetFiltersKey = `${paramType ?? ''}_${paramStatus ?? ''}_${JSON.stringify(stateFilters ?? {})}`;
+
+  const [prevKey, setPrevKey] = useState(targetFiltersKey);
+  const [filters, setFilters] = useState<FilterState>(() => {
+    const base: FilterState = { ...DEFAULT_FILTER_STATE };
+    if (stateFilters) return { ...base, ...stateFilters };
+    if (paramType) base['전시유형'] = paramType;
+    if (paramStatus) base['전시상태'] = paramStatus;
+    return base;
+  });
+
+  if (prevKey !== targetFiltersKey) {
+    setPrevKey(targetFiltersKey);
+    const base: FilterState = { ...DEFAULT_FILTER_STATE };
+    if (stateFilters) {
+      setFilters({ ...base, ...stateFilters });
+    } else {
+      if (paramType) base['전시유형'] = paramType;
+      if (paramStatus) base['전시상태'] = paramStatus;
+      setFilters(base);
+    }
+  }
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<FilterTab>('전시분야');
 
-  const filteredExhibitions = useMemo(() => {
-    const keyword = query.trim();
+  const searchDisplayParams = useMemo(
+    () => createSearchDisplayParams(query, filters),
+    [query, filters],
+  );
 
-    return EXHIBITIONS.filter((exhibition) => {
-      const matchesKeyword = !keyword || exhibition.title.includes(keyword);
-
-      const matchesField =
-        filters['전시분야'] === '전체' || exhibition.department === filters['전시분야'];
-
-      const matchesStatus =
-        filters['전시상태'] === '전체' || exhibition.status === filters['전시상태'];
-
-      const matchesLocation = filters['지역'] === '전체' || exhibition.location === filters['지역'];
-
-      return matchesKeyword && matchesField && matchesStatus && matchesLocation;
-    });
-  }, [query, filters]);
+  const { data, isError, isLoading } = useSearchDisplays(searchDisplayParams);
+  const exhibitions = data?.exhibitions ?? [];
 
   const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string]>).filter(
     ([, value]) => value !== '전체',
@@ -153,14 +192,22 @@ export function SearchPage() {
           ) : null}
 
           <div className="flex flex-1 flex-col px-5 pt-4 pb-24">
-            {filteredExhibitions.length === 0 ? (
+            {isLoading ? (
+              <p className="flex flex-1 items-center justify-center text-center text-xl text-neutral-400">
+                불러오는 중...
+              </p>
+            ) : isError ? (
+              <p className="flex flex-1 items-center justify-center text-center text-xl text-neutral-400">
+                전시를 불러오지 못했습니다
+              </p>
+            ) : exhibitions.length === 0 ? (
               <p className="flex flex-1 items-center justify-center text-center text-xl text-neutral-400">
                 결과가 없습니다
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-x-2.5 gap-y-5">
-                {filteredExhibitions.map((exhibition) => (
-                  <ExhibitionCard exhibition={exhibition} key={exhibition.id} />
+                {exhibitions.map((exhibition) => (
+                  <ExhibitionCard exhibition={exhibition} key={exhibition.displayId} />
                 ))}
               </div>
             )}

@@ -76,29 +76,29 @@ export const deleteLoungeComment = async (
 ): Promise<DeleteLoungeCommentResponseDataDto> =>
   apiRequest(`/v1/lounge/comments/${commentId}`, { method: 'DELETE' });
 
-// POST /v1/lounge/posts/:postId/like
+// POST /v1/lounge/posts/:postId/likes
 export const likeLoungePost = async (postId: number): Promise<LoungePostLikeStatusDto> =>
-  apiRequest(`/v1/lounge/posts/${postId}/like`, { method: 'POST' });
+  apiRequest(`/v1/lounge/posts/${postId}/likes`, { method: 'POST' });
 
-// DELETE /v1/lounge/posts/:postId/like
+// DELETE /v1/lounge/posts/:postId/likes
 export const unlikeLoungePost = async (postId: number): Promise<LoungePostLikeStatusDto> =>
-  apiRequest(`/v1/lounge/posts/${postId}/like`, { method: 'DELETE' });
+  apiRequest(`/v1/lounge/posts/${postId}/likes`, { method: 'DELETE' });
 
-// POST /v1/lounge/comments/:commentId/like
+// POST /v1/lounge/comments/:commentId/likes
 export const likeLoungeComment = async (commentId: number): Promise<LoungeCommentLikeStatusDto> =>
-  apiRequest(`/v1/lounge/comments/${commentId}/like`, { method: 'POST' });
+  apiRequest(`/v1/lounge/comments/${commentId}/likes`, { method: 'POST' });
 
-// DELETE /v1/lounge/comments/:commentId/like
+// DELETE /v1/lounge/comments/:commentId/likes
 export const unlikeLoungeComment = async (commentId: number): Promise<LoungeCommentLikeStatusDto> =>
-  apiRequest(`/v1/lounge/comments/${commentId}/like`, { method: 'DELETE' });
+  apiRequest(`/v1/lounge/comments/${commentId}/likes`, { method: 'DELETE' });
 
-// POST /v1/lounge/posts/:postId/scrap
+// POST /v1/lounge/posts/:postId/scraps
 export const scrapLoungePost = async (postId: number): Promise<LoungePostScrapStatusDto> =>
-  apiRequest(`/v1/lounge/posts/${postId}/scrap`, { method: 'POST' });
+  apiRequest(`/v1/lounge/posts/${postId}/scraps`, { method: 'POST' });
 
-// DELETE /v1/lounge/posts/:postId/scrap
+// DELETE /v1/lounge/posts/:postId/scraps
 export const unscrapLoungePost = async (postId: number): Promise<LoungePostScrapStatusDto> =>
-  apiRequest(`/v1/lounge/posts/${postId}/scrap`, { method: 'DELETE' });
+  apiRequest(`/v1/lounge/posts/${postId}/scraps`, { method: 'DELETE' });
 
 // POST /v1/lounge/comments/:commentId/replies
 export const createLoungeReply = async (
