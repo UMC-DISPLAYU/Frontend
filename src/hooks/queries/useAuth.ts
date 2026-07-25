@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { LoginRequestDto, LogoutRequestDto, SignupRequestDto } from '@/api/dto';
+import type { LoginRequestDto, SignupRequestDto } from '@/api/dto';
 import { login, logout, signup } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
@@ -30,7 +30,7 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: LogoutRequestDto) => logout(body),
+    mutationFn: logout,
     onSuccess: () => {
       queryClient.clear();
     },

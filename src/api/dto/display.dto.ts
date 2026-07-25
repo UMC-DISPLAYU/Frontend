@@ -1,15 +1,11 @@
-import type {
-  ApiResponseDto,
-  CursorPaginationDto,
-  ImageResponseDto,
-  OffsetPageInfoDto,
-  OffsetPageRequestDto,
-} from './common.dto';
+import type { ApiResponseDto, CursorPaginationDto, OffsetPageRequestDto } from './common.dto';
 
 export interface HomeExhibitionDto {
   displayId: number;
   title: string;
   posterImageUrl: string;
+  organization?: string;
+  department?: string;
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
@@ -60,6 +56,8 @@ export interface DisplayListItemDto {
   displayId: number;
   title: string;
   posterImageUrl: string;
+  organization?: string;
+  department?: string;
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
@@ -136,6 +134,7 @@ export interface DisplayDetailDto {
   displayType: string;
   displayFields: string[];
   region: string;
+  likeCount: number;
   period: DisplayPeriodDto;
   artworkContentOpen: string;
   exhibitionContentOpen: string;
@@ -161,7 +160,14 @@ export interface DisplayPeriodDto {
   endTime: string;
 }
 
-export type DisplayImageDto = ImageResponseDto;
+export interface DisplayImageDto {
+  imageId: number;
+  imageUrl: string;
+  imageType: string;
+  width: number;
+  height: number;
+  sortOrder: number;
+}
 
 export interface DisplayContentDto {
   contentId: number;
@@ -199,17 +205,17 @@ export type GetDisplayDetailResponseDto = ApiResponseDto<DisplayDetailDto>;
 export interface DisplayArtworkListItemDto {
   artworkId: number;
   artworkName: string;
-  authorName: string;
-  thumbnailImageUrl: string;
+  artistName: string;
+  artworkImageUrl: string;
+  imageWidth: number;
+  imageHeight: number;
 }
 
-export interface GetDisplayArtworksRequestDto extends OffsetPageRequestDto {
-  sort?: string;
-}
-
-export interface GetDisplayArtworksResponseDataDto extends OffsetPageInfoDto {
+export interface GetDisplayArtworksRequestDto {
   displayId: number;
-  totalCount: number;
+}
+
+export interface GetDisplayArtworksResponseDataDto {
   artworks: DisplayArtworkListItemDto[];
 }
 
@@ -234,10 +240,10 @@ export interface CreateDisplayRequestDto {
   hostOrganizationName?: string;
   subtitle?: string;
   description?: string;
-  precautions?: string | null;
-  departmentOrClubValid?: boolean;
+  precautions?: string;
   regionValid?: boolean;
   schoolOrOrganizationValid?: boolean;
+  departmentOrClubValid?: boolean;
   hostOrganizationNameValid?: boolean;
 }
 
@@ -246,23 +252,22 @@ export type CreateDisplayResponseDataDto = DisplayDetailDto;
 export type CreateDisplayResponseDto = ApiResponseDto<CreateDisplayResponseDataDto>;
 
 export interface UpdateDisplayRequestDto {
-  userId?: number;
-  displayId?: number;
+  displayId: number;
   title?: string;
   posterImageUrl?: string;
   type?: string;
   fields?: string[];
-  schoolOrOrganization?: string | null;
-  departmentOrClub?: string | null;
-  hostOrganizationName?: string | null;
-  subtitle?: string | null;
-  description?: string | null;
+  schoolOrOrganization?: string;
+  departmentOrClub?: string;
+  hostOrganizationName?: string;
+  subtitle?: string;
+  description?: string;
   startDate?: string;
   endDate?: string;
   openTime?: string;
   closeTime?: string;
   placeName?: string;
-  precautions?: string | null;
+  precautions?: string;
   fieldsValid?: boolean;
 }
 
@@ -279,7 +284,6 @@ export type DeleteDisplayResponseDto = ApiResponseDto<DeleteDisplayResponseDataD
 
 export interface ToggleDisplayLikeResponseDataDto {
   displayId: number;
-  isLiked: boolean;
   likeCount: number;
 }
 

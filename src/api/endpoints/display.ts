@@ -64,7 +64,7 @@ export const createDisplay = async (
 // PATCH /v1/display
 export const updateDisplay = async (
   displayId: number,
-  body: UpdateDisplayRequestDto,
+  body: Omit<UpdateDisplayRequestDto, 'displayId'>,
 ): Promise<UpdateDisplayResponseDataDto> =>
   apiRequest('/v1/display', { method: 'PATCH', body: { displayId, ...body } });
 
@@ -77,6 +77,5 @@ export const toggleDisplayLike = async (
 // PATCH /v1/display/like
 export const updateDisplayLike = async (body: {
   displayId: number;
-  userId?: number;
 }): Promise<ToggleDisplayLikeResponseDataDto> =>
   apiRequest('/v1/display/like', { method: 'PATCH', body });

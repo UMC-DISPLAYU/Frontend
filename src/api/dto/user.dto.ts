@@ -11,15 +11,15 @@ export interface UserProfileDto {
 }
 
 export interface SendVerificationEmailRequestDto {
-  schoolEmail: string;
+  schoolEmail?: string;
   univName?: string;
 }
 
 export type SendVerificationEmailResponseDto = ApiResponseDto<null>;
 
 export interface ConfirmVerificationEmailRequestDto {
-  schoolEmail: string;
-  verificationCode: string;
+  schoolEmail?: string;
+  verificationCode?: string;
 }
 
 export interface ConfirmVerificationEmailResponseDataDto {
@@ -31,8 +31,7 @@ export type ConfirmVerificationEmailResponseDto =
   ApiResponseDto<ConfirmVerificationEmailResponseDataDto>;
 
 export interface ResendVerificationEmailRequestDto {
-  schoolEmail: string;
-  univName?: string;
+  schoolEmail?: string;
 }
 
 export type ResendVerificationEmailResponseDto = ApiResponseDto<null>;
@@ -53,7 +52,7 @@ export type GetUserMeResponseDto = ApiResponseDto<UserProfileDto>;
 export type DeleteUserMeResponseDto = ApiResponseDto<null>;
 
 export interface UpdateNicknameRequestDto {
-  nickname: string;
+  nickname?: string;
 }
 
 export interface UpdateNicknameResponseDataDto {
@@ -65,11 +64,45 @@ export type UpdateNicknameResponseDto = ApiResponseDto<UpdateNicknameResponseDat
 
 export interface ArtistProfileDto {
   artistName: string;
+  profileImageUrl?: string | null;
+  introduction?: string | null;
   status?: string;
   schoolName?: string;
-  portfolioUrl?: string | null;
+  externalLink?: string | null;
   fields: string[];
 }
+
+export interface UpdateMyProfileRequestDto {
+  profileImageUrl?: string;
+  nickname?: string;
+}
+
+export interface UpdateMyProfileResponseDataDto {
+  nickname: string;
+  profileImageUrl: string;
+}
+
+export type UpdateMyProfileResponseDto = ApiResponseDto<UpdateMyProfileResponseDataDto>;
+
+export interface UpdateArtistProfileRequestDto {
+  profileImageUrl?: string;
+  artistName: string;
+  introduction?: string;
+  fields: string[];
+  externalLink?: string;
+  univName?: string;
+}
+
+export interface UpdateArtistProfileResponseDataDto {
+  profileImageUrl: string;
+  artistName: string;
+  introduction: string;
+  fields: string[];
+  externalLink: string;
+  univName: string;
+}
+
+export type UpdateArtistProfileResponseDto = ApiResponseDto<UpdateArtistProfileResponseDataDto>;
 
 export type GetMyArtistProfileResponseDto = ApiResponseDto<ArtistProfileDto>;
 

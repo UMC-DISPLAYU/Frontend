@@ -1,5 +1,6 @@
 import type {
   ApiResponseDto,
+  CursorPageInfoDto,
   ImageRequestDto,
   ImageResponseDto,
   OffsetPageRequestDto,
@@ -15,6 +16,16 @@ export interface ArtworkGuestbookUserDto {
 }
 
 export interface ArtworkGuestbookReplyDto {
+  userId: number;
+  nickname: string;
+  content: string;
+  createdAt: string;
+  isCreator: boolean;
+}
+
+export interface ArtworkQuestionReplyDto {
+  creatorName: string;
+  isCreator: boolean;
   content: string;
   createdAt: string;
 }
@@ -44,10 +55,10 @@ export interface ArtworkFeelingDto {
   content: string;
   createdAt: string;
   user: ArtworkGuestbookUserDto;
-  reply: ArtworkGuestbookReplyDto | null;
+  replies: ArtworkGuestbookReplyDto[];
 }
 
-export interface GetArtworkFeelingsResponseDataDto {
+export interface GetArtworkFeelingsResponseDataDto extends CursorPageInfoDto {
   feelings: ArtworkFeelingDto[];
 }
 
@@ -59,6 +70,7 @@ export interface CreateArtworkFeelingRequestDto {
 
 export interface CreateArtworkFeelingResponseDataDto {
   feelingId: number;
+  userId: number;
   content: string;
   createdAt: string;
 }
@@ -77,18 +89,24 @@ export interface UpdateArtworkFeelingResponseDataDto {
 
 export type UpdateArtworkFeelingResponseDto = ApiResponseDto<UpdateArtworkFeelingResponseDataDto>;
 
-export type DeleteArtworkFeelingResponseDto = ApiResponseDto<null>;
+export interface DeleteArtworkFeelingResponseDataDto {
+  feelingId: number;
+  deletedAt: string;
+}
+
+export type DeleteArtworkFeelingResponseDto = ApiResponseDto<DeleteArtworkFeelingResponseDataDto>;
 
 export interface ArtworkQuestionDto {
   questionId: number;
   content: string;
   isPublic: boolean;
+  answerStatus: string;
   createdAt: string;
   user: ArtworkGuestbookUserDto;
-  reply: ArtworkGuestbookReplyDto | null;
+  reply: ArtworkQuestionReplyDto | null;
 }
 
-export interface GetArtworkQuestionsResponseDataDto {
+export interface GetArtworkQuestionsResponseDataDto extends CursorPageInfoDto {
   questions: ArtworkQuestionDto[];
 }
 
@@ -137,23 +155,53 @@ export interface CreateArtworkQuestionReplyResponseDataDto {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
-  id2: number;
-  createrId: number;
+  artQueId: number;
+  creatorId: number;
+  creatorName: string;
 }
 
 export type CreateArtworkQuestionReplyResponseDto =
   ApiResponseDto<CreateArtworkQuestionReplyResponseDataDto>;
 
 export interface ArtworkFeelingLikeDto {
-  artLikeId: number;
+  feelingId: number;
+  liked: boolean;
+  likeCount: number;
   createdAt: string;
-  id2: number;
-  userId: number;
+  deletedAt: string | null;
 }
 
-export type ToggleArtworkFeelingLikeResponseDto = ApiResponseDto<ArtworkFeelingLikeDto | null>;
+export interface CreateArtworkFeelingReplyRequestDto {
+  content: string;
+}
+
+export interface CreateArtworkFeelingReplyResponseDataDto {
+  feelingReplyId: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  feelingId: number;
+  userId: number;
+  nickname: string;
+  isCreator: boolean;
+}
+
+export interface DisplayArtworkLikeResponseDataDto {
+  artworkId: number;
+  isLiked: boolean;
+  likeCount: number;
+}
+
+export type DisplayArtworkLikeResponseDto = ApiResponseDto<DisplayArtworkLikeResponseDataDto>;
+
+export type CreateArtworkFeelingReplyResponseDto =
+  ApiResponseDto<CreateArtworkFeelingReplyResponseDataDto>;
+
+export type ToggleArtworkFeelingLikeResponseDto = ApiResponseDto<ArtworkFeelingLikeDto>;
 
 export interface UpdateArtworkOrderRequestDto {
+  displayId: number;
   orderedArtworkIds: number[];
 }
 
@@ -174,8 +222,8 @@ export interface CreateExhibitionArtworkRequestDto {
   size: string;
   point: string;
   images: ImageRequestDto[];
-  artistName?: string;
-  artistUserId?: number;
+  artistName: string;
+  artistUserId: number;
   coAuthors: ArtworkCoAuthorsDto;
   qaHandlerUserId: number;
 }
@@ -202,8 +250,8 @@ export type CreateExhibitionArtworkResponseDto =
   ApiResponseDto<CreateExhibitionArtworkResponseDataDto>;
 
 export interface ArtworkCoAuthorsDto {
-  userIds: number[];
-  rawNames: string[];
+  userIds?: number[];
+  rawNames?: string[];
 }
 
 export interface DeleteArtworkResponseDataDto {
@@ -213,8 +261,10 @@ export interface DeleteArtworkResponseDataDto {
 
 export type DeleteArtworkResponseDto = ApiResponseDto<DeleteArtworkResponseDataDto>;
 
-export interface GetArtworkPreviewRequestDto extends Partial<OffsetPageRequestDto> {
-  type?: string;
+export interface GetArtworkPreviewRequestDto extends OffsetPageRequestDto {
+  type: string;
+  field?: string;
+  school?: string;
 }
 
 export interface ArtworkPreviewExhibitionInfoDto {
@@ -227,6 +277,7 @@ export interface ArtworkPreviewExhibitionInfoDto {
 export interface ArtworkPreviewItemDto {
   artworkId: number;
   artworkName: string;
+  artistName: string;
   artworkImageUrl: string;
   imageWidth: number;
   imageHeight: number;

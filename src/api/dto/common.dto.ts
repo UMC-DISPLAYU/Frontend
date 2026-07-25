@@ -72,10 +72,12 @@ export interface CursorPaginationDto<TCursor = number | string> {
 
 export interface ImageRequestDto {
   imageUrl: string;
+  isThumbnail?: boolean;
   imageType: string;
-  width: number;
-  height: number;
-  sortOrder: number;
+  sortOrder?: number;
+  caption?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface ImageResponseDto {

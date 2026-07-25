@@ -37,9 +37,15 @@ export type LoginResponseDataDto = ExistingUserLoginResponseDataDto | NewUserLog
 
 export type LoginResponseDto = ApiResponseDto<LoginResponseDataDto>;
 
+export interface OAuthAuthorizationUrlResponseDataDto {
+  authorizationUrl: string;
+}
+
+export type OAuthAuthorizationUrlResponseDto = ApiResponseDto<OAuthAuthorizationUrlResponseDataDto>;
+
 export interface SignupAgreementDto {
   agreeId: number;
-  isAgreed: boolean;
+  isAgreed?: boolean;
 }
 
 export interface SignupRequestDto {
@@ -50,14 +56,12 @@ export interface SignupRequestDto {
 export interface SignupResponseDataDto {
   user: AuthUserDto;
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export type SignupResponseDto = ApiResponseDto<SignupResponseDataDto>;
 
-export interface RefreshTokenRequestDto {
-  refreshToken: string;
-}
+export type RefreshTokenRequestDto = Record<string, never>;
 
 export interface RefreshTokenResponseDataDto {
   accessToken: string;
@@ -65,8 +69,6 @@ export interface RefreshTokenResponseDataDto {
 
 export type RefreshTokenResponseDto = ApiResponseDto<RefreshTokenResponseDataDto>;
 
-export interface LogoutRequestDto {
-  refreshToken: string;
-}
+export type LogoutRequestDto = Record<string, never>;
 
 export type LogoutResponseDto = ApiResponseDto<null>;

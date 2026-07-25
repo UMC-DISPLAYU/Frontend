@@ -22,7 +22,7 @@ export const useToggleDisplayLike = () => {
       queryClient.setQueryData(
         queryKeys.displays.detail(displayId),
         (current: DisplayDetailDto | undefined) =>
-          current ? { ...current, isLiked: data.isLiked, likeCount: data.likeCount } : current,
+          current ? { ...current, likeCount: data.likeCount } : current,
       );
     },
   });

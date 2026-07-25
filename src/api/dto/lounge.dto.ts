@@ -3,11 +3,12 @@ import type { ApiResponseDto, CursorPageInfoDto, CursorPageRequestDto } from './
 export interface LoungeWriterDto {
   userId: number;
   nickname: string;
-  profileImageUrl: string | null;
+  profileImageUrl: string;
 }
 
 export interface CreateLoungePostRequestDto {
   title: string;
+  postImageUrls: string[];
   content: string;
   category: string;
 }
@@ -15,17 +16,11 @@ export interface CreateLoungePostRequestDto {
 export interface LoungePostBaseDto {
   loungePostId: number;
   title: string;
-  postImageUrl: string | null;
+  postImageUrls: string[];
   content: string;
   category: string;
   postStatus: string;
 }
-
-export interface CreateLoungePostResponseDataDto extends LoungePostBaseDto {
-  createdAt: string;
-}
-
-export type CreateLoungePostResponseDto = ApiResponseDto<CreateLoungePostResponseDataDto>;
 
 export interface GetLoungePostsRequestDto extends CursorPageRequestDto {
   category?: string;
@@ -36,7 +31,7 @@ export interface LoungePostSummaryDto {
   category: string;
   title: string;
   content: string;
-  postImageUrl: string | null;
+  postImageUrls: string[];
   writer: LoungeWriterDto;
   createdAt: string;
   commentCount: number;
@@ -62,26 +57,19 @@ export interface LoungePostDetailDto extends LoungePostBaseDto {
   isMyPost: boolean;
 }
 
+export type CreateLoungePostResponseDataDto = LoungePostDetailDto;
+
+export type CreateLoungePostResponseDto = ApiResponseDto<CreateLoungePostResponseDataDto>;
+
 export type GetLoungePostDetailResponseDto = ApiResponseDto<LoungePostDetailDto>;
 
-export interface UpdateLoungePostRequestDto {
-  title?: string;
-  postImageUrl?: string | null;
-  content?: string;
-  category?: string;
-}
+export type UpdateLoungePostRequestDto = CreateLoungePostRequestDto;
 
-export interface UpdateLoungePostResponseDataDto extends LoungePostBaseDto {
-  updatedAt: string;
-}
+export type UpdateLoungePostResponseDataDto = LoungePostDetailDto;
 
 export type UpdateLoungePostResponseDto = ApiResponseDto<UpdateLoungePostResponseDataDto>;
 
-export interface DeleteLoungePostResponseDataDto {
-  loungePostId: number;
-  postStatus: string;
-  deletedAt: string;
-}
+export type DeleteLoungePostResponseDataDto = null;
 
 export type DeleteLoungePostResponseDto = ApiResponseDto<DeleteLoungePostResponseDataDto>;
 
@@ -97,12 +85,6 @@ export interface LoungeCommentBaseDto {
   writer: LoungeWriterDto;
 }
 
-export interface CreateLoungeCommentResponseDataDto extends LoungeCommentBaseDto {
-  createdAt: string;
-}
-
-export type CreateLoungeCommentResponseDto = ApiResponseDto<CreateLoungeCommentResponseDataDto>;
-
 export interface LoungeCommentDto extends LoungeCommentBaseDto {
   createdAt: string;
   updatedAt: string;
@@ -111,6 +93,10 @@ export interface LoungeCommentDto extends LoungeCommentBaseDto {
   isLiked: boolean;
   isMyComment: boolean;
 }
+
+export type CreateLoungeCommentResponseDataDto = LoungeCommentDto;
+
+export type CreateLoungeCommentResponseDto = ApiResponseDto<CreateLoungeCommentResponseDataDto>;
 
 export interface GetLoungeCommentsResponseDataDto extends CursorPageInfoDto {
   comments: LoungeCommentDto[];
@@ -122,20 +108,11 @@ export interface UpdateLoungeCommentRequestDto {
   content: string;
 }
 
-export interface UpdateLoungeCommentResponseDataDto {
-  loungeCommentId: number;
-  content: string;
-  commentStatus: string;
-  updatedAt: string;
-}
+export type UpdateLoungeCommentResponseDataDto = LoungeCommentDto;
 
 export type UpdateLoungeCommentResponseDto = ApiResponseDto<UpdateLoungeCommentResponseDataDto>;
 
-export interface DeleteLoungeCommentResponseDataDto {
-  loungeCommentId: number;
-  commentStatus: string;
-  deletedAt: string;
-}
+export type DeleteLoungeCommentResponseDataDto = null;
 
 export type DeleteLoungeCommentResponseDto = ApiResponseDto<DeleteLoungeCommentResponseDataDto>;
 
@@ -171,10 +148,7 @@ export type UnscrapLoungePostResponseDto = ApiResponseDto<LoungePostScrapStatusD
 
 export type CreateLoungeReplyRequestDto = CreateLoungeCommentRequestDto;
 
-export interface CreateLoungeReplyResponseDataDto extends LoungeCommentBaseDto {
-  parentCommentId: number;
-  createdAt: string;
-}
+export type CreateLoungeReplyResponseDataDto = LoungeCommentDto;
 
 export type CreateLoungeReplyResponseDto = ApiResponseDto<CreateLoungeReplyResponseDataDto>;
 

@@ -10,22 +10,15 @@ export type ArchiveExhibitionResponseDto = ApiResponseDto<ArchivedExhibitionStat
 export type UnarchiveExhibitionResponseDto = ApiResponseDto<ArchivedExhibitionStatusDto>;
 
 export interface ArchivedExhibitionDto {
-  savedExhibitionId: number;
+  archiveDisplayId: number;
   displayId: number;
-  title: string;
-  thumbnailUrl: string;
-  organization: string;
-  placeName: string;
-  startDate: string;
-  endDate: string;
-  displayType: string;
-  status: string;
+  userId: number;
   memo: string | null;
   savedAt: string;
 }
 
-export interface GetArchivedExhibitionsResponseDataDto {
-  savedExhibitions: ArchivedExhibitionDto[];
+export interface GetArchivedExhibitionsResponseDataDto extends CursorPageInfoDto {
+  displays: ArchivedExhibitionDto[];
 }
 
 export type GetArchivedExhibitionsResponseDto =
@@ -64,22 +57,21 @@ export type ArchiveArtistResponseDto = ApiResponseDto<ArchivedArtistStatusDto>;
 export type UnarchiveArtistResponseDto = ApiResponseDto<ArchivedArtistStatusDto>;
 
 export interface ArchivedArtistDto {
-  savedArtistId: number;
+  archiveArtistId: number;
   artistId: number;
-  name: string;
-  field: string;
-  profileImageUrl: string;
+  userId: number;
   savedAt: string;
 }
 
-export interface GetArchivedArtistsResponseDataDto {
-  savedArtists: ArchivedArtistDto[];
+export interface GetArchivedArtistsResponseDataDto extends CursorPageInfoDto {
+  artists: ArchivedArtistDto[];
 }
 
 export type GetArchivedArtistsResponseDto = ApiResponseDto<GetArchivedArtistsResponseDataDto>;
 
 export interface ArchiveMemoRequestDto {
-  memo: string;
+  content: string;
+  visitDate?: string;
 }
 
 export type GetArchivedExhibitionResponseDto = ApiResponseDto<ArchivedExhibitionDto>;
