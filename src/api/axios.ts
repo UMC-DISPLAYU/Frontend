@@ -22,8 +22,9 @@ export class ApiError extends Error {
 const getAccessToken = () => localStorage.getItem('accessToken');
 
 export const axiosInstance = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
   timeout: 10000,
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use((config) => {

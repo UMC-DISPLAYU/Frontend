@@ -2,7 +2,7 @@ import type {
   LoginRequestDto,
   LoginResponseDataDto,
   LogoutRequestDto,
-  RefreshTokenRequestDto,
+  OAuthAuthorizationUrlResponseDto,
   RefreshTokenResponseDataDto,
   SignupRequestDto,
   SignupResponseDataDto,
@@ -14,14 +14,24 @@ import { apiRequest } from '../client';
 export const login = async (body: LoginRequestDto): Promise<LoginResponseDataDto> =>
   apiRequest('/v1/auth/login', { method: 'POST', body });
 
+// GET /auth/kakao/login-url
+export const getKakaoAuthorizationUrl = async (): Promise<OAuthAuthorizationUrlResponseDto> =>
+  apiRequest('/auth/kakao/login-url');
+
+// GET /auth/google/login-url
+export const getGoogleAuthorizationUrl = async (): Promise<OAuthAuthorizationUrlResponseDto> =>
+  apiRequest('/auth/google/login-url');
+
 // POST /v1/auth/signup
 export const signup = async (body: SignupRequestDto): Promise<SignupResponseDataDto> =>
-  apiRequest('/v1/auth/signup', { method: 'POST', body });
+  apiRequest('/v1/auth/signup', {
+    method: 'POST',
+    body,
+  });
 
 // POST /v1/auth/refresh
-export const refreshToken = async (
-  body: RefreshTokenRequestDto,
-): Promise<RefreshTokenResponseDataDto> => apiRequest('/v1/auth/refresh', { method: 'POST', body });
+export const refreshToken = async (): Promise<RefreshTokenResponseDataDto> =>
+  apiRequest('/v1/auth/refresh', { method: 'POST' });
 
 // POST /v1/auth/logout
 export const logout = async (body: LogoutRequestDto): Promise<null> =>

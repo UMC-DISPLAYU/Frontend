@@ -3,6 +3,11 @@ import { useState } from 'react';
 import { Check, ChevronRight, Info, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import {
+  useGoogleAuthorizationUrl,
+  useKakaoAuthorizationUrl,
+  useSignup,
+} from '@/hooks/queries/useAuth';
 import { useCheckNickname } from '@/hooks/queries/useUserProfile';
 
 type Screen = 'login' | 'terms' | 'nickname' | 'complete';
@@ -109,7 +114,17 @@ function GoogleIcon() {
   );
 }
 
-function LoginScreen({ onNext, onGuest }: { onNext: () => void; onGuest: () => void }) {
+function LoginScreen({
+  onGoogle,
+  onGuest,
+  onKakao,
+  disabled,
+}: {
+  onGoogle: () => void;
+  onGuest: () => void;
+  onKakao: () => void;
+  disabled: boolean;
+}) {
   return (
     <div className="flex h-full flex-col bg-white">
       <div className="h-14 shrink-0 border-b border-[#e8eaed]" />
@@ -132,8 +147,9 @@ function LoginScreen({ onNext, onGuest }: { onNext: () => void; onGuest: () => v
         <div className="mb-7 flex flex-col gap-2.5">
           <button
             type="button"
-            onClick={onNext}
-            className="flex h-[54px] w-full items-center justify-center gap-[9px] rounded-xl bg-[#fee500]"
+            onClick={onKakao}
+            disabled={disabled}
+            className="flex h-[54px] w-full items-center justify-center gap-[9px] rounded-xl bg-[#fee500] disabled:opacity-50"
           >
             <KakaoIcon />
             <span className="text-[15px] font-bold tracking-[-0.15px] text-[#191600]">
@@ -143,8 +159,9 @@ function LoginScreen({ onNext, onGuest }: { onNext: () => void; onGuest: () => v
 
           <button
             type="button"
-            onClick={onNext}
-            className="flex h-[54px] w-full items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-[#d1d5db] bg-white"
+            onClick={onGoogle}
+            disabled={disabled}
+            className="flex h-[54px] w-full items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-[#d1d5db] bg-white disabled:opacity-50"
           >
             <GoogleIcon />
             <span className="text-[15px] font-medium tracking-[-0.15px] text-[#3d3d3d]">
@@ -223,7 +240,13 @@ function Badge({ type }: { type: '필수' | '선택' }) {
   );
 }
 
-function TermsScreen({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function TermsScreen({
+  onBack,
+  onNext,
+}: {
+  onBack: () => void;
+  onNext: (terms: TermsState) => void;
+}) {
   const [terms, setTerms] = useState<TermsState>({
     all: false,
     service: false,
@@ -298,13 +321,25 @@ function TermsScreen({ onBack, onNext }: { onBack: () => void; onNext: () => voi
 
         <div className="flex-1" />
 
-        <PrimaryButton label="동의하고 계속하기" onClick={onNext} disabled={!canProceed} />
+        <PrimaryButton
+          label="동의하고 계속하기"
+          onClick={() => onNext(terms)}
+          disabled={!canProceed}
+        />
       </div>
     </div>
   );
 }
 
-function NicknameScreen({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function NicknameScreen({
+  onBack,
+  onNext,
+  isSubmitting,
+}: {
+  onBack: () => void;
+  onNext: (nickname: string) => void;
+  isSubmitting: boolean;
+}) {
   const [nickname, setNickname] = useState('displayu디유');
   const [checkStatus, setCheckStatus] = useState<NicknameCheckStatus>('idle');
   const maxLen = 15;
@@ -323,11 +358,15 @@ function NicknameScreen({ onBack, onNext }: { onBack: () => void; onNext: () => 
       return;
     }
 
-    const result = await checkNickname();
-    const isAvailable = result.data?.isAvailable;
-    setCheckStatus(
-      typeof isAvailable === 'boolean' ? (isAvailable ? 'available' : 'unavailable') : 'error',
-    );
+    try {
+      const result = await checkNickname();
+      const isAvailable = result.data?.isAvailable;
+      setCheckStatus(
+        typeof isAvailable === 'boolean' ? (isAvailable ? 'available' : 'unavailable') : 'error',
+      );
+    } catch {
+      setCheckStatus('error');
+    }
   };
 
   const isValid = checkStatus === 'available' && nickname.length >= 5;
@@ -423,7 +462,11 @@ function NicknameScreen({ onBack, onNext }: { onBack: () => void; onNext: () => 
 
         <div className="flex-1" />
 
-        <PrimaryButton label="가입 완료하기" onClick={onNext} disabled={!isValid} />
+        <PrimaryButton
+          label={isSubmitting ? '가입 중' : '가입 완료하기'}
+          onClick={() => onNext(nickname)}
+          disabled={!isValid || isSubmitting}
+        />
       </div>
     </div>
   );
@@ -500,19 +543,86 @@ function CompleteScreen({
 
 export function OnboardingPage() {
   const [screen, setScreen] = useState<Screen>('login');
+  const [authError, setAuthError] = useState('');
+  const [agreedTerms, setAgreedTerms] = useState<TermsState>({
+    all: false,
+    service: true,
+    privacy: true,
+    marketing: false,
+  });
   const navigate = useNavigate();
+  const kakaoAuthorizationUrlMutation = useKakaoAuthorizationUrl();
+  const googleAuthorizationUrlMutation = useGoogleAuthorizationUrl();
+  const signupMutation = useSignup();
+
+  const startOAuthLogin = async (provider: 'kakao' | 'google') => {
+    setAuthError('');
+
+    try {
+      const { authorizationUrl } =
+        provider === 'kakao'
+          ? await kakaoAuthorizationUrlMutation.mutateAsync()
+          : await googleAuthorizationUrlMutation.mutateAsync();
+
+      window.location.href = authorizationUrl;
+    } catch {
+      setAuthError('로그인 연결에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }
+  };
+
+  const completeSignup = async (nickname: string) => {
+    setAuthError('');
+
+    try {
+      const result = await signupMutation.mutateAsync({
+        nickname,
+        agreements: [
+          { agreeId: 1, isAgreed: true },
+          { agreeId: 2, isAgreed: true },
+          { agreeId: 3, isAgreed: agreedTerms.marketing },
+        ],
+      });
+
+      localStorage.setItem('accessToken', result.accessToken);
+      setScreen('complete');
+    } catch {
+      setAuthError('가입 완료에 실패했어요. 다시 시도해주세요.');
+    }
+  };
+
+  const isStartingOAuth =
+    kakaoAuthorizationUrlMutation.isPending || googleAuthorizationUrlMutation.isPending;
 
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-[#f0f0f0] font-[Pretendard,sans-serif]">
       <div className="relative h-dvh w-full max-w-[375px] overflow-hidden bg-white">
         {screen === 'login' ? (
-          <LoginScreen onNext={() => setScreen('terms')} onGuest={() => navigate('/home')} />
+          <LoginScreen
+            onKakao={() => {
+              void startOAuthLogin('kakao');
+            }}
+            onGoogle={() => {
+              void startOAuthLogin('google');
+            }}
+            onGuest={() => navigate('/home')}
+            disabled={isStartingOAuth}
+          />
         ) : null}
         {screen === 'terms' ? (
-          <TermsScreen onBack={() => setScreen('login')} onNext={() => setScreen('nickname')} />
+          <TermsScreen
+            onBack={() => setScreen('login')}
+            onNext={(terms) => {
+              setAgreedTerms(terms);
+              setScreen('nickname');
+            }}
+          />
         ) : null}
         {screen === 'nickname' ? (
-          <NicknameScreen onBack={() => setScreen('terms')} onNext={() => setScreen('complete')} />
+          <NicknameScreen
+            onBack={() => setScreen('terms')}
+            onNext={completeSignup}
+            isSubmitting={signupMutation.isPending}
+          />
         ) : null}
         {screen === 'complete' ? (
           <CompleteScreen
@@ -520,6 +630,11 @@ export function OnboardingPage() {
             onLogout={() => setScreen('login')}
             onWithdraw={() => setScreen('login')}
           />
+        ) : null}
+        {authError ? (
+          <div className="absolute bottom-5 left-6 right-6 rounded-lg bg-[#fee2e2] px-4 py-3 text-center text-[12px] font-medium text-[#b91c1c]">
+            {authError}
+          </div>
         ) : null}
       </div>
     </div>
