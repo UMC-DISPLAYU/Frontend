@@ -1,14 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type { LoginRequestDto, LogoutRequestDto, SignupRequestDto } from '@/api/dto';
-import {
-  getGoogleAuthorizationUrl,
-  getKakaoAuthorizationUrl,
-  login,
-  logout,
-  refreshToken,
-  signup,
-} from '@/api/endpoints';
+import { login, logout, signup } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
 export const useLogin = () => {
@@ -32,21 +25,6 @@ export const useSignup = () => {
     },
   });
 };
-
-export const useRefreshToken = () =>
-  useMutation({
-    mutationFn: () => refreshToken(),
-  });
-
-export const useKakaoAuthorizationUrl = () =>
-  useMutation({
-    mutationFn: () => getKakaoAuthorizationUrl(),
-  });
-
-export const useGoogleAuthorizationUrl = () =>
-  useMutation({
-    mutationFn: () => getGoogleAuthorizationUrl(),
-  });
 
 export const useLogout = () => {
   const queryClient = useQueryClient();

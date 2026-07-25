@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { ArtworkPreviewMoreView } from '@/components/homepage/ArtworkPreviewMoreView';
 import { ArtworkPreviewSection } from '@/components/homepage/ArtworkPreviewSection';
 import { DuPickBanner } from '@/components/homepage/DuPickBanner';
 import { ExhibitionSection } from '@/components/homepage/ExhibitionSection';
 import { LoungeSection } from '@/components/homepage/LoungeSection';
-import { useRefreshToken } from '@/hooks/queries/useAuth';
 import {
   useClosingSoonDisplays,
   useDuPicks,
@@ -16,8 +15,6 @@ import {
 
 export const Homepage = () => {
   const [isArtworkPreviewOpen, setIsArtworkPreviewOpen] = useState(false);
-  const hasTriedRefresh = useRef(false);
-  const { mutateAsync: refreshAccessToken } = useRefreshToken();
   const { data: duPicksData } = useDuPicks();
   const { data: graduationExhibitions = [] } = useGraduationDisplays();
   const { data: closingSoonData } = useClosingSoonDisplays({ size: 3 });
@@ -25,22 +22,6 @@ export const Homepage = () => {
   const { data: loungePostsData } = useHomeLoungePosts();
   const closingSoonExhibitions = closingSoonData?.exhibitions ?? [];
   const artworkPreviewItems = artworkPreviewData?.artworks ?? [];
-
-  useEffect(() => {
-    if (hasTriedRefresh.current) {
-      return;
-    }
-
-    hasTriedRefresh.current = true;
-
-    refreshAccessToken()
-      .then(({ accessToken }) => {
-        localStorage.setItem('accessToken', accessToken);
-      })
-      .catch(() => {
-        localStorage.removeItem('accessToken');
-      });
-  }, [refreshAccessToken]);
 
   if (isArtworkPreviewOpen) {
     return <ArtworkPreviewMoreView items={artworkPreviewItems} />;

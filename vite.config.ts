@@ -12,11 +12,6 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/auth': {
-        target: 'https://api.displayu.co.kr',
-        changeOrigin: true,
-        rewrite: (path) => `/api${path}`,
-      },
       '/v1': {
         target: 'https://api.displayu.co.kr',
         changeOrigin: true,
