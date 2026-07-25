@@ -17,7 +17,7 @@ const NAV_ITEMS = [
     icon: homeIcon,
     id: 'home',
     label: '홈',
-    path: '/home',
+    path: '/',
   },
   {
     activeIcon: searchIconActive,
@@ -73,7 +73,7 @@ export function Navbar() {
           return (
             <NavLink
               key={id}
-              end={path === '/home'}
+              end={path === '/'}
               className="flex flex-col items-center justify-center w-16 sm:w-20 lg:w-24 h-[52px] sm:h-[60px] lg:h-[64px] cursor-pointer rounded-[24px] border-0 bg-transparent outline-none transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#fcfcfc] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
               to={path}
             >
