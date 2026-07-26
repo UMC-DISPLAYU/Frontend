@@ -30,13 +30,6 @@ export function ExhibitionMap({
 }: ExhibitionMapProps) {
   const appkey = import.meta.env.VITE_KAKAO_MAP_KEY;
 
-  // 디버깅: 환경변수 확인
-  if (!appkey) {
-    console.error('VITE_KAKAO_MAP_KEY is not defined');
-  } else {
-    console.log('Kakao Map Key loaded:', appkey.substring(0, 8) + '...');
-  }
-
   const [loading, error] = useKakaoLoader({
     appkey,
     libraries: ['services'],
@@ -90,7 +83,6 @@ export function ExhibitionMap({
       }
 
       setIsLocating(false);
-      console.log('위치 추적 종료');
     };
 
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -99,10 +91,6 @@ export function ExhibitionMap({
 
         const { latitude, longitude, accuracy } = position.coords;
         attemptsRef.current++;
-
-        console.log(
-          `위치 시도 ${attemptsRef.current}: 정확도 ${Math.round(accuracy)}m, 좌표 (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`,
-        );
 
         // 첫 번째 위치는 무조건 사용 (사용자가 바로 피드백을 받도록)
         const shouldUsePosition =
@@ -117,22 +105,15 @@ export function ExhibitionMap({
             const moveLatLon = new kakao.maps.LatLng(latitude, longitude);
             mapRef.current.setCenter(moveLatLon);
             mapRef.current.setLevel(5);
-            console.log('지도 이동 완료');
-          } else {
-            console.error('mapRef.current가 null입니다');
           }
         }
 
         // 종료 조건: 충분히 정확하거나 최대 시도 횟수 도달
         if (accuracy < 100 || attemptsRef.current >= maxAttempts) {
-          console.log(
-            `최종 위치: 정확도 ${Math.round(accuracy)}m (${attemptsRef.current}번 시도)`,
-          );
           stopLocating();
         }
       },
       (error) => {
-        console.error('위치 가져오기 실패:', error);
         let message = '위치를 가져올 수 없습니다.';
 
         switch (error.code) {
@@ -159,7 +140,6 @@ export function ExhibitionMap({
 
     // 타임아웃: 5초 후 무조건 종료
     timeoutIdRef.current = setTimeout(() => {
-      console.log('타임아웃으로 위치 추적 종료');
       stopLocating();
     }, 5000);
   }, []); // 의존성 배열 비움 - ref만 사용하므로 안전

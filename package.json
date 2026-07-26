@@ -47,6 +47,7 @@
     "eslint-plugin-simple-import-sort": "^13.0.0",
     "globals": "^17.7.0",
     "husky": "^9",
+    "kakao.maps.d.ts": "^0.1.40",
     "lint-staged": "^16.4.0",
     "msw": "^2.15.0",
     "prettier": "^3.8.5",
