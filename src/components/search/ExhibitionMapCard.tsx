@@ -1,3 +1,6 @@
+import { useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
 import type { NearbyDisplay } from '../../hooks/useNearbyDisplays';
 
 interface ExhibitionMapCardProps {
@@ -11,6 +14,10 @@ interface ExhibitionMapCardProps {
  * 지도 탭 하단에 쌓이는 가로형 카드.
  * 선택된 카드(지도 핀과 동기화)는 outline 으로 강조.
  * 색/타이포는 전부 디자인 토큰만 사용.
+ *
+ * 클릭 동작:
+ * - 싱글클릭: 지도 핀 선택
+ * - 더블클릭: 상세 페이지 이동
  */
 export function ExhibitionMapCard({
   exhibition,
@@ -18,18 +25,45 @@ export function ExhibitionMapCard({
   onClick,
   onToggleBookmark,
 }: ExhibitionMapCardProps) {
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick?.();
+  const navigate = useNavigate();
+  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clickCountRef = useRef<number>(0);
+
+  const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 북마크 버튼 클릭은 무시
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+
+    e.preventDefault();
+
+    clickCountRef.current++;
+
+    if (clickCountRef.current === 1) {
+      // 첫 번째 클릭: 300ms 대기
+      clickTimeoutRef.current = setTimeout(() => {
+        // 싱글클릭: 지도 핀 선택
+        if (onClick) {
+          onClick();
         }
-      }}
-      className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl p-3.5 text-left shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_1px_1px_4px_0px_rgba(1,8,21,0.20),inset_-2px_-2px_2px_0px_rgba(255,255,255,0.90)] ${
+        clickCountRef.current = 0;
+      }, 300);
+    } else if (clickCountRef.current === 2) {
+      // 두 번째 클릭: 타이머 취소하고 페이지 이동
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+        clickTimeoutRef.current = null;
+      }
+      clickCountRef.current = 0;
+      navigate(`/display/${exhibition.displayId}`);
+    }
+  };
+
+  return (
+    <Link
+      to={`/display/${exhibition.displayId}`}
+      onClick={handleCardClick}
+      className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl p-3.5 text-left no-underline shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_1px_1px_4px_0px_rgba(1,8,21,0.20),inset_-2px_-2px_2px_0px_rgba(255,255,255,0.90)] ${
         selected ? 'bg-box outline outline-1 -outline-offset-1 outline-line' : 'bg-box100'
       }`}
     >
@@ -69,6 +103,7 @@ export function ExhibitionMapCard({
         type="button"
         aria-label={exhibition.isBookmarked ? '북마크 해제' : '북마크'}
         onClick={(e) => {
+          e.preventDefault();
           e.stopPropagation();
           onToggleBookmark?.();
         }}
@@ -76,7 +111,7 @@ export function ExhibitionMapCard({
       >
         <BookmarkIcon filled={exhibition.isBookmarked} />
       </button>
-    </div>
+    </Link>
   );
 }
 

@@ -1,5 +1,6 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { LocateFixed } from 'lucide-react';
 import { CustomOverlayMap, Map, useKakaoLoader } from 'react-kakao-maps-sdk';
 
 import {
@@ -42,6 +43,126 @@ export function ExhibitionMap({
   });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const mapRef = useRef<kakao.maps.Map | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bestAccuracyRef = useRef<number>(Infinity);
+  const attemptsRef = useRef<number>(0);
+  const hasStoppedRef = useRef<boolean>(false);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleLocateUser = useCallback(() => {
+    if (!navigator.geolocation) {
+      alert('위치 서비스를 지원하지 않는 브라우저입니다.');
+      return;
+    }
+
+    // 이미 실행 중이면 무시
+    if (watchIdRef.current !== null) {
+      return;
+    }
+
+    // 상태 초기화
+    setIsLocating(true);
+    bestAccuracyRef.current = Infinity;
+    attemptsRef.current = 0;
+    hasStoppedRef.current = false;
+
+    const maxAttempts = 3;
+
+    const stopLocating = () => {
+      // 이미 정리되었으면 중복 실행 방지
+      if (hasStoppedRef.current) {
+        return;
+      }
+      hasStoppedRef.current = true;
+
+      // watchPosition 정리
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+
+      // timeout 정리
+      if (timeoutIdRef.current !== null) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
+      }
+
+      setIsLocating(false);
+      console.log('위치 추적 종료');
+    };
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        if (hasStoppedRef.current) return;
+
+        const { latitude, longitude, accuracy } = position.coords;
+        attemptsRef.current++;
+
+        console.log(
+          `위치 시도 ${attemptsRef.current}: 정확도 ${Math.round(accuracy)}m, 좌표 (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`,
+        );
+
+        // 첫 번째 위치는 무조건 사용 (사용자가 바로 피드백을 받도록)
+        const shouldUsePosition =
+          attemptsRef.current === 1 ||
+          accuracy < bestAccuracyRef.current ||
+          accuracy < 100;
+
+        if (shouldUsePosition) {
+          bestAccuracyRef.current = Math.min(bestAccuracyRef.current, accuracy);
+
+          if (mapRef.current) {
+            const moveLatLon = new kakao.maps.LatLng(latitude, longitude);
+            mapRef.current.setCenter(moveLatLon);
+            mapRef.current.setLevel(5);
+            console.log('지도 이동 완료');
+          } else {
+            console.error('mapRef.current가 null입니다');
+          }
+        }
+
+        // 종료 조건: 충분히 정확하거나 최대 시도 횟수 도달
+        if (accuracy < 100 || attemptsRef.current >= maxAttempts) {
+          console.log(
+            `최종 위치: 정확도 ${Math.round(accuracy)}m (${attemptsRef.current}번 시도)`,
+          );
+          stopLocating();
+        }
+      },
+      (error) => {
+        console.error('위치 가져오기 실패:', error);
+        let message = '위치를 가져올 수 없습니다.';
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            message = '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            message = '위치 정보를 사용할 수 없습니다.';
+            break;
+          case error.TIMEOUT:
+            message = '위치 요청 시간이 초과되었습니다. WiFi나 GPS가 켜져있는지 확인해주세요.';
+            break;
+        }
+
+        alert(message);
+        stopLocating();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      },
+    );
+
+    // 타임아웃: 5초 후 무조건 종료
+    timeoutIdRef.current = setTimeout(() => {
+      console.log('타임아웃으로 위치 추적 종료');
+      stopLocating();
+    }, 5000);
+  }, []); // 의존성 배열 비움 - ref만 사용하므로 안전
 
   const handleIdle = useCallback(
     (map: kakao.maps.Map) => {
@@ -69,6 +190,26 @@ export function ExhibitionMap({
     [onBoundsChange],
   );
 
+  // 컴포넌트 언마운트 시 정리
+  useEffect(() => {
+    return () => {
+      // watchPosition 정리
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      // timeout 정리
+      if (timeoutIdRef.current !== null) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
+      }
+      // debounce 정리
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
+
   if (error) {
     return <MapFallback>지도를 불러오지 못했습니다</MapFallback>;
   }
@@ -77,27 +218,45 @@ export function ExhibitionMap({
   }
 
   return (
-    <Map
-      center={DEFAULT_CENTER}
-      level={DEFAULT_LEVEL}
-      style={{ width: '100%', height: '100%' }}
-      onIdle={handleIdle}
-    >
-      {exhibitions.map((ex) => (
-        <CustomOverlayMap
-          key={ex.displayId}
-          position={{ lat: ex.latitude, lng: ex.longitude }}
-          yAnchor={1}
-          zIndex={ex.displayId === selectedId ? 10 : 1}
-        >
-          <MarkerPin
-            title={ex.title}
-            selected={ex.displayId === selectedId}
-            onClick={() => onSelect(ex.displayId)}
-          />
-        </CustomOverlayMap>
-      ))}
-    </Map>
+    <div className="relative size-full">
+      <Map
+        center={DEFAULT_CENTER}
+        level={DEFAULT_LEVEL}
+        style={{ width: '100%', height: '100%' }}
+        onIdle={handleIdle}
+        onCreate={(map) => {
+          mapRef.current = map;
+        }}
+      >
+        {exhibitions.map((ex) => (
+          <CustomOverlayMap
+            key={ex.displayId}
+            position={{ lat: ex.latitude, lng: ex.longitude }}
+            yAnchor={1}
+            zIndex={ex.displayId === selectedId ? 10 : 1}
+          >
+            <MarkerPin
+              title={ex.title}
+              selected={ex.displayId === selectedId}
+              onClick={() => onSelect(ex.displayId)}
+            />
+          </CustomOverlayMap>
+        ))}
+      </Map>
+
+      {/* 현재 위치로 이동 버튼 */}
+      <button
+        type="button"
+        onClick={handleLocateUser}
+        disabled={isLocating}
+        aria-label="내 위치로 이동"
+        className="absolute bottom-4 right-4 z-10 flex size-12 items-center justify-center rounded-full bg-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
+      >
+        <LocateFixed
+          className={`size-6 text-neutral-700 ${isLocating ? 'animate-pulse' : ''}`}
+        />
+      </button>
+    </div>
   );
 }
 
