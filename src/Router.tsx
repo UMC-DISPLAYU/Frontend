@@ -11,6 +11,7 @@ import { LoungePage } from './pages/LoungePage';
 import { MyActivityPage } from './pages/MyActivityPage';
 import { MyPage } from './pages/MyPage';
 import { NotFound } from './pages/NotFound';
+import { OnboardingPage } from './pages/OnboardingPage';
 import { SearchPage } from './pages/SearchPage';
 
 export const router = createBrowserRouter([
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { path: 'search', element: <SearchPage /> },
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
+      { path: 'onboarding', element: <OnboardingPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
