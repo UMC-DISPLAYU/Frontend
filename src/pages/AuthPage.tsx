@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
 import { ArtworkCard, ExhibitionCard, SettingsSheet } from '@/components/mypage';
 import { AuthPageHeader } from '@/components/mypage/AuthPageHeader';
-import { AUTH_PAGE_PROFILE } from '@/mocks/authPage';
-import { ARTWORKS, EXHIBITIONS } from '@/mocks/mypage';
+import {
+  ARTIST_PROFILE_PAGE_ARTWORKS,
+  ARTIST_PROFILE_PAGE_EXHIBITIONS,
+  ARTIST_PROFILE_PAGE_PROFILE,
+} from '@/mocks/user/mypage.mock';
 import type { TabKey } from '@/types/mypage';
 
 export function AuthPage() {
@@ -33,13 +36,13 @@ export function AuthPage() {
         onShare={() => {
           // TODO: 프로필 공유 동작 연결
         }}
-        profile={AUTH_PAGE_PROFILE}
+        profile={ARTIST_PROFILE_PAGE_PROFILE}
       />
 
       <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
         {activeTab === 'exhibition' && (
           <div className="flex flex-col gap-3">
-            {EXHIBITIONS.map((item) => (
+            {ARTIST_PROFILE_PAGE_EXHIBITIONS.map((item) => (
               <ExhibitionCard key={item.id} item={item} isArtistView />
             ))}
           </div>
@@ -47,7 +50,7 @@ export function AuthPage() {
 
         {activeTab === 'artwork' && (
           <div className="grid grid-cols-2 gap-x-1.5 gap-y-3">
-            {ARTWORKS.map((item) => (
+            {ARTIST_PROFILE_PAGE_ARTWORKS.map((item) => (
               <ArtworkCard key={item.id} item={item} />
             ))}
           </div>

@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { LoungeBoardHeader, LoungeBoardPostCard } from '@/components/lounge-board';
-import { MY_COMMENTED_POSTS, MY_SCRAPPED_POSTS, MY_WRITTEN_POSTS } from '@/mocks/exhibition';
+import type { LoungeCategoryKey } from '@/constants/loungeCategories';
+import { mockLoungePosts } from '@/mocks/lounge/lounge.mock';
+import type { LoungeBoardPost } from '@/types/exhibition';
 
 type TabKey = 'written' | 'comments' | 'scraps';
 
@@ -13,10 +15,21 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'scraps', label: '스크랩' },
 ];
 
-const TAB_POSTS: Record<TabKey, typeof MY_WRITTEN_POSTS> = {
-  written: MY_WRITTEN_POSTS,
-  comments: MY_COMMENTED_POSTS,
-  scraps: MY_SCRAPPED_POSTS,
+const toLoungeBoardPost = (post: (typeof mockLoungePosts)[number]): LoungeBoardPost => ({
+  id: String(post.loungePostId),
+  category: post.category as LoungeCategoryKey,
+  title: post.title,
+  description: post.content,
+  author: post.writer.nickname,
+  time: post.createdAt.slice(0, 10).replace(/-/g, '.'),
+  commentCount: post.commentCount,
+  images: post.postImageUrls,
+});
+
+const TAB_POSTS: Record<TabKey, LoungeBoardPost[]> = {
+  written: mockLoungePosts.filter((post) => post.isMyPost).map(toLoungeBoardPost),
+  comments: mockLoungePosts.slice(1, 5).map(toLoungeBoardPost),
+  scraps: mockLoungePosts.filter((post) => post.isLiked).map(toLoungeBoardPost),
 };
 
 function isTabKey(value: unknown): value is TabKey {

@@ -1,7 +1,7 @@
 import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
 
+import { MYPAGE_TABS } from '@/constants/mypage';
 import type { UserProfile } from '@/hooks/useUserProfile';
-import { TABS } from '@/mocks/mypage';
 import type { TabKey } from '@/types/mypage';
 
 interface MyPageHeaderProps {
@@ -159,7 +159,7 @@ export function MyPageHeader({
       </div>
 
       <nav className="border-b-2 border-zinc-300 flex shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
-        {TABS.map((tab) => {
+        {MYPAGE_TABS.map((tab) => {
           if (isArtistView && tab.key === 'artist') return null;
 
           const isActive = tab.key === activeTab;

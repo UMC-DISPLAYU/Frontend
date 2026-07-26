@@ -1,7 +1,7 @@
 import { Bookmark, ChevronLeft, ExternalLink, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { TABS } from '@/mocks/mypage';
+import { MYPAGE_TABS } from '@/constants/mypage';
 import type { ArtistProfile, TabKey } from '@/types/mypage';
 
 interface AuthPageHeaderProps {
@@ -117,7 +117,7 @@ export function AuthPageHeader({
       </div>
 
       <nav className="border-b-2 border-zinc-300 flex shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
-        {TABS.filter((tab) => tab.key !== 'artist').map((tab) => {
+        {MYPAGE_TABS.filter((tab) => tab.key !== 'artist').map((tab) => {
           const isActive = tab.key === activeTab;
           return (
             <button
