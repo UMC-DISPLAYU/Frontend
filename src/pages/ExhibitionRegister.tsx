@@ -11,6 +11,8 @@ import {
   EXHIBITION_TYPES,
   type ExhibitionTypeGroup,
 } from '@/constants/exhibition';
+import { useCreateDisplay } from '@/hooks/queries/useDisplayEditor';
+import { MOCK_UPLOAD_IMAGE_URL } from '@/mocks/data';
 
 const BASE_INPUT_CLASS =
   'px-3 py-2.5 bg-card rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-line typo-body-xs-regular text-main placeholder:text-faint leading-4';
@@ -25,11 +27,36 @@ export function ExhibitionRegister() {
   const [school, setSchool] = useState('');
   const [department, setDepartment] = useState('');
   const [organizer, setOrganizer] = useState('');
+  const createDisplayMutation = useCreateDisplay();
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
     return found?.group ?? null;
   }, [type]);
+
+  const handleSubmit = () => {
+    createDisplayMutation.mutate({
+      title: title || 'MOCK 임시 전시 등록',
+      posterImageUrl: MOCK_UPLOAD_IMAGE_URL,
+      type: type ?? 'MOCK_TYPE',
+      fields: field ? [field] : ['MOCK_FIELD'],
+      region: 'SEOUL',
+      startDate: '2026-07-01',
+      endDate: '2026-07-14',
+      openTime: '10:00',
+      closeTime: '18:00',
+      locationName: 'MOCK 임시 전시장',
+      latitude: 37.5665,
+      longitude: 126.978,
+      roadAddress: 'MOCK 서울특별시 중구 임시로 1',
+      schoolOrOrganization: school || organizer || 'MOCK 임시 기관',
+      departmentOrClub: department || 'MOCK 임시 학과',
+      hostOrganizationName: organizer || 'MOCK 임시 주최',
+      subtitle: subtitle || undefined,
+      description: intro || undefined,
+      precautions: 'MOCK 등록 테스트용 주의사항입니다.',
+    });
+  };
 
   return (
     <div className="w-full bg-page relative flex flex-col h-screen">
@@ -137,10 +164,17 @@ export function ExhibitionRegister() {
         <div className="px-5 pt-4 pb-4">
           <button
             type="button"
+            onClick={handleSubmit}
+            disabled={createDisplayMutation.isPending}
             className="w-full py-3 bg-dark rounded-xl text-card typo-body-sm-bold leading-5"
           >
-            다음
+            {createDisplayMutation.isPending ? '등록 중' : '다음'}
           </button>
+          {createDisplayMutation.isSuccess && (
+            <p className="mt-2 text-center typo-body-xs-regular text-sub600">
+              MOCK 전시 등록 요청이 완료되었습니다.
+            </p>
+          )}
         </div>
       </footer>
     </div>
