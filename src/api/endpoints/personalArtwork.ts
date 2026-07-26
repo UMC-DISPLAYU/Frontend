@@ -1,4 +1,5 @@
 import type {
+  GetPersonalArtworksRequestDto,
   GetPersonalArtworksResponseDataDto,
   PersonalArtworkRequestDto,
   PersonalArtworkResponseDataDto,
@@ -7,8 +8,10 @@ import type {
 import { apiRequest } from '../client';
 
 // GET /v1/personal-artworks
-export const getPersonalArtworks = async (): Promise<GetPersonalArtworksResponseDataDto> =>
-  apiRequest('/v1/personal-artworks');
+export const getPersonalArtworks = async (
+  params: GetPersonalArtworksRequestDto,
+): Promise<GetPersonalArtworksResponseDataDto> =>
+  apiRequest('/v1/personal-artworks', { query: params });
 
 // POST /v1/personal-artworks
 export const createPersonalArtwork = async (

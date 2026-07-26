@@ -19,6 +19,8 @@ import type {
   GetArtworkPreviewRequestDto,
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
+  GetDisplayArtworksRequestDto,
+  GetDisplayArtworksResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -27,6 +29,11 @@ import type {
 } from '@/api/dto';
 
 import { apiRequest } from '../client';
+
+// GET /v1/artworks
+export const getDisplayArtworks = async (
+  params: GetDisplayArtworksRequestDto,
+): Promise<GetDisplayArtworksResponseDataDto> => apiRequest('/v1/artworks', { query: params });
 
 // GET /v1/artworks/:artworkId
 export const getArtworkDetail = async (

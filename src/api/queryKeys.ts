@@ -7,6 +7,7 @@ import type {
 } from '@/api/dto/display.dto';
 import type { GetArtworkPreviewRequestDto } from '@/api/dto/displayArtwork.dto';
 import type { GetLoungePostsRequestDto } from '@/api/dto/lounge.dto';
+import type { GetPersonalArtworksRequestDto } from '@/api/dto/personalArtwork.dto';
 
 type ListParams = Record<string, unknown>;
 
@@ -49,16 +50,29 @@ export const queryKeys = {
   displayArtworks: {
     all: ['displayArtworks'] as const,
     lists: () => [...queryKeys.displayArtworks.all, 'list'] as const,
+    list: (displayId: number) => [...queryKeys.displayArtworks.lists(), displayId] as const,
     preview: (params: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params] as const,
     details: () => [...queryKeys.displayArtworks.all, 'detail'] as const,
     detail: (artworkId: number) => [...queryKeys.displayArtworks.details(), artworkId] as const,
   },
 
+  displayReviews: {
+    all: ['displayReviews'] as const,
+    lists: () => [...queryKeys.displayReviews.all, 'list'] as const,
+    list: (displayId: number, params?: ListParams) =>
+      [...queryKeys.displayReviews.lists(), displayId, params ?? {}] as const,
+    replyLists: (displayReviewId: number) =>
+      [...queryKeys.displayReviews.all, 'replies', displayReviewId] as const,
+    replies: (displayReviewId: number, params?: ListParams) =>
+      [...queryKeys.displayReviews.replyLists(displayReviewId), params ?? {}] as const,
+  },
+
   personalArtworks: {
     all: ['personalArtworks'] as const,
     lists: () => [...queryKeys.personalArtworks.all, 'list'] as const,
-    list: () => [...queryKeys.personalArtworks.lists()] as const,
+    list: (params: GetPersonalArtworksRequestDto) =>
+      [...queryKeys.personalArtworks.lists(), params] as const,
     details: () => [...queryKeys.personalArtworks.all, 'detail'] as const,
     detail: (personalArtworkId: number) =>
       [...queryKeys.personalArtworks.details(), personalArtworkId] as const,

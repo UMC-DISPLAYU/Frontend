@@ -261,7 +261,7 @@ export interface DeleteArtworkResponseDataDto {
 
 export type DeleteArtworkResponseDto = ApiResponseDto<DeleteArtworkResponseDataDto>;
 
-export interface GetArtworkPreviewRequestDto extends OffsetPageRequestDto {
+export interface GetArtworkPreviewRequestDto extends Partial<OffsetPageRequestDto> {
   type: string;
   field?: string;
   school?: string;

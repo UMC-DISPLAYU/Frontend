@@ -38,6 +38,10 @@ export interface PersonalArtworkSummaryDto {
   createdAt: string;
 }
 
+export interface GetPersonalArtworksRequestDto {
+  userId: number;
+}
+
 export type GetPersonalArtworksResponseDataDto = PersonalArtworkSummaryDto[];
 
 export type GetPersonalArtworksResponseDto = ApiResponseDto<GetPersonalArtworksResponseDataDto>;
