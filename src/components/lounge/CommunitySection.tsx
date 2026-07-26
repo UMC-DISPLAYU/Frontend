@@ -9,12 +9,12 @@ import { LoungeCard } from './LoungeCard';
 
 const TIP_CARDS: { category: LoungeCategoryKey; title: string; description: string }[] = [
   {
-    category: 'tips',
+    category: 'WORK_TIP',
     title: '전시 준비·작업 팁',
     description: '전시 준비 과정과\n작업 노하우를 공유해요',
   },
   {
-    category: 'collab',
+    category: 'COLLABORATION',
     title: '모집·협업',
     description: '전시 준비 과정과\n작업 노하우를 공유해요',
   },
@@ -45,7 +45,7 @@ export function CommunitySection() {
           title="전시후기"
           description={<MultilineText text={'전시를 체험한\n이야기와 감상을 나눠요'} />}
           image={loungeReviewThumbnail}
-          onClick={() => navigate('/lounge/review')}
+          onClick={() => navigate('/lounge/DISPLAY_REVIEW')}
         />
 
         <div className="flex-1 flex flex-col gap-2.5">
@@ -62,7 +62,7 @@ export function CommunitySection() {
 
       <LoungeCard
         className="flex items-start justify-between"
-        onClick={() => navigate('/lounge/venue')}
+        onClick={() => navigate('/lounge/VENUE_RENTAL')}
       >
         <div className="flex items-end gap-4">
           <div className="w-[221px] h-12 flex flex-col justify-end gap-1">
