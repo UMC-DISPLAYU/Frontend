@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { PersonalArtworkRequestDto } from '@/api/dto';
+import type { GetPersonalArtworksRequestDto, PersonalArtworkRequestDto } from '@/api/dto';
 import {
   createPersonalArtwork,
   deletePersonalArtwork,
@@ -10,10 +10,14 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
-export const usePersonalArtworks = () =>
+export const usePersonalArtworks = (
+  params: GetPersonalArtworksRequestDto,
+  options: { enabled?: boolean } = {},
+) =>
   useQuery({
-    queryKey: queryKeys.personalArtworks.list(),
-    queryFn: getPersonalArtworks,
+    queryKey: queryKeys.personalArtworks.list(params),
+    queryFn: () => getPersonalArtworks(params),
+    enabled: options.enabled ?? Number.isFinite(params.userId),
   });
 
 export const usePersonalArtwork = (personalArtworkId: number) =>

@@ -21,22 +21,25 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
-export const useArchivedExhibitions = () =>
+export const useArchivedExhibitions = (options: { enabled?: boolean } = {}) =>
   useQuery({
     queryKey: queryKeys.archives.displays.list(),
     queryFn: getArchivedExhibitions,
+    enabled: options.enabled,
   });
 
-export const useArchivedArtworks = () =>
+export const useArchivedArtworks = (options: { enabled?: boolean } = {}) =>
   useQuery({
     queryKey: queryKeys.archives.works.list(),
     queryFn: getArchivedArtworks,
+    enabled: options.enabled,
   });
 
-export const useArchivedArtists = () =>
+export const useArchivedArtists = (options: { enabled?: boolean } = {}) =>
   useQuery({
     queryKey: queryKeys.archives.artists.list(),
     queryFn: getArchivedArtists,
+    enabled: options.enabled,
   });
 
 export const useArchivedExhibition = (savedExhibitionId: number) =>

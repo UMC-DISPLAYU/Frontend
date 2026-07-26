@@ -14,6 +14,7 @@ const graduationDisplaysParams = { size: 3 };
 const closingSoonDisplaysParams = { size: 3 };
 const duPicksParams = { cursor: 1, size: 4 };
 const artworkPreviewParams = { type: 'RECOMMEND' as const, page: 0, size: 10 };
+const artworkPreviewMoreParams = { type: 'RECOMMEND' as const, page: 0 };
 const loungePostsParams = { size: 3 };
 
 const graduationDisplaysQuery = () => ({
@@ -36,6 +37,11 @@ const homeArtworkPreviewQuery = () => ({
   queryFn: () => getArtworkPreview(artworkPreviewParams),
 });
 
+const artworkPreviewMoreQuery = () => ({
+  queryKey: queryKeys.displayArtworks.preview(artworkPreviewMoreParams),
+  queryFn: () => getArtworkPreview(artworkPreviewMoreParams),
+});
+
 const homeLoungePostsQuery = () => ({
   queryKey: queryKeys.loungePosts.list(loungePostsParams),
   queryFn: () => getLoungePosts(loungePostsParams),
@@ -49,6 +55,8 @@ export const useClosingSoonDisplays = (params: GetClosingSoonDisplaysRequestDto 
 export const useDuPicks = () => useQuery(duPicksQuery());
 
 export const useHomeArtworkPreview = () => useQuery(homeArtworkPreviewQuery());
+
+export const useArtworkPreviewMore = () => useQuery(artworkPreviewMoreQuery());
 
 export const useHomeLoungePosts = () => useQuery(homeLoungePostsQuery());
 
