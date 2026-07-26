@@ -32,7 +32,7 @@ axiosInstance.interceptors.request.use((config) => {
 
   const accessToken = getAccessToken();
 
-  if (accessToken) {
+  if (accessToken && !config.headers.has('Authorization')) {
     config.headers.set('Authorization', `Bearer ${accessToken}`);
   }
 

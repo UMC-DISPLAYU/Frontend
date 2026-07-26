@@ -18,8 +18,6 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
     me: () => [...queryKeys.users.all, 'me'] as const,
-    nicknameCheck: (nickname: string) =>
-      [...queryKeys.users.all, 'nickname-check', nickname] as const,
     artistProfile: () => [...queryKeys.users.me(), 'artist-profile'] as const,
     userArtistProfile: (userId: number) =>
       [...queryKeys.users.all, userId, 'artist-profile'] as const,

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 
 import { Check, ChevronRight, Info, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { ApiError } from '@/api/axios';
 import { useSignup } from '@/hooks/queries/useAuth';
 import { useCheckNickname } from '@/hooks/queries/useUserProfile';
 
@@ -165,11 +166,7 @@ function TermsScreen({
         </div>
 
         <div className="mb-3.5 overflow-hidden rounded-2xl border border-[#e8eaed]">
-          <button
-            type="button"
-            onClick={() => toggle('all')}
-            className="flex w-full items-center gap-3 border-b border-[#e8eaed] bg-[#f2f3f5] px-[18px] py-4 text-left"
-          >
+          <div className="flex w-full items-center gap-3 border-b border-[#e8eaed] bg-[#f2f3f5] px-[18px] py-4 text-left">
             <RoundCheckbox checked={terms.all} onChange={() => toggle('all')} />
             <div>
               <p className="text-[15px] font-bold leading-[22.5px] text-[#0d0d0d]">전체 동의</p>
@@ -177,7 +174,7 @@ function TermsScreen({
                 아래 약관에 모두 동의합니다.
               </p>
             </div>
-          </button>
+          </div>
 
           {[
             ['service', '필수', '서비스 이용약관 동의'],
@@ -224,10 +221,7 @@ function NicknameScreen({
   const [nickname, setNickname] = useState('displayu디유');
   const [checkStatus, setCheckStatus] = useState<NicknameCheckStatus>('idle');
   const maxLen = 15;
-  const { refetch: checkNickname, isFetching: isCheckingNickname } = useCheckNickname(
-    { nickname },
-    false,
-  );
+  const checkNicknameMutation = useCheckNickname();
 
   const handleChange = (value: string) => {
     setNickname(value.slice(0, maxLen));
@@ -235,16 +229,13 @@ function NicknameScreen({
   };
 
   const handleCheck = async () => {
-    if (nickname.length < 5 || isCheckingNickname) {
+    if (nickname.length < 5 || checkNicknameMutation.isPending) {
       return;
     }
 
     try {
-      const result = await checkNickname();
-      const isAvailable = result.data?.isAvailable;
-      setCheckStatus(
-        typeof isAvailable === 'boolean' ? (isAvailable ? 'available' : 'unavailable') : 'error',
-      );
+      const result = await checkNicknameMutation.mutateAsync({ nickname });
+      setCheckStatus(result.isAvailable ? 'available' : 'unavailable');
     } catch {
       setCheckStatus('error');
     }
@@ -293,11 +284,11 @@ function NicknameScreen({
           <button
             type="button"
             onClick={handleCheck}
-            disabled={nickname.length < 5 || isCheckingNickname}
+            disabled={nickname.length < 5 || checkNicknameMutation.isPending}
             className="flex h-8 shrink-0 items-center justify-center rounded-lg border-[1.5px] border-[#0d0d0d] bg-white px-3 disabled:opacity-40"
           >
             <span className="text-[12px] font-semibold text-[#0d0d0d]">
-              {isCheckingNickname ? '확인 중' : '중복 확인'}
+              {checkNicknameMutation.isPending ? '확인 중' : '중복 확인'}
             </span>
           </button>
         </div>
@@ -432,25 +423,36 @@ export function OnboardingPage() {
     marketing: false,
   });
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const signupMutation = useSignup();
 
   const completeSignup = async (nickname: string) => {
     setAuthError('');
 
+    const signupToken = searchParams.get('signupToken');
+
     try {
       const result = await signupMutation.mutateAsync({
-        nickname,
-        agreements: [
-          { agreeId: 1, isAgreed: true },
-          { agreeId: 2, isAgreed: true },
-          { agreeId: 3, isAgreed: agreedTerms.marketing },
-        ],
+        body: {
+          nickname,
+          agreements: [
+            { agreeId: 1, isAgreed: true },
+            { agreeId: 2, isAgreed: true },
+            { agreeId: 3, isAgreed: agreedTerms.marketing },
+          ],
+        },
+        signupToken,
       });
 
       localStorage.setItem('accessToken', result.accessToken);
-      setScreen('complete');
-    } catch {
-      setAuthError('가입 완료에 실패했어요. 다시 시도해주세요.');
+      if (result.refreshToken) {
+        localStorage.setItem('refreshToken', result.refreshToken);
+      }
+      navigate('/home');
+    } catch (error) {
+      setAuthError(
+        error instanceof ApiError ? error.message : '가입 완료에 실패했어요. 다시 시도해주세요.',
+      );
     }
   };
 

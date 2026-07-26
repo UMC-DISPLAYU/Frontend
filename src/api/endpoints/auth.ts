@@ -23,8 +23,12 @@ export const getGoogleAuthorizationUrl = async (): Promise<OAuthAuthorizationUrl
   apiRequest('/auth/google/login-url');
 
 // POST /v1/auth/signup
-export const signup = async (body: SignupRequestDto): Promise<SignupResponseDataDto> =>
+export const signup = async (
+  body: SignupRequestDto,
+  signupToken: string | null,
+): Promise<SignupResponseDataDto> =>
   apiRequest('/v1/auth/signup', {
+    headers: signupToken ? { Authorization: `Bearer ${signupToken}` } : undefined,
     method: 'POST',
     body,
   });

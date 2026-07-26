@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { useGoogleAuthorizationUrl, useKakaoAuthorizationUrl } from '@/hooks/queries/useAuth';
 
+type OAuthProvider = 'kakao' | 'google';
+
 function KakaoIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -46,7 +48,7 @@ export function LoginPage() {
   const kakaoAuthorizationUrlMutation = useKakaoAuthorizationUrl();
   const googleAuthorizationUrlMutation = useGoogleAuthorizationUrl();
 
-  const startOAuthLogin = async (provider: 'kakao' | 'google') => {
+  const startOAuthLogin = async (provider: OAuthProvider) => {
     setAuthError('');
 
     try {
