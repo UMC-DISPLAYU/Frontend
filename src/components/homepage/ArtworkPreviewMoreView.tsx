@@ -1,10 +1,9 @@
-import type { ArtworkPreviewItemDto } from '@/api/dto';
+import { useArtworkPreviewMore } from '@/hooks/queries/useHome';
 
-type Props = {
-  items: ArtworkPreviewItemDto[];
-};
+export function ArtworkPreviewMoreView() {
+  const { data } = useArtworkPreviewMore();
+  const items = data?.artworks ?? [];
 
-export function ArtworkPreviewMoreView({ items }: Props) {
   return (
     <div className="w-full max-w-105 mx-auto bg-page min-h-dvh overflow-x-hidden pt-7 pb-28 font-[Pretendard,sans-serif]">
       <div className="columns-2 gap-2 px-4">

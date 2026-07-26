@@ -24,7 +24,7 @@ export const Homepage = () => {
   const artworkPreviewItems = artworkPreviewData?.artworks ?? [];
 
   if (isArtworkPreviewOpen) {
-    return <ArtworkPreviewMoreView items={artworkPreviewItems} />;
+    return <ArtworkPreviewMoreView />;
   }
 
   return (
