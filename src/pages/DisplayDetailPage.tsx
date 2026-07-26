@@ -59,22 +59,13 @@ export function DisplayDetailPage() {
   const heroImages = display.images.map((img) => img.imageUrl);
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-dvh bg-[#F0F0F3] relative">
-      {/* 히어로 슬라이더 (뒤로가기 버튼 포함) */}
-      <HeroSlider images={heroImages} onBack={() => navigate(-1)} />
-
-      {/* 전시 메타 정보 */}
-      <ExhibitionMeta display={display} />
-
-      {/* 소개 / 작품 / 후기 탭 */}
+    <div className="w-full max-w-md mx-auto min-h-dvh bg-bg relative">
+      <HeroSlider images={exhibition.heroImages} onBack={() => navigate(-1)} />
+      <ExhibitionMeta exhibition={exhibition} />
       <DetailTabNav activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* 탭 콘텐츠 */}
-      {activeTab === 'intro' && <IntroTab display={display} />}
-      {activeTab === 'artwork' && displayId !== undefined && <ArtworkTab displayId={displayId} />}
-      {activeTab === 'review' && <ReviewTab reviews={[]} />}
-
-      {/* 하단 고정: 공유 & 전시 저장 버튼 */}
+      {activeTab === 'intro' && <IntroTab exhibition={exhibition} />}
+      {activeTab === 'artwork' && <ArtworkTab artworks={id ? ARTWORKS[id] || [] : []} />}
+      {activeTab === 'review' && <ReviewTab reviews={id ? REVIEWS[id] || [] : []} />}
       <BottomFixedBar />
     </div>
   );
