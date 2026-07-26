@@ -5,6 +5,7 @@ import { AuthPage } from './pages/AuthPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { Homepage } from './pages/Homepage';
+import { LoginPage } from './pages/LoginPage';
 import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
 import { LoungeBoardPage } from './pages/LoungeBoardPage';
 import { LoungePage } from './pages/LoungePage';
@@ -33,6 +34,11 @@ export const router = createBrowserRouter([
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],
+  },
+
+  {
+    path: '/login',
+    element: <LoginPage />,
   },
 
   {
