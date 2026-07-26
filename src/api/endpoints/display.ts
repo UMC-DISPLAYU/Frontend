@@ -7,6 +7,8 @@ import type {
   GetClosingSoonDisplaysResponseDataDto,
   GetDisplayMapRequestDto,
   GetDisplayMapResponseDataDto,
+  GetDisplayReviewsRequestDto,
+  GetDisplayReviewsResponseDataDto,
   GetDuPicksRequestDto,
   GetDuPicksResponseDataDto,
   HomeExhibitionDto,
@@ -80,3 +82,10 @@ export const updateDisplayLike = async (body: {
   userId?: number;
 }): Promise<ToggleDisplayLikeResponseDataDto> =>
   apiRequest('/v1/display/like', { method: 'PATCH', body });
+
+// GET /v1/display/:displayId/reviews
+export const getDisplayReviews = async (
+  displayId: number,
+  params: GetDisplayReviewsRequestDto = {},
+): Promise<GetDisplayReviewsResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reviews`, { query: params });

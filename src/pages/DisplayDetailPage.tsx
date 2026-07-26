@@ -1,54 +1,48 @@
 import { useState } from 'react';
 
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { getDisplayDetail } from '@/api/endpoints/display';
-import { queryKeys } from '@/api/queryKeys';
-import { ArtworkTab } from '@/components/displaydetailpage/ArtworkTab';
-import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
-import { DetailTabNav } from '@/components/displaydetailpage/DetailTabNav';
-import { ExhibitionMeta } from '@/components/displaydetailpage/ExhibitionMeta';
-import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
-import { IntroTab } from '@/components/displaydetailpage/IntroTab';
-import { ReviewTab } from '@/components/displaydetailpage/ReviewTab';
+import {
+  ArtworkTab,
+  BottomFixedBar,
+  DetailTabNav,
+  ExhibitionMeta,
+  HeroSlider,
+  IntroTab,
+  ReviewTab,
+} from '@/components/displaydetailpage';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import type { DetailTabKey } from '@/types/exhibition';
+import { cn } from '@/utils/cn';
 
 export function DisplayDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const displayId = id ? Number(id) : undefined;
+  const displayId = id ? Number(id) : 0;
 
   const [activeTab, setActiveTab] = useState<DetailTabKey>('intro');
 
-  const {
-    data: display,
-    isPending,
-    isError,
-  } = useQuery({
-    queryKey: queryKeys.displays.detail(displayId ?? 0),
-    queryFn: () => getDisplayDetail(displayId!),
-    enabled: displayId !== undefined,
-  });
+  const { data: display, isPending, isError } = useDisplayDetail(displayId);
+
+  const containerClassName =
+    'w-full max-w-md mx-auto min-h-dvh flex flex-col justify-center items-center';
 
   if (isPending) {
     return (
-      <div className="w-full max-w-md mx-auto min-h-dvh flex items-center justify-center bg-[#F0F0F3]">
-        <p className="text-neutral-400 text-sm">불러오는 중...</p>
+      <div className={cn(containerClassName, 'bg-page')}>
+        <p className="typo-body-sm-regular text-faint">불러오는 중...</p>
       </div>
     );
   }
 
   if (isError || !display) {
     return (
-      <div className="w-full max-w-md mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-[#F0F0F3]">
-        <p className="text-neutral-500 text-sm font-[Pretendard,sans-serif]">
-          전시 정보를 찾을 수 없습니다.
-        </p>
+      <div className={cn(containerClassName, 'gap-3 bg-page')}>
+        <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="text-sm text-neutral-400 underline font-[Pretendard,sans-serif]"
+          className="typo-body-sm-regular text-faint underline cursor-pointer"
         >
           돌아가기
         </button>
@@ -56,16 +50,16 @@ export function DisplayDetailPage() {
     );
   }
 
-  const heroImages = display.images.map((img) => img.imageUrl);
+  const heroImages = display.images?.map((img) => img.imageUrl) ?? [];
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-dvh bg-bg relative">
-      <HeroSlider images={exhibition.heroImages} onBack={() => navigate(-1)} />
-      <ExhibitionMeta exhibition={exhibition} />
+    <div className="w-full max-w-md mx-auto min-h-dvh bg-page relative">
+      <HeroSlider images={heroImages} onBack={() => navigate(-1)} />
+      <ExhibitionMeta display={display} />
       <DetailTabNav activeTab={activeTab} onTabChange={setActiveTab} />
-      {activeTab === 'intro' && <IntroTab exhibition={exhibition} />}
-      {activeTab === 'artwork' && <ArtworkTab artworks={id ? ARTWORKS[id] || [] : []} />}
-      {activeTab === 'review' && <ReviewTab reviews={id ? REVIEWS[id] || [] : []} />}
+      {activeTab === 'intro' && <IntroTab display={display} />}
+      {activeTab === 'artwork' && <ArtworkTab displayId={display.displayId} />}
+      {activeTab === 'review' && <ReviewTab displayId={display.displayId} />}
       <BottomFixedBar />
     </div>
   );

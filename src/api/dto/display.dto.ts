@@ -208,13 +208,46 @@ export interface GetDisplayArtworksRequestDto extends OffsetPageRequestDto {
   sort?: string;
 }
 
-export interface GetDisplayArtworksResponseDataDto extends OffsetPageInfoDto {
-  displayId: number;
-  totalCount: number;
-  artworks: DisplayArtworkListItemDto[];
+// ─── 전시 후기 DTO ──────────────────────────────────────────────────────────
+
+export interface DisplayReviewUserDto {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string;
 }
 
-export type GetDisplayArtworksResponseDto = ApiResponseDto<GetDisplayArtworksResponseDataDto>;
+export interface DisplayReviewImageDto {
+  imageId: number;
+  imageUrl: string;
+  isThumbnail: boolean;
+  imageType: string;
+  sortOrder: number;
+  caption: string;
+  width: number;
+  height: number;
+}
+
+export interface DisplayReviewDto {
+  displayReviewId: number;
+  content: string;
+  createdAt: string;
+  user: DisplayReviewUserDto;
+  images: DisplayReviewImageDto[];
+  likeCount: number;
+  replyCount: number;
+}
+
+export interface GetDisplayReviewsRequestDto {
+  cursorId?: number;
+  size?: number;
+}
+
+export interface GetDisplayReviewsResponseDataDto {
+  reviews: DisplayReviewDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
 
 export interface CreateDisplayRequestDto {
   title: string;

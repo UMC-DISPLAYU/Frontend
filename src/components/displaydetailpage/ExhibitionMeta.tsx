@@ -11,20 +11,40 @@ type Props = {
   display: DisplayDetailDto;
 };
 
-const formatDate = (start: string, end: string) => {
+function formatDate(start: string, end: string) {
   if (!start || !end) return '';
   const [sYear, sMonth, sDay] = start.split('-');
   const [eYear, eMonth, eDay] = end.split('-');
   const startFmt = `${sYear}.${sMonth}.${sDay}`;
   const endFmt = sYear === eYear ? `${eMonth}.${eDay}` : `${eYear}.${eMonth}.${eDay}`;
   return `${startFmt} - ${endFmt}`;
-};
+}
 
-const formatTime = (start: string, end: string) => {
+function formatTime(start: string, end: string) {
   if (!start || !end) return '';
-  const trim = (t: string) => t.slice(0, 5); // "10:00"
+  const trim = (t: string) => t.slice(0, 5);
   return `${trim(start)} - ${trim(end)}`;
-};
+}
+
+function MetaRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Calendar;
+  label: string;
+  value?: string | null;
+}) {
+  if (!value) return null;
+
+  return (
+    <div className="flex items-center gap-2 typo-body-sm-regular text-main">
+      <Icon size={13} className="text-faint shrink-0" />
+      <span className="text-faint font-medium w-6 shrink-0">{label}</span>
+      <span>{value}</span>
+    </div>
+  );
+}
 
 export function ExhibitionMeta({ display: ex }: Props) {
   const [bookmarked, setBookmarked] = useState(false);
@@ -44,7 +64,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
 
   return (
     <section className="px-5 pt-6 pb-4">
-      {/* 제목/하트 */}
+      {/* 제목 / 하트 */}
       <div className="flex items-start justify-between pb-1.5 gap-2">
         <h1 className="flex-1 typo-body-xl-bold text-main">{ex.title}</h1>
         <button
@@ -65,26 +85,24 @@ export function ExhibitionMeta({ display: ex }: Props) {
           </span>
         </button>
       </div>
+
       {fullSubtitle && <p className="typo-body-sm-regular text-sub600">{fullSubtitle}</p>}
 
-      {/* 일정/운영/장소 */}
+      {/* 일정 / 운영 / 장소 */}
       <div className="mt-5 flex flex-col gap-1.5">
-        <div className="flex items-center gap-2 typo-body-sm-regular">
-          <Calendar size={13} className="text-faint shrink-0" />
-          <span className="text-faint font-medium w-6 shrink-0">일정</span>
-          <span>{formatDate(ex.period.startDate, ex.period.endDate)}</span>
-        </div>
-        <div className="flex items-center gap-2 typo-body-sm-regular">
-          <Clock size={13} className="text-faint shrink-0" />
-          <span className="text-faint font-medium w-6 shrink-0">운영</span>
-          <span>{formatTime(ex.period.startTime, ex.period.endTime)}</span>
-        </div>
-        <div className="flex items-center gap-2 typo-body-sm-regular">
-          <MapPin size={13} className="text-faint shrink-0" />
-          <span className="text-faint font-medium w-6 shrink-0">장소</span>
-          <span>{ex.location.placeName}</span>
-        </div>
+        <MetaRow
+          icon={Calendar}
+          label="일정"
+          value={formatDate(ex.period?.startDate, ex.period?.endDate)}
+        />
+        <MetaRow
+          icon={Clock}
+          label="운영"
+          value={formatTime(ex.period?.startTime, ex.period?.endTime)}
+        />
+        <MetaRow icon={MapPin} label="장소" value={ex.location?.placeName} />
       </div>
+
       {!isAtTop && (
         <div className="px-1 pt-10">
           <DisplaySaveButton />
