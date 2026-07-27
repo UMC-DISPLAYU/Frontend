@@ -41,7 +41,7 @@ export function CommunitySection() {
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center gap-3.5">
         <LoungeCard
-          className="flex-1 h-[343px]"
+          className="w-[174px] shrink-0 h-[343px]"
           title="전시후기"
           description={<MultilineText text={'전시를 체험한\n이야기와 감상을 나눠요'} />}
           image={loungeReviewThumbnail}
@@ -49,7 +49,7 @@ export function CommunitySection() {
           bordered
         />
 
-        <div className="flex-1 flex flex-col gap-2.5">
+        <div className="flex-1 min-w-0 flex flex-col gap-2.5">
           {TIP_CARDS.map(({ category, title, description }) => (
             <LoungeCard
               key={category}
@@ -63,7 +63,7 @@ export function CommunitySection() {
       </div>
 
       <LoungeCard
-        className="flex items-start justify-between"
+        className="flex justify-between h-[100px]"
         onClick={() => navigate('/lounge/venue')}
       >
         <div className="flex items-end">
@@ -73,7 +73,7 @@ export function CommunitySection() {
           </div>
           <img alt="" className="w-24 h-20 object-cover shrink-0" src={loungeVenueThumbnail} />
         </div>
-        <ArrowUpRight className="size-5 text-faint shrink-0" strokeWidth={1.5} />
+        <ArrowUpRight className="size-5 text-faint shrink-0" strokeWidth={2.5} />
       </LoungeCard>
     </div>
   );

@@ -12,7 +12,7 @@ export const LoungeBoardPage = () => {
     : [];
 
   return (
-    <div className="w-full max-w-105 mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-full max-w-[402px] mx-auto h-dvh bg-page flex flex-col">
       <LoungeBoardHeader
         title={isValidCategory ? LOUNGE_CATEGORIES[category] : '라운지'}
         className="pl-5 pr-[29px]"

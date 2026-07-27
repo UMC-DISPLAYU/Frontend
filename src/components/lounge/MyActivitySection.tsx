@@ -29,11 +29,11 @@ export function MyActivitySection() {
         {ACTIVITY_CARDS.map(({ image, imageClassName, title, tab }) => (
           <LoungeCard
             key={title}
-            className="w-[114px] h-[85px] flex flex-col items-center gap-2.5"
+            className="relative w-[114px] h-[85px]"
             onClick={() => goToTab(tab)}
           >
-            <ArrowUpRight className="size-5 text-faint self-end" strokeWidth={1.5} />
-            <div className="w-full flex flex-col items-start gap-0.5">
+            <ArrowUpRight className="absolute top-3 right-3 size-5 text-faint" strokeWidth={2.5} />
+            <div className="w-full flex flex-col items-start gap-0.5 mt-0.5">
               <img alt="" className={`${imageClassName} object-contain`} src={image} />
               <h3 className="typo-body-md-semibold text-main">{title}</h3>
             </div>
