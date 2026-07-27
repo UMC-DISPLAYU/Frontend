@@ -4,6 +4,7 @@ import { Layout } from './components/layout';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
+import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { Homepage } from './pages/Homepage';
 import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
 import { LoungeBoardPage } from './pages/LoungeBoardPage';
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
+      { path: 'lounge/review/post', element: <ExhibitionReviewWritePage /> },
       { path: 'lounge/my-activity', element: <MyActivityPage /> },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
       { path: 'lounge/:category/:id', element: <LoungeBoardDetailPage /> },
