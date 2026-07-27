@@ -8,7 +8,7 @@ import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCreateLoungePost } from '@/hooks/queries/useLounge';
 
 const BASE_INPUT_CLASS =
-  'px-3 py-2.5 bg-neutral-50 rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 typo-body-xs-regular text-main placeholder:text-faint leading-4';
+  'px-3 py-2.5 bg-neutral-50 rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 typo-body-xs-regular text-main placeholder:text-faint leading-4 focus-visible:outline-2 focus-visible:outline-blue-500';
 
 export function ExhibitionReviewWritePage() {
   const navigate = useNavigate();
@@ -28,15 +28,15 @@ export function ExhibitionReviewWritePage() {
     setSubmitError(null);
 
     try {
-      const postImageUrl = images[0]
-        ? await uploadImage.mutateAsync({ file: images[0], domain: 'lounge' })
-        : undefined;
+      const postImageUrls = await Promise.all(
+        images.map((file) => uploadImage.mutateAsync({ file, domain: 'lounge' })),
+      );
 
       await createLoungePost.mutateAsync({
         title,
         content,
         category: 'DISPLAY_REVIEW',
-        postImageUrl,
+        postImageUrls,
       });
 
       setIsSubmitted(true);
@@ -80,7 +80,7 @@ export function ExhibitionReviewWritePage() {
               maxLength={500}
               onChange={(e) => setContent(e.target.value)}
               placeholder="전시에 대해 소개해주세요"
-              className="flex-1 min-h-0 resize-none bg-transparent typo-body-xs-regular text-main placeholder:text-faint leading-4 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
+              className="flex-1 min-h-0 resize-none bg-transparent typo-body-xs-regular text-main placeholder:text-faint leading-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
             />
             <div className="shrink-0 text-right text-faint typo-body-xs-regular leading-4">
               {content.length}/500

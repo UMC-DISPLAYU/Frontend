@@ -10,7 +10,7 @@ export interface CreateLoungePostRequestDto {
   title: string;
   content: string;
   category: string;
-  postImageUrl?: string;
+  postImageUrls?: string[];
 }
 
 export interface LoungePostBaseDto {
@@ -36,6 +36,7 @@ export interface LoungePostSummaryDto {
   loungePostId: number;
   category: string;
   title: string;
+  content: string;
   postImageUrl: string | null;
   writer: LoungeWriterDto;
   createdAt: string;

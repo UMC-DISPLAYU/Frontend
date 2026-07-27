@@ -1,3 +1,5 @@
+import { useEffect, useId, useRef } from 'react';
+
 type Props = {
   message: string;
   confirmLabel?: string;
@@ -5,15 +7,27 @@ type Props = {
 };
 
 export function AlertModal({ message, confirmLabel = '확인', onConfirm }: Props) {
+  const descriptionId = useId();
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    confirmButtonRef.current?.focus();
+  }, []);
+
   return (
     <div
       role="alertdialog"
       aria-modal="true"
+      aria-label="알림"
+      aria-describedby={descriptionId}
       className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 px-10"
     >
       <div className="w-full max-w-80 bg-neutral-50/20 rounded-[20px] shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px] p-5 flex flex-col gap-5">
-        <p className="typo-body-md-regular text-main whitespace-pre-line">{message}</p>
+        <p id={descriptionId} className="typo-body-md-regular text-main whitespace-pre-line">
+          {message}
+        </p>
         <button
+          ref={confirmButtonRef}
           type="button"
           onClick={onConfirm}
           className="w-full h-11 bg-dark rounded-full flex items-center justify-center text-card typo-body-md-regular"

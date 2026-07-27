@@ -1,12 +1,13 @@
 import type {
-  ClosingSoonExhibitionDto,
   CreateDisplayRequestDto,
   CreateDisplayResponseDataDto,
   DisplayDetailDto,
   DisplayListResponseDataDto,
+  GetClosingSoonDisplaysRequestDto,
   GetClosingSoonDisplaysResponseDataDto,
   GetDisplayMapRequestDto,
   GetDisplayMapResponseDataDto,
+  GetDuPicksRequestDto,
   GetDuPicksResponseDataDto,
   HomeExhibitionDto,
   SearchDisplaysRequestDto,
@@ -18,22 +19,28 @@ import type {
 import { apiRequest } from '../client';
 
 // GET /v1/display/graduation
-export const getGraduationDisplays = async (): Promise<HomeExhibitionDto[]> => {
-  const data = await apiRequest<{ exhibitions: HomeExhibitionDto[] }>('/v1/display/graduation');
+export const getGraduationDisplays = async (params?: {
+  size?: number;
+}): Promise<HomeExhibitionDto[]> => {
+  const data = await apiRequest<{ exhibitions: HomeExhibitionDto[] }>('/v1/display/graduation', {
+    query: params,
+  });
 
   return data.exhibitions;
 };
 
 // GET /v1/display/closing-soon
-export const getClosingSoonDisplays = async (): Promise<ClosingSoonExhibitionDto[]> => {
-  const data = await apiRequest<GetClosingSoonDisplaysResponseDataDto>('/v1/display/closing-soon');
-
-  return data.exhibitions;
-};
+export const getClosingSoonDisplays = async (
+  params: GetClosingSoonDisplaysRequestDto = {},
+): Promise<GetClosingSoonDisplaysResponseDataDto> =>
+  apiRequest<GetClosingSoonDisplaysResponseDataDto>('/v1/display/closing-soon', {
+    query: params,
+  });
 
 // GET /v1/display/du-picks
-export const getDuPicks = async (): Promise<GetDuPicksResponseDataDto> =>
-  apiRequest('/v1/display/du-picks');
+export const getDuPicks = async (
+  params: GetDuPicksRequestDto = {},
+): Promise<GetDuPicksResponseDataDto> => apiRequest('/v1/display/du-picks', { query: params });
 
 // GET /v1/display/search
 export const searchDisplays = async (

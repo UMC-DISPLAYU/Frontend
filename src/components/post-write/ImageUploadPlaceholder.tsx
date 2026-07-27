@@ -2,20 +2,32 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Image } from 'lucide-react';
 
+import { AlertModal } from '@/components/ui';
+
 type Props = {
   maxImages?: number;
   onFilesChange?: (files: File[]) => void;
 };
 
-export function ImageUploadPlaceholder({ maxImages = 4, onFilesChange }: Props) {
+export function ImageUploadPlaceholder({ maxImages = 5, onFilesChange }: Props) {
   const [items, setItems] = useState<{ file: File; url: string }[]>([]);
+  const [showMaxWarning, setShowMaxWarning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const itemsRef = useRef(items);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
   useEffect(() => {
     return () => {
-      items.forEach(({ url }) => URL.revokeObjectURL(url));
+      itemsRef.current.forEach(({ url }) => URL.revokeObjectURL(url));
     };
-  }, [items]);
+  }, []);
+
+  useEffect(() => {
+    onFilesChange?.(items.map((item) => item.file));
+  }, [items, onFilesChange]);
 
   const handleUploadClick = useCallback(() => {
     if (items.length < maxImages) {
@@ -29,35 +41,31 @@ export function ImageUploadPlaceholder({ maxImages = 4, onFilesChange }: Props) 
       if (!files) return;
 
       const remainingSlots = maxImages - items.length;
-      const filesToAdd = Array.from(files)
+      const selectedFiles = Array.from(files);
+      if (selectedFiles.length > remainingSlots) {
+        setShowMaxWarning(true);
+      }
+      const filesToAdd = selectedFiles
         .slice(0, remainingSlots)
         .map((file) => ({ file, url: URL.createObjectURL(file) }));
 
-      setItems((prev) => {
-        const next = [...prev, ...filesToAdd];
-        onFilesChange?.(next.map((item) => item.file));
-        return next;
-      });
+      setItems((prev) => [...prev, ...filesToAdd]);
 
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     },
-    [items.length, maxImages, onFilesChange],
+    [items.length, maxImages],
   );
 
-  const handleRemoveImage = useCallback(
-    (index: number) => {
-      setItems((prev) => {
-        const next = [...prev];
-        URL.revokeObjectURL(next[index].url);
-        next.splice(index, 1);
-        onFilesChange?.(next.map((item) => item.file));
-        return next;
-      });
-    },
-    [onFilesChange],
-  );
+  const handleRemoveImage = useCallback((index: number) => {
+    setItems((prev) => {
+      const next = [...prev];
+      URL.revokeObjectURL(next[index].url);
+      next.splice(index, 1);
+      return next;
+    });
+  }, []);
 
   return (
     <div className="flex gap-2 flex-wrap">
@@ -105,6 +113,12 @@ export function ImageUploadPlaceholder({ maxImages = 4, onFilesChange }: Props) 
         className="hidden"
         aria-label="이미지 파일 선택"
       />
+      {showMaxWarning && (
+        <AlertModal
+          message={`이미지는 최대 ${maxImages}장까지 첨부할 수 있어요.`}
+          onConfirm={() => setShowMaxWarning(false)}
+        />
+      )}
     </div>
   );
 }
