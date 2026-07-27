@@ -7,6 +7,8 @@ import type {
   GetClosingSoonDisplaysResponseDataDto,
   GetDisplayMapRequestDto,
   GetDisplayMapResponseDataDto,
+  GetDisplayReviewRepliesRequestDto,
+  GetDisplayReviewRepliesResponseDataDto,
   GetDisplayReviewsRequestDto,
   GetDisplayReviewsResponseDataDto,
   GetDuPicksRequestDto,
@@ -89,3 +91,11 @@ export const getDisplayReviews = async (
   params: GetDisplayReviewsRequestDto = {},
 ): Promise<GetDisplayReviewsResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/reviews`, { query: params });
+
+// GET /v1/display/:displayId/reviews/:displayReviewId/replies
+export const getDisplayReviewReplies = async (
+  displayId: number,
+  displayReviewId: number,
+  params: GetDisplayReviewRepliesRequestDto = {},
+): Promise<GetDisplayReviewRepliesResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reviews/${displayReviewId}/replies`, { query: params });

@@ -249,6 +249,33 @@ export interface GetDisplayReviewsResponseDataDto {
   hasNext: boolean;
 }
 
+export interface DisplayReviewReplyUserDto {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+}
+
+export interface DisplayReviewReplyDto {
+  displayReviewReplyId: number;
+  content: string;
+  createdAt: string;
+  user: DisplayReviewReplyUserDto;
+  isTeamMember: boolean;
+  likeCount: number;
+}
+
+export interface GetDisplayReviewRepliesRequestDto {
+  cursorId?: number;
+  size?: number;
+}
+
+export interface GetDisplayReviewRepliesResponseDataDto {
+  replies: DisplayReviewReplyDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
+
 export interface CreateDisplayRequestDto {
   title: string;
   posterImageUrl: string;

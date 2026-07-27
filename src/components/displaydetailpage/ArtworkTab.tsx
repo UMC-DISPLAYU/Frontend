@@ -8,7 +8,7 @@ type ArtworkCardProps = {
 function ArtworkCard({ item }: ArtworkCardProps) {
   return (
     <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col px-2 py-3">
-      <div className="aspect-square w-full rounded-xl overflow-hidden bg-page">
+      <div className="aspect-square w-full rounded-xl overflow-hidden bg-page border  border-line-soft">
         <img
           src={item.artworkImageUrl}
           alt={item.artworkName}
