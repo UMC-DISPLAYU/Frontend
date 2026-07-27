@@ -41,7 +41,7 @@ export function CommunitySection() {
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center gap-3.5">
         <LoungeCard
-          className="flex-1"
+          className="flex-1 h-[343px]"
           title="전시후기"
           description={<MultilineText text={'전시를 체험한\n이야기와 감상을 나눠요'} />}
           image={loungeReviewThumbnail}
@@ -53,6 +53,7 @@ export function CommunitySection() {
           {TIP_CARDS.map(({ category, title, description }) => (
             <LoungeCard
               key={category}
+              className="h-[165px]"
               title={title}
               description={<MultilineText text={description} />}
               onClick={() => navigate(`/lounge/${category}`)}
@@ -66,7 +67,7 @@ export function CommunitySection() {
         onClick={() => navigate('/lounge/venue')}
       >
         <div className="flex items-end">
-          <div className="w-56 h-12 flex flex-col justify-end gap-1">
+          <div className="w-56 h-12 flex flex-col justify-end gap-px">
             <h3 className="typo-body-xl-semibold text-main">전시 장소 대여</h3>
             <p className="typo-body-xs-regular text-sub600">전시 장소에 대한 정보를 공유해요</p>
           </div>

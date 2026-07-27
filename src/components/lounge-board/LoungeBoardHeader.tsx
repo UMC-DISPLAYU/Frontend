@@ -20,7 +20,12 @@ export function LoungeBoardHeader({ title, showWriteButton = true, className = '
       </div>
 
       {showWriteButton && (
-        <button type="button" aria-label="글 작성" className="flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => navigate('/lounge/review/post')}
+          aria-label="글 작성"
+          className="flex items-center justify-center"
+        >
           <SquarePen className="size-[18px] text-faint" />
         </button>
       )}
