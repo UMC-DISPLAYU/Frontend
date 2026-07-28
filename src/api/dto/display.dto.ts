@@ -213,7 +213,7 @@ export interface GetDisplayArtworksRequestDto extends OffsetPageRequestDto {
 export interface DisplayReviewUserDto {
   userId: number;
   nickname: string;
-  profileImageUrl: string;
+  profileImageUrl: string | null;
 }
 
 export interface DisplayReviewImageDto {
@@ -222,7 +222,7 @@ export interface DisplayReviewImageDto {
   isThumbnail: boolean;
   imageType: string;
   sortOrder: number;
-  caption: string;
+  caption: string | null;
   width: number;
   height: number;
 }

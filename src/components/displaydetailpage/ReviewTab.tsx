@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Heart } from 'lucide-react';
 
@@ -116,10 +116,16 @@ function ReviewCard({
   const [showReplies, setShowReplies] = useState(false);
   const images = review.images ?? [];
 
-  const { data: repliesData, isPending: isRepliesPending } = useDisplayReviewReplies(
+  const {
+    data: repliesData,
+    isPending: isRepliesPending,
+    hasNextPage: hasMoreReplies,
+    fetchNextPage: fetchMoreReplies,
+    isFetchingNextPage: isFetchingMoreReplies,
+  } = useDisplayReviewReplies(
     displayId,
     review.displayReviewId,
-    showReplies || review.replyCount > 0,
+    showReplies, // 사용자가 직접 펼쳤을 때만 fetch
   );
 
   const replies = repliesData?.pages.flatMap((p) => p.replies) ?? [];
@@ -149,9 +155,6 @@ function ReviewCard({
                 <div className="w-full h-5 inline-flex justify-start items-center gap-2">
                   <div className="flex justify-start items-center gap-2">
                     <span className="typo-body-sm-bold text-main">{review.user?.nickname}</span>
-                    {(review as unknown as { isTeamMember?: boolean }).isTeamMember && (
-                      <span className="typo-body-xs-regular text-hint">전시팀원</span>
-                    )}
                     <span className="typo-body-xs-regular text-faint">
                       {formatDateOrTime(review.createdAt)}
                     </span>
@@ -235,7 +238,21 @@ function ReviewCard({
               댓글 불러오는 중...
             </div>
           ) : (
-            replies.map((reply) => <ReplyItem key={reply.displayReviewReplyId} reply={reply} />)
+            <>
+              {replies.map((reply) => (
+                <ReplyItem key={reply.displayReviewReplyId} reply={reply} />
+              ))}
+              {hasMoreReplies && (
+                <button
+                  type="button"
+                  onClick={() => fetchMoreReplies()}
+                  disabled={isFetchingMoreReplies}
+                  className="-mx-5 pl-14 pr-5 py-2 w-[calc(100%+2.5rem)] text-left typo-body-xs-regular text-faint hover:text-main border-b border-line cursor-pointer disabled:opacity-50"
+                >
+                  {isFetchingMoreReplies ? '댓글 불러오는 중...' : '댓글 더보기'}
+                </button>
+              )}
+            </>
           )}
         </div>
       )}
@@ -279,13 +296,12 @@ export function ReviewTab({ className, displayId }: Props) {
 
   const reviews = data?.pages.flatMap((page) => page.reviews) ?? [];
 
-  const observerRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLDivElement | null>(null);
 
   // 무한 스크롤 감지
-  const setObserverRef = (el: HTMLDivElement | null) => {
-    if (observerRef.current) return;
+  useEffect(() => {
+    const el = triggerRef.current;
     if (!el) return;
-    observerRef.current = el;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -296,7 +312,11 @@ export function ReviewTab({ className, displayId }: Props) {
       { threshold: 0.1 },
     );
     observer.observe(el);
-  };
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className={cn('px-5 py-6 pb-28 overflow-x-hidden', className)}>
@@ -334,7 +354,7 @@ export function ReviewTab({ className, displayId }: Props) {
           ))}
 
           {/* 무한 스크롤 감지 트리거 */}
-          <div ref={setObserverRef} className="h-4" />
+          <div ref={triggerRef} className="h-4" />
 
           {isFetchingNextPage && (
             <div className="py-4 text-center text-sub600 typo-body-xs-regular animate-pulse">

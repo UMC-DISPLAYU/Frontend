@@ -6,15 +6,32 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { DisplayContentCategoryDto } from '@/api/dto/display.dto';
 import DUfontlogo from '@/assets/DUfontlogo.svg';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayContentsPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const displayId = id ? Number(id) : 0;
+  const displayId = parseDisplayId(id);
 
   const [selectedCategory, setSelectedCategory] = useState<DisplayContentCategoryDto | null>(null);
 
-  const { data: display, isPending, isError } = useDisplayDetail(displayId);
+  const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
+
+  // 유효하지 않은 ID는 즉시 에러 상태로 처리
+  if (displayId === null) {
+    return (
+      <div className="w-full max-w-md mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-page">
+        <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="typo-body-sm-regular text-faint underline cursor-pointer"
+        >
+          돌아가기
+        </button>
+      </div>
+    );
+  }
 
   if (isPending) {
     return (
@@ -124,10 +141,12 @@ export function DisplayContentsPage() {
             const count = category.contents.length;
 
             return (
-              <div
+              <button
                 key={category.categoryId}
+                type="button"
                 onClick={() => setSelectedCategory(category)}
-                className="flex items-center justify-between cursor-pointer group"
+                aria-label={`${category.name} 사진 보기`}
+                className="flex items-center justify-between cursor-pointer group w-full text-left"
               >
                 {/* 좌측 카테고리 썸네일 카드 */}
                 <div className="w-72 h-36 relative rounded-xl overflow-hidden bg-box shadow-xs shrink-0">
@@ -160,7 +179,7 @@ export function DisplayContentsPage() {
                   />
                   <span className="typo-body-sm-regular text-faint">사진 {count}장</span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

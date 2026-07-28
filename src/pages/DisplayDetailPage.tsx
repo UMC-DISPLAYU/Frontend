@@ -14,18 +14,35 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import type { DetailTabKey } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
+import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const displayId = id ? Number(id) : 0;
+  const displayId = parseDisplayId(id);
 
   const [activeTab, setActiveTab] = useState<DetailTabKey>('intro');
 
-  const { data: display, isPending, isError } = useDisplayDetail(displayId);
+  const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
 
   const containerClassName =
     'w-full max-w-md mx-auto min-h-dvh flex flex-col justify-center items-center';
+
+  // 유효하지 않은 ID (숫자가 아니거나 0 이하)는 즉시 에러 상태로 처리
+  if (displayId === null) {
+    return (
+      <div className={cn(containerClassName, 'gap-3 bg-page')}>
+        <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="typo-body-sm-regular text-faint underline cursor-pointer"
+        >
+          돌아가기
+        </button>
+      </div>
+    );
+  }
 
   if (isPending) {
     return (

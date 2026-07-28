@@ -95,13 +95,15 @@ export function IntroTab({ display: ex }: Props) {
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 px-5" style={{ scrollbarWidth: 'none' }}>
             {ex.contentCategories.map((category) => (
-              <div
+              <button
                 key={category.categoryId}
+                type="button"
                 onClick={handleGoToContents}
-                className="cursor-pointer"
+                aria-label={`${category.name} 콘텐츠 보기`}
+                className="cursor-pointer shrink-0"
               >
                 <ContentCategoryCard category={category} />
-              </div>
+              </button>
             ))}
           </div>
         </section>
