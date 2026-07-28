@@ -9,6 +9,7 @@ import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
+import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { Homepage } from './pages/Homepage';
 import { InvitationRequestPage } from './pages/InvitationRequestPage';
 import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
       { path: 'my-review', element: <MyReviewPage /> },
       { path: 'my-questions', element: <MyQuestionsPage /> },
       { path: 'policy', element: <PolicyPage /> },
+      { path: 'lounge/review/post', element: <ExhibitionReviewWritePage /> },
       { path: 'lounge/my-activity', element: <MyActivityPage /> },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
       { path: 'lounge/:category/:id', element: <LoungeBoardDetailPage /> },
