@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import type { GetDisplayMapRequestDto } from '@/api/dto';
 import { getDisplayMap } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+import { formatDate } from '@/utils/date';
+import { calculateBounds } from '@/utils/geo';
 
 /**
  * 지도 중심 좌표 + 반경으로 주변 전시를 조회하는 훅.
@@ -27,51 +29,6 @@ export interface NearbyParams {
   lng: number;
   radius: number; // meters - API의 bounds 계산에 사용
   searchWord?: string | null;
-}
-
-/**
- * 두 좌표 사이 거리(m). 반경 계산에 사용.
- * Haversine formula로 지구 곡률을 고려한 정확한 거리 계산.
- */
-export function getDistanceMeters(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-): number {
-  const R = 6371000;
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
-
-/**
- * 중심 좌표와 반경(m)으로 bounding box 계산
- */
-function calculateBounds(lat: number, lng: number, radiusMeters: number) {
-  const latDelta = (radiusMeters / 6371000) * (180 / Math.PI);
-  const lngDelta = (radiusMeters / 6371000) * (180 / Math.PI) / Math.cos((lat * Math.PI) / 180);
-
-  return {
-    southLatitude: lat - latDelta,
-    westLongitude: lng - lngDelta,
-    northLatitude: lat + latDelta,
-    eastLongitude: lng + lngDelta,
-  };
-}
-
-/**
- * 날짜 문자열을 'MM.DD' 형식으로 변환
- */
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${month}.${day}`;
 }
 
 /**
@@ -122,4 +79,3 @@ export function useNearbyDisplays(params: NearbyParams | null) {
     staleTime: 10_000,
   });
 }
-

@@ -1,4 +1,6 @@
 import { useRef } from 'react';
+
+import { Bookmark, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import type { NearbyDisplay } from '../../hooks/useNearbyDisplays';
@@ -83,17 +85,13 @@ export function ExhibitionMapCard({
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col">
-              <span className="typo-body-xs-regular text-sub700">
-                {exhibition.hostName}
-              </span>
+              <span className="typo-body-xs-regular text-sub700">{exhibition.hostName}</span>
               <span className="typo-body-xs-regular text-hint">{exhibition.period}</span>
             </div>
 
             <div className="flex items-center gap-1">
-              <LocationIcon />
-              <span className="typo-body-xxs-regular text-faint">
-                {exhibition.placeName}
-              </span>
+              <MapPin className="size-2.5 text-faint" strokeWidth={1.7} aria-hidden />
+              <span className="typo-body-xxs-regular text-faint">{exhibition.placeName}</span>
             </div>
           </div>
         </div>
@@ -109,42 +107,12 @@ export function ExhibitionMapCard({
         }}
         className="shrink-0 focus:outline-none focus:ring-2 focus:ring-main focus:ring-offset-2"
       >
-        <BookmarkIcon filled={exhibition.isBookmarked} />
+        <Bookmark
+          className={exhibition.isBookmarked ? 'size-4 fill-main text-main' : 'size-4 text-faint'}
+          strokeWidth={1.2}
+          aria-hidden
+        />
       </button>
     </Link>
-  );
-}
-
-function LocationIcon() {
-  return (
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
-      <path
-        d="M5 1.25c1.5 0 2.5 1.1 2.5 2.4C7.5 5.4 5 8.3 5 8.3S2.5 5.4 2.5 3.65C2.5 2.35 3.5 1.25 5 1.25Z"
-        stroke="currentColor"
-        strokeWidth="0.83"
-        className="text-faint"
-      />
-      <circle
-        cx="5"
-        cy="3.75"
-        r="0.9"
-        stroke="currentColor"
-        strokeWidth="0.83"
-        className="text-faint"
-      />
-    </svg>
-  );
-}
-
-function BookmarkIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M4 2.5h8a.5.5 0 0 1 .5.5v10.5L8 11.2l-4.5 2.3V3a.5.5 0 0 1 .5-.5Z"
-        className={filled ? 'fill-main stroke-main' : 'stroke-faint'}
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

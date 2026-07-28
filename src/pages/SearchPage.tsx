@@ -88,10 +88,7 @@ export function SearchPage() {
   const exhibitions = data?.exhibitions ?? [];
 
   const nearbyParamsWithSearch = useMemo(
-    () =>
-      nearbyParams
-        ? { ...nearbyParams, searchWord: query.trim() || null }
-        : null,
+    () => (nearbyParams ? { ...nearbyParams, searchWord: query.trim() || null } : null),
     [nearbyParams, query],
   );
   const { data: nearbyData } = useNearbyDisplays(nearbyParamsWithSearch);
