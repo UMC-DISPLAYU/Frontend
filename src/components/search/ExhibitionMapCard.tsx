@@ -12,15 +12,7 @@ interface ExhibitionMapCardProps {
   onToggleBookmark?: () => void;
 }
 
-/**
- * 지도 탭 하단에 쌓이는 가로형 카드.
- * 선택된 카드(지도 핀과 동기화)는 outline 으로 강조.
- * 색/타이포는 전부 디자인 토큰만 사용.
- *
- * 클릭 동작:
- * - 싱글클릭: 지도 핀 선택
- * - 더블클릭: 상세 페이지 이동
- */
+
 export function ExhibitionMapCard({
   exhibition,
   selected = false,
