@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import { ChevronRightIcon, CircleAlert } from 'lucide-react';
+import { ChevronRight, CircleAlert } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto, DisplayDetailDto } from '@/api/dto/display.dto';
 
@@ -18,7 +19,7 @@ function ContentCategoryCard({ category }: ContentCarouselProps) {
 
   return (
     <div
-      className="shrink-0 rounded-xl overflow-hidden bg-[#e0e0e0] relative"
+      className="shrink-0 rounded-xl overflow-hidden bg-box200 relative cursor-pointer"
       style={{ width: 362, height: 152 }}
     >
       {firstImage ? (
@@ -42,7 +43,12 @@ function ContentCategoryCard({ category }: ContentCarouselProps) {
 }
 
 export function IntroTab({ display: ex }: Props) {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+
+  const handleGoToContents = () => {
+    navigate(`/display/${ex.displayId}/contents`);
+  };
 
   return (
     <div className="bg-page">
@@ -65,21 +71,37 @@ export function IntroTab({ display: ex }: Props) {
             type="button"
             id="intro-expand-btn"
             onClick={() => setExpanded((v) => !v)}
-            className="flex items-center typo-body-xs-regular text-faint"
+            className="flex items-center typo-body-xs-regular text-faint cursor-pointer"
           >
             {expanded ? '접기' : '더보기'}
-            <ChevronRightIcon className="text-faint size-3" />
+            <ChevronRight className="text-faint size-3" />
           </button>
         </div>
       </section>
 
       {/* 전시콘텐츠 */}
       {ex.contentCategories.length > 0 && (
-        <section className="py-5 bg-[#D7D7DF]">
-          <h2 className="typo-body-xl-bold text-main mb-4 px-5">전시콘텐츠</h2>
+        <section className="py-5 bg-box200">
+          <div className="flex items-center justify-between px-5 mb-4">
+            <h2 className="typo-body-xl-bold text-main">전시콘텐츠</h2>
+            <button
+              type="button"
+              onClick={handleGoToContents}
+              className="flex items-center gap-0.5 typo-body-xs-regular text-faint cursor-pointer"
+            >
+              <span>더보기</span>
+              <ChevronRight className="text-faint size-3" />
+            </button>
+          </div>
           <div className="flex gap-2 overflow-x-auto pb-2 px-5" style={{ scrollbarWidth: 'none' }}>
             {ex.contentCategories.map((category) => (
-              <ContentCategoryCard key={category.categoryId} category={category} />
+              <div
+                key={category.categoryId}
+                onClick={handleGoToContents}
+                className="cursor-pointer"
+              >
+                <ContentCategoryCard category={category} />
+              </div>
             ))}
           </div>
         </section>
