@@ -5,16 +5,21 @@ import { Navbar } from './Navbar';
 
 function LayoutContent() {
   const location = useLocation();
-  const hideNavbarPaths = ['/display/', '/artwork/', '/artworks-manage', '/exhibition-register/', '/exhibition/', '/team/'];
-  const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
+  const hideChromePaths = [
+    '/display/',
+    '/artwork/',
+    '/exhibition-register/',
+    '/lounge/review/post',
+  ];
+  const shouldHideChrome = hideChromePaths.some((path) => location.pathname.startsWith(path));
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
-      <main className={shouldHideNavbar ? "flex-1" : "pb-20 md:pb-24 lg:pb-28"}>
+      <main className={`flex-1 ${shouldHideChrome ? '' : 'pb-20 md:pb-24 lg:pb-28'}`}>
         <Outlet />
       </main>
-      <FNB />
-      {!shouldHideNavbar && (
+      {!shouldHideChrome && <FNB />}
+      {!shouldHideChrome && (
         <div className="fixed right-0 bottom-4 sm:bottom-6 md:bottom-8 left-0 z-50 flex justify-center px-4 pointer-events-none">
           <div className="pointer-events-auto">
             <Navbar />

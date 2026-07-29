@@ -1,3 +1,4 @@
+export { AlertModal } from './AlertModal';
 export { BackButton } from './BackButton';
 export { BottomSheet } from './BottomSheet';
 export { CalenderSheet } from './CalenderSheet';
