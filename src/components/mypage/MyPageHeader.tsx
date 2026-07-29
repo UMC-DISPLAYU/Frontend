@@ -1,4 +1,5 @@
 import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { TABS } from '@/mocks/mypage';
@@ -21,7 +22,6 @@ interface MyPageHeaderProps {
 export function MyPageHeader({
   activeTab,
   onTabChange,
-  onOpenMenu,
   onToggleView,
   onVerifyArtist,
   onRegister,
@@ -31,6 +31,7 @@ export function MyPageHeader({
   isArtistVerified,
   isArtistView,
 }: MyPageHeaderProps) {
+  const navigate = useNavigate();
   return (
     <header className="shrink-0 bg-white">
       <div className="px-5 pt-2 flex justify-between items-center">
@@ -50,7 +51,7 @@ export function MyPageHeader({
           <button type="button" aria-label="전환" onClick={onToggleView}>
             <RefreshCcw className="size-5" />
           </button>
-          <button type="button" aria-label="메뉴" onClick={onOpenMenu}>
+          <button type="button" aria-label="메뉴" onClick={() => navigate('/setting/')}>
             <Menu className="size-5" />
           </button>
         </div>

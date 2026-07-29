@@ -43,12 +43,13 @@ function ExhibitionCard({ item }: { item: HomeExhibitionDto }) {
 type Props = {
   title: string;
   items: HomeExhibitionDto[];
+  linkTo?: string;
 };
 
-export function ExhibitionSection({ title, items }: Props) {
+export function ExhibitionSection({ title, items, linkTo }: Props) {
   return (
     <section className="mb-7">
-      <SectionHeader title={title} />
+      <SectionHeader title={title} linkTo={linkTo} />
       <div className="grid grid-cols-3 gap-2 px-4">
         {items.map((item) => (
           <ExhibitionCard key={item.displayId} item={item} />

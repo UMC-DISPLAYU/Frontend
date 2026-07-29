@@ -7,6 +7,7 @@ import type {
 } from '@/api/dto/display.dto';
 import type { GetArtworkPreviewRequestDto } from '@/api/dto/displayArtwork.dto';
 import type { GetLoungePostsRequestDto } from '@/api/dto/lounge.dto';
+import type { NearbyParams } from '@/hooks/useNearbyDisplays';
 
 type ListParams = Record<string, unknown>;
 
@@ -34,6 +35,8 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'search', params] as const,
     map: (params: GetDisplayMapRequestDto) =>
       [...queryKeys.displays.lists(), 'map', params] as const,
+    nearby: (params: NearbyParams | null) =>
+      [...queryKeys.displays.lists(), 'nearby', params] as const,
     closingSoon: (params?: GetClosingSoonDisplaysRequestDto) =>
       [...queryKeys.displays.lists(), 'closing-soon', params ?? {}] as const,
     graduation: (params?: { size?: number }) =>
