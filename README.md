@@ -10,12 +10,12 @@
 
 <div align="center">
 
-| 이름 | 담당 (화면 / 기능) |
-| :--: | :----------------: |
-| [서현민](https://github.com/hyunmin1756) | 온보딩 페이지, 탐색 페이지, 라운지 페이지 |
-| [안재인](https://github.com/anjaein) | MSW, API 연동, 인증/권한 흐름 로직 |
-| [이승철](https://github.com/chulee-53) | 홈페이지, 전시 상세/작품 상세 페이지, CSS(디자인 시스템, 반응형 디자인) |
-| [정아람](https://github.com/aram426) | 마이페이지, 전시 등록/관리 플로우, 지도 API |
+|                   이름                   |                           담당 (화면 / 기능)                            |
+| :--------------------------------------: | :---------------------------------------------------------------------: |
+| [서현민](https://github.com/hyunmin1756) |                온보딩 페이지, 탐색 페이지, 라운지 페이지                |
+|   [안재인](https://github.com/anjaein)   |                   MSW, API 연동, 인증/권한 흐름 로직                    |
+|  [이승철](https://github.com/chulee-53)  | 홈페이지, 전시 상세/작품 상세 페이지, CSS(디자인 시스템, 반응형 디자인) |
+|   [정아람](https://github.com/aram426)   |               마이페이지, 전시 등록/관리 플로우, 지도 API               |
 
 </div>
 
@@ -23,20 +23,20 @@
 
 <div align="center">
 
-| Type | Tool |
-| :--: | :--: |
-| Bundler | ![VITE](https://img.shields.io/badge/VITE-646CFF?style=for-the-badge&logo=Vite&logoColor=white) |
-| Library | ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) |
-| Language | ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=TypeScript&logoColor=white) |
-| Routing | ![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white) |
-| Server State | ![TanStack Query](https://img.shields.io/badge/TanStack_Query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white) |
-| HTTP Client | ![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white) |
-| Styling | ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white) |
-| Mocking | ![MSW](https://img.shields.io/badge/MSW-FF6A33?style=for-the-badge&logo=mockserviceworker&logoColor=white) |
-| Formatting | ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white) ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black) |
-| Git Hooks | ![Husky](https://img.shields.io/badge/Husky-42B983?style=for-the-badge&logo=git&logoColor=white) |
-| Package Manager | ![pnpm](https://img.shields.io/badge/pnpm-F69220?style=for-the-badge&logo=pnpm&logoColor=white) |
-| Version Control | ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white) |
+|      Type       |                                                                                                       Tool                                                                                                        |
+| :-------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|     Bundler     |                                                          ![VITE](https://img.shields.io/badge/VITE-646CFF?style=for-the-badge&logo=Vite&logoColor=white)                                                          |
+|     Library     |                                                   ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)                                                   |
+|    Language     |                                                 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=TypeScript&logoColor=white)                                                 |
+|     Routing     |                                              ![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)                                               |
+|  Server State   |                                             ![TanStack Query](https://img.shields.io/badge/TanStack_Query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white)                                             |
+|   HTTP Client   |                                                        ![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)                                                         |
+|     Styling     |                                              ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)                                               |
+|     Mocking     |                                                    ![MSW](https://img.shields.io/badge/MSW-FF6A33?style=for-the-badge&logo=mockserviceworker&logoColor=white)                                                     |
+|   Formatting    | ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white) ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black) |
+|    Git Hooks    |                                                         ![Husky](https://img.shields.io/badge/Husky-42B983?style=for-the-badge&logo=git&logoColor=white)                                                          |
+| Package Manager |                                                          ![pnpm](https://img.shields.io/badge/pnpm-F69220?style=for-the-badge&logo=pnpm&logoColor=white)                                                          |
+| Version Control | ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)  |
 
 </div>
 
@@ -92,13 +92,13 @@ pnpm dev
 
 ### 플로우
 
-| 구분 | 단계 |
-|---|---|
-| 온보딩 | 온보딩 → 비회원 둘러보기 또는 로그인 → (신규가입 시 닉네임 설정 → 가입완료) → 홈 |
-| 관람 | 홈/탐색 → 전시 상세 → 작품 상세 / 콘텐츠 갤러리 / 후기·방명록·Q&A (라운지) |
-| 전시 등록 | 전시 등록하기 → 작가 인증 → 기본정보 입력 → 전시 작가명 설정 → 전시 관리(대시보드) → 전시 등록 |
-| 팀원 초대 | 전시 관리에서 초대 → 팀원이 초대 수락 → 작가명 설정 → 참여 완료 |
-| 전시작 등록 | 전시 작업 → 작품 등록 → 기본정보·이미지 입력 → 등록 완료 |
+| 구분        | 단계                                                                                           |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| 온보딩      | 온보딩 → 비회원 둘러보기 또는 로그인 → (신규가입 시 닉네임 설정 → 가입완료) → 홈               |
+| 관람        | 홈/탐색 → 전시 상세 → 작품 상세 / 콘텐츠 갤러리 / 후기·방명록·Q&A (라운지)                     |
+| 전시 등록   | 전시 등록하기 → 작가 인증 → 기본정보 입력 → 전시 작가명 설정 → 전시 관리(대시보드) → 전시 등록 |
+| 팀원 초대   | 전시 관리에서 초대 → 팀원이 초대 수락 → 작가명 설정 → 참여 완료                                |
+| 전시작 등록 | 전시 작업 → 작품 등록 → 기본정보·이미지 입력 → 등록 완료                                       |
 
 ---
 

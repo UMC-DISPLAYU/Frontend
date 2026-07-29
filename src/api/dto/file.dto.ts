@@ -20,9 +20,10 @@ export interface CreatePresignedUrlRequestDto {
 }
 
 export interface CreatePresignedUrlResponseDataDto {
-  presignedUrl?: string;
-  fileUrl?: string;
-  [key: string]: unknown;
+  uploadUrl: string;
+  fileKey: string;
+  fileUrl: string;
+  expiresIn: number;
 }
 
 export type CreatePresignedUrlResponseDto = ApiResponseDto<CreatePresignedUrlResponseDataDto>;

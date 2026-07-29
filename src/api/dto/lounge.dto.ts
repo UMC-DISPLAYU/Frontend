@@ -10,6 +10,7 @@ export interface CreateLoungePostRequestDto {
   title: string;
   content: string;
   category: string;
+  postImageUrls?: string[];
 }
 
 export interface LoungePostBaseDto {
