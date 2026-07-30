@@ -2,12 +2,31 @@ import { useState } from 'react';
 
 import { Check, ChevronLeft, ChevronRight, Info, X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+
+import { ApiError } from '@/api/axios';
+import type { AgreementDto } from '@/api/dto';
+import { useAgreements } from '@/hooks/queries/useAgreements';
+import { useSignup } from '@/hooks/queries/useAuth';
+import { useCheckNickname } from '@/hooks/queries/useUserProfile';
 
 type Step = 'intro' | 'terms' | 'termsDetail' | 'nickname' | 'done';
 type TermKey = 'over14' | 'service' | 'privacy' | 'location';
 type PolicyCode = 'terms' | 'privacy' | 'location';
 type TermState = Record<TermKey, boolean>;
+type NicknameStatus = 'idle' | 'available' | 'unavailable' | 'error';
+
+const AGREEMENT_CODES: Record<Exclude<TermKey, 'over14'>, string> = {
+  service: 'TERMS_OF_SERVICE',
+  privacy: 'PRIVACY_COLLECTION_USE',
+  location: 'LOCATION_BASED_SERVICE',
+};
+
+const POLICY_TERM_KEYS: Record<PolicyCode, Exclude<TermKey, 'over14'>> = {
+  terms: 'service',
+  privacy: 'privacy',
+  location: 'location',
+};
 
 const TERM_ROWS: Array<{
   key: TermKey;
@@ -456,8 +475,17 @@ function PolicyBulletList({ items }: { items: string[] }) {
   );
 }
 
-function TermsDetailScreen({ code, onBack }: { code: PolicyCode; onBack: () => void }) {
+function TermsDetailScreen({
+  agreement,
+  code,
+  onBack,
+}: {
+  agreement?: AgreementDto;
+  code: PolicyCode;
+  onBack: () => void;
+}) {
   const document = POLICY_DOCUMENTS[code];
+  const title = agreement?.title ?? document.title;
 
   return (
     <>
@@ -472,75 +500,117 @@ function TermsDetailScreen({ code, onBack }: { code: PolicyCode; onBack: () => v
             <ChevronLeft className="size-5 text-[#111827]" strokeWidth={2} />
           </button>
         </div>
-        <h1 className="text-[16px] font-semibold leading-6 text-[#111827]">{document.title}</h1>
+        <h1 className="text-[16px] font-semibold leading-6 text-[#111827]">{title}</h1>
       </header>
 
       <main className="flex-1 overflow-y-auto px-6 pb-8 pt-5">
         <p className="text-[11.5px] leading-[17.25px] text-[#8a94a6]">
-          시행일 2026. 08. 01 · 버전 1.0
+          시행일 {agreement?.effectiveDate ?? '2026. 08. 01'} · 버전 {agreement?.version ?? '1.0'}
         </p>
-        <p className="pt-6 text-[15px] leading-[24.75px] text-[#8a94a6]">{document.intro}</p>
 
-        {document.sections.map((section) => (
-          <section key={section.title} className="w-full pt-8">
-            <h2 className="text-[17px] font-semibold leading-[25.5px] text-[#111827]">
-              {section.title}
-            </h2>
+        {agreement ? (
+          <p className="whitespace-pre-wrap pt-6 text-[15px] leading-[24.75px] text-[#374151]">
+            {agreement.content}
+          </p>
+        ) : (
+          <>
+            <p className="pt-6 text-[15px] leading-[24.75px] text-[#8a94a6]">{document.intro}</p>
 
-            {section.paragraphs ? (
-              <div className="flex flex-col gap-[6px] pt-3">
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph} className="text-[15px] leading-[24.75px] text-[#374151]">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+            {document.sections.map((section) => (
+              <section key={section.title} className="w-full pt-8">
+                <h2 className="text-[17px] font-semibold leading-[25.5px] text-[#111827]">
+                  {section.title}
+                </h2>
+
+                {section.paragraphs ? (
+                  <div className="flex flex-col gap-[6px] pt-3">
+                    {section.paragraphs.map((paragraph) => (
+                      <p key={paragraph} className="text-[15px] leading-[24.75px] text-[#374151]">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+
+                {section.definitions ? (
+                  <div className="flex flex-col gap-3 pt-3">
+                    {section.definitions.map((definition) => (
+                      <p
+                        key={definition.label}
+                        className="text-[15px] leading-[24.75px] text-[#111827]"
+                      >
+                        <span className="font-medium">{definition.label}</span>
+                        <span className="text-[#374151]">: {definition.description}</span>
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+
+                {section.bullets ? <PolicyBulletList items={section.bullets} /> : null}
+
+                {section.note ? (
+                  <div className="mt-3 rounded-lg bg-[#f9fafb] p-4">
+                    <p className="text-[15px] leading-6 text-[#374151]">{section.note}</p>
+                  </div>
+                ) : null}
+              </section>
+            ))}
+
+            {document.footer ? (
+              <footer className="mt-8 border-t border-[#e5e7eb] pt-[25px]">
+                <div className="flex flex-col gap-[6px]">
+                  {document.footer.map((row) => (
+                    <p key={row.label} className="text-[13px] leading-[19.5px]">
+                      <span className="font-medium text-[#374151]">{row.label}</span>
+                      <span className="text-[#8a94a6]"> {row.description}</span>
+                    </p>
+                  ))}
+                </div>
+              </footer>
             ) : null}
-
-            {section.definitions ? (
-              <div className="flex flex-col gap-3 pt-3">
-                {section.definitions.map((definition) => (
-                  <p
-                    key={definition.label}
-                    className="text-[15px] leading-[24.75px] text-[#111827]"
-                  >
-                    <span className="font-medium">{definition.label}</span>
-                    <span className="text-[#374151]">: {definition.description}</span>
-                  </p>
-                ))}
-              </div>
-            ) : null}
-
-            {section.bullets ? <PolicyBulletList items={section.bullets} /> : null}
-
-            {section.note ? (
-              <div className="mt-3 rounded-lg bg-[#f9fafb] p-4">
-                <p className="text-[15px] leading-6 text-[#374151]">{section.note}</p>
-              </div>
-            ) : null}
-          </section>
-        ))}
-
-        {document.footer ? (
-          <footer className="mt-8 border-t border-[#e5e7eb] pt-[25px]">
-            <div className="flex flex-col gap-[6px]">
-              {document.footer.map((row) => (
-                <p key={row.label} className="text-[13px] leading-[19.5px]">
-                  <span className="font-medium text-[#374151]">{row.label}</span>
-                  <span className="text-[#8a94a6]"> {row.description}</span>
-                </p>
-              ))}
-            </div>
-          </footer>
-        ) : null}
+          </>
+        )}
       </main>
     </>
   );
 }
 
-function NicknameScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: () => void }) {
+function NicknameScreen({
+  isSubmitting,
+  onBack,
+  onSubmit,
+  submitError,
+}: {
+  isSubmitting: boolean;
+  onBack: () => void;
+  onSubmit: (nickname: string) => void;
+  submitError?: string;
+}) {
   const [nickname, setNickname] = useState('');
+  const [status, setStatus] = useState<NicknameStatus>('idle');
+  const checkNickname = useCheckNickname();
   const isNicknameShapeValid = /^[가-힣a-zA-Z0-9]{5,15}$/.test(nickname);
+  const canSubmit = status === 'available' && isNicknameShapeValid && !isSubmitting;
+
+  const handleCheckNickname = async () => {
+    if (!isNicknameShapeValid || checkNickname.isPending) return;
+
+    try {
+      const result = await checkNickname.mutateAsync({ nickname });
+      setStatus(result.isAvailable ? 'available' : 'unavailable');
+    } catch {
+      setStatus('error');
+    }
+  };
+
+  const statusMessage =
+    status === 'available'
+      ? '사용 가능한 닉네임이에요.'
+      : status === 'unavailable'
+        ? '이미 사용 중인 닉네임이에요.'
+        : status === 'error'
+          ? '중복 확인에 실패했어요.'
+          : '';
 
   return (
     <main className="flex h-full flex-1 flex-col bg-white px-5 pb-10 pt-[58px]">
@@ -578,6 +648,7 @@ function NicknameScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: ()
                 maxLength={15}
                 onChange={(event) => {
                   setNickname(event.target.value);
+                  setStatus('idle');
                 }}
                 placeholder="닉네임"
                 className="min-w-0 flex-1 bg-transparent text-[12px] leading-[18px] tracking-[-0.36px] text-[#111] outline-none placeholder:text-[#9d9d9d]"
@@ -589,6 +660,7 @@ function NicknameScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: ()
                   type="button"
                   onClick={() => {
                     setNickname('');
+                    setStatus('idle');
                   }}
                   aria-label="닉네임 지우기"
                   className="flex size-5 items-center justify-center rounded-[10px] bg-[#d7d7df]"
@@ -599,11 +671,11 @@ function NicknameScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: ()
               <div className="h-[18px] w-px bg-[#d7d7df]" />
               <button
                 type="button"
-                onClick={() => undefined}
-                disabled={!isNicknameShapeValid}
+                onClick={handleCheckNickname}
+                disabled={!isNicknameShapeValid || checkNickname.isPending}
                 className="flex h-8 w-[71.336px] items-center justify-center rounded-lg border border-[#767676] text-[12px] font-semibold leading-[18px] tracking-[-0.36px] text-[#111] disabled:border-[#d7d7df] disabled:text-[#9d9d9d]"
               >
-                중복 확인
+                {checkNickname.isPending ? '확인중' : '중복 확인'}
               </button>
             </div>
           </div>
@@ -615,6 +687,13 @@ function NicknameScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: ()
           <p>특수문자 불가</p>
           <p>공백 불가</p>
         </div>
+        <p
+          className={`mt-3 min-h-[17px] text-[12px] leading-[16.8px] tracking-[-0.36px] ${
+            status === 'available' ? 'text-[#22a06b]' : 'text-[#ef4444]'
+          }`}
+        >
+          {statusMessage}
+        </p>
       </div>
 
       <div className="shrink-0 rounded-[14px] bg-[#f9f9f9] p-[14px]">
@@ -626,13 +705,19 @@ function NicknameScreen({ onBack, onSubmit }: { onBack: () => void; onSubmit: ()
         </div>
       </div>
 
+      {submitError ? (
+        <p className="mt-3 shrink-0 text-center text-[12px] font-medium leading-[16.8px] tracking-[-0.36px] text-[#ef4444]">
+          {submitError}
+        </p>
+      ) : null}
+
       <button
         type="button"
-        disabled={!isNicknameShapeValid}
-        onClick={onSubmit}
+        disabled={!canSubmit}
+        onClick={() => onSubmit(nickname)}
         className="mt-5 flex h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold leading-5 tracking-[-0.42px] text-white disabled:bg-[#d7d7df]"
       >
-        가입 완료하기
+        {isSubmitting ? '가입 중' : '가입 완료하기'}
       </button>
     </main>
   );
@@ -675,13 +760,61 @@ function DoneScreen({ onNext }: { onNext: () => void }) {
 export function OnboardingPage() {
   const [step, setStep] = useState<Step>('terms');
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyCode>('terms');
+  const [error, setError] = useState('');
   const [terms, setTerms] = useState<TermState>({
     over14: false,
     service: false,
     privacy: false,
     location: false,
   });
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const agreementsQuery = useAgreements();
+  const signup = useSignup();
+
+  const findAgreement = (key: Exclude<TermKey, 'over14'>): AgreementDto | undefined =>
+    agreementsQuery.data?.find((agreement) => agreement.code === AGREEMENT_CODES[key]);
+
+  const completeSignup = async (nickname: string) => {
+    setError('');
+
+    const agreedTerms = (['service', 'privacy', 'location'] as const)
+      .filter((key) => terms[key])
+      .map((key) => findAgreement(key))
+      .filter((agreement): agreement is AgreementDto => Boolean(agreement))
+      .map((agreement) => ({ code: agreement.code, version: agreement.version }));
+
+    const requiredAgreementCodes = (['service', 'privacy'] as const).map(
+      (key) => AGREEMENT_CODES[key],
+    );
+    const hasRequiredAgreements = requiredAgreementCodes.every((code) =>
+      agreedTerms.some((agreement) => agreement.code === code),
+    );
+
+    if (!terms.over14 || !hasRequiredAgreements) {
+      setError('필수 약관 동의 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    try {
+      const result = await signup.mutateAsync({
+        body: {
+          nickname,
+          agreements: agreedTerms,
+          isOver14: terms.over14,
+        },
+        signupToken: searchParams.get('signupToken'),
+      });
+
+      localStorage.setItem('accessToken', result.accessToken);
+      if (result.refreshToken) {
+        localStorage.setItem('refreshToken', result.refreshToken);
+      }
+      setStep('done');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : '가입 완료에 실패했어요.');
+    }
+  };
 
   return (
     <MobileShell>
@@ -699,10 +832,21 @@ export function OnboardingPage() {
         />
       ) : null}
       {step === 'termsDetail' ? (
-        <TermsDetailScreen code={selectedPolicy} onBack={() => setStep('terms')} />
+        <TermsDetailScreen
+          agreement={findAgreement(POLICY_TERM_KEYS[selectedPolicy])}
+          code={selectedPolicy}
+          onBack={() => setStep('terms')}
+        />
       ) : null}
       {step === 'nickname' ? (
-        <NicknameScreen onBack={() => setStep('terms')} onSubmit={() => setStep('done')} />
+        <NicknameScreen
+          isSubmitting={signup.isPending}
+          onBack={() => setStep('terms')}
+          submitError={error}
+          onSubmit={(nickname) => {
+            void completeSignup(nickname);
+          }}
+        />
       ) : null}
       {step === 'done' ? <DoneScreen onNext={() => navigate('/home')} /> : null}
     </MobileShell>

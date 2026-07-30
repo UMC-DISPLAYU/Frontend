@@ -6,6 +6,7 @@ import displayuLogo from '@/assets/DUfontlogo.svg';
 import googleOriginal from '@/assets/google-original.svg';
 import kakaoTalk from '@/assets/kakao-talk.svg';
 import onboardingSplash from '@/assets/onboarding-splash.svg';
+import { useGoogleAuthorizationUrl, useKakaoAuthorizationUrl } from '@/hooks/queries/useAuth';
 
 const LOGIN_ASSETS = [displayuLogo, kakaoTalk, googleOriginal, onboardingSplash];
 
@@ -32,7 +33,19 @@ function preloadImages(srcList: string[]) {
   );
 }
 
-function LoginContent({ onNavigate }: { onNavigate: (path: string) => void }) {
+function LoginContent({
+  isStartingOAuth = false,
+  onGuest,
+  onGoogle,
+  onKakao,
+  error,
+}: {
+  isStartingOAuth?: boolean;
+  onGuest: () => void;
+  onGoogle: () => void;
+  onKakao: () => void;
+  error?: string;
+}) {
   return (
     <main className="flex min-h-dvh w-full max-w-[402px] flex-col overflow-hidden bg-page px-5 pb-10 pt-[18vh]">
       <section className="flex flex-col items-center">
@@ -49,7 +62,8 @@ function LoginContent({ onNavigate }: { onNavigate: (path: string) => void }) {
       <section className="flex w-full flex-col gap-[10px]">
         <button
           type="button"
-          onClick={() => onNavigate('/onboarding')}
+          onClick={onKakao}
+          disabled={isStartingOAuth}
           className="typo-body-md-regular flex h-[60px] w-full items-center justify-center gap-[10px] rounded-2xl border border-line-soft bg-card text-main"
         >
           <img src={kakaoTalk} alt="" className="h-6 w-[26.65px]" />
@@ -58,7 +72,8 @@ function LoginContent({ onNavigate }: { onNavigate: (path: string) => void }) {
 
         <button
           type="button"
-          onClick={() => onNavigate('/onboarding')}
+          onClick={onGoogle}
+          disabled={isStartingOAuth}
           className="typo-body-md-regular flex h-[60px] w-full items-center justify-center gap-[10px] rounded-2xl border border-line-soft bg-card text-main"
         >
           <img src={googleOriginal} alt="" className="h-6 w-[26.65px]" />
@@ -66,9 +81,15 @@ function LoginContent({ onNavigate }: { onNavigate: (path: string) => void }) {
         </button>
       </section>
 
+      {error ? (
+        <p className="mt-3 text-center text-[12px] font-medium leading-[16.8px] tracking-[-0.36px] text-[#ef4444]">
+          {error}
+        </p>
+      ) : null}
+
       <button
         type="button"
-        onClick={() => onNavigate('/home')}
+        onClick={onGuest}
         className="typo-body-sm-regular mt-[184px] text-center text-faint underline max-[420px]:mt-[21vh]"
       >
         비회원으로 감상하기
@@ -79,7 +100,27 @@ function LoginContent({ onNavigate }: { onNavigate: (path: string) => void }) {
 
 export function LoginPage() {
   const [showSplash, setShowSplash] = useState(true);
+  const [authError, setAuthError] = useState('');
   const navigate = useNavigate();
+  const kakaoAuthorizationUrlMutation = useKakaoAuthorizationUrl();
+  const googleAuthorizationUrlMutation = useGoogleAuthorizationUrl();
+  const isStartingOAuth =
+    kakaoAuthorizationUrlMutation.isPending || googleAuthorizationUrlMutation.isPending;
+
+  const startOAuthLogin = async (provider: 'kakao' | 'google') => {
+    setAuthError('');
+
+    try {
+      const { authorizationUrl } =
+        provider === 'kakao'
+          ? await kakaoAuthorizationUrlMutation.mutateAsync()
+          : await googleAuthorizationUrlMutation.mutateAsync();
+
+      window.location.href = authorizationUrl;
+    } catch {
+      setAuthError('로그인 연결에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }
+  };
 
   useEffect(() => {
     void preloadImages(LOGIN_ASSETS);
@@ -101,7 +142,11 @@ export function LoginPage() {
             className="h-full w-full object-cover"
           />
           <div className="pointer-events-none absolute opacity-0">
-            <LoginContent onNavigate={() => undefined} />
+            <LoginContent
+              onGuest={() => undefined}
+              onGoogle={() => undefined}
+              onKakao={() => undefined}
+            />
           </div>
         </main>
       </div>
@@ -110,7 +155,17 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-[#f0f0f0] font-[Pretendard,sans-serif]">
-      <LoginContent onNavigate={(path) => navigate(path)} />
+      <LoginContent
+        isStartingOAuth={isStartingOAuth}
+        error={authError}
+        onGuest={() => navigate('/home')}
+        onKakao={() => {
+          void startOAuthLogin('kakao');
+        }}
+        onGoogle={() => {
+          void startOAuthLogin('google');
+        }}
+      />
     </div>
   );
 }
