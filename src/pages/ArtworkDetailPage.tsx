@@ -84,7 +84,7 @@ export function ArtworkDetailPage() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-dvh bg-page relative pb-24">
+    <div className="w-full max-w-md mx-auto min-h-dvh bg-page relative">
       {/* 히어로 이미지 */}
       <HeroSlider
         images={[artwork.images.find((img) => img.isThumbnail)?.imageUrl || '']}

@@ -46,7 +46,7 @@ function LayoutContent() {
         </main>
 
         {/* 기본적으로 Footer(FNB) 노출, 선택적으로 안보이도록 설정 가능 */}
-        {!shouldHideFooter && <FNB />}
+        {!shouldHideFooter && <FNB hasFixedBottomBar={shouldHideNavbar} />}
 
         {!shouldHideNavbar && (
           <div className="fixed right-0 bottom-4 left-0 z-50 flex justify-center px-4 pointer-events-none">

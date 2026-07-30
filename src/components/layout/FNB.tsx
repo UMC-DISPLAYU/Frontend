@@ -1,9 +1,15 @@
 import DUfontlogo from '@/assets/DUfontlogo.svg';
+import { cn } from '@/utils/cn';
 
 interface DUMember {
   names: string[];
   role: string;
 }
+
+type FNBProps = {
+  hasFixedBottomBar?: boolean;
+  className?: string;
+};
 
 const credits: DUMember[] = [
   { role: 'PM', names: ['고상준'] },
@@ -12,9 +18,15 @@ const credits: DUMember[] = [
   { role: 'BackEnd', names: ['김승완  임도현  최건희', '김수빈  김민지  우서윤'] },
 ];
 
-export function FNB() {
+export function FNB({ hasFixedBottomBar = false, className }: FNBProps) {
   return (
-    <footer className="w-full max-w-md mx-auto bg-line-soft px-[30px] pt-[24px] pb-[32px] overflow-hidden">
+    <footer
+      className={cn(
+        'w-full max-w-md mx-auto bg-line-soft px-[30px] pt-[24px] overflow-hidden',
+        hasFixedBottomBar ? 'pb-28' : 'pb-[32px]',
+        className,
+      )}
+    >
       <div className="flex flex-col gap-6">
         {/* 로고 & 서브타이틀 */}
         <div className="flex flex-col items-start gap-3">
