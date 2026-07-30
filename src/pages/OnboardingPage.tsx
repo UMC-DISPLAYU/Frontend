@@ -332,16 +332,22 @@ function PrimaryButton({
   );
 }
 
-function CheckButton({ checked, onClick }: { checked: boolean; onClick: () => void }) {
+function AgreementCheck({ checked }: { checked: boolean }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <span
       className={`flex size-6 shrink-0 items-center justify-center rounded-full border ${
         checked ? 'border-[#0d0d0d] bg-[#0d0d0d]' : 'border-[#d8dbe1] bg-white'
       }`}
     >
       {checked ? <Check className="size-4 text-white" strokeWidth={2.4} /> : null}
+    </span>
+  );
+}
+
+function CheckButton({ checked, onClick }: { checked: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="shrink-0">
+      <AgreementCheck checked={checked} />
     </button>
   );
 }
@@ -420,7 +426,7 @@ function TermsScreen({
             onClick={() => toggle('all')}
             className="flex h-[58px] w-full items-center gap-3 rounded-lg border border-[#e6e8ec] bg-[#f6f7f9] px-4 text-left"
           >
-            <CheckButton checked={allChecked} onClick={() => toggle('all')} />
+            <AgreementCheck checked={allChecked} />
             <span className="text-[15px] font-bold text-[#0d0d0d]">전체 동의</span>
           </button>
 
