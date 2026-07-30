@@ -119,16 +119,18 @@ export interface ArtworkDetail {
   size: string;
   point: string;
   images: ArtworkImage[];
-
-  // UI-specific fields (to be mapped or added later)
-  artist: string;
-  exhibitionId: string;
+  artistName: string;
+  artistUserId: number;
+  exhibitionId: number;
   exhibitionTitle: string;
+  /** 장소. 백엔드에서 exhibitionOrganizer 추가 예정 시 별도 필드로 분리 */
   exhibitionOrganizer: string;
   exhibitionPeriod: string;
+  /** @todo 백엔드 응답 확장 예정 - exhibitionInfo.exhibitionThumbnailUrl 추가 시 교체 */
   exhibitionThumbnail: string;
-  bookmarkCount: number;
-  isBookmarked: boolean;
+  likeCount: number;
+  isLiked: boolean;
+  isSaved: boolean;
 }
 
 export interface GuestbookReviewReply {

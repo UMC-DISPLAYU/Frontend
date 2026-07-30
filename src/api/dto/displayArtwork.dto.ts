@@ -222,6 +222,10 @@ export interface ArtworkPreviewExhibitionInfoDto {
   exhibitionTitle: string;
   exhibitionPeriod: string;
   exhibitionLocation: string;
+  /** @todo 백엔드 응답 확장 예정 - 추가되면 required로 변경 */
+  exhibitionThumbnailUrl?: string;
+  /** @todo 백엔드 응답 확장 예정 - 추가되면 required로 변경 */
+  exhibitionOrganizer?: string;
 }
 
 export interface ArtworkPreviewItemDto {

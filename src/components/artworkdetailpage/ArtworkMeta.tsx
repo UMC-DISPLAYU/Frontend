@@ -4,6 +4,7 @@ import { Calendar, ChevronRight, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
+import { useToggleArtworkLike } from '@/hooks/queries/useArtworkDetail';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
@@ -14,8 +15,8 @@ type Props = {
 export function ArtworkMeta({ artwork }: Props) {
   const navigate = useNavigate();
   const [isAtTop, setIsAtTop] = useState(true);
-  const [liked, setLiked] = useState(artwork.isBookmarked ?? false);
-  const [likeCount, setLikeCount] = useState(artwork.bookmarkCount ?? 0);
+
+  const { mutate: toggleLike } = useToggleArtworkLike(artwork.artworkId);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,8 +28,7 @@ export function ArtworkMeta({ artwork }: Props) {
   }, []);
 
   const handleLike = () => {
-    setLiked((prev) => !prev);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+    toggleLike(artwork.isLiked);
   };
 
   return (
@@ -47,20 +47,18 @@ export function ArtworkMeta({ artwork }: Props) {
               strokeWidth={1.2}
               className={cn(
                 'size-6 transition-colors duration-200',
-                liked ? 'fill-heart text-heart' : 'fill-none text-main',
+                artwork.isLiked ? 'fill-heart text-heart' : 'fill-none text-main',
               )}
             />
           </button>
-          <span
-            className={cn('typo-body-xs-regular mt-1 transition-colors duration-200', 'text-main')}
-          >
-            {likeCount}
+          <span className="typo-body-xs-regular mt-1 transition-colors duration-200 text-main">
+            {artwork.likeCount}
           </span>
         </div>
       </div>
 
       {/* 작가명 */}
-      <p className="typo-body-sm-regular text-main mb-4 -mt-1.5">{artwork.artist}</p>
+      <p className="typo-body-sm-regular text-main mb-4 -mt-1.5">{artwork.artistName}</p>
 
       {/* 소속 전시 카드 */}
       <button

@@ -13,8 +13,8 @@ export function ArtworkIntroTab({ artwork }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [bookmarkedArtists, setBookmarkedArtists] = useState<Record<string, boolean>>({});
 
-  const artistList = artwork.artist
-    ? artwork.artist
+  const artistList = artwork.artistName
+    ? artwork.artistName
         .split(',')
         .map((name) => name.trim())
         .filter(Boolean)

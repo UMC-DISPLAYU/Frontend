@@ -63,7 +63,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
   const displayedLikeCount = (ex.likeCount ?? 0) + (bookmarked ? 1 : 0);
 
   return (
-    <section className="px-5 pt-6 pb-4 bg-[#f0f0f3]">
+    <section className="px-5 pt-6 pb-4 bg-page">
       {/* 제목 / 하트 */}
       <div className="flex items-start justify-between pb-1.5 gap-2">
         <h1 className="flex-1 typo-body-xl-bold text-main">{ex.title}</h1>
