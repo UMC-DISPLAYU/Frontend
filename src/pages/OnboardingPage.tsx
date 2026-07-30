@@ -10,7 +10,7 @@ import { useAgreements } from '@/hooks/queries/useAgreements';
 import { useSignup } from '@/hooks/queries/useAuth';
 import { useCheckNickname } from '@/hooks/queries/useUserProfile';
 
-type Step = 'intro' | 'terms' | 'termsDetail' | 'nickname' | 'done';
+type Step = 'terms' | 'termsDetail' | 'nickname' | 'done';
 type TermKey = 'over14' | 'service' | 'privacy' | 'location';
 type PolicyCode = 'terms' | 'privacy' | 'location';
 type TermState = Record<TermKey, boolean>;
@@ -331,39 +331,6 @@ function CheckButton({ checked, onClick }: { checked: boolean; onClick: () => vo
     <button type="button" onClick={onClick} className="shrink-0">
       <AgreementCheck checked={checked} />
     </button>
-  );
-}
-
-function IntroScreen({ onNext }: { onNext: () => void }) {
-  return (
-    <div className="flex flex-1 flex-col px-5 pb-10 pt-[126px]">
-      <div className="flex justify-center">
-        <div className="text-center font-['Aldrich'] text-[28px] leading-9 text-[#0d0d0d]">
-          Display U
-        </div>
-      </div>
-
-      <div className="mt-[86px]">
-        <h2 className="text-[26px] font-bold leading-[34px] text-[#0d0d0d]">
-          전시와 작품을
-          <br />더 가까이 감상해요
-        </h2>
-        <p className="mt-3 text-[14px] leading-[22px] text-[#656b75]">
-          디유에서 관심 전시를 저장하고, 작품에 대한 감상을 남기고, 작가 활동까지 이어갈 수 있어요.
-        </p>
-      </div>
-
-      <div className="mt-10 grid grid-cols-3 gap-2">
-        {['전시 저장', '작품 감상', '작가 인증'].map((label) => (
-          <div key={label} className="rounded-lg bg-[#f5f6f8] px-3 py-4 text-center">
-            <span className="text-[13px] font-semibold text-[#2d3035]">{label}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex-1" />
-      <PrimaryButton onClick={onNext}>시작하기</PrimaryButton>
-    </div>
   );
 }
 
@@ -906,7 +873,6 @@ export function OnboardingPage() {
 
   return (
     <MobileShell>
-      {step === 'intro' ? <IntroScreen onNext={() => setStep('terms')} /> : null}
       {step === 'terms' ? (
         <TermsScreen
           terms={terms}
