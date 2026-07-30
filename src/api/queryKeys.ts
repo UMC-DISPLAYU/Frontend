@@ -47,11 +47,16 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'du-picks', params ?? {}] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
+    reviews: (displayId: number) => [...queryKeys.displays.all, 'reviews', displayId] as const,
+    reviewReplies: (displayId: number, displayReviewId: number) =>
+      [...queryKeys.displays.all, 'reviews', displayId, 'replies', displayReviewId] as const,
   },
 
   displayArtworks: {
     all: ['displayArtworks'] as const,
     lists: () => [...queryKeys.displayArtworks.all, 'list'] as const,
+    byDisplayId: (displayId: number) =>
+      [...queryKeys.displayArtworks.lists(), 'display', displayId] as const,
     preview: (params?: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params ?? {}] as const,
     details: () => [...queryKeys.displayArtworks.all, 'detail'] as const,

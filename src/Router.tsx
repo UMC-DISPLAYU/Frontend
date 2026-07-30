@@ -5,6 +5,7 @@ import { AnswerPage } from './pages/AnswerPage';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayAcceptPage } from './pages/DisplayAcceptPage';
 import { DisplayArtistNamePage } from './pages/DisplayArtistNamePage';
+import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
+      { path: 'display/:id/contents', element: <DisplayContentsPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'setting', element: <SettingPage /> },
