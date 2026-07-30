@@ -10,7 +10,6 @@ import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { GuestbookInputBar } from '@/components/artworkdetailpage/GuestbookInputBar';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
-import { FNB } from '@/components/layout/FNB';
 import { ARTWORK_DETAILS, GUESTBOOK_QUESTIONS, GUESTBOOK_REVIEWS } from '@/mocks/exhibition';
 import type {
   ArtworkGuestbookTab as ArtworkGuestbookSubTabType,
@@ -85,7 +84,7 @@ export function ArtworkDetailPage() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-dvh bg-page relative pb-24">
+    <div className="w-full max-w-md mx-auto min-h-dvh bg-page relative">
       {/* 히어로 이미지 */}
       <HeroSlider
         images={[artwork.images.find((img) => img.isThumbnail)?.imageUrl || '']}
@@ -110,9 +109,6 @@ export function ArtworkDetailPage() {
           onArtistViewChange={setIsArtistView}
         />
       )}
-
-      {/* 하단 푸터 (FNB) */}
-      <FNB />
 
       {/* 하단 고정 바: 소개 탭은 저장버튼, 방명록 탭은 글쓰기 입력 바 */}
       {activeTab === 'intro' ? (
