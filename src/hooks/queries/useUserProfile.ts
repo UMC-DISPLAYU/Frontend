@@ -22,11 +22,9 @@ export const useUserMe = () =>
     queryFn: getUserMe,
   });
 
-export const useCheckNickname = (params: CheckNicknameRequestDto, enabled = true) =>
-  useQuery({
-    queryKey: queryKeys.users.nicknameCheck(params.nickname),
-    queryFn: () => checkNickname(params),
-    enabled: enabled && params.nickname.trim().length > 0,
+export const useCheckNickname = () =>
+  useMutation({
+    mutationFn: (params: CheckNicknameRequestDto) => checkNickname(params),
   });
 
 export const useMyArtistProfile = () =>

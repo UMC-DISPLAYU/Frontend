@@ -15,6 +15,7 @@ import type {
   GetArtworkPreviewRequestDto,
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
+  GetDisplayArtworksResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -137,3 +138,9 @@ export const likeArtwork = async (artworkId: number): Promise<unknown> =>
 // DELETE /v1/artworks/:artworkId/like
 export const unlikeArtwork = async (artworkId: number): Promise<unknown> =>
   apiRequest(`/v1/artworks/${artworkId}/like`, { method: 'DELETE' });
+
+// GET /v1/artworks?displayId=:displayId
+export const getDisplayArtworks = async (
+  displayId: number,
+): Promise<GetDisplayArtworksResponseDataDto> =>
+  apiRequest('/v1/artworks', { query: { displayId } });

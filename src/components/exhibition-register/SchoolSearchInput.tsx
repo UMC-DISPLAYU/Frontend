@@ -50,8 +50,8 @@ export function SchoolSearchInput({ value, onChange }: SchoolSearchInputProps) {
   return (
     <div className="bg-card px-4 py-3.5 border-b border-line flex flex-col gap-2">
       <label htmlFor="school-search" className="flex items-center gap-1">
-        <span className="text-neutral-600 text-xs font-bold leading-4">학교 / 기관명</span>
-        <span className="text-red-400 text-xs leading-5">*</span>
+        <span className="text-sub600 typo-body-xs-bold leading-4">학교 / 기관명</span>
+        <span className="text-red-400 typo-body-xs-regular leading-5">*</span>
       </label>
       <div className="relative">
         <div className="h-10 px-3 bg-page rounded-2xl outline outline-1 outline-offset-[-1px] outline-line-soft flex items-center gap-2 overflow-hidden">

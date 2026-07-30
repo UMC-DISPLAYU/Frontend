@@ -7,6 +7,7 @@ import type {
 } from '@/api/dto/display.dto';
 import type { GetArtworkPreviewRequestDto } from '@/api/dto/displayArtwork.dto';
 import type { GetLoungePostsRequestDto } from '@/api/dto/lounge.dto';
+import type { NearbyParams } from '@/hooks/useNearbyDisplays';
 
 type ListParams = Record<string, unknown>;
 
@@ -18,8 +19,6 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
     me: () => [...queryKeys.users.all, 'me'] as const,
-    nicknameCheck: (nickname: string) =>
-      [...queryKeys.users.all, 'nickname-check', nickname] as const,
     artistProfile: () => [...queryKeys.users.me(), 'artist-profile'] as const,
     userArtistProfile: (userId: number) =>
       [...queryKeys.users.all, userId, 'artist-profile'] as const,
@@ -36,6 +35,8 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'search', params] as const,
     map: (params: GetDisplayMapRequestDto) =>
       [...queryKeys.displays.lists(), 'map', params] as const,
+    nearby: (params: NearbyParams | null) =>
+      [...queryKeys.displays.lists(), 'nearby', params] as const,
     closingSoon: (params?: GetClosingSoonDisplaysRequestDto) =>
       [...queryKeys.displays.lists(), 'closing-soon', params ?? {}] as const,
     graduation: (params?: { size?: number }) =>
@@ -44,11 +45,16 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'du-picks', params ?? {}] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
+    reviews: (displayId: number) => [...queryKeys.displays.all, 'reviews', displayId] as const,
+    reviewReplies: (displayId: number, displayReviewId: number) =>
+      [...queryKeys.displays.all, 'reviews', displayId, 'replies', displayReviewId] as const,
   },
 
   displayArtworks: {
     all: ['displayArtworks'] as const,
     lists: () => [...queryKeys.displayArtworks.all, 'list'] as const,
+    byDisplayId: (displayId: number) =>
+      [...queryKeys.displayArtworks.lists(), 'display', displayId] as const,
     preview: (params?: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params ?? {}] as const,
     details: () => [...queryKeys.displayArtworks.all, 'detail'] as const,

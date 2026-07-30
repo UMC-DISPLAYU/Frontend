@@ -136,6 +136,7 @@ export interface DisplayDetailDto {
   displayType: string;
   displayFields: string[];
   region: string;
+  likeCount: number;
   period: DisplayPeriodDto;
   artworkContentOpen: string;
   exhibitionContentOpen: string;
@@ -207,13 +208,73 @@ export interface GetDisplayArtworksRequestDto extends OffsetPageRequestDto {
   sort?: string;
 }
 
-export interface GetDisplayArtworksResponseDataDto extends OffsetPageInfoDto {
-  displayId: number;
-  totalCount: number;
-  artworks: DisplayArtworkListItemDto[];
+// ─── 전시 후기 DTO ──────────────────────────────────────────────────────────
+
+export interface DisplayReviewUserDto {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
 }
 
-export type GetDisplayArtworksResponseDto = ApiResponseDto<GetDisplayArtworksResponseDataDto>;
+export interface DisplayReviewImageDto {
+  imageId: number;
+  imageUrl: string;
+  isThumbnail: boolean;
+  imageType: string;
+  sortOrder: number;
+  caption: string | null;
+  width: number;
+  height: number;
+}
+
+export interface DisplayReviewDto {
+  displayReviewId: number;
+  content: string;
+  createdAt: string;
+  user: DisplayReviewUserDto;
+  images: DisplayReviewImageDto[];
+  likeCount: number;
+  replyCount: number;
+}
+
+export interface GetDisplayReviewsRequestDto {
+  cursorId?: number;
+  size?: number;
+}
+
+export interface GetDisplayReviewsResponseDataDto {
+  reviews: DisplayReviewDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export interface DisplayReviewReplyUserDto {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+}
+
+export interface DisplayReviewReplyDto {
+  displayReviewReplyId: number;
+  content: string;
+  createdAt: string;
+  user: DisplayReviewReplyUserDto;
+  isTeamMember: boolean;
+  likeCount: number;
+}
+
+export interface GetDisplayReviewRepliesRequestDto {
+  cursorId?: number;
+  size?: number;
+}
+
+export interface GetDisplayReviewRepliesResponseDataDto {
+  replies: DisplayReviewReplyDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
 
 export interface CreateDisplayRequestDto {
   title: string;

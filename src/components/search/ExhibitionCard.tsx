@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import type { Exhibition } from './types';
 
 type ExhibitionCardProps = {
@@ -23,7 +25,10 @@ const formatDateRange = (startedAt: string, endedAt: string) => {
 
 export function ExhibitionCard({ exhibition }: ExhibitionCardProps) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-[10px] bg-neutral-50">
+    <Link
+      to={`/display/${exhibition.displayId}`}
+      className="flex flex-col overflow-hidden rounded-[10px] bg-neutral-50 no-underline"
+    >
       <div className="flex flex-col items-start gap-2.5 px-2 py-3 shadow-[0px_4px_18px_0px_rgba(67,0,209,0.04)]">
         <img
           alt=""
@@ -43,6 +48,6 @@ export function ExhibitionCard({ exhibition }: ExhibitionCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

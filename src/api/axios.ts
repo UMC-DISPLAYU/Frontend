@@ -24,6 +24,7 @@ const getAccessToken = () => localStorage.getItem('accessToken');
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000,
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use((config) => {
@@ -31,7 +32,7 @@ axiosInstance.interceptors.request.use((config) => {
 
   const accessToken = getAccessToken();
 
-  if (accessToken) {
+  if (accessToken && !config.headers.has('Authorization')) {
     config.headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
