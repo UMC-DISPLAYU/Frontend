@@ -9,12 +9,12 @@ interface ArtworkCardProps {
 
 export function ArtworkCard({ art }: ArtworkCardProps) {
   return (
-    <div className="w-28 h-40 rounded-xl bg-card border border-line-soft overflow-hidden">
+    <div className="h-[158px] w-[118px] shrink-0 overflow-hidden rounded-xl border border-line-soft bg-card">
       {art.image ? (
-        <img src={art.image} alt={art.title} className="w-full h-24 object-cover block" />
+        <img src={art.image} alt={art.title} className="block h-[98px] w-full object-cover" />
       ) : (
         <div
-          className="h-24 relative"
+          className="relative h-[98px]"
           style={{ background: 'linear-gradient(160deg,#b98a5e 0%,#8a5f3c 60%,#5c3d26 100%)' }}
         >
           {[
@@ -41,8 +41,8 @@ export function ArtworkCard({ art }: ArtworkCardProps) {
           />
         </div>
       )}
-      <div className="p-2 pb-2.5">
-        <div className="typo-body-xs-semibold text-main">{art.title}</div>
+      <div className="px-2.5 py-2">
+        <div className="typo-body-xs-semibold truncate text-main">{art.title}</div>
         <div className="typo-body-xxs-regular text-faint mt-[3px]">{art.artist}</div>
       </div>
     </div>

@@ -18,12 +18,14 @@ export function VisibilitySection({ artworkVisibility, onSettingsClick }: Visibi
         </button>
       </div>
       <div className="flex flex-col">
-        <div className="flex items-start justify-between border-b border-faint py-3">
-          <span className="typo-body-sm-regular text-hint">전시작</span>
-          <span className="typo-body-sm-regular text-main">{VISIBILITY_LABEL[artworkVisibility]}</span>
+        <div className="flex items-start justify-between border-b border-line-soft py-3">
+          <span className="typo-body-sm-regular text-main">전시작</span>
+          <span className="typo-body-sm-regular text-main">
+            {VISIBILITY_LABEL[artworkVisibility]}
+          </span>
         </div>
         <div className="flex items-start justify-between py-3">
-          <span className="typo-body-sm-regular text-hint">전시 콘텐츠</span>
+          <span className="typo-body-sm-regular text-main">전시 콘텐츠</span>
           <span className="typo-body-sm-regular text-main">전시 등록과 동시에 공개</span>
         </div>
       </div>

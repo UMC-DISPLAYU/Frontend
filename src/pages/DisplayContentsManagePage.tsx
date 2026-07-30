@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, MoreHorizontal, X } from 'lucide-react';
 
-import { BottomBar, Header, Screen } from '@/components/display-manage/common';
+import { MoreHorizontal, Plus, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
 import InteriorPhotos from '@/components/display-manage/InteriorPhotos';
+import { useHideFooter } from '@/components/layout';
 
 type Content = {
   id: number;
@@ -14,13 +16,34 @@ type Content = {
 };
 
 const INITIAL_CONTENTS: Content[] = [
-  { id: 1, title: '내부사진', description: '전시 공간과 현장 분위기를 담는 공유 앨범이에요.', photoCount: 0 },
-  { id: 2, title: '비하인드', description: '전시가 완성되기 전의 설치와 준비 과정을 담아요.', photoCount: 0 },
-  { id: 3, title: '안내자료', description: '관람을 돕는 안내 자료를 모아두는 공간이에요.', photoCount: 0 },
-  { id: 4, title: '작가 노트', description: '작품과 전시에 담긴 생각을 사진으로 기록해요.', photoCount: 0 },
+  {
+    id: 1,
+    title: '내부사진',
+    description: '전시 공간과 현장 분위기를 담는 공유 앨범이에요.',
+    photoCount: 12,
+  },
+  {
+    id: 2,
+    title: '비하인드',
+    description: '전시가 완성되기 전의 설치와 준비 과정을 담아요.',
+    photoCount: 8,
+  },
+  {
+    id: 3,
+    title: '안내자료',
+    description: '관람을 돕는 안내 자료를 모아두는 공간이에요.',
+    photoCount: 5,
+  },
+  {
+    id: 4,
+    title: '작가 노트',
+    description: '작품과 전시에 담긴 생각을 사진으로 기록해요.',
+    photoCount: 0,
+  },
 ];
 
 const BOTTOM_CTA_LABEL = '콘텐츠 추가';
+const EMPTY_CONTENT: Content = { id: 0, title: '', description: '', photoCount: 0 };
 
 /* ------------------------------------------------------------------ */
 /* 공통                                                                */
@@ -29,7 +52,14 @@ const BOTTOM_CTA_LABEL = '콘텐츠 추가';
 function Thumbnail({ src }: { src?: string }) {
   return (
     <div className="size-20 shrink-0 overflow-hidden rounded-xl bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)]">
-      {src && <img src={src} alt="" className="size-full object-cover" />}
+      {src ? (
+        <img src={src} alt="" className="size-full object-cover" />
+      ) : (
+        <div className="flex size-full flex-col justify-between bg-dark p-2 text-white">
+          <span className="typo-heading-xl leading-none">CREATIVE POSTER EXHIB</span>
+          <span className="h-4 w-10 bg-card/80" />
+        </div>
+      )}
     </div>
   );
 }
@@ -51,7 +81,7 @@ function ContentCard({
   return (
     <div
       onClick={onClick}
-      className={`flex h-28 items-center gap-3 overflow-hidden rounded-2xl bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] ${
+      className={`flex h-[110px] items-center gap-3 overflow-hidden rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] ${
         dimmed ? 'opacity-40' : ''
       } ${onClick ? 'cursor-pointer' : ''}`}
     >
@@ -61,7 +91,9 @@ function ContentCard({
         <div className="flex flex-col gap-4">
           <p className="typo-body-xs-regular line-clamp-2 text-sub700">{content.description}</p>
           <p className="typo-body-xxs-regular text-faint">
-            사진 {content.photoCount} / 20
+            {content.photoCount > 0
+              ? `사진 ${content.photoCount} / 20`
+              : '아직 추가된 사진이 없어요.'}
           </p>
         </div>
       </div>
@@ -80,13 +112,7 @@ function ContentCard({
 }
 
 /* 카드 우측 ⋯ 팝오버 */
-function CardPopover({
-  onEdit,
-  onDelete,
-}: {
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
+function CardPopover({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
   return (
     <div
       role="menu"
@@ -116,13 +142,23 @@ function CardPopover({
 /* 삭제 확인 모달                                                       */
 /* ------------------------------------------------------------------ */
 
-function DeleteConfirmDialog({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+function DeleteConfirmDialog({
+  onCancel,
+  onConfirm,
+}: {
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
   return (
-    <div className="absolute inset-0 z-30 grid place-items-center bg-main/35 px-5" role="dialog" aria-modal="true">
+    <div
+      className="absolute inset-0 z-30 grid place-items-center bg-main/35 px-5"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="w-80 rounded-[20px] bg-card/50 p-6 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px]">
-        <h2 className="typo-body-xl-bold text-center text-main">작품을 삭제할까요?</h2>
+        <h2 className="typo-body-xl-bold text-center text-main">콘텐츠를 삭제할까요?</h2>
         <p className="typo-body-md-regular mt-2 text-center text-sub600">
-          삭제한 작품은 전시에서 제거되며,
+          삭제한 콘텐츠는 전시에서 제거되며,
           <br />
           복구할 수 없어요.
         </p>
@@ -153,10 +189,12 @@ function DeleteConfirmDialog({ onCancel, onConfirm }: { onCancel: () => void; on
 
 function ContentEditSheet({
   content,
+  mode = 'edit',
   onClose,
   onSave,
 }: {
   content: Content;
+  mode?: 'create' | 'edit';
   onClose: () => void;
   onSave: (patch: { title: string; description: string }) => void;
 }) {
@@ -174,17 +212,26 @@ function ContentEditSheet({
       >
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="typo-body-xl-bold text-main">컨텐츠 수정</h2>
-            <p className="typo-body-xs-regular mt-1 text-sub600">전시 콘텐츠에서 사용할 카테고리를 만들어주세요.</p>
+            <h2 className="typo-body-xl-bold text-main">
+              {mode === 'create' ? '콘텐츠 추가' : '콘텐츠 수정'}
+            </h2>
+            <p className="typo-body-xs-regular mt-1 text-sub600">
+              전시 콘텐츠에서 사용할 카테고리를 만들어주세요.
+            </p>
           </div>
-          <button type="button" onClick={onClose} aria-label="닫기" className="grid size-6 place-items-center">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="닫기"
+            className="grid size-6 place-items-center"
+          >
             <X className="size-5 text-main" />
           </button>
         </div>
 
         <div className="mt-6 flex flex-col gap-2">
           <label htmlFor="content-title" className="flex items-center gap-1">
-            <span className="typo-body-sm-bold text-main">컨텐츠명</span>
+            <span className="typo-body-sm-bold text-main">콘텐츠명</span>
             <span className="typo-body-xs-regular text-error">*</span>
           </label>
           <input
@@ -198,7 +245,7 @@ function ContentEditSheet({
 
         <div className="mt-4 flex flex-col gap-2">
           <label htmlFor="content-desc" className="typo-body-sm-bold text-main">
-            컨텐츠 설명
+            콘텐츠 설명
           </label>
           <textarea
             id="content-desc"
@@ -216,7 +263,7 @@ function ContentEditSheet({
           onClick={() => onSave({ title: title.trim(), description: description.trim() })}
           className="typo-body-sm-bold mt-8 h-11 w-full rounded-xl bg-bt-black text-white disabled:opacity-40"
         >
-          저장하기
+          {mode === 'create' ? '추가하기' : '저장하기'}
         </button>
       </div>
     </div>
@@ -228,10 +275,13 @@ function ContentEditSheet({
 /* ------------------------------------------------------------------ */
 
 export function DisplayContentsManagePage() {
+  useHideFooter();
+
   const navigate = useNavigate();
   const [contents, setContents] = useState<Content[]>(INITIAL_CONTENTS);
   const [menuId, setMenuId] = useState<number | null>(null);
   const [editing, setEditing] = useState<Content | null>(null);
+  const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<Content | null>(null);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -255,9 +305,25 @@ export function DisplayContentsManagePage() {
   const handleSave = (patch: { title: string; description: string }) => {
     if (!editing) return;
     setContents((prev) =>
-      prev.map((c) => (c.id === editing.id ? { ...c, title: patch.title, description: patch.description } : c)),
+      prev.map((c) =>
+        c.id === editing.id ? { ...c, title: patch.title, description: patch.description } : c,
+      ),
     );
     setEditing(null);
+  };
+
+  const handleCreate = (patch: { title: string; description: string }) => {
+    const nextId = Math.max(0, ...contents.map((content) => content.id)) + 1;
+    setContents((prev) => [
+      ...prev,
+      {
+        id: nextId,
+        title: patch.title,
+        description: patch.description || '전시 콘텐츠 설명을 입력해주세요.',
+        photoCount: 0,
+      },
+    ]);
+    setCreating(false);
   };
 
   const handleDelete = () => {
@@ -267,9 +333,7 @@ export function DisplayContentsManagePage() {
   };
 
   const handlePhotoCountChange = (categoryId: number, count: number) => {
-    setContents((prev) =>
-      prev.map((c) => (c.id === categoryId ? { ...c, photoCount: count } : c)),
-    );
+    setContents((prev) => prev.map((c) => (c.id === categoryId ? { ...c, photoCount: count } : c)));
   };
 
   // 상세 화면 표시 중이면 InteriorPhotos 렌더링
@@ -293,9 +357,15 @@ export function DisplayContentsManagePage() {
       <div className="flex items-end justify-between gap-6 px-5 pt-3 pb-1">
         <div className="flex flex-col gap-1">
           <p className="typo-body-md-bold text-main">전시 콘텐츠 관리</p>
-          <p className="typo-body-xs-regular text-sub600">대표자는 전시 성격에 맞게 카테고리를 관리할 수 있어요</p>
+          <p className="typo-body-xs-regular text-sub600">
+            대표자는 전시 성격에 맞게 콘텐츠를 관리할 수 있어요
+          </p>
         </div>
-        <button type="button" className="flex flex-col items-center gap-[3px]">
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="flex flex-col items-center gap-[3px]"
+        >
           <span className="grid size-6 place-items-center">
             <Plus className="size-5 text-main" strokeWidth={2} />
           </span>
@@ -338,7 +408,11 @@ export function DisplayContentsManagePage() {
       </div>
 
       <BottomBar>
-        <button type="button" className="typo-body-sm-bold h-11 w-full rounded-xl bg-bt-black text-white">
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="typo-body-sm-bold h-11 w-full rounded-xl bg-bt-black text-white"
+        >
           {BOTTOM_CTA_LABEL}
         </button>
       </BottomBar>
@@ -346,7 +420,17 @@ export function DisplayContentsManagePage() {
       {editing && (
         <ContentEditSheet content={editing} onClose={() => setEditing(null)} onSave={handleSave} />
       )}
-      {deleting && <DeleteConfirmDialog onCancel={() => setDeleting(null)} onConfirm={handleDelete} />}
+      {creating && (
+        <ContentEditSheet
+          content={EMPTY_CONTENT}
+          mode="create"
+          onClose={() => setCreating(false)}
+          onSave={handleCreate}
+        />
+      )}
+      {deleting && (
+        <DeleteConfirmDialog onCancel={() => setDeleting(null)} onConfirm={handleDelete} />
+      )}
     </Screen>
   );
 }

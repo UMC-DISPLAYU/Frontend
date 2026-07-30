@@ -2,7 +2,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 
 import type { Work } from '@/types/artworkManage';
 
-import { PrimaryButton, Thumbnail } from './common';
+import { PrimaryButton, Thumbnail } from './Common';
 
 interface WorkActionSheetProps {
   work: Work;
@@ -27,22 +27,32 @@ export function WorkActionSheet({ work, onClose, onEdit, onDelete }: WorkActionS
           <div className="flex min-w-0 flex-col gap-2.5">
             <p className="typo-body-md-bold truncate text-main">{work.title}</p>
             <p className="typo-body-xs-regular text-sub700">{work.artist}</p>
-            <p className="typo-body-xxs-regular text-faint">등록자 · {work.owner}</p>
+            <p className="typo-body-xxs-regular text-faint">등록자 {work.owner}</p>
           </div>
         </div>
 
         <div className="mt-3">
-          <button type="button" onClick={onEdit} className="flex w-full items-center gap-4 px-2 py-4 text-left">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="flex w-full items-center gap-4 px-2 py-4 text-left"
+          >
             <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-card">
               <Pencil className="size-4 text-main" />
             </span>
             <span>
               <span className="typo-body-sm-regular block text-main">작품 정보 수정</span>
-              <span className="typo-body-sm-regular block text-faint">작품명, 설명, 작가 정보 수정</span>
+              <span className="typo-body-sm-regular block text-faint">
+                작품명, 설명, 작가 정보 수정
+              </span>
             </span>
           </button>
 
-          <button type="button" onClick={onDelete} className="flex w-full items-center gap-4 px-2 py-4 text-left">
+          <button
+            type="button"
+            onClick={onDelete}
+            className="flex w-full items-center gap-4 px-2 py-4 text-left"
+          >
             <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-card">
               <Trash2 className="size-4 text-error" />
             </span>

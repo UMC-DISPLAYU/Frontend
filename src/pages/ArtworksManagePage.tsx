@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -10,7 +11,7 @@ import {
 import { INITIAL_WORKS } from '@/mocks/artworkManage';
 import type { Work } from '@/types/artworkManage';
 
-export default function ArtworksManagePage() {
+export function ArtworksManagePage() {
   const [works, setWorks] = useState<Work[]>(INITIAL_WORKS);
   const [screen, setScreen] = useState<'manage' | 'order'>('manage');
   const [sheetWork, setSheetWork] = useState<Work | null>(null);
@@ -30,12 +31,13 @@ export default function ArtworksManagePage() {
   };
 
   return (
-    <div className="relative flex h-dvh flex-col overflow-hidden bg-page">
+    <div className="relative mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
       {screen === 'manage' ? (
         <ManageScreen
           works={works}
           onOpenSheet={setSheetWork}
           onEditOrder={() => setScreen('order')}
+          onAddArtwork={() => navigate('/artworks-register')}
           onBack={handleBack}
         />
       ) : (
@@ -51,7 +53,9 @@ export default function ArtworksManagePage() {
         />
       )}
 
-      {confirming && <DeleteConfirmDialog onCancel={() => setConfirming(false)} onConfirm={handleDelete} />}
+      {confirming && (
+        <DeleteConfirmDialog onCancel={() => setConfirming(false)} onConfirm={handleDelete} />
+      )}
     </div>
   );
 }

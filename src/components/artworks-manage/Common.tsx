@@ -10,9 +10,14 @@ export function Thumbnail({ src, className = 'size-20' }: { src?: string; classN
 
 export function Header({ title, onBack }: { title: string; onBack?: () => void }) {
   return (
-    <header className="flex items-center gap-3 px-5 py-2">
-      <button type="button" onClick={onBack} aria-label="뒤로 가기" className="grid size-7 place-items-center">
-        <ChevronLeft className="size-6 text-main" strokeWidth={2} />
+    <header className="flex items-center gap-3 px-5 pt-14.5 pb-3">
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="뒤로 가기"
+        className="-ml-1 grid size-7 place-items-center"
+      >
+        <ChevronLeft className="size-7 text-main" strokeWidth={2} />
       </button>
       <h1 className="typo-body-xl-bold text-main">{title}</h1>
     </header>
@@ -27,7 +32,10 @@ export function BottomBar({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function PrimaryButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+export function PrimaryButton({
+  children,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type="button"

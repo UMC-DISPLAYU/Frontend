@@ -1,21 +1,22 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { Layout } from './components/layout';
-import { ArtistNameSetup } from './pages/ArtistNameSetup';
-import ArtworksManagePage from './pages/ArtworksManagePage';
 import { AnswerPage } from './pages/AnswerPage';
+import { ArtistNameSetup } from './pages/ArtistNameSetup';
 import { ArtworkDetailPage } from './pages/ArtworkDetailPage';
+import { ArtworkRegisterPage } from './pages/ArtworkRegisterPage';
+import { ArtworksManagePage } from './pages/ArtworksManagePage';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayAcceptPage } from './pages/DisplayAcceptPage';
 import { DisplayArtistNamePage } from './pages/DisplayArtistNamePage';
+import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
 import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
-import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
-import DisplayManagePage from './pages/DisplayManagePage';
-import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
-import { ExhibitionManage } from './pages/ExhibitioionManagePage';
+import { DisplayManagePage } from './pages/DisplayManagePage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
+import { ExhibitionManage } from './pages/ExhibitioionManagePage';
+import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { Homepage } from './pages/Homepage';
@@ -32,9 +33,9 @@ import { NotFound } from './pages/NotFound';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { PolicyPage } from './pages/PolicyPage';
 import { SearchPage } from './pages/SearchPage';
+import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
-import { SettingPage } from './pages/Settingpage';
 
 export const router = createBrowserRouter([
   {
@@ -47,11 +48,12 @@ export const router = createBrowserRouter([
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
+      { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
+      { path: 'display/:id/contents', element: <DisplayContentsPage /> },
       { path: 'display/manage', element: <DisplayManagePage /> },
       { path: 'display/contents-manage', element: <DisplayContentsManagePage /> },
       { path: 'artworks-manage', element: <ArtworksManagePage /> },
-      { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
-      { path: 'display/:id/contents', element: <DisplayContentsPage /> },
+      { path: 'artworks-register', element: <ArtworkRegisterPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },

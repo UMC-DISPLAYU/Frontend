@@ -6,14 +6,14 @@ export function Screen({ children }: { children: React.ReactNode }) {
 
 export function Header({ title, onBack }: { title: string; onBack?: () => void }) {
   return (
-    <div className="flex items-center gap-3 px-5 pt-3.5 pb-2.5">
+    <div className="flex items-center gap-3 px-5 pt-14.5 pb-3">
       {onBack && (
         <button
           onClick={onBack}
-          className="bg-transparent border-none cursor-pointer p-0 flex"
+          className="-ml-1 flex bg-transparent border-none p-0 cursor-pointer"
           aria-label="뒤로가기"
         >
-          <ChevronLeft size={26} className="text-main" strokeWidth={2.4} />
+          <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
       )}
       <span className="typo-body-xl-bold text-main">{title}</span>
@@ -27,10 +27,7 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export function BottomBar({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      className="px-5 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+6px)]"
-      style={{ background: 'linear-gradient(180deg, rgba(240,240,243,0) 0%, var(--color-page) 40%)' }}
-    >
+    <div className="sticky bottom-0 border-t border-line bg-card px-5 pt-4 pb-8 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
       {children}
     </div>
   );
