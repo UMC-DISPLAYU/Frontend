@@ -669,17 +669,26 @@ function NicknameScreen({
 }) {
   const [nickname, setNickname] = useState('');
   const [status, setStatus] = useState<NicknameStatus>('idle');
+  const [checkedNickname, setCheckedNickname] = useState('');
   const checkNickname = useCheckNickname();
   const isNicknameShapeValid = /^[가-힣a-zA-Z0-9]{5,15}$/.test(nickname);
-  const canSubmit = status === 'available' && isNicknameShapeValid && !isSubmitting;
+  const canSubmit =
+    status === 'available' && checkedNickname === nickname && isNicknameShapeValid && !isSubmitting;
 
   const handleCheckNickname = async () => {
     if (!isNicknameShapeValid || checkNickname.isPending) return;
 
+    const targetNickname = nickname;
+
     try {
-      const result = await checkNickname.mutateAsync({ nickname });
+      const result = await checkNickname.mutateAsync({ nickname: targetNickname });
+      if (targetNickname !== nickname) return;
+
+      setCheckedNickname(targetNickname);
       setStatus(result.isAvailable ? 'available' : 'unavailable');
     } catch {
+      if (targetNickname !== nickname) return;
+
       setStatus('error');
     }
   };
@@ -729,6 +738,7 @@ function NicknameScreen({
                 maxLength={15}
                 onChange={(event) => {
                   setNickname(event.target.value);
+                  setCheckedNickname('');
                   setStatus('idle');
                 }}
                 placeholder="닉네임"
@@ -741,6 +751,7 @@ function NicknameScreen({
                   type="button"
                   onClick={() => {
                     setNickname('');
+                    setCheckedNickname('');
                     setStatus('idle');
                   }}
                   aria-label="닉네임 지우기"
