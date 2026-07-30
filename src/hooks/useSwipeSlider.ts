@@ -37,13 +37,18 @@ export function useSwipeSlider({ itemCount, threshold = 40 }: UseSwipeSliderProp
   };
 
   const handlers = {
-    onMouseDown: (e: React.MouseEvent) => handleStart(e.clientX),
+    onMouseDown: (e: React.MouseEvent) => {
+      if (e.button !== 0) return;
+      handleStart(e.clientX);
+    },
     onMouseMove: (e: React.MouseEvent) => handleMove(e.clientX),
     onMouseUp: handleEnd,
     onMouseLeave: handleEnd,
+    onContextMenu: handleEnd,
     onTouchStart: (e: React.TouchEvent) => handleStart(e.touches[0].clientX),
     onTouchMove: (e: React.TouchEvent) => handleMove(e.touches[0].clientX),
     onTouchEnd: handleEnd,
+    onTouchCancel: handleEnd,
   };
 
   return {
