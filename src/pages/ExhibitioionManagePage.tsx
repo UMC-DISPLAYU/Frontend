@@ -9,10 +9,13 @@ import {
   StatPill,
   VisibilitySection,
 } from '@/components/exhibition-manage';
+import { useHideFooter } from '@/components/layout';
 import { type VisibilityType } from '@/constants/visibility';
 import type { ExhibitionItem } from '@/types/mypage';
 
 export function ExhibitionManage() {
+  useHideFooter();
+
   const navigate = useNavigate();
   const { state } = useLocation();
 

@@ -4,6 +4,7 @@ import { Check, ChevronLeft, ImagePlus, Info, Plus, UserRound, X } from 'lucide-
 import { useNavigate } from 'react-router-dom';
 
 import { BottomButtonBar } from '@/components/common';
+import { useHideFooter } from '@/components/layout';
 import { Chip } from '@/components/ui';
 import { EXHIBITION_FIELDS } from '@/constants/exhibition';
 import { cn } from '@/utils/cn';
@@ -494,6 +495,8 @@ function InfoNotice({ children }: { children: React.ReactNode }) {
 }
 
 export function ArtworkRegisterPage() {
+  useHideFooter();
+
   const navigate = useNavigate();
   const [step, setStep] = useState<RegisterStep>('choice');
   const [registerMode, setRegisterMode] = useState<RegisterMode>('own');

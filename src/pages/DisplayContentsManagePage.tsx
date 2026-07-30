@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
 import InteriorPhotos from '@/components/display-manage/InteriorPhotos';
+import { useHideFooter } from '@/components/layout';
 
 type Content = {
   id: number;
@@ -274,6 +275,8 @@ function ContentEditSheet({
 /* ------------------------------------------------------------------ */
 
 export function DisplayContentsManagePage() {
+  useHideFooter();
+
   const navigate = useNavigate();
   const [contents, setContents] = useState<Content[]>(INITIAL_CONTENTS);
   const [menuId, setMenuId] = useState<number | null>(null);

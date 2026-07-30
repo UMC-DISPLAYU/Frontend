@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ManageScreen, WorkScreen } from '@/components/display-manage';
+import { useHideFooter } from '@/components/layout';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
@@ -25,6 +26,8 @@ const DEFAULT_CONTENTS = [
 const DEFAULT_ARTWORKS = [{ id: 'a1', title: '흐름의 기억', artist: '이준호', image: null }];
 
 export function DisplayManagePage() {
+  useHideFooter();
+
   const { state } = useLocation() as { state: DisplayManageLocationState | null };
   const [selected, setSelected] = useState<ExhibitionItem | null>(
     () => state?.initialExhibition ?? null,
