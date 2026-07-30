@@ -25,7 +25,7 @@ export function DetailTabNav({ activeTab, onTabChange }: Props) {
             onClick={() => onTabChange(tab.key)}
             className={cn(
               'py-4 typo-body-sm-regular transition-all duration-150 relative whitespace-nowrap',
-              isActive ? 'text-main' : 'text-faint',
+              isActive ? 'text-main font-bold' : 'text-faint',
             )}
           >
             {tab.label}

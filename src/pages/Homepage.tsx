@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { ArtworkPreviewMoreView } from '@/components/homepage/ArtworkPreviewMoreView';
 import { ArtworkPreviewSection } from '@/components/homepage/ArtworkPreviewSection';
@@ -15,6 +17,8 @@ import {
 
 export const Homepage = () => {
   const [isArtworkPreviewOpen, setIsArtworkPreviewOpen] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data: duPicksData } = useDuPicks();
   const { data: graduationExhibitions = [] } = useGraduationDisplays();
   const { data: closingSoonData } = useClosingSoonDisplays({ size: 3 });
@@ -22,6 +26,16 @@ export const Homepage = () => {
   const { data: loungePostsData } = useHomeLoungePosts();
   const closingSoonExhibitions = closingSoonData?.exhibitions ?? [];
   const artworkPreviewItems = artworkPreviewData?.artworks ?? [];
+
+  useEffect(() => {
+    const accessToken = searchParams.get('accessToken');
+
+    if (accessToken) {
+      localStorage.setItem('accessToken', accessToken);
+      navigate('/home', { replace: true });
+      return;
+    }
+  }, [navigate, searchParams]);
 
   if (isArtworkPreviewOpen) {
     return <ArtworkPreviewMoreView items={artworkPreviewItems} />;
