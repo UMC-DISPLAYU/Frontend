@@ -836,6 +836,21 @@ export function OnboardingPage() {
   const completeSignup = async (nickname: string) => {
     setError('');
 
+    if (!terms.over14 || !terms.service || !terms.privacy) {
+      setError('필수 약관에 모두 동의해주세요.');
+      return;
+    }
+
+    if (agreementsQuery.isLoading) {
+      setError('약관 정보를 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    if (agreementsQuery.isError) {
+      setError('약관 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
     const agreedTerms = (['service', 'privacy', 'location'] as const)
       .filter((key) => terms[key])
       .map((key) => findAgreement(key))
@@ -849,7 +864,7 @@ export function OnboardingPage() {
       agreedTerms.some((agreement) => agreement.code === code),
     );
 
-    if (!terms.over14 || !hasRequiredAgreements) {
+    if (!hasRequiredAgreements) {
       setError('필수 약관 동의 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
       return;
     }
