@@ -89,7 +89,8 @@ function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
             초대를 거절할까요?
           </div>
           <div className="self-stretch text-center justify-start text-neutral-600 text-sm font-normal font-['Pretendard'] leading-5">
-            거절하면 이 전시의 팀원으로 참여할 수 없어요. 다시 참여하려면 대표자가 다시 초대해야 해요.
+            거절하면 이 전시의 팀원으로 참여할 수 없어요. 다시 참여하려면 대표자가 다시 초대해야
+            해요.
           </div>
         </div>
         <div className="left-[20px] top-[122px] absolute inline-flex justify-start items-center gap-2.5">

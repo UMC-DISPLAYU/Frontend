@@ -1,9 +1,12 @@
 import type { HomeExhibitionDto } from '@/api/dto';
 import type {
+  ArtworkDetail,
   ArtworkItem,
   ArtworkPreviewItem,
   DuPickItem,
   ExhibitionDetail,
+  GuestbookQuestion,
+  GuestbookReview,
   LoungeBoardDetail,
   LoungeBoardPost,
   LoungePost,
@@ -674,6 +677,218 @@ export const REVIEWS: Record<string, ReviewItem[]> = {
         '전시 공간이 넓고 쾌적해서 관람하기 좋았어요. 작품 설명도 잘 되어 있어서 미술 지식이 없어도 충분히 즐길 수 있었습니다.',
       date: '2026.05.24',
       likes: 9,
+    },
+  ],
+};
+
+// ─── 작품 상세 데이터 ────────────────────────────────────────────────────────
+
+export const ARTWORK_DETAILS: Record<string, ArtworkDetail> = {
+  '1': {
+    artworkId: 1,
+    artworkName: '머문 자리의 온기',
+    type: '회화',
+    content:
+      '색과 형태는 우리가 마주하는 순간들을 시각적으로 기록합니다. 이번 전시는 중앙학교 OO학과 구성원들이 각자의 시선으로 바라본 세계를 색채와 형태로 담아낸 작품들로 이루어져 있습니다. 서로 다른 배경과 경험을 지닌 작가의 시각에서 바라본 작품들이 전시됩니다...',
+    productionYear: 2026,
+    materialMedia: '아크릴, 캔버스',
+    size: '90 × 120 cm',
+    point:
+      '이 작품은 사람들 틈에서 사람들이 놀던 인류와 무위기 에 집중해 감상하면 좋습니다. 빛을 내뿜는 생동감 넘는 색들과, 화려 하면서도 그 속에 여역을 활용합니다.',
+    images: [
+      { imageUrl: 'https://picsum.photos/seed/aw1/400/500', isThumbnail: true, sortOrder: 1 },
+      { imageUrl: 'https://picsum.photos/seed/proc1/200/160', isThumbnail: false, sortOrder: 2 },
+      { imageUrl: 'https://picsum.photos/seed/proc2/200/160', isThumbnail: false, sortOrder: 3 },
+      { imageUrl: 'https://picsum.photos/seed/proc3/200/160', isThumbnail: false, sortOrder: 4 },
+    ],
+    artist: '이정우, 고상준',
+    exhibitionId: '1',
+    exhibitionTitle: '색과 형태, 우리가 마주한 순간들',
+    exhibitionOrganizer: '중앙대학교 OO동아리 이름 전시',
+    exhibitionPeriod: '2026.05.23 – 05.30',
+    exhibitionThumbnail: 'https://picsum.photos/seed/ex1/80/60',
+    bookmarkCount: 204,
+    isBookmarked: false,
+  },
+  '2': {
+    artworkId: 2,
+    artworkName: '경계의 흔적',
+    type: '회화',
+    content:
+      '경계의 흔적은 우리가 일상에서 마주하는 경계들을 시각적으로 표현한 작품입니다. 보이지 않는 경계선들이 우리의 삶을 어떻게 구분하는지를 탐구합니다.',
+    productionYear: 2026,
+    materialMedia: '캔버스에 아크릴',
+    size: '80 × 100 cm',
+    point: '경계라는 개념에 주목하며 감상하시면 더 깊은 의미를 발견하실 수 있습니다.',
+    images: [
+      { imageUrl: 'https://picsum.photos/seed/aw2/400/500', isThumbnail: true, sortOrder: 1 },
+      { imageUrl: 'https://picsum.photos/seed/proc4/200/160', isThumbnail: false, sortOrder: 2 },
+      { imageUrl: 'https://picsum.photos/seed/proc5/200/160', isThumbnail: false, sortOrder: 3 },
+    ],
+    artist: '김민서',
+    exhibitionId: '1',
+    exhibitionTitle: '색과 형태, 우리가 마주한 순간들',
+    exhibitionOrganizer: '중앙대학교 OO동아리 이름 전시',
+    exhibitionPeriod: '2026.05.23 – 05.30',
+    exhibitionThumbnail: 'https://picsum.photos/seed/ex2/80/60',
+    bookmarkCount: 89,
+    isBookmarked: false,
+  },
+  '4': {
+    artworkId: 4,
+    artworkName: '정지된 순간',
+    type: '회화',
+    content:
+      '정지된 순간은 시간이 멈춘 듯한 고요한 순간을 포착한 작품입니다. 움직임과 정지 사이의 경계를 탐구합니다.',
+    productionYear: 2026,
+    materialMedia: '캔버스에 유화',
+    size: '100 × 120 cm',
+    point: '작품 속 정적인 순간에 집중하며 감상해보세요.',
+    images: [
+      { imageUrl: 'https://picsum.photos/seed/aw4/400/500', isThumbnail: true, sortOrder: 1 },
+      { imageUrl: 'https://picsum.photos/seed/proc6/200/160', isThumbnail: false, sortOrder: 2 },
+      { imageUrl: 'https://picsum.photos/seed/proc7/200/160', isThumbnail: false, sortOrder: 3 },
+    ],
+    artist: '최승우',
+    exhibitionId: '2',
+    exhibitionTitle: 'VISUAL WAVE',
+    exhibitionOrganizer: '홍익대학교 시각디자인학과 졸업전시',
+    exhibitionPeriod: '2026.06.02 – 06.10',
+    exhibitionThumbnail: 'https://picsum.photos/seed/vw1/80/60',
+    bookmarkCount: 156,
+    isBookmarked: false,
+  },
+  '6': {
+    artworkId: 6,
+    artworkName: '표면 아래',
+    type: '조각',
+    content:
+      '표면 아래에 숨겨진 이야기들을 조각으로 표현한 작품입니다. 겉으로 보이는 것과 내면의 진실 사이를 탐구합니다.',
+    productionYear: 2026,
+    materialMedia: '조각',
+    size: '50 × 70 × 30 cm',
+    point: '작품을 360도 다양한 각도에서 감상해보시길 권합니다.',
+    images: [
+      { imageUrl: 'https://picsum.photos/seed/aw6/400/500', isThumbnail: true, sortOrder: 1 },
+      { imageUrl: 'https://picsum.photos/seed/proc8/200/160', isThumbnail: false, sortOrder: 2 },
+    ],
+    artist: '한동현',
+    exhibitionId: '3',
+    exhibitionTitle: 'NEW OFFICE',
+    exhibitionOrganizer: '홍익대학교 시각디자인학과 기획전시',
+    exhibitionPeriod: '2026.06.02 – 06.10',
+    exhibitionThumbnail: 'https://picsum.photos/seed/no1/80/60',
+    bookmarkCount: 73,
+    isBookmarked: false,
+  },
+};
+
+// ─── 방명록 데이터 ───────────────────────────────────────────────────────────
+
+export const GUESTBOOK_REVIEWS: Record<string, GuestbookReview[]> = {
+  '1': [
+    {
+      feelingId: 1,
+      user: { userId: 1, nickname: '달의작업실' },
+      createdAt: '2026.05.24',
+      content:
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+      reply: null,
+      images: [
+        'https://picsum.photos/seed/rev1/200/240',
+        'https://picsum.photos/seed/rev2/200/240',
+        'https://picsum.photos/seed/rev3/200/240',
+      ],
+      likeCount: 12,
+      commentCount: 2,
+      replies: [
+        {
+          replyId: 101,
+          user: { userId: 2, nickname: '이정우' },
+          createdAt: '2026.05.24',
+          content:
+            '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+          isArtist: true,
+          isMyReply: true,
+          likeCount: 12,
+        },
+        {
+          replyId: 102,
+          user: { userId: 3, nickname: '달의작업실' },
+          createdAt: '7시간 전',
+          content:
+            '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+          likeCount: 12,
+        },
+      ],
+    },
+    {
+      feelingId: 4,
+      user: { userId: 4, nickname: '달의작업실' },
+      createdAt: '3시간 전',
+      content:
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+      reply: null,
+      likeCount: 12,
+      commentCount: 2,
+      replies: [
+        {
+          replyId: 103,
+          user: { userId: 5, nickname: '이정우' },
+          createdAt: '2시간 전',
+          content: '감사합니다! 앞으로도 좋은 작품으로 찾아뵙겠습니다.',
+          isArtist: true,
+          likeCount: 5,
+        },
+      ],
+    },
+  ],
+};
+
+export const GUESTBOOK_QUESTIONS: Record<string, GuestbookQuestion[]> = {
+  '1': [
+    {
+      questionId: 1,
+      isPublic: false,
+      createdAt: '2026.05.24',
+      user: { userId: 1, nickname: '달의작업실' },
+      content:
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+      reply: {
+        content: '질문해 주셔서 감사합니다! 좋은 답변 드리도록 노력하겠습니다.',
+        createdAt: '2026.05.24',
+      },
+      likeCount: 12,
+      commentCount: 2,
+    },
+    {
+      questionId: 2,
+      isPublic: true,
+      createdAt: '2026.05.24',
+      user: { userId: 2, nickname: '달의작업실' },
+      content:
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+      reply: {
+        content: '감사합니다. 전시 주제에 적합하도록 색채 조화를 깊이 고민했습니다.',
+        createdAt: '2026.05.24',
+      },
+      likeCount: 12,
+      commentCount: 2,
+      isMyQuestion: true,
+    },
+    {
+      questionId: 3,
+      isPublic: false,
+      createdAt: '2026.05.24',
+      user: { userId: 3, nickname: '달의작업실' },
+      content:
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+      reply: {
+        content: '소중한 의견 감사드립니다.',
+        createdAt: '2026.05.24',
+      },
+      likeCount: 12,
+      commentCount: 2,
     },
   ],
 };

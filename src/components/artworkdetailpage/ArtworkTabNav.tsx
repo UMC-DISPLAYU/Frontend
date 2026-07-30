@@ -1,26 +1,24 @@
-import type { DetailTabKey } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
-const DETAIL_TABS: { key: DetailTabKey; label: string }[] = [
-  { key: 'intro', label: '소개' },
-  { key: 'artwork', label: '작품' },
-  { key: 'review', label: '후기' },
-];
-
 type Props = {
-  activeTab: DetailTabKey;
-  onTabChange: (key: DetailTabKey) => void;
+  activeTab: 'intro' | 'guestbook';
+  onTabChange: (tab: 'intro' | 'guestbook') => void;
 };
 
-export function DetailTabNav({ activeTab, onTabChange }: Props) {
+export function ArtworkTabNav({ activeTab, onTabChange }: Props) {
+  const tabs: { key: 'intro' | 'guestbook'; label: string }[] = [
+    { key: 'intro', label: '소개' },
+    { key: 'guestbook', label: '방명록' },
+  ];
+
   return (
-    <nav className="bg-page sticky top-0 z-10 border-b-2 border-line-soft flex px-5 gap-10">
-      {DETAIL_TABS.map((tab) => {
+    <nav className="bg-page sticky top-0 z-10 border-b-2 border-line-soft flex px-5 gap-5.5">
+      {tabs.map((tab) => {
         const isActive = tab.key === activeTab;
         return (
           <button
             key={tab.key}
-            id={`tab-${tab.key}`}
+            id={`artwork-tab-${tab.key}`}
             type="button"
             onClick={() => onTabChange(tab.key)}
             className={cn(

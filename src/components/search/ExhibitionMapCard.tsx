@@ -12,7 +12,6 @@ interface ExhibitionMapCardProps {
   onToggleBookmark?: () => void;
 }
 
-
 export function ExhibitionMapCard({
   exhibition,
   selected = false,

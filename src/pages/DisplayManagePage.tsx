@@ -35,7 +35,7 @@ export function DisplayManagePage() {
   const { data: myDisplays = [], isLoading: isLoadingDisplays } = useMyDisplays();
   const { data: currentUser } = useUserMe();
   const { data: displayDetail } = useDisplayDetail(selected ? Number(selected.id) : Number.NaN);
-  const { data: artworks = [] } = useDisplayArtworks(selected ? Number(selected.id) : Number.NaN);
+  const { data: displayArtworks } = useDisplayArtworks(selected ? Number(selected.id) : Number.NaN);
 
   // Calculate user role
   const userRole = useDisplayRole(displayDetail, currentUser);
@@ -55,6 +55,14 @@ export function DisplayManagePage() {
     setSelected(null);
   };
 
+  const artworkItems =
+    displayArtworks?.artworks.map((artwork) => ({
+      id: String(artwork.artworkId),
+      title: artwork.artworkName,
+      artist: artwork.artistName,
+      image: artwork.artworkImageUrl || null,
+    })) ?? [];
+
   // Transform API data to match WorkScreen expected format
   const workData = selected
     ? {
@@ -65,7 +73,7 @@ export function DisplayManagePage() {
               meta: cat.contents.length > 0 ? `${cat.contents.length}개 등록` : '0개',
             }))
           : DEFAULT_CONTENTS,
-        artworks: artworks.length > 0 ? artworks : DEFAULT_ARTWORKS,
+        artworks: artworkItems.length > 0 ? artworkItems : DEFAULT_ARTWORKS,
       }
     : null;
 

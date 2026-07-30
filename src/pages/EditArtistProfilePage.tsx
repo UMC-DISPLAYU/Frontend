@@ -73,13 +73,7 @@ function ProfilePhotoField({
           </>
         )}
       </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFile}
-      />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </>
   );
 }
@@ -109,12 +103,7 @@ export function EditArtistProfilePage() {
   return (
     <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          aria-label="뒤로가기"
-          className="-ml-1"
-        >
+        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <h1 className="typo-body-xl-bold text-main">작가 프로필 설정</h1>
@@ -175,7 +164,9 @@ export function EditArtistProfilePage() {
                     aria-pressed={active}
                     onClick={() => toggleField(field)}
                     className={`rounded-sm border px-2.5 py-1.5 transition-colors ${
-                      active ? 'border-dark text-dark typo-body-xs-bold' : 'border-line text-sub600  typo-body-xs-regular'
+                      active
+                        ? 'border-dark text-dark typo-body-xs-bold'
+                        : 'border-line text-sub600  typo-body-xs-regular'
                     }`}
                   >
                     {field}
@@ -203,10 +194,7 @@ export function EditArtistProfilePage() {
           <div className="flex flex-col gap-3">
             <span className="typo-body-sm-bold text-main">소속 정보</span>
             <div className="rounded-2xl bg-card px-4 py-3.5">
-              <label
-                htmlFor="school"
-                className="mb-2 block typo-body-xs-bold text-sub600"
-              >
+              <label htmlFor="school" className="mb-2 block typo-body-xs-bold text-sub600">
                 학교 / 기관명
               </label>
 
