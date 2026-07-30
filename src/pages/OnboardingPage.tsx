@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Check, ChevronLeft, ChevronRight, Info, X } from 'lucide-react';
+import { Check, ChevronLeft, Info, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -15,6 +15,10 @@ type TermKey = 'over14' | 'service' | 'privacy' | 'location';
 type PolicyCode = 'terms' | 'privacy' | 'location';
 type TermState = Record<TermKey, boolean>;
 type NicknameStatus = 'idle' | 'available' | 'unavailable' | 'error';
+type ParsedPolicyBlock =
+  | { type: 'paragraph'; text: string }
+  | { type: 'heading'; text: string }
+  | { type: 'bullet'; text: string };
 
 const AGREEMENT_CODES: Record<Exclude<TermKey, 'over14'>, string> = {
   service: 'TERMS_OF_SERVICE',
@@ -27,28 +31,6 @@ const POLICY_TERM_KEYS: Record<PolicyCode, Exclude<TermKey, 'over14'>> = {
   privacy: 'privacy',
   location: 'location',
 };
-
-const TERM_ROWS: Array<{
-  key: TermKey;
-  label: string;
-  required: boolean;
-  detailCode?: PolicyCode;
-}> = [
-  { key: 'over14', label: '만 14세 이상입니다.', required: true },
-  { key: 'service', label: '서비스 이용약관 동의', required: true, detailCode: 'terms' },
-  {
-    key: 'privacy',
-    label: '개인정보 수집 및 이용 동의',
-    required: true,
-    detailCode: 'privacy',
-  },
-  {
-    key: 'location',
-    label: '위치기반서비스 이용약관 동의',
-    required: false,
-    detailCode: 'location',
-  },
-];
 
 const POLICY_DOCUMENTS: Record<
   PolicyCode,
@@ -399,12 +381,18 @@ function TermsScreen({
   onOpenDetail: (code: PolicyCode) => void;
 }) {
   const allChecked = Object.values(terms).every(Boolean);
+  const termsAndPrivacyChecked = terms.service && terms.privacy;
   const canProceed = terms.over14 && terms.service && terms.privacy;
 
-  const toggle = (key: TermKey | 'all') => {
+  const toggle = (key: TermKey | 'all' | 'termsAndPrivacy') => {
     if (key === 'all') {
       const next = !allChecked;
       onChange({ over14: next, service: next, privacy: next, location: next });
+      return;
+    }
+    if (key === 'termsAndPrivacy') {
+      const next = !termsAndPrivacyChecked;
+      onChange({ ...terms, service: next, privacy: next });
       return;
     }
     onChange({ ...terms, [key]: !terms[key] });
@@ -413,7 +401,7 @@ function TermsScreen({
   return (
     <main className="flex flex-1 flex-col px-5 pb-10 pt-[58px]">
       <BackButton onBack={onBack} />
-      <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-[52px]">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-10">
         <h2 className="text-[24px] font-bold leading-8 text-[#0d0d0d]">
           서비스 이용을 위해
           <br />
@@ -424,37 +412,67 @@ function TermsScreen({
           <button
             type="button"
             onClick={() => toggle('all')}
-            className="flex h-[58px] w-full items-center gap-3 rounded-lg border border-[#e6e8ec] bg-[#f6f7f9] px-4 text-left"
+            className="flex h-[58px] w-full items-center border-b border-[#c4c4c4] text-left"
           >
+            <span className="min-w-0 flex-1 text-[18px] font-bold leading-[25.2px] tracking-[-0.54px] text-[#111]">
+              전체 동의
+            </span>
             <AgreementCheck checked={allChecked} />
-            <span className="text-[15px] font-bold text-[#0d0d0d]">전체 동의</span>
           </button>
 
-          <div className="mt-4 flex flex-col gap-1">
-            {TERM_ROWS.map((row) => {
-              const detailCode = row.detailCode;
+          <div className="mt-5 flex flex-col gap-5">
+            <div className="flex min-h-9 items-center gap-3">
+              <div className="min-w-0 flex-1 text-[16px] leading-[22.4px] tracking-[-0.48px]">
+                <button
+                  type="button"
+                  onClick={() => onOpenDetail('terms')}
+                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                >
+                  이용약관
+                </button>
+                <span className="text-[#767676]"> 및 </span>
+                <button
+                  type="button"
+                  onClick={() => onOpenDetail('privacy')}
+                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                >
+                  개인정보취급방침
+                </button>
+                <span className="ml-2 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
+                  (필수)
+                </span>
+              </div>
+              <CheckButton
+                checked={termsAndPrivacyChecked}
+                onClick={() => toggle('termsAndPrivacy')}
+              />
+            </div>
 
-              return (
-                <div key={row.key} className="flex h-12 items-center gap-3">
-                  <CheckButton checked={terms[row.key]} onClick={() => toggle(row.key)} />
-                  <span className="text-[12px] font-bold text-[#8b919b]">
-                    [{row.required ? '필수' : '선택'}]
-                  </span>
-                  <span className="min-w-0 flex-1 text-[14px] font-medium text-[#24272c]">
-                    {row.label}
-                  </span>
-                  {detailCode ? (
-                    <button
-                      type="button"
-                      onClick={() => onOpenDetail(detailCode)}
-                      aria-label="약관 보기"
-                    >
-                      <ChevronRight className="size-5 text-[#a6abb4]" strokeWidth={1.8} />
-                    </button>
-                  ) : null}
-                </div>
-              );
-            })}
+            <div className="flex min-h-9 items-center gap-3">
+              <span className="min-w-0 flex-1 text-[16px] font-normal leading-[22.4px] tracking-[-0.48px] text-[#767676]">
+                만 14세 이상 확인
+                <span className="ml-1 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
+                  (필수)
+                </span>
+              </span>
+              <CheckButton checked={terms.over14} onClick={() => toggle('over14')} />
+            </div>
+
+            <div className="flex min-h-9 items-center gap-3">
+              <div className="min-w-0 flex-1 text-[16px] leading-[22.4px] tracking-[-0.48px]">
+                <button
+                  type="button"
+                  onClick={() => onOpenDetail('location')}
+                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                >
+                  위치기반서비스 이용약관
+                </button>
+                <span className="ml-2 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
+                  (선택)
+                </span>
+              </div>
+              <CheckButton checked={terms.location} onClick={() => toggle('location')} />
+            </div>
           </div>
         </section>
       </div>
@@ -481,6 +499,65 @@ function PolicyBulletList({ items }: { items: string[] }) {
   );
 }
 
+function parsePolicyContent(content: string): ParsedPolicyBlock[] {
+  return content
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      if (/^(제\d+조|[0-9]+\.)\s/.test(line)) {
+        return { type: 'heading', text: line };
+      }
+      if (/^[-•]\s+/.test(line)) {
+        return { type: 'bullet', text: line.replace(/^[-•]\s+/, '') };
+      }
+      return { type: 'paragraph', text: line };
+    });
+}
+
+function PolicyPlainContent({ content }: { content: string }) {
+  const blocks = parsePolicyContent(content);
+
+  return (
+    <div className="pt-6">
+      {blocks.map((block, index) => {
+        const key = `${block.type}-${index}-${block.text}`;
+
+        if (block.type === 'heading') {
+          return (
+            <h2
+              key={key}
+              className="pt-8 text-[17px] font-semibold leading-[25.5px] text-[#111827] first:pt-0"
+            >
+              {block.text}
+            </h2>
+          );
+        }
+
+        if (block.type === 'bullet') {
+          return (
+            <div key={key} className="flex items-start gap-[10px] pt-[6px]">
+              <span className="mt-[9px] size-[6px] shrink-0 rounded-full bg-[#d1d5db]" />
+              <p className="min-w-0 flex-1 whitespace-pre-wrap text-[15px] leading-[24.75px] text-[#374151]">
+                {block.text}
+              </p>
+            </div>
+          );
+        }
+
+        return (
+          <p
+            key={key}
+            className="whitespace-pre-wrap pt-3 text-[15px] leading-[24.75px] text-[#374151] first:pt-0"
+          >
+            {block.text}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 function TermsDetailScreen({
   agreement,
   code,
@@ -501,7 +578,7 @@ function TermsDetailScreen({
             type="button"
             onClick={onBack}
             aria-label="뒤로가기"
-            className="-ml-1 flex size-9 items-center justify-center rounded-full"
+            className="-ml-1 flex size-9 items-center justify-center"
           >
             <ChevronLeft className="size-5 text-[#111827]" strokeWidth={2} />
           </button>
@@ -515,9 +592,7 @@ function TermsDetailScreen({
         </p>
 
         {agreement ? (
-          <p className="whitespace-pre-wrap pt-6 text-[15px] leading-[24.75px] text-[#374151]">
-            {agreement.content}
-          </p>
+          <PolicyPlainContent content={agreement.content} />
         ) : (
           <>
             <p className="pt-6 text-[15px] leading-[24.75px] text-[#8a94a6]">{document.intro}</p>
@@ -629,7 +704,7 @@ function NicknameScreen({
         <ChevronLeft className="size-[22px] text-[#0d0d0d]" strokeWidth={2} />
       </button>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-[38px]">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-10">
         <h2 className="text-[24px] font-bold leading-[33.6px] tracking-[-0.72px] text-[#0d0d0d]">
           디유에서 사용할
           <br />
@@ -783,6 +858,12 @@ export function OnboardingPage() {
 
   const completeSignup = async (nickname: string) => {
     setError('');
+    const signupToken = searchParams.get('signupToken');
+
+    if (!signupToken) {
+      setError('회원가입 토큰을 확인할 수 없어요. 다시 로그인해주세요.');
+      return;
+    }
 
     const agreedTerms = (['service', 'privacy', 'location'] as const)
       .filter((key) => terms[key])
@@ -809,7 +890,7 @@ export function OnboardingPage() {
           agreements: agreedTerms,
           isOver14: terms.over14,
         },
-        signupToken: searchParams.get('signupToken'),
+        signupToken,
       });
 
       localStorage.setItem('accessToken', result.accessToken);
