@@ -1,3 +1,5 @@
+import { cn } from '@/utils/cn';
+
 type Props = {
   activeTab: 'intro' | 'guestbook';
   onTabChange: (tab: 'intro' | 'guestbook') => void;
@@ -10,7 +12,7 @@ export function ArtworkTabNav({ activeTab, onTabChange }: Props) {
   ];
 
   return (
-    <nav className="bg-[#F0F0F3] sticky top-0 z-10 border-b-2 border-[#e5e5e5] flex px-5 gap-19">
+    <nav className="bg-page sticky top-0 z-10 border-b-2 border-line-soft flex px-5 gap-5.5">
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;
         return (
@@ -19,14 +21,13 @@ export function ArtworkTabNav({ activeTab, onTabChange }: Props) {
             id={`artwork-tab-${tab.key}`}
             type="button"
             onClick={() => onTabChange(tab.key)}
-            className="py-3 text-[14px] font-[Pretendard,sans-serif] transition-all duration-150 relative whitespace-nowrap"
-            style={{
-              color: isActive ? '#111' : '#aaa',
-              fontWeight: isActive ? 700 : 400,
-            }}
+            className={cn(
+              'py-4 typo-body-sm-regular transition-all duration-150 relative whitespace-nowrap',
+              isActive ? 'text-main font-bold' : 'text-faint',
+            )}
           >
             {tab.label}
-            {isActive && <span className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-[#111]" />}
+            {isActive && <span className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-main" />}
           </button>
         );
       })}

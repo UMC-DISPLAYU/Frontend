@@ -7,27 +7,69 @@ import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab'
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
+import { GuestbookInputBar } from '@/components/artworkdetailpage/GuestbookInputBar';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
+import { FNB } from '@/components/layout/FNB';
 import { ARTWORK_DETAILS, GUESTBOOK_QUESTIONS, GUESTBOOK_REVIEWS } from '@/mocks/exhibition';
+import type {
+  ArtworkGuestbookTab as ArtworkGuestbookSubTabType,
+  GuestbookQuestion,
+  GuestbookReview,
+} from '@/types/exhibition';
 
 export function ArtworkDetailPage() {
   const navigate = useNavigate();
   const { artworkId } = useParams<{ artworkId: string }>();
   const [activeTab, setActiveTab] = useState<'intro' | 'guestbook'>('intro');
+  const [activeSubTab, setActiveSubTab] = useState<ArtworkGuestbookSubTabType>('review');
+  const [isArtistView, setIsArtistView] = useState(false);
 
   const artwork = artworkId ? ARTWORK_DETAILS[artworkId] : undefined;
 
+  const [reviews, setReviews] = useState<GuestbookReview[]>(() =>
+    artworkId ? GUESTBOOK_REVIEWS[artworkId] || [] : [],
+  );
+  const [questions, setQuestions] = useState<GuestbookQuestion[]>(() =>
+    artworkId ? GUESTBOOK_QUESTIONS[artworkId] || [] : [],
+  );
+
+  const handleSendGuestbook = (content: string, isPrivate: boolean) => {
+    if (activeSubTab === 'review') {
+      const newReview: GuestbookReview = {
+        feelingId: Date.now(),
+        user: { userId: 99, nickname: isArtistView ? artwork?.artist || '작가' : '나' },
+        createdAt: '방금 전',
+        content,
+        reply: null,
+        isArtist: isArtistView,
+        isMyReview: true,
+        likeCount: 0,
+      };
+      setReviews((prev) => [newReview, ...prev]);
+    } else {
+      const newQuestion: GuestbookQuestion = {
+        questionId: Date.now(),
+        user: { userId: 99, nickname: '나' },
+        createdAt: '방금 전',
+        content,
+        isPublic: !isPrivate,
+        reply: null,
+        isMyQuestion: true,
+        likeCount: 0,
+      };
+      setQuestions((prev) => [newQuestion, ...prev]);
+    }
+  };
+
   if (!artwork) {
     return (
-      <div className="w-full max-w-md mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-[#F0F0F3]">
-        <p className="text-neutral-500 text-sm font-[Pretendard,sans-serif]">
-          작품 정보를 찾을 수 없습니다.
-        </p>
+      <div className="w-full max-w-md mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-page">
+        <p className="typo-body-sm-regular text-sub600">작품 정보를 찾을 수 없습니다.</p>
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="text-sm text-neutral-400 underline font-[Pretendard,sans-serif]"
+          className="typo-body-sm-regular text-faint underline cursor-pointer"
         >
           돌아가기
         </button>
@@ -35,11 +77,8 @@ export function ArtworkDetailPage() {
     );
   }
 
-  const reviews = artworkId ? GUESTBOOK_REVIEWS[artworkId] || [] : [];
-  const questions = artworkId ? GUESTBOOK_QUESTIONS[artworkId] || [] : [];
-
   return (
-    <div className="w-full max-w-md mx-auto min-h-dvh bg-[#F0F0F3] relative">
+    <div className="w-full max-w-md mx-auto min-h-dvh bg-page relative pb-24">
       {/* 히어로 이미지 */}
       <HeroSlider
         images={[artwork.images.find((img) => img.isThumbnail)?.imageUrl || '']}
@@ -54,10 +93,30 @@ export function ArtworkDetailPage() {
 
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && <ArtworkIntroTab artwork={artwork} />}
-      {activeTab === 'guestbook' && <ArtworkGuestbookTab reviews={reviews} questions={questions} />}
+      {activeTab === 'guestbook' && (
+        <ArtworkGuestbookTab
+          reviews={reviews}
+          questions={questions}
+          activeSubTab={activeSubTab}
+          onSubTabChange={setActiveSubTab}
+          isArtistView={isArtistView}
+          onArtistViewChange={setIsArtistView}
+        />
+      )}
 
-      {/* 하단 고정 바 */}
-      <BottomFixedBar button={<ArtworkSaveButton className="w-full" />} />
+      {/* 하단 푸터 (FNB) */}
+      <FNB />
+
+      {/* 하단 고정 바: 소개 탭은 저장버튼, 방명록 탭은 글쓰기 입력 바 */}
+      {activeTab === 'intro' ? (
+        <BottomFixedBar button={<ArtworkSaveButton className="w-full" />} />
+      ) : (
+        <GuestbookInputBar
+          activeSubTab={activeSubTab}
+          isArtistView={isArtistView}
+          onSend={handleSendGuestbook}
+        />
+      )}
     </div>
   );
 }

@@ -5,6 +5,8 @@ import type {
   ArtworkPreviewItem,
   DuPickItem,
   ExhibitionDetail,
+  GuestbookQuestion,
+  GuestbookReview,
   LoungeBoardDetail,
   LoungeBoardPost,
   LoungePost,
@@ -699,7 +701,7 @@ export const ARTWORK_DETAILS: Record<string, ArtworkDetail> = {
       { imageUrl: 'https://picsum.photos/seed/proc2/200/160', isThumbnail: false, sortOrder: 3 },
       { imageUrl: 'https://picsum.photos/seed/proc3/200/160', isThumbnail: false, sortOrder: 4 },
     ],
-    artist: '이정우',
+    artist: '이정우, 고상준',
     exhibitionId: '1',
     exhibitionTitle: '색과 형태, 우리가 마주한 순간들',
     exhibitionOrganizer: '중앙대학교 OO동아리 이름 전시',
@@ -792,22 +794,53 @@ export const GUESTBOOK_REVIEWS: Record<string, GuestbookReview[]> = {
       content:
         '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
       reply: null,
+      images: [
+        'https://picsum.photos/seed/rev1/200/240',
+        'https://picsum.photos/seed/rev2/200/240',
+        'https://picsum.photos/seed/rev3/200/240',
+      ],
+      likeCount: 12,
+      commentCount: 2,
+      replies: [
+        {
+          replyId: 101,
+          user: { userId: 2, nickname: '이정우' },
+          createdAt: '2026.05.24',
+          content:
+            '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+          isArtist: true,
+          isMyReply: true,
+          likeCount: 12,
+        },
+        {
+          replyId: 102,
+          user: { userId: 3, nickname: '달의작업실' },
+          createdAt: '7시간 전',
+          content:
+            '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+          likeCount: 12,
+        },
+      ],
     },
     {
-      feelingId: 2,
-      user: { userId: 2, nickname: '달의작업실' },
-      createdAt: '2026.05.24',
+      feelingId: 4,
+      user: { userId: 4, nickname: '달의작업실' },
+      createdAt: '3시간 전',
       content:
-        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
       reply: null,
-    },
-    {
-      feelingId: 3,
-      user: { userId: 3, nickname: '달의작업실' },
-      createdAt: '2026.05.24',
-      content:
-        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.작품들이 전시 주제와 잘 연결됩니다.전시 주제와 잘 연련',
-      reply: null,
+      likeCount: 12,
+      commentCount: 2,
+      replies: [
+        {
+          replyId: 103,
+          user: { userId: 5, nickname: '이정우' },
+          createdAt: '2시간 전',
+          content: '감사합니다! 앞으로도 좋은 작품으로 찾아뵙겠습니다.',
+          isArtist: true,
+          likeCount: 5,
+        },
+      ],
     },
   ],
 };
@@ -818,29 +851,44 @@ export const GUESTBOOK_QUESTIONS: Record<string, GuestbookQuestion[]> = {
       questionId: 1,
       isPublic: false,
       createdAt: '2026.05.24',
-      user: { userId: 4, nickname: 'artseker_j' },
-      content: '비공개 질문입니다.',
-      reply: null,
+      user: { userId: 1, nickname: '달의작업실' },
+      content:
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+      reply: {
+        content: '질문해 주셔서 감사합니다! 좋은 답변 드리도록 노력하겠습니다.',
+        createdAt: '2026.05.24',
+      },
+      likeCount: 12,
+      commentCount: 2,
     },
     {
       questionId: 2,
       isPublic: true,
       createdAt: '2026.05.24',
-      user: { userId: 4, nickname: 'artseker_j' },
-      content: '색을 다루는 방식이 어떻게 되나요?',
+      user: { userId: 2, nickname: '달의작업실' },
+      content:
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
       reply: {
-        content:
-          '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.작품들이 전시 주제와 잘 연결됩니다.전시 주제와 잘 연련',
-        createdAt: '2026.05.25',
+        content: '감사합니다. 전시 주제에 적합하도록 색채 조화를 깊이 고민했습니다.',
+        createdAt: '2026.05.24',
       },
+      likeCount: 12,
+      commentCount: 2,
+      isMyQuestion: true,
     },
     {
       questionId: 3,
       isPublic: false,
       createdAt: '2026.05.24',
-      user: { userId: 4, nickname: 'artseker_j' },
-      content: '비공개 질문 2입니다.',
-      reply: null,
+      user: { userId: 3, nickname: '달의작업실' },
+      content:
+        '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+      reply: {
+        content: '소중한 의견 감사드립니다.',
+        createdAt: '2026.05.24',
+      },
+      likeCount: 12,
+      commentCount: 2,
     },
   ],
 };
