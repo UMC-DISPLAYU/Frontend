@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import type { DisplayArtworkDto } from '@/api/dto';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 
@@ -6,8 +8,13 @@ type ArtworkCardProps = {
 };
 
 function ArtworkCard({ item }: ArtworkCardProps) {
+  const navigate = useNavigate();
+
   return (
-    <article className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col px-2 py-3">
+    <article
+      className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col px-2 py-3 cursor-pointer"
+      onClick={() => navigate(`/artwork/${item.artworkId}`)}
+    >
       <div className="aspect-square w-full rounded-xl overflow-hidden bg-page border  border-line-soft">
         <img
           src={item.artworkImageUrl}

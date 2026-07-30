@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
+import { ArtworkDetailPage } from './pages/ArtworkDetailPage';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayAcceptPage } from './pages/DisplayAcceptPage';
 import { DisplayArtistNamePage } from './pages/DisplayArtistNamePage';
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
+      { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
       { path: 'display/:id/contents', element: <DisplayContentsPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
