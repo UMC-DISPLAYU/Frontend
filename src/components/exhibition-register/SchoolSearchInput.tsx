@@ -92,9 +92,7 @@ export function SchoolSearchInput({ value, onChange }: SchoolSearchInputProps) {
                   </button>
                 ))
               ) : (
-                <div className="px-4 py-3 text-faint typo-body-sm-regular">
-                  검색 결과가 없습니다
-                </div>
+                <div className="px-4 py-3 text-sm text-neutral-400">검색 결과가 없습니다</div>
               )}
             </div>
           </div>

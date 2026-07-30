@@ -1,16 +1,25 @@
-import type { ApiResponseDto, OffsetPageInfoDto, OffsetPageRequestDto } from './common.dto';
+import type {
+  ApiResponseDto,
+  CursorPaginationDto,
+  ImageResponseDto,
+  OffsetPageInfoDto,
+  OffsetPageRequestDto,
+} from './common.dto';
 
 export interface HomeExhibitionDto {
   displayId: number;
   title: string;
   posterImageUrl: string;
-  isBookmarked: boolean;
   startedAt: string;
   endedAt: string;
+  dayLeft?: number;
 }
 
-export interface ClosingSoonExhibitionDto extends HomeExhibitionDto {
-  dayLeft?: number;
+export type ClosingSoonExhibitionDto = HomeExhibitionDto;
+
+export interface GetClosingSoonDisplaysRequestDto {
+  cursor?: string;
+  size?: number;
 }
 
 export interface GetGraduationDisplaysResponseDataDto {
@@ -21,6 +30,7 @@ export type GetGraduationDisplaysResponseDto = ApiResponseDto<GetGraduationDispl
 
 export interface GetClosingSoonDisplaysResponseDataDto {
   exhibitions: ClosingSoonExhibitionDto[];
+  pagination: CursorPaginationDto<string>;
 }
 
 export type GetClosingSoonDisplaysResponseDto =
@@ -31,12 +41,17 @@ export interface DuPickDto {
   title: string;
   subtitle: string;
   bannerImageUrl: string;
-  authorName: string;
   createdAt: string;
+}
+
+export interface GetDuPicksRequestDto {
+  cursor?: number | null;
+  size?: number;
 }
 
 export interface GetDuPicksResponseDataDto {
   duPicks: DuPickDto[];
+  pagination: CursorPaginationDto<number>;
 }
 
 export type GetDuPicksResponseDto = ApiResponseDto<GetDuPicksResponseDataDto>;
@@ -44,11 +59,10 @@ export type GetDuPicksResponseDto = ApiResponseDto<GetDuPicksResponseDataDto>;
 export interface DisplayListItemDto {
   displayId: number;
   title: string;
-  host: string;
-  period: string;
-  location: string;
   posterImageUrl: string;
-  isBookmarked: boolean;
+  startedAt: string;
+  endedAt: string;
+  dayLeft?: number;
 }
 
 export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {
@@ -60,17 +74,20 @@ export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {
 }
 
 //나머지는 선택이고 필수
-export interface SearchDisplaysRequestDto extends OffsetPageRequestDto {
+export interface SearchDisplaysRequestDto {
   searchWord?: string | null;
   status?: string | null;
   region?: string | null;
   field?: string | null;
   type?: string | null;
+  cursor: number;
+  size: number;
 }
 
 //
-export interface DisplayListResponseDataDto extends OffsetPageInfoDto {
+export interface DisplayListResponseDataDto {
   exhibitions: DisplayListItemDto[];
+  pagination: CursorPaginationDto<number>;
 }
 
 export type GetDisplaysResponseDto = ApiResponseDto<DisplayListResponseDataDto>;
@@ -78,40 +95,104 @@ export type GetDisplaysResponseDto = ApiResponseDto<DisplayListResponseDataDto>;
 export type SearchDisplaysResponseDto = ApiResponseDto<DisplayListResponseDataDto>;
 
 export interface GetDisplayMapRequestDto {
-  swLatitude: number;
-  swLongitude: number;
-  neLatitude: number;
-  neLongitude: number;
+  southLatitude: number;
+  westLongitude: number;
+  northLatitude: number;
+  eastLongitude: number;
   searchWord?: string;
+  cursor?: number;
+  size?: number;
 }
 
 export interface DisplayMapMarkerDto {
   displayId: number;
   title: string;
-  period: string;
+  startDate: string;
+  endDate: string;
   locationName: string;
   posterImageUrl: string;
   latitude: number;
   longitude: number;
-  isBookmarked: boolean;
 }
 
 export interface GetDisplayMapResponseDataDto {
   markers: DisplayMapMarkerDto[];
+  pagination: CursorPaginationDto<number>;
 }
 
 export type GetDisplayMapResponseDto = ApiResponseDto<GetDisplayMapResponseDataDto>;
 
 export interface DisplayDetailDto {
   displayId: number;
+  ownerUserId: number;
   title: string;
-  hostName: string;
-  posterImageUrl: string;
+  subtitle: string | null;
+  content: string | null;
+  location: DisplayLocationDto;
+  qnaAccount: string;
+  note: string | null;
+  organization: string | null;
+  department: string | null;
+  displayType: string;
+  displayFields: string[];
+  region: string;
   likeCount: number;
-  isLiked: boolean;
-  isBookmarked: boolean;
-  period: string;
-  location: string;
+  period: DisplayPeriodDto;
+  artworkContentOpen: string;
+  exhibitionContentOpen: string;
+  status: string;
+  invitationToken: string | null;
+  invitationDisabledAt: string | null;
+  images: DisplayImageDto[];
+  contentCategories: DisplayContentCategoryDto[];
+  teamMembers: DisplayTeamMemberDto[];
+  invitations: DisplayInvitationDto[];
+}
+
+export interface DisplayLocationDto {
+  placeName: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface DisplayPeriodDto {
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+}
+
+export type DisplayImageDto = ImageResponseDto;
+
+export interface DisplayContentDto {
+  contentId: number;
+  imageUrl: string;
+  width: number;
+  height: number;
+  sortOrder: number;
+}
+
+export interface DisplayContentCategoryDto {
+  categoryId: number;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+  contents: DisplayContentDto[];
+}
+
+export interface DisplayTeamMemberDto {
+  teamMemberId: number;
+  userId: number;
+  displayNickname: string;
+  role: string;
+  accepted: boolean;
+}
+
+export interface DisplayInvitationDto {
+  invitationId: number;
+  inviterUserId: number;
+  inviteeUserId: number;
+  createdAt: string;
 }
 
 export type GetDisplayDetailResponseDto = ApiResponseDto<DisplayDetailDto>;
@@ -127,83 +208,107 @@ export interface GetDisplayArtworksRequestDto extends OffsetPageRequestDto {
   sort?: string;
 }
 
-export interface GetDisplayArtworksResponseDataDto extends OffsetPageInfoDto {
-  displayId: number;
-  totalCount: number;
-  artworks: DisplayArtworkListItemDto[];
+// ─── 전시 후기 DTO ──────────────────────────────────────────────────────────
+
+export interface DisplayReviewUserDto {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
 }
 
-export type GetDisplayArtworksResponseDto = ApiResponseDto<GetDisplayArtworksResponseDataDto>;
+export interface DisplayReviewImageDto {
+  imageId: number;
+  imageUrl: string;
+  isThumbnail: boolean;
+  imageType: string;
+  sortOrder: number;
+  caption: string | null;
+  width: number;
+  height: number;
+}
+
+export interface DisplayReviewDto {
+  displayReviewId: number;
+  content: string;
+  createdAt: string;
+  user: DisplayReviewUserDto;
+  images: DisplayReviewImageDto[];
+  likeCount: number;
+  replyCount: number;
+}
+
+export interface GetDisplayReviewsRequestDto {
+  cursorId?: number;
+  size?: number;
+}
+
+export interface GetDisplayReviewsResponseDataDto {
+  reviews: DisplayReviewDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export interface DisplayReviewReplyUserDto {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+}
+
+export interface DisplayReviewReplyDto {
+  displayReviewReplyId: number;
+  content: string;
+  createdAt: string;
+  user: DisplayReviewReplyUserDto;
+  isTeamMember: boolean;
+  likeCount: number;
+}
+
+export interface GetDisplayReviewRepliesRequestDto {
+  cursorId?: number;
+  size?: number;
+}
+
+export interface GetDisplayReviewRepliesResponseDataDto {
+  replies: DisplayReviewReplyDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
 
 export interface CreateDisplayRequestDto {
   title: string;
   posterImageUrl: string;
   type: string;
   fields: string[];
-  schoolOrOrganization: string | null;
-  departmentOrClub: string | null;
-  hostOrganizationName: string | null;
-  subtitle: string | null;
-  description: string | null;
-}
-
-export interface CreateDisplayResponseDataDto extends CreateDisplayRequestDto {
-  displayId: number;
-  status: string;
-}
-
-export type CreateDisplayResponseDto = ApiResponseDto<CreateDisplayResponseDataDto>;
-
-export interface UpdateDisplayDetailsRequestDto {
+  region: string;
   startDate: string;
   endDate: string;
   openTime: string;
   closeTime: string;
   locationName: string;
+  latitude: number;
+  longitude: number;
   roadAddress: string;
-  precautions: string | null;
+  schoolOrOrganization?: string;
+  departmentOrClub?: string;
+  hostOrganizationName?: string;
+  subtitle?: string;
+  description?: string;
+  precautions?: string | null;
+  departmentOrClubValid?: boolean;
+  regionValid?: boolean;
+  schoolOrOrganizationValid?: boolean;
+  hostOrganizationNameValid?: boolean;
 }
 
-export interface UpdateDisplayDetailsResponseDataDto extends UpdateDisplayDetailsRequestDto {
-  displayId: number;
-  title: string;
-  status: string;
-}
+export type CreateDisplayResponseDataDto = DisplayDetailDto;
 
-export type UpdateDisplayDetailsResponseDto = ApiResponseDto<UpdateDisplayDetailsResponseDataDto>;
-
-export interface CreateDisplayAuthorRequestDto {
-  authorName: string;
-}
-
-export interface CreateDisplayAuthorResponseDataDto {
-  displayId: number;
-  authorId: number;
-  authorName: string;
-}
-
-export type CreateDisplayAuthorResponseDto = ApiResponseDto<CreateDisplayAuthorResponseDataDto>;
-
-export interface UpdateDisplayVisibilityRequestDto {
-  artworkVisibility: string;
-  contentVisibility: string;
-}
-
-export interface UpdateDisplayVisibilityResponseDataDto extends UpdateDisplayVisibilityRequestDto {
-  displayId: number;
-}
-
-export type UpdateDisplayVisibilityResponseDto =
-  ApiResponseDto<UpdateDisplayVisibilityResponseDataDto>;
-
-export interface PublishDisplayResponseDataDto {
-  displayId: number;
-  status: string;
-}
-
-export type PublishDisplayResponseDto = ApiResponseDto<PublishDisplayResponseDataDto>;
+export type CreateDisplayResponseDto = ApiResponseDto<CreateDisplayResponseDataDto>;
 
 export interface UpdateDisplayRequestDto {
+  userId?: number;
+  displayId?: number;
   title?: string;
   posterImageUrl?: string;
   type?: string;
@@ -217,30 +322,12 @@ export interface UpdateDisplayRequestDto {
   endDate?: string;
   openTime?: string;
   closeTime?: string;
-  location?: string;
-  locationDetails?: string;
+  placeName?: string;
   precautions?: string | null;
+  fieldsValid?: boolean;
 }
 
-export interface UpdateDisplayResponseDataDto {
-  displayId: number;
-  title: string;
-  subtitle: string | null;
-  description: string | null;
-  posterImageUrl: string;
-  type: string;
-  fields: string[];
-  schoolOrOrganization: string | null;
-  departmentOrClub: string | null;
-  hostOrganizationName: string | null;
-  startDate: string;
-  endDate: string;
-  openTime: string;
-  closeTime: string;
-  location: string;
-  precautions: string | null;
-  status: string;
-}
+export type UpdateDisplayResponseDataDto = DisplayDetailDto;
 
 export type UpdateDisplayResponseDto = ApiResponseDto<UpdateDisplayResponseDataDto>;
 
@@ -258,48 +345,3 @@ export interface ToggleDisplayLikeResponseDataDto {
 }
 
 export type ToggleDisplayLikeResponseDto = ApiResponseDto<ToggleDisplayLikeResponseDataDto>;
-
-export interface DisplayReviewDto {
-  reviewId: number;
-  writerNickname: string;
-  writerProfileImageUrl: string;
-  score: number;
-  content: string;
-  createdAt: string;
-  isMyReview: boolean;
-}
-
-export interface GetDisplayReviewsResponseDataDto extends OffsetPageInfoDto {
-  reviews: DisplayReviewDto[];
-}
-
-export type GetDisplayReviewsResponseDto = ApiResponseDto<GetDisplayReviewsResponseDataDto>;
-
-export interface CreateDisplayReviewRequestDto {
-  score: number;
-  content: string;
-}
-
-export interface CreateDisplayReviewResponseDataDto extends DisplayReviewDto {
-  displayId: number;
-}
-
-export type CreateDisplayReviewResponseDto = ApiResponseDto<CreateDisplayReviewResponseDataDto>;
-
-export interface UpdateDisplayReviewRequestDto {
-  score?: number;
-  content?: string;
-}
-
-export interface UpdateDisplayReviewResponseDataDto extends DisplayReviewDto {
-  displayId: number;
-}
-
-export type UpdateDisplayReviewResponseDto = ApiResponseDto<UpdateDisplayReviewResponseDataDto>;
-
-export interface DeleteDisplayReviewResponseDataDto {
-  reviewId: number;
-  isDeleted: boolean;
-}
-
-export type DeleteDisplayReviewResponseDto = ApiResponseDto<DeleteDisplayReviewResponseDataDto>;

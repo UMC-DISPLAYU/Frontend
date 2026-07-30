@@ -1,9 +1,12 @@
-import type { ApiResponseDto, CurrentPageInfoDto, OffsetPageRequestDto } from './common.dto';
+import type {
+  ApiResponseDto,
+  ImageRequestDto,
+  ImageResponseDto,
+  OffsetPageRequestDto,
+} from './common.dto';
 
-export interface ArtworkImageDto {
-  imageUrl: string;
+export interface ArtworkImageDto extends ImageResponseDto {
   isThumbnail: boolean;
-  sortOrder: number;
 }
 
 export interface ArtworkGuestbookUserDto {
@@ -25,7 +28,13 @@ export interface GetArtworkDetailResponseDataDto {
   materialMedia: string;
   size: string;
   point: string;
-  images: ArtworkImageDto[];
+  images: ImageResponseDto[];
+  artistName: string;
+  artistUserId: number;
+  exhibitionInfo: ArtworkPreviewExhibitionInfoDto;
+  likeCount: number;
+  isLiked: boolean;
+  isSaved: boolean;
 }
 
 export type GetArtworkDetailResponseDto = ApiResponseDto<GetArtworkDetailResponseDataDto>;
@@ -156,21 +165,37 @@ export interface UpdateArtworkOrderResponseDataDto {
 export type UpdateArtworkOrderResponseDto = ApiResponseDto<UpdateArtworkOrderResponseDataDto>;
 
 export interface CreateExhibitionArtworkRequestDto {
+  displayId: number;
   artworkName: string;
-  description: string;
-  category: string;
+  content: string;
+  type: string;
   productionYear: number;
-  material: string;
-  size: string | null;
-  appreciationPoint: string | null;
-  isSizeNull: boolean;
+  materialMedia: string;
+  size: string;
+  point: string;
+  images: ImageRequestDto[];
+  artistName?: string;
+  artistUserId?: number;
+  coAuthors: ArtworkCoAuthorsDto;
+  qaHandlerUserId: number;
 }
 
 export interface CreateExhibitionArtworkResponseDataDto {
   artworkId: number;
   displayId: number;
-  mainImageUrls: string[];
-  processImageUrls: string[];
+  artworkName: string;
+  content: string;
+  type: string;
+  productionYear: number;
+  materialMedia: string;
+  size: string;
+  point: string;
+  workSortOrder: number;
+  images: ImageResponseDto[];
+  artistName: string;
+  artistUserId: number;
+  coAuthorCount: number;
+  qaHandlerUserId: number;
 }
 
 export type CreateExhibitionArtworkResponseDto =
@@ -181,21 +206,6 @@ export interface ArtworkCoAuthorsDto {
   rawNames: string[];
 }
 
-export interface SetupArtworkAuthorRequestDto {
-  artistName: string;
-  coAuthors: ArtworkCoAuthorsDto;
-  qaHandlerUserId: number;
-}
-
-export interface SetupArtworkAuthorResponseDataDto {
-  artworkId: number;
-  artistName: string;
-  coAuthorCount: number;
-  qaHandlerUserId: number;
-}
-
-export type SetupArtworkAuthorResponseDto = ApiResponseDto<SetupArtworkAuthorResponseDataDto>;
-
 export interface DeleteArtworkResponseDataDto {
   deletedArtworkId: number;
   message: string;
@@ -203,7 +213,9 @@ export interface DeleteArtworkResponseDataDto {
 
 export type DeleteArtworkResponseDto = ApiResponseDto<DeleteArtworkResponseDataDto>;
 
-export type GetArtworkPreviewRequestDto = Partial<OffsetPageRequestDto>;
+export interface GetArtworkPreviewRequestDto extends Partial<OffsetPageRequestDto> {
+  type?: string;
+}
 
 export interface ArtworkPreviewExhibitionInfoDto {
   displayId: number;
@@ -214,7 +226,7 @@ export interface ArtworkPreviewExhibitionInfoDto {
 
 export interface ArtworkPreviewItemDto {
   artworkId: number;
-  artworkTitle: string;
+  artworkName: string;
   artworkImageUrl: string;
   imageWidth: number;
   imageHeight: number;
@@ -223,7 +235,24 @@ export interface ArtworkPreviewItemDto {
 
 export interface GetArtworkPreviewResponseDataDto {
   artworks: ArtworkPreviewItemDto[];
-  pageInfo: CurrentPageInfoDto;
+  page: number;
+  size: number;
+  isLast: boolean;
 }
 
 export type GetArtworkPreviewResponseDto = ApiResponseDto<GetArtworkPreviewResponseDataDto>;
+
+export interface DisplayArtworkDto {
+  artworkId: number;
+  artworkName: string;
+  artistName: string;
+  artworkImageUrl: string;
+  imageWidth: number;
+  imageHeight: number;
+}
+
+export interface GetDisplayArtworksResponseDataDto {
+  artworks: DisplayArtworkDto[];
+}
+
+export type GetDisplayArtworksResponseDto = ApiResponseDto<GetDisplayArtworksResponseDataDto>;

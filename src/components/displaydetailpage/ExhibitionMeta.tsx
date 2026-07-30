@@ -1,24 +1,71 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Calendar, Clock, Heart, MapPin } from 'lucide-react';
 
-import type { ExhibitionDetail } from '@/types/exhibition';
+import type { DisplayDetailDto } from '@/api/dto/display.dto';
 import { cn } from '@/utils/cn';
 
 import { DisplaySaveButton } from './DisplaySaveButton';
 
 type Props = {
-  exhibition: ExhibitionDetail;
+  display: DisplayDetailDto;
 };
 
-export function ExhibitionMeta({ exhibition: ex }: Props) {
-  const [bookmarked, setBookmarked] = useState(ex.isBookmarked);
-  const likeCount = ex.bookmarkCount;
+function formatDate(start: string, end: string) {
+  if (!start || !end) return '';
+  const [sYear, sMonth, sDay] = start.split('-');
+  const [eYear, eMonth, eDay] = end.split('-');
+  const startFmt = `${sYear}.${sMonth}.${sDay}`;
+  const endFmt = sYear === eYear ? `${eMonth}.${eDay}` : `${eYear}.${eMonth}.${eDay}`;
+  return `${startFmt} - ${endFmt}`;
+}
+
+function formatTime(start: string, end: string) {
+  if (!start || !end) return '';
+  const trim = (t: string) => t.slice(0, 5);
+  return `${trim(start)} - ${trim(end)}`;
+}
+
+function MetaRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Calendar;
+  label: string;
+  value?: string | null;
+}) {
+  if (!value) return null;
 
   return (
-    <section className="px-5 pt-6 pb-4">
-      {/* 제목/하트 */}
-      <div className="flex items-start justify-between gap-2">
+    <div className="flex items-center gap-2 typo-body-sm-regular text-main">
+      <Icon size={13} className="text-faint shrink-0" />
+      <span className="text-faint font-medium w-6 shrink-0">{label}</span>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+export function ExhibitionMeta({ display: ex }: Props) {
+  const [bookmarked, setBookmarked] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsAtTop(window.scrollY <= 10);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
+  const displayedLikeCount = (ex.likeCount ?? 0) + (bookmarked ? 1 : 0);
+
+  return (
+    <section className="px-5 pt-6 pb-4 bg-[#f0f0f3]">
+      {/* 제목 / 하트 */}
+      <div className="flex items-start justify-between pb-1.5 gap-2">
         <h1 className="flex-1 typo-body-xl-bold text-main">{ex.title}</h1>
         <button
           type="button"
@@ -33,32 +80,34 @@ export function ExhibitionMeta({ exhibition: ex }: Props) {
               bookmarked ? 'fill-heart text-heart' : 'fill-none text-sub700',
             )}
           />
-          <span className="typo-body-xs-regular text-main">{likeCount}</span>
+          <span className={cn('typo-body-xs-regular', bookmarked ? 'text-heart' : 'text-sub700')}>
+            {displayedLikeCount}
+          </span>
         </button>
       </div>
-      <p className="typo-body-sm-regular text-sub600">{ex.subtitle}</p>
 
-      {/* 일정/운영/장소 */}
+      {fullSubtitle && <p className="typo-body-sm-regular text-sub600">{fullSubtitle}</p>}
+
+      {/* 일정 / 운영 / 장소 */}
       <div className="mt-5 flex flex-col gap-1.5">
-        <div className="flex items-center gap-2 typo-body-sm-regular">
-          <Calendar size={13} className="text-faint shrink-0" />
-          <span className="text-faint font-medium w-6 shrink-0">일정</span>
-          <span>{ex.period}</span>
-        </div>
-        <div className="flex items-center gap-2 typo-body-sm-regular">
-          <Clock size={13} className="text-faint shrink-0" />
-          <span className="text-faint font-medium w-6 shrink-0">운영</span>
-          <span>{ex.hours}</span>
-        </div>
-        <div className="flex items-center gap-2 typo-body-sm-regular">
-          <MapPin size={13} className="text-faint shrink-0" />
-          <span className="text-faint font-medium w-6 shrink-0">장소</span>
-          <span>{ex.location}</span>
-        </div>
+        <MetaRow
+          icon={Calendar}
+          label="일정"
+          value={formatDate(ex.period?.startDate, ex.period?.endDate)}
+        />
+        <MetaRow
+          icon={Clock}
+          label="운영"
+          value={formatTime(ex.period?.startTime, ex.period?.endTime)}
+        />
+        <MetaRow icon={MapPin} label="장소" value={ex.location?.placeName} />
       </div>
-      <div className="px-1 pt-10">
-        <DisplaySaveButton />
-      </div>
+
+      {!isAtTop && (
+        <div className="px-1 pt-10">
+          <DisplaySaveButton />
+        </div>
+      )}
     </section>
   );
 }
