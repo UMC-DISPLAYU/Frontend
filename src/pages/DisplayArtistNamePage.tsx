@@ -41,12 +41,9 @@ export function DisplayArtistNamePage() {
     <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-6">
         <section className="flex flex-col gap-1.5">
-          <h2 className="typo-body-md-bold text-main">
-            이 전시에서 사용할 작가명을 입력해주세요
-          </h2>
+          <h2 className="typo-body-md-bold text-main">이 전시에서 사용할 작가명을 입력해주세요</h2>
           <p className="typo-body-xs-regular text-hint">
-            대표자와 팀원이 서로를 쉽게 확인하고, 작품 등록 시 기본 작가명으로 사용할
-            이름이에요.
+            대표자와 팀원이 서로를 쉽게 확인하고, 작품 등록 시 기본 작가명으로 사용할 이름이에요.
           </p>
         </section>
 
@@ -90,8 +87,8 @@ export function DisplayArtistNamePage() {
             <circle cx="8" cy="5" r="0.85" fill="currentColor" />
           </svg>
           <p className="typo-body-xs-regular text-hint">
-            입력한 작가명은 전시 팀원 목록, 전시작 등록자 표시, Q&A 담당자 지정에 사용되어
-            실명 사용을 권장해요. 작품 등록 시 해당 작가명으로 입력돼요.
+            입력한 작가명은 전시 팀원 목록, 전시작 등록자 표시, Q&A 담당자 지정에 사용되어 실명
+            사용을 권장해요. 작품 등록 시 해당 작가명으로 입력돼요.
           </p>
         </div>
       </div>

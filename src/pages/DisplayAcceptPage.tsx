@@ -51,9 +51,7 @@ export function DisplayAcceptPage() {
             </svg>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <h1 className="typo-body-xl-bold text-center text-main">
-              전시 참여가 완료되었어요
-            </h1>
+            <h1 className="typo-body-xl-bold text-center text-main">전시 참여가 완료되었어요</h1>
             <p className="typo-body-xs-regular text-center text-faint">
               이제 이 전시가 내 전시 관리에 추가돼요.
             </p>
@@ -112,8 +110,8 @@ export function DisplayAcceptPage() {
                   <circle cx="8" cy="5" r="0.85" fill="currentColor" />
                 </svg>
                 <p className="typo-body-xs-regular text-hint">
-                  인증 전에도 전시 콘텐츠는 추가할 수 있어요. 작품을 등록하려면 학교 이메일
-                  인증이 필요해요.
+                  인증 전에도 전시 콘텐츠는 추가할 수 있어요. 작품을 등록하려면 학교 이메일 인증이
+                  필요해요.
                 </p>
               </div>
             </div>
@@ -122,14 +120,13 @@ export function DisplayAcceptPage() {
       </div>
 
       <div className="flex flex-col gap-2 px-5 pb-8 pt-4">
-          <button
-            type="button"
-            onClick={handleGoManage}
-            className="typo-body-sm-semibold w-full rounded-xl border border-line-soft bg-card py-3.5 text-main"
-          >
-            내 전시 관리로 이동
-          </button>
-
+        <button
+          type="button"
+          onClick={handleGoManage}
+          className="typo-body-sm-semibold w-full rounded-xl border border-line-soft bg-card py-3.5 text-main"
+        >
+          내 전시 관리로 이동
+        </button>
       </div>
     </div>
   );

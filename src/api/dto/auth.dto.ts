@@ -16,6 +16,10 @@ export interface LoginRequestDto {
   idToken: string;
 }
 
+export interface OAuthAuthorizationUrlResponseDto {
+  authorizationUrl: string;
+}
+
 //기존 사용자 응답
 export interface ExistingUserLoginResponseDataDto {
   isNewUser: false;
@@ -50,14 +54,10 @@ export interface SignupRequestDto {
 export interface SignupResponseDataDto {
   user: AuthUserDto;
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export type SignupResponseDto = ApiResponseDto<SignupResponseDataDto>;
-
-export interface RefreshTokenRequestDto {
-  refreshToken: string;
-}
 
 export interface RefreshTokenResponseDataDto {
   accessToken: string;
@@ -66,7 +66,7 @@ export interface RefreshTokenResponseDataDto {
 export type RefreshTokenResponseDto = ApiResponseDto<RefreshTokenResponseDataDto>;
 
 export interface LogoutRequestDto {
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export type LogoutResponseDto = ApiResponseDto<null>;
