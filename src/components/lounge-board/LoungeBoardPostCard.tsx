@@ -29,7 +29,7 @@ export function LoungeBoardPostCard({ post, tagLabel }: Props) {
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <h3 className="typo-body-sm-bold text-main">{post.title}</h3>
+          <h3 className="typo-body-sm-bold text-main truncate">{post.title}</h3>
 
           {post.images && post.images.length > 0 && (
             <div className="flex gap-1">

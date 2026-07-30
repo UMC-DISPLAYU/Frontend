@@ -16,7 +16,13 @@ export const LoungeBoardDetailPage = () => {
   const isValidCategory = isLoungeCategoryKey(category);
   const review = id ? LOUNGE_BOARD_DETAILS[id] : undefined;
   const isValidPost = isValidCategory && review && review.category === category;
+  const [prevId, setPrevId] = useState(id);
   const [comments, setComments] = useState(review?.comments ?? []);
+
+  if (id !== prevId) {
+    setPrevId(id);
+    setComments(review?.comments ?? []);
+  }
 
   return (
     <div className="w-full max-w-105 mx-auto h-dvh bg-page flex flex-col">
