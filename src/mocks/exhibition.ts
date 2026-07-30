@@ -1,4 +1,3 @@
-import type { HomeExhibitionDto } from '@/api/dto';
 import type {
   ArtworkDetail,
   ArtworkItem,
@@ -98,28 +97,32 @@ export const EXHIBITION_DETAILS: Record<string, ExhibitionDetail> = {
 
 export const DU_PICK_ITEMS: DuPickItem[] = [
   {
-    id: '1',
-    name: '색과 형태, 우리가 마주한 순간들',
-    date: '2026.05.23 – 05.30',
-    location: '중앙대학교 301관',
+    id: 1,
+    title: '색과 형태, 우리가 마주한 순간들',
+    date: '2026.05.23 - 05.30',
+    location: '중앙대학교 310관',
+    bannerImageUrl: '/images/dupick1.png',
   },
   {
-    id: '2',
-    name: '빛과 그림자, 경계 위의 시간들',
-    date: '2026.06.01 – 06.10',
-    location: '홍익대학교 현대미술관',
+    id: 2,
+    title: '빛과 궤적, 경계를 넘어서는 울림',
+    date: '2026.05.09 - 05.17',
+    location: '중앙대학교 310관',
+    bannerImageUrl: '/images/dupick2.png',
   },
   {
-    id: '3',
-    name: '정지된 움직임, 그 사이의 공간',
-    date: '2026.06.14 – 06.20',
-    location: '서울대학교 미술관',
+    id: 3,
+    title: '시간을 깨뜨리는 푸른 울림',
+    date: '2026.03.20 - 03.29',
+    location: '중앙대학교 310관',
+    bannerImageUrl: '/images/dupick3.png',
   },
   {
-    id: '4',
-    name: '기억의 층위, 쌓인 감각들',
-    date: '2026.06.25 – 07.05',
-    location: '국립현대미술관 서울',
+    id: 4,
+    title: 'Support Your Local City',
+    date: '2025.12.12 - 12.21',
+    location: '중앙대학교 310관',
+    bannerImageUrl: '/images/dupick4.png',
   },
 ];
 

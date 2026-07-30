@@ -57,7 +57,6 @@ export const useHome = () =>
     queries: [
       graduationDisplaysQuery(),
       closingSoonDisplaysQuery(closingSoonDisplaysParams),
-      duPicksQuery(),
       homeArtworkPreviewQuery(),
       homeLoungePostsQuery(),
     ],

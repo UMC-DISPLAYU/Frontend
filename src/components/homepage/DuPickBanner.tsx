@@ -3,14 +3,16 @@ import { useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import type { DuPickDto } from '@/api/dto';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
+import type { DuPickItem } from '@/types/exhibition';
+import { cn } from '@/utils/cn';
 
 type Props = {
-  items: DuPickDto[];
+  items: DuPickItem[];
+  className?: string;
 };
 
-export function DuPickBanner({ items }: Props) {
+export function DuPickBanner({ items, className }: Props) {
   const navigate = useNavigate();
   const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: items.length,
@@ -27,7 +29,7 @@ export function DuPickBanner({ items }: Props) {
   if (items.length === 0) return null;
 
   return (
-    <section className="pb-7">
+    <section className={cn('pb-7', className)}>
       <div className="px-4 mb-2.5 flex items-center justify-between">
         <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
           <span>DU Pick</span>
@@ -45,7 +47,11 @@ export function DuPickBanner({ items }: Props) {
       <div className="px-4">
         <div
           {...handlers}
-          className="relative h-128.25 overflow-hidden bg-[#D1D5DB] select-none touch-pan-y cursor-grab active:cursor-grabbing"
+          className={cn(
+            'relative h-128.25 overflow-hidden bg-[#D1D5DB] select-none touch-pan-y cursor-grab',
+            'shadow-[2px_4px_18px_0px_rgba(67,0,209,0.08),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]',
+            isDragging && 'cursor-grabbing',
+          )}
         >
           <div
             className="flex h-full w-full"
@@ -54,24 +60,31 @@ export function DuPickBanner({ items }: Props) {
               transition: isDragging ? 'none' : 'transform 300ms ease-out',
             }}
           >
-            {items.map((item, i) => (
-              <div key={item.duPickId || i} className="relative h-full w-full shrink-0">
-                {item.bannerImageUrl && (
-                  <img
-                    src={item.bannerImageUrl}
-                    alt={item.title}
-                    draggable={false}
-                    className="absolute inset-0 h-full w-full object-cover select-none"
-                  />
-                )}
-                <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/20 to-transparent pointer-events-none" />
+            {items.map((item, i) => {
+              const displayTitle = item.title || item.name || '';
 
-                <div className="absolute bottom-9 left-7 right-4 pointer-events-none">
-                  <p className="mb-1.5 typo-body-xl-bold text-white">{item.title}</p>
-                  <p className="typo-body-xs-regular text-faint">{item.subtitle}</p>
+              return (
+                <div key={item.id || i} className="relative h-full w-full shrink-0">
+                  {item.bannerImageUrl && (
+                    <img
+                      src={item.bannerImageUrl}
+                      alt={displayTitle}
+                      draggable={false}
+                      className="absolute inset-0 h-full w-full object-cover select-none"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-linear-to-b from-zinc-300/0 via-transparent to-zinc-800/95 pointer-events-none" />
+
+                  <div className="absolute bottom-9 left-5 right-4 pointer-events-none flex flex-col gap-0.5">
+                    <p className="typo-body-xl-bold text-neutral-50">{displayTitle}</p>
+                    <div className="flex items-center gap-2 typo-body-xs-regular text-neutral-400">
+                      {item.date && <span>{item.date}</span>}
+                      {item.location && <span>{item.location}</span>}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="absolute bottom-3.5 inset-x-0 z-10 flex items-center justify-center gap-1.5">
@@ -84,9 +97,10 @@ export function DuPickBanner({ items }: Props) {
                   e.stopPropagation();
                   setActiveIndex(i);
                 }}
-                className={`w-1.75 h-1.75 rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200 ${
-                  i === activeIndex ? 'bg-line-active' : 'bg-[#667281]'
-                }`}
+                className={cn(
+                  'w-1.75 h-1.75 rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200',
+                  i === activeIndex ? 'bg-line-active' : 'bg-[#667281]',
+                )}
               />
             ))}
           </div>
