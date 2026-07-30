@@ -68,6 +68,7 @@ export const useDeleteUserMe = () => {
   return useMutation({
     mutationFn: deleteUserMe,
     onSuccess: () => {
+      localStorage.removeItem('accessToken');
       queryClient.clear();
     },
   });

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { Check, ChevronLeft, Info, X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { ApiError } from '@/api/axios';
 import type { AgreementDto } from '@/api/dto';
@@ -848,7 +848,6 @@ export function OnboardingPage() {
     privacy: false,
     location: false,
   });
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const agreementsQuery = useAgreements();
   const signup = useSignup();
@@ -858,12 +857,6 @@ export function OnboardingPage() {
 
   const completeSignup = async (nickname: string) => {
     setError('');
-    const signupToken = searchParams.get('signupToken');
-
-    if (!signupToken) {
-      setError('회원가입 토큰을 확인할 수 없어요. 다시 로그인해주세요.');
-      return;
-    }
 
     const agreedTerms = (['service', 'privacy', 'location'] as const)
       .filter((key) => terms[key])
@@ -885,12 +878,9 @@ export function OnboardingPage() {
 
     try {
       const result = await signup.mutateAsync({
-        body: {
-          nickname,
-          agreements: agreedTerms,
-          isOver14: terms.over14,
-        },
-        signupToken,
+        nickname,
+        agreements: agreedTerms,
+        isOver14: terms.over14,
       });
 
       localStorage.setItem('accessToken', result.accessToken);

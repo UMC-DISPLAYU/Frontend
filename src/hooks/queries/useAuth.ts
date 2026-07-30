@@ -25,8 +25,7 @@ export const useSignup = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ body, signupToken }: { body: SignupRequestDto; signupToken: string | null }) =>
-      signup(body, signupToken),
+    mutationFn: (body: SignupRequestDto) => signup(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
     },
@@ -49,6 +48,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: (body: LogoutRequestDto) => logout(body),
     onSettled: () => {
+      localStorage.removeItem('accessToken');
       queryClient.clear();
     },
   });
