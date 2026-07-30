@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import { Search } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import type { SearchDisplaysRequestDto } from '@/api/dto';
@@ -7,7 +8,6 @@ import type { SearchDisplaysRequestDto } from '@/api/dto';
 import cancelIcon from '../assets/cancel.svg';
 import filterIcon from '../assets/filter.svg';
 import filterSelectedDotIcon from '../assets/filter-selected-dot.svg';
-import searchIcon from '../assets/search.svg';
 import {
   DEFAULT_FILTER_STATE,
   ExhibitionCard,
@@ -72,7 +72,6 @@ export function SearchPage() {
   }
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<FilterTab>('전시분야');
 
   const searchDisplayParams = useMemo(
     () => createSearchDisplayParams(query, filters),
@@ -93,8 +92,8 @@ export function SearchPage() {
   const resetFilters = () => setFilters(DEFAULT_FILTER_STATE);
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-[402px] flex-col bg-gray-100">
-      <div className="flex flex-col bg-gray-100 px-5 pt-5">
+    <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-[402px] flex-col bg-page">
+      <div className="flex flex-col bg-page px-5 pt-5">
         <div className="flex h-[62px] flex-col justify-start gap-1 self-stretch">
           <h1 className="text-slate-900 text-3xl font-['Aldrich'] leading-10">Explore</h1>
           <p className="text-xs text-neutral-500">저장한 전시와 작품, 작가를 다시 꺼내보세요.</p>
@@ -108,7 +107,7 @@ export function SearchPage() {
             type="text"
             value={query}
           />
-          <img alt="" className="size-5" src={searchIcon} />
+          <Search className="text-hint" size={20} strokeWidth={2} />
         </div>
 
         <div className="-mx-5 flex h-11 items-end gap-5 border-b border-zinc-300 px-5">
@@ -143,10 +142,7 @@ export function SearchPage() {
             <button
               aria-label="필터"
               className="relative flex size-7 shrink-0 items-center justify-center rounded-sm outline outline-1 -outline-offset-1 outline-stone-300"
-              onClick={() => {
-                setModalTab('전시분야');
-                setModalOpen(true);
-              }}
+              onClick={() => setModalOpen(true)}
               type="button"
             >
               <img alt="" className="size-3.5" src={filterIcon} />
@@ -217,12 +213,11 @@ export function SearchPage() {
 
       {modalOpen ? (
         <FilterModal
-          activeTab={modalTab}
           filters={filters}
-          onActiveTabChange={setModalTab}
           onApply={() => setModalOpen(false)}
           onClose={() => setModalOpen(false)}
           onFilterChange={updateFilter}
+          onReset={resetFilters}
           onResetAndApply={() => {
             resetFilters();
             setModalOpen(false);
