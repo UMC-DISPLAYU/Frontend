@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { ChevronDown, Heart, Lock, SquarePen } from 'lucide-react';
+import { Heart, Lock } from 'lucide-react';
 
 import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
 import type {
@@ -242,7 +242,7 @@ function QuestionCard({
   const [likeCount, setLikeCount] = useState(question.likeCount ?? 12);
 
   const replyStatus = question.reply ? '답변완료' : '답변대기';
-  const isSecretForUser = !question.isPublic && !isArtistView;
+  const isSecretForUser = !question.isPublic && !isArtistView && !question.isMyQuestion;
 
   const handleLike = () => {
     setLiked((prev) => !prev);

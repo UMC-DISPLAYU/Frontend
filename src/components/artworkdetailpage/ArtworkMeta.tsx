@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import type { ArtworkDetail } from '@/types/exhibition';
+import { cn } from '@/utils/cn';
 
 type Props = {
   artwork: ArtworkDetail;
@@ -13,6 +14,8 @@ type Props = {
 export function ArtworkMeta({ artwork }: Props) {
   const navigate = useNavigate();
   const [isAtTop, setIsAtTop] = useState(true);
+  const [liked, setLiked] = useState(artwork.isBookmarked ?? false);
+  const [likeCount, setLikeCount] = useState(artwork.bookmarkCount ?? 0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,16 +26,36 @@ export function ArtworkMeta({ artwork }: Props) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleLike = () => {
+    setLiked((prev) => !prev);
+    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+  };
+
   return (
     <div className="bg-page px-5 pt-5 pb-6">
       {/* 제목/하트 */}
       <div className="flex items-start justify-between gap-3">
         <h1 className="typo-body-2xl-bold text-main">{artwork.artworkName}</h1>
         <div className="flex flex-col items-center shrink-0">
-          <button type="button" aria-label="좋아요" className="cursor-pointer">
-            <Heart strokeWidth={1.2} className="size-6" />
+          <button
+            type="button"
+            aria-label="좋아요"
+            onClick={handleLike}
+            className="cursor-pointer active:scale-95 transition-transform"
+          >
+            <Heart
+              strokeWidth={1.2}
+              className={cn(
+                'size-6 transition-colors duration-200',
+                liked ? 'fill-heart text-heart' : 'fill-none text-main',
+              )}
+            />
           </button>
-          <span className="typo-body-xs-regular text-main mt-1">{artwork.bookmarkCount}</span>
+          <span
+            className={cn('typo-body-xs-regular mt-1 transition-colors duration-200', 'text-main')}
+          >
+            {likeCount}
+          </span>
         </div>
       </div>
 

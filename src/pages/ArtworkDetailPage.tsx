@@ -27,12 +27,19 @@ export function ArtworkDetailPage() {
 
   const artwork = artworkId ? ARTWORK_DETAILS[artworkId] : undefined;
 
+  const [prevArtworkId, setPrevArtworkId] = useState(artworkId);
   const [reviews, setReviews] = useState<GuestbookReview[]>(() =>
     artworkId ? GUESTBOOK_REVIEWS[artworkId] || [] : [],
   );
   const [questions, setQuestions] = useState<GuestbookQuestion[]>(() =>
     artworkId ? GUESTBOOK_QUESTIONS[artworkId] || [] : [],
   );
+
+  if (prevArtworkId !== artworkId) {
+    setPrevArtworkId(artworkId);
+    setReviews(artworkId ? GUESTBOOK_REVIEWS[artworkId] || [] : []);
+    setQuestions(artworkId ? GUESTBOOK_QUESTIONS[artworkId] || [] : []);
+  }
 
   const handleSendGuestbook = (content: string, isPrivate: boolean) => {
     if (activeSubTab === 'review') {
