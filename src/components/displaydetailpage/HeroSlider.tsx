@@ -37,10 +37,8 @@ export function HeroSlider({ images, onBack }: Props) {
         ))}
       </div>
 
-      {/* 뒤로가기 버튼 */}
       <BackButton id="display-back-btn" onClick={onBack} className="absolute top-4 left-4 z-20" />
 
-      {/* 인디케이터 — 고정 크기 원형 점 */}
       {images.length > 1 && (
         <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2">
           {images.map((_, idx) => (
