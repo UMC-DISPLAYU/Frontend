@@ -3,6 +3,7 @@ import { Bookmark } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 export function DisplaySaveButton({ className = '', id }: { className?: string; id?: string }) {
+  // TODO: Add exhibition bookmark API logic here later
   return (
     <button
       type="button"

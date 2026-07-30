@@ -39,13 +39,7 @@ function ProfilePhotoField({
           </>
         )}
       </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFile}
-      />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </>
   );
 }
@@ -65,12 +59,7 @@ export function EditBasicInfoPage() {
   return (
     <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          aria-label="뒤로가기"
-          className="-ml-1"
-        >
+        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>

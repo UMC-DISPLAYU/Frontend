@@ -241,3 +241,18 @@ export interface GetArtworkPreviewResponseDataDto {
 }
 
 export type GetArtworkPreviewResponseDto = ApiResponseDto<GetArtworkPreviewResponseDataDto>;
+
+export interface DisplayArtworkDto {
+  artworkId: number;
+  artworkName: string;
+  artistName: string;
+  artworkImageUrl: string;
+  imageWidth: number;
+  imageHeight: number;
+}
+
+export interface GetDisplayArtworksResponseDataDto {
+  artworks: DisplayArtworkDto[];
+}
+
+export type GetDisplayArtworksResponseDto = ApiResponseDto<GetDisplayArtworksResponseDataDto>;
