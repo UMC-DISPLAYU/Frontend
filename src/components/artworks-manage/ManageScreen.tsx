@@ -2,23 +2,34 @@ import { MoreHorizontal } from 'lucide-react';
 
 import type { Work } from '@/types/artworkManage';
 
-import { BottomBar, Header, PrimaryButton, Thumbnail } from './common';
+import { BottomBar, Header, PrimaryButton, Thumbnail } from './Common';
 
 interface ManageScreenProps {
   works: Work[];
   onOpenSheet: (work: Work) => void;
   onEditOrder: () => void;
+  onAddArtwork: () => void;
   onBack: () => void;
 }
 
-export function ManageScreen({ works, onOpenSheet, onEditOrder, onBack }: ManageScreenProps) {
+export function ManageScreen({
+  works,
+  onOpenSheet,
+  onEditOrder,
+  onAddArtwork,
+  onBack,
+}: ManageScreenProps) {
   return (
     <>
       <Header title="전시작 관리" onBack={onBack} />
 
       <div className="flex items-end justify-between px-5 pt-3 pb-2">
         <p className="typo-body-md-bold text-main">전체 작품 {works.length}개</p>
-        <button type="button" onClick={onEditOrder} className="typo-body-xs-regular text-main underline">
+        <button
+          type="button"
+          onClick={onEditOrder}
+          className="typo-body-xs-regular text-main underline"
+        >
           순서 편집
         </button>
       </div>
@@ -27,17 +38,16 @@ export function ManageScreen({ works, onOpenSheet, onEditOrder, onBack }: Manage
         {works.map((work) => (
           <li
             key={work.id}
-            className="flex items-start justify-between gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]"
+            className="flex h-[110px] items-center justify-between gap-3 rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]"
           >
-            <div className="flex min-w-0 gap-3">
-              <Thumbnail src={work.thumbnail} className="size-18 h-24 w-16" />
+            <div className="flex min-w-0 items-center gap-3">
+              <Thumbnail src={work.thumbnail} />
               <div className="flex min-w-0 flex-col gap-2.5">
                 <p className="typo-body-md-bold truncate text-main">{work.title}</p>
                 <div>
-                  <p className="typo-body-xs-regular text-sub700">{work.org}</p>
-                  <p className="typo-body-xs-regular text-hint">{work.date}</p>
+                  <p className="typo-body-xs-regular text-sub700">{work.artist}</p>
                 </div>
-                <p className="typo-body-xxs-regular text-faint">{work.place}</p>
+                <p className="typo-body-xxs-regular text-faint">등록자 {work.owner}</p>
               </div>
             </div>
 
@@ -54,7 +64,7 @@ export function ManageScreen({ works, onOpenSheet, onEditOrder, onBack }: Manage
       </ul>
 
       <BottomBar>
-        <PrimaryButton>전시작 추가</PrimaryButton>
+        <PrimaryButton onClick={onAddArtwork}>전시작 추가</PrimaryButton>
       </BottomBar>
     </>
   );

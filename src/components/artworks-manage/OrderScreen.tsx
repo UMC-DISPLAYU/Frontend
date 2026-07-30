@@ -3,7 +3,7 @@ import { GripVertical } from 'lucide-react';
 import { useDragReorder } from '@/hooks/useDragReorder';
 import type { Work } from '@/types/artworkManage';
 
-import { BottomBar, Header, PrimaryButton, Thumbnail } from './common';
+import { BottomBar, Header, PrimaryButton, Thumbnail } from './Common';
 import { STEP } from './constants';
 
 interface OrderScreenProps {
@@ -41,7 +41,7 @@ export function OrderScreen({ works, onReorder, onBack }: OrderScreenProps) {
             <li
               key={work.id}
               style={active ? { transform: `translateY(${offset}px) scale(1.02)` } : undefined}
-              className={`flex h-28 shrink-0 items-center justify-between gap-3 rounded-2xl bg-card py-3.5 pr-2 pl-4 ${
+              className={`flex h-[110px] shrink-0 items-center justify-between gap-3 rounded-[18px] bg-card py-3.5 pr-2 pl-4 ${
                 active
                   ? 'relative z-10 shadow-[8px_8px_24px_0px_rgba(67,0,209,0.14)]'
                   : 'shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] transition-transform duration-150 motion-reduce:transition-none'
@@ -52,7 +52,7 @@ export function OrderScreen({ works, onReorder, onBack }: OrderScreenProps) {
                 <div className="flex min-w-0 flex-col gap-2.5">
                   <p className="typo-body-md-bold truncate text-main">{work.title}</p>
                   <p className="typo-body-xs-regular text-sub700">{work.artist}</p>
-                  <p className="typo-body-xxs-regular text-faint">등록자 · {work.owner}</p>
+                  <p className="typo-body-xxs-regular text-faint">등록자 {work.owner}</p>
                 </div>
               </div>
 
@@ -83,7 +83,7 @@ export function OrderScreen({ works, onReorder, onBack }: OrderScreenProps) {
       </ul>
 
       <BottomBar>
-        <PrimaryButton>전시작 추가</PrimaryButton>
+        <PrimaryButton onClick={onBack}>순서 저장하기</PrimaryButton>
       </BottomBar>
     </>
   );

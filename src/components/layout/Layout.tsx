@@ -8,7 +8,11 @@ function LayoutContent() {
   const hideChromePaths = [
     '/display/',
     '/artwork/',
+    '/artworks-manage',
+    '/artworks-register',
+    '/exhibition/',
     '/exhibition-register/',
+    '/team/manage',
     '/lounge/review/post',
   ];
   const shouldHideChrome = hideChromePaths.some((path) => location.pathname.startsWith(path));

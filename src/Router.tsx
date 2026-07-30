@@ -1,19 +1,20 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { Layout } from './components/layout';
-import { ArtistNameSetup } from './pages/ArtistNameSetup';
-import ArtworksManagePage from './pages/ArtworksManagePage';
 import { AnswerPage } from './pages/AnswerPage';
+import { ArtistNameSetup } from './pages/ArtistNameSetup';
+import { ArtworkRegisterPage } from './pages/ArtworkRegisterPage';
+import { ArtworksManagePage } from './pages/ArtworksManagePage';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayAcceptPage } from './pages/DisplayAcceptPage';
 import { DisplayArtistNamePage } from './pages/DisplayArtistNamePage';
-import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
-import DisplayManagePage from './pages/DisplayManagePage';
-import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
-import { ExhibitionManage } from './pages/ExhibitioionManagePage';
+import { DisplayDetailPage } from './pages/DisplayDetailPage';
+import { DisplayManagePage } from './pages/DisplayManagePage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
+import { ExhibitionManage } from './pages/ExhibitioionManagePage';
+import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { Homepage } from './pages/Homepage';
@@ -28,9 +29,9 @@ import { MyReviewPage } from './pages/MyReviewPage';
 import { NotFound } from './pages/NotFound';
 import { PolicyPage } from './pages/PolicyPage';
 import { SearchPage } from './pages/SearchPage';
+import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
-import { SettingPage } from './pages/Settingpage';
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
       { path: 'display/manage', element: <DisplayManagePage /> },
       { path: 'display/contents-manage', element: <DisplayContentsManagePage /> },
       { path: 'artworks-manage', element: <ArtworksManagePage /> },
+      { path: 'artworks-register', element: <ArtworkRegisterPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },

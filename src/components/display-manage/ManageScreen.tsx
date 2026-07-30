@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 
-import { BottomBar, Header, Screen } from './common';
+import { BottomBar, Header, Screen } from './Common';
 import { ExhibitionCard } from './ExhibitionCard';
 
 export function ManageScreen({

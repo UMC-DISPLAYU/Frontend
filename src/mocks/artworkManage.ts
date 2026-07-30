@@ -8,7 +8,7 @@ export const INITIAL_WORKS: Work[] = [
     org: '중앙대학교 디자인학부',
     date: '05.28 - 06.05',
     place: '중앙대학교 310관 갤러리',
-    owner: 'sangjun24',
+    owner: '고상준 (sangjun24)',
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ export const INITIAL_WORKS: Work[] = [
     org: '중앙대학교 디자인학부',
     date: '05.28 - 06.05',
     place: '중앙대학교 310관 갤러리',
-    owner: 'sangjun24',
+    owner: '고상준 (sangjun24)',
   },
   {
     id: 3,
@@ -26,7 +26,7 @@ export const INITIAL_WORKS: Work[] = [
     org: '중앙대학교 디자인학부',
     date: '05.28 - 06.05',
     place: '중앙대학교 310관 갤러리',
-    owner: 'sangjun24',
+    owner: '고상준 (sangjun24)',
   },
   {
     id: 4,
@@ -35,6 +35,6 @@ export const INITIAL_WORKS: Work[] = [
     org: '중앙대학교 디자인학부',
     date: '05.28 - 06.05',
     place: '중앙대학교 310관 갤러리',
-    owner: 'sangjun24',
+    owner: '고상준 (sangjun24)',
   },
 ];

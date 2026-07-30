@@ -10,24 +10,34 @@ import {
   VisibilitySection,
 } from '@/components/exhibition-manage';
 import { type VisibilityType } from '@/constants/visibility';
+import type { ExhibitionItem } from '@/types/mypage';
 
 export function ExhibitionManage() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
   const exhibition = {
+    id: String(state?.displayId ?? state?.id ?? 1),
+    status: state?.status ?? '전시예정',
     title: state?.placeName || '형태의 침묵',
     org: '중앙대학교 디자인학부',
-    dates: state?.period || '05.28 - 06.05',
+    period: state?.period || '05.28 - 06.05',
     place: state?.address || '중앙대학교 310관 갤러리',
     thumbnail: 'https://placehold.co/130x162',
   };
 
   const artworkVisibility: VisibilityType = state?.artworkVisibility ?? 'startDate';
+  const workExhibition: ExhibitionItem = exhibition;
 
   const goVisibility = () => {
     navigate('/exhibition/visibility', {
       state: { ...state, artworkVisibility },
+    });
+  };
+
+  const goDisplayWork = () => {
+    navigate('/display/manage', {
+      state: { initialExhibition: workExhibition },
     });
   };
 
@@ -36,7 +46,7 @@ export function ExhibitionManage() {
       <PageHeader title="전시관리" onBack={() => navigate(-1)} />
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3">
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-5">
           <ExhibitionCard {...exhibition} />
 
           <Section
@@ -44,18 +54,13 @@ export function ExhibitionManage() {
             description="팀원과 함께 전시와 작품을 함께 준비해보세요."
           >
             <div className="flex gap-3">
-              <StatPill label="전시" value="3" />
+              <StatPill label="전시 콘텐츠" value="3" />
               <StatPill label="작품" value="2" />
             </div>
-            <OutlineButton onClick={() => navigate('/display/manage')}>
-              전시 작업으로 이동
-            </OutlineButton>
+            <OutlineButton onClick={goDisplayWork}>전시 작업으로 이동</OutlineButton>
           </Section>
 
-          <Section
-            title="팀원관리"
-            description="닉네임 또는 초대 링크로 팀원을 초대할 수 있어요."
-          >
+          <Section title="팀원관리" description="닉네임 또는 초대 링크로 팀원을 초대할 수 있어요.">
             <div className="flex gap-3">
               <StatPill label="참여팀원" value="2" />
               <StatPill label="초대대기" value="1" />
@@ -92,7 +97,10 @@ export function ExhibitionManage() {
 
       <BottomButtonBar>
         <div className="flex gap-2.5">
-          <button type="button" className="typo-body-sm-bold h-11 w-24 shrink-0 rounded-xl bg-bt-gray text-main">
+          <button
+            type="button"
+            className="typo-body-sm-bold h-11 w-24 shrink-0 rounded-xl bg-bt-gray text-main"
+          >
             임시저장
           </button>
           <button
