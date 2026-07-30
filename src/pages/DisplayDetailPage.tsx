@@ -6,6 +6,7 @@ import {
   ArtworkTab,
   BottomFixedBar,
   DetailTabNav,
+  DisplaySaveButton,
   ExhibitionMeta,
   HeroSlider,
   IntroTab,
@@ -77,6 +78,7 @@ export function DisplayDetailPage() {
       {activeTab === 'intro' && <IntroTab display={display} />}
       {activeTab === 'artwork' && <ArtworkTab displayId={display.displayId} />}
       {activeTab === 'review' && <ReviewTab displayId={display.displayId} />}
+      <BottomFixedBar button={<DisplaySaveButton />} />
     </div>
   );
 }
