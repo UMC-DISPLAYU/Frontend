@@ -1,37 +1,25 @@
-import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
+import { ExternalLink, Menu, RefreshCcw, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { TABS } from '@/mocks/mypage';
-import type { TabKey } from '@/types/mypage';
+import { useMyPageStore } from '@/stores/useMyPageStore';
 
 interface MyPageHeaderProps {
-  activeTab: TabKey;
-  onTabChange: (key: TabKey) => void;
-  onOpenMenu: () => void;
-  onToggleView: () => void;
   onVerifyArtist?: () => void;
-  onRegister?: () => void;
-  onManage?: () => void;
   onShare?: () => void;
   profile: UserProfile;
   isArtistVerified: boolean;
-  isArtistView: boolean;
 }
 
 export function MyPageHeader({
-  activeTab,
-  onTabChange,
-  onToggleView,
   onVerifyArtist,
-  onRegister,
-  onManage,
   onShare,
   profile,
   isArtistVerified,
-  isArtistView,
 }: MyPageHeaderProps) {
   const navigate = useNavigate();
+  const { activeTab, isArtistView, setActiveTab, toggleArtistView } = useMyPageStore();
   return (
     <header className="shrink-0 bg-white">
       <div className="px-5 pt-2 flex justify-between items-center">
@@ -40,19 +28,22 @@ export function MyPageHeader({
             My Page
           </h1>
           {isArtistVerified && isArtistView && (
-            <span className="px-1.5 py-0.5 bg-blue-100 rounded-sm">
-              <span className="text-blue-600 text-[10px] font-normal font-['Pretendard'] leading-3">
+            <span className="inline-flex items-center px-2.5 py-1 bg-blue-100 rounded-sm">
+              <span className="text-tag-blue typo-body-xs-regular">
                 작가인증
               </span>
             </span>
           )}
         </div>
         <div className="flex items-center gap-3.5 text-neutral-900">
-          <button type="button" aria-label="전환" onClick={onToggleView}>
+          <button type="button" aria-label="전환" onClick={toggleArtistView}>
             <RefreshCcw className="size-5" />
           </button>
           <button type="button" aria-label="메뉴" onClick={() => navigate('/setting/')}>
             <Menu className="size-5" />
+          </button>
+          <button type="button" aria-label="공유" onClick={onShare}>
+            <Share className="size-5" />
           </button>
         </div>
       </div>
@@ -131,20 +122,29 @@ export function MyPageHeader({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={onRegister}
+              onClick={() => navigate('/exhibition-register')}
               className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
             >
               <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
-                전시/작품등록
+                전시등록
               </span>
             </button>
             <button
               type="button"
-              onClick={onManage}
+              onClick={() => navigate('/display/register')}
               className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
             >
               <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
-                전시/작품관리
+                작품등록
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/exhibition/manage')}
+              className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
+            >
+              <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
+                전시관리
               </span>
             </button>
             <button
@@ -153,7 +153,7 @@ export function MyPageHeader({
               onClick={onShare}
               className="size-11 shrink-0 bg-neutral-800 rounded-xl flex justify-center items-center"
             >
-              <Upload color="#ffffff" className="size-5" />
+              <Share color="#ffffff" className="size-5" />
             </button>
           </div>
         )}
@@ -168,7 +168,7 @@ export function MyPageHeader({
             <button
               key={tab.key}
               type="button"
-              onClick={() => onTabChange(tab.key)}
+              onClick={() => setActiveTab(tab.key)}
               className={`relative flex-1 h-11 flex justify-center pt-3 text-sm font-['Pretendard'] leading-5 ${
                 isActive ? 'text-neutral-900 font-bold' : 'text-neutral-400 font-normal'
               }`}

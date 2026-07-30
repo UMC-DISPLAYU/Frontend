@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { getMyArtistProfile, getUserMe } from '@/api/endpoints/user';
+
 import ExhibitionIcon from '../assets/exhibit.svg';
 import AvatarImage from '../assets/Icon (1).svg';
 import SchoolIcon from '../assets/image 3666.svg';
@@ -20,39 +22,10 @@ export interface UserProfile {
 }
 
 export interface UserProfileResponse {
+  id: number;
   isArtistVerified: boolean;
   profile: UserProfile;
 }
-
-// Mock API 함수 - 나중에 실제 API 호출로 교체
-const fetchUserProfile = async (): Promise<UserProfileResponse> => {
-  // TODO: 실제 API 호출로 교체
-  // const response = await fetch('/api/user/profile');
-  // return response.json();
-
-  // Mock: 작가 인증된 사용자 데이터
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        isArtistVerified: true, // false로 변경하면 일반 사용자 UI
-        profile: {
-          name: '김지원 님',
-          avatar: AvatarImage,
-          // 작가 인증된 경우 (isArtistVerified: true)
-          school: '중앙대학교',
-          schoolIcon: SchoolIcon,
-          field: '회화 · 일러스트',
-          fieldIcon: FieldIcon,
-          exhibit: '4',
-          exhibitionIcon: ExhibitionIcon,
-          bio: '빛과 색의 경계를 탐구하며, 일상에서 발견한 순간들을 작품으로 표현합니다.',
-          portfolioUrl: 'portfolio.sangjun.com',
-          caption: '내가 저장한 작품 확인하기', // 일반 뷰로 전환했을 때 사용
-        },
-      });
-    }, 300);
-  });
-};
 
 export function useUserProfile() {
   const [data, setData] = useState<UserProfileResponse | null>(null);
@@ -65,8 +38,40 @@ export function useUserProfile() {
     const loadProfile = async () => {
       try {
         setIsLoading(true);
-        const profileData = await fetchUserProfile();
+
+        // 기본 사용자 정보 가져오기
+        const userMe = await getUserMe();
+
+        // 작가 인증 여부 확인 후 작가 프로필 가져오기
+        let artistProfile = null;
+        if (userMe.isVerified) {
+          try {
+            artistProfile = await getMyArtistProfile();
+          } catch (err) {
+            // 작가 프로필이 없을 수 있음 (인증은 됐지만 프로필 미작성)
+            console.warn('Artist profile not found:', err);
+          }
+        }
+
         if (!cancelled) {
+          const profileData: UserProfileResponse = {
+            id: userMe.id,
+            isArtistVerified: userMe.isVerified && !!artistProfile,
+            profile: {
+              name: `${userMe.name} 님`,
+              avatar: AvatarImage, // TODO: 실제 프로필 이미지 URL
+              school: artistProfile?.schoolName,
+              schoolIcon: artistProfile?.schoolName ? SchoolIcon : undefined,
+              field: artistProfile?.fields.join(' · '),
+              fieldIcon: artistProfile?.fields.length ? FieldIcon : undefined,
+              exhibit: undefined, // TODO: 전시 수 API 연동 필요
+              exhibitionIcon: undefined,
+              bio: undefined, // TODO: bio API 필드 추가 필요
+              portfolioUrl: artistProfile?.portfolioUrl || undefined,
+              caption: '내가 저장한 작품 확인하기',
+            },
+          };
+
           setData(profileData);
           setError(null);
         }

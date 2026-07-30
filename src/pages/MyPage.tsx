@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import {
   ArtistCard,
   ArtworkCard,
@@ -15,24 +13,16 @@ import {
   MY_PARTICIPATED_EXHIBITIONS,
   MY_REGISTERED_ARTWORKS,
 } from '@/mocks/mypage';
-import type { TabKey } from '@/types/mypage';
+import { useMyPageStore } from '@/stores/useMyPageStore';
 
 export function MyPage() {
-  const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isArtistView, setIsArtistView] = useState(true);
+  const { activeTab, isSettingsOpen, isArtistView, setIsSettingsOpen, toggleArtistView } =
+    useMyPageStore();
 
   const { data: userData, isLoading, error } = useUserProfile();
 
   const handleSelectSetting = () => {
     setIsSettingsOpen(false);
-  };
-
-  const handleToggleView = () => {
-    setIsArtistView((prev) => !prev);
-    if (isArtistView && activeTab === 'artist') {
-      setActiveTab('exhibition');
-    }
   };
 
   if (isLoading) {
@@ -53,30 +43,38 @@ export function MyPage() {
     );
   }
 
-  const { isArtistVerified, profile } = userData;
+  const { id, isArtistVerified, profile } = userData;
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/artist/${id}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${profile.name} 작가님`,
+          url
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert('링크가 복사되었습니다');
+      }
+    } catch (err) {
+      // 사용자가 공유를 취소한 경우 등
+      console.error('Share failed:', err);
+    }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex flex-col">
       <MyPageHeader
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onOpenMenu={() => setIsSettingsOpen(true)}
-        onToggleView={handleToggleView}
         onVerifyArtist={() => {
           // TODO: 작가 인증 플로우 연결
+          // 1. 학교 이메일 인증이 안된 경우 → 이메일 인증 페이지로 이동
+          // 2. 이메일 인증이 된 경우 → 작가 프로필 설정 페이지(/edit-artist-profile)로 이동
         }}
-        onRegister={() => {
-          // TODO: 전시/작품 등록 플로우 연결
-        }}
-        onManage={() => {
-          // TODO: 전시/작품 관리 플로우 연결
-        }}
-        onShare={() => {
-          // TODO: 프로필 공유 동작 연결
-        }}
+        onShare={handleShare}
         profile={profile}
         isArtistVerified={isArtistVerified}
-        isArtistView={isArtistView}
       />
 
       <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
@@ -107,11 +105,7 @@ export function MyPage() {
         )}
       </section>
 
-      <SettingsSheet
-        open={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        onSelect={handleSelectSetting}
-      />
+      <SettingsSheet onSelect={handleSelectSetting} />
     </div>
   );
 }
