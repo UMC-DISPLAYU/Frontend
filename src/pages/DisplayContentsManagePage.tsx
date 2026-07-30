@@ -56,7 +56,7 @@ function Thumbnail({ src }: { src?: string }) {
         <img src={src} alt="" className="size-full object-cover" />
       ) : (
         <div className="flex size-full flex-col justify-between bg-dark p-2 text-white">
-          <span className="font-['Aldrich'] text-[15px] leading-[0.95]">CREATIVE POSTER EXHIB</span>
+          <span className="typo-heading-xl leading-none">CREATIVE POSTER EXHIB</span>
           <span className="h-4 w-10 bg-card/80" />
         </div>
       )}

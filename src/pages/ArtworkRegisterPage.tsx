@@ -77,7 +77,7 @@ function UploadTile({
         <img src={imageUrl} alt={label} className="size-full object-cover" />
       ) : (
         <>
-          <span className="grid size-10 place-items-center rounded-full bg-[#f3f4f6]">
+          <span className="grid size-10 place-items-center rounded-full bg-box100">
             <ImagePlus className="size-[18px] text-line" strokeWidth={1.8} />
           </span>
           <span className="typo-body-xs-regular text-main">{label}</span>
@@ -346,7 +346,7 @@ function AuthorSelectCard({
         selected && 'border border-line-active',
       )}
     >
-      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#f3f4f6]">
+      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-box100">
         <UserRound className="size-6 text-line" strokeWidth={1.7} />
       </span>
       <div className="min-w-0 flex-1">
@@ -385,7 +385,7 @@ function CollaboratorTeamCard({
         verified ? 'border border-line bg-card' : 'bg-bt-gray',
       )}
     >
-      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#f3f4f6]">
+      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-box100">
         <UserRound className="size-6 text-line" strokeWidth={1.7} />
       </span>
       <div className="min-w-0 flex-1">
@@ -422,7 +422,7 @@ function PersonCard({
 }) {
   const content = (
     <>
-      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#f3f4f6]">
+      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-box100">
         <UserRound className="size-6 text-line" strokeWidth={1.7} />
       </span>
       <div className="min-w-0 flex-1">
