@@ -2,24 +2,29 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ManageScreen, WorkScreen } from '@/components/display-manage';
-import { MY_PARTICIPATED_EXHIBITIONS } from '@/mocks/mypage';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useDisplayRole } from '@/hooks/useDisplayRole';
 import type { ExhibitionItem } from '@/types/mypage';
-
-const MOCK_WORK = {
-  contents: [
-    { id: 'c1', title: '전시 카드 · 브로셔 · 가이드', meta: '1개 등록' },
-    { id: 'c2', title: '전시장 내부 사진', meta: '3개 등록' },
-    { id: 'c3', title: '준비 과정 / BTS', meta: '0개' },
-  ],
-  artworks: [{ id: 'a1', title: '흐름의 기억', artist: '이준호', image: null }],
-};
 
 type UserRole = 'owner' | 'member-verified' | 'member-unverified';
 
 export default function DisplayManagePage() {
   const [selected, setSelected] = useState<ExhibitionItem | null>(null);
-  const [userRole] = useState<UserRole>('owner');
   const navigate = useNavigate();
+
+  // Fetch data
+  const { data: myDisplays = [], isLoading: isLoadingDisplays } = useMyDisplays();
+  const { data: currentUser } = useUserMe();
+  const { data: displayDetail, isLoading: isLoadingDetail } = useDisplayDetail(
+    selected ? Number(selected.id) : Number.NaN,
+  );
+  const { data: artworks = [] } = useDisplayArtworks(selected ? Number(selected.id) : Number.NaN);
+
+  // Calculate user role
+  const userRole = useDisplayRole(displayDetail, currentUser);
 
   const handleVerifyArtist = () => {
     console.log('작가 인증 페이지로 이동');
@@ -29,20 +34,53 @@ export default function DisplayManagePage() {
     navigate('/artworks-manage');
   };
 
+  // Transform API data to match WorkScreen expected format
+  const workData = displayDetail
+    ? {
+        contents:
+          displayDetail.contentCategories?.map((cat) => ({
+            id: String(cat.categoryId),
+            title: cat.name,
+            meta: `${cat.contents.length}개 등록`,
+          })) || [],
+        artworks:
+          artworks.map((art) => ({
+            id: art.id,
+            title: art.title,
+            artist: art.artist,
+            image: art.image,
+          })) || [],
+      }
+    : null;
+
+  if (isLoadingDisplays) {
+    return (
+      <div className="w-full max-w-md mx-auto h-dvh bg-page flex items-center justify-center">
+        <div>로딩 중...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
       {selected ? (
-        <WorkScreen
-          ex={selected}
-          work={MOCK_WORK}
-          onBack={() => setSelected(null)}
-          userRole={userRole}
-          onVerifyArtist={handleVerifyArtist}
-          onManageArtworks={handleManageArtworks}
-        />
+        isLoadingDetail ? (
+          <div className="w-full max-w-md mx-auto h-dvh bg-page flex items-center justify-center">
+            <div>로딩 중...</div>
+          </div>
+        ) : workData ? (
+          <WorkScreen
+            ex={selected}
+            work={workData}
+            onBack={() => setSelected(null)}
+            userRole={userRole || 'member-unverified'}
+            onVerifyArtist={handleVerifyArtist}
+            onManageArtworks={handleManageArtworks}
+          />
+        ) : null
       ) : (
         <ManageScreen
-          exhibitions={MY_PARTICIPATED_EXHIBITIONS}
+          exhibitions={myDisplays}
           onOpen={setSelected}
           onBack={() => window.history.back()}
           onRegister={() => navigate('/exhibition-register')}

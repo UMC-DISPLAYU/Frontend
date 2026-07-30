@@ -3,6 +3,7 @@ export * from './artist';
 export * from './auth';
 export * from './display';
 export * from './displayArtwork';
+export * from './displayContent';
 export * from './file';
 export * from './health';
 export * from './lounge';

@@ -3,20 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, MoreHorizontal, X } from 'lucide-react';
 
 import { BottomBar, Header, Screen } from '@/components/display-manage/common';
+import InteriorPhotos from '@/components/display-manage/InteriorPhotos';
 
 type Content = {
   id: number;
   title: string;
   description: string;
-  count: string; // 예: "사진 12 / 20"
+  photoCount: number;
   thumbnail?: string;
 };
 
 const INITIAL_CONTENTS: Content[] = [
-  { id: 1, title: '내부사진', description: '전시 공간과 현장 분위기를 담는 공유 앨범이에요.', count: '사진 12 / 20' },
-  { id: 2, title: '작품 클로즈업', description: '작품 디테일을 가까이에서 담은 사진 모음이에요.', count: '사진 8 / 20' },
-  { id: 3, title: '오프닝 스케치', description: '오프닝 현장의 순간을 기록한 앨범이에요.', count: '사진 5 / 20' },
-  { id: 4, title: '작가 노트', description: '작가가 직접 남긴 작업 기록과 코멘트예요.', count: '사진 3 / 20' },
+  { id: 1, title: '내부사진', description: '전시 공간과 현장 분위기를 담는 공유 앨범이에요.', photoCount: 0 },
+  { id: 2, title: '비하인드', description: '전시가 완성되기 전의 설치와 준비 과정을 담아요.', photoCount: 0 },
+  { id: 3, title: '안내자료', description: '관람을 돕는 안내 자료를 모아두는 공간이에요.', photoCount: 0 },
+  { id: 4, title: '작가 노트', description: '작품과 전시에 담긴 생각을 사진으로 기록해요.', photoCount: 0 },
 ];
 
 const BOTTOM_CTA_LABEL = '콘텐츠 추가';
@@ -37,26 +38,31 @@ function Thumbnail({ src }: { src?: string }) {
 function ContentCard({
   content,
   onMore,
+  onClick,
   dimmed = false,
   moreRef,
 }: {
   content: Content;
   onMore: (e: React.MouseEvent) => void;
+  onClick?: () => void;
   dimmed?: boolean;
   moreRef?: React.Ref<HTMLButtonElement>;
 }) {
   return (
     <div
+      onClick={onClick}
       className={`flex h-28 items-center gap-3 overflow-hidden rounded-2xl bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] ${
         dimmed ? 'opacity-40' : ''
-      }`}
+      } ${onClick ? 'cursor-pointer' : ''}`}
     >
       <Thumbnail src={content.thumbnail} />
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
         <p className="typo-body-md-bold truncate text-main">{content.title}</p>
         <div className="flex flex-col gap-4">
           <p className="typo-body-xs-regular line-clamp-2 text-sub700">{content.description}</p>
-          <p className="typo-body-xxs-regular text-faint">{content.count}</p>
+          <p className="typo-body-xxs-regular text-faint">
+            사진 {content.photoCount} / 20
+          </p>
         </div>
       </div>
       <button
@@ -227,7 +233,11 @@ export function DisplayContentsManagePage() {
   const [menuId, setMenuId] = useState<number | null>(null);
   const [editing, setEditing] = useState<Content | null>(null);
   const [deleting, setDeleting] = useState<Content | null>(null);
+  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // TODO: displayId를 실제 값으로 교체
+  const displayId = 1;
 
   // 바깥 클릭/스크롤 시 팝오버 닫기
   useEffect(() => {
@@ -256,6 +266,25 @@ export function DisplayContentsManagePage() {
     setDeleting(null);
   };
 
+  const handlePhotoCountChange = (categoryId: number, count: number) => {
+    setContents((prev) =>
+      prev.map((c) => (c.id === categoryId ? { ...c, photoCount: count } : c)),
+    );
+  };
+
+  // 상세 화면 표시 중이면 InteriorPhotos 렌더링
+  if (selectedContent) {
+    return (
+      <InteriorPhotos
+        title={selectedContent.title}
+        displayId={displayId}
+        categoryId={selectedContent.id}
+        onBack={() => setSelectedContent(null)}
+        onPhotoCountChange={(count) => handlePhotoCountChange(selectedContent.id, count)}
+      />
+    );
+  }
+
   return (
     <Screen>
       <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
@@ -281,6 +310,7 @@ export function DisplayContentsManagePage() {
             <ContentCard
               content={content}
               dimmed={menuId !== null && menuId !== content.id}
+              onClick={() => setSelectedContent(content)}
               onMore={(e) => {
                 e.stopPropagation();
                 setMenuId((prev) => (prev === content.id ? null : content.id));
