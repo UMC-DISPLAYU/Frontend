@@ -78,7 +78,7 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
           className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
           aria-label="이미지 업로드"
         >
-          <div className="size-10 bg-gray-100 rounded-full flex items-center justify-center">
+          <div className="size-10 bg-box rounded-full flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <rect
                 x="2.25"

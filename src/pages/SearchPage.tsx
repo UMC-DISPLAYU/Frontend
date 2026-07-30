@@ -19,7 +19,10 @@ import {
   type FilterTab,
   getFilterOptionValue,
 } from '../components/search';
+import { ExhibitionMap } from '../components/search/ExhibitionMap';
+import { ExhibitionMapCard } from '../components/search/ExhibitionMapCard';
 import { useSearchDisplays } from '../hooks/queries/useDisplayBrowse';
+import { type NearbyParams, useNearbyDisplays } from '../hooks/useNearbyDisplays';
 
 type ExploreTab = 'list' | 'map';
 
@@ -44,6 +47,8 @@ export function SearchPage() {
 
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<ExploreTab>('list');
+  const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
+  const [nearbyParams, setNearbyParams] = useState<NearbyParams | null>(null);
 
   const paramType = urlSearchParams.get('type');
   const paramStatus = urlSearchParams.get('status');
@@ -80,6 +85,13 @@ export function SearchPage() {
 
   const { data, isError, isLoading } = useSearchDisplays(searchDisplayParams);
   const exhibitions = data?.exhibitions ?? [];
+
+  const nearbyParamsWithSearch = useMemo(
+    () => (nearbyParams ? { ...nearbyParams, searchWord: query.trim() || null } : null),
+    [nearbyParams, query],
+  );
+  const { data: nearbyData } = useNearbyDisplays(nearbyParamsWithSearch);
+  const nearbyExhibitions = nearbyData ?? [];
 
   const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string]>).filter(
     ([, value]) => value !== '전체',
@@ -209,7 +221,37 @@ export function SearchPage() {
             )}
           </div>
         </div>
-      ) : null}
+      ) : (
+        <div className="relative flex flex-1 flex-col">
+          <div className="h-[400px] w-full">
+            <ExhibitionMap
+              exhibitions={nearbyExhibitions}
+              onBoundsChange={setNearbyParams}
+              onSelect={setSelectedMapId}
+              selectedId={selectedMapId}
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto bg-gray-100 px-5 pt-4 pb-24">
+            {nearbyExhibitions.length === 0 ? (
+              <p className="flex items-center justify-center py-8 text-center text-sm text-neutral-400">
+                이 지역에 전시가 없습니다
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {nearbyExhibitions.map((exhibition) => (
+                  <ExhibitionMapCard
+                    exhibition={exhibition}
+                    key={exhibition.displayId}
+                    onClick={() => setSelectedMapId(exhibition.displayId)}
+                    selected={selectedMapId === exhibition.displayId}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {modalOpen ? (
         <FilterModal
