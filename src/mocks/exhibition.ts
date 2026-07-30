@@ -94,56 +94,6 @@ export const EXHIBITION_DETAILS: Record<string, ExhibitionDetail> = {
   },
 };
 
-// ─── 홈 카드 데이터 (id는 EXHIBITION_DETAILS와 일치) ────────────────────────
-
-export const GRADUATION_EXHIBITIONS: HomeExhibitionDto[] = [
-  {
-    displayId: 1,
-    title: '색과 형태, 우리가 마주한 순간들',
-    startedAt: '2026-05-23',
-    endedAt: '2026-05-30',
-    posterImageUrl: 'https://picsum.photos/seed/ex1/300/400',
-  },
-  {
-    displayId: 2,
-    title: 'VISUAL WAVE',
-    startedAt: '2026-06-02',
-    endedAt: '2026-06-10',
-    posterImageUrl: 'https://picsum.photos/seed/vw1/300/400',
-  },
-  {
-    displayId: 3,
-    title: 'NEW OFFICE',
-    startedAt: '2026-06-02',
-    endedAt: '2026-06-10',
-    posterImageUrl: 'https://picsum.photos/seed/no1/300/400',
-  },
-];
-
-export const DEADLINE_EXHIBITIONS: HomeExhibitionDto[] = [
-  {
-    displayId: 1,
-    title: '색과 형태, 우리가 마주한 순간들',
-    startedAt: '2026-05-23',
-    endedAt: '2026-05-30',
-    posterImageUrl: 'https://picsum.photos/seed/ex2/300/400',
-  },
-  {
-    displayId: 2,
-    title: 'VISUAL WAVE',
-    startedAt: '2026-06-02',
-    endedAt: '2026-06-10',
-    posterImageUrl: 'https://picsum.photos/seed/vw2/300/400',
-  },
-  {
-    displayId: 3,
-    title: 'NEW OFFICE',
-    startedAt: '2026-06-02',
-    endedAt: '2026-06-10',
-    posterImageUrl: 'https://picsum.photos/seed/no2/300/400',
-  },
-];
-
 // ─── 홈 피드 데이터 ────────────────────────────────────────────────────────
 
 export const DU_PICK_ITEMS: DuPickItem[] = [
