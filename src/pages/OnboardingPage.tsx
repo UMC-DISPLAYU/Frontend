@@ -850,7 +850,7 @@ function DoneScreen({ onNext }: { onNext: () => void }) {
 }
 
 export function OnboardingPage() {
-  const [step, setStep] = useState<Step>('intro');
+  const [step, setStep] = useState<Step>('terms');
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyCode>('terms');
   const [error, setError] = useState('');
   const [terms, setTerms] = useState<TermState>({
