@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios';
 
 import type { ApiResponseDto } from '@/api/dto';
+import { useAuthStore } from '@/stores/authStore';
 
 export class ApiError extends Error {
   code?: string;
@@ -19,8 +20,6 @@ export class ApiError extends Error {
   }
 }
 
-const getAccessToken = () => localStorage.getItem('accessToken');
-
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000,
@@ -30,9 +29,10 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use((config) => {
   config.headers.set('Accept', 'application/json');
 
-  const accessToken = getAccessToken();
+  const accessToken = useAuthStore.getState().accessToken;
+  const isSignupRequest = config.url?.includes('/v1/auth/signup');
 
-  if (accessToken && !config.headers.has('Authorization')) {
+  if (accessToken && !isSignupRequest && !config.headers.has('Authorization')) {
     config.headers.set('Authorization', `Bearer ${accessToken}`);
   }
 

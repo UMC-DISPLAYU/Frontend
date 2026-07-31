@@ -15,6 +15,7 @@ import {
   updateNickname,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
 export const useUserMe = () =>
   useQuery({
@@ -68,6 +69,7 @@ export const useDeleteUserMe = () => {
   return useMutation({
     mutationFn: deleteUserMe,
     onSuccess: () => {
+      useAuthStore.getState().clearAccessToken();
       queryClient.clear();
     },
   });
