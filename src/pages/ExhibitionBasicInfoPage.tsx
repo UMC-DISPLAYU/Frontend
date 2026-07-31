@@ -4,7 +4,7 @@ import { Calendar, Clock, MapPin } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { BottomButtonBar, PageHeader } from '@/components/common';
-import { FormField, InputBox } from '@/components/exhibition-basic-info';
+import { AddressSearchModal } from '@/components/exhibition-basic-info';
 import { CalenderSheet } from '@/components/ui/CalenderSheet';
 import { TimeSheet } from '@/components/ui/TimeSheet';
 
@@ -23,6 +23,32 @@ interface DateValue {
 
 type SheetType = 'date' | 'time-start' | 'time-end' | null;
 
+/* 밑줄형 입력 래퍼 */
+function Underline({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex items-center gap-2.5 border-b border-input-border px-3 py-2.5 ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <div className="flex items-center gap-1">
+      <span className="typo-body-sm-bold text-main">{children}</span>
+      {required && <span className="typo-body-xs-regular text-error">*</span>}
+    </div>
+  );
+}
+
 export function ExhibitionBasicInfo() {
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -32,12 +58,29 @@ export function ExhibitionBasicInfo() {
   const [openEnd, setOpenEnd] = useState<TimeValue | null>(null);
   const [placeName, setPlaceName] = useState('');
   const [address, setAddress] = useState('');
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [contact, setContact] = useState('');
   const [notice, setNotice] = useState('');
 
   const [sheet, setSheet] = useState<SheetType>(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   const canNext = period && placeName.trim() && address.trim();
+
+  const timeLabel =
+    openStart && openEnd ? `${openStart.label} - ${openEnd.label}` : (openStart?.label ?? null);
+
+  const handleAddressConfirm = (
+    fullAddress: string,
+    detailAddress: string,
+    lat: number,
+    lng: number,
+  ) => {
+    setAddress(fullAddress);
+    setLatitude(lat);
+    setLongitude(lng);
+  };
 
   const goNext = () => {
     navigate('/exhibition/artist', {
@@ -49,6 +92,8 @@ export function ExhibitionBasicInfo() {
         openHours: openStart && openEnd ? `${openStart.label} - ${openEnd.label}` : '',
         placeName,
         address,
+        latitude,
+        longitude,
         contact,
         notice,
       },
@@ -56,113 +101,126 @@ export function ExhibitionBasicInfo() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
-      <PageHeader title="전시 기본 정보" onBack={() => navigate(-1)} centered />
+    <div className="mx-auto flex h-dvh w-96 flex-col bg-page">
+      <PageHeader title="전시 기본 정보" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3">
         <div className="flex flex-col gap-6">
-          <FormField label="전시기간" required>
-            <button type="button" onClick={() => setSheet('date')} className="w-full">
-              <InputBox>
-                <Calendar className="size-4 shrink-0 text-main" strokeWidth={1} />
-                <span className={`typo-body-xs-regular ${period ? 'text-main' : 'text-faint'}`}>
-                  {period?.label ?? '날짜선택'}
-                </span>
-              </InputBox>
-            </button>
-          </FormField>
-
-          <FormField
-            label="운영시간"
-            description="날짜별 운영 시간이 다르다면 유의사항에 적어주세요."
-          >
-            <div className="flex items-start gap-3">
-              <button type="button" onClick={() => setSheet('time-start')} className="flex-1">
-                <InputBox>
+          {/* 전시기간 · 운영시간 */}
+          <div className="flex items-start gap-3">
+            <div className="flex flex-1 flex-col gap-3">
+              <Label required>전시기간</Label>
+              <button type="button" onClick={() => setSheet('date')} className="w-full">
+                <Underline>
                   <Calendar className="size-4 shrink-0 text-main" strokeWidth={1} />
-                  <span className={`typo-body-xs-regular ${openStart ? 'text-main' : 'text-faint'}`}>
-                    {openStart?.label ?? '시작 시간'}
+                  <span
+                    className={`typo-body-xs-regular truncate ${
+                      period ? 'text-main' : 'text-input-placeholder'
+                    }`}
+                  >
+                    {period?.label ?? '날짜선택'}
                   </span>
-                </InputBox>
-              </button>
-              <button type="button" onClick={() => setSheet('time-end')} className="flex-1">
-                <InputBox>
-                  <Clock className="size-4 shrink-0 text-main" strokeWidth={1} />
-                  <span className={`typo-body-xs-regular ${openEnd ? 'text-main' : 'text-faint'}`}>
-                    {openEnd?.label ?? '종료시간'}
-                  </span>
-                </InputBox>
+                </Underline>
               </button>
             </div>
-          </FormField>
 
-          <FormField label="장소명" required htmlFor="place-name">
-            <InputBox>
+            <div className="flex flex-1 flex-col gap-3">
+              <Label required>운영시간</Label>
+              <button type="button" onClick={() => setSheet('time-start')} className="w-full">
+                <Underline>
+                  <Clock className="size-4 shrink-0 text-main" strokeWidth={1} />
+                  <span
+                    className={`typo-body-xs-regular truncate ${
+                      timeLabel ? 'text-main' : 'text-input-placeholder'
+                    }`}
+                  >
+                    {timeLabel ?? '시간선택'}
+                  </span>
+                </Underline>
+              </button>
+            </div>
+          </div>
+
+          {/* 장소명 */}
+          <div className="flex flex-col gap-3">
+            <Label required>장소명</Label>
+            <Underline>
               <input
                 id="place-name"
                 value={placeName}
                 onChange={(e) => setPlaceName(e.target.value)}
                 placeholder="전시명을 입력해주세요"
-                className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
+                className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
               />
-            </InputBox>
-          </FormField>
+            </Underline>
+          </div>
 
-          <FormField label="주소" required htmlFor="address">
-            <div className="flex items-stretch gap-3">
-              <InputBox className="flex-1">
-                <MapPin className="size-4 shrink-0 text-faint" strokeWidth={1} />
+          {/* 주소 */}
+          <div className="flex flex-col gap-3">
+            <Label required>주소</Label>
+            <div className="flex items-center gap-3">
+              <Underline className="flex-1">
+                <MapPin className="size-4 shrink-0 text-input-placeholder" strokeWidth={1} />
                 <input
                   id="address"
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  readOnly
                   placeholder="주소를 검색해주세요"
-                  className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
+                  className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
                 />
-              </InputBox>
+              </Underline>
               <button
                 type="button"
-                className="w-14 typo-body-xs-bold rounded-lg bg-card px-3 py-2.5 outline outline-1 outline-offset-[-1px] outline-sub600 shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)]"
+                onClick={() => setIsAddressModalOpen(true)}
+                className="typo-body-xs-bold shrink-0 rounded-lg bg-card px-4 py-2.5 text-main outline outline-1 outline-offset-[-1px] outline-sub600"
               >
                 검색
               </button>
             </div>
-          </FormField>
+          </div>
 
-          <FormField
-            label="문의 방법"
-            description="@displayu_oo / example@email.com"
-            htmlFor="contact"
-          >
-            <InputBox>
-              <input
-                id="contact"
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                placeholder="문의 계정 또는 연락처를 입력해주세요"
-                className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
-              />
-            </InputBox>
-          </FormField>
-
-          <FormField
-            label="유의사항"
-            description="날짜별 운영 시간이 다르거나 예약, 출입 안내가 있다면 이곳에 적어주세요."
-            htmlFor="notice"
-          >
-            <InputBox className="items-start">
-              <div className="flex h-28 w-full flex-col justify-between">
-                <textarea
-                  id="notice"
-                  value={notice}
-                  onChange={(e) => setNotice(e.target.value.slice(0, 500))}
-                  placeholder="관람 전 알아두면 좋은 내용을 입력해주세요"
-                  className="typo-body-xs-regular w-full flex-1 resize-none bg-transparent text-main outline-none placeholder:text-faint"
+          {/* 문의 방법 */}
+          <div className="flex flex-col gap-3">
+            <Label>문의 방법</Label>
+            <div className="flex flex-col gap-1.5">
+              <Underline>
+                <input
+                  id="contact"
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  placeholder="문의 계정 또는 연락처를 입력해주세요"
+                  className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
                 />
-                <span className="typo-body-xs-regular self-end text-faint">{notice.length}/500</span>
-              </div>
-            </InputBox>
-          </FormField>
+              </Underline>
+              <p className="typo-body-xxs-regular text-faint">
+                @displayu_oo / example@email.com
+              </p>
+            </div>
+          </div>
+
+          {/* 유의사항 */}
+          <div className="flex flex-col gap-3 pb-8">
+            <Label>유의사항</Label>
+            <div className="flex flex-col gap-1.5">
+              <Underline className="items-start">
+                <div className="flex h-28 w-full flex-col justify-between">
+                  <textarea
+                    id="notice"
+                    value={notice}
+                    onChange={(e) => setNotice(e.target.value.slice(0, 500))}
+                    placeholder="관람 전 알아두면 좋은 내용을 입력해주세요"
+                    className="typo-body-xs-regular w-full flex-1 resize-none bg-transparent text-main outline-none placeholder:text-input-placeholder"
+                  />
+                  <span className="typo-body-xs-regular self-end text-faint">
+                    {notice.length}/500
+                  </span>
+                </div>
+              </Underline>
+              <p className="typo-body-xxs-regular text-faint">
+                날짜별 운영 시간이 다르거나 예약, 출입 안내가 있다면 이곳에 적어주세요.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -191,6 +249,11 @@ export function ExhibitionBasicInfo() {
         value={openEnd}
         subtitle="종료 시간"
         onConfirm={setOpenEnd}
+      />
+      <AddressSearchModal
+        open={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
+        onConfirm={handleAddressConfirm}
       />
     </div>
   );

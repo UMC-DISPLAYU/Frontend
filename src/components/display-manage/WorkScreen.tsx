@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { ChevronRight, Info, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +11,7 @@ import { Header, Screen, SectionTitle } from './Common';
 import { ContentRow } from './ContentRow';
 import { ExhibitionMeta } from './ExhibitionMeta';
 import { InfoBox } from './InfoBox';
+import InteriorPhotos from './InteriorPhotos';
 import { Poster } from './Poster';
 
 interface WorkData {
@@ -34,6 +37,25 @@ export function WorkScreen({
   onManageArtworks: () => void;
 }) {
   const navigate = useNavigate();
+  const [selectedContent, setSelectedContent] = useState<{ id: string; title: string } | null>(null);
+
+  const handlePhotoCountChange = (categoryId: number, count: number) => {
+    // TODO: 사진 개수 업데이트 로직
+    console.log('Photo count changed:', categoryId, count);
+  };
+
+  // 콘텐츠 상세 화면 표시 중이면 InteriorPhotos 렌더링
+  if (selectedContent) {
+    return (
+      <InteriorPhotos
+        title={selectedContent.title}
+        displayId={Number(ex.id)}
+        categoryId={Number(selectedContent.id)}
+        onBack={() => setSelectedContent(null)}
+        onPhotoCountChange={(count) => handlePhotoCountChange(Number(selectedContent.id), count)}
+      />
+    );
+  }
 
   return (
     <Screen>
@@ -54,7 +76,7 @@ export function WorkScreen({
         <div className="flex items-center justify-between mt-6 mb-1">
           <SectionTitle>전시콘텐츠</SectionTitle>
           <button
-            onClick={() => navigate('/display/contents-manage')}
+            onClick={() => navigate('/display/contents-manage', { state: { displayId: ex.id } })}
             className="typo-body-xs-regular flex items-center gap-0.5 border-none bg-transparent text-hint cursor-pointer"
           >
             관리하기 <ChevronRight size={13} />
@@ -62,7 +84,11 @@ export function WorkScreen({
         </div>
         <div className="flex flex-col gap-2">
           {work.contents.map((r) => (
-            <ContentRow key={r.id} row={r} onClick={() => navigate('/display/contents-manage')} />
+            <ContentRow
+              key={r.id}
+              row={r}
+              onClick={() => setSelectedContent({ id: r.id, title: r.title })}
+            />
           ))}
         </div>
 

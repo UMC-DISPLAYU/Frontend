@@ -22,19 +22,26 @@ export function ExhibitionManage() {
   const exhibition = {
     id: String(state?.displayId ?? state?.id ?? 1),
     status: state?.status ?? '전시예정',
-    title: state?.placeName || '형태의 침묵',
-    org: '중앙대학교 디자인학부',
+    title: state?.title || '형태의 침묵',
+    org: state?.school || state?.organizer || '중앙대학교 디자인학부',
     period: state?.period || '05.28 - 06.05',
-    place: state?.address || '중앙대학교 310관 갤러리',
+    place: state?.address || state?.placeName || '중앙대학교 310관 갤러리',
     thumbnail: 'https://placehold.co/130x162',
   };
 
   const artworkVisibility: VisibilityType = state?.artworkVisibility ?? 'startDate';
+  const contentVisibility: VisibilityType = state?.contentVisibility ?? 'startDate';
   const workExhibition: ExhibitionItem = exhibition;
 
   const goVisibility = () => {
     navigate('/exhibition/visibility', {
-      state: { ...state, artworkVisibility },
+      state: {
+        ...state,
+        displayId: exhibition.id,
+        startDate: state?.startDate,
+        artworkVisibility,
+        contentVisibility,
+      },
     });
   };
 
@@ -45,7 +52,7 @@ export function ExhibitionManage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <PageHeader title="전시관리" onBack={() => navigate(-1)} />
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3">
@@ -73,7 +80,12 @@ export function ExhibitionManage() {
             </OutlineButton>
           </Section>
 
-          <VisibilitySection artworkVisibility={artworkVisibility} onSettingsClick={goVisibility} />
+          <VisibilitySection
+            artworkVisibility={artworkVisibility}
+            contentVisibility={contentVisibility}
+            startDate={state?.startDate}
+            onSettingsClick={goVisibility}
+          />
 
           <button
             type="button"
@@ -109,7 +121,19 @@ export function ExhibitionManage() {
           <button
             type="button"
             className="typo-body-sm-bold h-11 flex-1 rounded-xl bg-dark text-white"
-            onClick={() => navigate('/')}
+            onClick={() =>
+              navigate('/exhibition/register-complete', {
+                state: {
+                  title: state?.title || exhibition.title,
+                  school: state?.school,
+                  department: state?.department,
+                  organizer: state?.organizer,
+                  placeName: state?.placeName || exhibition.place,
+                  artworkVisibility,
+                  contentVisibility,
+                },
+              })
+            }
           >
             등록하기
           </button>

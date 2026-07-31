@@ -35,7 +35,7 @@ export function DisplayAcceptPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-16">
         <div className="flex flex-col items-center gap-1.5">
           <div className="flex size-14 items-center justify-center rounded-full bg-[var(--palette-green-50)] text-[var(--palette-green-500)]">

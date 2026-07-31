@@ -24,7 +24,7 @@ export function TeamManage() {
   );
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <PageHeader title="팀원 초대/관리" onBack={() => navigate(-1)} centered />
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3 pb-8">

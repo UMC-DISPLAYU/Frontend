@@ -82,14 +82,14 @@ export function DisplayManagePage() {
 
   if (isLoadingDisplays && !selected) {
     return (
-      <div className="w-full max-w-md mx-auto h-dvh bg-page flex items-center justify-center">
+      <div className="w-96 mx-auto h-dvh bg-page flex items-center justify-center">
         <div>로딩 중...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       {selected ? (
         workData ? (
           <WorkScreen

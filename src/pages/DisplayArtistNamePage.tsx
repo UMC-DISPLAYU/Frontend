@@ -38,7 +38,7 @@ export function DisplayArtistNamePage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-6">
         <section className="flex flex-col gap-1.5">
           <h2 className="typo-body-md-bold text-main">이 전시에서 사용할 작가명을 입력해주세요</h2>

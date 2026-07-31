@@ -36,6 +36,7 @@ import { SearchPage } from './pages/SearchPage';
 import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
+import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
 
 export const router = createBrowserRouter([
   {
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
       { path: 'artworks-manage', element: <ArtworksManagePage /> },
       { path: 'artworks-register', element: <ArtworkRegisterPage /> },
       { path: 'exhibition-register', element: <ExhibitionRegister /> },
+      { path: 'exhibition/register-complete', element: <ExhibitionRegisterComplete /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },
       { path: 'exhibition/artist', element: <ArtistNameSetup /> },

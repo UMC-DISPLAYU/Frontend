@@ -225,7 +225,7 @@ function RegisterActionSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 mx-auto flex w-full max-w-md items-end bg-black/40"
+      className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40"
       onClick={onClose}
     >
       <div
@@ -269,7 +269,7 @@ function DirectCollaboratorSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 mx-auto flex w-full max-w-md items-end bg-black/40"
+      className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40"
       onClick={onClose}
     >
       <div
@@ -1119,7 +1119,7 @@ export function ArtworkRegisterPage() {
   );
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-md flex-col bg-page">
+    <div className="mx-auto flex h-dvh w-96 flex-col bg-page">
       {step === 'choice' && renderChoice()}
       {step === 'proxyTeamAuthor' && renderProxyTeamAuthor()}
       {step === 'proxyAuthor' && renderProxyAuthor()}

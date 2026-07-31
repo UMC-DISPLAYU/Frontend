@@ -1,13 +1,26 @@
 import { ChevronRight } from 'lucide-react';
 
-import { VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
+import { formatStartDate, VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
 
 interface VisibilitySectionProps {
   artworkVisibility: VisibilityType;
+  contentVisibility: VisibilityType;
+  startDate?: string | Date | null;
   onSettingsClick: () => void;
 }
 
-export function VisibilitySection({ artworkVisibility, onSettingsClick }: VisibilitySectionProps) {
+export function VisibilitySection({
+  artworkVisibility,
+  contentVisibility,
+  startDate,
+  onSettingsClick,
+}: VisibilitySectionProps) {
+  const startDateLabel = formatStartDate(startDate);
+
+  const getVisibilityLabel = (visibility: VisibilityType) => {
+    return VISIBILITY_LABEL[visibility];
+  };
+
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -21,12 +34,14 @@ export function VisibilitySection({ artworkVisibility, onSettingsClick }: Visibi
         <div className="flex items-start justify-between border-b border-line-soft py-3">
           <span className="typo-body-sm-regular text-main">전시작</span>
           <span className="typo-body-sm-regular text-main">
-            {VISIBILITY_LABEL[artworkVisibility]}
+            {getVisibilityLabel(artworkVisibility)}
           </span>
         </div>
         <div className="flex items-start justify-between py-3">
           <span className="typo-body-sm-regular text-main">전시 콘텐츠</span>
-          <span className="typo-body-sm-regular text-main">전시 등록과 동시에 공개</span>
+          <span className="typo-body-sm-regular text-main">
+            {getVisibilityLabel(contentVisibility)}
+          </span>
         </div>
       </div>
     </section>

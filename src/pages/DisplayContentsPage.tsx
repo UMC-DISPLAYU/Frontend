@@ -20,7 +20,7 @@ export function DisplayContentsPage() {
   // 유효하지 않은 ID는 즉시 에러 상태로 처리
   if (displayId === null) {
     return (
-      <div className="w-full max-w-md mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-page">
+      <div className="w-96 mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-page">
         <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
         <button
           type="button"
@@ -35,7 +35,7 @@ export function DisplayContentsPage() {
 
   if (isPending) {
     return (
-      <div className="w-full max-w-md mx-auto min-h-dvh flex items-center justify-center bg-page">
+      <div className="w-96 mx-auto min-h-dvh flex items-center justify-center bg-page">
         <p className="typo-body-sm-regular text-faint">불러오는 중...</p>
       </div>
     );
@@ -43,7 +43,7 @@ export function DisplayContentsPage() {
 
   if (isError || !display) {
     return (
-      <div className="w-full max-w-md mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-page">
+      <div className="w-96 mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-page">
         <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
         <button
           type="button"
@@ -67,7 +67,7 @@ export function DisplayContentsPage() {
   // 선택된 카테고리의 사진들을 아래로 나열하는 뷰
   if (selectedCategory) {
     return (
-      <div className="w-full max-w-md mx-auto min-h-dvh bg-page flex flex-col">
+      <div className="w-96 mx-auto min-h-dvh bg-page flex flex-col">
         {/* 헤더 */}
         <header className="sticky top-0 z-20 bg-page h-14 px-5 flex items-center justify-between">
           <button
@@ -109,7 +109,7 @@ export function DisplayContentsPage() {
 
   // 기본 전시 콘텐츠 카테고리 목록 뷰
   return (
-    <div className="w-full max-w-md mx-auto min-h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto min-h-dvh bg-page flex flex-col">
       {/* 헤더 */}
       <header className="sticky top-0 z-20 bg-page h-14 px-5 flex items-center justify-between">
         <button

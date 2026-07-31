@@ -1,18 +1,60 @@
 import { useState } from 'react';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { updateDisplay } from '@/api/endpoints/display';
+import { queryKeys } from '@/api/queryKeys';
 import { BottomButtonBar, PageHeader } from '@/components/common';
 import { RadioOption } from '@/components/visibility-settings';
-import {
-  formatStartDate,
-  VISIBILITY_LABEL,
-  type VisibilityType,
-} from '@/constants/visibility';
+import { formatStartDate, VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
 
 interface VisibilityState {
+  displayId?: number;
   startDate?: string | Date | null;
   artworkVisibility?: VisibilityType;
+  contentVisibility?: VisibilityType;
+}
+
+interface VisibilitySectionProps {
+  title: string;
+  value: VisibilityType;
+  onChange: (next: VisibilityType) => void;
+  startDateLabel: string | null;
+}
+
+function VisibilitySection({ title, value, onChange, startDateLabel }: VisibilitySectionProps) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <span className="typo-body-sm-bold text-main">{title}</span>
+        <span className="typo-body-xs-regular text-hint">등록된 전시작 전체에 일괄 적용돼요.</span>
+      </div>
+
+      <div role="radiogroup" aria-label={title} className="flex flex-col gap-2">
+        <RadioOption
+          checked={value === 'immediate'}
+          onSelect={() => onChange('immediate')}
+          title={VISIBILITY_LABEL.immediate}
+          description="등록 즉시 관람자에게 노출돼요."
+        />
+        <RadioOption
+          checked={value === 'startDate'}
+          onSelect={() => onChange('startDate')}
+          title={VISIBILITY_LABEL.startDate}
+          description={
+            startDateLabel ? `${startDateLabel} 부터 노출돼요.` : '전시 시작일부터 노출돼요.'
+          }
+        />
+        <RadioOption
+          checked={value === 'hidden'}
+          onSelect={() => onChange('hidden')}
+          title={VISIBILITY_LABEL.hidden}
+          description="관람자에게 노출되지 않아요."
+        />
+      </div>
+    </section>
+  );
 }
 
 export function VisibilitySettings() {
@@ -21,20 +63,25 @@ export function VisibilitySettings() {
 
   const startDateLabel = formatStartDate(state?.startDate);
 
-  const [selected, setSelected] = useState<VisibilityType>(state?.artworkVisibility ?? 'startDate');
+  const [artworkVisibility, setArtworkVisibility] = useState<VisibilityType>(
+    state?.artworkVisibility ?? 'startDate',
+  );
+  const [contentVisibility, setContentVisibility] = useState<VisibilityType>(
+    state?.contentVisibility ?? 'startDate',
+  );
 
   const save = () => {
     navigate('/exhibition/manage', {
       replace: true,
-      state: { ...state, artworkVisibility: selected },
+      state: { ...state, artworkVisibility, contentVisibility },
     });
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
-      <PageHeader title="공개 설정" onBack={() => navigate(-1)} centered />
+    <div className="mx-auto flex h-dvh w-96 flex-col bg-page">
+      <PageHeader title="공개 설정" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3 pb-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3 pb-6">
         <div className="flex flex-col gap-1">
           <h2 className="typo-body-md-bold text-main">공개 시점 설정</h2>
           <p className="typo-body-xs-regular text-hint">
@@ -44,35 +91,20 @@ export function VisibilitySettings() {
           </p>
         </div>
 
-        <section className="mt-8 flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="typo-body-sm-bold text-main">전시작 공개 시점</span>
-            <span className="typo-body-xs-regular text-hint">등록된 전시작 전체에 일괄 적용돼요.</span>
-          </div>
-
-          <div role="radiogroup" className="flex flex-col gap-2">
-            <RadioOption
-              checked={selected === 'immediate'}
-              onSelect={() => setSelected('immediate')}
-              title={VISIBILITY_LABEL.immediate}
-              description="등록 즉시 관람자에게 노출돼요."
-            />
-            <RadioOption
-              checked={selected === 'startDate'}
-              onSelect={() => setSelected('startDate')}
-              title={VISIBILITY_LABEL.startDate}
-              description={
-                startDateLabel ? `${startDateLabel} 부터 노출돼요.` : '전시 시작일부터 노출돼요.'
-              }
-            />
-            <RadioOption
-              checked={selected === 'hidden'}
-              onSelect={() => setSelected('hidden')}
-              title={VISIBILITY_LABEL.hidden}
-              description="관람자에게 노출되지 않아요."
-            />
-          </div>
-        </section>
+        <div className="mt-8 flex flex-col gap-8">
+          <VisibilitySection
+            title="전시작 공개 시점"
+            value={artworkVisibility}
+            onChange={setArtworkVisibility}
+            startDateLabel={startDateLabel}
+          />
+          <VisibilitySection
+            title="전시콘텐츠 공개 시점"
+            value={contentVisibility}
+            onChange={setContentVisibility}
+            startDateLabel={startDateLabel}
+          />
+        </div>
       </div>
 
       <BottomButtonBar withBorder={false}>

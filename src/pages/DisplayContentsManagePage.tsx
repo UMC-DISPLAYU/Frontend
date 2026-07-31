@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { MoreHorizontal, Plus, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
 import InteriorPhotos from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 
 type Content = {
   id: number;
@@ -278,7 +279,12 @@ export function DisplayContentsManagePage() {
   useHideFooter();
 
   const navigate = useNavigate();
-  const [contents, setContents] = useState<Content[]>(INITIAL_CONTENTS);
+  const { state } = useLocation();
+  const displayId = state?.displayId ? Number(state.displayId) : 1;
+
+  // API에서 전시 상세 정보 가져오기
+  const { data: displayDetail, isLoading } = useDisplayDetail(displayId);
+
   const [menuId, setMenuId] = useState<number | null>(null);
   const [editing, setEditing] = useState<Content | null>(null);
   const [creating, setCreating] = useState(false);
@@ -286,8 +292,15 @@ export function DisplayContentsManagePage() {
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // TODO: displayId를 실제 값으로 교체
-  const displayId = 1;
+  // API 데이터를 Content 형식으로 변환
+  const contents: Content[] =
+    displayDetail?.data?.contentCategories?.map((cat) => ({
+      id: cat.categoryId,
+      title: cat.name,
+      description: cat.description || '',
+      photoCount: cat.contents.length,
+      thumbnail: cat.contents[0]?.imageUrl,
+    })) ?? INITIAL_CONTENTS;
 
   // 바깥 클릭/스크롤 시 팝오버 닫기
   useEffect(() => {
@@ -304,37 +317,39 @@ export function DisplayContentsManagePage() {
 
   const handleSave = (patch: { title: string; description: string }) => {
     if (!editing) return;
-    setContents((prev) =>
-      prev.map((c) =>
-        c.id === editing.id ? { ...c, title: patch.title, description: patch.description } : c,
-      ),
-    );
+    // TODO: API 호출로 콘텐츠 수정
+    console.log('Update content:', editing.id, patch);
     setEditing(null);
   };
 
   const handleCreate = (patch: { title: string; description: string }) => {
-    const nextId = Math.max(0, ...contents.map((content) => content.id)) + 1;
-    setContents((prev) => [
-      ...prev,
-      {
-        id: nextId,
-        title: patch.title,
-        description: patch.description || '전시 콘텐츠 설명을 입력해주세요.',
-        photoCount: 0,
-      },
-    ]);
+    // TODO: API 호출로 콘텐츠 생성
+    console.log('Create content:', patch);
     setCreating(false);
   };
 
   const handleDelete = () => {
     if (!deleting) return;
-    setContents((prev) => prev.filter((c) => c.id !== deleting.id));
+    // TODO: API 호출로 콘텐츠 삭제
+    console.log('Delete content:', deleting.id);
     setDeleting(null);
   };
 
   const handlePhotoCountChange = (categoryId: number, count: number) => {
-    setContents((prev) => prev.map((c) => (c.id === categoryId ? { ...c, photoCount: count } : c)));
+    // TODO: API 호출로 사진 개수 업데이트
+    console.log('Photo count changed:', categoryId, count);
   };
+
+  if (isLoading) {
+    return (
+      <Screen>
+        <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
+        <div className="flex flex-1 items-center justify-center">
+          <div className="typo-body-sm-regular text-faint">로딩 중...</div>
+        </div>
+      </Screen>
+    );
+  }
 
   // 상세 화면 표시 중이면 InteriorPhotos 렌더링
   if (selectedContent) {
