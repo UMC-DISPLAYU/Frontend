@@ -21,6 +21,7 @@ export function ExhibitionReviewWritePage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isSubmittingRef = useRef(false);
 
   const createLoungePost = useCreateLoungePost();
   const isSubmitting = createLoungePost.isPending;
@@ -38,6 +39,8 @@ export function ExhibitionReviewWritePage() {
     title.trim().length > 0 && content.trim().length > 0 && !isImagesUploading && !isSubmitting;
 
   const handleSubmit = async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setSubmitError(null);
 
     try {
@@ -53,6 +56,8 @@ export function ExhibitionReviewWritePage() {
       console.error(error);
       const message = getErrorMessage(error, '알 수 없는 오류가 발생했습니다.');
       setSubmitError(`후기 등록에 실패했습니다. (${message})`);
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 
