@@ -10,6 +10,8 @@ export interface HomeExhibitionDto {
   displayId: number;
   title: string;
   posterImageUrl: string;
+  organization: string;
+  department: string;
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
