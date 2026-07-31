@@ -16,6 +16,11 @@ export const queryKeys = {
     all: ['auth'] as const,
   },
 
+  agreements: {
+    all: ['agreements'] as const,
+    signup: () => [...queryKeys.agreements.all, 'signup'] as const,
+  },
+
   users: {
     all: ['users'] as const,
     me: () => [...queryKeys.users.all, 'me'] as const,

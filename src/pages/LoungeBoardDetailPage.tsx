@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import { useParams } from 'react-router-dom';
-
+import { ErrorView } from '@/components/common';
 import {
   LoungeBoardActionBar,
   LoungeBoardCommentItem,
@@ -12,6 +12,7 @@ import { isLoungeCategoryKey, LOUNGE_CATEGORIES } from '@/constants/loungeCatego
 import { LOUNGE_BOARD_DETAILS } from '@/mocks/exhibition';
 
 export const LoungeBoardDetailPage = () => {
+  const navigate = useNavigate();
   const { category, id } = useParams<{ category: string; id: string }>();
   const isValidCategory = isLoungeCategoryKey(category);
   const review = id ? LOUNGE_BOARD_DETAILS[id] : undefined;
@@ -34,7 +35,7 @@ export const LoungeBoardDetailPage = () => {
 
       {isValidPost ? (
         <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-10">
-          <div className="flex flex-col items-center gap-[30px]">
+          <div className="flex flex-col items-center gap-7.5">
             <LoungeBoardPostDetail review={review} />
 
             <div className="w-full flex flex-col items-center gap-7">
@@ -57,7 +58,12 @@ export const LoungeBoardDetailPage = () => {
           </div>
         </main>
       ) : (
-        <p className="typo-body-sm-regular text-hint px-5 pt-5">게시글을 찾을 수 없습니다.</p>
+        <ErrorView
+          fullScreen={false}
+          title="게시글을 찾을 수 없습니다"
+          message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
+          onRetry={() => navigate(-1)}
+        />
       )}
     </div>
   );

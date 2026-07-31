@@ -11,6 +11,7 @@ const formatMonthDay = (date: string) => {
 
 function ExhibitionCard({ item }: { item: HomeExhibitionDto }) {
   const navigate = useNavigate();
+  const orgDept = [item.organization, item.department].filter(Boolean).join(' ');
 
   return (
     <article
@@ -32,6 +33,9 @@ function ExhibitionCard({ item }: { item: HomeExhibitionDto }) {
       </div>
       <div className="flex flex-col">
         <p className="typo-body-xs-bold text-main truncate">{item.title}</p>
+        {orgDept ? (
+          <p className="typo-body-xs-regular text-sub700 truncate -mt-0.5">{orgDept}</p>
+        ) : null}
         <p className="typo-body-xs-regular text-hint mt-0.5">
           {formatMonthDay(item.startedAt)} - {formatMonthDay(item.endedAt)}
         </p>
