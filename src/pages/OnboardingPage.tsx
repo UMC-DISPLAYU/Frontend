@@ -879,9 +879,6 @@ export function OnboardingPage() {
       });
 
       setAccessToken(result.accessToken);
-      if (result.refreshToken) {
-        localStorage.setItem('refreshToken', result.refreshToken);
-      }
       setStep('done');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : '가입 완료에 실패했어요.');
