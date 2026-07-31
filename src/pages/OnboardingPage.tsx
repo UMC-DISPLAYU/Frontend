@@ -9,6 +9,7 @@ import type { AgreementDto } from '@/api/dto';
 import { useAgreements } from '@/hooks/queries/useAgreements';
 import { useSignup } from '@/hooks/queries/useAuth';
 import { useCheckNickname } from '@/hooks/queries/useUserProfile';
+import { useAuthStore } from '@/stores/authStore';
 
 type Step = 'terms' | 'termsDetail' | 'nickname' | 'done';
 type TermKey = 'over14' | 'service' | 'privacy' | 'location';
@@ -829,6 +830,7 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const agreementsQuery = useAgreements();
   const signup = useSignup();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const findAgreement = (key: Exclude<TermKey, 'over14'>): AgreementDto | undefined =>
     agreementsQuery.data?.find((agreement) => agreement.code === AGREEMENT_CODES[key]);
@@ -876,10 +878,7 @@ export function OnboardingPage() {
         isOver14: terms.over14,
       });
 
-      localStorage.setItem('accessToken', result.accessToken);
-      if (result.refreshToken) {
-        localStorage.setItem('refreshToken', result.refreshToken);
-      }
+      setAccessToken(result.accessToken);
       setStep('done');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : '가입 완료에 실패했어요.');

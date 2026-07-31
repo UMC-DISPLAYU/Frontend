@@ -9,6 +9,7 @@ import {
   signup,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -48,7 +49,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: (body: LogoutRequestDto) => logout(body),
     onSettled: () => {
-      localStorage.removeItem('accessToken');
+      useAuthStore.getState().clearAccessToken();
       queryClient.clear();
     },
   });
