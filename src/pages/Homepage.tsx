@@ -15,11 +15,14 @@ import {
   useHomeArtworkPreview,
   useHomeLoungePosts,
 } from '@/hooks/queries/useHome';
+import { useAuthStore } from '@/stores/authStore';
 
 export const Homepage = () => {
   const [isArtworkPreviewOpen, setIsArtworkPreviewOpen] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const { data: duPicksData } = useDuPicks();
   const { data: graduationExhibitions = [] } = useGraduationDisplays();
   const { data: closingSoonData } = useClosingSoonDisplays({ size: 3 });
@@ -32,26 +35,26 @@ export const Homepage = () => {
     const accessToken = searchParams.get('accessToken');
 
     if (accessToken) {
-      localStorage.setItem('accessToken', accessToken);
+      setAccessToken(accessToken);
       navigate('/home', { replace: true });
     }
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, setAccessToken]);
 
   // OAuth 콜백 이후 refreshToken 쿠키만 있고 accessToken이 없는 상태(기존 회원)일 수 있어서,
   // 홈 진입 시 accessToken이 없으면 1회 재발급을 시도한다.
   useEffect(() => {
-    if (localStorage.getItem('accessToken')) {
+    if (accessToken) {
       return;
     }
 
     void refreshToken()
       .then(({ accessToken }) => {
-        localStorage.setItem('accessToken', accessToken);
+        setAccessToken(accessToken);
       })
       .catch(() => {
         // 비회원/게스트일 수 있으므로 조용히 무시 (refresh token 쿠키 자체가 없는 경우)
       });
-  }, []);
+  }, [accessToken, setAccessToken]);
 
   if (isArtworkPreviewOpen) {
     return <ArtworkPreviewMoreView items={artworkPreviewItems} />;
