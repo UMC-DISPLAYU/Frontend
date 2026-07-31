@@ -59,6 +59,7 @@ function VisibilitySection({ title, value, onChange, startDateLabel }: Visibilit
 
 export function VisibilitySettings() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { state } = useLocation() as { state: VisibilityState | null };
 
   const startDateLabel = formatStartDate(state?.startDate);
@@ -70,11 +71,37 @@ export function VisibilitySettings() {
     state?.contentVisibility ?? 'startDate',
   );
 
+  const updateMutation = useMutation({
+    mutationFn: (body: {
+      artworkVisibility: VisibilityType;
+      contentVisibility: VisibilityType;
+    }) => {
+      if (!state?.displayId) throw new Error('displayId is required');
+      return updateDisplay(state.displayId, body);
+    },
+    onSuccess: () => {
+      if (state?.displayId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(state.displayId) });
+      }
+      navigate('/exhibition/manage', {
+        replace: true,
+        state: { ...state, artworkVisibility, contentVisibility },
+      });
+    },
+  });
+
   const save = () => {
-    navigate('/exhibition/manage', {
-      replace: true,
-      state: { ...state, artworkVisibility, contentVisibility },
-    });
+    if (!state?.displayId) {
+      // displayId가 없으면 router state로만 전달 (등록 플로우)
+      navigate('/exhibition/manage', {
+        replace: true,
+        state: { ...state, artworkVisibility, contentVisibility },
+      });
+      return;
+    }
+
+    // displayId가 있으면 API로 저장
+    updateMutation.mutate({ artworkVisibility, contentVisibility });
   };
 
   return (

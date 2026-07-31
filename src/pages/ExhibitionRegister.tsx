@@ -164,7 +164,7 @@ export function ExhibitionRegister() {
           disabled={!isFormValid}
           onClick={() =>
             navigate('/exhibition/basic', {
-              state: { title, subtitle, intro, type, field, school, department, organizer },
+              state: { images, title, subtitle, intro, type, field, school, department, organizer },
             })
           }
           className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5 disabled:opacity-40"

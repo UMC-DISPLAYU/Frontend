@@ -327,6 +327,8 @@ export interface UpdateDisplayRequestDto {
   placeName?: string;
   precautions?: string | null;
   fieldsValid?: boolean;
+  artworkVisibility?: 'immediate' | 'startDate' | 'hidden';
+  contentVisibility?: 'immediate' | 'startDate' | 'hidden';
 }
 
 export type UpdateDisplayResponseDataDto = DisplayDetailDto;

@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Plus, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import {
+  createContentCategory,
+  deleteContentCategory,
+  updateContentCategory,
+} from '@/api/endpoints/displayContent';
+import { queryKeys } from '@/api/queryKeys';
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
 import InteriorPhotos from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
@@ -280,10 +287,45 @@ export function DisplayContentsManagePage() {
 
   const navigate = useNavigate();
   const { state } = useLocation();
-  const displayId = state?.displayId ? Number(state.displayId) : 1;
+  const displayId = state?.displayId ? Number(state.displayId) : Number.NaN;
+  const isValidDisplayId = Number.isFinite(displayId) && displayId > 0;
+
+  const queryClient = useQueryClient();
 
   // API에서 전시 상세 정보 가져오기
-  const { data: displayDetail, isLoading } = useDisplayDetail(displayId);
+  const { data: displayDetail, isLoading, isError } = useDisplayDetail(displayId);
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: (body: { name: string; description: string }) =>
+      createContentCategory(displayId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      setCreating(false);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      categoryId,
+      body,
+    }: {
+      categoryId: number;
+      body: { name: string; description: string };
+    }) => updateContentCategory(displayId, categoryId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      setEditing(null);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (categoryId: number) => deleteContentCategory(displayId, categoryId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      setDeleting(null);
+    },
+  });
 
   const [menuId, setMenuId] = useState<number | null>(null);
   const [editing, setEditing] = useState<Content | null>(null);
@@ -300,7 +342,7 @@ export function DisplayContentsManagePage() {
       description: cat.description || '',
       photoCount: cat.contents.length,
       thumbnail: cat.contents[0]?.imageUrl,
-    })) ?? INITIAL_CONTENTS;
+    })) ?? [];
 
   // 바깥 클릭/스크롤 시 팝오버 닫기
   useEffect(() => {
@@ -317,28 +359,36 @@ export function DisplayContentsManagePage() {
 
   const handleSave = (patch: { title: string; description: string }) => {
     if (!editing) return;
-    // TODO: API 호출로 콘텐츠 수정
-    console.log('Update content:', editing.id, patch);
-    setEditing(null);
+    updateMutation.mutate({
+      categoryId: editing.id,
+      body: { name: patch.title, description: patch.description },
+    });
   };
 
   const handleCreate = (patch: { title: string; description: string }) => {
-    // TODO: API 호출로 콘텐츠 생성
-    console.log('Create content:', patch);
-    setCreating(false);
+    createMutation.mutate({ name: patch.title, description: patch.description });
   };
 
   const handleDelete = () => {
     if (!deleting) return;
-    // TODO: API 호출로 콘텐츠 삭제
-    console.log('Delete content:', deleting.id);
-    setDeleting(null);
+    deleteMutation.mutate(deleting.id);
   };
 
   const handlePhotoCountChange = (categoryId: number, count: number) => {
     // TODO: API 호출로 사진 개수 업데이트
     console.log('Photo count changed:', categoryId, count);
   };
+
+  if (!isValidDisplayId) {
+    return (
+      <Screen>
+        <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
+        <div className="flex flex-1 items-center justify-center">
+          <div className="typo-body-sm-regular text-error">유효하지 않은 전시 ID입니다.</div>
+        </div>
+      </Screen>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -351,13 +401,34 @@ export function DisplayContentsManagePage() {
     );
   }
 
+  if (isError || !displayDetail) {
+    return (
+      <Screen>
+        <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
+        <div className="flex flex-1 items-center justify-center">
+          <div className="typo-body-sm-regular text-error">전시 정보를 불러올 수 없습니다.</div>
+        </div>
+      </Screen>
+    );
+  }
+
   // 상세 화면 표시 중이면 InteriorPhotos 렌더링
   if (selectedContent) {
+    const category = displayDetail?.contentCategories?.find(
+      (cat) => cat.categoryId === selectedContent.id,
+    );
+    const initialPhotos =
+      category?.contents.map((content) => ({
+        id: content.contentId,
+        url: content.imageUrl,
+      })) ?? [];
+
     return (
       <InteriorPhotos
         title={selectedContent.title}
         displayId={displayId}
         categoryId={selectedContent.id}
+        initialPhotos={initialPhotos}
         onBack={() => setSelectedContent(null)}
         onPhotoCountChange={(count) => handlePhotoCountChange(selectedContent.id, count)}
       />

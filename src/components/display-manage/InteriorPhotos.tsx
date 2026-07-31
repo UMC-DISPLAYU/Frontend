@@ -14,6 +14,7 @@ type InteriorPhotosProps = {
   title?: string;
   displayId: number;
   categoryId: number;
+  initialPhotos?: Photo[];
   onBack?: () => void;
   onPhotoCountChange?: (count: number) => void;
 };
@@ -22,10 +23,11 @@ export default function InteriorPhotos({
   title = '내부사진',
   displayId,
   categoryId,
+  initialPhotos = [],
   onBack,
   onPhotoCountChange,
 }: InteriorPhotosProps) {
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

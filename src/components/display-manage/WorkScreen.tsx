@@ -15,7 +15,7 @@ import InteriorPhotos from './InteriorPhotos';
 import { Poster } from './Poster';
 
 interface WorkData {
-  contents: Array<{ id: string; title: string; meta: string }>;
+  contents: Array<{ id: string; title: string; meta: string; photos?: Array<{ id: number | string; url: string; alt?: string }> }>;
   artworks: Array<{ id: string; title: string; artist: string; image: string | null }>;
 }
 
@@ -46,11 +46,15 @@ export function WorkScreen({
 
   // 콘텐츠 상세 화면 표시 중이면 InteriorPhotos 렌더링
   if (selectedContent) {
+    const contentData = work.contents.find((c) => c.id === selectedContent.id);
+    const initialPhotos = contentData?.photos ?? [];
+
     return (
       <InteriorPhotos
         title={selectedContent.title}
         displayId={Number(ex.id)}
         categoryId={Number(selectedContent.id)}
+        initialPhotos={initialPhotos}
         onBack={() => setSelectedContent(null)}
         onPhotoCountChange={(count) => handlePhotoCountChange(Number(selectedContent.id), count)}
       />
