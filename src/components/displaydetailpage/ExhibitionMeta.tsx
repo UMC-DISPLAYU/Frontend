@@ -64,9 +64,11 @@ export function ExhibitionMeta({ display: ex }: Props) {
 
   return (
     <section className="px-5 pt-6 pb-4 bg-[#f0f0f3]">
-      {/* 제목 / 하트 */}
-      <div className="flex items-start justify-between pb-1.5 gap-2">
-        <h1 className="flex-1 typo-body-xl-bold text-main">{ex.title}</h1>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 flex flex-col gap-1.5">
+          <h1 className="typo-body-xl-bold text-main">{ex.title}</h1>
+          {fullSubtitle && <p className="typo-body-sm-regular text-sub600">{fullSubtitle}</p>}
+        </div>
         <button
           type="button"
           id="meta-heart-btn"
@@ -86,9 +88,6 @@ export function ExhibitionMeta({ display: ex }: Props) {
         </button>
       </div>
 
-      {fullSubtitle && <p className="typo-body-sm-regular text-sub600">{fullSubtitle}</p>}
-
-      {/* 일정 / 운영 / 장소 */}
       <div className="mt-5 flex flex-col gap-1.5">
         <MetaRow
           icon={Calendar}

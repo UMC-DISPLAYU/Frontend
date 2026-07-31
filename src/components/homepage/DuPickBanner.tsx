@@ -1,32 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import type { DuPickDto } from '@/api/dto';
+import { useSwipeSlider } from '@/hooks/useSwipeSlider';
+import type { DuPickItem } from '@/types/exhibition';
+import { cn } from '@/utils/cn';
 
 type Props = {
-  items: DuPickDto[];
+  items: DuPickItem[];
+  className?: string;
 };
 
-export function DuPickBanner({ items }: Props) {
-  const [activeIndex, setActiveIndex] = useState(0);
+export function DuPickBanner({ items, className }: Props) {
   const navigate = useNavigate();
+  const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
+    itemCount: items.length,
+  });
 
   useEffect(() => {
-    if (items.length === 0) return;
+    if (items.length === 0 || isDragging) return;
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % items.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [items.length]);
+  }, [items.length, activeIndex, isDragging, setActiveIndex]);
 
-  const current = items[activeIndex];
-  if (!current) return null;
+  if (items.length === 0) return null;
 
   return (
-    <section className="pb-7">
-      <div className="px-4 mb-2.5 flex justify-between items-center">
+    <section className={cn('pb-7', className)}>
+      <div className="px-4 mb-2.5 flex items-center justify-between">
         <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
           <span>DU Pick</span>
         </h2>
@@ -34,38 +38,69 @@ export function DuPickBanner({ items }: Props) {
           type="button"
           aria-label="전시 등록 버튼"
           onClick={() => navigate('/exhibition-register')}
-          className="cursor-pointer p-0 bg-transparent border-none"
+          className="cursor-pointer border-none bg-transparent p-0"
         >
           <Plus strokeWidth={1.5} className="size-8" />
         </button>
       </div>
 
       <div className="px-4">
-        <div className="relative h-128.25 overflow-hidden bg-[#D1D5DB]">
-          {current.bannerImageUrl && (
-            <img
-              src={current.bannerImageUrl}
-              alt={current.title}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+        <div
+          {...handlers}
+          className={cn(
+            'relative h-128.25 overflow-hidden bg-[#D1D5DB] select-none touch-pan-y cursor-grab',
+            'shadow-[2px_4px_18px_0px_rgba(67,0,209,0.08),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]',
+            isDragging && 'cursor-grabbing',
           )}
-          <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/20 to-transparent" />
+        >
+          <div
+            className="flex h-full w-full"
+            style={{
+              transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffset}px))`,
+              transition: isDragging ? 'none' : 'transform 300ms ease-out',
+            }}
+          >
+            {items.map((item, i) => {
+              const displayTitle = item.title || item.name || '';
 
-          <div className="absolute left-7 right-4 bottom-9">
-            <p className="typo-body-xl-bold text-white mb-1.5">{current.title}</p>
-            <p className="typo-body-xs-regular text-faint">{current.subtitle}</p>
+              return (
+                <div key={item.id || i} className="relative h-full w-full shrink-0">
+                  {item.bannerImageUrl && (
+                    <img
+                      src={item.bannerImageUrl}
+                      alt={displayTitle}
+                      draggable={false}
+                      className="absolute inset-0 h-full w-full object-cover select-none"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-linear-to-b from-zinc-300/0 via-transparent to-zinc-800/95 pointer-events-none" />
+
+                  <div className="absolute bottom-9 left-5 right-4 pointer-events-none flex flex-col gap-0.5">
+                    <p className="typo-body-xl-bold text-neutral-50">{displayTitle}</p>
+                    <div className="flex items-center gap-2 typo-body-xs-regular text-neutral-400">
+                      {item.date && <span>{item.date}</span>}
+                      {item.location && <span>{item.location}</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="absolute bottom-3.5 inset-x-0 flex justify-center items-center gap-1.5">
+          <div className="absolute bottom-3.5 inset-x-0 z-10 flex items-center justify-center gap-1.5">
             {items.map((_, i) => (
               <button
                 key={i}
                 type="button"
                 aria-label={`슬라이드 ${i + 1}`}
-                onClick={() => setActiveIndex(i)}
-                className={`w-1.75 h-1.75 rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200 ${
-                  i === activeIndex ? 'bg-line-active' : 'bg-[#667281]'
-                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex(i);
+                }}
+                className={cn(
+                  'w-1.75 h-1.75 rounded-full border-none p-0 cursor-pointer shrink-0 transition-all duration-200',
+                  i === activeIndex ? 'bg-line-active' : 'bg-[#667281]',
+                )}
               />
             ))}
           </div>

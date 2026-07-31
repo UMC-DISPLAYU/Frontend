@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto } from '@/api/dto/display.dto';
 import DUfontlogo from '@/assets/DUfontlogo.svg';
+import { ErrorView, LoadingView } from '@/components/common';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
@@ -17,42 +18,17 @@ export function DisplayContentsPage() {
 
   const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
 
-  // 유효하지 않은 ID는 즉시 에러 상태로 처리
-  if (displayId === null) {
-    return (
-      <div className="w-96 mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-page">
-        <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="typo-body-sm-regular text-faint underline cursor-pointer"
-        >
-          돌아가기
-        </button>
-      </div>
-    );
-  }
-
   if (isPending) {
-    return (
-      <div className="w-96 mx-auto min-h-dvh flex items-center justify-center bg-page">
-        <p className="typo-body-sm-regular text-faint">불러오는 중...</p>
-      </div>
-    );
+    return <LoadingView message="전시 콘텐츠를 불러오는 중..." />;
   }
 
-  if (isError || !display) {
+  if (isError || !display || displayId === null) {
     return (
-      <div className="w-96 mx-auto min-h-dvh flex flex-col items-center justify-center gap-3 bg-page">
-        <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="typo-body-sm-regular text-faint underline cursor-pointer"
-        >
-          돌아가기
-        </button>
-      </div>
+      <ErrorView
+        title="전시 정보를 찾을 수 없습니다"
+        message="요청하신 전시 정보가 존재하지 않거나 삭제되었습니다."
+        onRetry={() => navigate(-1)}
+      />
     );
   }
 

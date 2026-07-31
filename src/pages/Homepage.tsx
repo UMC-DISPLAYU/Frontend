@@ -9,17 +9,16 @@ import { ExhibitionSection } from '@/components/homepage/ExhibitionSection';
 import { LoungeSection } from '@/components/homepage/LoungeSection';
 import {
   useClosingSoonDisplays,
-  useDuPicks,
   useGraduationDisplays,
   useHomeArtworkPreview,
   useHomeLoungePosts,
 } from '@/hooks/queries/useHome';
+import { DU_PICK_ITEMS } from '@/mocks/exhibition';
 
 export const Homepage = () => {
   const [isArtworkPreviewOpen, setIsArtworkPreviewOpen] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { data: duPicksData } = useDuPicks();
   const { data: graduationExhibitions = [] } = useGraduationDisplays();
   const { data: closingSoonData } = useClosingSoonDisplays({ size: 3 });
   const { data: artworkPreviewData } = useHomeArtworkPreview();
@@ -43,7 +42,7 @@ export const Homepage = () => {
 
   return (
     <div className="w-full max-w-105 mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5 font-[Pretendard,sans-serif]">
-      <DuPickBanner items={duPicksData?.duPicks ?? []} />
+      <DuPickBanner items={DU_PICK_ITEMS} />
       <ExhibitionSection
         title="졸업전시"
         items={graduationExhibitions}
