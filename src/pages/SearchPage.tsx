@@ -207,7 +207,7 @@ export function SearchPage() {
           <div className="flex flex-1 flex-col px-5 pt-4 pb-24">
             {isLoading ? (
               <LoadingView fullScreen={false} message="전시를 검색하는 중..." />
-            ) : !isError ? (
+            ) : isError ? (
               <ErrorView
                 fullScreen={false}
                 title="전시를 불러오지 못했습니다"
