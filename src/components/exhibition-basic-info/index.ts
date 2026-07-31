@@ -1,4 +1,4 @@
-export { Label } from './Label';
+export { AddressSearchModal } from './AddressSearchModal';
 export { FormField } from './FormField';
 export { InputBox } from './InputBox';
-export { AddressSearchModal } from './AddressSearchModal';
+export { Label } from './Label';

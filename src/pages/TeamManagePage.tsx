@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { PageHeader } from '@/components/common';
-import { InviteLinkSection, MemberRow, type Member } from '@/components/team-manage';
+import { InviteLinkSection, type Member,MemberRow } from '@/components/team-manage';
 
 const MEMBERS: Member[] = [
   { id: '1', name: '최유성', nickname: 'quietroom', status: 'owner' },

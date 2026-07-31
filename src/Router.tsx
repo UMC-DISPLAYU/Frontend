@@ -32,11 +32,11 @@ import { MyReviewPage } from './pages/MyReviewPage';
 import { NotFound } from './pages/NotFound';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { PolicyPage } from './pages/PolicyPage';
+import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
 import { SearchPage } from './pages/SearchPage';
 import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
-import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
 
 export const router = createBrowserRouter([
   {

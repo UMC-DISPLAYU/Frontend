@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+
 import { ChevronLeft, X } from 'lucide-react';
 
 const MAX_PHOTOS = 20;

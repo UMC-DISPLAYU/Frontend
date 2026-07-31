@@ -6,14 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { BottomButtonBar, PageHeader } from '@/components/common';
 import { AddressSearchModal } from '@/components/exhibition-basic-info';
 import { CalenderSheet } from '@/components/ui/CalenderSheet';
-import { TimeSheet } from '@/components/ui/TimeSheet';
-
-interface TimeValue {
-  hour: number;
-  minute: number;
-  period: 'AM' | 'PM';
-  label: string;
-}
+import { TimeSheet, type TimeRangeValue } from '@/components/ui/TimeSheet';
 
 interface DateValue {
   start: Date;
@@ -21,7 +14,7 @@ interface DateValue {
   label: string;
 }
 
-type SheetType = 'date' | 'time-start' | 'time-end' | null;
+type SheetType = 'date' | 'time' | null;
 
 /* 밑줄형 입력 래퍼 */
 function Underline({
@@ -54,8 +47,7 @@ export function ExhibitionBasicInfo() {
   const { state } = useLocation();
 
   const [period, setPeriod] = useState<DateValue | null>(null);
-  const [openStart, setOpenStart] = useState<TimeValue | null>(null);
-  const [openEnd, setOpenEnd] = useState<TimeValue | null>(null);
+  const [operatingHours, setOperatingHours] = useState<TimeRangeValue | null>(null);
   const [placeName, setPlaceName] = useState('');
   const [address, setAddress] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
@@ -67,9 +59,6 @@ export function ExhibitionBasicInfo() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   const canNext = period && placeName.trim() && address.trim();
-
-  const timeLabel =
-    openStart && openEnd ? `${openStart.label} - ${openEnd.label}` : (openStart?.label ?? null);
 
   const handleAddressConfirm = (
     fullAddress: string,
@@ -89,7 +78,7 @@ export function ExhibitionBasicInfo() {
         period: period?.label ?? '',
         startDate: period?.start.toISOString() ?? null,
         endDate: period?.end.toISOString() ?? null,
-        openHours: openStart && openEnd ? `${openStart.label} - ${openEnd.label}` : '',
+        openHours: operatingHours?.label ?? '',
         placeName,
         address,
         latitude,
@@ -126,15 +115,15 @@ export function ExhibitionBasicInfo() {
 
             <div className="flex flex-1 flex-col gap-3">
               <Label required>운영시간</Label>
-              <button type="button" onClick={() => setSheet('time-start')} className="w-full">
+              <button type="button" onClick={() => setSheet('time')} className="w-full">
                 <Underline>
                   <Clock className="size-4 shrink-0 text-main" strokeWidth={1} />
                   <span
                     className={`typo-body-xs-regular truncate ${
-                      timeLabel ? 'text-main' : 'text-input-placeholder'
+                      operatingHours ? 'text-main' : 'text-input-placeholder'
                     }`}
                   >
-                    {timeLabel ?? '시간선택'}
+                    {operatingHours?.label ?? '시간선택'}
                   </span>
                 </Underline>
               </button>
@@ -237,18 +226,10 @@ export function ExhibitionBasicInfo() {
 
       <CalenderSheet open={sheet === 'date'} onClose={() => setSheet(null)} value={period} onConfirm={setPeriod} />
       <TimeSheet
-        open={sheet === 'time-start'}
+        open={sheet === 'time'}
         onClose={() => setSheet(null)}
-        value={openStart}
-        subtitle="시작 시간"
-        onConfirm={setOpenStart}
-      />
-      <TimeSheet
-        open={sheet === 'time-end'}
-        onClose={() => setSheet(null)}
-        value={openEnd}
-        subtitle="종료 시간"
-        onConfirm={setOpenEnd}
+        value={operatingHours}
+        onConfirm={setOperatingHours}
       />
       <AddressSearchModal
         open={isAddressModalOpen}

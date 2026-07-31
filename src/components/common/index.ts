@@ -1,2 +1,2 @@
-export { PageHeader } from './PageHeader';
 export { BottomButtonBar } from './BottomButtonBar';
+export { PageHeader } from './PageHeader';

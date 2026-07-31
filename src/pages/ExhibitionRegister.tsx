@@ -33,8 +33,8 @@ export function ExhibitionRegister() {
   const [organizer, setOrganizer] = useState('');
 
   useEffect(() => {
-    if (artistProfile?.data?.schoolName) {
-      setSchool(artistProfile.data.schoolName);
+    if (artistProfile?.schoolName) {
+      setSchool(artistProfile.schoolName);
     }
   }, [artistProfile]);
 

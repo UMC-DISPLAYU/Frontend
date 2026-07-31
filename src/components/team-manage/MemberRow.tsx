@@ -1,6 +1,6 @@
 import { User } from 'lucide-react';
 
-import { StatusBadge, type MemberStatus } from './StatusBadge';
+import { type MemberStatus,StatusBadge } from './StatusBadge';
 
 export interface Member {
   id: string;

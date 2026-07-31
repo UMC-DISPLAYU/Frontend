@@ -294,7 +294,7 @@ export function DisplayContentsManagePage() {
 
   // API 데이터를 Content 형식으로 변환
   const contents: Content[] =
-    displayDetail?.data?.contentCategories?.map((cat) => ({
+    displayDetail?.contentCategories?.map((cat) => ({
       id: cat.categoryId,
       title: cat.name,
       description: cat.description || '',
