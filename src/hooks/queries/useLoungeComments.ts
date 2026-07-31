@@ -57,17 +57,27 @@ export const useUpdateLoungeComment = () => {
   });
 };
 
+type CommentMutationVariables = {
+  postId: number;
+  commentId: number;
+  parentCommentId?: number;
+};
+
 export const useDeleteLoungeComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: { postId: number; commentId: number }) =>
-      deleteLoungeComment(commentId),
+    mutationFn: ({ commentId }: CommentMutationVariables) => deleteLoungeComment(commentId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
+      if (variables.parentCommentId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.loungeComments.replyLists(variables.parentCommentId),
+        });
+      }
     },
   });
 };
@@ -76,12 +86,16 @@ export const useLikeLoungeComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: { postId: number; commentId: number }) =>
-      likeLoungeComment(commentId),
+    mutationFn: ({ commentId }: CommentMutationVariables) => likeLoungeComment(commentId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
+      if (variables.parentCommentId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.loungeComments.replyLists(variables.parentCommentId),
+        });
+      }
     },
   });
 };
@@ -90,12 +104,16 @@ export const useUnlikeLoungeComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: { postId: number; commentId: number }) =>
-      unlikeLoungeComment(commentId),
+    mutationFn: ({ commentId }: CommentMutationVariables) => unlikeLoungeComment(commentId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
+      if (variables.parentCommentId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.loungeComments.replyLists(variables.parentCommentId),
+        });
+      }
     },
   });
 };

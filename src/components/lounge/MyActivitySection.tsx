@@ -1,14 +1,21 @@
 import { ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import loungeVenueThumbnail from '@/assets/LoungeVenueThumbnail.svg';
+import myCommentsIcon from '@/assets/my-comments.svg';
+import savedPostsIcon from '@/assets/saved-posts.svg';
+import scrapsIcon from '@/assets/scraps.svg';
 
 import { LoungeCard } from './LoungeCard';
 
-const ACTIVITY_CARDS: { image?: string; title: string; tab: string }[] = [
-  { image: loungeVenueThumbnail, title: '작성한 글', tab: 'written' },
-  { title: '내 댓글', tab: 'comments' },
-  { title: '스크랩', tab: 'scraps' },
+const ACTIVITY_CARDS: { image: string; imageClassName: string; title: string; tab: string }[] = [
+  {
+    image: savedPostsIcon,
+    imageClassName: 'w-[47px] h-[37px]',
+    title: '작성한 글',
+    tab: 'written',
+  },
+  { image: myCommentsIcon, imageClassName: 'w-10 h-[38px]', title: '내 댓글', tab: 'comments' },
+  { image: scrapsIcon, imageClassName: 'w-[42px] h-10', title: '스크랩', tab: 'scraps' },
 ];
 
 export function MyActivitySection() {
@@ -18,29 +25,20 @@ export function MyActivitySection() {
   return (
     <section className="flex flex-col gap-3">
       <h2 className="typo-body-xl-bold text-main">내 활동</h2>
-      <div className="flex gap-2.5">
-        {ACTIVITY_CARDS.map(({ image, title, tab }) =>
-          image ? (
-            <LoungeCard
-              key={title}
-              className="flex-1 h-32 flex flex-col items-center justify-between"
-              onClick={() => goToTab(tab)}
-            >
-              <ArrowUpRight className="size-5 text-faint self-end" strokeWidth={1.5} />
-              <img alt="" className="w-16 h-14 object-cover" src={image} />
-              <h3 className="w-full typo-body-xl-semibold text-main text-left">{title}</h3>
-            </LoungeCard>
-          ) : (
-            <LoungeCard
-              key={title}
-              className="flex-1 h-32 flex flex-col justify-between items-end"
-              onClick={() => goToTab(tab)}
-            >
-              <ArrowUpRight className="size-5 text-faint" strokeWidth={1.5} />
-              <h3 className="w-full typo-body-xl-semibold text-main text-left">{title}</h3>
-            </LoungeCard>
-          ),
-        )}
+      <div className="flex gap-2.5 overflow-x-auto scrollbar-none">
+        {ACTIVITY_CARDS.map(({ image, imageClassName, title, tab }) => (
+          <LoungeCard
+            key={title}
+            className="relative w-[114px] h-[85px] shrink-0"
+            onClick={() => goToTab(tab)}
+          >
+            <ArrowUpRight className="absolute top-3 right-3 size-5 text-faint" strokeWidth={2.5} />
+            <div className="w-full flex flex-col items-start gap-0.5 mt-0.5">
+              <img alt="" className={`${imageClassName} object-contain`} src={image} />
+              <h3 className="typo-body-md-semibold text-main">{title}</h3>
+            </div>
+          </LoungeCard>
+        ))}
       </div>
     </section>
   );

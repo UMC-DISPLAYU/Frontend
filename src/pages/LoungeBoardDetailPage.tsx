@@ -13,7 +13,7 @@ import {
   toLoungeCategoryKey,
 } from '@/constants/loungeCategories';
 import { useLoungePostDetail } from '@/hooks/queries/useLounge';
-import { useLoungeComments } from '@/hooks/queries/useLoungeComments';
+import { useDeleteLoungeComment, useLoungeComments } from '@/hooks/queries/useLoungeComments';
 import type { LoungeBoardComment, LoungeBoardDetail } from '@/types/exhibition';
 
 const formatDate = (iso: string) => {
@@ -47,6 +47,7 @@ export const LoungeBoardDetailPage = () => {
     isError: isPostError,
   } = useLoungePostDetail(postId);
   const { data: commentsData, isPending: isCommentsPending } = useLoungeComments(postId);
+  const deleteCommentMutation = useDeleteLoungeComment();
 
   const postCategoryKey = post ? toLoungeCategoryKey(post.category) : undefined;
   const isValidPost = isValidCategory && !!post && postCategoryKey === category;
@@ -73,6 +74,7 @@ export const LoungeBoardDetailPage = () => {
               content: comment.content,
               likeCount: comment.likeCount,
               isLiked: comment.isLiked,
+              replyCount: comment.replyCount,
             }),
           ),
         }
@@ -96,7 +98,7 @@ export const LoungeBoardDetailPage = () => {
       ) : isLoading ? (
         <LoadingView fullScreen={false} />
       ) : review ? (
-        <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-10">
+        <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-10">
           <div className="flex flex-col items-center gap-7.5">
             <LoungeBoardPostDetail review={review} />
 
@@ -108,9 +110,16 @@ export const LoungeBoardDetailPage = () => {
                 isSaved={review.isSaved}
               />
 
-              <div className="w-full flex flex-col gap-4">
+              <div className="w-full flex flex-col gap-[40px]">
                 {review.comments.map((comment) => (
-                  <LoungeBoardCommentItem key={comment.id} comment={comment} />
+                  <LoungeBoardCommentItem
+                    key={comment.id}
+                    postId={postId}
+                    comment={comment}
+                    onDelete={() =>
+                      deleteCommentMutation.mutate({ postId, commentId: Number(comment.id) })
+                    }
+                  />
                 ))}
               </div>
             </div>

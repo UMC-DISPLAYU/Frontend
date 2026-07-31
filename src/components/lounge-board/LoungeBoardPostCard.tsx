@@ -11,10 +11,11 @@ type Props = {
 export function LoungeBoardPostCard({ post, tagLabel }: Props) {
   const navigate = useNavigate();
   const detailPath = `/lounge/${post.category}/${post.id}`;
+  const hasImages = Boolean(post.images && post.images.length > 0);
 
   return (
     <article
-      className="px-4 py-3.5 bg-stone-50 rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.02)] outline outline-2 outline-offset-[-2px] outline-neutral-50 flex flex-col gap-3 overflow-hidden cursor-pointer"
+      className={`${hasImages ? 'h-[280px]' : 'h-[148px]'} px-4 py-3.5 bg-stone-50 rounded-lg shadow-[8px_8px_18px_0px_rgba(67,0,209,0.02)] outline outline-2 outline-offset-[-2px] outline-neutral-50 flex flex-col gap-3 overflow-hidden cursor-pointer`}
       onClick={() => navigate(detailPath)}
       role="button"
       tabIndex={0}
@@ -28,7 +29,7 @@ export function LoungeBoardPostCard({ post, tagLabel }: Props) {
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <h3 className="typo-body-sm-bold text-main">{post.title}</h3>
+          <h3 className="typo-body-sm-bold text-main truncate">{post.title}</h3>
 
           {post.images && post.images.length > 0 && (
             <div className="flex gap-1">
@@ -40,7 +41,7 @@ export function LoungeBoardPostCard({ post, tagLabel }: Props) {
             </div>
           )}
 
-          <p className="typo-body-sm-regular text-main">{post.description}</p>
+          <p className="typo-body-sm-regular text-main line-clamp-2">{post.description}</p>
         </div>
 
         <div className="flex items-center gap-2">
