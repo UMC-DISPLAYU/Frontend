@@ -71,18 +71,16 @@ export function MyActivityPage() {
         })}
       </nav>
 
-     <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-10 flex flex-col">
-      {TAB_POSTS[activeTab].length > 0 ? (
-        <div className="flex flex-col gap-3.5">
-          {TAB_POSTS[activeTab].map((post) => (
-            <LoungeBoardPostCard key={post.id} post={post} tagLabel={activeTabLabel} />
-          ))}
-        </div>
-      ) : (
-        <ErrorView fullScreen={false} message={`${activeTabLabel} 항목이 없어요.`} />
-      )}
-    </main>
-
+      <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-10 flex flex-col">
+        {TAB_POSTS[activeTab].length > 0 ? (
+          <div className="flex flex-col gap-3.5">
+            {TAB_POSTS[activeTab].map((post) => (
+              <LoungeBoardPostCard key={post.id} post={post} tagLabel={activeTabLabel} />
+            ))}
+          </div>
+        ) : (
+          <ErrorView fullScreen={false} message={`${activeTabLabel} 항목이 없어요.`} />
+        )}
       </main>
     </div>
   );
