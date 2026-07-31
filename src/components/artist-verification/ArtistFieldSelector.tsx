@@ -14,10 +14,15 @@ export function ArtistFieldSelector({ selectedFields, onToggle }: ArtistFieldSel
   return (
     <section className="mt-8">
       <RequiredLabel required>전시분야</RequiredLabel>
-      <p className="mt-0.5 typo-body-xs-regular text-sub600">
+      <p id="artist-field-selector-help" className="mt-0.5 typo-body-xs-regular text-sub600">
         주요 활동 분야를 최대 2개까지 선택해주세요.
       </p>
-      <div className="mt-3 flex flex-col gap-2">
+      <div
+        role="group"
+        aria-label="전시분야"
+        aria-describedby="artist-field-selector-help"
+        className="mt-3 flex flex-col gap-2"
+      >
         {FIELD_ROWS.map((row) => (
           <div key={row.join()} className="flex flex-wrap gap-2">
             {row.map((field) => (
@@ -26,6 +31,7 @@ export function ArtistFieldSelector({ selectedFields, onToggle }: ArtistFieldSel
                 label={field}
                 selected={selectedFields.includes(field)}
                 onClick={() => onToggle(field)}
+                role="checkbox"
               />
             ))}
           </div>
