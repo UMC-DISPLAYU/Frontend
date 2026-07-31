@@ -11,7 +11,7 @@ import {
 } from '@/api/endpoints/displayContent';
 import { queryKeys } from '@/api/queryKeys';
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
-import InteriorPhotos from '@/components/display-manage/InteriorPhotos';
+import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 

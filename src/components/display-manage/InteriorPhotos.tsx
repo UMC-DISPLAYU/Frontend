@@ -19,7 +19,7 @@ type InteriorPhotosProps = {
   onPhotoCountChange?: (count: number) => void;
 };
 
-export default function InteriorPhotos({
+export function InteriorPhotos({
   title = '내부사진',
   displayId,
   categoryId,

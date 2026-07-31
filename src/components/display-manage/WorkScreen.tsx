@@ -11,7 +11,7 @@ import { Header, Screen, SectionTitle } from './Common';
 import { ContentRow } from './ContentRow';
 import { ExhibitionMeta } from './ExhibitionMeta';
 import { InfoBox } from './InfoBox';
-import InteriorPhotos from './InteriorPhotos';
+import { InteriorPhotos } from './InteriorPhotos';
 import { Poster } from './Poster';
 
 interface WorkData {
