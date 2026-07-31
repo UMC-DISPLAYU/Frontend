@@ -27,6 +27,8 @@ type Props = {
   isReply?: boolean;
   parentCommentId?: number;
   onDelete?: () => void;
+  onReplyClick?: (commentId: number, author: string) => void;
+  isComposingReply?: boolean;
 };
 
 export function LoungeBoardCommentItem({
@@ -35,9 +37,17 @@ export function LoungeBoardCommentItem({
   isReply = false,
   parentCommentId,
   onDelete,
+  onReplyClick,
+  isComposingReply = false,
 }: Props) {
   const [repliesOpen, setRepliesOpen] = useState(false);
   const commentId = Number(comment.id);
+
+  const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
+  if (isComposingReply !== prevIsComposingReply) {
+    setPrevIsComposingReply(isComposingReply);
+    if (isComposingReply) setRepliesOpen(true);
+  }
 
   const likeMutation = useLikeLoungeComment();
   const unlikeMutation = useUnlikeLoungeComment();
@@ -96,11 +106,15 @@ export function LoungeBoardCommentItem({
       <p className="pl-9 typo-body-sm-regular text-sub600">{comment.content}</p>
 
       <div className="pl-9 flex items-center gap-2">
-        {!isReply && (
-          <button type="button" className="typo-body-xs-regular text-faint">
-            답글달기
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() =>
+            onReplyClick?.(isReply ? (parentCommentId ?? commentId) : commentId, comment.author)
+          }
+          className="typo-body-xs-regular text-faint"
+        >
+          답글달기
+        </button>
         {!isReply && replyCount > 0 && (
           <button
             type="button"
@@ -131,6 +145,7 @@ export function LoungeBoardCommentItem({
                   parentCommentId: commentId,
                 })
               }
+              onReplyClick={onReplyClick}
             />
           ))}
         </div>

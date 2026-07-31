@@ -23,7 +23,14 @@ function LayoutContent() {
     '/team/manage',
     '/lounge/review/post',
   ];
-  const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
+  const isPathNavbarHidden = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
+
+  // Router handle ({ hideNavbar: true }) 기반 숨김
+  const isRouteHandleNavbarHidden = matches.some(
+    (match) => (match.handle as { hideNavbar?: boolean })?.hideNavbar,
+  );
+
+  const shouldHideNavbar = isPathNavbarHidden || isRouteHandleNavbarHidden;
 
   // Footer(FNB) 선택적 숨김 경로 (기본값: Footer 표시, 안 보일 특수 페이지 등록 가능)
   const defaultHideFooterPaths = [
