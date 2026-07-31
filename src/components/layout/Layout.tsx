@@ -15,13 +15,18 @@ function LayoutContent() {
   const hideNavbarPaths = [
     '/display/',
     '/artwork/',
+    '/artist-verification',
     '/exhibition-register/',
     '/lounge/review/post',
   ];
   const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
 
   // Footer(FNB) 선택적 숨김 경로 (기본값: Footer 표시, 안 보일 특수 페이지 등록 가능)
-  const defaultHideFooterPaths = ['/exhibition-register/', '/lounge/review/post'];
+  const defaultHideFooterPaths = [
+    '/artist-verification',
+    '/exhibition-register/',
+    '/lounge/review/post',
+  ];
   const isPathFooterHidden = defaultHideFooterPaths.some((path) =>
     location.pathname.startsWith(path),
   );

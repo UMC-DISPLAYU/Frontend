@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import {
   ArtistCard,
   ArtworkCard,
@@ -18,6 +20,7 @@ import {
 import type { TabKey } from '@/types/mypage';
 
 export function MyPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isArtistView, setIsArtistView] = useState(true);
@@ -63,7 +66,7 @@ export function MyPage() {
         onOpenMenu={() => setIsSettingsOpen(true)}
         onToggleView={handleToggleView}
         onVerifyArtist={() => {
-          // TODO: 작가 인증 플로우 연결
+          navigate('/artist-verification');
         }}
         onRegister={() => {
           // TODO: 전시/작품 등록 플로우 연결
