@@ -12,11 +12,9 @@ interface VisibilitySectionProps {
 export function VisibilitySection({
   artworkVisibility,
   contentVisibility,
-  startDate,
+  startDate: _startDate,
   onSettingsClick,
 }: VisibilitySectionProps) {
-  const startDateLabel = formatStartDate(startDate);
-
   const getVisibilityLabel = (visibility: VisibilityType) => {
     return VISIBILITY_LABEL[visibility];
   };

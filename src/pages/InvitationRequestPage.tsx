@@ -134,7 +134,7 @@ export function InvitationRequestPage() {
 
   const handleRejectConfirm = () => {
     // TODO: 거절 API 호출
-    console.log('거절 확인:', selectedInvitation?.id);
+    // console.log('거절 확인:', selectedInvitation?.id);
     setRejectModalOpen(false);
     setSelectedInvitation(null);
   };

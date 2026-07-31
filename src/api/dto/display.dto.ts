@@ -2,7 +2,6 @@ import type {
   ApiResponseDto,
   CursorPaginationDto,
   ImageResponseDto,
-  OffsetPageInfoDto,
   OffsetPageRequestDto,
 } from './common.dto';
 

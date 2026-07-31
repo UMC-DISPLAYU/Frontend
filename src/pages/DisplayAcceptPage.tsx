@@ -25,11 +25,6 @@ export function DisplayAcceptPage() {
 
   const exhibitionInfo = buildExhibitionInfo(invitation);
 
-  const handleComplete = () => {
-    // TODO: 완료 후 이동 경로 연결 (예: 전시 콘텐츠 추가 화면)
-    navigate('/my/exhibitions');
-  };
-
   const handleGoManage = () => {
     navigate('/display/manage');
   };

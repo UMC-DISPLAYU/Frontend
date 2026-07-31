@@ -21,8 +21,8 @@ type InteriorPhotosProps = {
 
 export function InteriorPhotos({
   title = '내부사진',
-  displayId,
-  categoryId,
+  displayId: _displayId,
+  categoryId: _categoryId,
   initialPhotos = [],
   onBack,
   onPhotoCountChange,

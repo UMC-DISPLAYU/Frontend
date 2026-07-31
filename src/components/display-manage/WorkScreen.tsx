@@ -39,9 +39,9 @@ export function WorkScreen({
   const navigate = useNavigate();
   const [selectedContent, setSelectedContent] = useState<{ id: string; title: string } | null>(null);
 
-  const handlePhotoCountChange = (categoryId: number, count: number) => {
+  const handlePhotoCountChange = (_categoryId: number, _count: number) => {
     // TODO: 사진 개수 업데이트 로직
-    console.log('Photo count changed:', categoryId, count);
+    // console.log('Photo count changed:', categoryId, count);
   };
 
   // 콘텐츠 상세 화면 표시 중이면 InteriorPhotos 렌더링

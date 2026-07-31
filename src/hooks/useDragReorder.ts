@@ -50,6 +50,7 @@ export function useDragReorder<T>({ items, onReorder, step }: UseDragReorderProp
       window.removeEventListener('pointerup', handleUp);
       window.removeEventListener('pointercancel', handleUp);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragIndex, items, step]);
 
   const handleStart = (index: number, clientY: number) => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
 
@@ -51,18 +51,22 @@ export function TimeSheet({
   const draggingRef = useRef(false);
   /** 직접 입력 중인 숫자 버퍼 ("1" -> "18") */
   const bufferRef = useRef('');
+  const prevOpenRef = useRef(open);
 
   // 열릴 때마다 외부 값과 동기화
   useEffect(() => {
-    if (!open) return;
-    setTime({
-      startHour: value?.startHour ?? 9,
-      startMinute: value?.startMinute ?? 0,
-      endHour: value?.endHour ?? 18,
-      endMinute: value?.endMinute ?? 0,
-    });
-    setField('startHour');
-    bufferRef.current = '';
+    // open이 false -> true로 변경될 때만 초기화
+    if (open && !prevOpenRef.current) {
+      setTime({
+        startHour: value?.startHour ?? 9,
+        startMinute: value?.startMinute ?? 0,
+        endHour: value?.endHour ?? 18,
+        endMinute: value?.endMinute ?? 0,
+      });
+      setField('startHour');
+      bufferRef.current = '';
+    }
+    prevOpenRef.current = open;
   }, [open, value]);
 
   const isHourField = field === 'startHour' || field === 'endHour';
@@ -74,25 +78,28 @@ export function TimeSheet({
 
   /* ---------------- 시계 드래그 ---------------- */
 
-  const applyAngle = (clientX: number, clientY: number) => {
-    const el = clockRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const ang = (Math.atan2(clientX - cx, -(clientY - cy)) * (180 / Math.PI) + 360) % 360;
+  const applyAngle = useCallback(
+    (clientX: number, clientY: number) => {
+      const el = clockRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const ang = (Math.atan2(clientX - cx, -(clientY - cy)) * (180 / Math.PI) + 360) % 360;
 
-    bufferRef.current = '';
+      bufferRef.current = '';
 
-    if (isHourField) {
-      const h12 = Math.round(ang / 30) % 12; // 0 ~ 11
-      // 현재 오전/오후 구간을 유지한 채 12시간 눈금만 반영
-      const isPm = activeHour >= 12;
-      setTime((t) => ({ ...t, [hourKey]: isPm ? h12 + 12 : h12 }));
-    } else {
-      setTime((t) => ({ ...t, [minuteKey]: Math.round(ang / 6) % 60 }));
-    }
-  };
+      if (isHourField) {
+        const h12 = Math.round(ang / 30) % 12; // 0 ~ 11
+        // 현재 오전/오후 구간을 유지한 채 12시간 눈금만 반영
+        const isPm = activeHour >= 12;
+        setTime((t) => ({ ...t, [hourKey]: isPm ? h12 + 12 : h12 }));
+      } else {
+        setTime((t) => ({ ...t, [minuteKey]: Math.round(ang / 6) % 60 }));
+      }
+    },
+    [isHourField, activeHour, hourKey, minuteKey],
+  );
 
   // window 에 붙여서 원 밖으로 나가도 드래그가 유지되게 한다
   useEffect(() => {
@@ -118,7 +125,7 @@ export function TimeSheet({
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', up);
     };
-  }, [open, field, activeHour]);
+  }, [open, applyAngle]);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();

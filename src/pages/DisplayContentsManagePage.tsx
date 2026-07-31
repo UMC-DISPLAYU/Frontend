@@ -23,33 +23,6 @@ type Content = {
   thumbnail?: string;
 };
 
-const INITIAL_CONTENTS: Content[] = [
-  {
-    id: 1,
-    title: '내부사진',
-    description: '전시 공간과 현장 분위기를 담는 공유 앨범이에요.',
-    photoCount: 12,
-  },
-  {
-    id: 2,
-    title: '비하인드',
-    description: '전시가 완성되기 전의 설치와 준비 과정을 담아요.',
-    photoCount: 8,
-  },
-  {
-    id: 3,
-    title: '안내자료',
-    description: '관람을 돕는 안내 자료를 모아두는 공간이에요.',
-    photoCount: 5,
-  },
-  {
-    id: 4,
-    title: '작가 노트',
-    description: '작품과 전시에 담긴 생각을 사진으로 기록해요.',
-    photoCount: 0,
-  },
-];
-
 const BOTTOM_CTA_LABEL = '콘텐츠 추가';
 const EMPTY_CONTENT: Content = { id: 0, title: '', description: '', photoCount: 0 };
 
@@ -374,9 +347,9 @@ export function DisplayContentsManagePage() {
     deleteMutation.mutate(deleting.id);
   };
 
-  const handlePhotoCountChange = (categoryId: number, count: number) => {
+  const handlePhotoCountChange = (_categoryId: number, _count: number) => {
     // TODO: API 호출로 사진 개수 업데이트
-    console.log('Photo count changed:', categoryId, count);
+    // console.log('Photo count changed:', categoryId, count);
   };
 
   if (!isValidDisplayId) {

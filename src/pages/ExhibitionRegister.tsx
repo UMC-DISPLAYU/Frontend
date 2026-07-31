@@ -28,15 +28,9 @@ export function ExhibitionRegister() {
   const [type, setType] = useState<string | null>(null);
   const [field, setField] = useState<string[]>([]);
 
-  const [school, setSchool] = useState('');
+  const [school, setSchool] = useState(artistProfile?.schoolName || '');
   const [department, setDepartment] = useState('');
   const [organizer, setOrganizer] = useState('');
-
-  useEffect(() => {
-    if (artistProfile?.schoolName) {
-      setSchool(artistProfile.schoolName);
-    }
-  }, [artistProfile]);
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);

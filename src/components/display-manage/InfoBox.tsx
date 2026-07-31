@@ -1,4 +1,4 @@
-import { ChevronRight, Info, ShieldCheck } from 'lucide-react';
+import { ChevronRight, ShieldCheck } from 'lucide-react';
 
 interface InfoBoxProps {
   userRole: 'owner' | 'member-verified' | 'member-unverified';
