@@ -51,31 +51,14 @@ const NAV_ITEMS = [
 
 export function Navbar() {
   return (
-    <div className="relative w-96 px-5 py-1.5 rounded-[250px] shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06)] overflow-hidden">
-      <div
-        aria-hidden
-        className="absolute inset-0 rounded-[250px] backdrop-blur-[10px] pointer-events-none bg-zinc-400/20"
-        style={{
-          backgroundImage:
-            'linear-gradient(90deg, rgba(182,178,178,0.2) 0%, rgba(182,178,178,0.2) 100%), linear-gradient(90deg, rgba(182,178,178,0.5) 0%, rgba(182,178,178,0.5) 100%)',
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 rounded-[inherit] pointer-events-none"
-        style={{
-          boxShadow:
-            'inset 2px 2px 4px -2px rgba(245,245,245,1), inset -2px -2px 4px -2px rgba(241,241,241,0.6)',
-        }}
-      />
-
+    <div className="relative w-96 px-5 py-1.5 rounded-[250px] bg-zinc-400/20 backdrop-blur-[10px] shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-2px_-2px_4px_-2px_rgba(241,241,241,0.60),inset_2px_2px_4px_-2px_rgba(255,255,255,1.00)] overflow-hidden">
       <div className="relative flex items-center justify-center">
         {NAV_ITEMS.map(({ activeIcon, icon, id, label, path }) => {
           return (
             <NavLink
               key={id}
               end={path === '/home'}
-              className="flex flex-col items-center justify-center w-20 h-14 cursor-pointer rounded-[24px] border-0 bg-transparent outline-none transition-transform duration-150 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#fcfcfc]"
+              className="flex flex-col items-center justify-center w-20 h-14 cursor-pointer rounded-3xl border-0 bg-transparent outline-none transition-transform duration-150 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#fcfcfc]"
               to={path}
             >
               {({ isActive }) => (
