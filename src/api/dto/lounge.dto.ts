@@ -16,7 +16,7 @@ export interface CreateLoungePostRequestDto {
 export interface LoungePostBaseDto {
   loungePostId: number;
   title: string;
-  postImageUrl: string | null;
+  postImageUrls: string[];
   content: string;
   category: string;
   postStatus: string;
@@ -37,7 +37,7 @@ export interface LoungePostSummaryDto {
   category: string;
   title: string;
   content: string;
-  postImageUrl: string | null;
+  postImageUrls: string[];
   writer: LoungeWriterDto;
   createdAt: string;
   commentCount: number;
@@ -67,7 +67,7 @@ export type GetLoungePostDetailResponseDto = ApiResponseDto<LoungePostDetailDto>
 
 export interface UpdateLoungePostRequestDto {
   title?: string;
-  postImageUrl?: string | null;
+  postImageUrls?: string[];
   content?: string;
   category?: string;
 }

@@ -18,3 +18,17 @@ export type LoungeCategoryKey = keyof typeof LOUNGE_CATEGORIES;
 export function isLoungeCategoryKey(value: string | undefined): value is LoungeCategoryKey {
   return !!value && value in LOUNGE_CATEGORIES;
 }
+
+// 프론트 카테고리 키 ↔ 백엔드 category enum 값 매핑 (LoungePostCard.tsx의 CATEGORY_LABEL 기준)
+export const LOUNGE_CATEGORY_API_VALUES = {
+  review: 'DISPLAY_REVIEW',
+  tips: 'WORK_TIP',
+  collab: 'COLLABORATION',
+  venue: 'SPACE_RENTAL',
+} as const;
+
+export function toLoungeCategoryKey(apiCategory: string): LoungeCategoryKey | undefined {
+  return (Object.keys(LOUNGE_CATEGORY_API_VALUES) as LoungeCategoryKey[]).find(
+    (key) => LOUNGE_CATEGORY_API_VALUES[key] === apiCategory,
+  );
+}
