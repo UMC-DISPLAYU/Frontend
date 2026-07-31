@@ -10,7 +10,6 @@ interface AuthPageHeaderProps {
   onOpenMenu: () => void;
   onRefresh: () => void;
   onRegister: () => void;
-  onManage: () => void;
   onShare: () => void;
   profile: ArtistProfile;
 }
@@ -19,7 +18,6 @@ export function AuthPageHeader({
   activeTab,
   onTabChange,
   onRegister,
-  onManage,
   onShare,
   profile,
 }: AuthPageHeaderProps) {
