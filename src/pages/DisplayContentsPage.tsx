@@ -43,7 +43,7 @@ export function DisplayContentsPage() {
   // 선택된 카테고리의 사진들을 아래로 나열하는 뷰
   if (selectedCategory) {
     return (
-      <div className="w-full max-w-md mx-auto min-h-dvh bg-page flex flex-col">
+      <div className="w-96 mx-auto min-h-dvh bg-page flex flex-col">
         {/* 헤더 */}
         <header className="sticky top-0 z-20 bg-page h-14 px-5 flex items-center justify-between">
           <button
@@ -85,7 +85,7 @@ export function DisplayContentsPage() {
 
   // 기본 전시 콘텐츠 카테고리 목록 뷰
   return (
-    <div className="w-full max-w-md mx-auto min-h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto min-h-dvh bg-page flex flex-col">
       {/* 헤더 */}
       <header className="sticky top-0 z-20 bg-page h-14 px-5 flex items-center justify-between">
         <button

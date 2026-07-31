@@ -1,0 +1,48 @@
+import { useState } from 'react';
+
+import { Copy, Link2 } from 'lucide-react';
+
+import { Toggle } from './Toggle';
+
+interface InviteLinkSectionProps {
+  inviteLink: string;
+}
+
+export function InviteLinkSection({ inviteLink }: InviteLinkSectionProps) {
+  const [linkEnabled, setLinkEnabled] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`https://${inviteLink}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* 클립보드 권한이 없으면 조용히 무시 */
+    }
+  };
+
+  return (
+    <div className="mt-3 flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="typo-body-sm-regular text-main">초대 링크 활성화</span>
+        <Toggle checked={linkEnabled} onChange={setLinkEnabled} />
+      </div>
+
+      {linkEnabled && (
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-1">
+            <span className="grid h-4 w-7 shrink-0 place-items-center rounded-sm bg-card outline outline-1 outline-offset-[-1px] outline-line-soft">
+              <Link2 className="size-3 text-main" strokeWidth={2} />
+            </span>
+            <span className="typo-body-xs-regular truncate text-main">{inviteLink}</span>
+          </div>
+          <button type="button" onClick={copyLink} className="flex shrink-0 items-center gap-0.5">
+            <Copy className="size-3 text-main" strokeWidth={1} />
+            <span className="typo-body-xs-regular text-main">{copied ? '복사됨' : '복사'}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

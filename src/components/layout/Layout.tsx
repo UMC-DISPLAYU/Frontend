@@ -15,8 +15,12 @@ function LayoutContent() {
   const hideNavbarPaths = [
     '/display/',
     '/artwork/',
+    '/artworks-manage',
+    '/artworks-register',
+    '/exhibition/',
     '/artist-verification',
     '/exhibition-register/',
+    '/team/manage',
     '/lounge/review/post',
   ];
   const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
