@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
 import { ArtistNameSetup } from './pages/ArtistNameSetup';
+import { ArtistVerificationPage } from './pages/ArtistVerificationPage';
 import { ArtworkDetailPage } from './pages/ArtworkDetailPage';
 import { ArtworkRegisterPage } from './pages/ArtworkRegisterPage';
 import { ArtworksManagePage } from './pages/ArtworksManagePage';
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: 'search', element: <SearchPage /> },
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
+      { path: 'artist-verification', element: <ArtistVerificationPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
       { path: 'display/:id/contents', element: <DisplayContentsPage /> },
