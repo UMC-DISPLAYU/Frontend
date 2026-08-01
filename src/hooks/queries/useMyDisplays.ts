@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { queryKeys } from '@/api/queryKeys';
-import { MY_PARTICIPATED_EXHIBITIONS } from '@/mocks/mypage';
 import type { ExhibitionItem } from '@/types/mypage';
 
 // TODO: API 받아서 연결하기
@@ -10,8 +9,5 @@ import type { ExhibitionItem } from '@/types/mypage';
 export const useMyDisplays = () =>
   useQuery<ExhibitionItem[]>({
     queryKey: [...queryKeys.displays.lists(), 'my'],
-    queryFn: async () => {
-      // TODO: API 받아서 연결하기
-      return Promise.resolve(MY_PARTICIPATED_EXHIBITIONS);
-    },
+    queryFn: async () => Promise.resolve([]),
   });

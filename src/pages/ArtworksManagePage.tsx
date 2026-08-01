@@ -8,11 +8,10 @@ import {
   OrderScreen,
   WorkActionSheet,
 } from '@/components/artworks-manage';
-import { INITIAL_WORKS } from '@/mocks/artworkManage';
 import type { Work } from '@/types/artworkManage';
 
 export function ArtworksManagePage() {
-  const [works, setWorks] = useState<Work[]>(INITIAL_WORKS);
+  const [works, setWorks] = useState<Work[]>([]);
   const [screen, setScreen] = useState<'manage' | 'order'>('manage');
   const [sheetWork, setSheetWork] = useState<Work | null>(null);
   const [confirming, setConfirming] = useState(false);

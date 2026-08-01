@@ -2,8 +2,13 @@ import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { UserProfile } from '@/hooks/useUserProfile';
-import { TABS } from '@/mocks/mypage';
 import type { TabKey } from '@/types/mypage';
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'exhibition', label: '전시' },
+  { key: 'artwork', label: '작품' },
+  { key: 'artist', label: '작가' },
+];
 
 interface MyPageHeaderProps {
   activeTab: TabKey;

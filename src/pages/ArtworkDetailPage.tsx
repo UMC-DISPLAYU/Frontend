@@ -11,12 +11,16 @@ import { GuestbookInputBar } from '@/components/artworkdetailpage/GuestbookInput
 import { ErrorView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
-import { ARTWORK_DETAILS, GUESTBOOK_QUESTIONS, GUESTBOOK_REVIEWS } from '@/mocks/exhibition';
 import type {
+  ArtworkDetail,
   ArtworkGuestbookTab as ArtworkGuestbookSubTabType,
   GuestbookQuestion,
   GuestbookReview,
 } from '@/types/exhibition';
+
+function getArtworkDetailFromApiPlaceholder(): ArtworkDetail | undefined {
+  return undefined;
+}
 
 export function ArtworkDetailPage() {
   const navigate = useNavigate();
@@ -25,48 +29,20 @@ export function ArtworkDetailPage() {
   const [activeSubTab, setActiveSubTab] = useState<ArtworkGuestbookSubTabType>('review');
   const [isArtistView, setIsArtistView] = useState(false);
 
-  const artwork = artworkId ? ARTWORK_DETAILS[artworkId] : undefined;
+  const artwork = getArtworkDetailFromApiPlaceholder();
 
   const [prevArtworkId, setPrevArtworkId] = useState(artworkId);
-  const [reviews, setReviews] = useState<GuestbookReview[]>(() =>
-    artworkId ? GUESTBOOK_REVIEWS[artworkId] || [] : [],
-  );
-  const [questions, setQuestions] = useState<GuestbookQuestion[]>(() =>
-    artworkId ? GUESTBOOK_QUESTIONS[artworkId] || [] : [],
-  );
+  const [reviews, setReviews] = useState<GuestbookReview[]>(() => []);
+  const [questions, setQuestions] = useState<GuestbookQuestion[]>(() => []);
 
   if (prevArtworkId !== artworkId) {
     setPrevArtworkId(artworkId);
-    setReviews(artworkId ? GUESTBOOK_REVIEWS[artworkId] || [] : []);
-    setQuestions(artworkId ? GUESTBOOK_QUESTIONS[artworkId] || [] : []);
+    setReviews([]);
+    setQuestions([]);
   }
 
-  const handleSendGuestbook = (content: string, isPrivate: boolean) => {
-    if (activeSubTab === 'review') {
-      const newReview: GuestbookReview = {
-        feelingId: Date.now(),
-        user: { userId: 99, nickname: isArtistView ? artwork?.artist || '작가' : '나' },
-        createdAt: '방금 전',
-        content,
-        reply: null,
-        isArtist: isArtistView,
-        isMyReview: true,
-        likeCount: 0,
-      };
-      setReviews((prev) => [newReview, ...prev]);
-    } else {
-      const newQuestion: GuestbookQuestion = {
-        questionId: Date.now(),
-        user: { userId: 99, nickname: '나' },
-        createdAt: '방금 전',
-        content,
-        isPublic: !isPrivate,
-        reply: null,
-        isMyQuestion: true,
-        likeCount: 0,
-      };
-      setQuestions((prev) => [newQuestion, ...prev]);
-    }
+  const handleSendGuestbook = () => {
+    // TODO: 작품 방명록 작성 API 연결
   };
 
   if (!artwork) {

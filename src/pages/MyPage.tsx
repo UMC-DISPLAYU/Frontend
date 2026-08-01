@@ -3,21 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ErrorView, LoadingView } from '@/components/common';
-import {
-  ArtistCard,
-  ArtworkCard,
-  ExhibitionCard,
-  MyPageHeader,
-  SettingsSheet,
-} from '@/components/mypage';
+import { MyPageHeader, SettingsSheet } from '@/components/mypage';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import {
-  ARTISTS,
-  MY_BOOKMARKED_ARTWORKS,
-  MY_BOOKMARKED_EXHIBITIONS,
-  MY_PARTICIPATED_EXHIBITIONS,
-  MY_REGISTERED_ARTWORKS,
-} from '@/mocks/mypage';
 import type { TabKey } from '@/types/mypage';
 
 export function MyPage() {
@@ -79,31 +66,10 @@ export function MyPage() {
       />
 
       <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
-        {activeTab === 'exhibition' && (
-          <div className="flex flex-col gap-3">
-            {(isArtistView ? MY_PARTICIPATED_EXHIBITIONS : MY_BOOKMARKED_EXHIBITIONS).map(
-              (item) => (
-                <ExhibitionCard key={item.id} item={item} isArtistView={isArtistView} />
-              ),
-            )}
-          </div>
-        )}
-
-        {activeTab === 'artwork' && (
-          <div className="grid grid-cols-2 gap-x-1.5 gap-y-3">
-            {(isArtistView ? MY_REGISTERED_ARTWORKS : MY_BOOKMARKED_ARTWORKS).map((item) => (
-              <ArtworkCard key={item.id} item={item} isArtistView={isArtistView} />
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'artist' && !isArtistView && (
-          <div className="flex flex-col gap-3">
-            {ARTISTS.map((item) => (
-              <ArtistCard key={item.id} item={item} />
-            ))}
-          </div>
-        )}
+        <ErrorView
+          fullScreen={false}
+          message={`${activeTab === 'exhibition' ? '전시' : activeTab === 'artwork' ? '작품' : '작가'} 데이터가 없습니다.`}
+        />
       </section>
 
       <SettingsSheet
