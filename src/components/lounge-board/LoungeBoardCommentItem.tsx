@@ -10,16 +10,7 @@ import {
 } from '@/hooks/queries/useLoungeComments';
 import { useLoungeReplies } from '@/hooks/queries/useLoungeReplies';
 import type { LoungeBoardComment } from '@/types/exhibition';
-
-const formatRelativeTime = (createdAt: string) => {
-  const diff = Date.now() - new Date(createdAt).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return '방금 전';
-  if (minutes < 60) return `${minutes}분 전`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}시간 전`;
-  return `${Math.floor(hours / 24)}일 전`;
-};
+import { formatLoungeTime } from '@/utils/date';
 
 type Props = {
   postId: number;
@@ -64,7 +55,7 @@ export function LoungeBoardCommentItem({
     repliesData?.replies.map((reply) => ({
       id: String(reply.loungeCommentId),
       author: reply.writer.nickname,
-      time: formatRelativeTime(reply.createdAt),
+      time: formatLoungeTime(reply.createdAt),
       content: reply.content,
       likeCount: reply.likeCount,
       isLiked: reply.isLiked,

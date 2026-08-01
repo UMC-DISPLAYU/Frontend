@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Image, SendHorizontal, X } from 'lucide-react';
 
@@ -21,6 +21,7 @@ export function LoungeBoardCommentInputBar({
   onSubmitReply,
 }: Props) {
   const [text, setText] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const replyKey = replyTarget?.commentId ?? null;
   const [prevReplyKey, setPrevReplyKey] = useState(replyKey);
@@ -28,6 +29,12 @@ export function LoungeBoardCommentInputBar({
     setPrevReplyKey(replyKey);
     setText('');
   }
+
+  useEffect(() => {
+    if (replyTarget) {
+      inputRef.current?.focus();
+    }
+  }, [replyTarget]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -66,6 +73,7 @@ export function LoungeBoardCommentInputBar({
           className="w-full h-11 px-3 bg-box200 rounded-xl flex items-center justify-between gap-2"
         >
           <input
+            ref={inputRef}
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}

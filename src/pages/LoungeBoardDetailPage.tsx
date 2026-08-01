@@ -23,6 +23,7 @@ import {
 } from '@/hooks/queries/useLoungeComments';
 import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
 import type { LoungeBoardComment, LoungeBoardDetail } from '@/types/exhibition';
+import { formatLoungeTime } from '@/utils/date';
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -31,16 +32,6 @@ const formatDate = (iso: string) => {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}.${m}.${day}`;
-};
-
-const formatRelativeTime = (createdAt: string) => {
-  const diff = Date.now() - new Date(createdAt).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return '방금 전';
-  if (minutes < 60) return `${minutes}분 전`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}시간 전`;
-  return `${Math.floor(hours / 24)}일 전`;
 };
 
 export const LoungeBoardDetailPage = () => {
@@ -84,7 +75,7 @@ export const LoungeBoardDetailPage = () => {
             (comment): LoungeBoardComment => ({
               id: String(comment.loungeCommentId),
               author: comment.writer.nickname,
-              time: formatRelativeTime(comment.createdAt),
+              time: formatLoungeTime(comment.createdAt),
               content: comment.content,
               likeCount: comment.likeCount,
               isLiked: comment.isLiked,
