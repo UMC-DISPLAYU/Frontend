@@ -68,6 +68,7 @@ export function LoungeBoardCommentItem({
       content: reply.content,
       likeCount: reply.likeCount,
       isLiked: reply.isLiked,
+      isMyComment: reply.isMyComment,
     })) ?? [];
 
   const replyCount = comment.replyCount ?? 0;
@@ -124,9 +125,11 @@ export function LoungeBoardCommentItem({
             댓글{replyCount}
           </button>
         )}
-        <button type="button" onClick={onDelete} className="typo-body-xs-regular text-faint">
-          삭제
-        </button>
+        {comment.isMyComment && (
+          <button type="button" onClick={onDelete} className="typo-body-xs-regular text-faint">
+            삭제
+          </button>
+        )}
       </div>
 
       {!isReply && repliesOpen && replies.length > 0 && (

@@ -11,12 +11,13 @@ import type {
   GetLoungePostsRequestDto,
   GetLoungePostsResponseDataDto,
   GetLoungeRepliesResponseDataDto,
+  GetMyLoungeCommentsResponseDataDto,
+  GetMyLoungePostsResponseDataDto,
+  GetMyLoungeScrapsResponseDataDto,
   LoungeCommentLikeStatusDto,
   LoungePostDetailDto,
   LoungePostLikeStatusDto,
   LoungePostScrapStatusDto,
-  UpdateLoungeCommentRequestDto,
-  UpdateLoungeCommentResponseDataDto,
   UpdateLoungePostRequestDto,
   UpdateLoungePostResponseDataDto,
 } from '@/api/dto';
@@ -63,13 +64,6 @@ export const getLoungeComments = async (
 ): Promise<GetLoungeCommentsResponseDataDto> =>
   apiRequest(`/v1/lounge/posts/${postId}/comments`, { query: params });
 
-// PATCH /v1/lounge/comments/:commentId
-export const updateLoungeComment = async (
-  commentId: number,
-  body: UpdateLoungeCommentRequestDto,
-): Promise<UpdateLoungeCommentResponseDataDto> =>
-  apiRequest(`/v1/lounge/comments/${commentId}`, { method: 'PATCH', body });
-
 // DELETE /v1/lounge/comments/:commentId
 export const deleteLoungeComment = async (
   commentId: number,
@@ -113,3 +107,20 @@ export const getLoungeReplies = async (
   params: { cursorId?: number | null; size?: number } = {},
 ): Promise<GetLoungeRepliesResponseDataDto> =>
   apiRequest(`/v1/lounge/comments/${commentId}/replies`, { query: params });
+
+// GET /v1/lounge/me/posts (PR #258, 아직 미배포)
+export const getMyLoungePosts = async (
+  params: { cursorId?: number | null; size?: number } = {},
+): Promise<GetMyLoungePostsResponseDataDto> => apiRequest('/v1/lounge/me/posts', { query: params });
+
+// GET /v1/lounge/me/scraps (PR #258, 아직 미배포)
+export const getMyLoungeScraps = async (
+  params: { cursorId?: number | null; size?: number } = {},
+): Promise<GetMyLoungeScrapsResponseDataDto> =>
+  apiRequest('/v1/lounge/me/scraps', { query: params });
+
+// GET /v1/lounge/me/comments (PR #258, 아직 미배포)
+export const getMyLoungeComments = async (
+  params: { cursorId?: number | null; size?: number } = {},
+): Promise<GetMyLoungeCommentsResponseDataDto> =>
+  apiRequest('/v1/lounge/me/comments', { query: params });

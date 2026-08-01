@@ -75,7 +75,7 @@ export const router = createBrowserRouter([
       { path: 'my-review', element: <MyReviewPage /> },
       { path: 'my-questions', element: <MyQuestionsPage /> },
       { path: 'policy', element: <PolicyPage /> },
-      { path: 'lounge/review/post', element: <ExhibitionReviewWritePage /> },
+      { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },
       { path: 'lounge/my-activity', element: <MyActivityPage /> },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
       {

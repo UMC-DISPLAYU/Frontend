@@ -88,6 +88,7 @@ export type DeleteLoungePostResponseDto = ApiResponseDto<DeleteLoungePostRespons
 
 export interface CreateLoungeCommentRequestDto {
   content: string;
+  imageUrls?: string[];
 }
 
 export interface LoungeCommentBaseDto {
@@ -96,6 +97,7 @@ export interface LoungeCommentBaseDto {
   content: string;
   commentStatus: string;
   writer: LoungeWriterDto;
+  imageUrls: string[];
 }
 
 export interface CreateLoungeCommentResponseDataDto extends LoungeCommentBaseDto {
@@ -118,19 +120,6 @@ export interface GetLoungeCommentsResponseDataDto extends CursorPageInfoDto {
 }
 
 export type GetLoungeCommentsResponseDto = ApiResponseDto<GetLoungeCommentsResponseDataDto>;
-
-export interface UpdateLoungeCommentRequestDto {
-  content: string;
-}
-
-export interface UpdateLoungeCommentResponseDataDto {
-  loungeCommentId: number;
-  content: string;
-  commentStatus: string;
-  updatedAt: string;
-}
-
-export type UpdateLoungeCommentResponseDto = ApiResponseDto<UpdateLoungeCommentResponseDataDto>;
 
 export interface DeleteLoungeCommentResponseDataDto {
   loungeCommentId: number;
@@ -193,3 +182,35 @@ export interface GetLoungeRepliesResponseDataDto extends CursorPageInfoDto {
 }
 
 export type GetLoungeRepliesResponseDto = ApiResponseDto<GetLoungeRepliesResponseDataDto>;
+
+// ─── 내 활동 (PR #258, 아직 미배포) ────────────────────────────────────────────
+
+export type GetMyLoungePostsResponseDataDto = GetLoungePostsResponseDataDto;
+
+export type GetMyLoungePostsResponseDto = ApiResponseDto<GetMyLoungePostsResponseDataDto>;
+
+export type GetMyLoungeScrapsResponseDataDto = GetLoungePostsResponseDataDto;
+
+export type GetMyLoungeScrapsResponseDto = ApiResponseDto<GetMyLoungeScrapsResponseDataDto>;
+
+export interface LoungeMyCommentDto {
+  loungeCommentId: number;
+  loungePostId: number;
+  parentCommentId: number | null;
+  content: string;
+  imageUrls: string[];
+  commentStatus: string;
+  writer: LoungeWriterDto;
+  createdAt: string;
+  updatedAt: string;
+  likeCount: number;
+  replyCount: number;
+  isLiked: boolean;
+  isMyComment: boolean;
+}
+
+export interface GetMyLoungeCommentsResponseDataDto extends CursorPageInfoDto {
+  comments: LoungeMyCommentDto[];
+}
+
+export type GetMyLoungeCommentsResponseDto = ApiResponseDto<GetMyLoungeCommentsResponseDataDto>;

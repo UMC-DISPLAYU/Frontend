@@ -88,6 +88,7 @@ export const LoungeBoardDetailPage = () => {
               content: comment.content,
               likeCount: comment.likeCount,
               isLiked: comment.isLiked,
+              isMyComment: comment.isMyComment,
               replyCount: comment.replyCount,
             }),
           ),

@@ -1,13 +1,21 @@
 import { ChevronLeft, SquarePen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import type { LoungeCategoryKey } from '@/constants/loungeCategories';
+
 type Props = {
   title: string;
+  category?: LoungeCategoryKey;
   showWriteButton?: boolean;
   className?: string;
 };
 
-export function LoungeBoardHeader({ title, showWriteButton = true, className = '' }: Props) {
+export function LoungeBoardHeader({
+  title,
+  category,
+  showWriteButton = true,
+  className = '',
+}: Props) {
   const navigate = useNavigate();
 
   return (
@@ -19,10 +27,10 @@ export function LoungeBoardHeader({ title, showWriteButton = true, className = '
         <h1 className="typo-body-xl-bold text-main">{title}</h1>
       </div>
 
-      {showWriteButton && (
+      {showWriteButton && category && (
         <button
           type="button"
-          onClick={() => navigate('/lounge/review/post')}
+          onClick={() => navigate(`/lounge/${category}/post`)}
           className="absolute top-[14px] right-[33px] flex flex-col items-center gap-1"
         >
           <SquarePen className="size-3.5 text-faint" />

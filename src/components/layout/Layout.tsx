@@ -11,6 +11,9 @@ function LayoutContent() {
   const matches = useMatches();
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
 
+  // 라운지 글쓰기 페이지 (/lounge/:category/post, 카테고리 무관)
+  const isLoungeWritePath = /^\/lounge\/[^/]+\/post$/.test(location.pathname);
+
   // 하단 네비게이션 바(Navbar) 숨김 경로
   const hideNavbarPaths = [
     '/display/',
@@ -21,9 +24,9 @@ function LayoutContent() {
     '/artist-verification',
     '/exhibition-register/',
     '/team/manage',
-    '/lounge/review/post',
   ];
-  const isPathNavbarHidden = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
+  const isPathNavbarHidden =
+    hideNavbarPaths.some((path) => location.pathname.startsWith(path)) || isLoungeWritePath;
 
   // Router handle ({ hideNavbar: true }) 기반 숨김
   const isRouteHandleNavbarHidden = matches.some(
@@ -33,14 +36,9 @@ function LayoutContent() {
   const shouldHideNavbar = isPathNavbarHidden || isRouteHandleNavbarHidden;
 
   // Footer(FNB) 선택적 숨김 경로 (기본값: Footer 표시, 안 보일 특수 페이지 등록 가능)
-  const defaultHideFooterPaths = [
-    '/artist-verification',
-    '/exhibition-register/',
-    '/lounge/review/post',
-  ];
-  const isPathFooterHidden = defaultHideFooterPaths.some((path) =>
-    location.pathname.startsWith(path),
-  );
+  const defaultHideFooterPaths = ['/artist-verification', '/exhibition-register/'];
+  const isPathFooterHidden =
+    defaultHideFooterPaths.some((path) => location.pathname.startsWith(path)) || isLoungeWritePath;
 
   // Router handle ({ hideFooter: true }) 기반 숨김
   const isRouteHandleFooterHidden = matches.some(

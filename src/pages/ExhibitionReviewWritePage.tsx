@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
+import { ErrorView } from '@/components/common';
 import { FNB } from '@/components/layout';
 import { ImageUploadPlaceholder, PostWriteHeader } from '@/components/post-write';
 import { AlertModal, RequiredLabel } from '@/components/ui';
+import { isLoungeCategoryKey, LOUNGE_CATEGORY_API_VALUES } from '@/constants/loungeCategories';
 import { useCreateLoungePost } from '@/hooks/queries/useLounge';
 import { getErrorMessage } from '@/utils/error';
 
@@ -13,6 +15,8 @@ const BASE_INPUT_CLASS =
 
 export function ExhibitionReviewWritePage() {
   const navigate = useNavigate();
+  const { category } = useParams<{ category: string }>();
+  const isValidCategory = isLoungeCategoryKey(category);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -40,6 +44,7 @@ export function ExhibitionReviewWritePage() {
 
   const handleSubmit = async () => {
     if (isSubmittingRef.current) return;
+    if (!isValidCategory) return;
     isSubmittingRef.current = true;
     setSubmitError(null);
 
@@ -47,7 +52,7 @@ export function ExhibitionReviewWritePage() {
       await createLoungePost.mutateAsync({
         title,
         content,
-        category: 'DISPLAY_REVIEW',
+        category: LOUNGE_CATEGORY_API_VALUES[category],
         postImageUrls: imageUrls,
       });
 
@@ -55,11 +60,21 @@ export function ExhibitionReviewWritePage() {
     } catch (error) {
       console.error(error);
       const message = getErrorMessage(error, '알 수 없는 오류가 발생했습니다.');
-      setSubmitError(`후기 등록에 실패했습니다. (${message})`);
+      setSubmitError(`등록에 실패했습니다. (${message})`);
     } finally {
       isSubmittingRef.current = false;
     }
   };
+
+  if (!isValidCategory) {
+    return (
+      <ErrorView
+        title="존재하지 않는 게시판입니다"
+        message="요청하신 라운지 게시판을 찾을 수 없습니다."
+        onRetry={() => navigate(-1)}
+      />
+    );
+  }
 
   return (
     <div className="w-full max-w-[402px] mx-auto bg-page relative flex min-h-dvh flex-col">
@@ -129,7 +144,7 @@ export function ExhibitionReviewWritePage() {
       </footer>
 
       {isSubmitted && (
-        <AlertModal message="정상적으로 후기가 작성되었습니다." onConfirm={() => navigate(-1)} />
+        <AlertModal message="정상적으로 게시글이 작성되었습니다." onConfirm={() => navigate(-1)} />
       )}
     </div>
   );

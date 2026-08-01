@@ -1,17 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type {
-  CreateLoungeCommentRequestDto,
-  CursorPageRequestDto,
-  UpdateLoungeCommentRequestDto,
-} from '@/api/dto';
+import type { CreateLoungeCommentRequestDto, CursorPageRequestDto } from '@/api/dto';
 import {
   createLoungeComment,
   deleteLoungeComment,
   getLoungeComments,
   likeLoungeComment,
   unlikeLoungeComment,
-  updateLoungeComment,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
@@ -33,26 +28,6 @@ export const useCreateLoungeComment = () => {
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
-    },
-  });
-};
-
-export const useUpdateLoungeComment = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      commentId,
-      body,
-    }: {
-      postId: number;
-      commentId: number;
-      body: UpdateLoungeCommentRequestDto;
-    }) => updateLoungeComment(commentId, body),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
-      });
     },
   });
 };
