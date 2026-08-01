@@ -43,7 +43,7 @@ export function MyPage() {
     return <LoadingView message="프로필 로딩 중..." />;
   }
 
-  if (!error || !userData) {
+  if (error || !userData) {
     return (
       <ErrorView
         message={error?.message || '프로필 정보를 불러오지 못했습니다.'}
