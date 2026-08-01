@@ -86,11 +86,15 @@ export function FilterModal({
           </div>
         ) : null}
 
-        <div className="flex flex-1 flex-col gap-[54px] overflow-y-auto px-5 pt-5 scrollbar-none">
+        <div className="flex flex-1 flex-col gap-[22px] overflow-y-auto px-5 pt-3 pb-[33px] scrollbar-none">
           {FILTER_TABS.map((tab) => (
             <div className="flex flex-col gap-4" key={tab}>
-              <h3 className="typo-body-sm-bold text-main">{tab}</h3>
-              <div className="flex flex-wrap gap-5">
+              <div className="-mx-5 flex items-center self-stretch px-5">
+                <h3 className="typo-body-sm-bold text-main inline-block w-fit border-b-2 border-neutral-900 pb-3">
+                  {tab}
+                </h3>
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-3">
                 {FILTER_TAB_OPTIONS[tab].map((option) => (
                   <FilterChip
                     key={option}

@@ -34,7 +34,6 @@ export const FILTER_CONFIG: Record<FilterTab, FilterConfig> = {
   전시상태: {
     param: 'status',
     options: [
-      ALL_OPTION,
       { label: '전시중', value: 'ONGOING' },
       { label: '전시예정', value: 'UPCOMING' },
       { label: '종료예정', value: 'CLOSING_SOON' },
@@ -44,7 +43,6 @@ export const FILTER_CONFIG: Record<FilterTab, FilterConfig> = {
   전시유형: {
     param: 'type',
     options: [
-      ALL_OPTION,
       { label: '졸업 전시', value: 'GRADUATION' },
       { label: '학과·학회 전시', value: 'DEPARTMENTS' },
       { label: '과제 전시', value: 'ASSIGNMENTS' },
@@ -56,7 +54,6 @@ export const FILTER_CONFIG: Record<FilterTab, FilterConfig> = {
   지역: {
     param: 'region',
     options: [
-      ALL_OPTION,
       { label: '서울', value: 'SEOUL' },
       { label: '경기·인천', value: 'GYEONGGI_INCHEON' },
       { label: '그 외 지역', value: 'OTHERS' },
