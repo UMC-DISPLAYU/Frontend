@@ -35,7 +35,7 @@ export function FNB({ hasFixedBottomBar = false, className }: FNBProps) {
         </div>
 
         {/* 크레딧 목록 */}
-        <div className="flex flex-wrap items-start gap-x-4 gap-y-4 sm:gap-7">
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-4 sm:gap-x-7">
           {credits.map((item) => (
             <div className="flex flex-col gap-0.5 shrink-0" key={item.role}>
               <p className="typo-body-xs-regular text-hint">{item.role}</p>
