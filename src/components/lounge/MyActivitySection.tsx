@@ -25,13 +25,9 @@ export function MyActivitySection() {
   return (
     <section className="flex flex-col gap-3">
       <h2 className="typo-body-xl-bold text-main">내 활동</h2>
-      <div className="flex gap-2.5 overflow-x-auto scrollbar-none">
+      <div className="grid grid-cols-3 gap-2.5">
         {ACTIVITY_CARDS.map(({ image, imageClassName, title, tab }) => (
-          <LoungeCard
-            key={title}
-            className="relative w-[114px] h-[85px] shrink-0"
-            onClick={() => goToTab(tab)}
-          >
+          <LoungeCard key={title} className="relative h-[85px]" onClick={() => goToTab(tab)}>
             <ArrowUpRight className="absolute top-3 right-3 size-5 text-faint" strokeWidth={2.5} />
             <div className="w-full flex flex-col items-start gap-0.5 mt-0.5">
               <img alt="" className={`${imageClassName} object-contain`} src={image} />

@@ -39,9 +39,9 @@ export function CommunitySection() {
 
   return (
     <div className="flex flex-col gap-2.5">
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center justify-between gap-3.5">
         <LoungeCard
-          className="w-[174px] shrink-0 h-[343px]"
+          className="min-w-0 h-[343px]"
           title="전시후기"
           description={<MultilineText text={'전시를 체험한\n이야기와 감상을 나눠요'} />}
           image={loungeReviewThumbnail}
@@ -49,7 +49,7 @@ export function CommunitySection() {
           bordered
         />
 
-        <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+        <div className="w-[162px] min-w-0 flex flex-col gap-2.5">
           {TIP_CARDS.map(({ category, title, description }) => (
             <LoungeCard
               key={category}
@@ -66,10 +66,12 @@ export function CommunitySection() {
         className="flex justify-between h-[100px]"
         onClick={() => navigate('/lounge/venue')}
       >
-        <div className="flex items-end">
-          <div className="w-56 h-12 flex flex-col justify-end gap-px">
-            <h3 className="typo-body-xl-semibold text-main">전시 장소 대여</h3>
-            <p className="typo-body-xs-regular text-sub600">전시 장소에 대한 정보를 공유해요</p>
+        <div className="flex items-end min-w-0 flex-1">
+          <div className="flex-1 min-w-0 h-12 flex flex-col justify-end gap-px">
+            <h3 className="typo-body-xl-semibold text-main truncate">전시 장소 대여</h3>
+            <p className="typo-body-xs-regular text-sub600 truncate">
+              전시 장소에 대한 정보를 공유해요
+            </p>
           </div>
           <img alt="" className="w-24 h-20 object-cover shrink-0" src={loungeVenueThumbnail} />
         </div>

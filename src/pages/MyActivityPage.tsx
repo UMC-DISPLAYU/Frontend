@@ -75,7 +75,7 @@ export function MyActivityPage() {
         {TAB_POSTS[activeTab].length > 0 ? (
           <div className="flex flex-col gap-3.5">
             {TAB_POSTS[activeTab].map((post) => (
-              <LoungeBoardPostCard key={post.id} post={post} tagLabel={activeTabLabel} />
+              <LoungeBoardPostCard key={post.id} post={post} />
             ))}
           </div>
         ) : (
