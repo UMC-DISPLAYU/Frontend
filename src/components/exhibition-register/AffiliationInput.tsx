@@ -8,6 +8,7 @@ interface AffiliationInputProps {
   onDepartmentChange: (department: string) => void;
   organizer: string;
   onOrganizerChange: (organizer: string) => void;
+  readonly?: boolean;
 }
 
 export function AffiliationInput({
@@ -18,11 +19,14 @@ export function AffiliationInput({
   onDepartmentChange,
   organizer,
   onOrganizerChange,
+  readonly = false,
 }: AffiliationInputProps) {
   if (group === 'institution') {
     return (
-      <div className="rounded-2xl outline outline-1 outline-offset-[-1px] outline-line">
-        <SchoolSearchInput value={school} onChange={onSchoolChange} />
+      <div
+        className={`rounded-2xl outline outline-1 outline-offset-[-1px] outline-line ${readonly ? 'overflow-hidden' : ''}`}
+      >
+        <SchoolSearchInput value={school} onChange={onSchoolChange} readonly={readonly} />
 
         <div className="bg-card px-4 py-3.5 flex flex-col gap-2">
           <label htmlFor="department-input" className="flex items-center gap-1">
@@ -34,7 +38,7 @@ export function AffiliationInput({
             value={department}
             onChange={(e) => onDepartmentChange(e.target.value)}
             placeholder="학과, 학회, 동아리명을 입력해주세요"
-            className="h-10 px-3 bg-page rounded-2xl outline outline-1 outline-offset-[-1px] outline-line-soft typo-body-sm-regular text-main placeholder:text-hint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+            className="h-10 px-3 bg-input-soft-bg rounded-2xl outline outline-1 outline-offset-[-1px] outline-line-soft typo-body-sm-regular text-main placeholder:text-hint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
           />
         </div>
       </div>
@@ -42,7 +46,9 @@ export function AffiliationInput({
   }
 
   return (
-    <div className="rounded-2xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden">
+    <div
+      className={`rounded-2xl outline outline-1 outline-offset-[-1px] outline-line ${readonly ? 'overflow-hidden' : ''}`}
+    >
       <div className="bg-card px-4 py-3.5 flex flex-col gap-2">
         <label htmlFor="organizer-input" className="flex items-center gap-1">
           <span className="text-sub700 typo-body-xs-bold leading-4">주최 / 소속명</span>
@@ -53,7 +59,7 @@ export function AffiliationInput({
           value={organizer}
           onChange={(e) => onOrganizerChange(e.target.value)}
           placeholder="팀, 모임, 연합명을 입력해주세요"
-          className="h-10 px-3 bg-page rounded-2xl outline outline-1 outline-offset-[-1px] outline-line-soft typo-body-sm-regular text-main placeholder:text-hint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+          className="h-10 px-3 bg-input-soft-bg rounded-2xl outline outline-1 outline-offset-[-1px] outline-line-soft typo-body-sm-regular text-main placeholder:text-hint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
         />
       </div>
     </div>

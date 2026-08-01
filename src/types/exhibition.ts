@@ -3,10 +3,12 @@ import type { LoungeCategoryKey } from '@/constants/loungeCategories';
 // ─── Home Types ────────────────────────────────────────────────────────────
 
 export interface DuPickItem {
-  id: string;
-  name: string;
+  id?: number | string;
+  title: string;
+  name?: string;
   date: string;
   location: string;
+  bannerImageUrl?: string;
 }
 
 export interface ArtworkPreviewItem {

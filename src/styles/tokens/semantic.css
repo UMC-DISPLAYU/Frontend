@@ -15,7 +15,7 @@
   --bg-box200: var(--palette-token-200);
   --bg-dark: var(--palette-gray-black);
   --bg-heart: var(--palette-red);
-  --bg-bookmark: var(--palette-gray-200);
+  --bg-bookmark: var(--palette-gray-300);
   --bg-logo: var(--palette-navy);
 
   /* Foreground — 텍스트와 아이콘이 같은 스케일을 공유한다 */
@@ -27,6 +27,23 @@
   --fg-white: var(--palette-gray-white);
   --fg-link: var(--palette-blue);
   --fg-error: var(--palette-red);
+
+  /* Input — Default (기본형) */
+  --input-border: var(--palette-gray-300);
+  --input-placeholder: var(--palette-gray-400);
+
+  /* Input — Soft (연한 박스형) */
+  --input-soft-bg: var(--palette-gray-70);
+  --input-soft-border: var(--palette-gray-100);
+  --input-soft-placeholder: var(--palette-gray-300);
+
+  /* Modal */
+  --modal-title: var(--palette-gray-black);
+  --modal-desc: var(--palette-gray-600);
+  --modal-btn-bg: var(--palette-gray-400);
+  --modal-btn-fg: var(--palette-gray-black);
+  --modal-btn-hover-bg: var(--palette-gray-black);
+  --modal-btn-hover-fg: var(--palette-gray-white);
 
   /* Tag */
   --tag-blue: var(--palette-blue);

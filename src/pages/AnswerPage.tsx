@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { ErrorView } from '@/components/common';
+
 type TabKey = 'pending' | 'done';
 
 interface Question {
@@ -143,7 +145,7 @@ export function AnswerPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col overflow-hidden">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col overflow-hidden">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
@@ -155,16 +157,16 @@ export function AnswerPage() {
         <Tabs value={tab} onChange={setTab} />
       </div>
 
-      <section className="flex-1 min-h-0 overflow-y-auto px-5 py-5">
-        <div className="flex flex-col gap-[10px]">
-          {items.length === 0 ? (
-            <div className="py-20 text-center typo-body-sm-regular text-faint">
-              아직 항목이 없어요.
-            </div>
-          ) : (
-            items.map((item) => <QuestionCard key={item.id} item={item} />)
-          )}
-        </div>
+      <section className="flex-1 min-h-0 overflow-y-auto px-5 py-5 flex flex-col">
+        {items.length === 0 ? (
+          <ErrorView fullScreen={false} message="답변할 질문 항목이 없어요." />
+        ) : (
+          <div className="flex flex-col gap-[10px]">
+            {items.map((item) => (
+              <QuestionCard key={item.id} item={item} />
+            ))}
+          </div>
+        )}
       </section>
 
       <div className="bg-gradient-to-b from-transparent via-page/75 to-page px-5 pb-2 pt-3">

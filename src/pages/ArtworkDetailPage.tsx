@@ -8,6 +8,7 @@ import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { GuestbookInputBar } from '@/components/artworkdetailpage/GuestbookInputBar';
+import { ErrorView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
@@ -33,16 +34,11 @@ export function ArtworkDetailPage() {
   // 유효하지 않은 artworkId 즉시 처리
   if (!Number.isFinite(artworkId) || artworkId <= 0) {
     return (
-      <div className={cn(containerClassName, 'gap-3 bg-page')}>
-        <p className="typo-body-sm-regular text-sub600">작품 정보를 찾을 수 없습니다.</p>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="typo-body-sm-regular text-faint underline cursor-pointer"
-        >
-          돌아가기
-        </button>
-      </div>
+      <ErrorView
+        title="작품 정보를 찾을 수 없습니다"
+        message="요청하신 작품 정보가 존재하지 않거나 삭제되었습니다."
+        onRetry={() => navigate(-1)}
+      />
     );
   }
 

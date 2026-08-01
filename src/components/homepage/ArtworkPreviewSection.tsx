@@ -22,7 +22,7 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
 
   return (
     <section className="mb-7">
-      <SectionHeader title="작품" onLinkClick={onMoreClick} />
+      <SectionHeader title="작품 미리보기" onLinkClick={onMoreClick} />
       <div
         ref={scrollRef}
         onWheel={handleWheel}
@@ -44,9 +44,7 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
 
             <div className="absolute left-3 right-3 bottom-3">
               <p className="typo-body-sm-bold text-white">{item.artworkName}</p>
-              <p className="typo-body-xs-regular text-faint">
-                {item.exhibitionInfo.exhibitionPeriod}
-              </p>
+              <p className="typo-body-xxs-regular text-tag-gray">{item.artistName}</p>
             </div>
           </div>
         ))}

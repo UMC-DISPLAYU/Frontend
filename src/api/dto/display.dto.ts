@@ -2,7 +2,6 @@ import type {
   ApiResponseDto,
   CursorPaginationDto,
   ImageResponseDto,
-  OffsetPageInfoDto,
   OffsetPageRequestDto,
 } from './common.dto';
 
@@ -10,6 +9,8 @@ export interface HomeExhibitionDto {
   displayId: number;
   title: string;
   posterImageUrl: string;
+  organization: string;
+  department: string;
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
@@ -325,6 +326,8 @@ export interface UpdateDisplayRequestDto {
   placeName?: string;
   precautions?: string | null;
   fieldsValid?: boolean;
+  artworkVisibility?: 'immediate' | 'startDate' | 'hidden';
+  contentVisibility?: 'immediate' | 'startDate' | 'hidden';
 }
 
 export type UpdateDisplayResponseDataDto = DisplayDetailDto;

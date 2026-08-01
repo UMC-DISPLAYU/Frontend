@@ -19,7 +19,7 @@ function ContentCategoryCard({ category }: ContentCarouselProps) {
 
   return (
     <div
-      className="shrink-0 rounded-xl overflow-hidden bg-box200 relative cursor-pointer"
+      className="shrink-0 rounded-xl overflow-hidden bg-box200 relative cursor-pointer text-left"
       style={{ width: 362, height: 152 }}
     >
       {firstImage ? (
@@ -28,8 +28,8 @@ function ContentCategoryCard({ category }: ContentCarouselProps) {
         <div className="w-full h-full bg-neutral-300" />
       )}
       {/* 왼쪽 하단 그라데이션 + 텍스트 오버레이 */}
-      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent rounded-xl" />
-      <div className="absolute bottom-3 left-3 flex flex-col gap-0.5">
+      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent rounded-xl pointer-events-none" />
+      <div className="absolute bottom-3 left-3 flex flex-col gap-0.5 text-left">
         <p className="typo-body-md-bold text-white leading-tight">{category.name}</p>
         {(category.description || count > 0) && (
           <p className="typo-body-xxs-regular text-white/80">

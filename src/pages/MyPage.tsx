@@ -1,5 +1,8 @@
 import { useState } from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
+import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtistCard,
   ArtworkCard,
@@ -18,6 +21,7 @@ import {
 import type { TabKey } from '@/types/mypage';
 
 export function MyPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isArtistView, setIsArtistView] = useState(true);
@@ -36,34 +40,29 @@ export function MyPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-neutral-500 text-sm font-['Pretendard']">로딩 중...</div>
-      </div>
-    );
+    return <LoadingView message="프로필 로딩 중..." />;
   }
 
-  if (error || !userData) {
+  if (!error || !userData) {
     return (
-      <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-red-500 text-sm font-['Pretendard']">
-          프로필을 불러오는데 실패했습니다.
-        </div>
-      </div>
+      <ErrorView
+        message={error?.message || '프로필 정보를 불러오지 못했습니다.'}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
   const { isArtistVerified, profile } = userData;
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-gray-100 flex flex-col">
       <MyPageHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onOpenMenu={() => setIsSettingsOpen(true)}
         onToggleView={handleToggleView}
         onVerifyArtist={() => {
-          // TODO: 작가 인증 플로우 연결
+          navigate('/artist-verification');
         }}
         onRegister={() => {
           // TODO: 전시/작품 등록 플로우 연결
