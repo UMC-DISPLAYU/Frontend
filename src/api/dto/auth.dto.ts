@@ -42,13 +42,14 @@ export type LoginResponseDataDto = ExistingUserLoginResponseDataDto | NewUserLog
 export type LoginResponseDto = ApiResponseDto<LoginResponseDataDto>;
 
 export interface SignupAgreementDto {
-  agreeId: number;
-  isAgreed: boolean;
+  code: string;
+  version: string;
 }
 
 export interface SignupRequestDto {
   nickname: string;
   agreements: SignupAgreementDto[];
+  isOver14: boolean;
 }
 
 export interface SignupResponseDataDto {

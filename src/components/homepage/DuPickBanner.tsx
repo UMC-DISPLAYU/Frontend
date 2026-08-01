@@ -3,12 +3,15 @@ import { useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import type { DuPickDto } from '@/api/dto';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
 import type { DuPickItem } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
+type BannerItem = DuPickItem | DuPickDto;
+
 type Props = {
-  items: DuPickItem[];
+  items: BannerItem[];
   className?: string;
 };
 
@@ -61,10 +64,15 @@ export function DuPickBanner({ items, className }: Props) {
             }}
           >
             {items.map((item, i) => {
-              const displayTitle = item.title || item.name || '';
+              const displayTitle = 'name' in item ? item.title || item.name || '' : item.title;
+              const description =
+                'date' in item ? [item.date, item.location].join(' ') : item.subtitle;
 
               return (
-                <div key={item.id || i} className="relative h-full w-full shrink-0">
+                <div
+                  key={'duPickId' in item ? item.duPickId : item.id || i}
+                  className="relative h-full w-full shrink-0"
+                >
                   {item.bannerImageUrl && (
                     <img
                       src={item.bannerImageUrl}
@@ -78,8 +86,7 @@ export function DuPickBanner({ items, className }: Props) {
                   <div className="absolute bottom-9 left-5 right-4 pointer-events-none flex flex-col gap-0.5">
                     <p className="typo-body-xl-bold text-neutral-50">{displayTitle}</p>
                     <div className="flex items-center gap-2 typo-body-xs-regular text-neutral-400">
-                      {item.date && <span>{item.date}</span>}
-                      {item.location && <span>{item.location}</span>}
+                      {description && <span>{description}</span>}
                     </div>
                   </div>
                 </div>
