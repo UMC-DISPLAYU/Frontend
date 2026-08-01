@@ -15,13 +15,22 @@ function LayoutContent() {
   const hideNavbarPaths = [
     '/display/',
     '/artwork/',
+    '/artworks-manage',
+    '/artworks-register',
+    '/exhibition/',
+    '/artist-verification',
     '/exhibition-register/',
+    '/team/manage',
     '/lounge/review/post',
   ];
   const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
 
   // Footer(FNB) 선택적 숨김 경로 (기본값: Footer 표시, 안 보일 특수 페이지 등록 가능)
-  const defaultHideFooterPaths = ['/exhibition-register/', '/lounge/review/post'];
+  const defaultHideFooterPaths = [
+    '/artist-verification',
+    '/exhibition-register/',
+    '/lounge/review/post',
+  ];
   const isPathFooterHidden = defaultHideFooterPaths.some((path) =>
     location.pathname.startsWith(path),
   );
@@ -50,7 +59,7 @@ function LayoutContent() {
 
         {!shouldHideNavbar && (
           <div className="fixed right-0 bottom-4 left-0 z-50 flex justify-center px-4 pointer-events-none">
-            <div className="pointer-events-auto">
+            <div className="pointer-events-auto w-full max-w-96 flex justify-center">
               <Navbar />
             </div>
           </div>

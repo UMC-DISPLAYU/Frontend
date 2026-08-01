@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { ErrorView } from '@/components/common';
+
 const TABS = ['전시', '작품'];
 
 interface Question {
@@ -66,7 +68,7 @@ export function MyQuestionsPage() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
@@ -96,12 +98,16 @@ export function MyQuestionsPage() {
         })}
       </div>
 
-      <section className="flex-1 min-h-0 overflow-y-auto px-5 py-5">
-        <div className="flex flex-col gap-3.5">
-          {QUESTIONS.map((q, i) => (
-            <QuestionCard key={i} q={q} />
-          ))}
-        </div>
+      <section className="flex-1 min-h-0 overflow-y-auto px-5 py-5 flex flex-col">
+        {QUESTIONS.length > 0 ? (
+          <div className="flex flex-col gap-3.5">
+            {QUESTIONS.map((q, i) => (
+              <QuestionCard key={i} q={q} />
+            ))}
+          </div>
+        ) : (
+          <ErrorView fullScreen={false} message="등록된 질문이 없습니다." />
+        )}
       </section>
     </div>
   );

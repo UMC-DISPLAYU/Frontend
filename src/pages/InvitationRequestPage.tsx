@@ -134,7 +134,7 @@ export function InvitationRequestPage() {
 
   const handleRejectConfirm = () => {
     // TODO: 거절 API 호출
-    console.log('거절 확인:', selectedInvitation?.id);
+    // console.log('거절 확인:', selectedInvitation?.id);
     setRejectModalOpen(false);
     setSelectedInvitation(null);
   };
@@ -146,7 +146,7 @@ export function InvitationRequestPage() {
 
   return (
     <>
-      <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+      <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
         <section className="flex-1 min-h-0 overflow-y-auto px-5 pb-5 pt-3">
           <div className="flex flex-col items-end gap-1 pb-4">
             <div className="flex w-full flex-col gap-1">

@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import type { SearchDisplaysRequestDto } from '@/api/dto';
+import { ErrorView, LoadingView } from '@/components/common';
 
 import cancelIcon from '../assets/cancel.svg';
 import filterIcon from '../assets/filter.svg';
@@ -201,13 +202,14 @@ export function SearchPage() {
 
           <div className="flex flex-1 flex-col px-5 pt-4 pb-24">
             {isLoading ? (
-              <p className="flex flex-1 items-center justify-center text-center text-xl text-neutral-400">
-                불러오는 중...
-              </p>
+              <LoadingView fullScreen={false} message="전시를 검색하는 중..." />
             ) : isError ? (
-              <p className="flex flex-1 items-center justify-center text-center text-xl text-neutral-400">
-                전시를 불러오지 못했습니다
-              </p>
+              <ErrorView
+                fullScreen={false}
+                title="전시를 불러오지 못했습니다"
+                message="검색 결과를 가져오는 중 오류가 발생했습니다."
+                onRetry={() => window.location.reload()}
+              />
             ) : exhibitions.length === 0 ? (
               <p className="flex flex-1 items-center justify-center text-center text-xl text-neutral-400">
                 결과가 없습니다

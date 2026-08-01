@@ -9,6 +9,7 @@ import {
   signup,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -25,8 +26,7 @@ export const useSignup = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ body, signupToken }: { body: SignupRequestDto; signupToken: string | null }) =>
-      signup(body, signupToken),
+    mutationFn: (body: SignupRequestDto) => signup(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
     },
@@ -49,6 +49,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: (body: LogoutRequestDto) => logout(body),
     onSettled: () => {
+      useAuthStore.getState().clearAccessToken();
       queryClient.clear();
     },
   });

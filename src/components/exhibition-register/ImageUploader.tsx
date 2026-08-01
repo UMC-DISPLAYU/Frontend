@@ -2,9 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ImageUploaderProps {
   maxImages?: number;
+  onImagesChange?: (images: string[]) => void;
 }
 
-export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
+export function ImageUploader({ maxImages = 4, onImagesChange }: ImageUploaderProps) {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,23 +30,31 @@ export function ImageUploader({ maxImages = 4 }: ImageUploaderProps) {
       const filesToAdd = Math.min(files.length, remainingSlots);
       const newUrls = Array.from({ length: filesToAdd }, (_, i) => URL.createObjectURL(files[i]));
 
-      setImageUrls((prev) => [...prev, ...newUrls]);
+      setImageUrls((prev) => {
+        const updated = [...prev, ...newUrls];
+        onImagesChange?.(updated);
+        return updated;
+      });
 
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     },
-    [imageUrls.length, maxImages],
+    [imageUrls.length, maxImages, onImagesChange],
   );
 
-  const handleRemoveImage = useCallback((index: number) => {
-    setImageUrls((prev) => {
-      const newUrls = [...prev];
-      URL.revokeObjectURL(newUrls[index]);
-      newUrls.splice(index, 1);
-      return newUrls;
-    });
-  }, []);
+  const handleRemoveImage = useCallback(
+    (index: number) => {
+      setImageUrls((prev) => {
+        const newUrls = [...prev];
+        URL.revokeObjectURL(newUrls[index]);
+        newUrls.splice(index, 1);
+        onImagesChange?.(newUrls);
+        return newUrls;
+      });
+    },
+    [onImagesChange],
+  );
 
   return (
     <div className="mt-2 flex gap-2 flex-wrap">
