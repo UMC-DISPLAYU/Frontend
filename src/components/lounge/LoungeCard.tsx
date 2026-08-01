@@ -34,7 +34,7 @@ export function LoungeCard({
           <div className="h-full flex flex-col justify-between items-end">
             <div className="flex flex-col items-end gap-8">
               <ArrowUpRight className="size-5 text-faint" strokeWidth={2.5} />
-              <img alt="" className="w-full h-[169px] object-cover" src={image} />
+              <img alt="" className="w-[162px] h-[169px] object-cover" src={image} />
             </div>
             <div className="w-full flex flex-col items-start gap-1">
               <h3 className="typo-body-xl-semibold text-main">{title}</h3>
