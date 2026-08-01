@@ -15,8 +15,14 @@ export interface ArtworkGuestbookUserDto {
 }
 
 export interface ArtworkGuestbookReplyDto {
+  feelingReplyId?: number;
+  questionReplyId?: number;
   content: string;
   createdAt: string;
+  userId?: number;
+  nickname?: string;
+  isCreator?: boolean;
+  isTeamMember?: boolean;
 }
 
 export interface GetArtworkDetailResponseDataDto {
@@ -41,9 +47,11 @@ export type GetArtworkDetailResponseDto = ApiResponseDto<GetArtworkDetailRespons
 
 export interface ArtworkFeelingDto {
   feelingId: number;
+  userId?: number;
   content: string;
   createdAt: string;
   user: ArtworkGuestbookUserDto;
+  images?: ImageResponseDto[];
   reply: ArtworkGuestbookReplyDto | null;
 }
 
@@ -55,6 +63,14 @@ export type GetArtworkFeelingsResponseDto = ApiResponseDto<GetArtworkFeelingsRes
 
 export interface CreateArtworkFeelingRequestDto {
   content: string;
+  images?: ArtworkFeelingImageRequestDto[];
+}
+
+export interface ArtworkFeelingImageRequestDto {
+  imageUrl: string;
+  width?: number;
+  height?: number;
+  sortOrder?: number;
 }
 
 export interface CreateArtworkFeelingResponseDataDto {
@@ -152,6 +168,24 @@ export interface ArtworkFeelingLikeDto {
 }
 
 export type ToggleArtworkFeelingLikeResponseDto = ApiResponseDto<ArtworkFeelingLikeDto | null>;
+
+export interface ArtworkFeelingReplyListResponseDataDto {
+  replies: ArtworkGuestbookReplyDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export interface ArtworkFeelingReplyLikeDto {
+  feelingReplyId: number;
+  isLiked: boolean;
+  likeCount: number;
+}
+
+export interface DeleteArtworkFeelingReplyResponseDataDto {
+  feelingReplyId: number;
+  deletedAt: string;
+}
 
 export interface UpdateArtworkOrderRequestDto {
   orderedArtworkIds: number[];

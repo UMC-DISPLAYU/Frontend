@@ -1,8 +1,18 @@
 import type {
   CreateDisplayRequestDto,
   CreateDisplayResponseDataDto,
+  CreateDisplayReviewReplyRequestDto,
+  CreateDisplayReviewReplyResponseDataDto,
+  CreateDisplayReviewRequestDto,
+  CreateDisplayReviewResponseDataDto,
+  DeleteDisplayReviewReplyResponseDataDto,
+  DeleteDisplayReviewResponseDataDto,
   DisplayDetailDto,
   DisplayListResponseDataDto,
+  DisplayMemberInvitationResponseDataDto,
+  DisplayMemberListResponseDataDto,
+  DisplayReviewLikeResponseDataDto,
+  DisplayReviewReplyLikeResponseDataDto,
   GetClosingSoonDisplaysRequestDto,
   GetClosingSoonDisplaysResponseDataDto,
   GetDisplayMapRequestDto,
@@ -13,7 +23,10 @@ import type {
   GetDisplayReviewsResponseDataDto,
   GetDuPicksRequestDto,
   GetDuPicksResponseDataDto,
+  GetMyDisplaysResponseDataDto,
   HomeExhibitionDto,
+  InviteDisplayMemberRequestDto,
+  MyDisplayInvitationListResponseDataDto,
   SearchDisplaysRequestDto,
   ToggleDisplayLikeResponseDataDto,
   UpdateDisplayRequestDto,
@@ -85,12 +98,85 @@ export const updateDisplayLike = async (body: {
 }): Promise<ToggleDisplayLikeResponseDataDto> =>
   apiRequest('/v1/display/like', { method: 'PATCH', body });
 
+// GET /v1/display/me
+export const getMyDisplays = async (): Promise<GetMyDisplaysResponseDataDto> =>
+  apiRequest('/v1/display/me');
+
+// PATCH /v1/display/me/nickname
+export const updateMyDisplayNickname = async (body: { nickname: string }): Promise<unknown> =>
+  apiRequest('/v1/display/me/nickname', { method: 'PATCH', body });
+
+// GET /v1/display/invitation/:token
+export const getDisplayInvitationByToken = async (
+  token: string,
+): Promise<DisplayMemberInvitationResponseDataDto> => apiRequest(`/v1/display/invitation/${token}`);
+
+// POST /v1/display/:displayId/invitation
+export const createDisplayInvitation = async (
+  displayId: number,
+): Promise<DisplayMemberInvitationResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/invitation`, { method: 'POST' });
+
+// PATCH /v1/display/:displayId/invitation/disable
+export const disableDisplayInvitation = async (displayId: number): Promise<unknown> =>
+  apiRequest(`/v1/display/${displayId}/invitation/disable`, { method: 'PATCH' });
+
+// GET /v1/display/:displayId/members
+export const getDisplayMembers = async (
+  displayId: number,
+): Promise<DisplayMemberListResponseDataDto> => apiRequest(`/v1/display/${displayId}/members`);
+
+// POST /v1/display-invitations/displays/:displayId
+export const inviteDisplayMember = async (
+  displayId: number,
+  body: InviteDisplayMemberRequestDto,
+): Promise<DisplayMemberInvitationResponseDataDto> =>
+  apiRequest(`/v1/display-invitations/displays/${displayId}`, { method: 'POST', body });
+
+// GET /v1/display-invitations/me
+export const getMyDisplayInvitations = async (): Promise<MyDisplayInvitationListResponseDataDto> =>
+  apiRequest('/v1/display-invitations/me');
+
+// POST /v1/display-invitations/:invitationId/accept
+export const acceptDisplayInvitation = async (
+  invitationId: number,
+  body: { displayNickname: string },
+): Promise<DisplayMemberInvitationResponseDataDto> =>
+  apiRequest(`/v1/display-invitations/${invitationId}/accept`, { method: 'POST', body });
+
+// POST /v1/display-invitations/:invitationId/reject
+export const rejectDisplayInvitation = async (
+  invitationId: number,
+): Promise<DisplayMemberInvitationResponseDataDto> =>
+  apiRequest(`/v1/display-invitations/${invitationId}/reject`, { method: 'POST' });
+
 // GET /v1/display/:displayId/reviews
 export const getDisplayReviews = async (
   displayId: number,
   params: GetDisplayReviewsRequestDto = {},
 ): Promise<GetDisplayReviewsResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/reviews`, { query: params });
+
+// POST /v1/display/:displayId/reviews
+export const createDisplayReview = async (
+  displayId: number,
+  body: CreateDisplayReviewRequestDto,
+): Promise<CreateDisplayReviewResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reviews`, { method: 'POST', body });
+
+// DELETE /v1/display/:displayId/reviews/:displayReviewId
+export const deleteDisplayReview = async (
+  displayId: number,
+  displayReviewId: number,
+): Promise<DeleteDisplayReviewResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reviews/${displayReviewId}`, { method: 'DELETE' });
+
+// POST /v1/display/:displayId/reviews/:displayReviewId/like
+export const toggleDisplayReviewLike = async (
+  displayId: number,
+  displayReviewId: number,
+): Promise<DisplayReviewLikeResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reviews/${displayReviewId}/like`, { method: 'POST' });
 
 // GET /v1/display/:displayId/reviews/:displayReviewId/replies
 export const getDisplayReviewReplies = async (
@@ -99,3 +185,35 @@ export const getDisplayReviewReplies = async (
   params: GetDisplayReviewRepliesRequestDto = {},
 ): Promise<GetDisplayReviewRepliesResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/reviews/${displayReviewId}/replies`, { query: params });
+
+// POST /v1/display/:displayId/reviews/:displayReviewId/replies
+export const createDisplayReviewReply = async (
+  displayId: number,
+  displayReviewId: number,
+  body: CreateDisplayReviewReplyRequestDto,
+): Promise<CreateDisplayReviewReplyResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reviews/${displayReviewId}/replies`, {
+    method: 'POST',
+    body,
+  });
+
+// DELETE /v1/display/:displayId/reviews/:displayReviewId/reply/:displayReviewReplyId
+export const deleteDisplayReviewReply = async (
+  displayId: number,
+  displayReviewId: number,
+  displayReviewReplyId: number,
+): Promise<DeleteDisplayReviewReplyResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reviews/${displayReviewId}/reply/${displayReviewReplyId}`, {
+    method: 'DELETE',
+  });
+
+// POST /v1/display/:displayId/reviews/:displayReviewId/reply/:displayReviewReplyId/like
+export const toggleDisplayReviewReplyLike = async (
+  displayId: number,
+  displayReviewId: number,
+  displayReviewReplyId: number,
+): Promise<DisplayReviewReplyLikeResponseDataDto> =>
+  apiRequest(
+    `/v1/display/${displayId}/reviews/${displayReviewId}/reply/${displayReviewReplyId}/like`,
+    { method: 'POST' },
+  );

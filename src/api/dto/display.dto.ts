@@ -138,6 +138,7 @@ export interface DisplayDetailDto {
   displayFields: string[];
   region: string;
   likeCount: number;
+  isBookmarked?: boolean;
   period: DisplayPeriodDto;
   artworkContentOpen: string;
   exhibitionContentOpen: string;
@@ -243,6 +244,31 @@ export interface GetDisplayReviewsRequestDto {
   size?: number;
 }
 
+export interface CreateDisplayReviewRequestDto {
+  content: string;
+  images?: DisplayReviewImageRequestDto[];
+}
+
+export interface DisplayReviewImageRequestDto {
+  imageUrl: string;
+  width?: number;
+  height?: number;
+  sortOrder?: number;
+}
+
+export type CreateDisplayReviewResponseDataDto = DisplayReviewDto;
+
+export interface DeleteDisplayReviewResponseDataDto {
+  displayReviewId: number;
+  deletedAt: string;
+}
+
+export interface DisplayReviewLikeResponseDataDto {
+  displayReviewId: number;
+  isLiked: boolean;
+  likeCount: number;
+}
+
 export interface GetDisplayReviewsResponseDataDto {
   reviews: DisplayReviewDto[];
   nextCursorId: number | null;
@@ -268,6 +294,23 @@ export interface DisplayReviewReplyDto {
 export interface GetDisplayReviewRepliesRequestDto {
   cursorId?: number;
   size?: number;
+}
+
+export interface CreateDisplayReviewReplyRequestDto {
+  content: string;
+}
+
+export type CreateDisplayReviewReplyResponseDataDto = DisplayReviewReplyDto;
+
+export interface DeleteDisplayReviewReplyResponseDataDto {
+  displayReviewReplyId: number;
+  deletedAt: string;
+}
+
+export interface DisplayReviewReplyLikeResponseDataDto {
+  displayReviewReplyId: number;
+  isLiked: boolean;
+  likeCount: number;
 }
 
 export interface GetDisplayReviewRepliesResponseDataDto {
@@ -348,3 +391,48 @@ export interface ToggleDisplayLikeResponseDataDto {
 }
 
 export type ToggleDisplayLikeResponseDto = ApiResponseDto<ToggleDisplayLikeResponseDataDto>;
+
+export interface MyDisplayDto {
+  displayId: number;
+  title: string;
+  isDisplaying: boolean;
+  startDate: string;
+  endDate: string;
+  school: string;
+  department: string;
+  placeName: string;
+  postImageUrl: string;
+}
+
+export interface GetMyDisplaysResponseDataDto {
+  createdDisplays: MyDisplayDto[];
+  participatedDisplays: MyDisplayDto[];
+}
+
+export interface InviteDisplayMemberRequestDto {
+  inviteeUserId: number;
+  role?: 'TEAM_MEM';
+}
+
+export interface DisplayMemberListResponseDataDto {
+  displayId: number;
+  members: DisplayTeamMemberDto[];
+}
+
+export interface DisplayMemberInvitationResponseDataDto {
+  invitationId: number;
+  displayId: number;
+  inviterUserId: number;
+  inviteeUserId: number;
+  status: string;
+  createdAt: string;
+  respondedAt?: string | null;
+}
+
+export interface MyDisplayInvitationListResponseDataDto {
+  invitations: DisplayInvitationDto[];
+}
+
+export interface AcceptDisplayInvitationRequestDto {
+  displayNickname: string;
+}

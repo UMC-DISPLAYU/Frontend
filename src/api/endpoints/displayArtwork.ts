@@ -1,5 +1,7 @@
 import type {
   ArtworkFeelingLikeDto,
+  ArtworkFeelingReplyLikeDto,
+  ArtworkFeelingReplyListResponseDataDto,
   ArtworkQuestionRecordDto,
   CreateArtworkFeelingRequestDto,
   CreateArtworkFeelingResponseDataDto,
@@ -8,6 +10,7 @@ import type {
   CreateArtworkQuestionRequestDto,
   CreateExhibitionArtworkRequestDto,
   CreateExhibitionArtworkResponseDataDto,
+  DeleteArtworkFeelingReplyResponseDataDto,
   DeleteArtworkQuestionResponseDataDto,
   DeleteArtworkResponseDataDto,
   GetArtworkDetailResponseDataDto,
@@ -99,6 +102,14 @@ export const toggleArtworkFeelingLike = async (
 ): Promise<ArtworkFeelingLikeDto | null> =>
   apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/like`, { method: 'POST' });
 
+// GET /v1/artworks/:artworkId/feelings/:feelingId/replies
+export const getArtworkFeelingReplies = async (
+  artworkId: number,
+  feelingId: number,
+  params: { cursorId?: number; size?: number } = {},
+): Promise<ArtworkFeelingReplyListResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/replies`, { query: params });
+
 // PUT /v1/artworks/order
 export const updateArtworkOrder = async (
   _displayId: number,
@@ -130,6 +141,26 @@ export const createArtworkFeelingReply = async (
   body: { content: string },
 ): Promise<unknown> =>
   apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply`, { method: 'POST', body });
+
+// DELETE /v1/artworks/:artworkId/feelings/:feelingId/reply/:feelingReplyId
+export const deleteArtworkFeelingReply = async (
+  artworkId: number,
+  feelingId: number,
+  feelingReplyId: number,
+): Promise<DeleteArtworkFeelingReplyResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply/${feelingReplyId}`, {
+    method: 'DELETE',
+  });
+
+// POST /v1/artworks/:artworkId/feelings/:feelingId/reply/:feelingReplyId/like
+export const toggleArtworkFeelingReplyLike = async (
+  artworkId: number,
+  feelingId: number,
+  feelingReplyId: number,
+): Promise<ArtworkFeelingReplyLikeDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply/${feelingReplyId}/like`, {
+    method: 'POST',
+  });
 
 // POST /v1/artworks/:artworkId/like
 export const likeArtwork = async (artworkId: number): Promise<unknown> =>

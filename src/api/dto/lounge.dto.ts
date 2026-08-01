@@ -119,19 +119,6 @@ export interface GetLoungeCommentsResponseDataDto extends CursorPageInfoDto {
 
 export type GetLoungeCommentsResponseDto = ApiResponseDto<GetLoungeCommentsResponseDataDto>;
 
-export interface UpdateLoungeCommentRequestDto {
-  content: string;
-}
-
-export interface UpdateLoungeCommentResponseDataDto {
-  loungeCommentId: number;
-  content: string;
-  commentStatus: string;
-  updatedAt: string;
-}
-
-export type UpdateLoungeCommentResponseDto = ApiResponseDto<UpdateLoungeCommentResponseDataDto>;
-
 export interface DeleteLoungeCommentResponseDataDto {
   loungeCommentId: number;
   commentStatus: string;

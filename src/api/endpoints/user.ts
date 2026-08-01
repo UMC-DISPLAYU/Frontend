@@ -5,7 +5,13 @@ import type {
   ConfirmVerificationEmailRequestDto,
   ConfirmVerificationEmailResponseDataDto,
   ResendVerificationEmailRequestDto,
+  SchoolSearchDto,
+  SchoolSearchRequestDto,
   SendVerificationEmailRequestDto,
+  UpdateArtistProfileRequestDto,
+  UpdateArtistProfileResponseDataDto,
+  UpdateMyProfileRequestDto,
+  UpdateMyProfileResponseDataDto,
   UpdateNicknameRequestDto,
   UpdateNicknameResponseDataDto,
   UserProfileDto,
@@ -41,6 +47,11 @@ export const getUserMe = async (): Promise<UserProfileDto> => apiRequest('/v1/us
 export const deleteUserMe = async (): Promise<null> =>
   apiRequest('/v1/users/me', { method: 'DELETE' });
 
+// PATCH /v1/users/me
+export const updateUserMe = async (
+  body: UpdateMyProfileRequestDto,
+): Promise<UpdateMyProfileResponseDataDto> => apiRequest('/v1/users/me', { method: 'PATCH', body });
+
 // PATCH /v1/users/me/nickname
 export const updateNickname = async (
   body: UpdateNicknameRequestDto,
@@ -51,7 +62,27 @@ export const updateNickname = async (
 export const getMyArtistProfile = async (): Promise<ArtistProfileDto> =>
   apiRequest('/v1/users/me/artist-profile');
 
+// PATCH /v1/users/me/artist-profile
+export const updateMyArtistProfile = async (
+  body: UpdateArtistProfileRequestDto,
+): Promise<UpdateArtistProfileResponseDataDto> =>
+  apiRequest('/v1/users/me/artist-profile', { method: 'PATCH', body });
+
 // GET /v1/users/:userId/artist-profile
 export const getUserArtistProfile = async (
   userId: number,
 ): Promise<Omit<ArtistProfileDto, 'status'>> => apiRequest(`/v1/users/${userId}/artist-profile`);
+
+// GET /v1/schools
+export const searchSchools = async (
+  params: SchoolSearchRequestDto = {},
+): Promise<SchoolSearchDto[]> => {
+  const data = await apiRequest<{ schools?: SchoolSearchDto[] } | SchoolSearchDto[]>(
+    '/v1/schools',
+    {
+      query: params,
+    },
+  );
+
+  return Array.isArray(data) ? data : (data.schools ?? []);
+};

@@ -5,6 +5,7 @@ export interface UserProfileDto {
   provider: string;
   name: string;
   nickname: string;
+  profileImageUrl?: string | null;
   isVerified: boolean;
   socialEmail: string;
   schoolEmail: string | null;
@@ -56,6 +57,16 @@ export interface UpdateNicknameRequestDto {
   nickname: string;
 }
 
+export interface UpdateMyProfileRequestDto {
+  profileImageUrl?: string;
+  nickname?: string;
+}
+
+export interface UpdateMyProfileResponseDataDto {
+  profileImageUrl: string;
+  nickname: string;
+}
+
 export interface UpdateNicknameResponseDataDto {
   nickname: string;
   nextNicknameChangeAvailableAt: string;
@@ -64,11 +75,39 @@ export interface UpdateNicknameResponseDataDto {
 export type UpdateNicknameResponseDto = ApiResponseDto<UpdateNicknameResponseDataDto>;
 
 export interface ArtistProfileDto {
+  profileImageUrl?: string | null;
   artistName: string;
+  introduction?: string | null;
   status?: string;
   schoolName?: string;
+  externalLink?: string | null;
   portfolioUrl?: string | null;
   fields: string[];
+}
+
+export interface UpdateArtistProfileRequestDto {
+  profileImageUrl?: string;
+  artistName: string;
+  introduction?: string;
+  fields: string[];
+  externalLink?: string;
+  univName?: string;
+}
+
+export type UpdateArtistProfileResponseDataDto = Omit<UpdateArtistProfileRequestDto, 'univName'> & {
+  univName?: string;
+};
+
+export interface SchoolSearchRequestDto {
+  keyword?: string;
+}
+
+export interface SchoolSearchDto {
+  name: string;
+}
+
+export interface SchoolSearchResponseDataDto {
+  schools: SchoolSearchDto[];
 }
 
 export type GetMyArtistProfileResponseDto = ApiResponseDto<ArtistProfileDto>;

@@ -15,8 +15,6 @@ import type {
   LoungePostDetailDto,
   LoungePostLikeStatusDto,
   LoungePostScrapStatusDto,
-  UpdateLoungeCommentRequestDto,
-  UpdateLoungeCommentResponseDataDto,
   UpdateLoungePostRequestDto,
   UpdateLoungePostResponseDataDto,
 } from '@/api/dto';
@@ -62,13 +60,6 @@ export const getLoungeComments = async (
   params: { cursorId?: number | null; size?: number } = {},
 ): Promise<GetLoungeCommentsResponseDataDto> =>
   apiRequest(`/v1/lounge/posts/${postId}/comments`, { query: params });
-
-// PATCH /v1/lounge/comments/:commentId
-export const updateLoungeComment = async (
-  commentId: number,
-  body: UpdateLoungeCommentRequestDto,
-): Promise<UpdateLoungeCommentResponseDataDto> =>
-  apiRequest(`/v1/lounge/comments/${commentId}`, { method: 'PATCH', body });
 
 // DELETE /v1/lounge/comments/:commentId
 export const deleteLoungeComment = async (
