@@ -22,8 +22,8 @@ export function FNB({ hasFixedBottomBar = false, className }: FNBProps) {
   return (
     <footer
       className={cn(
-        'w-full max-w-md mx-auto bg-line-soft px-[30px] pt-[24px] overflow-hidden',
-        hasFixedBottomBar ? 'pb-28' : 'pb-[32px]',
+        'w-full max-w-md mx-auto bg-line-soft px-4 sm:px-7.5 pt-6 overflow-hidden',
+        hasFixedBottomBar ? 'pb-28' : 'pb-8',
         className,
       )}
     >
@@ -35,7 +35,7 @@ export function FNB({ hasFixedBottomBar = false, className }: FNBProps) {
         </div>
 
         {/* 크레딧 목록 */}
-        <div className="flex items-start gap-7">
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-4 sm:gap-7">
           {credits.map((item) => (
             <div className="flex flex-col gap-0.5 shrink-0" key={item.role}>
               <p className="typo-body-xs-regular text-hint">{item.role}</p>
