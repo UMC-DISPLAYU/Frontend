@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   CheckNicknameRequestDto,
   CreateArtistProfileRequestDto,
+  UpdateArtistProfileRequestDto,
   UpdateMyProfileRequestDto,
   UpdateNicknameRequestDto,
 } from '@/api/dto';
@@ -13,6 +14,7 @@ import {
   getMyArtistProfile,
   getUserArtistProfile,
   getUserMe,
+  updateMyArtistProfile,
   updateNickname,
   updateUserMe,
 } from '@/api/endpoints';
@@ -62,6 +64,17 @@ export const useUpdateUserMe = () => {
     mutationFn: (body: UpdateMyProfileRequestDto) => updateUserMe(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
+    },
+  });
+};
+
+export const useUpdateMyArtistProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: UpdateArtistProfileRequestDto) => updateMyArtistProfile(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
     },
   });
 };
