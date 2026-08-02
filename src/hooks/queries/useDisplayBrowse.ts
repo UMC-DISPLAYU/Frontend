@@ -1,7 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { GetDisplayMapRequestDto, SearchDisplaysRequestDto } from '@/api/dto';
-import { getDisplayMap, searchDisplays } from '@/api/endpoints';
+import type {
+  CreateDisplayRequestDto,
+  GetDisplayMapRequestDto,
+  SearchDisplaysRequestDto,
+} from '@/api/dto';
+import { createDisplay, getDisplayMap, searchDisplays } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
 export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
@@ -15,3 +19,14 @@ export const useDisplayMap = (params: GetDisplayMapRequestDto) =>
     queryKey: queryKeys.displays.map(params),
     queryFn: () => getDisplayMap(params),
   });
+
+export const useCreateDisplay = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: CreateDisplayRequestDto) => createDisplay(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+    },
+  });
+};

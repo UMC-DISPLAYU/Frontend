@@ -3,10 +3,71 @@ import { useState } from 'react';
 import { ChevronLeft, Info } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import type { CreateDisplayRequestDto } from '@/api/dto';
+import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
+
 interface SummaryRowProps {
   label: string;
   value: string;
 }
+
+type ExhibitionRegisterState = {
+  imageUrls?: string[];
+  title?: string;
+  subtitle?: string;
+  intro?: string;
+  type?: string;
+  field?: string[];
+  school?: string;
+  department?: string;
+  organizer?: string;
+  period?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  placeName?: string;
+  address?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  contact?: string;
+  notice?: string;
+};
+
+const DISPLAY_TYPE_MAP: Record<string, CreateDisplayRequestDto['type']> = {
+  '졸업 전시': 'GRADUATION',
+  '과제 전시': 'TASK',
+  '학과·학회 전시': 'CLUB',
+  '연합 전시': 'JOINT',
+  '소모임·동아리 전시': 'CLUB',
+  '기타 단체 전시': 'ETC',
+};
+
+const DISPLAY_FIELD_MAP: Record<string, string> = {
+  회화: 'PAINTING',
+  디자인: 'DESIGN',
+  사진: 'PHOTOGRAPHY',
+  건축: 'ARCHITECTURE',
+  영상: 'MEDIA',
+  조소: 'SCULPTURE',
+  패션: 'FASHION',
+  일러스트: 'DESIGN',
+  공예: 'CRAFT',
+  기타: 'ETC',
+};
+
+const getRegion = (address: string): CreateDisplayRequestDto['region'] => {
+  if (address.includes('서울')) return 'SEOUL';
+  if (address.includes('경기') || address.includes('인천')) return 'GYEONGGI_INCHEON';
+
+  return 'OTHERS';
+};
+
+const optionalText = (value?: string | null) => {
+  const trimmed = value?.trim();
+
+  return trimmed ? trimmed : undefined;
+};
 
 function SummaryRow({ label, value }: SummaryRowProps) {
   return (
@@ -20,17 +81,78 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 export function ArtistNameSetup() {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const registerState = (state ?? {}) as ExhibitionRegisterState;
+  const createDisplay = useCreateDisplay();
   const [artistName, setArtistName] = useState('');
 
   const info = {
-    title: state?.title || '빛의 결 | 조용한 흐름',
-    org: state?.org || state?.school || '중앙대학교 OO동아리',
-    period: state?.period || '2025.06.10 – 2025.06.20',
-    role: state?.role || '팀원',
+    title: registerState.title ?? '',
+    org: registerState.school || registerState.organizer || '',
+    period: registerState.period ?? '',
+    role: '대표자',
   };
 
   const goCreate = () => {
-    navigate('/exhibition/manage', { state: { ...state, artistName } });
+    const type = registerState.type ? DISPLAY_TYPE_MAP[registerState.type] : undefined;
+    const posterImageUrl = registerState.imageUrls?.[0];
+
+    if (
+      !artistName.trim() ||
+      !type ||
+      !posterImageUrl ||
+      !registerState.title ||
+      !registerState.startDate ||
+      !registerState.endDate ||
+      !registerState.startTime ||
+      !registerState.endTime ||
+      !registerState.placeName ||
+      !registerState.address ||
+      registerState.latitude === null ||
+      registerState.latitude === undefined ||
+      registerState.longitude === null ||
+      registerState.longitude === undefined
+    ) {
+      return;
+    }
+
+    const requestBody: CreateDisplayRequestDto = {
+      title: registerState.title.trim(),
+      posterImageUrl,
+      type,
+      fields: registerState.field?.map((field) => DISPLAY_FIELD_MAP[field]).filter(Boolean) ?? [],
+      region: getRegion(registerState.address),
+      startDate: registerState.startDate,
+      endDate: registerState.endDate,
+      openTime: registerState.startTime,
+      closeTime: registerState.endTime,
+      locationName: registerState.placeName.trim(),
+      latitude: registerState.latitude,
+      longitude: registerState.longitude,
+      roadAddress: registerState.address.trim(),
+      schoolOrOrganization: optionalText(registerState.school),
+      departmentOrClub: optionalText(registerState.department),
+      hostOrganizationName: optionalText(registerState.organizer),
+      subtitle: optionalText(registerState.subtitle),
+      description: optionalText(registerState.intro),
+      precautions: optionalText(registerState.notice),
+    };
+
+    if (requestBody.fields.length === 0) {
+      return;
+    }
+
+    createDisplay.mutate(requestBody, {
+      onSuccess: (display) => {
+        navigate('/exhibition/manage', {
+          state: {
+            ...registerState,
+            artistName,
+            displayId: display.displayId,
+            posterImageUrl,
+          },
+        });
+      },
+    });
   };
 
   return (
@@ -98,11 +220,11 @@ export function ArtistNameSetup() {
 
         <button
           type="button"
-          disabled={!artistName.trim()}
+          disabled={!artistName.trim() || createDisplay.isPending}
           onClick={goCreate}
           className="typo-body-sm-bold mt-4 h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
         >
-          전시 관리 페이지 만들기
+          {createDisplay.isPending ? '전시 등록 중' : '전시 관리 페이지 만들기'}
         </button>
       </div>
     </div>

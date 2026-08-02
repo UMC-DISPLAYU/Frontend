@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -14,14 +14,15 @@ import {
   type ExhibitionTypeGroup,
 } from '@/constants/exhibition';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
 
 export function ExhibitionRegister() {
   const { data: artistProfile } = useMyArtistProfile();
+  const imageUpload = useImageUpload({ domain: 'display' });
 
-  const [images, setImages] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [intro, setIntro] = useState('');
@@ -31,6 +32,7 @@ export function ExhibitionRegister() {
   const [school, setSchool] = useState(artistProfile?.schoolName || '');
   const [department, setDepartment] = useState('');
   const [organizer, setOrganizer] = useState('');
+  const schoolValue = school || artistProfile?.schoolName || '';
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
@@ -51,11 +53,31 @@ export function ExhibitionRegister() {
   };
 
   const isFormValid =
-    images.length > 0 &&
+    imageUpload.images.length > 0 &&
     title.trim() !== '' &&
     type !== null &&
     field.length > 0 &&
     isAffiliationValid();
+
+  const goNext = async () => {
+    if (!isFormValid || imageUpload.isUploading) return;
+
+    const imageUrls = await imageUpload.uploadImages();
+
+    navigate('/exhibition/basic', {
+      state: {
+        imageUrls,
+        title,
+        subtitle,
+        intro,
+        type,
+        field,
+        school,
+        department,
+        organizer,
+      },
+    });
+  };
 
   return (
     <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
@@ -64,7 +86,12 @@ export function ExhibitionRegister() {
       <main className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-6 px-5 pt-2 pb-8">
           <div className="flex justify-center">
-            <ImageUploader maxImages={4} onImagesChange={setImages} />
+            <ImageUploader
+              images={imageUpload.images}
+              maxImages={4}
+              onAddImages={imageUpload.addImages}
+              onRemoveImage={imageUpload.removeImage}
+            />
           </div>
 
           <div className="flex flex-col gap-3">
@@ -139,13 +166,12 @@ export function ExhibitionRegister() {
               <RequiredLabel required>소속 정보</RequiredLabel>
               <AffiliationInput
                 group={selectedGroup}
-                school={school}
+                school={schoolValue}
                 onSchoolChange={setSchool}
                 department={department}
                 onDepartmentChange={setDepartment}
                 organizer={organizer}
                 onOrganizerChange={setOrganizer}
-                readonly
               />
             </div>
           )}
@@ -155,15 +181,11 @@ export function ExhibitionRegister() {
       <footer className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
         <button
           type="button"
-          disabled={!isFormValid}
-          onClick={() =>
-            navigate('/exhibition/basic', {
-              state: { images, title, subtitle, intro, type, field, school, department, organizer },
-            })
-          }
+          disabled={!isFormValid || imageUpload.isUploading}
+          onClick={goNext}
           className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5 disabled:opacity-40"
         >
-          다음
+          {imageUpload.isUploading ? '이미지 업로드 중' : '다음'}
         </button>
       </footer>
     </div>

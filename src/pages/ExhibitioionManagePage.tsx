@@ -26,7 +26,7 @@ export function ExhibitionManage() {
     org: state?.school || state?.organizer || '중앙대학교 디자인학부',
     period: state?.period || '05.28 - 06.05',
     place: state?.address || state?.placeName || '중앙대학교 310관 갤러리',
-    thumbnail: 'https://placehold.co/130x162',
+    thumbnail: state?.posterImageUrl || state?.imageUrls?.[0],
   };
 
   const artworkVisibility: VisibilityType = state?.artworkVisibility ?? 'startDate';
