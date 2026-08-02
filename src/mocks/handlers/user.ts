@@ -6,10 +6,12 @@ import { noContent, paths, readJson, success } from '@/mocks/response';
 const userArtistProfile = (userId = 1) => ({
   artistId: userId,
   userId,
+  artistName: userId === 1 ? mockDb.me.nickname : `작가 ${userId}`,
   nickname: userId === 1 ? mockDb.me.nickname : `작가 ${userId}`,
   profileImageUrl: mockDb.me.profileImageUrl,
   introduction: '전시와 작품을 기록하는 작가 프로필입니다.',
   instagram: '@displayu_mock',
+  fields: ['회화', '일러스트'],
   status: 'ACTIVE',
 });
 
@@ -45,6 +47,19 @@ export const userHandlers = [
         isAvailable: nickname !== '중복닉네임',
       });
     }),
+  ),
+  // 가짜 API: 작가 인증 화면에서 내 작가 프로필 기본값을 확인하기 위해 사용합니다.
+  ...paths('/api/v1/users/me/artist-profile').map((path) =>
+    http.get(path, () => success('/api/v1/users/me/artist-profile', userArtistProfile())),
+  ),
+  // 가짜 API: 작가 인증 화면에서 내 작가 프로필 수정 흐름을 확인하기 위해 사용합니다.
+  ...paths('/api/v1/users/me/artist-profile').map((path) =>
+    http.patch(path, async ({ request }) =>
+      success('/api/v1/users/me/artist-profile', {
+        ...userArtistProfile(),
+        ...(await readJson(request)),
+      }),
+    ),
   ),
   ...paths('/api/v1/users/{userId}/artist-profile').map((path) =>
     http.get(path, ({ params }) =>

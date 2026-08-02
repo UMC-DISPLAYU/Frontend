@@ -18,6 +18,18 @@ const listDisplays = () =>
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
 
+const myDisplayItem = (display: any) => ({
+  displayId: display.displayId,
+  title: display.title,
+  isDisplaying: display.status === 'ONGOING',
+  startDate: display.startDate ?? display.startedAt,
+  endDate: display.endDate ?? display.endedAt,
+  school: display.organization,
+  department: display.department,
+  placeName: display.placeName,
+  postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
+});
+
 const DISPLAY_MAP_COORDINATES: Record<number, { latitude: number; longitude: number }> = {
   101: { latitude: 37.55038, longitude: 126.92577 },
   102: { latitude: 37.6541, longitude: 127.0568 },
@@ -186,7 +198,12 @@ export const displayHandlers = [
     }),
   ),
   ...paths('/api/v1/display/me').map((path) =>
-    http.get(path, () => success('/api/v1/display/me', listResponse(listDisplays()))),
+    http.get(path, () =>
+      success('/api/v1/display/me', {
+        createdDisplays: listDisplays().slice(0, 3).map(myDisplayItem),
+        participatedDisplays: listDisplays().slice(3, 6).map(myDisplayItem),
+      }),
+    ),
   ),
   ...paths('/api/v1/display/me/nickname').map((path) =>
     http.patch(path, async ({ request }) =>

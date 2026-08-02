@@ -28,7 +28,8 @@ import {
   useUpdateArchivedExhibitionMemo,
 } from '@/hooks/queries/useArchive';
 import { useMyArtworks } from '@/hooks/queries/useDisplayArtworks';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
+import { useMyArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
 import type { ArtistItem, ExhibitionItem, SavedArtworkItem, TabKey } from '@/types/mypage';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -104,7 +105,15 @@ export function MyPage() {
   const archivedExhibitionsQuery = useArchivedExhibitions();
   const archivedArtworksQuery = useArchivedArtworks();
   const archivedArtistsQuery = useArchivedArtists();
-  const myArtworksQuery = useMyArtworks();
+  const myArtistProfileQuery = useMyArtistProfile({
+    enabled: isArtistView,
+  });
+  const myDisplaysQuery = useMyDisplays({
+    enabled: isArtistView && activeTab === 'exhibition',
+  });
+  const myArtworksQuery = useMyArtworks({
+    enabled: isArtistView && activeTab === 'artwork',
+  });
   const unarchiveExhibition = useUnarchiveExhibition();
   const unarchiveArtwork = useUnarchiveArtwork();
   const unarchiveArtist = useUnarchiveArtist();
@@ -119,16 +128,17 @@ export function MyPage() {
       avatar: userData?.profileImageUrl || DefaultProfileIcon,
       caption: '내가 저장한 작품 확인하기',
       isVerified: Boolean(userData?.isVerified),
-      school: userData?.schoolEmail?.split('@')[1] ?? '',
+      school: myArtistProfileQuery.data?.schoolName || userData?.schoolEmail?.split('@')[1] || '',
       schoolIcon: SchoolIcon,
-      field: '',
+      field: myArtistProfileQuery.data?.fields?.join(' · ') ?? '',
       fieldIcon: FieldIcon,
-      exhibit: '',
+      exhibit: `${myDisplaysQuery.data?.length ?? 0}_작`,
       exhibitionIcon: ExhibitionIcon,
-      bio: '',
-      portfolioUrl: '',
+      bio: myArtistProfileQuery.data?.introduction ?? '',
+      portfolioUrl:
+        myArtistProfileQuery.data?.portfolioUrl || myArtistProfileQuery.data?.externalLink || '',
     }),
-    [userData],
+    [myArtistProfileQuery.data, myDisplaysQuery.data?.length, userData],
   );
 
   const exhibitions = useMemo<ExhibitionItem[]>(() => {
@@ -147,6 +157,8 @@ export function MyPage() {
       memo: item.memo ?? undefined,
     }));
   }, [archivedExhibitionsQuery.data]);
+
+  const myExhibitions = myDisplaysQuery.data ?? [];
 
   const artworks = useMemo<SavedArtworkItem[]>(() => {
     const items = (archivedArtworksQuery.data?.works ?? []) as ArchivedArtworkView[];
@@ -189,7 +201,9 @@ export function MyPage() {
 
   const activeQuery =
     activeTab === 'exhibition'
-      ? archivedExhibitionsQuery
+      ? isArtistView
+        ? myDisplaysQuery
+        : archivedExhibitionsQuery
       : activeTab === 'artwork'
         ? // 가짜 컴포넌트 연결: 작가 뷰 작품 탭에서만 GET /artworks/me 결과를 사용합니다.
           isArtistView
@@ -291,9 +305,10 @@ export function MyPage() {
           <LoadingView fullScreen={false} message="저장 목록 로딩 중..." />
         ) : activeQuery.error ? (
           <ErrorView fullScreen={false} message="저장 목록을 불러오지 못했습니다." />
-        ) : activeTab === 'exhibition' && exhibitions.length > 0 ? (
+        ) : activeTab === 'exhibition' &&
+          (isArtistView ? myExhibitions : exhibitions).length > 0 ? (
           <div className="flex flex-col gap-4">
-            {exhibitions.map((item) => (
+            {(isArtistView ? myExhibitions : exhibitions).map((item) => (
               <ExhibitionCard
                 key={item.id}
                 item={item}

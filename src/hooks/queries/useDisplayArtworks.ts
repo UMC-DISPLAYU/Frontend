@@ -11,8 +11,9 @@ export const useDisplayArtworks = (displayId: number) =>
   });
 
 // 가짜 쿼리 훅: 백엔드에 내 작품 전체 조회 API가 생기면 실제 query hook으로 교체해야 합니다.
-export const useMyArtworks = () =>
+export const useMyArtworks = ({ enabled = true }: { enabled?: boolean } = {}) =>
   useQuery({
     queryKey: queryKeys.displayArtworks.me(),
     queryFn: getMyArtworks,
+    enabled,
   });

@@ -28,10 +28,11 @@ export const useCheckNickname = () =>
     mutationFn: (params: CheckNicknameRequestDto) => checkNickname(params),
   });
 
-export const useMyArtistProfile = () =>
+export const useMyArtistProfile = ({ enabled = true }: { enabled?: boolean } = {}) =>
   useQuery({
     queryKey: queryKeys.users.artistProfile(),
     queryFn: getMyArtistProfile,
+    enabled,
   });
 
 export const useUserArtistProfile = (userId: number) =>
