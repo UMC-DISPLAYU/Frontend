@@ -11,71 +11,38 @@ function LayoutContent() {
   const matches = useMatches();
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
 
-  // 하단 네비게이션 바(Navbar) 숨김 경로
-  const hideNavbarPaths = [
-    '/display/',
-    '/artwork/',
-    '/artworks-manage',
-    '/artworks-register',
-    '/exhibition/',
-    '/artist-verification',
-    '/exhibition-register',
-    '/team/manage',
-    '/lounge/review/post',
-    '/auth',
-    '/setting',
-    '/edit-basic-info',
-    '/edit-artist-profile',
-    '/answer-questions',
-    '/invitations/'
-  ];
-  const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
+  // 하단 네비게이션 바(Navbar) 표시 경로 (화이트리스트)
+  const showNavbarPaths = ['/home', '/search', '/lounge', '/my'];
+  const shouldShowNavbar = showNavbarPaths.some((path) => location.pathname.startsWith(path));
 
-  // Footer(FNB) 선택적 숨김 경로 (기본값: Footer 표시, 안 보일 특수 페이지 등록 가능)
-  const defaultHideFooterPaths = [
-    '/artist-verification',
-    '/lounge/review/post',
-    '/exhibition/manage',
-    '/exhibition/visibility',
-    '/exhibition/register-complete',
-    '/team/manage',
-    '/setting',
-    '/edit-basic-info',
-    '/edit-artist-profile',
-    '/display/manage',
-    '/answer-questions',
-    '/invitations/',
-    '/my-review',
-    '/my-questions',
-    '/policy',
-  ];
-  const isPathFooterHidden = defaultHideFooterPaths.some((path) =>
-    location.pathname.startsWith(path),
-  );
+  // Footer(FNB) 표시 경로 (화이트리스트)
+  const showFooterPaths = ['/home', '/search', '/lounge', '/my'];
+  const isPathFooterShown = showFooterPaths.some((path) => location.pathname.startsWith(path));
 
   // Router handle ({ hideFooter: true }) 기반 숨김
   const isRouteHandleFooterHidden = matches.some(
     (match) => (match.handle as { hideFooter?: boolean })?.hideFooter,
   );
 
-  const shouldHideFooter = manualFooterHidden || isPathFooterHidden || isRouteHandleFooterHidden;
+  const shouldShowFooter = isPathFooterShown && !manualFooterHidden && !isRouteHandleFooterHidden;
 
   return (
     <FooterContext.Provider
       value={{
-        isFooterHidden: shouldHideFooter,
+        isFooterHidden: !shouldShowFooter,
         setFooterHidden: setManualFooterHidden,
       }}
     >
       <div className="min-h-screen flex flex-col justify-between">
-        <main className={`flex-1 ${shouldHideNavbar ? '' : 'pb-3'}`}>
+        <main className={`flex-1 ${shouldShowNavbar ? 'pb-3' : ''}`}>
           <Outlet />
         </main>
 
-        {/* 기본적으로 Footer(FNB) 노출, 선택적으로 안보이도록 설정 가능 */}
-        {!shouldHideFooter && <FNB hasFixedBottomBar={shouldHideNavbar} />}
+        {/* Footer(FNB)는 홈/탐색/라운지/마이에서만 표시 */}
+        {shouldShowFooter && <FNB hasFixedBottomBar={shouldShowNavbar} />}
 
-        {!shouldHideNavbar && (
+        {/* Navbar는 홈/탐색/라운지/마이에서만 표시 */}
+        {shouldShowNavbar && (
           <div className="fixed right-0 bottom-4 left-0 z-50 flex justify-center px-4 pointer-events-none">
             <div className="pointer-events-auto w-full max-w-96 flex justify-center">
               <Navbar />
