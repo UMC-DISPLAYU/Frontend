@@ -19,6 +19,7 @@ import type {
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
   GetDisplayArtworksResponseDataDto,
+  GetMyArtworksResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -175,3 +176,8 @@ export const getDisplayArtworks = async (
   displayId: number,
 ): Promise<GetDisplayArtworksResponseDataDto> =>
   apiRequest('/v1/artworks', { query: { displayId } });
+
+// 가짜 엔드포인트: 백엔드에 내 작품 전체 조회 API가 생기면 실제 경로로 교체해야 합니다.
+// GET /v1/artworks/me
+export const getMyArtworks = async (): Promise<GetMyArtworksResponseDataDto> =>
+  apiRequest('/v1/artworks/me');

@@ -27,6 +27,7 @@ import {
   useUpdateArchivedArtworkMemo,
   useUpdateArchivedExhibitionMemo,
 } from '@/hooks/queries/useArchive';
+import { useMyArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import type { ArtistItem, ExhibitionItem, SavedArtworkItem, TabKey } from '@/types/mypage';
 
@@ -103,6 +104,7 @@ export function MyPage() {
   const archivedExhibitionsQuery = useArchivedExhibitions();
   const archivedArtworksQuery = useArchivedArtworks();
   const archivedArtistsQuery = useArchivedArtists();
+  const myArtworksQuery = useMyArtworks();
   const unarchiveExhibition = useUnarchiveExhibition();
   const unarchiveArtwork = useUnarchiveArtwork();
   const unarchiveArtist = useUnarchiveArtist();
@@ -159,6 +161,18 @@ export function MyPage() {
     }));
   }, [archivedArtworksQuery.data]);
 
+  // 가짜 컴포넌트 연결: 백엔드에 내 작품 전체 조회 API가 생기기 전까지 작가 뷰 작품 탭에서만 사용합니다.
+  const myArtworks = useMemo<SavedArtworkItem[]>(() => {
+    const items = myArtworksQuery.data?.artworks ?? [];
+    return items.map((item) => ({
+      id: String(item.artworkId),
+      artworkId: item.artworkId,
+      title: item.artworkName,
+      artist: item.artistName,
+      thumbnail: item.artworkImageUrl || DefaultProfileIcon,
+    }));
+  }, [myArtworksQuery.data]);
+
   const artists = useMemo<ArtistItem[]>(() => {
     const items = (archivedArtistsQuery.data?.savedArtists ?? []) as ArchivedArtistView[];
     return items.map((item) => ({
@@ -177,7 +191,10 @@ export function MyPage() {
     activeTab === 'exhibition'
       ? archivedExhibitionsQuery
       : activeTab === 'artwork'
-        ? archivedArtworksQuery
+        ? // 가짜 컴포넌트 연결: 작가 뷰 작품 탭에서만 GET /artworks/me 결과를 사용합니다.
+          isArtistView
+          ? myArtworksQuery
+          : archivedArtworksQuery
         : archivedArtistsQuery;
 
   const handleSelectSetting = () => {
@@ -291,9 +308,10 @@ export function MyPage() {
               />
             ))}
           </div>
-        ) : activeTab === 'artwork' && artworks.length > 0 ? (
+        ) : activeTab === 'artwork' && (isArtistView ? myArtworks : artworks).length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
-            {artworks.map((item) => (
+            {/* 가짜 컴포넌트 연결: 작가 뷰에서는 내 작품 전체 조회 mock 데이터를 렌더링합니다. */}
+            {(isArtistView ? myArtworks : artworks).map((item) => (
               <ArtworkCard
                 key={item.id}
                 item={item}

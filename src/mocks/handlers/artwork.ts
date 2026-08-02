@@ -59,6 +59,23 @@ export const artworkHandlers = [
       });
     }),
   ),
+  // 가짜 API: 백엔드에 내 작품 전체 조회 API가 생기기 전까지 마이페이지 작가 뷰에서만 사용합니다.
+  ...paths('/api/v1/artworks/me').map((path) =>
+    http.get(path, () =>
+      success('/api/v1/artworks/me', {
+        artworks: mockDb.artworks.map((artwork: any) => ({
+          artworkId: artwork.artworkId,
+          artworkName: artwork.artworkName ?? artwork.title,
+          artistName: artwork.artistName ?? artwork.artist,
+          artworkImageUrl: artwork.artworkImageUrl ?? artwork.images?.[0]?.imageUrl ?? '',
+          displayId: artwork.displayId,
+          displayTitle:
+            mockDb.displays.find((display: any) => display.displayId === artwork.displayId)
+              ?.title ?? '',
+        })),
+      }),
+    ),
+  ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
     http.get(path, ({ params }) =>
       success('/api/v1/artworks/{artworkId}', findArtwork(toNumber(params.artworkId, 1001))),

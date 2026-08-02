@@ -67,6 +67,7 @@ export const queryKeys = {
       [...queryKeys.displayArtworks.lists(), 'display', displayId] as const,
     preview: (params?: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params ?? {}] as const,
+    me: () => [...queryKeys.displayArtworks.lists(), 'me'] as const,
     details: () => [...queryKeys.displayArtworks.all, 'detail'] as const,
     detail: (artworkId: number) => [...queryKeys.displayArtworks.details(), artworkId] as const,
   },

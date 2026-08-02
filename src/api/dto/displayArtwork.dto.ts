@@ -291,3 +291,20 @@ export interface GetDisplayArtworksResponseDataDto {
 }
 
 export type GetDisplayArtworksResponseDto = ApiResponseDto<GetDisplayArtworksResponseDataDto>;
+
+// 가짜 DTO: 백엔드에 내 작품 전체 조회 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export interface MyArtworkDto {
+  artworkId: number;
+  artworkName: string;
+  artistName: string;
+  artworkImageUrl: string;
+  displayId: number;
+  displayTitle: string;
+}
+
+// 가짜 DTO: 백엔드에 내 작품 전체 조회 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export interface GetMyArtworksResponseDataDto {
+  artworks: MyArtworkDto[];
+}
+
+export type GetMyArtworksResponseDto = ApiResponseDto<GetMyArtworksResponseDataDto>;
