@@ -44,7 +44,20 @@ export const artworkHandlers = [
     }),
   ),
   ...paths('/api/v1/artworks/preview').map((path) =>
-    http.get(path, () => success('/api/v1/artworks/preview', listResponse(mockDb.artworks))),
+    http.get(path, ({ request }) => {
+      const url = new URL(request.url);
+      const page = Number(url.searchParams.get('page') ?? 0);
+      const size = Number(url.searchParams.get('size') ?? mockDb.artworks.length);
+      const start = page * size;
+      const artworks = mockDb.artworks.slice(start, start + size);
+
+      return success('/api/v1/artworks/preview', {
+        artworks,
+        page,
+        size: artworks.length,
+        isLast: start + size >= mockDb.artworks.length,
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
     http.get(path, ({ params }) =>

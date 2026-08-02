@@ -107,6 +107,7 @@ export function ExhibitionMap({
         onIdle={handleIdle}
         onCreate={(map) => {
           mapRef.current = map;
+          handleIdle(map);
         }}
       >
         {exhibitions.map((ex) => (

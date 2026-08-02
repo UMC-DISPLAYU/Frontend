@@ -9,11 +9,57 @@ const now = () => new Date().toISOString();
 const listDisplays = () =>
   mockDb.displays.map((display: any) => ({
     ...display,
-    posterImageUrl: display.images?.[0]?.imageUrl,
+    posterImageUrl:
+      display.posterImageUrl ??
+      display.posterImages?.[0]?.imageUrl ??
+      display.images?.[0]?.imageUrl,
   }));
 
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
+
+const DISPLAY_MAP_COORDINATES: Record<number, { latitude: number; longitude: number }> = {
+  101: { latitude: 37.55038, longitude: 126.92577 },
+  102: { latitude: 37.6541, longitude: 127.0568 },
+  103: { latitude: 37.4599, longitude: 126.9519 },
+  104: { latitude: 37.562, longitude: 126.9468 },
+  105: { latitude: 37.5662, longitude: 126.9977 },
+  106: { latitude: 37.61029, longitude: 126.99594 },
+};
+
+const isInsideBounds = (
+  latitude: number,
+  longitude: number,
+  bounds: {
+    southLatitude: number;
+    westLongitude: number;
+    northLatitude: number;
+    eastLongitude: number;
+  },
+) =>
+  latitude >= bounds.southLatitude &&
+  latitude <= bounds.northLatitude &&
+  longitude >= bounds.westLongitude &&
+  longitude <= bounds.eastLongitude;
+
+const duPicks = () => [
+  {
+    duPickId: 1,
+    title: '디유대학교 포스터전: 작업 큐레이션',
+    subtitle: '학생들의 감각이 포스터가 되는 순간',
+    bannerImageUrl:
+      'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/a0c512ba-c1ce-43e0-ae2a-f52e2cb8dd84-KakaoTalk_Photo_2026-08-01-13-40-36.jpeg',
+    createdAt: now(),
+  },
+  {
+    duPickId: 2,
+    title: '작품은 어디까지 설명해야 할까',
+    subtitle: '캡션과 작가 노트에서 발견한 좋은 문장의 조건',
+    bannerImageUrl:
+      'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/d091230b-1a5f-419c-ad7d-8c3629580e44-KakaoTalk_Photo_2026-08-02-16-33-34.jpeg',
+    createdAt: now(),
+  },
+];
 
 export const displayHandlers = [
   ...paths('/api/v1/display').map((path) =>
@@ -51,20 +97,14 @@ export const displayHandlers = [
     ),
   ),
   ...paths('/api/v1/display/du-picks').map((path) =>
-    http.get(path, () =>
-      success('/api/v1/display/du-picks', {
-        duPicks: listDisplays()
-          .slice(0, 3)
-          .map((display: any, index: number) => ({
-            duPickId: index + 1,
-            title: display.title,
-            subtitle: display.subtitle ?? display.organization ?? '',
-            bannerImageUrl: display.posterImageUrl,
-            createdAt: now(),
-          })),
-        pagination: { nextCursor: null, size: 3, hasNext: false },
-      }),
-    ),
+    http.get(path, () => {
+      const items = duPicks();
+
+      return success('/api/v1/display/du-picks', {
+        duPicks: items,
+        pagination: { nextCursor: null, size: items.length, hasNext: false },
+      });
+    }),
   ),
   ...paths('/api/v1/display/graduation').map((path) =>
     http.get(path, () => success('/api/v1/display/graduation', { exhibitions: listDisplays() })),
@@ -94,21 +134,56 @@ export const displayHandlers = [
     }),
   ),
   ...paths('/api/v1/display/map').map((path) =>
-    http.get(path, () =>
-      success('/api/v1/display/map', {
-        markers: listDisplays().map((display: any, index: number) => ({
-          displayId: display.displayId,
-          title: display.title,
-          startDate: display.period?.startDate ?? display.startedAt,
-          endDate: display.period?.endDate ?? display.endedAt,
-          locationName: display.location?.placeName ?? display.placeName,
-          posterImageUrl: display.posterImageUrl,
-          latitude: 37.55 + index * 0.01,
-          longitude: 126.95 + index * 0.01,
-        })),
-        pagination: { nextCursor: null, size: mockDb.displays.length, hasNext: false },
-      }),
-    ),
+    http.get(path, ({ request }) => {
+      const searchParams = new URL(request.url).searchParams;
+      const bounds = {
+        southLatitude: Number(searchParams.get('southLatitude')),
+        westLongitude: Number(searchParams.get('westLongitude')),
+        northLatitude: Number(searchParams.get('northLatitude')),
+        eastLongitude: Number(searchParams.get('eastLongitude')),
+      };
+      const searchWord = searchParams.get('searchWord')?.trim();
+      const cursor = Number(searchParams.get('cursor') ?? 0);
+      const size = Number(searchParams.get('size') ?? mockDb.displays.length);
+      const hasBounds = Object.values(bounds).every(Number.isFinite);
+      const start = Number.isFinite(cursor) ? cursor : 0;
+
+      const filteredMarkers = listDisplays()
+        .map((display: any) => {
+          const coordinates = DISPLAY_MAP_COORDINATES[display.displayId];
+
+          if (!coordinates) {
+            return null;
+          }
+
+          return {
+            displayId: display.displayId,
+            title: display.title,
+            startDate: display.period?.startDate ?? display.startedAt,
+            endDate: display.period?.endDate ?? display.endedAt,
+            locationName: display.location?.placeName ?? display.placeName,
+            posterImageUrl: display.posterImageUrl,
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+          };
+        })
+        .filter((marker: any) => marker)
+        .filter(
+          (marker: any) => !hasBounds || isInsideBounds(marker.latitude, marker.longitude, bounds),
+        )
+        .filter((marker: any) => !searchWord || marker.title.includes(searchWord));
+      const markers = filteredMarkers.slice(start, start + size);
+      const nextCursor = start + size < filteredMarkers.length ? start + size : null;
+
+      return success('/api/v1/display/map', {
+        markers,
+        pagination: {
+          nextCursor,
+          size: markers.length,
+          hasNext: nextCursor !== null,
+        },
+      });
+    }),
   ),
   ...paths('/api/v1/display/me').map((path) =>
     http.get(path, () => success('/api/v1/display/me', listResponse(listDisplays()))),

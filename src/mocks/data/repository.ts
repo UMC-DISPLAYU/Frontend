@@ -129,8 +129,21 @@ const artworkToDetail = (artwork: any) => ({
   id: artwork.artworkId,
   displayId: artwork.displayId,
   title: artwork.title,
+  artworkName: artwork.title,
   artist: artwork.artist,
   artistName: artwork.artist,
+  artworkImageUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
+  imageWidth: 1600,
+  imageHeight: 1600,
+  exhibitionInfo: {
+    displayId: artwork.displayId,
+    exhibitionTitle:
+      MOCK_DISPLAY_DETAILS.find((display) => display.displayId === artwork.displayId)?.title ?? '',
+    exhibitionPeriod: '',
+    exhibitionLocation:
+      MOCK_DISPLAY_DETAILS.find((display) => display.displayId === artwork.displayId)?.placeName ??
+      '',
+  },
   content: artwork.description,
   description: artwork.description,
   type: artwork.type,
