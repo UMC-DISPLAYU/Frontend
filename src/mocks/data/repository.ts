@@ -37,7 +37,7 @@ const makeUser = (userId = 1) => ({
   email: 'displayu@example.com',
   nickname: '디스플레이유',
   name: '디스플레이유',
-  profileImageUrl: MOCK_UPLOAD_IMAGE_URL,
+  profileImageUrl: null,
   role: 'USER',
   provider: 'KAKAO',
   school: '홍익대학교',

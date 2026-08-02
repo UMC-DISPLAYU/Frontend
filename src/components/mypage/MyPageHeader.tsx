@@ -1,6 +1,7 @@
 import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import type { TabKey } from '@/types/mypage';
 
@@ -70,6 +71,9 @@ export function MyPageHeader({
             className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
             src={profile.avatar}
             alt={profile.name}
+            onError={(event) => {
+              event.currentTarget.src = DefaultProfileIcon;
+            }}
           />
           <div className="flex-1 min-w-0 flex flex-col gap-1.5">
             <div className="text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7 truncate">

@@ -4,9 +4,10 @@ import type { ArtistItem } from '@/types/mypage';
 
 interface ArtistCardProps {
   item: ArtistItem;
+  onUnarchive?: (item: ArtistItem) => void;
 }
 
-export function ArtistCard({ item }: ArtistCardProps) {
+export function ArtistCard({ item, onUnarchive }: ArtistCardProps) {
   return (
     <article className="w-full bg-neutral-50 rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] overflow-hidden font-['Pretendard']">
       <div className="flex items-center gap-3.5 px-3 py-3.5">
@@ -22,7 +23,7 @@ export function ArtistCard({ item }: ArtistCardProps) {
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <button type="button" aria-label="북마크">
+          <button type="button" aria-label="북마크 해제" onClick={() => onUnarchive?.(item)}>
             <Bookmark color="#D70004" fill="#D70004" className="size-4" />
           </button>
           <ChevronRight color="#99A1AF" className="size-4" />
