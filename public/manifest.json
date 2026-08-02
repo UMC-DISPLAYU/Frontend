@@ -1,0 +1,21 @@
+{
+  "name": "DISPLAYU",
+  "short_name": "DISPLAYU",
+  "description": "작가와 관람자를 잇는 대학생 전시 플랫폼",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F0F0F3",
+  "theme_color": "#ECECF2",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/icon.png",
+      "type": "image/png",
+      "sizes": "894x894"
+    }
+  ]
+}

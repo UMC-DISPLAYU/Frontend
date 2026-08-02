@@ -1,3 +1,8 @@
+import { useState } from 'react';
+
+import { useNavigate } from 'react-router-dom';
+
+import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtistCard,
   ArtworkCard,
@@ -16,8 +21,10 @@ import {
 import { useMyPageStore } from '@/stores/useMyPageStore';
 
 export function MyPage() {
-  const { activeTab, isSettingsOpen, isArtistView, setIsSettingsOpen, toggleArtistView } =
-    useMyPageStore();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isArtistView, setIsArtistView] = useState(true);
 
   const { data: userData, isLoading, error } = useUserProfile();
 
@@ -26,20 +33,15 @@ export function MyPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-neutral-500 text-sm font-['Pretendard']">로딩 중...</div>
-      </div>
-    );
+    return <LoadingView message="프로필 로딩 중..." />;
   }
 
   if (error || !userData) {
     return (
-      <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex items-center justify-center">
-        <div className="text-red-500 text-sm font-['Pretendard']">
-          프로필을 불러오는데 실패했습니다.
-        </div>
-      </div>
+      <ErrorView
+        message={error?.message || '프로필 정보를 불러오지 못했습니다.'}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
@@ -65,12 +67,10 @@ export function MyPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-gray-100 flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-gray-100 flex flex-col">
       <MyPageHeader
         onVerifyArtist={() => {
-          // TODO: 작가 인증 플로우 연결
-          // 1. 학교 이메일 인증이 안된 경우 → 이메일 인증 페이지로 이동
-          // 2. 이메일 인증이 된 경우 → 작가 프로필 설정 페이지(/edit-artist-profile)로 이동
+          navigate('/artist-verification');
         }}
         onShare={handleShare}
         profile={profile}

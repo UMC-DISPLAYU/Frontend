@@ -1,23 +1,11 @@
-import { useMyPageStore } from '@/stores/useMyPageStore';
-
-interface SettingsMenu {
-  key: string;
-  icon: string;
-  iconWrapClass: string;
-  title: string;
-  titleClass: string;
-  description: string;
-  descriptionClass: string;
-}
-
 interface SettingsSheetProps {
-  onSelect: (key: SettingsMenu['key']) => void;
+  open: boolean;
+  onClose: () => void;
+  onSelect: (key: string) => void;
 }
 
-export function SettingsSheet({ onSelect }: SettingsSheetProps) {
-  const { isSettingsOpen, setIsSettingsOpen } = useMyPageStore();
-
-  if (!isSettingsOpen) return null;
+export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-center">

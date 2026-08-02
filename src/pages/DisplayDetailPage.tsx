@@ -2,10 +2,12 @@ import { useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtworkTab,
   BottomFixedBar,
   DetailTabNav,
+  DisplaySaveButton,
   ExhibitionMeta,
   HeroSlider,
   IntroTab,
@@ -13,7 +15,6 @@ import {
 } from '@/components/displaydetailpage';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import type { DetailTabKey } from '@/types/exhibition';
-import { cn } from '@/utils/cn';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayDetailPage() {
@@ -25,45 +26,17 @@ export function DisplayDetailPage() {
 
   const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
 
-  const containerClassName =
-    'w-full max-w-md mx-auto min-h-dvh flex flex-col justify-center items-center';
-
-  // 유효하지 않은 ID (숫자가 아니거나 0 이하)는 즉시 에러 상태로 처리
-  if (displayId === null) {
-    return (
-      <div className={cn(containerClassName, 'gap-3 bg-page')}>
-        <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="typo-body-sm-regular text-faint underline cursor-pointer"
-        >
-          돌아가기
-        </button>
-      </div>
-    );
-  }
-
   if (isPending) {
-    return (
-      <div className={cn(containerClassName, 'bg-page')}>
-        <p className="typo-body-sm-regular text-faint">불러오는 중...</p>
-      </div>
-    );
+    return <LoadingView message="전시 정보를 불러오는 중..." />;
   }
 
-  if (isError || !display) {
+  if (isError || !display || displayId === null) {
     return (
-      <div className={cn(containerClassName, 'gap-3 bg-page')}>
-        <p className="typo-body-sm-regular text-sub600">전시 정보를 찾을 수 없습니다.</p>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="typo-body-sm-regular text-faint underline cursor-pointer"
-        >
-          돌아가기
-        </button>
-      </div>
+      <ErrorView
+        title="전시 정보를 찾을 수 없습니다"
+        message="요청하신 전시 정보가 존재하지 않거나 삭제되었습니다."
+        onRetry={() => navigate(-1)}
+      />
     );
   }
 
@@ -77,7 +50,7 @@ export function DisplayDetailPage() {
       {activeTab === 'intro' && <IntroTab display={display} />}
       {activeTab === 'artwork' && <ArtworkTab displayId={display.displayId} />}
       {activeTab === 'review' && <ReviewTab displayId={display.displayId} />}
-      <BottomFixedBar />
+      <BottomFixedBar button={<DisplaySaveButton />} />
     </div>
   );
 }

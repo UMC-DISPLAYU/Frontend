@@ -11,7 +11,7 @@ export function SettingPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-screen bg-page">
+    <div className="w-96 mx-auto min-h-screen bg-page">
       <SettingHeader onBack={handleBack} />
 
       <div className="flex flex-col gap-8 px-5 pb-10">
@@ -50,7 +50,7 @@ export function SettingPage() {
           <SettingRow
             title="전시 등록하기"
             desc="전시를 직접 등록하려면 작가 인증이 필요해요."
-            onClick={() => navigate('/exhibitions-register')}
+            onClick={() => navigate('/exhibition-register')}
             last
           />
         </SettingSection>

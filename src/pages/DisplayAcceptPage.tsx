@@ -25,17 +25,12 @@ export function DisplayAcceptPage() {
 
   const exhibitionInfo = buildExhibitionInfo(invitation);
 
-  const handleComplete = () => {
-    // TODO: 완료 후 이동 경로 연결 (예: 전시 콘텐츠 추가 화면)
-    navigate('/my/exhibitions');
-  };
-
   const handleGoManage = () => {
     navigate('/display/manage');
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-16">
         <div className="flex flex-col items-center gap-1.5">
           <div className="flex size-14 items-center justify-center rounded-full bg-[var(--palette-green-50)] text-[var(--palette-green-500)]">

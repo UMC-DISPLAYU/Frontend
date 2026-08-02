@@ -227,6 +227,7 @@ export interface ArtworkPreviewExhibitionInfoDto {
 export interface ArtworkPreviewItemDto {
   artworkId: number;
   artworkName: string;
+  artistName: string;
   artworkImageUrl: string;
   imageWidth: number;
   imageHeight: number;

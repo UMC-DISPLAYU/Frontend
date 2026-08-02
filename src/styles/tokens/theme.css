@@ -29,6 +29,23 @@
   --color-link: var(--fg-link);
   --color-error: var(--fg-error);
 
+  /* Input — Default (기본형) */
+  --color-input-border: var(--input-border);
+  --color-input-placeholder: var(--input-placeholder);
+
+  /* Input — Soft (연한 박스형) */
+  --color-input-soft-bg: var(--input-soft-bg);
+  --color-input-soft-border: var(--input-soft-border);
+  --color-input-soft-placeholder: var(--input-soft-placeholder);
+
+  /* Modal */
+  --color-modal-title: var(--modal-title);
+  --color-modal-desc: var(--modal-desc);
+  --color-modal-btn-bg: var(--modal-btn-bg);
+  --color-modal-btn-fg: var(--modal-btn-fg);
+  --color-modal-btn-hover-bg: var(--modal-btn-hover-bg);
+  --color-modal-btn-hover-fg: var(--modal-btn-hover-fg);
+
   /* Tag */
   --color-tag-blue: var(--tag-blue);
   --color-tag-gray: var(--tag-gray);

@@ -3,10 +3,12 @@ import type { LoungeCategoryKey } from '@/constants/loungeCategories';
 // ─── Home Types ────────────────────────────────────────────────────────────
 
 export interface DuPickItem {
-  id: string;
-  name: string;
+  id?: number | string;
+  title: string;
+  name?: string;
   date: string;
   location: string;
+  bannerImageUrl?: string;
 }
 
 export interface ArtworkPreviewItem {
@@ -98,4 +100,92 @@ export interface ReviewItem {
   date: string;
   likes: number;
   images?: string[];
+}
+// ─── Artwork Detail Types ──────────────────────────────────────────────────
+
+export type ArtworkGuestbookTab = 'review' | 'question';
+
+export interface ArtworkImage {
+  imageUrl: string;
+  isThumbnail: boolean;
+  sortOrder: number;
+}
+
+export interface ArtworkDetail {
+  artworkId: number;
+  artworkName: string;
+  content: string;
+  type: string;
+  productionYear: number;
+  materialMedia: string;
+  size: string;
+  point: string;
+  images: ArtworkImage[];
+
+  // UI-specific fields (to be mapped or added later)
+  artist: string;
+  exhibitionId: string;
+  exhibitionTitle: string;
+  exhibitionOrganizer: string;
+  exhibitionPeriod: string;
+  exhibitionThumbnail: string;
+  bookmarkCount: number;
+  isBookmarked: boolean;
+}
+
+export interface GuestbookReviewReply {
+  replyId: number;
+  content: string;
+  createdAt: string;
+  user: {
+    userId: number;
+    nickname: string;
+    profileImageUrl?: string;
+  };
+  isArtist?: boolean;
+  isMyReply?: boolean;
+  likeCount?: number;
+  isLiked?: boolean;
+}
+
+export interface GuestbookReview {
+  feelingId: number;
+  content: string;
+  createdAt: string;
+  user: {
+    userId: number;
+    nickname: string;
+    profileImageUrl?: string;
+  };
+  reply: {
+    content: string;
+    createdAt: string;
+  } | null;
+  replies?: GuestbookReviewReply[];
+  images?: string[];
+  likeCount?: number;
+  isLiked?: boolean;
+  isArtist?: boolean;
+  isMyReview?: boolean;
+  commentCount?: number;
+}
+
+export interface GuestbookQuestion {
+  questionId: number;
+  content: string;
+  isPublic: boolean;
+  createdAt: string;
+  user: {
+    userId: number;
+    nickname: string;
+    profileImageUrl?: string;
+  };
+  reply: {
+    content: string;
+    createdAt: string;
+  } | null;
+  commentCount?: number;
+  likeCount?: number;
+  isLiked?: boolean;
+  isMyQuestion?: boolean;
 }
