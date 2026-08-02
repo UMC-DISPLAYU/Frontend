@@ -12,8 +12,15 @@ import {
   EmailVerificationField,
   SchoolSearchField,
 } from '@/components/artist-verification';
+import {
+  useConfirmVerificationEmail,
+  useResendVerificationEmail,
+  useSearchSchools,
+  useSendVerificationEmail,
+} from '@/hooks/queries/useSchoolEmailVerification';
+import { useCreateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 
-type EmailState = 'idle' | 'sent' | 'schoolMismatch';
+type EmailState = 'idle' | 'sent' | 'error';
 type CodeState = 'idle' | 'confirmed' | 'mismatch';
 
 export function ArtistVerificationPage() {
@@ -27,6 +34,11 @@ export function ArtistVerificationPage() {
   const [emailState, setEmailState] = useState<EmailState>('idle');
   const [codeState, setCodeState] = useState<CodeState>('idle');
   const [complete, setComplete] = useState(false);
+  const schoolQuery = useSearchSchools(school);
+  const sendVerificationEmail = useSendVerificationEmail();
+  const resendVerificationEmail = useResendVerificationEmail();
+  const confirmVerificationEmail = useConfirmVerificationEmail();
+  const createMyArtistProfile = useCreateMyArtistProfile();
 
   const isMailSent = emailState === 'sent';
   const isCodeConfirmed = codeState === 'confirmed';
@@ -47,12 +59,83 @@ export function ArtistVerificationPage() {
   };
 
   const handleSendMail = () => {
-    setEmailState(school && email ? 'sent' : 'schoolMismatch');
-    setCodeState('idle');
+    if (!school.trim() || !email.trim()) {
+      setEmailState('error');
+      return;
+    }
+
+    sendVerificationEmail.mutate(
+      { schoolEmail: email.trim(), univName: school.trim() },
+      {
+        onSuccess: () => {
+          setEmailState('sent');
+          setCodeState('idle');
+        },
+        onError: () => {
+          setEmailState('error');
+        },
+      },
+    );
+  };
+
+  const handleResendMail = () => {
+    if (!school.trim() || !email.trim()) {
+      setEmailState('error');
+      return;
+    }
+
+    resendVerificationEmail.mutate(
+      { schoolEmail: email.trim(), univName: school.trim() },
+      {
+        onSuccess: () => {
+          setEmailState('sent');
+          setCodeState('idle');
+        },
+        onError: () => {
+          setEmailState('error');
+        },
+      },
+    );
   };
 
   const handleConfirmCode = () => {
-    setCodeState(code.length === 6 ? 'confirmed' : 'mismatch');
+    if (!email.trim() || code.trim().length !== 6) {
+      setCodeState('mismatch');
+      return;
+    }
+
+    confirmVerificationEmail.mutate(
+      { schoolEmail: email.trim(), verificationCode: code.trim() },
+      {
+        onSuccess: () => {
+          setCodeState('confirmed');
+        },
+        onError: () => {
+          setCodeState('mismatch');
+        },
+      },
+    );
+  };
+
+  const handleComplete = () => {
+    createMyArtistProfile.mutate(
+      {
+        artistName: profileName.trim(),
+        activityFields: selectedFields,
+      },
+      {
+        onSuccess: () => {
+          setComplete(true);
+        },
+      },
+    );
+  };
+
+  const handleSelectSchool = (value: string) => {
+    setSchool(value);
+    setShowSchoolSuggestions(false);
+    setEmailState('idle');
+    setCodeState('idle');
   };
 
   if (complete) {
@@ -73,13 +156,17 @@ export function ArtistVerificationPage() {
               onChange={(value) => {
                 setSchool(value);
                 setShowSchoolSuggestions(true);
+                setEmailState('idle');
+                setCodeState('idle');
               }}
+              suggestions={schoolQuery.data ?? []}
               showSuggestions={showSchoolSuggestions}
               onFocus={() => setShowSchoolSuggestions(true)}
-              onSelect={(value) => {
-                setSchool(value);
-                setShowSchoolSuggestions(false);
+              onBlur={() => {
+                window.setTimeout(() => setShowSchoolSuggestions(false), 120);
               }}
+              onSelect={handleSelectSchool}
+              isLoading={schoolQuery.isLoading}
             />
           </div>
 
@@ -88,14 +175,12 @@ export function ArtistVerificationPage() {
             onChange={(value) => {
               setEmail(value);
               setEmailState('idle');
+              setCodeState('idle');
             }}
             onSend={handleSendMail}
             sent={isMailSent}
-            error={
-              emailState === 'schoolMismatch'
-                ? '선택한 학교의 웹메일과 일치하지 않습니다.'
-                : undefined
-            }
+            error={emailState === 'error' ? '학교와 이메일을 확인해주세요.' : undefined}
+            isSending={sendVerificationEmail.isPending}
           />
 
           {isMailSent ? (
@@ -106,12 +191,11 @@ export function ArtistVerificationPage() {
                 setCodeState('idle');
               }}
               onConfirm={handleConfirmCode}
-              onResend={() => {
-                setEmailState('sent');
-                setCodeState('idle');
-              }}
+              onResend={handleResendMail}
               confirmed={isCodeConfirmed}
               error={codeState === 'mismatch' ? '인증번호가 일치하지 않아요.' : undefined}
+              isConfirming={confirmVerificationEmail.isPending}
+              isResending={resendVerificationEmail.isPending}
             />
           ) : null}
 
@@ -123,7 +207,10 @@ export function ArtistVerificationPage() {
           ) : null}
         </div>
 
-        <ArtistVerificationBottomButton disabled={!canSubmit} onClick={() => setComplete(true)}>
+        <ArtistVerificationBottomButton
+          disabled={!canSubmit || createMyArtistProfile.isPending}
+          onClick={handleComplete}
+        >
           인증확인
         </ArtistVerificationBottomButton>
       </main>

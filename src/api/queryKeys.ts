@@ -29,6 +29,11 @@ export const queryKeys = {
       [...queryKeys.users.all, userId, 'artist-profile'] as const,
   },
 
+  schools: {
+    all: ['schools'] as const,
+    search: (keyword?: string) => [...queryKeys.schools.all, 'search', keyword ?? ''] as const,
+  },
+
   health: {
     all: ['health'] as const,
   },

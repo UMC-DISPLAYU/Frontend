@@ -3,7 +3,7 @@ import { http } from 'msw';
 import { mockDb } from '@/mocks/data/repository';
 import { noContent, paths, readJson, success } from '@/mocks/response';
 
-const artistProfile = (userId = 1) => ({
+const userArtistProfile = (userId = 1) => ({
   artistId: userId,
   userId,
   nickname: userId === 1 ? mockDb.me.nickname : `작가 ${userId}`,
@@ -46,29 +46,26 @@ export const userHandlers = [
       });
     }),
   ),
-  ...paths('/api/v1/users/me/artist-profile').map((path) =>
-    http.get(path, () => success('/api/v1/users/me/artist-profile', artistProfile())),
-  ),
-  ...paths('/api/v1/users/me/artist-profile').map((path) =>
-    http.patch(path, async ({ request }) =>
-      success('/api/v1/users/me/artist-profile', {
-        ...artistProfile(),
-        ...(await readJson(request)),
-      }),
-    ),
-  ),
   ...paths('/api/v1/users/{userId}/artist-profile').map((path) =>
     http.get(path, ({ params }) =>
-      success('/api/v1/users/{userId}/artist-profile', artistProfile(Number(params.userId))),
+      success('/api/v1/users/{userId}/artist-profile', userArtistProfile(Number(params.userId))),
     ),
   ),
   ...paths('/api/v1/users/me/verification/email/send').map((path) =>
     http.post(path, () => noContent('/api/v1/users/me/verification/email/send')),
   ),
   ...paths('/api/v1/users/me/verification/email/confirm').map((path) =>
-    http.post(path, () =>
-      success('/api/v1/users/me/verification/email/confirm', { verified: true }),
-    ),
+    http.post(path, async ({ request }) => {
+      const body = await readJson<{ schoolEmail?: string }>(request);
+      mockDb.me.schoolEmail = body.schoolEmail ?? mockDb.me.schoolEmail;
+      mockDb.me.isVerified = true;
+      mockDb.me.isEmailVerified = true;
+
+      return success('/api/v1/users/me/verification/email/confirm', {
+        schoolEmail: mockDb.me.schoolEmail,
+        isVerified: true,
+      });
+    }),
   ),
   ...paths('/api/v1/users/me/verification/email/resend').map((path) =>
     http.post(path, () => noContent('/api/v1/users/me/verification/email/resend')),
