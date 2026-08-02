@@ -1,13 +1,36 @@
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Check, ChevronLeft, ImagePlus, Info, Plus, UserRound, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { BottomButtonBar } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
 import { Chip } from '@/components/ui';
 import { EXHIBITION_FIELDS } from '@/constants/exhibition';
+import { useCreateDisplayArtwork } from '@/hooks/queries/useDisplayArtworks';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
+
+/* 화면에 표시하는 한글 분야를 API enum으로 변환합니다. */
+const FIELD_TO_TYPE: Record<string, string> = {
+  회화: 'PAINTING',
+  디자인: 'DESIGN',
+  사진: 'PHOTOGRAPHY',
+  건축: 'ARCHITECTURE',
+  영상: 'VIDEO',
+  조소: 'SCULPTURE',
+  패션: 'FASHION',
+  일러스트: 'ILLUSTRATION',
+  공예: 'CRAFTS',
+  기타: 'OTHERS',
+};
+
+/* "2026.09.22" 처럼 입력된 값에서 연도만 추출합니다. */
+const toProductionYear = (value: string) => {
+  const year = Number(value.slice(0, 4));
+
+  return Number.isFinite(year) && year > 0 ? year : new Date().getFullYear();
+};
 
 type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'participants';
 type RegisterMode = 'own' | 'proxy';
@@ -187,17 +210,23 @@ function SheetOption({
   description,
   helper,
   onClick,
+  disabled = false,
 }: {
   title: string;
   description: string;
   helper: React.ReactNode;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-xl border border-line bg-card px-4 py-3.5 text-left shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]"
+      disabled={disabled}
+      className={cn(
+        'w-full rounded-xl border border-line bg-card px-4 py-3.5 text-left shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]',
+        disabled && 'cursor-not-allowed opacity-40',
+      )}
     >
       <p className="typo-body-md-bold text-main">{title}</p>
       <p className="typo-body-xs-regular mt-2.5 text-main">{description}</p>
@@ -224,10 +253,7 @@ function RegisterActionSheet({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
@@ -268,10 +294,7 @@ function DirectCollaboratorSheet({
   const isValid = value.trim().length > 0;
 
   return (
-    <div
-      className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
@@ -498,11 +521,21 @@ export function ArtworkRegisterPage() {
   useHideFooter();
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const displayId = Number(searchParams.get('displayId') ?? 0);
+
+  const imageUpload = useImageUpload({ domain: 'artwork' });
+  const createArtwork = useCreateDisplayArtwork(displayId);
+  const isSubmitting = imageUpload.isUploading || createArtwork.isPending;
+
   const [step, setStep] = useState<RegisterStep>('choice');
   const [registerMode, setRegisterMode] = useState<RegisterMode>('own');
   const [activeSheet, setActiveSheet] = useState<RegisterSheet>(null);
   const [artworkImage, setArtworkImage] = useState<string | null>(null);
   const [processImage, setProcessImage] = useState<string | null>(null);
+  // 업로드에 필요한 원본 파일을 미리보기 URL과 함께 보관합니다.
+  const [artworkFile, setArtworkFile] = useState<File | null>(null);
+  const [processFile, setProcessFile] = useState<File | null>(null);
   const [selectedProxyAuthorId, setSelectedProxyAuthorId] = useState<string | null>(null);
   const [proxyAuthorName, setProxyAuthorName] = useState('');
   const [proxyAuthorSource, setProxyAuthorSource] = useState<ProxyAuthorSource>('direct');
@@ -567,12 +600,23 @@ export function ArtworkRegisterPage() {
         ? [qnaAssigneeOptions[0].id]
         : [];
 
+  // 언마운트 시에만 정리합니다. 의존성에 URL을 넣으면 값이 바뀔 때마다
+  // cleanup이 돌아 방금 만든 미리보기 URL이 즉시 해제됩니다.
+  const previewUrlsRef = useRef<{ artwork: string | null; process: string | null }>({
+    artwork: null,
+    process: null,
+  });
+
+  useEffect(() => {
+    previewUrlsRef.current = { artwork: artworkImage, process: processImage };
+  }, [artworkImage, processImage]);
+
   useEffect(() => {
     return () => {
-      if (artworkImage) URL.revokeObjectURL(artworkImage);
-      if (processImage) URL.revokeObjectURL(processImage);
+      if (previewUrlsRef.current.artwork) URL.revokeObjectURL(previewUrlsRef.current.artwork);
+      if (previewUrlsRef.current.process) URL.revokeObjectURL(previewUrlsRef.current.process);
     };
-  }, [artworkImage, processImage]);
+  }, []);
 
   useEffect(() => {
     if (!activeSheet) return;
@@ -619,6 +663,45 @@ export function ArtworkRegisterPage() {
     navigate(-1);
   };
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  /* 이미지를 업로드한 뒤 작품을 등록합니다. */
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
+    setSubmitError(null);
+
+    const files = [artworkFile, processFile].filter((file): file is File => Boolean(file));
+
+    let imageUrls: string[] = [];
+    try {
+      imageUrls = await Promise.all(files.map((file) => imageUpload.uploadImage(file)));
+    } catch {
+      setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    createArtwork.mutate(
+      {
+        displayId,
+        artworkName: title.trim(),
+        content: description.trim(),
+        type: FIELD_TO_TYPE[field] ?? 'OTHERS',
+        productionYear: toProductionYear(year),
+        materialMedia: medium.trim(),
+        size: size.trim(),
+        point: point.trim(),
+        images: imageUrls.map((imageUrl) => ({ imageUrl })),
+        artistName: registerMode === 'proxy' ? proxyAuthorName.trim() || undefined : undefined,
+        coAuthors: { userIds: [], names: [] },
+      },
+      {
+        onSuccess: () => navigate(`/artworks-manage?displayId=${displayId}`),
+        onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
+      },
+    );
+  };
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>, target: 'artwork' | 'process') => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -627,9 +710,11 @@ export function ArtworkRegisterPage() {
     if (target === 'artwork') {
       if (artworkImage) URL.revokeObjectURL(artworkImage);
       setArtworkImage(url);
+      setArtworkFile(file);
     } else {
       if (processImage) URL.revokeObjectURL(processImage);
       setProcessImage(url);
+      setProcessFile(file);
     }
     e.target.value = '';
   };
@@ -1037,12 +1122,16 @@ export function ArtworkRegisterPage() {
         </section>
       </main>
       <BottomButtonBar>
+        {submitError && (
+          <p className="typo-body-xs-regular mb-2 text-center text-error">{submitError}</p>
+        )}
         <button
           type="button"
-          onClick={() => navigate('/artworks-manage')}
-          className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
         >
-          완료
+          {isSubmitting ? '등록 중' : '완료'}
         </button>
       </BottomButtonBar>
     </>
@@ -1056,11 +1145,13 @@ export function ArtworkRegisterPage() {
         title="작가 정보를 어떻게 입력할까요?"
         subtitle="대신 등록할 작품의 작가 정보를 선택해주세요."
       >
+        {/* 대신 등록 플로우에서는 전시 팀원 선택을 지원하지 않습니다. */}
         <SheetOption
           title="전시 팀원에서 선택"
           description="디유 계정이 있는 팀원의 작가명과 프로필을 불러와요."
-          helper="작가 인증 완료 팀원만 선택할 수 있어요."
+          helper="준비 중이에요. 직접 이름 입력을 이용해주세요."
           onClick={selectTeamProxyAuthor}
+          disabled
         />
         <SheetOption
           title="직접 이름 입력"

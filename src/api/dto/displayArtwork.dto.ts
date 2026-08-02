@@ -208,6 +208,7 @@ export interface DeleteArtworkFeelingReplyResponseDataDto {
 }
 
 export interface UpdateArtworkOrderRequestDto {
+  displayId: number;
   orderedArtworkIds: number[];
 }
 

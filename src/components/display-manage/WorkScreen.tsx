@@ -110,7 +110,7 @@ export function WorkScreen({
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
           <button
             type="button"
-            onClick={() => navigate('/artworks-register')}
+            onClick={() => navigate(`/artworks-register?displayId=${ex.id}`)}
             className="flex h-[158px] w-[118px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
           >
             <Plus size={20} className="text-hint" />

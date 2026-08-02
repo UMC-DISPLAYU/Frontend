@@ -66,12 +66,33 @@ export const artworkHandlers = [
   ),
   ...paths('/api/v1/artworks').map((path) =>
     http.post(path, async ({ request }) => {
-      const body = await readJson<Record<string, unknown>>(request);
+      const body = await readJson<Record<string, any>>(request);
+      // 요청 데이터로만 구성합니다. 기존 작품을 템플릿으로 복사하면
+      // 이미지 등 덮어쓰지 않은 필드가 그대로 남아 다른 작품 정보가 노출됩니다.
+      const imageUrl = body.images?.[0]?.imageUrl ?? '';
+      const artistName = body.artistName ?? mockDb.me.nickname;
+      const artworkName = String(body.artworkName ?? body.title ?? '새 작품');
       const artwork = {
-        ...findArtwork(1001),
         ...body,
         artworkId: Math.max(...mockDb.artworks.map((item: any) => item.artworkId)) + 1,
-        artworkName: String(body.artworkName ?? body.title ?? '새 작품'),
+        displayId: Number(body.displayId ?? 101),
+        artworkName,
+        title: artworkName,
+        artistName,
+        artist: artistName,
+        content: body.content ?? '',
+        description: body.content ?? '',
+        type: body.type ?? 'OTHERS',
+        productionYear: body.productionYear ?? new Date().getFullYear(),
+        materialMedia: body.materialMedia ?? '',
+        material: body.materialMedia ?? '',
+        size: body.size ?? '',
+        point: body.point ?? '',
+        images: body.images ?? [],
+        artworkImageUrl: imageUrl,
+        thumbnailUrl: imageUrl,
+        imageUrl,
+        order: mockDb.artworks.length + 1,
       };
       mockDb.artworks.unshift(artwork);
 
@@ -80,11 +101,30 @@ export const artworkHandlers = [
   ),
   ...paths('/api/v1/artworks/order').map((path) =>
     http.put(path, async ({ request }) => {
-      const body = await readJson<{ orderedArtworkIds?: number[] }>(request);
+      const body = await readJson<{ displayId?: number; orderedArtworkIds?: number[] }>(request);
+      const orderedIds = body.orderedArtworkIds ?? [];
+
+      // 요청 순서대로 해당 전시의 작품을 재배치합니다.
+      if (orderedIds.length > 0) {
+        const byId = new Map<number, any>(
+          mockDb.artworks.map((artwork: any) => [artwork.artworkId, artwork]),
+        );
+        const reordered = orderedIds
+          .map((artworkId) => byId.get(artworkId))
+          .filter((artwork): artwork is any => Boolean(artwork));
+        const rest = mockDb.artworks.filter(
+          (artwork: any) => !orderedIds.includes(artwork.artworkId),
+        );
+
+        mockDb.artworks = [...reordered, ...rest].map((artwork: any, index: number) => ({
+          ...artwork,
+          order: index + 1,
+        }));
+      }
 
       return success('/api/v1/artworks/order', {
-        displayId: mockDb.artworks[0]?.displayId ?? 101,
-        updatedCount: body.orderedArtworkIds?.length ?? 0,
+        displayId: body.displayId ?? mockDb.artworks[0]?.displayId ?? 101,
+        updatedCount: orderedIds.length,
       });
     }),
   ),
@@ -135,12 +175,15 @@ export const artworkHandlers = [
     ),
   ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
-    http.delete(path, ({ params }) =>
-      success('/api/v1/artworks/{artworkId}', {
-        deletedArtworkId: toNumber(params.artworkId),
+    http.delete(path, ({ params }) => {
+      const artworkId = toNumber(params.artworkId);
+      mockDb.artworks = mockDb.artworks.filter((artwork: any) => artwork.artworkId !== artworkId);
+
+      return success('/api/v1/artworks/{artworkId}', {
+        deletedArtworkId: artworkId,
         message: '삭제되었습니다.',
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/like').map((path) =>
     http.post(path, ({ params }) =>

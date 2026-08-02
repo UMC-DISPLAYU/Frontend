@@ -36,7 +36,7 @@ export function DisplayManagePage() {
   const { data: displayArtworks } = useDisplayArtworks(selected ? Number(selected.id) : Number.NaN);
 
   const handleManageArtworks = () => {
-    navigate('/artworks-manage');
+    navigate(`/artworks-manage?displayId=${selected ? Number(selected.id) : ''}`);
   };
 
   const handleWorkBack = () => {
