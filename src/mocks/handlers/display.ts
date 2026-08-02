@@ -30,6 +30,29 @@ const myDisplayItem = (display: any) => ({
   postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
 });
 
+const displayInvitationItem = (displayId: number, invitationId = displayId) => {
+  const display = findDisplay(displayId);
+
+  return {
+    invitationId,
+    displayId,
+    inviterUserId: 1,
+    inviteeUserId: mockDb.me.userId,
+    status: 'PENDING',
+    createdAt: now(),
+    displayTitle: display.title,
+    school: display.organization,
+    department: display.department,
+    startDate: display.startDate ?? display.startedAt,
+    endDate: display.endDate ?? display.endedAt,
+    placeName: display.placeName,
+    posterImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
+    inviterNickname: '고상준(sangjun24)',
+  };
+};
+
+const mockDisplayInvitations = [displayInvitationItem(101, 1), displayInvitationItem(102, 2)];
+
 const DISPLAY_MAP_COORDINATES: Record<number, { latitude: number; longitude: number }> = {
   101: { latitude: 37.55038, longitude: 126.92577 },
   102: { latitude: 37.6541, longitude: 127.0568 },
@@ -258,25 +281,39 @@ export const displayHandlers = [
   ...paths('/api/v1/display-invitations/me').map((path) =>
     http.get(path, () =>
       success('/api/v1/display-invitations/me', {
-        invitations: [{ invitationId: 1, displayId: 101, status: 'PENDING', createdAt: now() }],
+        invitations: mockDisplayInvitations.filter((invitation) => invitation.status === 'PENDING'),
       }),
     ),
   ),
   ...paths('/api/v1/display-invitations/{invitationId}/accept').map((path) =>
-    http.post(path, ({ params }) =>
-      success('/api/v1/display-invitations/{invitationId}/accept', {
-        invitationId: toNumber(params.invitationId, 1),
+    http.post(path, ({ params }) => {
+      const invitationId = toNumber(params.invitationId, 1);
+      const invitation = mockDisplayInvitations.find((item) => item.invitationId === invitationId);
+
+      if (invitation) {
+        invitation.status = 'ACCEPTED';
+      }
+
+      return success('/api/v1/display-invitations/{invitationId}/accept', {
+        ...(invitation ?? { invitationId }),
         status: 'ACCEPTED',
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/display-invitations/{invitationId}/reject').map((path) =>
-    http.post(path, ({ params }) =>
-      success('/api/v1/display-invitations/{invitationId}/reject', {
-        invitationId: toNumber(params.invitationId, 1),
+    http.post(path, ({ params }) => {
+      const invitationId = toNumber(params.invitationId, 1);
+      const invitation = mockDisplayInvitations.find((item) => item.invitationId === invitationId);
+
+      if (invitation) {
+        invitation.status = 'REJECTED';
+      }
+
+      return success('/api/v1/display-invitations/{invitationId}/reject', {
+        ...(invitation ?? { invitationId }),
         status: 'REJECTED',
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/display/{displayId}/members').map((path) =>
     http.get(path, ({ params }) =>

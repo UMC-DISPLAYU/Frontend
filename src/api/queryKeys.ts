@@ -60,6 +60,12 @@ export const queryKeys = {
       [...queryKeys.displays.all, 'reviews', displayId, 'replies', displayReviewId] as const,
   },
 
+  displayInvitations: {
+    all: ['displayInvitations'] as const,
+    lists: () => [...queryKeys.displayInvitations.all, 'list'] as const,
+    me: () => [...queryKeys.displayInvitations.lists(), 'me'] as const,
+  },
+
   displayArtworks: {
     all: ['displayArtworks'] as const,
     lists: () => [...queryKeys.displayArtworks.all, 'list'] as const,
