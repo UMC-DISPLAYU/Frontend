@@ -4,8 +4,9 @@ import type {
   CreateDisplayRequestDto,
   GetDisplayMapRequestDto,
   SearchDisplaysRequestDto,
+  UpdateDisplayRequestDto,
 } from '@/api/dto';
-import { createDisplay, getDisplayMap, searchDisplays } from '@/api/endpoints';
+import { createDisplay, getDisplayMap, searchDisplays, updateDisplay } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
 export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
@@ -26,6 +27,23 @@ export const useCreateDisplay = () => {
   return useMutation({
     mutationFn: (body: CreateDisplayRequestDto) => createDisplay(body),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+    },
+  });
+};
+
+// PATCH /v1/display: 전시 기본 정보 수정
+export const useUpdateDisplay = (displayId: number | undefined) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: UpdateDisplayRequestDto) => {
+      if (!displayId) throw new Error('displayId is required');
+      return updateDisplay(displayId, body);
+    },
+    onSuccess: () => {
+      if (!displayId) return;
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
     },
   });

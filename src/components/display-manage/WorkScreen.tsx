@@ -10,34 +10,34 @@ import { ArtworkCard } from './ArtworkCard';
 import { Header, Screen, SectionTitle } from './Common';
 import { ContentRow } from './ContentRow';
 import { ExhibitionMeta } from './ExhibitionMeta';
-import { InfoBox } from './InfoBox';
 import { InteriorPhotos } from './InteriorPhotos';
 import { Poster } from './Poster';
 
 interface WorkData {
-  contents: Array<{ id: string; title: string; meta: string; photos?: Array<{ id: number | string; url: string; alt?: string }> }>;
+  contents: Array<{
+    id: string;
+    title: string;
+    meta: string;
+    photos?: Array<{ id: number | string; url: string; alt?: string }>;
+  }>;
   artworks: Array<{ id: string; title: string; artist: string; image: string | null }>;
 }
-
-type UserRole = 'owner' | 'member-verified' | 'member-unverified';
 
 export function WorkScreen({
   ex,
   work,
   onBack,
-  userRole = 'owner',
-  onVerifyArtist,
   onManageArtworks,
 }: {
   ex: ExhibitionItem;
   work: WorkData;
   onBack: () => void;
-  userRole?: UserRole;
-  onVerifyArtist: () => void;
   onManageArtworks: () => void;
 }) {
   const navigate = useNavigate();
-  const [selectedContent, setSelectedContent] = useState<{ id: string; title: string } | null>(null);
+  const [selectedContent, setSelectedContent] = useState<{ id: string; title: string } | null>(
+    null,
+  );
 
   const handlePhotoCountChange = (_categoryId: number, _count: number) => {
     // TODO: 사진 개수 업데이트 로직
@@ -74,8 +74,6 @@ export function WorkScreen({
           <Poster src={ex.thumbnail} w={72} h={101} />
           <ExhibitionMeta ex={ex} showBadge={false} />
         </div>
-
-        {userRole !== 'owner' && <InfoBox userRole={userRole} onVerifyArtist={onVerifyArtist} />}
 
         <div className="flex items-center justify-between mt-6 mb-1">
           <SectionTitle>전시콘텐츠</SectionTitle>

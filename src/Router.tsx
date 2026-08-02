@@ -18,6 +18,7 @@ import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
 import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
+import { ExhibitionEditPage } from './pages/ExhibitionEditPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { Homepage } from './pages/Homepage';
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
       { path: 'exhibition/register-complete', element: <ExhibitionRegisterComplete /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },
+      { path: 'exhibition/edit/:displayId', element: <ExhibitionEditPage /> },
       { path: 'exhibition/artist', element: <ArtistNameSetup /> },
       { path: 'exhibition/manage', element: <ExhibitionManage /> },
       { path: 'exhibition/visibility', element: <VisibilitySettings /> },

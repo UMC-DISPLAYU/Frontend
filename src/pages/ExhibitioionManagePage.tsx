@@ -11,7 +11,29 @@ import {
 } from '@/components/exhibition-manage';
 import { useHideFooter } from '@/components/layout';
 import { type VisibilityType } from '@/constants/visibility';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import type { ExhibitionItem } from '@/types/mypage';
+
+const formatMonthDay = (date: string | undefined) => {
+  if (!date) return '';
+  const [, month, day] = date.split('-');
+  return month && day ? `${month}.${day}` : date;
+};
+
+/* 전시 상세 응답이 period/location 객체 또는 평평한 필드로 오는 두 형태를 모두 다룹니다. */
+type DisplaySource = {
+  status?: string;
+  title?: string;
+  organization?: string | null;
+  department?: string | null;
+  placeName?: string;
+  posterImageUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  period?: { startDate?: string; endDate?: string };
+  location?: { placeName?: string };
+  images?: { imageUrl?: string }[];
+};
 
 export function ExhibitionManage() {
   useHideFooter();
@@ -19,14 +41,30 @@ export function ExhibitionManage() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
+  // 등록된 전시 데이터를 서버에서 불러옵니다. state는 등록 직후 화면 전환용으로만 사용합니다.
+  const displayId = Number(state?.displayId ?? state?.id ?? 0);
+  const { data: display } = useDisplayDetail(displayId);
+
+  const source = display as DisplaySource | undefined;
+  const startDate = source?.period?.startDate ?? source?.startDate;
+  const endDate = source?.period?.endDate ?? source?.endDate;
+
+  const period = source
+    ? `${formatMonthDay(startDate)} - ${formatMonthDay(endDate)}`
+    : (state?.period ?? '');
+
   const exhibition = {
-    id: String(state?.displayId ?? state?.id ?? 1),
-    status: state?.status ?? '전시예정',
-    title: state?.title || '형태의 침묵',
-    org: state?.school || state?.organizer || '중앙대학교 디자인학부',
-    period: state?.period || '05.28 - 06.05',
-    place: state?.address || state?.placeName || '중앙대학교 310관 갤러리',
-    thumbnail: state?.posterImageUrl || state?.imageUrls?.[0],
+    id: String(displayId || ''),
+    status: source?.status ?? state?.status ?? '',
+    title: source?.title ?? state?.title ?? '',
+    org: source?.organization ?? source?.department ?? state?.school ?? state?.organizer ?? '',
+    period,
+    place: source?.location?.placeName ?? source?.placeName ?? state?.placeName ?? '',
+    thumbnail:
+      source?.posterImageUrl ??
+      source?.images?.[0]?.imageUrl ??
+      state?.posterImageUrl ??
+      state?.imageUrls?.[0],
   };
 
   const artworkVisibility: VisibilityType = state?.artworkVisibility ?? 'startDate';
@@ -37,8 +75,8 @@ export function ExhibitionManage() {
     navigate('/exhibition/visibility', {
       state: {
         ...state,
-        displayId: exhibition.id,
-        startDate: state?.startDate,
+        displayId: displayId || undefined,
+        startDate: startDate ?? state?.startDate,
         artworkVisibility,
         contentVisibility,
       },
@@ -83,13 +121,13 @@ export function ExhibitionManage() {
           <VisibilitySection
             artworkVisibility={artworkVisibility}
             contentVisibility={contentVisibility}
-            startDate={state?.startDate}
+            startDate={startDate ?? state?.startDate}
             onSettingsClick={goVisibility}
           />
 
           <button
             type="button"
-            onClick={() => navigate('/exhibition/basic')}
+            onClick={() => navigate(`/exhibition/edit/${exhibition.id}`, { state })}
             className="flex items-center gap-3 rounded-xl bg-card px-4 py-3"
           >
             <div className="flex flex-1 flex-col gap-1 text-left">
@@ -124,11 +162,11 @@ export function ExhibitionManage() {
             onClick={() =>
               navigate('/exhibition/register-complete', {
                 state: {
-                  title: state?.title || exhibition.title,
-                  school: state?.school,
-                  department: state?.department,
+                  title: exhibition.title,
+                  school: source?.organization ?? state?.school,
+                  department: source?.department ?? state?.department,
                   organizer: state?.organizer,
-                  placeName: state?.placeName || exhibition.place,
+                  placeName: exhibition.place,
                   artworkVisibility,
                   contentVisibility,
                 },

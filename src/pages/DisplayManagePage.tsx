@@ -7,11 +7,7 @@ import { useHideFooter } from '@/components/layout';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
-import { useDisplayRole } from '@/hooks/useDisplayRole';
 import type { ExhibitionItem } from '@/types/mypage';
-
-type UserRole = 'owner' | 'member-verified' | 'member-unverified';
 
 type DisplayManageLocationState = {
   initialExhibition?: ExhibitionItem;
@@ -36,14 +32,8 @@ export function DisplayManagePage() {
 
   // Fetch data
   const { data: myDisplays = [], isLoading: isLoadingDisplays } = useMyDisplays();
-  const { data: currentUser } = useUserMe();
   const { data: displayDetail } = useDisplayDetail(selected ? Number(selected.id) : Number.NaN);
   const { data: displayArtworks } = useDisplayArtworks(selected ? Number(selected.id) : Number.NaN);
-
-  // Calculate user role
-  const userRole = useDisplayRole(displayDetail, currentUser);
-
-  const handleVerifyArtist = () => {};
 
   const handleManageArtworks = () => {
     navigate('/artworks-manage');
@@ -96,8 +86,6 @@ export function DisplayManagePage() {
             ex={selected}
             work={workData}
             onBack={handleWorkBack}
-            userRole={(userRole || 'owner') as UserRole}
-            onVerifyArtist={handleVerifyArtist}
             onManageArtworks={handleManageArtworks}
           />
         ) : null

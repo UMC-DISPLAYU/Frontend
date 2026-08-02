@@ -18,6 +18,23 @@ const listDisplays = () =>
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
 
+/*
+ * 전시 상세 응답. 스웨거 DisplayDetailResponse가 항상 내려주는 필드를 보강합니다.
+ * teamMembers/invitations가 없으면 화면에서 .find() 호출 시 터집니다.
+ */
+const displayDetailResponse = (displayId: number) => {
+  const display = findDisplay(displayId);
+
+  return {
+    ...display,
+    ownerUserId: display.ownerUserId ?? mockDb.me.userId,
+    teamMembers: display.teamMembers ?? [],
+    invitations: display.invitations ?? [],
+    contentCategories: display.contentCategories ?? [],
+    images: display.images ?? display.posterImages ?? [],
+  };
+};
+
 const myDisplayItem = (display: any) => ({
   displayId: display.displayId,
   title: display.title,
@@ -114,11 +131,44 @@ export const displayHandlers = [
       return created('/api/v1/display', { displayId, ...display });
     }),
   ),
+  // PATCH /api/v1/display: 전시 수정. 스웨거 UpdateDisplayRequest 필드만 반영합니다.
   ...paths('/api/v1/display').map((path) =>
     http.patch(path, async ({ request }) => {
-      const body = await readJson<{ displayId?: number } & Record<string, unknown>>(request);
+      const body = await readJson<Record<string, any>>(request);
       const display = findDisplay(Number(body.displayId ?? 101));
-      Object.assign(display, body);
+
+      // 값이 넘어온 필드만 덮어씁니다. (undefined로 기존 값이 지워지는 것을 방지)
+      const assign = (key: string, value: unknown) => {
+        if (value !== undefined) display[key] = value;
+      };
+
+      assign('title', body.title);
+      assign('name', body.title);
+      assign('subtitle', body.subtitle);
+      assign('description', body.description);
+      assign('content', body.description);
+      assign('posterImageUrl', body.posterImageUrl);
+      assign('thumbnailUrl', body.posterImageUrl);
+      assign('displayType', body.type);
+      assign('displayFields', body.fields);
+      assign('organization', body.schoolOrOrganization);
+      assign('department', body.departmentOrClub);
+      assign('hostOrganizationName', body.hostOrganizationName);
+      assign('placeName', body.placeName);
+      assign('note', body.precautions);
+      assign('precautions', body.precautions);
+
+      // 전시 기간/운영 시간은 목록·상세가 서로 다른 키를 읽어 함께 갱신합니다.
+      if (body.startDate !== undefined) {
+        display.startDate = body.startDate;
+        display.startedAt = body.startDate;
+      }
+      if (body.endDate !== undefined) {
+        display.endDate = body.endDate;
+        display.endedAt = body.endDate;
+      }
+      assign('startTime', body.openTime);
+      assign('endTime', body.closeTime);
 
       return success('/api/v1/display', display);
     }),
@@ -281,7 +331,10 @@ export const displayHandlers = [
   ),
   ...paths('/api/v1/display/{displayId}').map((path) =>
     http.get(path, ({ params }) =>
-      success('/api/v1/display/{displayId}', findDisplay(toNumber(params.displayId, 101))),
+      success(
+        '/api/v1/display/{displayId}',
+        displayDetailResponse(toNumber(params.displayId, 101)),
+      ),
     ),
   ),
   ...paths('/api/v1/display/{displayId}/invitation').map((path) =>

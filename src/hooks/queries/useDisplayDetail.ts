@@ -8,7 +8,7 @@ export const useDisplayDetail = (displayId: number) =>
   useQuery({
     queryKey: queryKeys.displays.detail(displayId),
     queryFn: () => getDisplayDetail(displayId),
-    enabled: Number.isFinite(displayId),
+    enabled: Number.isFinite(displayId) && displayId > 0,
   });
 
 export const useToggleDisplayLike = () => {
