@@ -369,13 +369,37 @@ export interface UpdateDisplayRequestDto {
   placeName?: string;
   precautions?: string | null;
   fieldsValid?: boolean;
-  artworkVisibility?: 'immediate' | 'startDate' | 'hidden';
-  contentVisibility?: 'immediate' | 'startDate' | 'hidden';
 }
 
 export type UpdateDisplayResponseDataDto = DisplayDetailDto;
 
 export type UpdateDisplayResponseDto = ApiResponseDto<UpdateDisplayResponseDataDto>;
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export type OpenTimeType = 'immediate' | 'startDate' | 'hidden';
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export interface OpenTimeDto {
+  displayId: number;
+  artworkVisibility: OpenTimeType;
+  contentVisibility: OpenTimeType;
+}
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export type GetOpenTimeResponseDataDto = OpenTimeDto;
+
+export type GetOpenTimeResponseDto = ApiResponseDto<GetOpenTimeResponseDataDto>;
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export interface UpdateOpenTimeRequestDto {
+  artworkVisibility: OpenTimeType;
+  contentVisibility: OpenTimeType;
+}
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export type UpdateOpenTimeResponseDataDto = OpenTimeDto;
+
+export type UpdateOpenTimeResponseDto = ApiResponseDto<UpdateOpenTimeResponseDataDto>;
 
 export interface DeleteDisplayResponseDataDto {
   displayId: number;

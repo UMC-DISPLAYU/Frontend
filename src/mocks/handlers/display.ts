@@ -123,6 +123,39 @@ export const displayHandlers = [
       return success('/api/v1/display', display);
     }),
   ),
+  // 가짜 API: 백엔드에 공개 시점 설정 API가 생기기 전까지 공개 설정 화면에서 사용합니다.
+  ...paths('/api/v1/open-time/{displayId}').map((path) =>
+    http.get(path, ({ params }) => {
+      const display = findDisplay(toNumber(params.displayId, 101));
+
+      return success('/api/v1/open-time/{displayId}', {
+        displayId: display.displayId,
+        artworkVisibility: display.artworkVisibility ?? 'startDate',
+        contentVisibility: display.contentVisibility ?? 'startDate',
+      });
+    }),
+  ),
+  // 가짜 API: 백엔드에 공개 시점 설정 API가 생기기 전까지 공개 설정 화면에서 사용합니다.
+  ...paths('/api/v1/open-time/{displayId}').map((path) =>
+    http.patch(path, async ({ params, request }) => {
+      const body = await readJson<{
+        artworkVisibility?: string;
+        contentVisibility?: string;
+      }>(request);
+      const display = findDisplay(toNumber(params.displayId, 101));
+
+      display.artworkVisibility =
+        body.artworkVisibility ?? display.artworkVisibility ?? 'startDate';
+      display.contentVisibility =
+        body.contentVisibility ?? display.contentVisibility ?? 'startDate';
+
+      return success('/api/v1/open-time/{displayId}', {
+        displayId: display.displayId,
+        artworkVisibility: display.artworkVisibility,
+        contentVisibility: display.contentVisibility,
+      });
+    }),
+  ),
   ...paths('/api/v1/display/closing-soon').map((path) =>
     http.get(path, () =>
       success('/api/v1/display/closing-soon', {

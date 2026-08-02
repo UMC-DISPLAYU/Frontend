@@ -24,6 +24,7 @@ import type {
   GetDuPicksRequestDto,
   GetDuPicksResponseDataDto,
   GetMyDisplaysResponseDataDto,
+  GetOpenTimeResponseDataDto,
   HomeExhibitionDto,
   InviteDisplayMemberRequestDto,
   MyDisplayInvitationListResponseDataDto,
@@ -31,6 +32,8 @@ import type {
   ToggleDisplayLikeResponseDataDto,
   UpdateDisplayRequestDto,
   UpdateDisplayResponseDataDto,
+  UpdateOpenTimeRequestDto,
+  UpdateOpenTimeResponseDataDto,
 } from '@/api/dto';
 
 import { apiRequest } from '../client';
@@ -84,6 +87,19 @@ export const updateDisplay = async (
   body: UpdateDisplayRequestDto,
 ): Promise<UpdateDisplayResponseDataDto> =>
   apiRequest('/v1/display', { method: 'PATCH', body: { displayId, ...body } });
+
+// 가짜 엔드포인트: 백엔드에 공개 시점 설정 API가 생기면 실제 경로로 교체해야 합니다.
+// GET /v1/open-time/{displayId}
+export const getOpenTime = async (displayId: number): Promise<GetOpenTimeResponseDataDto> =>
+  apiRequest(`/v1/open-time/${displayId}`);
+
+// 가짜 엔드포인트: 백엔드에 공개 시점 설정 API가 생기면 실제 경로로 교체해야 합니다.
+// PATCH /v1/open-time/{displayId}
+export const updateOpenTime = async (
+  displayId: number,
+  body: UpdateOpenTimeRequestDto,
+): Promise<UpdateOpenTimeResponseDataDto> =>
+  apiRequest(`/v1/open-time/${displayId}`, { method: 'PATCH', body });
 
 // POST /v1/display/like
 export const toggleDisplayLike = async (
