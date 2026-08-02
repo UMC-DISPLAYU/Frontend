@@ -46,6 +46,7 @@ export interface LoungeBoardComment {
   isLiked: boolean;
   isMyComment?: boolean;
   replyCount?: number;
+  commentStatus?: string;
   replies?: LoungeBoardComment[];
 }
 

@@ -183,7 +183,7 @@ export interface GetLoungeRepliesResponseDataDto extends CursorPageInfoDto {
 
 export type GetLoungeRepliesResponseDto = ApiResponseDto<GetLoungeRepliesResponseDataDto>;
 
-// ─── 내 활동 (PR #258, 아직 미배포) ────────────────────────────────────────────
+// ─── 내 활동 (PR #258, 배포됨) ─────────────────────────────────────────────────
 
 export type GetMyLoungePostsResponseDataDto = GetLoungePostsResponseDataDto;
 
@@ -193,24 +193,7 @@ export type GetMyLoungeScrapsResponseDataDto = GetLoungePostsResponseDataDto;
 
 export type GetMyLoungeScrapsResponseDto = ApiResponseDto<GetMyLoungeScrapsResponseDataDto>;
 
-export interface LoungeMyCommentDto {
-  loungeCommentId: number;
-  loungePostId: number;
-  parentCommentId: number | null;
-  content: string;
-  imageUrls: string[];
-  commentStatus: string;
-  writer: LoungeWriterDto;
-  createdAt: string;
-  updatedAt: string;
-  likeCount: number;
-  replyCount: number;
-  isLiked: boolean;
-  isMyComment: boolean;
-}
-
-export interface GetMyLoungeCommentsResponseDataDto extends CursorPageInfoDto {
-  comments: LoungeMyCommentDto[];
-}
+// "내 댓글"은 댓글이 아니라 내가 댓글·답글을 남긴 게시글 목록을 게시글 형태로 반환한다 (요청사항 반영, 배포 확인됨)
+export type GetMyLoungeCommentsResponseDataDto = GetLoungePostsResponseDataDto;
 
 export type GetMyLoungeCommentsResponseDto = ApiResponseDto<GetMyLoungeCommentsResponseDataDto>;

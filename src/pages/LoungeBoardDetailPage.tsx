@@ -82,6 +82,7 @@ export const LoungeBoardDetailPage = () => {
               isLiked: comment.isLiked,
               isMyComment: comment.isMyComment,
               replyCount: comment.replyCount,
+              commentStatus: comment.commentStatus,
             }),
           ),
         }
@@ -119,20 +120,30 @@ export const LoungeBoardDetailPage = () => {
                 />
 
                 <div className="w-full flex flex-col gap-[40px]">
-                  {review.comments.map((comment) => (
-                    <LoungeBoardCommentItem
-                      key={comment.id}
-                      postId={postId}
-                      comment={comment}
-                      isDeleted={deletedCommentIds.has(comment.id)}
-                      onDelete={() => {
-                        deleteCommentMutation.mutate({ postId, commentId: Number(comment.id) });
-                        setDeletedCommentIds((prev) => new Set(prev).add(comment.id));
-                      }}
-                      onReplyClick={(commentId, author) => setReplyTarget({ commentId, author })}
-                      isComposingReply={replyTarget?.commentId === Number(comment.id)}
-                    />
-                  ))}
+                  {review.comments
+                    .map((comment) => ({
+                      comment,
+                      isDeleted:
+                        comment.commentStatus === 'DELETED' || deletedCommentIds.has(comment.id),
+                    }))
+                    // 답글 없는 삭제된 부모 댓글은 목록에서 완전히 제외
+                    .filter(
+                      ({ isDeleted, comment }) => !(isDeleted && (comment.replyCount ?? 0) === 0),
+                    )
+                    .map(({ comment, isDeleted }) => (
+                      <LoungeBoardCommentItem
+                        key={comment.id}
+                        postId={postId}
+                        comment={comment}
+                        isDeleted={isDeleted}
+                        onDelete={() => {
+                          deleteCommentMutation.mutate({ postId, commentId: Number(comment.id) });
+                          setDeletedCommentIds((prev) => new Set(prev).add(comment.id));
+                        }}
+                        onReplyClick={(commentId, author) => setReplyTarget({ commentId, author })}
+                        isComposingReply={replyTarget?.commentId === Number(comment.id)}
+                      />
+                    ))}
                 </div>
               </div>
             </div>
