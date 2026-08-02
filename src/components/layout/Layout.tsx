@@ -12,12 +12,24 @@ function LayoutContent() {
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
 
   // 하단 네비게이션 바(Navbar) 표시 경로 (화이트리스트)
-  const showNavbarPaths = ['/home', '/search', '/lounge', '/my', '/policy', '/invitation-request'];
-  const shouldShowNavbar = showNavbarPaths.some((path) => location.pathname.startsWith(path));
+  const showNavbarPaths = ['/home', '/search', '/lounge'];
+  const exactNavbarPaths = ['/my']; // 정확히 일치해야 하는 경로
+  const hideNavbarPaths = ['/lounge/my-questions']; // 예외: startsWith로 매칭되지만 숨김
+
+  const shouldShowNavbar =
+    (showNavbarPaths.some((path) => location.pathname.startsWith(path)) ||
+      exactNavbarPaths.some((path) => location.pathname === path)) &&
+    !hideNavbarPaths.some((path) => location.pathname.startsWith(path));
 
   // Footer(FNB) 표시 경로 (화이트리스트)
-  const showFooterPaths = ['/home', '/search', '/lounge', '/my'];
-  const isPathFooterShown = showFooterPaths.some((path) => location.pathname.startsWith(path));
+  const showFooterPaths = ['/home', '/search', '/lounge'];
+  const exactFooterPaths = ['/my']; // 정확히 일치해야 하는 경로
+  const hideFooterPaths = ['/lounge/my-questions']; // 예외: startsWith로 매칭되지만 숨김
+
+  const isPathFooterShown =
+    (showFooterPaths.some((path) => location.pathname.startsWith(path)) ||
+      exactFooterPaths.some((path) => location.pathname === path)) &&
+    !hideFooterPaths.some((path) => location.pathname.startsWith(path));
 
   // Router handle ({ hideFooter: true }) 기반 숨김
   const isRouteHandleFooterHidden = matches.some(
