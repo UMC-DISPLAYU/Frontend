@@ -53,6 +53,7 @@ export const LoungeBoardDetailPage = () => {
   const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
     null,
   );
+  const [deletedCommentIds, setDeletedCommentIds] = useState<Set<string>>(new Set());
 
   const postCategoryKey = post ? toLoungeCategoryKey(post.category) : undefined;
   const isValidPost = isValidCategory && !!post && postCategoryKey === category;
@@ -123,9 +124,11 @@ export const LoungeBoardDetailPage = () => {
                       key={comment.id}
                       postId={postId}
                       comment={comment}
-                      onDelete={() =>
-                        deleteCommentMutation.mutate({ postId, commentId: Number(comment.id) })
-                      }
+                      isDeleted={deletedCommentIds.has(comment.id)}
+                      onDelete={() => {
+                        deleteCommentMutation.mutate({ postId, commentId: Number(comment.id) });
+                        setDeletedCommentIds((prev) => new Set(prev).add(comment.id));
+                      }}
                       onReplyClick={(commentId, author) => setReplyTarget({ commentId, author })}
                       isComposingReply={replyTarget?.commentId === Number(comment.id)}
                     />

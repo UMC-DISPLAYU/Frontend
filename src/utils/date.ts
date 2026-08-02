@@ -14,8 +14,7 @@ export function formatDate(dateStr: string): string {
 export function formatLoungeTime(createdAt: string): string {
   const diff = Date.now() - new Date(createdAt).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return '방금 전';
-  if (minutes < 60) return `${minutes}분 전`;
+  if (minutes < 60) return `${Math.max(minutes, 1)}분 전`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}시간 전`;
 

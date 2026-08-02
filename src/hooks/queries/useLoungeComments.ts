@@ -44,15 +44,9 @@ export const useDeleteLoungeComment = () => {
   return useMutation({
     mutationFn: ({ commentId }: CommentMutationVariables) => deleteLoungeComment(commentId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
-      });
+      // 댓글·답글 목록은 일부러 무효화하지 않음: 삭제된 항목을 목록에서 지우지 않고
+      // "삭제된 글입니다."로 표시만 바꾸는 UI라서, 목록이 새로 불러와지면 안 됨.
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
-      if (variables.parentCommentId) {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.loungeComments.replyLists(variables.parentCommentId),
-        });
-      }
     },
   });
 };
