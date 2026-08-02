@@ -53,9 +53,11 @@ export function MyPageHeader({
           )}
         </div>
         <div className="flex items-center gap-3.5 text-neutral-900">
-          <button type="button" aria-label="전환" onClick={onToggleView}>
-            <RefreshCcw className="size-5" />
-          </button>
+          {isArtistVerified && (
+            <button type="button" aria-label="전환" onClick={onToggleView}>
+              <RefreshCcw className="size-5" />
+            </button>
+          )}
           <button type="button" aria-label="메뉴" onClick={() => navigate('/setting/')}>
             <Menu className="size-5" />
           </button>

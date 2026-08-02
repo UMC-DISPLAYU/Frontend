@@ -11,7 +11,7 @@ export function MyPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isArtistView, setIsArtistView] = useState(true);
+  const [isArtistView, setIsArtistView] = useState(false);
 
   const { data: userData, isLoading, error } = useUserProfile();
 
@@ -20,6 +20,10 @@ export function MyPage() {
   };
 
   const handleToggleView = () => {
+    if (!userData?.isArtistVerified) {
+      return;
+    }
+
     setIsArtistView((prev) => !prev);
     if (isArtistView && activeTab === 'artist') {
       setActiveTab('exhibition');
