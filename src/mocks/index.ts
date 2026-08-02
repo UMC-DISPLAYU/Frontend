@@ -10,8 +10,10 @@ import { healthHandlers } from './handlers/health';
 import { loungeHandlers } from './handlers/lounge';
 import { personalArtworkHandlers } from './handlers/personalArtwork';
 import { userHandlers } from './handlers/user';
+import { passthroughHandlers } from './passthrough';
 
 export const handlers = [
+  ...passthroughHandlers,
   ...healthHandlers,
   ...authHandlers,
   ...userHandlers,
