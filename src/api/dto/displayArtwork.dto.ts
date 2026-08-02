@@ -110,6 +110,26 @@ export interface GetArtworkQuestionsResponseDataDto {
 
 export type GetArtworkQuestionsResponseDto = ApiResponseDto<GetArtworkQuestionsResponseDataDto>;
 
+// 가짜 DTO: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
+export interface MyArtworkQuestionDto {
+  questionId: number;
+  artworkId: number;
+  artworkName: string;
+  content: string;
+  answerStatus: 'PENDING' | 'ANSWERED';
+  isPublic: boolean;
+  createdAt: string;
+  user: ArtworkGuestbookUserDto;
+}
+
+// 가짜 DTO: GET /api/v1/artworks/question/me 응답 데이터입니다.
+export interface GetMyArtworkQuestionsResponseDataDto {
+  questions: MyArtworkQuestionDto[];
+}
+
+// 가짜 DTO: GET /api/v1/artworks/question/me API 응답입니다.
+export type GetMyArtworkQuestionsResponseDto = ApiResponseDto<GetMyArtworkQuestionsResponseDataDto>;
+
 export interface CreateArtworkQuestionRequestDto {
   content: string;
   isPublic: boolean;

@@ -19,6 +19,7 @@ import type {
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
   GetDisplayArtworksResponseDataDto,
+  GetMyArtworkQuestionsResponseDataDto,
   GetMyArtworksResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
@@ -62,6 +63,11 @@ export const deleteArtworkFeeling = async (artworkId: number, feelingId: number)
 export const getArtworkQuestions = async (
   artworkId: number,
 ): Promise<GetArtworkQuestionsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/questions`);
+
+// 가짜 엔드포인트: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
+// GET /api/v1/artworks/question/me
+export const getMyArtworkQuestions = async (): Promise<GetMyArtworkQuestionsResponseDataDto> =>
+  apiRequest('/v1/artworks/question/me');
 
 // POST /v1/artworks/:artworkId/questions
 export const createArtworkQuestion = async (

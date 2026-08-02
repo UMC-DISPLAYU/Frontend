@@ -8,6 +8,51 @@ const now = () => new Date().toISOString();
 const findArtwork = (artworkId: number) =>
   mockDb.artworks.find((artwork: any) => artwork.artworkId === artworkId) ?? mockDb.artworks[0];
 
+// 가짜 API 응답 데이터: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
+const myArtworkQuestions = [
+  {
+    questionId: 1,
+    artworkId: 1001,
+    artworkName: '빛의 결',
+    content:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    answerStatus: 'PENDING',
+    isPublic: false,
+    createdAt: now(),
+    user: {
+      userId: 11,
+      nickname: 'artseeker_j',
+    },
+  },
+  {
+    questionId: 2,
+    artworkId: 1001,
+    artworkName: '빛의 결',
+    content:
+      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
+    answerStatus: 'PENDING',
+    isPublic: true,
+    createdAt: now(),
+    user: {
+      userId: 12,
+      nickname: 'artseeker_j',
+    },
+  },
+  {
+    questionId: 3,
+    artworkId: 1002,
+    artworkName: '형태의 침묵',
+    content: '작품 설명에서 말한 반복되는 선의 의미가 궁금합니다.',
+    answerStatus: 'ANSWERED',
+    isPublic: true,
+    createdAt: now(),
+    user: {
+      userId: 13,
+      nickname: 'viewer_08',
+    },
+  },
+];
+
 export const artworkHandlers = [
   ...paths('/api/v1/artworks').map((path) =>
     http.get(path, ({ request }) => {
@@ -73,6 +118,14 @@ export const artworkHandlers = [
             mockDb.displays.find((display: any) => display.displayId === artwork.displayId)
               ?.title ?? '',
         })),
+      }),
+    ),
+  ),
+  // 가짜 API: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
+  ...paths('/api/v1/artworks/question/me').map((path) =>
+    http.get(path, () =>
+      success('/api/v1/artworks/question/me', {
+        questions: myArtworkQuestions,
       }),
     ),
   ),

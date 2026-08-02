@@ -4,6 +4,7 @@ import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
+import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
 
 type TabKey = 'pending' | 'done';
 
@@ -17,47 +18,27 @@ interface Question {
   isOpen: boolean;
 }
 
-const PENDING: Question[] = [
-  {
-    id: 'p1',
-    exhibition: '빛의 결',
-    desc: '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
-    user: 'artseeker_j',
-    time: '1시간 전',
-    status: '답변예정',
-    isOpen: false,
-  },
-  {
-    id: 'p2',
-    exhibition: '빛의 결',
-    desc: '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
-    user: 'artseeker_j',
-    time: '1시간 전',
-    status: '답변예정',
-    isOpen: true,
-  },
-];
+const formatAnswerStatus = (answerStatus: string) => {
+  if (answerStatus === 'PENDING') return '답변예정';
+  if (answerStatus === 'ANSWERED') return '답변완료';
 
-const DONE: Question[] = [
-  {
-    id: 'd1',
-    exhibition: '빛의 결',
-    desc: '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
-    user: 'artseeker_j',
-    time: '1시간 전',
-    status: '답변예정',
-    isOpen: false,
-  },
-  {
-    id: 'd2',
-    exhibition: '빛의 결',
-    desc: '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
-    user: 'artseeker_j',
-    time: '1시간 전',
-    status: '답변예정',
-    isOpen: true,
-  },
-];
+  return '';
+};
+
+const getRelativeTime = (createdAt: string) => {
+  const diff = Date.now() - new Date(createdAt).getTime();
+  const minutes = Math.floor(diff / 1000 / 60);
+
+  if (!Number.isFinite(minutes)) return '';
+
+  if (minutes < 1) return '방금 전';
+  if (minutes < 60) return `${minutes}분 전`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}시간 전`;
+
+  return `${Math.floor(hours / 24)}일 전`;
+};
 
 interface QuestionCardProps {
   item: Question;
@@ -137,8 +118,27 @@ function Tabs({ value, onChange }: TabsProps) {
 export function AnswerPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabKey>('done');
+  // 가짜 API 연동: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 GET /api/v1/artworks/question/me 응답을 사용합니다.
+  const { data, isError, isLoading } = useMyArtworkQuestions();
+  const questions = data?.questions;
 
-  const items = tab === 'pending' ? PENDING : DONE;
+  const items = questions
+    ? questions
+        .filter((question) =>
+          tab === 'pending'
+            ? question.answerStatus === 'PENDING'
+            : question.answerStatus === 'ANSWERED',
+        )
+        .map<Question>((question) => ({
+          id: String(question.questionId),
+          exhibition: question.artworkName,
+          desc: question.content,
+          user: question.user.nickname,
+          time: getRelativeTime(question.createdAt),
+          status: formatAnswerStatus(question.answerStatus),
+          isOpen: question.isPublic,
+        }))
+    : [];
 
   const handleDone = () => {
     navigate(-1);
@@ -158,7 +158,11 @@ export function AnswerPage() {
       </div>
 
       <section className="flex-1 min-h-0 overflow-y-auto px-5 py-5 flex flex-col">
-        {items.length === 0 ? (
+        {isLoading ? (
+          <ErrorView fullScreen={false} message="답변할 질문을 불러오는 중이에요." />
+        ) : isError ? (
+          <ErrorView fullScreen={false} message="답변할 질문을 불러오지 못했어요." />
+        ) : items.length === 0 ? (
           <ErrorView fullScreen={false} message="답변할 질문 항목이 없어요." />
         ) : (
           <div className="flex flex-col gap-[10px]">
