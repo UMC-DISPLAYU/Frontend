@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Plus, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import {
-  createContentCategory,
-  deleteContentCategory,
-  updateContentCategory,
-} from '@/api/endpoints/displayContent';
-import { queryKeys } from '@/api/queryKeys';
+import DUfontlogo from '@/assets/DUfontlogo.svg';
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
 import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
+import {
+  useCreateContentCategory,
+  useDeleteContentCategory,
+  useUpdateContentCategory,
+} from '@/hooks/queries/useContentCategories';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 
 type Content = {
@@ -30,15 +29,15 @@ const EMPTY_CONTENT: Content = { id: 0, title: '', description: '', photoCount: 
 /* 공통                                                                */
 /* ------------------------------------------------------------------ */
 
+/* 대표 이미지가 없는 콘텐츠는 DU 로고를 폴백으로 보여줍니다. */
 function Thumbnail({ src }: { src?: string }) {
   return (
     <div className="size-20 shrink-0 overflow-hidden rounded-xl bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)]">
       {src ? (
         <img src={src} alt="" className="size-full object-cover" />
       ) : (
-        <div className="flex size-full flex-col justify-between bg-dark p-2 text-white">
-          <span className="typo-heading-xl leading-none">CREATIVE POSTER EXHIB</span>
-          <span className="h-4 w-10 bg-card/80" />
+        <div className="grid size-full place-items-center bg-box200 p-3">
+          <img src={DUfontlogo} alt="" className="w-full opacity-40" />
         </div>
       )}
     </div>
@@ -263,42 +262,13 @@ export function DisplayContentsManagePage() {
   const displayId = state?.displayId ? Number(state.displayId) : Number.NaN;
   const isValidDisplayId = Number.isFinite(displayId) && displayId > 0;
 
-  const queryClient = useQueryClient();
-
   // API에서 전시 상세 정보 가져오기
   const { data: displayDetail, isLoading, isError } = useDisplayDetail(displayId);
 
-  // Mutations
-  const createMutation = useMutation({
-    mutationFn: (body: { name: string; description: string }) =>
-      createContentCategory(displayId, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
-      setCreating(false);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({
-      categoryId,
-      body,
-    }: {
-      categoryId: number;
-      body: { name: string; description: string };
-    }) => updateContentCategory(displayId, categoryId, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
-      setEditing(null);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (categoryId: number) => deleteContentCategory(displayId, categoryId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
-      setDeleting(null);
-    },
-  });
+  // 콘텐츠 카테고리 생성/수정/삭제
+  const createMutation = useCreateContentCategory(displayId);
+  const updateMutation = useUpdateContentCategory(displayId);
+  const deleteMutation = useDeleteContentCategory(displayId);
 
   const [menuId, setMenuId] = useState<number | null>(null);
   const [editing, setEditing] = useState<Content | null>(null);
@@ -332,19 +302,25 @@ export function DisplayContentsManagePage() {
 
   const handleSave = (patch: { title: string; description: string }) => {
     if (!editing) return;
-    updateMutation.mutate({
-      categoryId: editing.id,
-      body: { name: patch.title, description: patch.description },
-    });
+    updateMutation.mutate(
+      {
+        categoryId: editing.id,
+        body: { name: patch.title, description: patch.description },
+      },
+      { onSuccess: () => setEditing(null) },
+    );
   };
 
   const handleCreate = (patch: { title: string; description: string }) => {
-    createMutation.mutate({ name: patch.title, description: patch.description });
+    createMutation.mutate(
+      { name: patch.title, description: patch.description },
+      { onSuccess: () => setCreating(false) },
+    );
   };
 
   const handleDelete = () => {
     if (!deleting) return;
-    deleteMutation.mutate(deleting.id);
+    deleteMutation.mutate(deleting.id, { onSuccess: () => setDeleting(null) });
   };
 
   const handlePhotoCountChange = (_categoryId: number, _count: number) => {

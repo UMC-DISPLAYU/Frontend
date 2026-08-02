@@ -100,6 +100,24 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
     [domain, uploadImage],
   );
 
+  /*
+   * 파일 하나를 즉시 업로드하고 조회용 URL을 반환합니다.
+   * addImages 직후에는 내부 ref가 아직 갱신되지 않아 uploadImages()가 비어 있으므로,
+   * 선택 즉시 업로드해야 하는 화면에서는 이 함수를 사용합니다.
+   */
+  const uploadSingleImage = useCallback(
+    async (file: File, options: UploadImagesOptions = {}) => {
+      const uploadDomain = options.domain ?? domain;
+
+      if (!uploadDomain) {
+        throw new Error('이미지를 업로드할 domain이 필요합니다.');
+      }
+
+      return uploadImage.mutateAsync({ file, domain: uploadDomain });
+    },
+    [domain, uploadImage],
+  );
+
   return {
     images,
     files: images.map((image) => image.file),
@@ -110,5 +128,6 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
     removeImage,
     clearImages,
     uploadImages,
+    uploadImage: uploadSingleImage,
   };
 };
