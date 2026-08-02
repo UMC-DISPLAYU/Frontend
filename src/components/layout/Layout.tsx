@@ -19,17 +19,35 @@ function LayoutContent() {
     '/artworks-register',
     '/exhibition/',
     '/artist-verification',
-    '/exhibition-register/',
+    '/exhibition-register',
     '/team/manage',
     '/lounge/review/post',
+    '/auth',
+    '/setting',
+    '/edit-basic-info',
+    '/edit-artist-profile',
+    '/answer-questions',
+    '/invitations/'
   ];
   const shouldHideNavbar = hideNavbarPaths.some((path) => location.pathname.startsWith(path));
 
   // Footer(FNB) 선택적 숨김 경로 (기본값: Footer 표시, 안 보일 특수 페이지 등록 가능)
   const defaultHideFooterPaths = [
     '/artist-verification',
-    '/exhibition-register/',
     '/lounge/review/post',
+    '/exhibition/manage',
+    '/exhibition/visibility',
+    '/exhibition/register-complete',
+    '/team/manage',
+    '/setting',
+    '/edit-basic-info',
+    '/edit-artist-profile',
+    '/display/manage',
+    '/answer-questions',
+    '/invitations/',
+    '/my-review',
+    '/my-questions',
+    '/policy',
   ];
   const isPathFooterHidden = defaultHideFooterPaths.some((path) =>
     location.pathname.startsWith(path),
