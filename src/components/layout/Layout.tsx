@@ -12,7 +12,7 @@ function LayoutContent() {
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
 
   // 하단 네비게이션 바(Navbar) 표시 경로 (화이트리스트)
-  const showNavbarPaths = ['/home', '/search', '/lounge', '/my'];
+  const showNavbarPaths = ['/home', '/search', '/lounge', '/my', '/policy', '/invitation-request'];
   const shouldShowNavbar = showNavbarPaths.some((path) => location.pathname.startsWith(path));
 
   // Footer(FNB) 표시 경로 (화이트리스트)
