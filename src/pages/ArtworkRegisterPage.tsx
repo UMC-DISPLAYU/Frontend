@@ -18,13 +18,7 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
-
-/* "2026.09.22" 처럼 입력된 값에서 연도만 추출합니다. */
-const toProductionYear = (value: string) => {
-  const year = Number(value.slice(0, 4));
-
-  return Number.isFinite(year) && year > 0 ? year : new Date().getFullYear();
-};
+import { toProductionYear } from '@/utils/date';
 
 type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'participants';
 type RegisterMode = 'own' | 'proxy';
