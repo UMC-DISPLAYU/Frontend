@@ -5,8 +5,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
-import { Chip } from '@/components/ui';
+import { ChipGroup } from '@/components/ui';
 import {
+  ARTWORK_FIELD_FALLBACK,
+  ARTWORK_FIELD_MAP,
   EXHIBITION_FIELDS,
   MAX_ARTWORK_PROGRESS_IMAGES,
   MAX_ARTWORK_UPLOAD_IMAGES,
@@ -16,20 +18,6 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
-
-/* 화면에 표시하는 한글 분야를 API enum으로 변환합니다. */
-const FIELD_TO_TYPE: Record<string, string> = {
-  회화: 'PAINTING',
-  디자인: 'DESIGN',
-  사진: 'PHOTOGRAPHY',
-  건축: 'ARCHITECTURE',
-  영상: 'VIDEO',
-  조소: 'SCULPTURE',
-  패션: 'FASHION',
-  일러스트: 'ILLUSTRATION',
-  공예: 'CRAFTS',
-  기타: 'OTHERS',
-};
 
 /* "2026.09.22" 처럼 입력된 값에서 연도만 추출합니다. */
 const toProductionYear = (value: string) => {
@@ -711,7 +699,7 @@ export function ArtworkRegisterPage() {
         displayId,
         artworkName: title.trim(),
         content: description.trim(),
-        type: FIELD_TO_TYPE[field] ?? 'OTHERS',
+        type: ARTWORK_FIELD_MAP[field] ?? ARTWORK_FIELD_FALLBACK,
         productionYear: toProductionYear(year),
         materialMedia: medium.trim(),
         size: size.trim(),
@@ -1017,16 +1005,14 @@ export function ArtworkRegisterPage() {
 
           <section className="flex flex-col gap-3">
             <FieldLabel required>작품분야</FieldLabel>
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="작품분야">
-              {EXHIBITION_FIELDS.map((item) => (
-                <Chip
-                  key={item}
-                  label={item}
-                  selected={field === item}
-                  onClick={() => setField(item)}
-                />
-              ))}
-            </div>
+            <ChipGroup
+              options={EXHIBITION_FIELDS}
+              selected={[field]}
+              onChange={(next) => setField(next[0] ?? field)}
+              maxSelect={1}
+              aria-label="작품분야"
+              className="flex flex-wrap gap-2"
+            />
           </section>
 
           <section className="flex flex-col gap-3">

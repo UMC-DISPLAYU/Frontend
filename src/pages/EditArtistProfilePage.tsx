@@ -4,21 +4,10 @@ import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
+import { ChipGroup } from '@/components/ui';
+import { EXHIBITION_FIELDS } from '@/constants/exhibition';
 import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
-
-const EXHIBITION_FIELDS = [
-  '회화',
-  '디자인',
-  '사진',
-  '건축',
-  '영상',
-  '조소',
-  '패션',
-  '일러스트',
-  '공예',
-  '기타',
-] as const;
 
 const INTRO_MAX = 100;
 
@@ -89,12 +78,6 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [schoolFocused, setSchoolFocused] = useState(false);
   const schoolQuery = useSearchSchools(school);
   const updateMyArtistProfile = useUpdateMyArtistProfile();
-
-  const toggleField = (field: string) => {
-    setSelectedFields((prev) =>
-      prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field],
-    );
-  };
 
   const showSchoolDropdown = schoolFocused && school.trim().length > 0;
 
@@ -170,26 +153,12 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           {/* 전시분야 */}
           <div className="flex flex-col gap-3">
             <span className="typo-body-sm-bold text-main">전시분야</span>
-            <div className="flex flex-wrap gap-2">
-              {EXHIBITION_FIELDS.map((field) => {
-                const active = selectedFields.includes(field);
-                return (
-                  <button
-                    key={field}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => toggleField(field)}
-                    className={`rounded-sm border px-2.5 py-1.5 transition-colors ${
-                      active
-                        ? 'border-dark text-dark typo-body-xs-bold'
-                        : 'border-line text-sub600  typo-body-xs-regular'
-                    }`}
-                  >
-                    {field}
-                  </button>
-                );
-              })}
-            </div>
+            <ChipGroup
+              options={EXHIBITION_FIELDS}
+              selected={selectedFields}
+              onChange={setSelectedFields}
+              aria-label="전시분야"
+            />
           </div>
 
           {/* 외부 링크 */}

@@ -50,14 +50,6 @@ export function ArtistVerificationPage() {
     profileName.trim() &&
     selectedFields.length > 0;
 
-  const toggleField = (field: string) => {
-    setSelectedFields((current) => {
-      if (current.includes(field)) return current.filter((item) => item !== field);
-      if (current.length >= 2) return current;
-      return [...current, field];
-    });
-  };
-
   const handleSendMail = () => {
     if (!school.trim() || !email.trim()) {
       setEmailState('error');
@@ -202,7 +194,7 @@ export function ArtistVerificationPage() {
           {shouldShowProfileFields ? (
             <>
               <ArtistProfileSection value={profileName} onChange={setProfileName} />
-              <ArtistFieldSelector selectedFields={selectedFields} onToggle={toggleField} />
+              <ArtistFieldSelector selectedFields={selectedFields} onChange={setSelectedFields} />
             </>
           ) : null}
         </div>

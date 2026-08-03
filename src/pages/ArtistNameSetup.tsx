@@ -4,6 +4,7 @@ import { ChevronLeft, Info } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
+import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
 
 interface SummaryRowProps {
@@ -32,28 +33,6 @@ type ExhibitionRegisterState = {
   longitude?: number | null;
   contact?: string;
   notice?: string;
-};
-
-const DISPLAY_TYPE_MAP: Record<string, CreateDisplayRequestDto['type']> = {
-  '졸업 전시': 'GRADUATION',
-  '과제 전시': 'TASK',
-  '학과·학회 전시': 'CLUB',
-  '연합 전시': 'JOINT',
-  '소모임·동아리 전시': 'CLUB',
-  '기타 단체 전시': 'ETC',
-};
-
-const DISPLAY_FIELD_MAP: Record<string, string> = {
-  회화: 'PAINTING',
-  디자인: 'DESIGN',
-  사진: 'PHOTOGRAPHY',
-  건축: 'ARCHITECTURE',
-  영상: 'MEDIA',
-  조소: 'SCULPTURE',
-  패션: 'FASHION',
-  일러스트: 'DESIGN',
-  공예: 'CRAFT',
-  기타: 'ETC',
 };
 
 const getRegion = (address: string): CreateDisplayRequestDto['region'] => {

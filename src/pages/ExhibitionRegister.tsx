@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 
 import { ImageUploader } from '@/components/common';
 import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
-import { Chip, RequiredLabel } from '@/components/ui';
+import { ChipGroup, RequiredLabel } from '@/components/ui';
 import {
   EXHIBITION_FIELDS,
+  EXHIBITION_TYPE_LABELS,
   EXHIBITION_TYPES,
   type ExhibitionTypeGroup,
   MAX_POSTER_UPLOAD_IMAGES,
@@ -38,9 +39,6 @@ export function ExhibitionRegister() {
   }, [type]);
 
   const navigate = useNavigate();
-
-  const toggleField = (f: string) =>
-    setField((prev) => (prev.includes(f) ? prev.filter((item) => item !== f) : [...prev, f]));
 
   const isAffiliationValid = () => {
     if (!selectedGroup) return true;
@@ -133,30 +131,24 @@ export function ExhibitionRegister() {
 
           <div className="flex flex-col gap-3">
             <RequiredLabel required>전시유형</RequiredLabel>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {EXHIBITION_TYPES.map((t) => (
-                <Chip
-                  key={t.label}
-                  label={t.label}
-                  selected={type === t.label}
-                  onClick={() => setType(t.label)}
-                />
-              ))}
-            </div>
+            <ChipGroup
+              options={EXHIBITION_TYPE_LABELS}
+              selected={type ? [type] : []}
+              onChange={(next) => setType(next[0] ?? null)}
+              maxSelect={1}
+              aria-label="전시유형"
+              className="flex flex-wrap items-center gap-1.5"
+            />
           </div>
 
           <div className="flex flex-col gap-3">
             <RequiredLabel required>전시분야</RequiredLabel>
-            <div className="flex flex-wrap items-center gap-2">
-              {EXHIBITION_FIELDS.map((f) => (
-                <Chip
-                  key={f}
-                  label={f}
-                  selected={field.includes(f)}
-                  onClick={() => toggleField(f)}
-                />
-              ))}
-            </div>
+            <ChipGroup
+              options={EXHIBITION_FIELDS}
+              selected={field}
+              onChange={setField}
+              aria-label="전시분야"
+            />
           </div>
 
           {selectedGroup && (
