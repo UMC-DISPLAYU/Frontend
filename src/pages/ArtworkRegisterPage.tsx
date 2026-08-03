@@ -7,7 +7,9 @@ import { BottomButtonBar } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
 import { Chip } from '@/components/ui';
 import { EXHIBITION_FIELDS } from '@/constants/exhibition';
-import { useCreateDisplayArtwork } from '@/hooks/queries/useDisplayArtworks';
+import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
 
@@ -52,23 +54,6 @@ const DEFAULT_EXHIBITION = {
 
 const REPRESENTATIVE = { id: 'owner', name: '최유성', account: 'quietroom' };
 const DIRECT_INPUT_ACCOUNT = '직접입력';
-
-const initialCollaborators = [
-  { id: 'lee', name: '이정우', account: 'quietroom' },
-  { id: 'ko', name: '고상준', account: 'quietroom' },
-];
-
-const proxyAuthorOptions = [
-  { id: 'lee', name: '이정우', account: 'quietroom', verified: true },
-  { id: 'kim-verified', name: '김서윤', account: 'blue.note', verified: true },
-  { id: 'kim-unverified', name: '김서윤', account: 'blue.note', verified: false },
-];
-
-const collaboratorTeamOptions = [
-  { id: 'kim-verified', name: '김서윤', account: 'blue.note', verified: true },
-  { id: 'lee', name: '이정우', account: 'quietroom', verified: true },
-  { id: 'kim-unverified', name: '김서윤', account: 'blue.note', verified: false },
-];
 
 function ArtworkRegisterHeader({ title, onBack }: { title: string; onBack: () => void }) {
   return (
@@ -351,12 +336,15 @@ function AuthorSelectCard({
   verified,
   selected,
   onClick,
+  isMember = true,
 }: {
   name: string;
   account: string;
   verified: boolean;
   selected: boolean;
   onClick: () => void;
+  /* 직접 이름으로 등록된 작가는 계정이 없어 작가로 연결할 수 없습니다. */
+  isMember?: boolean;
 }) {
   return (
     <button
@@ -375,7 +363,11 @@ function AuthorSelectCard({
       <div className="min-w-0 flex-1">
         <p className="typo-body-sm-bold truncate text-main">{name}</p>
         <p className="typo-body-xs-regular mt-2 truncate text-faint">
-          {verified ? account : '작가 인증 후 선택할 수 있어요.'}
+          {verified
+            ? account
+            : isMember
+              ? '작가 인증 후 선택할 수 있어요.'
+              : '직접 입력한 작가는 선택할 수 없어요.'}
         </p>
       </div>
       {verified && (
@@ -539,7 +531,7 @@ export function ArtworkRegisterPage() {
   const [selectedProxyAuthorId, setSelectedProxyAuthorId] = useState<string | null>(null);
   const [proxyAuthorName, setProxyAuthorName] = useState('');
   const [proxyAuthorSource, setProxyAuthorSource] = useState<ProxyAuthorSource>('direct');
-  const [directCollaboratorName, setDirectCollaboratorName] = useState('고상준');
+  const [directCollaboratorName, setDirectCollaboratorName] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [field, setField] = useState<string>('회화');
@@ -547,39 +539,100 @@ export function ArtworkRegisterPage() {
   const [medium, setMedium] = useState('아크릴, 캔버스');
   const [size, setSize] = useState('90 × 120 cm');
   const [point, setPoint] = useState('');
-  const [collaborators, setCollaborators] = useState(initialCollaborators);
+  /* userId가 있으면 디유 계정이 연결된 팀원, 없으면 직접 이름을 입력한 작가입니다. */
+  const [collaborators, setCollaborators] = useState<
+    { id: string; name: string; account: string; userId?: number }[]
+  >([]);
   const [qnaAssigneeIds, setQnaAssigneeIds] = useState<string[]>([REPRESENTATIVE.id]);
   const artworkInputRef = useRef<HTMLInputElement>(null);
   const processInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedProxyAuthor = proxyAuthorOptions.find(
+  /*
+   * 전시 팀원 목록. 초대를 수락한 팀원만 작가로 지정할 수 있습니다.
+   * 스웨거 TeamMemberResponse에는 작가 인증 여부가 없어 초대 수락 여부로 대신 판정합니다.
+   */
+  const { data: userMe } = useUserMe();
+  const { data: memberList } = useDisplayMembers(displayId);
+  const { data: artworkList } = useDisplayArtworks(displayId);
+
+  const teamAuthorOptions = useMemo(() => {
+    const members = (memberList?.members ?? []).map((member) => ({
+      id: String(member.teamMemberId),
+      userId: member.userId,
+      name: member.displayNickname,
+      account: member.displayNickname,
+      verified: member.accepted !== false,
+      isMember: true,
+    }));
+
+    /*
+     * 직접 이름으로 등록된 작가(artistUserId가 없는 작품의 작가)도 목록에 노출하되
+     * 계정이 없어 작가 프로필을 연결할 수 없으므로 선택은 막습니다.
+     */
+    const registeredNames = new Set(members.map((member) => member.name));
+    const directAuthors = (artworkList?.artworks ?? [])
+      .filter((artwork) => !artwork.artistUserId && artwork.artistName)
+      .map((artwork) => artwork.artistName)
+      .filter((name) => {
+        if (registeredNames.has(name)) return false;
+        registeredNames.add(name);
+        return true;
+      })
+      .map((name) => ({
+        id: `direct-${name}`,
+        userId: undefined as number | undefined,
+        name,
+        account: DIRECT_INPUT_ACCOUNT,
+        verified: false,
+        isMember: false,
+      }));
+
+    return [...members, ...directAuthors];
+  }, [memberList, artworkList]);
+
+  const selectedProxyAuthor = teamAuthorOptions.find(
     (author) => author.id === selectedProxyAuthorId,
   );
   const displayAuthor = useMemo(() => {
+    /* 본인 등록은 로그인 사용자를, 팀원 선택은 해당 팀원의 계정을 작가로 연결합니다. */
     if (registerMode === 'own') {
-      return { ...REPRESENTATIVE, tag: '작가인증' };
+      return {
+        ...REPRESENTATIVE,
+        name: userMe?.nickname || userMe?.name || REPRESENTATIVE.name,
+        account: userMe?.nickname || REPRESENTATIVE.account,
+        userId: userMe?.userId,
+        tag: '작가인증',
+      };
     }
     if (proxyAuthorSource === 'team' && selectedProxyAuthor) {
       return {
         id: selectedProxyAuthor.id,
         name: selectedProxyAuthor.name,
         account: selectedProxyAuthor.account,
+        userId: selectedProxyAuthor.userId,
         tag: '작가인증',
       };
     }
 
+    /* 직접 입력한 작가는 계정이 없어 이름만 전송합니다. */
     return {
       id: 'proxy-author-direct',
       name: proxyAuthorName,
       account: DIRECT_INPUT_ACCOUNT,
+      userId: undefined as number | undefined,
       tag: '대리 등록',
     };
-  }, [proxyAuthorName, proxyAuthorSource, registerMode, selectedProxyAuthor]);
+  }, [proxyAuthorName, proxyAuthorSource, registerMode, selectedProxyAuthor, userMe]);
   const qnaAssigneeOptions = useMemo(() => {
     const options = [
-      { id: displayAuthor.id, name: displayAuthor.name, account: displayAuthor.account },
+      {
+        id: displayAuthor.id,
+        name: displayAuthor.name,
+        account: displayAuthor.account,
+        userId: displayAuthor.userId,
+      },
     ];
-    const addOption = (person: { id: string; name: string; account: string }) => {
+    const addOption = (person: { id: string; name: string; account: string; userId?: number }) => {
       if (options.some((option) => option.id === person.id)) return;
       options.push(person);
     };
@@ -681,6 +734,16 @@ export function ArtworkRegisterPage() {
       return;
     }
 
+    const artistUserId = displayAuthor.userId;
+    /*
+     * 스웨거 qaHandlerUserId는 단수라 선택한 담당자 중 첫 번째만 보냅니다.
+     * 계정이 없는 직접 입력 작가는 담당자로 지정할 수 없습니다.
+     */
+    const qaHandlerUserId =
+      selectedQnaAssigneeIds
+        .map((id) => qnaAssigneeOptions.find((person) => person.id === id)?.userId)
+        .find((userId): userId is number => typeof userId === 'number') ?? userMe?.userId;
+
     createArtwork.mutate(
       {
         displayId,
@@ -692,8 +755,18 @@ export function ArtworkRegisterPage() {
         size: size.trim(),
         point: point.trim(),
         images: imageUrls.map((imageUrl) => ({ imageUrl })),
-        artistName: registerMode === 'proxy' ? proxyAuthorName.trim() || undefined : undefined,
-        coAuthors: { userIds: [], names: [] },
+        artistName: displayAuthor.name.trim(),
+        artistUserId,
+        /* 계정이 연결된 팀원은 userIds로, 직접 입력한 작가는 rawNames로 보냅니다. */
+        coAuthors: {
+          userIds: collaborators
+            .map((person) => person.userId)
+            .filter((userId): userId is number => typeof userId === 'number'),
+          rawNames: collaborators
+            .filter((person) => typeof person.userId !== 'number')
+            .map((person) => person.name),
+        },
+        qaHandlerUserId,
       },
       {
         onSuccess: () => navigate(`/artworks-manage?displayId=${displayId}`),
@@ -764,7 +837,7 @@ export function ArtworkRegisterPage() {
   };
 
   const openDirectCollaboratorSheet = () => {
-    setDirectCollaboratorName('고상준');
+    setDirectCollaboratorName('');
     setActiveSheet('collaboratorDirect');
   };
 
@@ -788,12 +861,15 @@ export function ArtworkRegisterPage() {
     });
   };
 
-  const addTeamCollaborator = (person: (typeof collaboratorTeamOptions)[number]) => {
+  const addTeamCollaborator = (person: (typeof teamAuthorOptions)[number]) => {
     if (!person.verified) return;
 
     setCollaborators((prev) => {
       if (prev.some((item) => item.id === person.id)) return prev;
-      return [...prev, { id: person.id, name: person.name, account: person.account }];
+      return [
+        ...prev,
+        { id: person.id, name: person.name, account: person.account, userId: person.userId },
+      ];
     });
     setActiveSheet(null);
   };
@@ -904,7 +980,7 @@ export function ArtworkRegisterPage() {
   };
 
   const renderProxyTeamAuthor = () => {
-    const selectedAuthor = proxyAuthorOptions.find((author) => author.id === selectedProxyAuthorId);
+    const selectedAuthor = teamAuthorOptions.find((author) => author.id === selectedProxyAuthorId);
     const canSubmit = Boolean(selectedAuthor?.verified);
 
     return (
@@ -924,16 +1000,22 @@ export function ArtworkRegisterPage() {
           </div>
 
           <div className="mt-5 flex flex-col gap-3">
-            {proxyAuthorOptions.map((author) => (
+            {teamAuthorOptions.map((author) => (
               <AuthorSelectCard
                 key={author.id}
                 name={author.name}
                 account={author.account}
                 verified={author.verified}
+                isMember={author.isMember}
                 selected={selectedProxyAuthorId === author.id}
                 onClick={() => setSelectedProxyAuthorId(author.id)}
               />
             ))}
+            {teamAuthorOptions.length === 0 && (
+              <p className="typo-body-xs-regular py-8 text-center text-faint">
+                아직 전시 팀원이 없어요.
+              </p>
+            )}
           </div>
         </main>
         <BottomButtonBar>
@@ -1145,13 +1227,11 @@ export function ArtworkRegisterPage() {
         title="작가 정보를 어떻게 입력할까요?"
         subtitle="대신 등록할 작품의 작가 정보를 선택해주세요."
       >
-        {/* 대신 등록 플로우에서는 전시 팀원 선택을 지원하지 않습니다. */}
         <SheetOption
           title="전시 팀원에서 선택"
           description="디유 계정이 있는 팀원의 작가명과 프로필을 불러와요."
-          helper="준비 중이에요. 직접 이름 입력을 이용해주세요."
+          helper="작가 인증 완료 팀원만 선택할 수 있어요."
           onClick={selectTeamProxyAuthor}
-          disabled
         />
         <SheetOption
           title="직접 이름 입력"
@@ -1188,7 +1268,12 @@ export function ArtworkRegisterPage() {
         subtitle="작가 인증이 완료된 팀원만 공동 작업자로 추가할 수 있어요."
         bodyClassName="mt-6 flex flex-col gap-2"
       >
-        {collaboratorTeamOptions.map((person) => (
+        {teamAuthorOptions.length === 0 && (
+          <p className="typo-body-xs-regular py-8 text-center text-faint">
+            아직 전시 팀원이 없어요.
+          </p>
+        )}
+        {teamAuthorOptions.map((person) => (
           <CollaboratorTeamCard
             key={person.id}
             name={person.name}
