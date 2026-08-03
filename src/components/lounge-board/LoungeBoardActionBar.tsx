@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Bookmark, Flag, Heart } from 'lucide-react';
+import { Bookmark, Heart } from 'lucide-react';
 
 type Props = {
   likeCount: number;
@@ -18,7 +18,7 @@ export function LoungeBoardActionBar({ likeCount, isLiked, isSaved }: Props) {
       <div className="flex flex-col">
         <div className="-mx-5 border-t border-zinc-300" />
 
-        <div className="-mx-5 flex items-center justify-between pt-[18px]">
+        <div className="-mx-5 flex items-center pt-[18px]">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -37,22 +37,18 @@ export function LoungeBoardActionBar({ likeCount, isLiked, isSaved }: Props) {
               onClick={() => setSaved((v) => !v)}
               className="px-5 py-2 rounded-[10px] flex items-center gap-1.5"
             >
+              {/* 저장됨 아이콘 색 임시로 피그마 값을 하드코딩했습니다(서현민) */}
               <Bookmark
-                className={`size-4 text-hint ${saved ? 'fill-bookmark' : ''}`}
+                className={`size-4 ${saved ? 'text-[#C4C4C4] fill-[#C4C4C4]' : 'text-hint'}`}
                 strokeWidth={1.5}
               />
               <span className="typo-body-sm-regular text-hint">저장</span>
             </button>
           </div>
-
-          <button type="button" className="px-5 py-2 rounded-[10px] flex items-center gap-1.5">
-            <Flag className="size-4 text-hint" strokeWidth={1.5} />
-            <span className="typo-body-sm-regular text-hint">신고</span>
-          </button>
         </div>
       </div>
 
-      <div className="-mx-5 h-2 bg-zinc-300" />
+      <div className="-mx-5 h-1 bg-zinc-300" />
     </div>
   );
 }
