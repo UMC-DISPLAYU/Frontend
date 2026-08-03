@@ -566,13 +566,14 @@ export function ArtworkRegisterPage() {
     }));
 
     /*
-     * 직접 이름으로 등록된 작가(artistUserId가 없는 작품의 작가)도 목록에 노출하되
-     * 계정이 없어 작가 프로필을 연결할 수 없으므로 선택은 막습니다.
+     * 직접 이름으로 등록된 작가도 목록에 노출하되 계정이 없어 선택은 막습니다.
+     * 작품 목록 응답(ArtworkItemResponse)에는 artistUserId가 없어
+     * 팀원 닉네임에 없는 작가명을 직접 입력으로 간주합니다.
      */
     const registeredNames = new Set(members.map((member) => member.name));
     const directAuthors = (artworkList?.artworks ?? [])
-      .filter((artwork) => !artwork.artistUserId && artwork.artistName)
       .map((artwork) => artwork.artistName)
+      .filter((name): name is string => Boolean(name))
       .filter((name) => {
         if (registeredNames.has(name)) return false;
         registeredNames.add(name);
@@ -600,7 +601,7 @@ export function ArtworkRegisterPage() {
         ...REPRESENTATIVE,
         name: userMe?.nickname || userMe?.name || REPRESENTATIVE.name,
         account: userMe?.nickname || REPRESENTATIVE.account,
-        userId: userMe?.userId,
+        userId: userMe?.id,
         tag: '작가인증',
       };
     }
@@ -624,7 +625,7 @@ export function ArtworkRegisterPage() {
     };
   }, [proxyAuthorName, proxyAuthorSource, registerMode, selectedProxyAuthor, userMe]);
   const qnaAssigneeOptions = useMemo(() => {
-    const options = [
+    const options: { id: string; name: string; account: string; userId?: number }[] = [
       {
         id: displayAuthor.id,
         name: displayAuthor.name,
@@ -742,7 +743,12 @@ export function ArtworkRegisterPage() {
     const qaHandlerUserId =
       selectedQnaAssigneeIds
         .map((id) => qnaAssigneeOptions.find((person) => person.id === id)?.userId)
-        .find((userId): userId is number => typeof userId === 'number') ?? userMe?.userId;
+        .find((userId): userId is number => typeof userId === 'number') ?? userMe?.id;
+
+    if (typeof qaHandlerUserId !== 'number') {
+      setSubmitError('Q&A 담당자를 지정할 수 없어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
 
     createArtwork.mutate(
       {
@@ -754,7 +760,13 @@ export function ArtworkRegisterPage() {
         materialMedia: medium.trim(),
         size: size.trim(),
         point: point.trim(),
-        images: imageUrls.map((imageUrl) => ({ imageUrl })),
+        images: imageUrls.map((imageUrl, index) => ({
+          imageUrl,
+          imageType: 'ARTWORK',
+          width: 0,
+          height: 0,
+          sortOrder: index + 1,
+        })),
         artistName: displayAuthor.name.trim(),
         artistUserId,
         /* 계정이 연결된 팀원은 userIds로, 직접 입력한 작가는 rawNames로 보냅니다. */
