@@ -5,5 +5,4 @@ export { DisplaySaveButton } from './DisplaySaveButton';
 export { ExhibitionMeta } from './ExhibitionMeta';
 export { HeroSlider } from './HeroSlider';
 export { IntroTab } from './IntroTab';
-export { ReplyInput } from './ReplyInput';
 export { ReviewTab } from './ReviewTab';

@@ -1,6 +1,6 @@
 import { type ChangeEvent, type KeyboardEvent, useRef, useState } from 'react';
 
-import { ImageIcon, SendHorizontal, X } from 'lucide-react';
+import { Check, ImageIcon, SendHorizontal, X } from 'lucide-react';
 
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
@@ -8,11 +8,16 @@ import { cn } from '@/utils/cn';
 type Props = {
   placeholder?: string;
   /* 업로드가 끝난 이미지 URL과 함께 입력한 내용을 전달합니다. */
-  onSubmit: (payload: { content: string; imageUrls: string[] }) => void;
+  onSubmit: (payload: { content: string; imageUrls: string[]; isPrivate: boolean }) => void;
   isSubmitting?: boolean;
   /* 이미지 업로드 도메인. 지정하지 않으면 이미지 첨부 없이 텍스트만 입력받습니다. */
   imageDomain?: string;
   maxImages?: number;
+  /* 답글 모드일 때 대상 작성자 닉네임. 넘기면 입력창 위에 안내 줄이 표시됩니다. */
+  replyingTo?: string;
+  onCancelReply?: () => void;
+  /* 작품 방명록의 질문 탭처럼 비공개로 남길 수 있는 화면에서 사용합니다. */
+  showPrivateOption?: boolean;
   className?: string;
 };
 
@@ -22,9 +27,13 @@ export function BottomCommentBar({
   isSubmitting = false,
   imageDomain,
   maxImages = 3,
+  replyingTo,
+  onCancelReply,
+  showPrivateOption = false,
   className = '',
 }: Props) {
   const [content, setContent] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { images, addImages, removeImage, clearImages, uploadImages, isUploading } = useImageUpload(
     {
@@ -48,8 +57,9 @@ export function BottomCommentBar({
     try {
       const imageUrls = images.length > 0 ? await uploadImages() : [];
 
-      onSubmit({ content: content.trim(), imageUrls });
+      onSubmit({ content: content.trim(), imageUrls, isPrivate });
       setContent('');
+      setIsPrivate(false);
       clearImages();
     } catch {
       /* 업로드 실패 시 입력 내용을 유지합니다. */
@@ -69,6 +79,22 @@ export function BottomCommentBar({
         className,
       )}
     >
+      {replyingTo && (
+        <div className="-mx-5 mb-3 flex items-center justify-between gap-2 border-b border-line-soft px-5 pb-3">
+          <span className="typo-body-xs-regular truncate text-hint">
+            {replyingTo}님에게 답글 남기는 중
+          </span>
+          <button
+            type="button"
+            onClick={onCancelReply}
+            aria-label="답글 취소"
+            className="shrink-0 cursor-pointer text-hint"
+          >
+            <X size={16} strokeWidth={1.5} />
+          </button>
+        </div>
+      )}
+
       {images.length > 0 && (
         <ul className="mb-2 flex gap-2">
           {images.map((image) => (
@@ -92,6 +118,25 @@ export function BottomCommentBar({
       )}
 
       <div className="flex h-12 items-center gap-2 rounded-xl bg-box200 pr-4 pl-5">
+        {showPrivateOption && (
+          <button
+            type="button"
+            onClick={() => setIsPrivate((prev) => !prev)}
+            aria-pressed={isPrivate}
+            className="flex shrink-0 cursor-pointer items-center gap-1.5 text-hint hover:text-main"
+          >
+            <span
+              className={cn(
+                'flex size-4 items-center justify-center rounded border border-hint transition-colors',
+                isPrivate && 'border-main bg-main text-white',
+              )}
+            >
+              {isPrivate && <Check size={12} strokeWidth={3} />}
+            </span>
+            <span className="typo-body-xs-regular text-hint">비공개</span>
+          </button>
+        )}
+
         <input
           value={content}
           onChange={(e) => setContent(e.target.value)}

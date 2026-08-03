@@ -7,8 +7,7 @@ import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab'
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
-import { GuestbookInputBar } from '@/components/artworkdetailpage/GuestbookInputBar';
-import { ErrorView } from '@/components/common';
+import { BottomCommentBar, ErrorView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
 import type {
@@ -41,7 +40,11 @@ export function ArtworkDetailPage() {
     setQuestions([]);
   }
 
-  const handleSendGuestbook = () => {
+  const handleSendGuestbook = (_payload: {
+    content: string;
+    imageUrls: string[];
+    isPrivate: boolean;
+  }) => {
     // TODO: 작품 방명록 작성 API 연결
   };
 
@@ -86,10 +89,10 @@ export function ArtworkDetailPage() {
       {activeTab === 'intro' ? (
         <BottomFixedBar button={<ArtworkSaveButton className="w-full" />} />
       ) : (
-        <GuestbookInputBar
-          activeSubTab={activeSubTab}
-          isArtistView={isArtistView}
-          onSend={handleSendGuestbook}
+        <BottomCommentBar
+          /* 일반인 시점 질문 탭에서만 비공개로 남길 수 있습니다. */
+          showPrivateOption={activeSubTab === 'question' && !isArtistView}
+          onSubmit={handleSendGuestbook}
         />
       )}
     </div>
