@@ -13,14 +13,6 @@ type DisplayManageLocationState = {
   initialExhibition?: ExhibitionItem;
 };
 
-const DEFAULT_CONTENTS = [
-  { id: 'guide', title: '전시 카드 · 브로셔 · 가이드', meta: '1개 등록' },
-  { id: 'interior', title: '전시장 내부 사진', meta: '3개 등록' },
-  { id: 'bts', title: '준비 과정 / BTS', meta: '0개' },
-];
-
-const DEFAULT_ARTWORKS = [{ id: 'a1', title: '흐름의 기억', artist: '이준호', image: null }];
-
 export function DisplayManagePage() {
   useHideFooter();
 
@@ -36,7 +28,9 @@ export function DisplayManagePage() {
   const { data: displayArtworks } = useDisplayArtworks(selected ? Number(selected.id) : Number.NaN);
 
   const handleManageArtworks = () => {
-    navigate(`/artworks-manage?displayId=${selected ? Number(selected.id) : ''}`);
+    if (!selected) return;
+
+    navigate(`/artworks-manage?displayId=${selected.id}`);
   };
 
   const handleWorkBack = () => {
@@ -59,14 +53,13 @@ export function DisplayManagePage() {
   // Transform API data to match WorkScreen expected format
   const workData = selected
     ? {
-        contents: displayDetail?.contentCategories?.length
-          ? displayDetail.contentCategories.map((cat) => ({
-              id: String(cat.categoryId),
-              title: cat.name,
-              meta: cat.contents.length > 0 ? `${cat.contents.length}개 등록` : '0개',
-            }))
-          : DEFAULT_CONTENTS,
-        artworks: artworkItems.length > 0 ? artworkItems : DEFAULT_ARTWORKS,
+        contents:
+          displayDetail?.contentCategories?.map((cat) => ({
+            id: String(cat.categoryId),
+            title: cat.name,
+            meta: cat.contents.length > 0 ? `${cat.contents.length}개 등록` : '0개',
+          })) ?? [],
+        artworks: artworkItems,
       }
     : null;
 
