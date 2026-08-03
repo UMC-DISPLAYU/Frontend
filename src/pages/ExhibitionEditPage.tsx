@@ -23,8 +23,9 @@ const formatDate = (date: Date) =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 const formatTime = (hour: number, minute: number) => `${pad(hour)}:${pad(minute)}`;
 
+/* tsconfig lib이 ES2020이라 replaceAll 대신 split/join으로 치환합니다. */
 const formatPeriodLabel = (start: string, end: string) =>
-  start && end ? `${start.replaceAll('-', '.')} - ${end.replaceAll('-', '.')}` : '';
+  start && end ? `${start.split('-').join('.')} - ${end.split('-').join('.')}` : '';
 
 /* 전시 상세 응답이 period/location 객체 또는 평평한 필드로 오는 두 형태를 모두 다룹니다. */
 type DisplaySource = {
