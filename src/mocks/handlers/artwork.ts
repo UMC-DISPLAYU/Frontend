@@ -185,15 +185,36 @@ export const artworkHandlers = [
       });
     }),
   ),
+  /* 스웨거: POST는 좋아요 추가, DELETE는 취소입니다. */
   ...paths('/api/v1/artworks/{artworkId}/like').map((path) =>
-    http.post(path, ({ params }) =>
-      success('/api/v1/artworks/{artworkId}/like', okStatus(toNumber(params.artworkId), true)),
-    ),
+    http.post(path, ({ params }) => {
+      const artwork = findArtwork(toNumber(params.artworkId, 1001));
+
+      if (artwork && !artwork.isLiked) {
+        artwork.isLiked = true;
+        artwork.likeCount = (artwork.likeCount ?? 0) + 1;
+      }
+
+      return success('/api/v1/artworks/{artworkId}/like', {
+        ...okStatus(toNumber(params.artworkId), true),
+        likeCount: artwork?.likeCount ?? 0,
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/like').map((path) =>
-    http.delete(path, ({ params }) =>
-      success('/api/v1/artworks/{artworkId}/like', okStatus(toNumber(params.artworkId), false)),
-    ),
+    http.delete(path, ({ params }) => {
+      const artwork = findArtwork(toNumber(params.artworkId, 1001));
+
+      if (artwork?.isLiked) {
+        artwork.isLiked = false;
+        artwork.likeCount = Math.max(0, (artwork.likeCount ?? 0) - 1);
+      }
+
+      return success('/api/v1/artworks/{artworkId}/like', {
+        ...okStatus(toNumber(params.artworkId), false),
+        likeCount: artwork?.likeCount ?? 0,
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/feelings').map((path) =>
     http.get(path, ({ params }) =>
@@ -213,12 +234,15 @@ export const artworkHandlers = [
         content: body.content ?? '',
         createdAt: now(),
       };
-      mockDb.artworkFeelings.unshift({
+      // 최신 감상이 목록 아래에 표시되도록 뒤에 붙입니다.
+      mockDb.artworkFeelings.push({
         ...feeling,
         writer: mockDb.me,
         user: mockDb.me,
         likeCount: 0,
+        isLiked: false,
         liked: false,
+        replyCount: 0,
       });
 
       return created('/api/v1/artworks/{artworkId}/feelings', feeling);
@@ -234,7 +258,19 @@ export const artworkHandlers = [
     ),
   ),
   ...paths('/api/v1/artworks/{artworkId}/feelings/{feelingId}').map((path) =>
-    http.delete(path, () => noContent('/api/v1/artworks/{artworkId}/feelings/{feelingId}')),
+    http.delete(path, ({ params }) => {
+      const feelingId = toNumber(params.feelingId);
+
+      // 감상과 딸린 답글을 함께 제거합니다.
+      mockDb.artworkFeelings = mockDb.artworkFeelings.filter(
+        (item: any) => item.feelingId !== feelingId,
+      );
+      mockDb.artworkFeelingReplies = mockDb.artworkFeelingReplies.filter(
+        (reply: any) => reply.feelingId !== feelingId,
+      );
+
+      return noContent('/api/v1/artworks/{artworkId}/feelings/{feelingId}');
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/feelings/{feelingId}/like').map((path) =>
     http.post(path, ({ params }) =>
@@ -247,31 +283,60 @@ export const artworkHandlers = [
     ),
   ),
   ...paths('/api/v1/artworks/{artworkId}/feelings/{feelingId}/replies').map((path) =>
-    http.get(path, () =>
-      success('/api/v1/artworks/{artworkId}/feelings/{feelingId}/replies', {
-        replies: [],
+    http.get(path, ({ params }) => {
+      const feelingId = toNumber(params.feelingId);
+      const replies = mockDb.artworkFeelingReplies.filter(
+        (reply: any) => reply.feelingId === feelingId,
+      );
+
+      return success('/api/v1/artworks/{artworkId}/feelings/{feelingId}/replies', {
+        replies,
         nextCursorId: null,
-        size: 0,
+        size: replies.length,
         hasNext: false,
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/feelings/{feelingId}/reply').map((path) =>
-    http.post(path, async ({ request }) =>
-      created('/api/v1/artworks/{artworkId}/feelings/{feelingId}/reply', {
+    http.post(path, async ({ params, request }) => {
+      const body = await readJson<{ content?: string }>(request);
+      const feelingId = toNumber(params.feelingId);
+      const reply = {
         feelingReplyId: Date.now(),
-        ...(await readJson(request)),
+        feelingId,
+        content: body.content ?? '',
+        userId: mockDb.me.userId,
+        nickname: mockDb.me.nickname,
+        isCreator: false,
         createdAt: now(),
-      }),
-    ),
+      };
+
+      // 최신 답글이 아래에 표시되도록 뒤에 붙입니다.
+      mockDb.artworkFeelingReplies.push(reply);
+
+      const feeling = mockDb.artworkFeelings.find((item: any) => item.feelingId === feelingId);
+      if (feeling) feeling.replyCount = (feeling.replyCount ?? 0) + 1;
+
+      return created('/api/v1/artworks/{artworkId}/feelings/{feelingId}/reply', reply);
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/feelings/{feelingId}/reply/{feelingReplyId}').map((path) =>
-    http.delete(path, ({ params }) =>
-      success('/api/v1/artworks/{artworkId}/feelings/{feelingId}/reply/{feelingReplyId}', {
-        feelingReplyId: toNumber(params.feelingReplyId),
+    http.delete(path, ({ params }) => {
+      const feelingReplyId = toNumber(params.feelingReplyId);
+      const feelingId = toNumber(params.feelingId);
+
+      mockDb.artworkFeelingReplies = mockDb.artworkFeelingReplies.filter(
+        (reply: any) => reply.feelingReplyId !== feelingReplyId,
+      );
+
+      const feeling = mockDb.artworkFeelings.find((item: any) => item.feelingId === feelingId);
+      if (feeling) feeling.replyCount = Math.max(0, (feeling.replyCount ?? 0) - 1);
+
+      return success('/api/v1/artworks/{artworkId}/feelings/{feelingId}/reply/{feelingReplyId}', {
+        feelingReplyId,
         deletedAt: now(),
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/feelings/{feelingId}/reply/{feelingReplyId}/like').map(
     (path) =>
@@ -293,48 +358,84 @@ export const artworkHandlers = [
     ),
   ),
   ...paths('/api/v1/artworks/{artworkId}/questions').map((path) =>
-    http.post(path, async ({ params, request }) =>
-      created('/api/v1/artworks/{artworkId}/questions', {
-        artQueId: Date.now(),
-        questionId: Date.now(),
+    http.post(path, async ({ params, request }) => {
+      const body = await readJson<{ content?: string; isPublic?: boolean }>(request);
+      const questionId = Date.now();
+      const question = {
+        artQueId: questionId,
+        questionId,
         artworkId: toNumber(params.artworkId, 1001),
-        ...(await readJson(request)),
+        content: body.content ?? '',
+        isPublic: body.isPublic ?? true,
+        user: mockDb.me,
+        writer: mockDb.me,
+        userId: mockDb.me.userId,
+        reply: null,
         answerStatus: 'WAITING',
         createdAt: now(),
         updatedAt: now(),
         deletedAt: null,
-        userId: 1,
-      }),
-    ),
+      };
+
+      // 최신 질문이 목록 아래에 표시되도록 뒤에 붙입니다.
+      mockDb.artworkQuestions.push(question);
+
+      return created('/api/v1/artworks/{artworkId}/questions', question);
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}').map((path) =>
-    http.patch(path, async ({ params, request }) =>
-      success('/api/v1/artworks/{artworkId}/questions/{questionId}', {
-        artQueId: toNumber(params.questionId),
-        questionId: toNumber(params.questionId),
-        ...(await readJson(request)),
+    http.patch(path, async ({ params, request }) => {
+      const body = await readJson<{ content?: string; isPublic?: boolean }>(request);
+      const questionId = toNumber(params.questionId);
+      const question = mockDb.artworkQuestions.find((item: any) => item.questionId === questionId);
+
+      if (question) {
+        if (body.content !== undefined) question.content = body.content;
+        if (body.isPublic !== undefined) question.isPublic = body.isPublic;
+        question.updatedAt = now();
+      }
+
+      return success('/api/v1/artworks/{artworkId}/questions/{questionId}', {
+        artQueId: questionId,
+        questionId,
+        ...body,
         updatedAt: now(),
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}').map((path) =>
-    http.delete(path, ({ params }) =>
-      success('/api/v1/artworks/{artworkId}/questions/{questionId}', {
-        artQueId: toNumber(params.questionId),
+    http.delete(path, ({ params }) => {
+      const questionId = toNumber(params.questionId);
+
+      mockDb.artworkQuestions = mockDb.artworkQuestions.filter(
+        (item: any) => item.questionId !== questionId,
+      );
+
+      return success('/api/v1/artworks/{artworkId}/questions/{questionId}', {
+        artQueId: questionId,
         deletedAt: now(),
-      }),
-    ),
+      });
+    }),
   ),
+  /* 질문 답변은 질문의 reply 필드에 담깁니다. */
   ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}/reply').map((path) =>
-    http.post(path, async ({ request }) =>
-      created('/api/v1/artworks/{artworkId}/questions/{questionId}/reply', {
+    http.post(path, async ({ params, request }) => {
+      const body = await readJson<{ content?: string }>(request);
+      const questionId = toNumber(params.questionId);
+      const reply = {
+        questionReplyId: Date.now(),
         queReplyId: Date.now(),
-        ...(await readJson(request)),
+        content: body.content ?? '',
+        userId: mockDb.me.userId,
+        nickname: mockDb.me.nickname,
+        isCreator: true,
         createdAt: now(),
-        updatedAt: now(),
-        deletedAt: null,
-        createrId: 1,
-      }),
-    ),
+      };
+
+      const question = mockDb.artworkQuestions.find((item: any) => item.questionId === questionId);
+      if (question) question.reply = reply;
+
+      return created('/api/v1/artworks/{artworkId}/questions/{questionId}/reply', reply);
+    }),
   ),
 ];

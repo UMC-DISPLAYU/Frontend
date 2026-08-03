@@ -3,17 +3,29 @@ import { http } from 'msw';
 import { mockDb } from '@/mocks/data/repository';
 import { noContent, paths, readJson, success } from '@/mocks/response';
 
-const userArtistProfile = (userId = 1) => ({
-  artistId: userId,
-  userId,
-  artistName: userId === 1 ? mockDb.me.nickname : `작가 ${userId}`,
-  nickname: userId === 1 ? mockDb.me.nickname : `작가 ${userId}`,
-  profileImageUrl: mockDb.me.profileImageUrl,
-  introduction: '전시와 작품을 기록하는 작가 프로필입니다.',
-  instagram: '@displayu_mock',
-  fields: ['회화', '일러스트'],
-  status: 'ACTIVE',
-});
+/* 작품에 부여한 artistUserId(300번대)로 조회하면 해당 작품의 작가 정보를 돌려줍니다. */
+const findArtworkArtist = (userId: number) =>
+  (mockDb.artworks as { artistUserId?: number; artistName?: string }[]).find(
+    (artwork) => artwork.artistUserId === userId,
+  );
+
+const userArtistProfile = (userId = 1) => {
+  const artwork = findArtworkArtist(userId);
+  const artistName = userId === mockDb.me.userId ? mockDb.me.nickname : (artwork?.artistName ?? '');
+
+  return {
+    artistId: userId,
+    userId,
+    artistName,
+    nickname: artistName,
+    profileImageUrl: mockDb.me.profileImageUrl,
+    schoolName: '홍익대학교 시각디자인과',
+    introduction: '전시와 작품을 기록하는 작가 프로필입니다.',
+    instagram: '@displayu_mock',
+    fields: ['회화', '일러스트'],
+    status: 'ACTIVE',
+  };
+};
 
 export const userHandlers = [
   ...paths('/api/v1/users/me').map((path) =>

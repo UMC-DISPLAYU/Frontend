@@ -45,19 +45,22 @@ const archivedArtworks = () => ({
   hasNext: false,
 });
 
+/* 저장한 작가는 mockDb.savedArtistIds를 기준으로 만듭니다. */
 const archivedArtists = () => ({
-  savedArtists: [
-    {
-      savedArtistId: 1,
-      artistId: 1,
-      name: '디스플레이유',
-      field: '시각디자인',
-      profileImageUrl: '',
-      artworkCount: mockDb.artworks.length,
-      exhibitionCount: mockDb.displays.length,
-      savedAt: '2026-08-02T00:00:00.000Z',
-    },
-  ],
+  savedArtists: mockDb.savedArtistIds.map((artistId: number, index: number) => ({
+    savedArtistId: index + 1,
+    artistId,
+    name:
+      artistId === mockDb.me.userId
+        ? mockDb.me.nickname
+        : (mockDb.artworks.find((artwork: any) => artwork.artistUserId === artistId)?.artistName ??
+          ''),
+    field: '시각디자인',
+    profileImageUrl: '',
+    artworkCount: mockDb.artworks.length,
+    exhibitionCount: mockDb.displays.length,
+    savedAt: '2026-08-02T00:00:00.000Z',
+  })),
 });
 
 const updateDisplayMemo = (archiveDisplayId: number, memo: string | null) => {
@@ -78,15 +81,24 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/artists').map((path) =>
     http.get(path, () => success('/api/v1/archives/artists', archivedArtists())),
   ),
+  /* 저장 여부를 화면에서 확인할 수 있도록 mockDb에 실제로 반영합니다. */
   ...paths('/api/v1/archives/artists/{artistId}').map((path) =>
-    http.post(path, ({ params }) =>
-      success('/api/v1/archives/artists/{artistId}', okStatus(toNumber(params.artistId), true)),
-    ),
+    http.post(path, ({ params }) => {
+      const artistId = toNumber(params.artistId);
+
+      if (!mockDb.savedArtistIds.includes(artistId)) mockDb.savedArtistIds.push(artistId);
+
+      return success('/api/v1/archives/artists/{artistId}', okStatus(artistId, true));
+    }),
   ),
   ...paths('/api/v1/archives/artists/{artistId}').map((path) =>
-    http.delete(path, ({ params }) =>
-      success('/api/v1/archives/artists/{artistId}', okStatus(toNumber(params.artistId), false)),
-    ),
+    http.delete(path, ({ params }) => {
+      const artistId = toNumber(params.artistId);
+
+      mockDb.savedArtistIds = mockDb.savedArtistIds.filter((id: number) => id !== artistId);
+
+      return success('/api/v1/archives/artists/{artistId}', okStatus(artistId, false));
+    }),
   ),
   ...paths('/api/v1/archives/artists/{savedArtistId}').map((path) =>
     http.get(path, ({ params }) =>

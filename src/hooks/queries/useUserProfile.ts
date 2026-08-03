@@ -43,7 +43,7 @@ export const useUserArtistProfile = (userId: number) =>
   useQuery({
     queryKey: queryKeys.users.userArtistProfile(userId),
     queryFn: () => getUserArtistProfile(userId),
-    enabled: Number.isFinite(userId),
+    enabled: Number.isFinite(userId) && userId > 0,
   });
 
 export const useUpdateNickname = () => {

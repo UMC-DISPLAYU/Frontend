@@ -101,6 +101,8 @@ export const queryKeys = {
     all: ['artworkFeelings'] as const,
     lists: () => [...queryKeys.artworkFeelings.all, 'list'] as const,
     list: (artworkId: number) => [...queryKeys.artworkFeelings.lists(), artworkId] as const,
+    replies: (artworkId: number, feelingId: number) =>
+      [...queryKeys.artworkFeelings.all, 'replies', artworkId, feelingId] as const,
   },
 
   artworkQuestions: {

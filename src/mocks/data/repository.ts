@@ -138,27 +138,38 @@ const artworkToDetail = (artwork: any) => ({
   artworkName: artwork.title,
   artist: artwork.artist,
   artistName: artwork.artist,
+  /* 작가 프로필 조회와 작가 저장에 쓰는 계정 id. 작품별로 고정된 값을 부여합니다. */
+  artistUserId: 300 + (artwork.artworkId % 100),
   artworkImageUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
   imageWidth: 1600,
   imageHeight: 1600,
-  exhibitionInfo: {
-    displayId: artwork.displayId,
-    exhibitionTitle:
-      MOCK_DISPLAY_DETAILS.find((display) => display.displayId === artwork.displayId)?.title ?? '',
-    exhibitionPeriod: '',
-    exhibitionLocation:
-      MOCK_DISPLAY_DETAILS.find((display) => display.displayId === artwork.displayId)?.placeName ??
-      '',
-  },
-  content: artwork.description,
+  exhibitionInfo: (() => {
+    const display = MOCK_DISPLAY_DETAILS.find((item) => item.displayId === artwork.displayId);
+    const formatPeriod = (start?: string, end?: string) =>
+      start && end ? `${start.split('-').join('.')} - ${end.split('-').join('.')}` : '';
+
+    return {
+      displayId: artwork.displayId,
+      exhibitionTitle: display?.title ?? '',
+      exhibitionPeriod: formatPeriod(display?.startedAt, display?.endedAt),
+      exhibitionLocation: display?.placeName ?? '',
+    };
+  })(),
+  /* 원본 mock의 소개/감상 포인트가 비어 있어 화면 확인용 문구를 채웁니다. */
+  content:
+    artwork.description ??
+    `${artwork.title}은(는) ${artwork.material ?? '다양한 재료'}로 작업한 ${artwork.productionYear ?? ''}년 작품입니다. 작가는 일상에서 마주친 장면을 다시 배치해 보는 사람마다 다른 이야기를 떠올리도록 했습니다.`,
   description: artwork.description,
   type: artwork.type,
   productionYear: artwork.productionYear,
   materialMedia: artwork.material,
   material: artwork.material,
   size: artwork.size,
-  point: artwork.point,
+  point: artwork.point ?? '재료의 질감과 형태가 만들어내는 균형을 눈여겨봐 주세요.',
   liked: false,
+  /* 작품 상세 응답(ArtworkDetailResponse)이 내려주는 좋아요/저장 상태입니다. */
+  isLiked: false,
+  isSaved: false,
   likeCount: 3,
   thumbnailUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
   images: artwork.images.map((image: any, index: number) => ({
@@ -273,6 +284,10 @@ export const mockDb: {
       updatedAt: now(),
     },
   ],
+  /* 저장한 작가 id 목록. 기본으로 한 명 저장된 상태입니다. */
+  savedArtistIds: [1] as number[],
+  artworkFeelingReplies: [] as any[],
+  artworkQuestionReplies: [] as any[],
   artworkQuestions: [
     {
       questionId: 1,
