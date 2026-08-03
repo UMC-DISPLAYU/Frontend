@@ -43,7 +43,9 @@ export function ArtworkCard({
       <div className="p-1.5 pb-0">
         <div className="relative rounded-xl overflow-hidden">
           <div className="w-full h-44 bg-neutral-200">
-            <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+            {item.thumbnail && (
+              <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+            )}
           </div>
           {!isArtistView && (
             <button

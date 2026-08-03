@@ -69,7 +69,7 @@ export function MyPageHeader({
         <div className="flex items-center gap-6">
           <img
             className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
-            src={profile.avatar}
+            src={profile.avatar || DefaultProfileIcon}
             alt={profile.name}
             onError={(event) => {
               event.currentTarget.src = DefaultProfileIcon;

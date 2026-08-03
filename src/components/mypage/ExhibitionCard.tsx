@@ -43,7 +43,9 @@ export function ExhibitionCard({
     <article className="shrink-0 w-full bg-neutral-50 rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden font-['Pretendard']">
       <div className="px-4 py-3.5 flex justify-start items-start gap-3">
         <div className="w-24 h-32 rounded-xl overflow-hidden bg-neutral-200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
-          <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+          {item.thumbnail && (
+            <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+          )}
         </div>
 
         <div className="flex-1 flex flex-col justify-start items-start min-w-0">

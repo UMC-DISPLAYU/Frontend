@@ -85,7 +85,11 @@ type ArchivedArtistView = ArchivedArtistDto &
     memo?: string | null;
   };
 
-const getImageUrl = (item: ImageLike) =>
+/*
+ * 이미지가 없을 때의 대체 이미지는 항목 종류에 따라 다릅니다.
+ * 사람(작가)은 기본 프로필 아이콘, 전시/작품 썸네일은 빈 값으로 두고 카드에서 처리합니다.
+ */
+const getImageUrl = (item: ImageLike, fallback = '') =>
   item.thumbnailUrl ||
   item.posterImageUrl ||
   item.profileImageUrl ||
@@ -93,7 +97,7 @@ const getImageUrl = (item: ImageLike) =>
   item.imageUrl ||
   item.images?.[0]?.imageUrl ||
   item.posterImages?.[0]?.imageUrl ||
-  DefaultProfileIcon;
+  fallback;
 
 export function MyPage() {
   const navigate = useNavigate();
@@ -181,7 +185,7 @@ export function MyPage() {
       artworkId: item.artworkId,
       title: item.artworkName,
       artist: item.artistName,
-      thumbnail: item.artworkImageUrl || DefaultProfileIcon,
+      thumbnail: item.artworkImageUrl ?? '',
     }));
   }, [myArtworksQuery.data]);
 
@@ -194,7 +198,7 @@ export function MyPage() {
       field: item.field ?? item.fields?.join(', ') ?? '',
       registeration: String(item.artworkCount ?? item.registeration ?? 0),
       exhibition: String(item.exhibitionCount ?? item.exhibition ?? 0),
-      thumbnail: getImageUrl(item),
+      thumbnail: getImageUrl(item, DefaultProfileIcon),
       memo: item.memo ?? undefined,
     }));
   }, [archivedArtistsQuery.data]);

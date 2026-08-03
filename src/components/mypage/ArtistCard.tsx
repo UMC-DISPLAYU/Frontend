@@ -1,5 +1,6 @@
 import { Bookmark, ChevronRight } from 'lucide-react';
 
+import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
 import type { ArtistItem } from '@/types/mypage';
 
 interface ArtistCardProps {
@@ -12,7 +13,14 @@ export function ArtistCard({ item, onUnarchive }: ArtistCardProps) {
     <article className="w-full bg-neutral-50 rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] overflow-hidden font-['Pretendard']">
       <div className="flex items-center gap-3.5 px-3 py-3.5">
         <div className="size-12 rounded-full bg-neutral-200 overflow-hidden shrink-0">
-          <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.name} />
+          <img
+            className="w-full h-full object-cover"
+            src={item.thumbnail || DefaultProfileIcon}
+            alt={item.name}
+            onError={(event) => {
+              event.currentTarget.src = DefaultProfileIcon;
+            }}
+          />
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
