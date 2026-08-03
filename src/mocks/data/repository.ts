@@ -80,6 +80,12 @@ const displayToListItem = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
 
 const displayToDetail = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   ...displayToListItem(display),
+  /*
+   * MSW는 메모리에만 상태를 두기 때문에 새로고침하면 발급했던 토큰이 사라집니다.
+   * 초대 링크를 새 탭에서 열어볼 수 있도록 전시마다 고정 토큰을 미리 심어둡니다.
+   */
+  invitationToken: `mock-invitation-${display.displayId}`,
+  invitationDisabledAt: null,
   posterImages: display.posterSection.images.map((image, index) => ({
     imageId: display.displayId * 100 + index + 1,
     posterImageId: display.displayId * 100 + index + 1,
@@ -173,10 +179,28 @@ const artworkToDetail = (artwork: any) => ({
   })),
 });
 
+/*
+ * 닉네임 검색(GET /users/search)과 팀원 초대 화면에서 사용하는 검색 대상 사용자입니다.
+ * userId 1~15는 mockDb.me와 다른 핸들러(작품 질문 등)가 이미 쓰고 있어 201번대를 사용합니다.
+ */
+const MOCK_SEARCHABLE_USERS = [
+  { userId: 201, name: '이정우', nickname: 'quietroom' },
+  { userId: 202, name: '최유성', nickname: 'quietstudio' },
+  { userId: 203, name: '김서연', nickname: 'seoyeon_k' },
+  { userId: 204, name: '박지훈', nickname: 'jihoon_park' },
+  { userId: 205, name: '한도윤', nickname: 'doyoon' },
+  { userId: 206, name: '정민서', nickname: 'minseo_art' },
+  { userId: 207, name: '오세훈', nickname: 'sehun_q' },
+  { userId: 208, name: '강하늘', nickname: 'skyline' },
+  { userId: 209, name: '윤채린', nickname: 'chaerin_j' },
+  { userId: 210, name: '임규리', nickname: 'quriosity' },
+];
+
 export const mockDb: {
   [key: string]: any;
 } = {
   me: makeUser(),
+  searchableUsers: MOCK_SEARCHABLE_USERS,
   displays: MOCK_DISPLAY_DETAILS.map(displayToDetail),
   artworks: MOCK_DISPLAY_DETAILS.flatMap((display) =>
     display.artworkSection.artworks.map(artworkToDetail),

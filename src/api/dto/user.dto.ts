@@ -98,6 +98,19 @@ export type UpdateArtistProfileResponseDataDto = Omit<UpdateArtistProfileRequest
   univName?: string;
 };
 
+export interface SearchUsersRequestDto {
+  nickname: string;
+}
+
+export interface UserSearchDto {
+  userId: number;
+  name: string;
+  nickname: string;
+}
+
+/* 스웨거는 success에 UserSearchResponse 배열을 그대로 내려줍니다. */
+export type SearchUsersResponseDataDto = UserSearchDto[];
+
 export interface SchoolSearchRequestDto {
   keyword?: string;
 }

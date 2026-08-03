@@ -1,4 +1,5 @@
 import type {
+  CreateDisplayInvitationLinkResponseDataDto,
   CreateDisplayRequestDto,
   CreateDisplayResponseDataDto,
   CreateDisplayReviewReplyRequestDto,
@@ -7,6 +8,7 @@ import type {
   CreateDisplayReviewResponseDataDto,
   DeleteDisplayReviewReplyResponseDataDto,
   DeleteDisplayReviewResponseDataDto,
+  DisableDisplayInvitationLinkResponseDataDto,
   DisplayDetailDto,
   DisplayListResponseDataDto,
   DisplayMemberInvitationResponseDataDto,
@@ -130,11 +132,13 @@ export const getDisplayInvitationByToken = async (
 // POST /v1/display/:displayId/invitation
 export const createDisplayInvitation = async (
   displayId: number,
-): Promise<DisplayMemberInvitationResponseDataDto> =>
+): Promise<CreateDisplayInvitationLinkResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/invitation`, { method: 'POST' });
 
 // PATCH /v1/display/:displayId/invitation/disable
-export const disableDisplayInvitation = async (displayId: number): Promise<unknown> =>
+export const disableDisplayInvitation = async (
+  displayId: number,
+): Promise<DisableDisplayInvitationLinkResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/invitation/disable`, { method: 'PATCH' });
 
 // GET /v1/display/:displayId/members

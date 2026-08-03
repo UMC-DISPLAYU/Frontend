@@ -85,6 +85,34 @@ export const userHandlers = [
   ...paths('/api/v1/users/me/verification/email/resend').map((path) =>
     http.post(path, () => noContent('/api/v1/users/me/verification/email/resend')),
   ),
+  /*
+   * 스웨거 기준: 닉네임 부분 일치, 영문 대소문자 무시, 앞뒤 공백 제거,
+   * 닉네임 → userId 오름차순 정렬, 최대 20명.
+   * 본인(mockDb.me)은 초대 대상이 아니므로 결과에서 제외합니다.
+   */
+  ...paths('/api/v1/users/search').map((path) =>
+    http.get(path, ({ request }) => {
+      const keyword = (new URL(request.url).searchParams.get('nickname') ?? '').trim();
+
+      if (!keyword) {
+        return success('/api/v1/users/search', []);
+      }
+
+      const users = mockDb.searchableUsers
+        .filter(
+          (user: { userId: number; nickname: string }) =>
+            user.userId !== mockDb.me.userId &&
+            user.nickname.toLowerCase().includes(keyword.toLowerCase()),
+        )
+        .sort(
+          (a: { userId: number; nickname: string }, b: { userId: number; nickname: string }) =>
+            a.nickname.localeCompare(b.nickname) || a.userId - b.userId,
+        )
+        .slice(0, 20);
+
+      return success('/api/v1/users/search', users);
+    }),
+  ),
   ...paths('/api/v1/schools').map((path) =>
     http.get(path, ({ request }) => {
       const keyword = new URL(request.url).searchParams.get('keyword') ?? '';

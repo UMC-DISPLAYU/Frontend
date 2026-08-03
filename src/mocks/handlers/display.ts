@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { http } from 'msw';
 
-import { listResponse, mockDb, okStatus } from '@/mocks/data/repository';
+import { mockDb, okStatus } from '@/mocks/data/repository';
 import { created, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const now = () => new Date().toISOString();
@@ -28,6 +28,8 @@ const displayDetailResponse = (displayId: number) => {
   return {
     ...display,
     ownerUserId: display.ownerUserId ?? mockDb.me.userId,
+    invitationToken: display.invitationToken ?? null,
+    invitationDisabledAt: display.invitationDisabledAt ?? null,
     teamMembers: display.teamMembers ?? [],
     invitations: display.invitations ?? [],
     contentCategories: display.contentCategories ?? [],
@@ -227,15 +229,12 @@ export const displayHandlers = [
   ...paths('/api/v1/display/graduation').map((path) =>
     http.get(path, () => success('/api/v1/display/graduation', { exhibitions: listDisplays() })),
   ),
+  /*
+   * 스웨거: 초대 토큰으로 전시 상세를 조회합니다(PUBLIC).
+   * 실서버는 만료/비활성 링크에 실패를 내려주지만, mock에서는 항상 성공을 반환합니다.
+   */
   ...paths('/api/v1/display/invitation/{token}').map((path) =>
-    http.get(path, ({ params }) =>
-      success('/api/v1/display/invitation/{token}', {
-        invitationId: 1,
-        token: params.token,
-        displayId: 101,
-        status: 'ACTIVE',
-      }),
-    ),
+    http.get(path, () => success('/api/v1/display/invitation/{token}', displayDetailResponse(101))),
   ),
   ...paths('/api/v1/display/like').map((path) =>
     http.post(path, async ({ request }) => {
@@ -337,32 +336,79 @@ export const displayHandlers = [
       ),
     ),
   ),
+  /*
+   * 초대 링크 활성/비활성 상태는 전시 상세(invitationToken/invitationDisabledAt)로 판단하므로
+   * 응답만 만들지 말고 mockDb의 전시 데이터에 실제로 반영해야 토글이 유지됩니다.
+   */
   ...paths('/api/v1/display/{displayId}/invitation').map((path) =>
-    http.post(path, ({ params }) =>
-      created('/api/v1/display/{displayId}/invitation', {
-        invitationId: 1,
-        displayId: toNumber(params.displayId, 101),
-        token: `mock-invitation-${params.displayId}`,
-        status: 'ACTIVE',
-      }),
-    ),
+    http.post(path, ({ params }) => {
+      const displayId = toNumber(params.displayId, 101);
+      const display = findDisplay(displayId);
+      /*
+       * 실제로는 재발급 시 새 토큰으로 교체되지만, MSW는 새로고침하면 상태가 초기화되어
+       * 방금 만든 링크를 새 탭에서 열 수 없습니다. 확인 편의를 위해 고정 토큰을 씁니다.
+       */
+      const token = `mock-invitation-${displayId}`;
+
+      display.invitationToken = token;
+      display.invitationDisabledAt = null;
+
+      return success('/api/v1/display/{displayId}/invitation', {
+        displayId,
+        invitationUrl: `${window.location.origin}/display/invitation/${token}`,
+      });
+    }),
   ),
   ...paths('/api/v1/display/{displayId}/invitation/disable').map((path) =>
-    http.patch(path, ({ params }) =>
-      success('/api/v1/display/{displayId}/invitation/disable', {
-        displayId: toNumber(params.displayId, 101),
-        invitationDisabledAt: now(),
-      }),
-    ),
+    http.patch(path, ({ params }) => {
+      const displayId = toNumber(params.displayId, 101);
+      const display = findDisplay(displayId);
+      const invitationDisabledAt = now();
+
+      display.invitationDisabledAt = invitationDisabledAt;
+
+      return success('/api/v1/display/{displayId}/invitation/disable', {
+        displayId,
+        invitationDisabledAt,
+      });
+    }),
   ),
+  /*
+   * 멤버 초대. 초대받은 사람이 팀원 목록에 '초대대기'로 보이도록
+   * accepted=false 인 팀원을 전시 데이터에 추가합니다.
+   */
   ...paths('/api/v1/display-invitations/displays/{displayId}').map((path) =>
-    http.post(path, ({ params }) =>
-      created('/api/v1/display-invitations/displays/{displayId}', {
-        invitationId: 1,
-        displayId: toNumber(params.displayId, 101),
+    http.post(path, async ({ params, request }) => {
+      const displayId = toNumber(params.displayId, 101);
+      const display = findDisplay(displayId);
+      const body = await readJson<{ inviteeUserId?: number }>(request);
+      const inviteeUserId = Number(body.inviteeUserId ?? 0);
+
+      const invitee = mockDb.searchableUsers.find((user: any) => user.userId === inviteeUserId);
+      const members = display.teamMembers ?? [];
+      const alreadyMember = members.some((member: any) => member.userId === inviteeUserId);
+
+      if (inviteeUserId && !alreadyMember) {
+        display.teamMembers = [
+          ...members,
+          {
+            teamMemberId: Date.now(),
+            userId: inviteeUserId,
+            displayNickname: invitee?.nickname ?? `user-${inviteeUserId}`,
+            role: 'TEAM_MEM',
+            accepted: false,
+          },
+        ];
+      }
+
+      return created('/api/v1/display-invitations/displays/{displayId}', {
+        invitationId: Date.now(),
+        displayId,
+        inviteeUserId,
         status: 'PENDING',
-      }),
-    ),
+        createdAt: now(),
+      });
+    }),
   ),
   ...paths('/api/v1/display-invitations/me').map((path) =>
     http.get(path, () =>
@@ -402,11 +448,15 @@ export const displayHandlers = [
     }),
   ),
   ...paths('/api/v1/display/{displayId}/members').map((path) =>
-    http.get(path, ({ params }) =>
-      success('/api/v1/display/{displayId}/members', {
-        members: findDisplay(toNumber(params.displayId, 101)).teamMembers ?? [],
-      }),
-    ),
+    http.get(path, ({ params }) => {
+      const displayId = toNumber(params.displayId, 101);
+      const display = findDisplay(displayId);
+
+      return success('/api/v1/display/{displayId}/members', {
+        displayId,
+        members: display.teamMembers ?? [],
+      });
+    }),
   ),
   ...paths('/api/v1/display/{displayId}/reviews').map((path) =>
     http.get(path, ({ params }) => {

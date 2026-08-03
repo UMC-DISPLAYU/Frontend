@@ -453,6 +453,18 @@ export interface DisplayMemberInvitationResponseDataDto {
   respondedAt?: string | null;
 }
 
+/* POST /display/{displayId}/invitation — 서버가 완성된 초대 URL을 그대로 내려줍니다. */
+export interface CreateDisplayInvitationLinkResponseDataDto {
+  displayId: number;
+  invitationUrl: string;
+}
+
+/* PATCH /display/{displayId}/invitation/disable */
+export interface DisableDisplayInvitationLinkResponseDataDto {
+  displayId: number;
+  invitationDisabledAt: string;
+}
+
 export interface MyDisplayInvitationListResponseDataDto {
   invitations: DisplayInvitationDto[];
 }

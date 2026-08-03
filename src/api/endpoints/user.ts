@@ -7,6 +7,8 @@ import type {
   ResendVerificationEmailRequestDto,
   SchoolSearchDto,
   SchoolSearchRequestDto,
+  SearchUsersRequestDto,
+  SearchUsersResponseDataDto,
   SendVerificationEmailRequestDto,
   UpdateArtistProfileRequestDto,
   UpdateArtistProfileResponseDataDto,
@@ -39,6 +41,11 @@ export const checkNickname = async (
   params: CheckNicknameRequestDto,
 ): Promise<CheckNicknameResponseDataDto> =>
   apiRequest('/v1/users/nickname/check', { query: params });
+
+// GET /v1/users/search
+export const searchUsers = async (
+  params: SearchUsersRequestDto,
+): Promise<SearchUsersResponseDataDto> => apiRequest('/v1/users/search', { query: params });
 
 // GET /v1/users/me
 export const getUserMe = async (): Promise<UserProfileDto> => apiRequest('/v1/users/me');

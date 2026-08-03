@@ -12,6 +12,7 @@ import {
 import { useHideFooter } from '@/components/layout';
 import { type VisibilityType } from '@/constants/visibility';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import type { ExhibitionItem } from '@/types/mypage';
 
 const formatMonthDay = (date: string | undefined) => {
@@ -44,6 +45,12 @@ export function ExhibitionManage() {
   // 등록된 전시 데이터를 서버에서 불러옵니다. state는 등록 직후 화면 전환용으로만 사용합니다.
   const displayId = Number(state?.displayId ?? state?.id ?? 0);
   const { data: display } = useDisplayDetail(displayId);
+  const { data: memberList } = useDisplayMembers(displayId);
+
+  /* 팀원 목록의 accepted로 참여팀원과 초대대기를 나눕니다. */
+  const teamMembers = memberList?.members ?? [];
+  const acceptedCount = teamMembers.filter((member) => member.accepted !== false).length;
+  const pendingCount = teamMembers.filter((member) => member.accepted === false).length;
 
   const source = display as DisplaySource | undefined;
   const startDate = source?.period?.startDate ?? source?.startDate;
@@ -110,10 +117,13 @@ export function ExhibitionManage() {
 
           <Section title="팀원관리" description="닉네임 또는 초대 링크로 팀원을 초대할 수 있어요.">
             <div className="flex gap-3">
-              <StatPill label="참여팀원" value="2" />
-              <StatPill label="초대대기" value="1" />
+              <StatPill label="참여팀원" value={String(acceptedCount)} />
+              <StatPill label="초대대기" value={String(pendingCount)} />
             </div>
-            <OutlineButton weight="semibold" onClick={() => navigate('/team/manage')}>
+            <OutlineButton
+              weight="semibold"
+              onClick={() => navigate(`/display/${displayId}/team/manage`)}
+            >
               팀원 초대/관리
             </OutlineButton>
           </Section>

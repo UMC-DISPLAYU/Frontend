@@ -13,6 +13,7 @@ import { DisplayArtistNamePage } from './pages/DisplayArtistNamePage';
 import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
 import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
+import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
 import { DisplayManagePage } from './pages/DisplayManagePage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
@@ -51,6 +52,8 @@ export const router = createBrowserRouter([
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'artist-verification', element: <ArtistVerificationPage /> },
+      // 백엔드가 발급하는 초대 URL. display/:id 보다 먼저 매칭되어야 합니다.
+      { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
       { path: 'display/:id/contents', element: <DisplayContentsPage /> },
@@ -66,7 +69,7 @@ export const router = createBrowserRouter([
       { path: 'exhibition/artist', element: <ArtistNameSetup /> },
       { path: 'exhibition/manage', element: <ExhibitionManage /> },
       { path: 'exhibition/visibility', element: <VisibilitySettings /> },
-      { path: 'team/manage', element: <TeamManage /> },
+      { path: 'display/:displayId/team/manage', element: <TeamManage /> },
       { path: 'setting', element: <SettingPage /> },
       { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
       { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },

@@ -24,6 +24,7 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
     me: () => [...queryKeys.users.all, 'me'] as const,
+    search: (nickname: string) => [...queryKeys.users.all, 'search', nickname] as const,
     artistProfile: () => [...queryKeys.users.me(), 'artist-profile'] as const,
     userArtistProfile: (userId: number) =>
       [...queryKeys.users.all, userId, 'artist-profile'] as const,
@@ -66,6 +67,13 @@ export const queryKeys = {
     all: ['displayInvitations'] as const,
     lists: () => [...queryKeys.displayInvitations.all, 'list'] as const,
     me: () => [...queryKeys.displayInvitations.lists(), 'me'] as const,
+    byToken: (token: string) => [...queryKeys.displayInvitations.all, 'token', token] as const,
+  },
+
+  displayMembers: {
+    all: ['displayMembers'] as const,
+    lists: () => [...queryKeys.displayMembers.all, 'list'] as const,
+    byDisplayId: (displayId: number) => [...queryKeys.displayMembers.lists(), displayId] as const,
   },
 
   displayArtworks: {
