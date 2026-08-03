@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArchivedArtistDto, ArchivedArtworkDto, ArchivedExhibitionDto } from '@/api/dto';
-import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
 import ExhibitionIcon from '@/assets/exhibit.svg';
 import SchoolIcon from '@/assets/image 3666.svg';
 import FieldIcon from '@/assets/image 3673.svg';
@@ -15,6 +14,7 @@ import {
   MyPageHeader,
   SettingsSheet,
 } from '@/components/mypage';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
   useArchivedArtists,
   useArchivedArtworks,
@@ -129,7 +129,7 @@ export function MyPage() {
   const profile = useMemo(
     () => ({
       name: userData?.nickname || userData?.name || '사용자',
-      avatar: userData?.profileImageUrl || DefaultProfileIcon,
+      avatar: userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
       caption: '내가 저장한 작품 확인하기',
       isVerified: Boolean(userData?.isVerified),
       school: myArtistProfileQuery.data?.schoolName || userData?.schoolEmail?.split('@')[1] || '',
@@ -198,7 +198,7 @@ export function MyPage() {
       field: item.field ?? item.fields?.join(', ') ?? '',
       registeration: String(item.artworkCount ?? item.registeration ?? 0),
       exhibition: String(item.exhibitionCount ?? item.exhibition ?? 0),
-      thumbnail: getImageUrl(item, DefaultProfileIcon),
+      thumbnail: getImageUrl(item, FALLBACK_PROFILE_IMAGE),
       memo: item.memo ?? undefined,
     }));
   }, [archivedArtistsQuery.data]);

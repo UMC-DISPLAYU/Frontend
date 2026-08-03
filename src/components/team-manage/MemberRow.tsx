@@ -1,4 +1,4 @@
-import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 
 import { type MemberStatus, StatusBadge } from './StatusBadge';
 
@@ -24,10 +24,10 @@ export function MemberRow({ member, onInvite, inviteDisabled, inviteLabel }: Mem
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <img
           className="size-12 shrink-0 rounded-full object-cover"
-          src={member.profileImageUrl || DefaultProfileIcon}
+          src={member.profileImageUrl || FALLBACK_PROFILE_IMAGE}
           alt={member.name}
           onError={(event) => {
-            event.currentTarget.src = DefaultProfileIcon;
+            event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
           }}
         />
         <div className="flex min-w-0 flex-col gap-2">

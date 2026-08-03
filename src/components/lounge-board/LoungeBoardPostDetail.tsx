@@ -1,4 +1,4 @@
-import defaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { LoungeBoardDetail } from '@/types/exhibition';
 
 type Props = {
@@ -12,7 +12,7 @@ export function LoungeBoardPostDetail({ review }: Props) {
         <img
           alt=""
           className="size-10 rounded-full shrink-0 border-[1.33px] border-stone-300"
-          src={defaultProfileIcon}
+          src={FALLBACK_PROFILE_IMAGE}
         />
         <div className="flex flex-col items-start gap-1">
           <p className="typo-body-sm-bold text-main">{review.author}</p>

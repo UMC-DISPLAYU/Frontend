@@ -1,7 +1,7 @@
 import { Bookmark, ChevronLeft, ExternalLink, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { ArtistProfile, TabKey } from '@/types/mypage';
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -51,10 +51,10 @@ export function AuthPageHeader({
         <div className="flex items-center gap-6">
           <img
             className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
-            src={profile.avatar || DefaultProfileIcon}
+            src={profile.avatar || FALLBACK_PROFILE_IMAGE}
             alt={profile.name}
             onError={(event) => {
-              event.currentTarget.src = DefaultProfileIcon;
+              event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
             }}
           />
           <div className="flex-1 min-w-0 flex flex-col gap-1.5">

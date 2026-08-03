@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import { MoreHorizontal, Plus, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import DUfontlogo from '@/assets/DUfontlogo.svg';
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
 import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
+import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import {
   useCreateContentCategory,
   useDeleteContentCategory,
@@ -37,7 +37,7 @@ function Thumbnail({ src }: { src?: string }) {
         <img src={src} alt="" className="size-full object-cover" />
       ) : (
         <div className="grid size-full place-items-center bg-box200 p-3">
-          <img src={DUfontlogo} alt="" className="w-full opacity-40" />
+          <img src={FALLBACK_POSTER_IMAGE} alt="" className="w-full opacity-40" />
         </div>
       )}
     </div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { Bookmark, ChevronRight, ChevronUp } from 'lucide-react';
 
-import defaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
   useArchiveArtist,
   useArchivedArtists,
@@ -115,11 +115,11 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <img
-                  src={profile?.profileImageUrl || defaultProfileIcon}
+                  src={profile?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
                   alt={artistName}
                   className="size-10 rounded-full object-cover shrink-0"
                   onError={(event) => {
-                    event.currentTarget.src = defaultProfileIcon;
+                    event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
                   }}
                 />
                 <div className="flex flex-col justify-center items-start gap-0.5 min-w-0 flex-1">

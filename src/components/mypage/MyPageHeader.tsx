@@ -1,7 +1,7 @@
 import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import type { TabKey } from '@/types/mypage';
 
@@ -69,10 +69,10 @@ export function MyPageHeader({
         <div className="flex items-center gap-6">
           <img
             className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
-            src={profile.avatar || DefaultProfileIcon}
+            src={profile.avatar || FALLBACK_PROFILE_IMAGE}
             alt={profile.name}
             onError={(event) => {
-              event.currentTarget.src = DefaultProfileIcon;
+              event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
             }}
           />
           <div className="flex-1 min-w-0 flex flex-col gap-1.5">

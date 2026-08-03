@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react';
 
 import type { DisplayReviewDto, DisplayReviewReplyDto } from '@/api/dto/display.dto';
 import { BottomCommentBar } from '@/components/common';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
   useCreateDisplayReviewReply,
   useDeleteDisplayReviewReply,
@@ -18,8 +19,6 @@ import {
 } from '@/hooks/queries/useDisplayReviews';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { cn } from '@/utils/cn';
-
-import defaultProfileIcon from '../../assets/DefaultProfileIcon.svg';
 
 // ─── 날짜/시간 포맷 (24시간 미만: N시간, 24시간 이상: YYYY.MM.DD) ─────────────
 
@@ -65,11 +64,11 @@ function ReplyItem({
         {/* 아바타 (size-7 = 28px) */}
         <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
           <img
-            src={reply.user?.profileImageUrl || defaultProfileIcon}
+            src={reply.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
             alt={reply.user?.nickname || '사용자'}
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = defaultProfileIcon;
+              (e.currentTarget as HTMLImageElement).src = FALLBACK_PROFILE_IMAGE;
             }}
           />
         </div>
@@ -181,11 +180,11 @@ function ReviewCard({
           {/* 프로필 아바타 (size-7 = 28px) */}
           <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
             <img
-              src={review.user?.profileImageUrl || defaultProfileIcon}
+              src={review.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
               alt={review.user?.nickname || '사용자'}
               className="w-full h-full object-cover"
               onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = defaultProfileIcon;
+                (e.currentTarget as HTMLImageElement).src = FALLBACK_PROFILE_IMAGE;
               }}
             />
           </div>

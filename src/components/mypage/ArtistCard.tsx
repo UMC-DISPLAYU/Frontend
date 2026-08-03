@@ -1,6 +1,6 @@
 import { Bookmark, ChevronRight } from 'lucide-react';
 
-import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { ArtistItem } from '@/types/mypage';
 
 interface ArtistCardProps {
@@ -15,10 +15,10 @@ export function ArtistCard({ item, onUnarchive }: ArtistCardProps) {
         <div className="size-12 rounded-full bg-neutral-200 overflow-hidden shrink-0">
           <img
             className="w-full h-full object-cover"
-            src={item.thumbnail || DefaultProfileIcon}
+            src={item.thumbnail || FALLBACK_PROFILE_IMAGE}
             alt={item.name}
             onError={(event) => {
-              event.currentTarget.src = DefaultProfileIcon;
+              event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
             }}
           />
         </div>

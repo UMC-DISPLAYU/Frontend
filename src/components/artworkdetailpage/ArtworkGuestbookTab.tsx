@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { Heart, Lock } from 'lucide-react';
 
-import DefaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
   useArtworkFeelingReplies,
   useDeleteArtworkFeeling,
@@ -61,7 +61,7 @@ function ReviewReplyItem({
         {/* 프로필 아바타 */}
         <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
           <img
-            src={reply.user?.profileImageUrl || DefaultProfileIcon}
+            src={reply.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
             alt={reply.user?.nickname || '사용자'}
             className="w-full h-full object-cover"
           />
@@ -183,7 +183,7 @@ function ReviewCard({
           {/* 프로필 아바타 */}
           <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
             <img
-              src={review.user?.profileImageUrl || DefaultProfileIcon}
+              src={review.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
               alt={review.user?.nickname || '사용자'}
               className="w-full h-full object-cover"
             />
@@ -376,7 +376,7 @@ function QuestionCard({
           {/* 프로필 아바타 */}
           <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
             <img
-              src={question.user?.profileImageUrl || DefaultProfileIcon}
+              src={question.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
               alt={question.user?.nickname || '사용자'}
               className="w-full h-full object-cover"
             />
