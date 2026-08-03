@@ -15,16 +15,25 @@ type UploadItem = {
 
 type Props = {
   maxImages?: number;
+  initialImageUrls?: string[];
   onUploadedUrlsChange?: (urls: string[]) => void;
   onUploadingChange?: (isUploading: boolean) => void;
 };
 
 export function ImageUploadPlaceholder({
   maxImages = 5,
+  initialImageUrls,
   onUploadedUrlsChange,
   onUploadingChange,
 }: Props) {
-  const [items, setItems] = useState<UploadItem[]>([]);
+  const [items, setItems] = useState<UploadItem[]>(() =>
+    (initialImageUrls ?? []).map((url) => ({
+      id: crypto.randomUUID(),
+      previewUrl: url,
+      status: 'done',
+      uploadedUrl: url,
+    })),
+  );
   const [showMaxWarning, setShowMaxWarning] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +74,9 @@ export function ImageUploadPlaceholder({
           prev.map((item) => (item.id === id ? { ...item, status: 'done', uploadedUrl } : item)),
         );
       } catch (error) {
+        const stillExists = itemsRef.current.some((item) => item.id === id);
+        if (!stillExists) return;
+
         const message = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
         setUploadError(message);
         setItems((prev) => {
@@ -96,7 +108,10 @@ export function ImageUploadPlaceholder({
         status: 'uploading' as const,
       }));
 
-      setItems((prev) => [...prev, ...newItems.map(({ file: _file, ...item }) => item)]);
+      setItems((prev) => [
+        ...prev,
+        ...newItems.map(({ id, previewUrl, status }) => ({ id, previewUrl, status })),
+      ]);
       newItems.forEach((item) => uploadFile(item.id, item.file));
 
       if (fileInputRef.current) {

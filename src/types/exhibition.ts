@@ -44,6 +44,10 @@ export interface LoungeBoardComment {
   content: string;
   likeCount: number;
   isLiked: boolean;
+  isMyComment?: boolean;
+  replyCount?: number;
+  commentStatus?: string;
+  images?: string[];
   replies?: LoungeBoardComment[];
 }
 
@@ -57,6 +61,7 @@ export interface LoungeBoardDetail {
   likeCount: number;
   isLiked: boolean;
   isSaved: boolean;
+  isMyPost?: boolean;
   images?: string[];
   comments: LoungeBoardComment[];
 }

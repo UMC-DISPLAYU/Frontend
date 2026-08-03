@@ -11,15 +11,25 @@ function LayoutContent() {
   const matches = useMatches();
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
 
+  // 라운지 글쓰기 페이지 (/lounge/:category/post, 카테고리 무관)
+  const isLoungeWritePath = /^\/lounge\/[^/]+\/post$/.test(location.pathname);
+
   // 하단 네비게이션 바(Navbar) 표시 경로 (화이트리스트)
   const showNavbarPaths = ['/home', '/search', '/lounge'];
   const exactNavbarPaths = ['/my']; // 정확히 일치해야 하는 경로
   const hideNavbarPaths = ['/lounge/my-questions']; // 예외: startsWith로 매칭되지만 숨김
 
+  // Router handle ({ hideNavbar: true }) 기반 숨김 (예: 라운지 게시판 상세 페이지)
+  const isRouteHandleNavbarHidden = matches.some(
+    (match) => (match.handle as { hideNavbar?: boolean })?.hideNavbar,
+  );
+
   const shouldShowNavbar =
     (showNavbarPaths.some((path) => location.pathname.startsWith(path)) ||
       exactNavbarPaths.some((path) => location.pathname === path)) &&
-    !hideNavbarPaths.some((path) => location.pathname.startsWith(path));
+    !hideNavbarPaths.some((path) => location.pathname.startsWith(path)) &&
+    !isLoungeWritePath &&
+    !isRouteHandleNavbarHidden;
 
   // Footer(FNB) 표시 경로 (화이트리스트)
   const showFooterPaths = ['/home', '/search', '/lounge'];
@@ -29,7 +39,8 @@ function LayoutContent() {
   const isPathFooterShown =
     (showFooterPaths.some((path) => location.pathname.startsWith(path)) ||
       exactFooterPaths.some((path) => location.pathname === path)) &&
-    !hideFooterPaths.some((path) => location.pathname.startsWith(path));
+    !hideFooterPaths.some((path) => location.pathname.startsWith(path)) &&
+    !isLoungeWritePath;
 
   // Router handle ({ hideFooter: true }) 기반 숨김
   const isRouteHandleFooterHidden = matches.some(

@@ -33,8 +33,11 @@ export function LoungeBoardPostCard({ post, tagLabel }: Props) {
 
           {post.images && post.images.length > 0 && (
             <div className="flex gap-1">
-              {post.images.map((src, index) => (
-                <div key={index} className="flex-1 h-32 rounded-sm overflow-hidden">
+              {post.images.slice(0, 3).map((src, index) => (
+                <div
+                  key={index}
+                  className="w-[108px] h-[130px] shrink-0 rounded-sm overflow-hidden"
+                >
                   <img alt="" className="w-full h-full object-cover" src={src} />
                 </div>
               ))}
