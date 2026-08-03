@@ -2,16 +2,14 @@ import { useMemo, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import {
-  AffiliationInput,
-  ExhibitionHeader,
-  ImageUploader,
-} from '@/components/exhibition-register';
+import { ImageUploader } from '@/components/common';
+import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
 import { Chip, RequiredLabel } from '@/components/ui';
 import {
   EXHIBITION_FIELDS,
   EXHIBITION_TYPES,
   type ExhibitionTypeGroup,
+  MAX_POSTER_UPLOAD_IMAGES,
 } from '@/constants/exhibition';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -88,7 +86,7 @@ export function ExhibitionRegister() {
           <div className="flex justify-center">
             <ImageUploader
               images={imageUpload.images}
-              maxImages={4}
+              maxImages={MAX_POSTER_UPLOAD_IMAGES}
               onAddImages={imageUpload.addImages}
               onRemoveImage={imageUpload.removeImage}
             />

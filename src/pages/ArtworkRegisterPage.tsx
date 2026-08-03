@@ -1,12 +1,16 @@
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { Check, ChevronLeft, ImagePlus, Info, Plus, UserRound, X } from 'lucide-react';
+import { Check, ChevronLeft, Info, Plus, UserRound, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { BottomButtonBar } from '@/components/common';
+import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
 import { Chip } from '@/components/ui';
-import { EXHIBITION_FIELDS } from '@/constants/exhibition';
+import {
+  EXHIBITION_FIELDS,
+  MAX_ARTWORK_PROGRESS_IMAGES,
+  MAX_ARTWORK_UPLOAD_IMAGES,
+} from '@/constants/exhibition';
 import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
@@ -63,35 +67,6 @@ function ArtworkRegisterHeader({ title, onBack }: { title: string; onBack: () =>
       </button>
       <h1 className="typo-body-xl-bold text-main">{title}</h1>
     </header>
-  );
-}
-
-function UploadTile({
-  label,
-  imageUrl,
-  onClick,
-}: {
-  label: string;
-  imageUrl?: string | null;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex size-[100px] flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border border-line bg-card"
-    >
-      {imageUrl ? (
-        <img src={imageUrl} alt={label} className="size-full object-cover" />
-      ) : (
-        <>
-          <span className="grid size-10 place-items-center rounded-full bg-box100">
-            <ImagePlus className="size-[18px] text-line" strokeWidth={1.8} />
-          </span>
-          <span className="typo-body-xs-regular text-main">{label}</span>
-        </>
-      )}
-    </button>
   );
 }
 
@@ -516,18 +491,19 @@ export function ArtworkRegisterPage() {
   const [searchParams] = useSearchParams();
   const displayId = Number(searchParams.get('displayId') ?? 0);
 
-  const imageUpload = useImageUpload({ domain: 'artwork' });
+  /* 작품 이미지와 작업과정 이미지를 각각 따로 모아 등록 시 순서대로 업로드합니다. */
+  const artworkUpload = useImageUpload({ domain: 'artwork', maxImages: MAX_ARTWORK_UPLOAD_IMAGES });
+  const processUpload = useImageUpload({
+    domain: 'artwork',
+    maxImages: MAX_ARTWORK_PROGRESS_IMAGES,
+  });
   const createArtwork = useCreateDisplayArtwork(displayId);
-  const isSubmitting = imageUpload.isUploading || createArtwork.isPending;
+  const isSubmitting =
+    artworkUpload.isUploading || processUpload.isUploading || createArtwork.isPending;
 
   const [step, setStep] = useState<RegisterStep>('choice');
   const [registerMode, setRegisterMode] = useState<RegisterMode>('own');
   const [activeSheet, setActiveSheet] = useState<RegisterSheet>(null);
-  const [artworkImage, setArtworkImage] = useState<string | null>(null);
-  const [processImage, setProcessImage] = useState<string | null>(null);
-  // 업로드에 필요한 원본 파일을 미리보기 URL과 함께 보관합니다.
-  const [artworkFile, setArtworkFile] = useState<File | null>(null);
-  const [processFile, setProcessFile] = useState<File | null>(null);
   const [selectedProxyAuthorId, setSelectedProxyAuthorId] = useState<string | null>(null);
   const [proxyAuthorName, setProxyAuthorName] = useState('');
   const [proxyAuthorSource, setProxyAuthorSource] = useState<ProxyAuthorSource>('direct');
@@ -544,8 +520,6 @@ export function ArtworkRegisterPage() {
     { id: string; name: string; account: string; userId?: number }[]
   >([]);
   const [qnaAssigneeIds, setQnaAssigneeIds] = useState<string[]>([REPRESENTATIVE.id]);
-  const artworkInputRef = useRef<HTMLInputElement>(null);
-  const processInputRef = useRef<HTMLInputElement>(null);
 
   /*
    * 전시 팀원 목록. 초대를 수락한 팀원만 작가로 지정할 수 있습니다.
@@ -654,24 +628,6 @@ export function ArtworkRegisterPage() {
         ? [qnaAssigneeOptions[0].id]
         : [];
 
-  // 언마운트 시에만 정리합니다. 의존성에 URL을 넣으면 값이 바뀔 때마다
-  // cleanup이 돌아 방금 만든 미리보기 URL이 즉시 해제됩니다.
-  const previewUrlsRef = useRef<{ artwork: string | null; process: string | null }>({
-    artwork: null,
-    process: null,
-  });
-
-  useEffect(() => {
-    previewUrlsRef.current = { artwork: artworkImage, process: processImage };
-  }, [artworkImage, processImage]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrlsRef.current.artwork) URL.revokeObjectURL(previewUrlsRef.current.artwork);
-      if (previewUrlsRef.current.process) URL.revokeObjectURL(previewUrlsRef.current.process);
-    };
-  }, []);
-
   useEffect(() => {
     if (!activeSheet) return;
 
@@ -725,11 +681,11 @@ export function ArtworkRegisterPage() {
 
     setSubmitError(null);
 
-    const files = [artworkFile, processFile].filter((file): file is File => Boolean(file));
+    const files = [...artworkUpload.files, ...processUpload.files];
 
     let imageUrls: string[] = [];
     try {
-      imageUrls = await Promise.all(files.map((file) => imageUpload.uploadImage(file)));
+      imageUrls = await Promise.all(files.map((file) => artworkUpload.uploadImage(file)));
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
       return;
@@ -785,23 +741,6 @@ export function ArtworkRegisterPage() {
         onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
       },
     );
-  };
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, target: 'artwork' | 'process') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const url = URL.createObjectURL(file);
-    if (target === 'artwork') {
-      if (artworkImage) URL.revokeObjectURL(artworkImage);
-      setArtworkImage(url);
-      setArtworkFile(file);
-    } else {
-      if (processImage) URL.revokeObjectURL(processImage);
-      setProcessImage(url);
-      setProcessFile(file);
-    }
-    e.target.value = '';
   };
 
   const handleChoiceNext = () => {
@@ -1052,10 +991,12 @@ export function ArtworkRegisterPage() {
       <ArtworkRegisterHeader title="전시작 등록" onBack={handleBack} />
       <main className="flex-1 overflow-y-auto px-5 pt-3 pb-8">
         <div className="flex justify-center">
-          <UploadTile
-            label="작품 업로드"
-            imageUrl={artworkImage}
-            onClick={() => artworkInputRef.current?.click()}
+          <ImageUploader
+            images={artworkUpload.images}
+            maxImages={MAX_ARTWORK_UPLOAD_IMAGES}
+            emptyLabel="작품 업로드"
+            onAddImages={artworkUpload.addImages}
+            onRemoveImage={artworkUpload.removeImage}
           />
         </div>
 
@@ -1105,10 +1046,12 @@ export function ArtworkRegisterPage() {
 
           <section className="flex flex-col gap-3">
             <FieldLabel>작품과정</FieldLabel>
-            <UploadTile
-              label="작업과정 업로드"
-              imageUrl={processImage}
-              onClick={() => processInputRef.current?.click()}
+            <ImageUploader
+              images={processUpload.images}
+              maxImages={MAX_ARTWORK_PROGRESS_IMAGES}
+              emptyLabel="작업과정 업로드"
+              onAddImages={processUpload.addImages}
+              onRemoveImage={processUpload.removeImage}
             />
           </section>
 
@@ -1131,20 +1074,6 @@ export function ArtworkRegisterPage() {
           다음
         </button>
       </BottomButtonBar>
-      <input
-        ref={artworkInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleFileChange(e, 'artwork')}
-        className="hidden"
-      />
-      <input
-        ref={processInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleFileChange(e, 'process')}
-        className="hidden"
-      />
     </>
   );
 

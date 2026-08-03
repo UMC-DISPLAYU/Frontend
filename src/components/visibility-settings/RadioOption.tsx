@@ -16,9 +16,7 @@ export function RadioOption({ checked, onSelect, title, description }: RadioOpti
     >
       <span
         className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full ${
-          checked
-            ? 'outline outline-2 outline-offset-[-2px] outline-main'
-            : 'border-2 border-line'
+          checked ? 'outline outline-2 outline-offset-[-2px] outline-main' : 'border-2 border-line'
         }`}
       >
         {checked && <span className="size-1.5 rounded-full bg-main" />}

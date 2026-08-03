@@ -1,17 +1,24 @@
 import { useCallback, useRef } from 'react';
 
+import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
 
 interface ImageUploaderProps {
   images: ImageUploadItem[];
   maxImages?: number;
+  /* 비어 있는 타일에 표시할 문구입니다. 생략하면 "현재 개수/최대 개수"를 보여줍니다. */
+  emptyLabel?: string;
+  /* 한 번에 여러 장을 고를 수 있게 할지 여부입니다. */
+  multiple?: boolean;
   onAddImages: (files: FileList | File[]) => void;
   onRemoveImage: (id: string) => void;
 }
 
 export function ImageUploader({
   images,
-  maxImages = 4,
+  maxImages = MAX_POSTER_UPLOAD_IMAGES,
+  emptyLabel,
+  multiple = true,
   onAddImages,
   onRemoveImage,
 }: ImageUploaderProps) {
@@ -66,7 +73,7 @@ export function ImageUploader({
           type="button"
           onClick={handleImageClick}
           className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
-          aria-label="이미지 업로드"
+          aria-label={emptyLabel ?? '이미지 업로드'}
         >
           <div className="size-10 bg-box rounded-full flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -90,7 +97,7 @@ export function ImageUploader({
             </svg>
           </div>
           <span className="text-main typo-body-xs-regular">
-            {images.length}/{maxImages}
+            {emptyLabel ?? `${images.length}/${maxImages}`}
           </span>
         </button>
       )}
@@ -98,7 +105,7 @@ export function ImageUploader({
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        multiple
+        multiple={multiple}
         onChange={handleImageChange}
         className="hidden"
         aria-label="이미지 파일 선택"

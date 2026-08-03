@@ -23,3 +23,7 @@ export const EXHIBITION_FIELDS = [
 export type ExhibitionTypeGroup = 'institution' | 'organization';
 export type ExhibitionType = (typeof EXHIBITION_TYPES)[number]['label'];
 export type ExhibitionField = (typeof EXHIBITION_FIELDS)[number];
+
+export const MAX_POSTER_UPLOAD_IMAGES = 4;
+export const MAX_ARTWORK_UPLOAD_IMAGES = 20;
+export const MAX_ARTWORK_PROGRESS_IMAGES = 20;
