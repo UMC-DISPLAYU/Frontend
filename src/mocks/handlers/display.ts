@@ -28,6 +28,8 @@ const displayDetailResponse = (displayId: number) => {
   return {
     ...display,
     ownerUserId: display.ownerUserId ?? mockDb.me.userId,
+    isLiked: display.isLiked ?? false,
+    likeCount: display.likeCount ?? 0,
     invitationToken: display.invitationToken ?? null,
     invitationDisabledAt: display.invitationDisabledAt ?? null,
     teamMembers: display.teamMembers ?? [],
@@ -236,18 +238,39 @@ export const displayHandlers = [
   ...paths('/api/v1/display/invitation/{token}').map((path) =>
     http.get(path, () => success('/api/v1/display/invitation/{token}', displayDetailResponse(101))),
   ),
+  /* 스웨거: POST는 좋아요 추가, PATCH는 좋아요 취소입니다. */
   ...paths('/api/v1/display/like').map((path) =>
     http.post(path, async ({ request }) => {
       const body = await readJson<{ displayId?: number }>(request);
+      const display = findDisplay(Number(body.displayId ?? 101));
 
-      return success('/api/v1/display/like', okStatus(Number(body.displayId ?? 101), true));
+      if (!display.isLiked) {
+        display.isLiked = true;
+        display.likeCount = (display.likeCount ?? 0) + 1;
+      }
+
+      return success('/api/v1/display/like', {
+        ...okStatus(display.displayId, true),
+        displayId: display.displayId,
+        likeCount: display.likeCount,
+      });
     }),
   ),
   ...paths('/api/v1/display/like').map((path) =>
     http.patch(path, async ({ request }) => {
       const body = await readJson<{ displayId?: number }>(request);
+      const display = findDisplay(Number(body.displayId ?? 101));
 
-      return success('/api/v1/display/like', okStatus(Number(body.displayId ?? 101), false));
+      if (display.isLiked) {
+        display.isLiked = false;
+        display.likeCount = Math.max(0, (display.likeCount ?? 0) - 1);
+      }
+
+      return success('/api/v1/display/like', {
+        ...okStatus(display.displayId, false),
+        displayId: display.displayId,
+        likeCount: display.likeCount,
+      });
     }),
   ),
   ...paths('/api/v1/display/map').map((path) =>
@@ -473,13 +496,18 @@ export const displayHandlers = [
   ),
   ...paths('/api/v1/display/{displayId}/reviews').map((path) =>
     http.post(path, async ({ params, request }) => {
-      const body = await readJson<{ content?: string; images?: unknown[] }>(request);
+      const body = await readJson<{ content?: string; images?: { imageUrl?: string }[] }>(request);
+      const reviewId = mockDb.displayReviews.length + 1;
       const review = {
-        displayReviewId: mockDb.displayReviews.length + 1,
-        reviewId: mockDb.displayReviews.length + 1,
+        displayReviewId: reviewId,
+        reviewId,
         displayId: toNumber(params.displayId, 101),
         content: body.content ?? '',
-        images: body.images ?? [],
+        // 요청에는 imageUrl만 담기므로 조회 응답에 필요한 imageId를 채워줍니다.
+        images: (body.images ?? []).map((image, index) => ({
+          ...image,
+          imageId: reviewId * 100 + index + 1,
+        })),
         writer: mockDb.me,
         user: mockDb.me,
         likeCount: 0,
@@ -487,18 +515,29 @@ export const displayHandlers = [
         createdAt: now(),
         updatedAt: now(),
       };
-      mockDb.displayReviews.unshift(review);
+      // 최신 후기가 목록 아래에 표시되도록 뒤에 붙입니다.
+      mockDb.displayReviews.push(review);
 
       return created('/api/v1/display/{displayId}/reviews', review);
     }),
   ),
   ...paths('/api/v1/display/{displayId}/reviews/{displayReviewId}').map((path) =>
-    http.delete(path, ({ params }) =>
-      success('/api/v1/display/{displayId}/reviews/{displayReviewId}', {
-        displayReviewId: toNumber(params.displayReviewId),
+    http.delete(path, ({ params }) => {
+      const displayReviewId = toNumber(params.displayReviewId);
+
+      // 후기와 딸린 답글을 함께 제거합니다.
+      mockDb.displayReviews = mockDb.displayReviews.filter(
+        (review: any) => review.displayReviewId !== displayReviewId,
+      );
+      mockDb.displayReviewReplies = mockDb.displayReviewReplies.filter(
+        (reply: any) => reply.displayReviewId !== displayReviewId,
+      );
+
+      return success('/api/v1/display/{displayId}/reviews/{displayReviewId}', {
+        displayReviewId,
         deletedAt: now(),
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/display/{displayId}/reviews/{displayReviewId}/like').map((path) =>
     http.post(path, ({ params }) =>
@@ -510,38 +549,67 @@ export const displayHandlers = [
     ),
   ),
   ...paths('/api/v1/display/{displayId}/reviews/{displayReviewId}/replies').map((path) =>
-    http.get(path, () =>
-      success('/api/v1/display/{displayId}/reviews/{displayReviewId}/replies', {
-        replies: [],
+    http.get(path, ({ params }) => {
+      const displayReviewId = toNumber(params.displayReviewId, 1);
+      const replies = mockDb.displayReviewReplies.filter(
+        (reply: any) => reply.displayReviewId === displayReviewId,
+      );
+
+      return success('/api/v1/display/{displayId}/reviews/{displayReviewId}/replies', {
+        replies,
         nextCursorId: null,
-        size: 0,
+        size: replies.length,
         hasNext: false,
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/display/{displayId}/reviews/{displayReviewId}/replies').map((path) =>
-    http.post(path, async ({ request }) => {
+    http.post(path, async ({ params, request }) => {
       const body = await readJson<{ content?: string }>(request);
-
-      return created('/api/v1/display/{displayId}/reviews/{displayReviewId}/replies', {
-        displayReviewReplyId: 1,
+      const displayReviewId = toNumber(params.displayReviewId, 1);
+      const reply = {
+        displayReviewReplyId: mockDb.displayReviewReplies.length + 1,
+        displayReviewId,
         content: body.content ?? '',
+        user: mockDb.me,
+        isTeamMember: false,
+        likeCount: 0,
         createdAt: now(),
-      });
+      };
+
+      mockDb.displayReviewReplies.push(reply);
+
+      // 후기 목록의 댓글 수도 함께 늘려줍니다.
+      const review = mockDb.displayReviews.find(
+        (item: any) => item.displayReviewId === displayReviewId,
+      );
+      if (review) review.replyCount = (review.replyCount ?? 0) + 1;
+
+      return created('/api/v1/display/{displayId}/reviews/{displayReviewId}/replies', reply);
     }),
   ),
   ...paths(
     '/api/v1/display/{displayId}/reviews/{displayReviewId}/reply/{displayReviewReplyId}',
   ).map((path) =>
-    http.delete(path, ({ params }) =>
-      success(
+    http.delete(path, ({ params }) => {
+      const displayReviewReplyId = toNumber(params.displayReviewReplyId);
+      const displayReviewId = toNumber(params.displayReviewId, 1);
+
+      mockDb.displayReviewReplies = mockDb.displayReviewReplies.filter(
+        (reply: any) => reply.displayReviewReplyId !== displayReviewReplyId,
+      );
+
+      // 후기 목록의 댓글 수도 함께 줄여줍니다.
+      const review = mockDb.displayReviews.find(
+        (item: any) => item.displayReviewId === displayReviewId,
+      );
+      if (review) review.replyCount = Math.max(0, (review.replyCount ?? 0) - 1);
+
+      return success(
         '/api/v1/display/{displayId}/reviews/{displayReviewId}/reply/{displayReviewReplyId}',
-        {
-          displayReviewReplyId: toNumber(params.displayReviewReplyId),
-          deletedAt: now(),
-        },
-      ),
-    ),
+        { displayReviewReplyId, deletedAt: now() },
+      );
+    }),
   ),
   ...paths(
     '/api/v1/display/{displayId}/reviews/{displayReviewId}/reply/{displayReviewReplyId}/like',

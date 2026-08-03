@@ -248,6 +248,9 @@ export const mockDb: {
       content: '작품과 동선이 잘 어울렸어요.',
       writer: makeUser(4),
       author: makeUser(4),
+      /* 후기 조회 응답(DisplayReviewResponse)은 작성자를 user로 내려줍니다. */
+      user: makeUser(4),
+      images: [],
       likeCount: 2,
       liked: false,
       replyCount: 0,
@@ -255,6 +258,7 @@ export const mockDb: {
       updatedAt: now(),
     },
   ],
+  displayReviewReplies: [] as any[],
   artworkFeelings: [
     {
       feelingId: 1,

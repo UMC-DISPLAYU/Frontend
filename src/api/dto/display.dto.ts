@@ -408,9 +408,10 @@ export interface DeleteDisplayResponseDataDto {
 
 export type DeleteDisplayResponseDto = ApiResponseDto<DeleteDisplayResponseDataDto>;
 
+/* 스웨거 응답은 displayId와 likeCount만 담깁니다. 좋아요 여부는 요청 종류로 판단합니다. */
 export interface ToggleDisplayLikeResponseDataDto {
   displayId: number;
-  isLiked: boolean;
+  isLiked?: boolean;
   likeCount: number;
 }
 

@@ -3,11 +3,25 @@ import { useEffect, useRef, useState } from 'react';
 import { Heart } from 'lucide-react';
 
 import type { DisplayReviewDto, DisplayReviewReplyDto } from '@/api/dto/display.dto';
-import { useDisplayReviewReplies } from '@/hooks/queries/useDisplayReviewReplies';
-import { useDisplayReviews } from '@/hooks/queries/useDisplayReviews';
+import { BottomCommentBar } from '@/components/common';
+import {
+  useCreateDisplayReviewReply,
+  useDeleteDisplayReviewReply,
+  useDisplayReviewReplies,
+  useToggleDisplayReviewReplyLike,
+} from '@/hooks/queries/useDisplayReviewReplies';
+import {
+  useCreateDisplayReview,
+  useDeleteDisplayReview,
+  useDisplayReviews,
+  useToggleDisplayReviewLike,
+} from '@/hooks/queries/useDisplayReviews';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { cn } from '@/utils/cn';
 
 import defaultProfileIcon from '../../assets/DefaultProfileIcon.svg';
+
+import { ReplyInput } from './ReplyInput';
 
 // ─── 날짜/시간 포맷 (24시간 미만: N시간, 24시간 이상: YYYY.MM.DD) ─────────────
 
@@ -39,9 +53,13 @@ function formatDateOrTime(iso: string) {
 function ReplyItem({
   reply,
   isMyReply = false,
+  onLike,
+  onDelete,
 }: {
   reply: DisplayReviewReplyDto;
   isMyReply?: boolean;
+  onLike?: () => void;
+  onDelete?: () => void;
 }) {
   return (
     <div className="-mx-5 pl-14 pr-5 py-3 border-b border-line">
@@ -81,7 +99,7 @@ function ReplyItem({
           <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-faint">
             <div className="flex items-center gap-2">
               {isMyReply && (
-                <button type="button" className="hover:text-main cursor-pointer">
+                <button type="button" onClick={onDelete} className="hover:text-main cursor-pointer">
                   삭제
                 </button>
               )}
@@ -89,6 +107,7 @@ function ReplyItem({
 
             <button
               type="button"
+              onClick={onLike}
               id={`reply-like-${reply.displayReviewReplyId}`}
               className="flex items-center gap-1 hover:text-main text-faint cursor-pointer"
             >
@@ -108,13 +127,37 @@ function ReviewCard({
   displayId,
   review,
   isMyReview = false,
+  myUserId,
+  onLike,
+  onDelete,
 }: {
   displayId: number;
   review: DisplayReviewDto;
   isMyReview?: boolean;
+  myUserId?: number;
+  onLike?: () => void;
+  onDelete?: () => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
+  const [showReplyInput, setShowReplyInput] = useState(false);
   const images = review.images ?? [];
+
+  const createReply = useCreateDisplayReviewReply(displayId, review.displayReviewId);
+  const deleteReply = useDeleteDisplayReviewReply(displayId, review.displayReviewId);
+  const likeReply = useToggleDisplayReviewReplyLike(displayId, review.displayReviewId);
+
+  /* 등록에 성공하면 입력창을 닫고 답글 목록을 펼쳐 방금 남긴 답글을 보여줍니다. */
+  const submitReply = (content: string) => {
+    createReply.mutate(
+      { content },
+      {
+        onSuccess: () => {
+          setShowReplyInput(false);
+          setShowReplies(true);
+        },
+      },
+    );
+  };
 
   const {
     data: repliesData,
@@ -125,7 +168,8 @@ function ReviewCard({
   } = useDisplayReviewReplies(
     displayId,
     review.displayReviewId,
-    showReplies, // 사용자가 직접 펼쳤을 때만 fetch
+    // 목록이 화면에 보이는 조건과 맞춰야 불필요한 재요청이 생기지 않습니다.
+    showReplies || review.replyCount > 0,
   );
 
   const replies = repliesData?.pages.flatMap((p) => p.replies) ?? [];
@@ -167,9 +211,9 @@ function ReviewCard({
                     className="w-full inline-flex justify-start items-start gap-1 overflow-x-auto pb-1"
                     style={{ scrollbarWidth: 'none' }}
                   >
-                    {images.map((img) => (
+                    {images.map((img, index) => (
                       <div
-                        key={img.imageId}
+                        key={img.imageId ?? `${img.imageUrl}-${index}`}
                         className="w-28 h-32 relative rounded-sm overflow-hidden shrink-0 bg-box"
                       >
                         <img
@@ -194,7 +238,7 @@ function ReviewCard({
               <div className="flex justify-start items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowReplies((prev) => !prev)}
+                  onClick={() => setShowReplyInput((prev) => !prev)}
                   className="hover:text-main cursor-pointer"
                 >
                   답글달기
@@ -209,7 +253,11 @@ function ReviewCard({
                   </button>
                 )}
                 {isMyReview && (
-                  <button type="button" className="hover:text-main cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={onDelete}
+                    className="hover:text-main cursor-pointer"
+                  >
                     삭제
                   </button>
                 )}
@@ -218,6 +266,7 @@ function ReviewCard({
               <div className="flex justify-start items-center gap-1">
                 <button
                   type="button"
+                  onClick={onLike}
                   id={`review-like-${review.displayReviewId}`}
                   className="flex items-center gap-1 hover:text-main text-hint cursor-pointer"
                 >
@@ -240,7 +289,13 @@ function ReviewCard({
           ) : (
             <>
               {replies.map((reply) => (
-                <ReplyItem key={reply.displayReviewReplyId} reply={reply} />
+                <ReplyItem
+                  key={reply.displayReviewReplyId}
+                  reply={reply}
+                  isMyReply={Boolean(myUserId) && reply.user?.userId === myUserId}
+                  onLike={() => likeReply.mutate(reply.displayReviewReplyId)}
+                  onDelete={() => deleteReply.mutate(reply.displayReviewReplyId)}
+                />
               ))}
               {hasMoreReplies && (
                 <button
@@ -255,6 +310,14 @@ function ReviewCard({
             </>
           )}
         </div>
+      )}
+
+      {showReplyInput && (
+        <ReplyInput
+          onSubmit={submitReply}
+          onCancel={() => setShowReplyInput(false)}
+          isSubmitting={createReply.isPending}
+        />
       )}
     </article>
   );
@@ -293,6 +356,13 @@ type Props = {
 export function ReviewTab({ className, displayId }: Props) {
   const { data, isPending, isError, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useDisplayReviews(displayId);
+
+  const { data: userMe } = useUserMe();
+  const myUserId = userMe?.id;
+
+  const likeReview = useToggleDisplayReviewLike(displayId);
+  const deleteReview = useDeleteDisplayReview(displayId);
+  const createReview = useCreateDisplayReview(displayId);
 
   const reviews = data?.pages.flatMap((page) => page.reviews) ?? [];
 
@@ -350,7 +420,15 @@ export function ReviewTab({ className, displayId }: Props) {
       {reviews.length > 0 && (
         <div className="flex flex-col">
           {reviews.map((review) => (
-            <ReviewCard key={review.displayReviewId} displayId={displayId} review={review} />
+            <ReviewCard
+              key={review.displayReviewId}
+              displayId={displayId}
+              review={review}
+              isMyReview={Boolean(myUserId) && review.user?.userId === myUserId}
+              myUserId={myUserId}
+              onLike={() => likeReview.mutate(review.displayReviewId)}
+              onDelete={() => deleteReview.mutate(review.displayReviewId)}
+            />
           ))}
 
           {/* 무한 스크롤 감지 트리거 */}
@@ -363,6 +441,18 @@ export function ReviewTab({ className, displayId }: Props) {
           )}
         </div>
       )}
+
+      <BottomCommentBar
+        placeholder="글을 입력하세요."
+        imageDomain="display-review"
+        isSubmitting={createReview.isPending}
+        onSubmit={({ content, imageUrls }) =>
+          createReview.mutate({
+            content,
+            images: imageUrls.map((imageUrl) => ({ imageUrl })),
+          })
+        }
+      />
     </div>
   );
 }
