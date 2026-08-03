@@ -2,12 +2,16 @@ import { useRef, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { ErrorView } from '@/components/common';
+import { ErrorView, LoadingView } from '@/components/common';
 import { FNB } from '@/components/layout';
 import { ImageUploadPlaceholder, PostWriteHeader } from '@/components/post-write';
 import { AlertModal, RequiredLabel } from '@/components/ui';
 import { isLoungeCategoryKey, LOUNGE_CATEGORY_API_VALUES } from '@/constants/loungeCategories';
-import { useCreateLoungePost } from '@/hooks/queries/useLounge';
+import {
+  useCreateLoungePost,
+  useLoungePostDetail,
+  useUpdateLoungePost,
+} from '@/hooks/queries/useLounge';
 import { getErrorMessage } from '@/utils/error';
 
 const BASE_INPUT_CLASS =
@@ -15,8 +19,13 @@ const BASE_INPUT_CLASS =
 
 export function ExhibitionReviewWritePage() {
   const navigate = useNavigate();
-  const { category } = useParams<{ category: string }>();
+  const { category, id } = useParams<{ category: string; id?: string }>();
   const isValidCategory = isLoungeCategoryKey(category);
+  const isEditMode = Boolean(id);
+  const postId = id ? Number(id) : NaN;
+
+  const { data: existingPost, isPending: isExistingPostPending } = useLoungePostDetail(postId);
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -24,11 +33,20 @@ export function ExhibitionReviewWritePage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const [isPrefilled, setIsPrefilled] = useState(false);
+  if (isEditMode && existingPost && !isPrefilled) {
+    setIsPrefilled(true);
+    setTitle(existingPost.title);
+    setContent(existingPost.content);
+    setImageUrls(existingPost.postImageUrls);
+  }
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isSubmittingRef = useRef(false);
 
   const createLoungePost = useCreateLoungePost();
-  const isSubmitting = createLoungePost.isPending;
+  const updateLoungePost = useUpdateLoungePost();
+  const isSubmitting = createLoungePost.isPending || updateLoungePost.isPending;
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value.slice(0, 1500));
@@ -49,18 +67,30 @@ export function ExhibitionReviewWritePage() {
     setSubmitError(null);
 
     try {
-      await createLoungePost.mutateAsync({
-        title,
-        content,
-        category: LOUNGE_CATEGORY_API_VALUES[category],
-        postImageUrls: imageUrls,
-      });
+      if (isEditMode) {
+        await updateLoungePost.mutateAsync({
+          postId,
+          body: {
+            title,
+            content,
+            category: LOUNGE_CATEGORY_API_VALUES[category],
+            postImageUrls: imageUrls,
+          },
+        });
+      } else {
+        await createLoungePost.mutateAsync({
+          title,
+          content,
+          category: LOUNGE_CATEGORY_API_VALUES[category],
+          postImageUrls: imageUrls,
+        });
+      }
 
       setIsSubmitted(true);
     } catch (error) {
       console.error(error);
       const message = getErrorMessage(error, '알 수 없는 오류가 발생했습니다.');
-      setSubmitError(`등록에 실패했습니다. (${message})`);
+      setSubmitError(`${isEditMode ? '수정' : '등록'}에 실패했습니다. (${message})`);
     } finally {
       isSubmittingRef.current = false;
     }
@@ -76,13 +106,18 @@ export function ExhibitionReviewWritePage() {
     );
   }
 
+  if (isEditMode && (isExistingPostPending || !isPrefilled)) {
+    return <LoadingView />;
+  }
+
   return (
     <div className="w-full max-w-[402px] mx-auto bg-page relative flex min-h-dvh flex-col">
-      <PostWriteHeader title="글 작성" className="px-5" />
+      <PostWriteHeader title={isEditMode ? '글 수정' : '글 작성'} className="px-5" />
 
       <main className="flex flex-col pl-[21px] pr-[19px] pb-28">
-        <div className="mt-[31px] shrink-0 -ml-[21px] -mr-[19px] flex justify-center">
+        <div className="mt-[31px] shrink-0 -ml-[21px] -mr-[19px] flex px-5">
           <ImageUploadPlaceholder
+            initialImageUrls={isEditMode ? imageUrls : undefined}
             onUploadedUrlsChange={setImageUrls}
             onUploadingChange={setIsImagesUploading}
           />
@@ -144,7 +179,10 @@ export function ExhibitionReviewWritePage() {
       </footer>
 
       {isSubmitted && (
-        <AlertModal message="정상적으로 게시글이 작성되었습니다." onConfirm={() => navigate(-1)} />
+        <AlertModal
+          message={`정상적으로 게시글이 ${isEditMode ? '수정' : '작성'}되었습니다.`}
+          onConfirm={() => navigate(-1)}
+        />
       )}
     </div>
   );

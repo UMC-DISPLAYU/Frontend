@@ -15,7 +15,7 @@ import {
   LOUNGE_CATEGORIES,
   toLoungeCategoryKey,
 } from '@/constants/loungeCategories';
-import { useLoungePostDetail } from '@/hooks/queries/useLounge';
+import { useDeleteLoungePost, useLoungePostDetail } from '@/hooks/queries/useLounge';
 import {
   useCreateLoungeComment,
   useDeleteLoungeComment,
@@ -49,11 +49,18 @@ export const LoungeBoardDetailPage = () => {
   const deleteCommentMutation = useDeleteLoungeComment();
   const createCommentMutation = useCreateLoungeComment();
   const createReplyMutation = useCreateLoungeReply();
+  const deletePostMutation = useDeleteLoungePost();
 
   const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
     null,
   );
+  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
   const [deletedCommentIds, setDeletedCommentIds] = useState<Set<string>>(new Set());
+
+  const clearReplyTarget = () => {
+    setReplyTarget(null);
+    setActiveReplyId(null);
+  };
 
   const postCategoryKey = post ? toLoungeCategoryKey(post.category) : undefined;
   const isValidPost = isValidCategory && !!post && postCategoryKey === category;
@@ -71,6 +78,7 @@ export const LoungeBoardDetailPage = () => {
           likeCount: post.likeCount,
           isLiked: post.isLiked,
           isSaved: post.isScrapped,
+          isMyPost: post.isMyPost,
           images: post.postImageUrls.length > 0 ? post.postImageUrls : undefined,
           comments: commentsData.comments.map(
             (comment): LoungeBoardComment => ({
@@ -83,6 +91,7 @@ export const LoungeBoardDetailPage = () => {
               isMyComment: comment.isMyComment,
               replyCount: comment.replyCount,
               commentStatus: comment.commentStatus,
+              images: comment.imageUrls.length > 0 ? comment.imageUrls : undefined,
             }),
           ),
         }
@@ -109,7 +118,13 @@ export const LoungeBoardDetailPage = () => {
         <>
           <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-28">
             <div className="flex flex-col items-center gap-7.5">
-              <LoungeBoardPostDetail review={review} />
+              <LoungeBoardPostDetail
+                review={review}
+                onEdit={() => navigate(`/lounge/${category}/${id}/edit`)}
+                onDelete={() =>
+                  deletePostMutation.mutate(postId, { onSuccess: () => navigate(-1) })
+                }
+              />
 
               <div className="w-full flex flex-col items-center gap-7">
                 <LoungeBoardActionBar
@@ -140,8 +155,11 @@ export const LoungeBoardDetailPage = () => {
                           deleteCommentMutation.mutate({ postId, commentId: Number(comment.id) });
                           setDeletedCommentIds((prev) => new Set(prev).add(comment.id));
                         }}
-                        onReplyClick={(commentId, author) => setReplyTarget({ commentId, author })}
-                        isComposingReply={replyTarget?.commentId === Number(comment.id)}
+                        onReplyClick={(commentId, author, highlightId) => {
+                          setReplyTarget({ commentId, author });
+                          setActiveReplyId(highlightId);
+                        }}
+                        activeReplyId={activeReplyId}
                       />
                     ))}
                 </div>
@@ -151,14 +169,14 @@ export const LoungeBoardDetailPage = () => {
 
           <LoungeBoardCommentInputBar
             replyTarget={replyTarget}
-            onCancelReply={() => setReplyTarget(null)}
-            onSubmitComment={(content) =>
-              createCommentMutation.mutate({ postId, body: { content } })
+            onCancelReply={clearReplyTarget}
+            onSubmitComment={(content, imageUrls) =>
+              createCommentMutation.mutate({ postId, body: { content, imageUrls } })
             }
-            onSubmitReply={(commentId, content) =>
+            onSubmitReply={(commentId, content, imageUrls) =>
               createReplyMutation.mutate(
-                { postId, commentId, body: { content } },
-                { onSuccess: () => setReplyTarget(null) },
+                { postId, commentId, body: { content, imageUrls } },
+                { onSuccess: clearReplyTarget },
               )
             }
           />

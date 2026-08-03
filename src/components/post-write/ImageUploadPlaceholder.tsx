@@ -15,16 +15,25 @@ type UploadItem = {
 
 type Props = {
   maxImages?: number;
+  initialImageUrls?: string[];
   onUploadedUrlsChange?: (urls: string[]) => void;
   onUploadingChange?: (isUploading: boolean) => void;
 };
 
 export function ImageUploadPlaceholder({
   maxImages = 5,
+  initialImageUrls,
   onUploadedUrlsChange,
   onUploadingChange,
 }: Props) {
-  const [items, setItems] = useState<UploadItem[]>([]);
+  const [items, setItems] = useState<UploadItem[]>(() =>
+    (initialImageUrls ?? []).map((url) => ({
+      id: crypto.randomUUID(),
+      previewUrl: url,
+      status: 'done',
+      uploadedUrl: url,
+    })),
+  );
   const [showMaxWarning, setShowMaxWarning] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

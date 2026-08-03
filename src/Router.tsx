@@ -83,6 +83,11 @@ export const router = createBrowserRouter([
         element: <LoungeBoardDetailPage />,
         handle: { hideNavbar: true },
       },
+      {
+        path: 'lounge/:category/:id/edit',
+        element: <ExhibitionReviewWritePage />,
+        handle: { hideNavbar: true, hideFooter: true },
+      },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],
