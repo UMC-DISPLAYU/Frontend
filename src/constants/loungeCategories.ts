@@ -19,7 +19,6 @@ export function isLoungeCategoryKey(value: string | undefined): value is LoungeC
   return !!value && value in LOUNGE_CATEGORIES;
 }
 
-// 프론트 카테고리 키 ↔ 백엔드 category enum 값 매핑 (LoungePostCard.tsx의 CATEGORY_LABEL 기준)
 export const LOUNGE_CATEGORY_API_VALUES = {
   review: 'DISPLAY_REVIEW',
   tips: 'WORK_TIP',

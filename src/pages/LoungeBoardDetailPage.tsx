@@ -45,7 +45,12 @@ export const LoungeBoardDetailPage = () => {
     isPending: isPostPending,
     isError: isPostError,
   } = useLoungePostDetail(postId);
-  const { data: commentsData, isPending: isCommentsPending } = useLoungeComments(postId);
+  const {
+    data: commentsData,
+    isPending: isCommentsPending,
+    isError: isCommentsError,
+    refetch: refetchComments,
+  } = useLoungeComments(postId);
   const deleteCommentMutation = useDeleteLoungeComment();
   const createCommentMutation = useCreateLoungeComment();
   const createReplyMutation = useCreateLoungeReply();
@@ -114,6 +119,13 @@ export const LoungeBoardDetailPage = () => {
         />
       ) : isLoading ? (
         <LoadingView fullScreen={false} />
+      ) : isValidPost && isCommentsError ? (
+        <ErrorView
+          fullScreen={false}
+          title="댓글을 불러오지 못했습니다"
+          message="잠시 후 다시 시도해주세요."
+          onRetry={() => refetchComments()}
+        />
       ) : review ? (
         <>
           <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-28">
@@ -171,10 +183,10 @@ export const LoungeBoardDetailPage = () => {
             replyTarget={replyTarget}
             onCancelReply={clearReplyTarget}
             onSubmitComment={(content, imageUrls) =>
-              createCommentMutation.mutate({ postId, body: { content, imageUrls } })
+              createCommentMutation.mutateAsync({ postId, body: { content, imageUrls } })
             }
             onSubmitReply={(commentId, content, imageUrls) =>
-              createReplyMutation.mutate(
+              createReplyMutation.mutateAsync(
                 { postId, commentId, body: { content, imageUrls } },
                 { onSuccess: clearReplyTarget },
               )

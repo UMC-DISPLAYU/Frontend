@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 
 type Props = {
   message: string;
@@ -16,6 +16,11 @@ export function ConfirmModal({
   onCancel,
 }: Props) {
   const descriptionId = useId();
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    cancelButtonRef.current?.focus();
+  }, []);
 
   return (
     <div
@@ -31,6 +36,7 @@ export function ConfirmModal({
         </p>
         <div className="flex gap-2.5">
           <button
+            ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
             className="flex-1 h-11 bg-bt-gray rounded-full flex items-center justify-center text-main typo-body-md-regular"

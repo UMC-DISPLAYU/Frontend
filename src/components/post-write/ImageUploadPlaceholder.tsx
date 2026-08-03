@@ -74,6 +74,9 @@ export function ImageUploadPlaceholder({
           prev.map((item) => (item.id === id ? { ...item, status: 'done', uploadedUrl } : item)),
         );
       } catch (error) {
+        const stillExists = itemsRef.current.some((item) => item.id === id);
+        if (!stillExists) return;
+
         const message = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
         setUploadError(message);
         setItems((prev) => {
@@ -105,7 +108,10 @@ export function ImageUploadPlaceholder({
         status: 'uploading' as const,
       }));
 
-      setItems((prev) => [...prev, ...newItems.map(({ file: _file, ...item }) => item)]);
+      setItems((prev) => [
+        ...prev,
+        ...newItems.map(({ id, previewUrl, status }) => ({ id, previewUrl, status })),
+      ]);
       newItems.forEach((item) => uploadFile(item.id, item.file));
 
       if (fileInputRef.current) {

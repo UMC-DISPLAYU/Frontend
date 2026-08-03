@@ -24,7 +24,11 @@ export function ExhibitionReviewWritePage() {
   const isEditMode = Boolean(id);
   const postId = id ? Number(id) : NaN;
 
-  const { data: existingPost, isPending: isExistingPostPending } = useLoungePostDetail(postId);
+  const {
+    data: existingPost,
+    isPending: isExistingPostPending,
+    isError: isExistingPostError,
+  } = useLoungePostDetail(postId);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -101,6 +105,16 @@ export function ExhibitionReviewWritePage() {
       <ErrorView
         title="존재하지 않는 게시판입니다"
         message="요청하신 라운지 게시판을 찾을 수 없습니다."
+        onRetry={() => navigate(-1)}
+      />
+    );
+  }
+
+  if (isEditMode && (!Number.isFinite(postId) || isExistingPostError)) {
+    return (
+      <ErrorView
+        title="게시글을 찾을 수 없습니다"
+        message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
         onRetry={() => navigate(-1)}
       />
     );

@@ -126,7 +126,9 @@ export function MyActivityPage() {
           <LoadingView fullScreen={false} />
         ) : isError ? (
           <ErrorView fullScreen={false} message="불러오지 못했어요. 잠시 후 다시 시도해주세요." />
-        ) : posts.length > 0 ? (
+        ) : posts.length === 0 && !hasNextPage ? (
+          <ErrorView fullScreen={false} message={`${activeTabLabel} 항목이 없어요.`} />
+        ) : (
           <div className="flex flex-col gap-3.5">
             {posts.map((post) => (
               <LoungeBoardPostCard key={post.id} post={post} />
@@ -135,8 +137,6 @@ export function MyActivityPage() {
             <div ref={triggerRef} className="h-4" />
             {isFetchingNextPage && <LoadingView fullScreen={false} message="불러오는 중..." />}
           </div>
-        ) : (
-          <ErrorView fullScreen={false} message={`${activeTabLabel} 항목이 없어요.`} />
         )}
       </main>
     </div>

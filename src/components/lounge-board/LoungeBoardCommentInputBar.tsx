@@ -23,8 +23,8 @@ type ReplyTarget = {
 type Props = {
   replyTarget: ReplyTarget | null;
   onCancelReply: () => void;
-  onSubmitComment: (content: string, imageUrls: string[]) => void;
-  onSubmitReply: (commentId: number, content: string, imageUrls: string[]) => void;
+  onSubmitComment: (content: string, imageUrls: string[]) => Promise<unknown>;
+  onSubmitReply: (commentId: number, content: string, imageUrls: string[]) => Promise<unknown>;
 };
 
 export function LoungeBoardCommentInputBar({
@@ -37,6 +37,8 @@ export function LoungeBoardCommentInputBar({
   const [images, setImages] = useState<UploadItem[]>([]);
   const [showMaxWarning, setShowMaxWarning] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagesRef = useRef(images);
@@ -82,6 +84,9 @@ export function LoungeBoardCommentInputBar({
           prev.map((item) => (item.id === id ? { ...item, status: 'done', uploadedUrl } : item)),
         );
       } catch (error) {
+        const stillExists = imagesRef.current.some((item) => item.id === id);
+        if (!stillExists) return;
+
         const message = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
         setUploadError(message);
         setImages((prev) => {
@@ -113,7 +118,10 @@ export function LoungeBoardCommentInputBar({
         status: 'uploading' as const,
       }));
 
-      setImages((prev) => [...prev, ...newItems.map(({ file: _file, ...item }) => item)]);
+      setImages((prev) => [
+        ...prev,
+        ...newItems.map(({ id, previewUrl, status }) => ({ id, previewUrl, status })),
+      ]);
       newItems.forEach((item) => uploadFile(item.id, item.file));
 
       if (fileInputRef.current) {
@@ -131,23 +139,30 @@ export function LoungeBoardCommentInputBar({
     });
   }, []);
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const trimmed = text.trim();
-    if (!trimmed || isUploading) return;
+    if (!trimmed || isUploading || isSubmitting) return;
 
     const imageUrls = images
       .filter((item) => item.status === 'done')
       .map((item) => item.uploadedUrl as string);
 
-    if (replyTarget) {
-      onSubmitReply(replyTarget.commentId, trimmed, imageUrls);
-    } else {
-      onSubmitComment(trimmed, imageUrls);
+    setIsSubmitting(true);
+    try {
+      if (replyTarget) {
+        await onSubmitReply(replyTarget.commentId, trimmed, imageUrls);
+      } else {
+        await onSubmitComment(trimmed, imageUrls);
+      }
+      setText('');
+      imagesRef.current.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+      setImages([]);
+    } catch (error) {
+      setSubmitError(getErrorMessage(error, '등록에 실패했습니다.'));
+    } finally {
+      setIsSubmitting(false);
     }
-    setText('');
-    imagesRef.current.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
-    setImages([]);
   };
 
   return (
@@ -236,7 +251,7 @@ export function LoungeBoardCommentInputBar({
 
                 <button
                   type="submit"
-                  disabled={!text.trim() || isUploading}
+                  disabled={!text.trim() || isUploading || isSubmitting}
                   className="text-hint hover:text-main disabled:opacity-40 disabled:hover:text-hint cursor-pointer transition-colors"
                   aria-label="댓글 등록"
                 >
@@ -255,6 +270,7 @@ export function LoungeBoardCommentInputBar({
         />
       )}
       {uploadError && <AlertModal message={uploadError} onConfirm={() => setUploadError(null)} />}
+      {submitError && <AlertModal message={submitError} onConfirm={() => setSubmitError(null)} />}
     </>
   );
 }
