@@ -1,10 +1,8 @@
-import { useState } from 'react';
-
 import { ChevronLeft, SquarePen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { ConfirmModal } from '@/components/ui';
 import type { LoungeCategoryKey } from '@/constants/loungeCategories';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useLoungePostPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -22,7 +20,7 @@ export function LoungeBoardHeader({
   className = '',
 }: Props) {
   const navigate = useNavigate();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
   const loungePostPolicy = useLoungePostPolicy();
   const canCreatePost = hasPermission(loungePostPolicy, 'create');
 
@@ -34,7 +32,7 @@ export function LoungeBoardHeader({
       return;
     }
 
-    setIsLoginModalOpen(true);
+    openLoginModal();
   };
 
   return (
@@ -57,18 +55,8 @@ export function LoungeBoardHeader({
         </button>
       )}
 
-      {isLoginModalOpen && (
-        <ConfirmModal
-          message="로그인이 필요한 기능이에요.&#10;로그인하러 갈까요?"
-          confirmLabel="로그인하기"
-          cancelLabel="취소"
-          onConfirm={() => {
-            setIsLoginModalOpen(false);
-            navigate('/login');
-          }}
-          onCancel={() => setIsLoginModalOpen(false)}
-        />
-      )}
+      {/* null 이 아니면 실행 */}
+      {loginModal}
     </div>
   );
 }

@@ -1,16 +1,15 @@
-import { useState } from 'react';
-
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
-import { ConfirmModal } from '@/components/ui';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 
 export function SettingPage() {
   const navigate = useNavigate();
   const { data: userData, isPending } = useUserMe();
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const { artistVerificationModal, openArtistVerificationModal } =
+    useArtistVerificationRequiredModal();
 
   const isVerified = !isPending && Boolean(userData?.isVerified);
 
@@ -22,7 +21,7 @@ export function SettingPage() {
     if (isPending) return; // 로딩 중에는 동작하지 않음
 
     if (!isVerified) {
-      setShowVerificationModal(true);
+      openArtistVerificationModal();
       return;
     }
     navigate('/exhibition-register');
@@ -115,18 +114,7 @@ export function SettingPage() {
         </div>
       </div>
 
-      {showVerificationModal && (
-        <ConfirmModal
-          message="전시를 등록하려면 작가 인증이 필요해요.&#10;학교 메일로 인증할까요?"
-          confirmLabel="학교 메일로 인증하기"
-          cancelLabel="취소"
-          onConfirm={() => {
-            setShowVerificationModal(false);
-            navigate('/artist-verification');
-          }}
-          onCancel={() => setShowVerificationModal(false)}
-        />
-      )}
+      {artistVerificationModal}
     </div>
   );
 }

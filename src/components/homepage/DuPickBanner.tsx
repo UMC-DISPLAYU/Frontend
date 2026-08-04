@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { DuPickDto } from '@/api/dto';
-import { ConfirmModal } from '@/components/ui';
+import {
+  useArtistVerificationRequiredModal,
+  useLoginRequiredModal,
+} from '@/hooks/usePermissionRequiredModal';
 import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
 import { useAuthStore } from '@/stores/authStore';
@@ -116,8 +119,10 @@ export function DuPickBanner({ items, className }: Props) {
 function ExhibitionRegisterButton() {
   const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const { artistVerificationModal, openArtistVerificationModal } =
+    useArtistVerificationRequiredModal();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
   const displayCreatePolicy = useDisplayCreatePolicy();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const canCreateDisplay = hasPermission(displayCreatePolicy, 'create');
 
   const handleClick = () => {
@@ -126,7 +131,12 @@ function ExhibitionRegisterButton() {
       return;
     }
 
-    setIsModalOpen(true);
+    if (accessToken) {
+      openArtistVerificationModal();
+      return;
+    }
+
+    openLoginModal();
   };
 
   return (
@@ -140,31 +150,9 @@ function ExhibitionRegisterButton() {
         <Plus strokeWidth={1.5} className="size-8" />
       </button>
 
-      {isModalOpen && !accessToken && (
-        <ConfirmModal
-          message="로그인이 필요한 기능이에요.&#10;로그인하러 갈까요?"
-          confirmLabel="로그인하기"
-          cancelLabel="취소"
-          onConfirm={() => {
-            setIsModalOpen(false);
-            navigate('/login');
-          }}
-          onCancel={() => setIsModalOpen(false)}
-        />
-      )}
-
-      {isModalOpen && accessToken && (
-        <ConfirmModal
-          message="전시를 등록하려면 작가 인증이 필요해요.&#10;학교 메일로 인증할까요?"
-          confirmLabel="학교 메일로 인증하기"
-          cancelLabel="취소"
-          onConfirm={() => {
-            setIsModalOpen(false);
-            navigate('/artist-verification');
-          }}
-          onCancel={() => setIsModalOpen(false)}
-        />
-      )}
+      {/* null 이 아니면 실행 */}
+      {loginModal}
+      {artistVerificationModal}
     </>
   );
 }
