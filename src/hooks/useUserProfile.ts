@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { getMyArtistProfile, getUserMe } from '@/api/endpoints/user';
 
 import AvatarImage from '../assets/Icon (1).svg';
-import FieldIcon from '../assets/image 3673.svg';
 import SchoolIcon from '../assets/image 3666.svg';
+import FieldIcon from '../assets/image 3673.svg';
 
 export interface UserProfile {
   name: string;

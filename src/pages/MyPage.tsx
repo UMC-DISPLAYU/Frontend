@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import type { ArchivedArtistDto, ArchivedArtworkDto, ArchivedExhibitionDto } from '@/api/dto';
 import ExhibitionIcon from '@/assets/exhibit.svg';
-import FieldIcon from '@/assets/image 3673.svg';
 import SchoolIcon from '@/assets/image 3666.svg';
+import FieldIcon from '@/assets/image 3673.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtistCard,
