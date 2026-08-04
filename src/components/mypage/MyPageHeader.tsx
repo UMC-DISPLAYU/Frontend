@@ -1,9 +1,11 @@
-import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
+import { ExternalLink, Menu, RefreshCcw, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { UserProfile } from '@/hooks/useUserProfile';
+import { useMyPageStore } from '@/stores/useMyPageStore';
 import type { TabKey } from '@/types/mypage';
+import { cn } from '@/utils/cn';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'exhibition', label: '전시' },
@@ -12,53 +14,37 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 interface MyPageHeaderProps {
-  activeTab: TabKey;
-  onTabChange: (key: TabKey) => void;
-  onOpenMenu: () => void;
-  onToggleView: () => void;
   onVerifyArtist?: () => void;
-  onRegister?: () => void;
-  onManage?: () => void;
   onShare?: () => void;
+  onToggleView?: () => void;
   profile: UserProfile;
   isArtistVerified: boolean;
-  isArtistView: boolean;
 }
 
 export function MyPageHeader({
-  activeTab,
-  onTabChange,
-  onToggleView,
   onVerifyArtist,
-  onRegister,
-  onManage,
   onShare,
+  onToggleView,
   profile,
   isArtistVerified,
-  isArtistView,
 }: MyPageHeaderProps) {
   const navigate = useNavigate();
+  const { activeTab, isArtistView, setActiveTab } = useMyPageStore();
   return (
-    <header className="shrink-0 bg-white">
+    <header className="shrink-0 bg-card">
       <div className="px-5 pt-2 flex justify-between items-center">
         <div className="flex items-center gap-2.5">
-          <h1 className="text-slate-900 text-3xl font-normal font-['Aldrich'] leading-10">
-            My Page
-          </h1>
+          <h1 className="typo-heading-3xl text-main">My Page</h1>
           {isArtistVerified && isArtistView && (
-            <span className="px-1.5 py-0.5 bg-blue-100 rounded-sm">
-              <span className="text-blue-600 text-[10px] font-normal font-['Pretendard'] leading-3">
-                작가인증
-              </span>
+            <span className="inline-flex items-center px-2.5 py-1 bg-sky-100 rounded-sm">
+              <span className="text-tag-blue typo-body-xs-regular">작가인증</span>
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3.5 text-neutral-900">
-          {isArtistVerified && (
-            <button type="button" aria-label="전환" onClick={onToggleView}>
-              <RefreshCcw className="size-5" />
-            </button>
-          )}
+        <div className="flex items-center gap-3.5 text-main">
+          <button type="button" aria-label="전환" onClick={onToggleView}>
+            <RefreshCcw className="size-5" />
+          </button>
           <button type="button" aria-label="메뉴" onClick={() => navigate('/setting/')}>
             <Menu className="size-5" />
           </button>
@@ -68,7 +54,7 @@ export function MyPageHeader({
       <div className="px-5 pt-5 pb-5 flex flex-col gap-3.5">
         <div className="flex items-center gap-6">
           <img
-            className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
+            className="size-20 rounded-full border-[2.67px] border-line object-cover shrink-0"
             src={profile.avatar || FALLBACK_PROFILE_IMAGE}
             alt={profile.name}
             onError={(event) => {
@@ -76,32 +62,24 @@ export function MyPageHeader({
             }}
           />
           <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-            <div className="text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7 truncate">
-              {profile.name}
-            </div>
+            <div className="typo-body-2xl-bold text-main truncate">{profile.name}</div>
             {isArtistView ? (
               <div className="flex items-center gap-5.5">
                 <div className="w-17.5 flex flex-col items-center gap-0.5">
                   <img className="w-12 h-9 object-contain" src={profile.schoolIcon} alt="" />
-                  <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
-                    {profile.school}
-                  </span>
+                  <span className="typo-body-xs-semibold text-main">{profile.school}</span>
                 </div>
                 <div className="w-18 flex flex-col items-center gap-0.5">
                   <img className="w-12 h-9 object-contain" src={profile.fieldIcon} alt="" />
-                  <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
-                    {profile.field}
-                  </span>
+                  <span className="typo-body-xs-semibold text-main">{profile.field}</span>
                 </div>
                 <div className="w-17.5 flex flex-col items-center gap-0.5">
                   <img className="w-12 h-9 object-contain" src={profile.exhibitionIcon} alt="" />
-                  <span className="text-neutral-900 text-xs font-semibold font-['Pretendard'] leading-4">
-                    {profile.exhibit}
-                  </span>
+                  <span className="typo-body-xs-semibold text-main">{profile.exhibit}</span>
                 </div>
               </div>
             ) : (
-              <div className="text-slate-950 text-xs font-normal font-['Pretendard'] leading-4 truncate">
+              <div className="typo-body-xs-regular text-main truncate">
                 {profile.caption || '내가 저장한 작품 확인하기'}
               </div>
             )}
@@ -110,26 +88,22 @@ export function MyPageHeader({
             <button
               type="button"
               onClick={onVerifyArtist}
-              className="shrink-0 px-6 py-1.5 bg-gray-300 rounded-lg outline outline-1 -outline-offset-1 outline-gray-200"
+              className="shrink-0 px-6 py-1.5 bg-box200 rounded-lg border border-line-soft"
             >
-              <span className="text-neutral-900 text-xs font-normal font-['Pretendard'] underline leading-4">
-                작가 인증하기
-              </span>
+              <span className="typo-body-xs-regular text-main underline">작가 인증하기</span>
             </button>
           )}
         </div>
 
         {isArtistView && profile.bio && (
           <div className="flex flex-col gap-2">
-            <p className="text-neutral-800 text-xs font-semibold font-['Pretendard'] leading-4">
-              {profile.bio}
-            </p>
+            <p className="typo-body-xs-semibold text-sub700">{profile.bio}</p>
             {profile.portfolioUrl && (
               <a
                 href={`https://${profile.portfolioUrl}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-1 text-blue-600 text-xs font-medium font-['Pretendard'] leading-5"
+                className="flex items-center gap-1 typo-body-xs-semibold text-link"
               >
                 <ExternalLink className="size-4" />
                 {profile.portfolioUrl}
@@ -142,35 +116,38 @@ export function MyPageHeader({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={onRegister}
-              className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
+              onClick={() => navigate('/exhibition-register')}
+              className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
             >
-              <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
-                전시/작품등록
-              </span>
+              <span className="typo-body-sm-regular text-main">전시등록</span>
             </button>
             <button
               type="button"
-              onClick={onManage}
-              className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
+              onClick={() => navigate('/personal-artworks/register')}
+              className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
             >
-              <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
-                전시/작품관리
-              </span>
+              <span className="typo-body-sm-regular text-main">작품등록</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/exhibition/manage')}
+              className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
+            >
+              <span className="typo-body-sm-regular text-main">전시관리</span>
             </button>
             <button
               type="button"
               aria-label="공유"
               onClick={onShare}
-              className="size-11 shrink-0 bg-neutral-800 rounded-xl flex justify-center items-center"
+              className="size-11 shrink-0 bg-dark rounded-xl flex justify-center items-center"
             >
-              <Upload color="#ffffff" className="size-5" />
+              <Share className="size-5 text-white" />
             </button>
           </div>
         )}
       </div>
 
-      <nav className="border-b-2 border-zinc-300 flex shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
+      <nav className="border-b-2 border-line flex shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
         {TABS.map((tab) => {
           if (isArtistView && tab.key === 'artist') return null;
 
@@ -179,14 +156,15 @@ export function MyPageHeader({
             <button
               key={tab.key}
               type="button"
-              onClick={() => onTabChange(tab.key)}
-              className={`relative flex-1 h-11 flex justify-center pt-3 text-sm font-['Pretendard'] leading-5 ${
-                isActive ? 'text-neutral-900 font-bold' : 'text-neutral-400 font-normal'
-              }`}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'relative flex-1 h-11 flex justify-center pt-3',
+                isActive ? 'typo-body-sm-bold text-main' : 'typo-body-sm-regular text-faint',
+              )}
             >
               {tab.label}
               {isActive && (
-                <span className="absolute w-35 h-0.5 bg-neutral-900 bottom-0 left-1/2 -translate-x-1/2" />
+                <span className="absolute w-35 h-0.5 bg-main bottom-0 left-1/2 -translate-x-1/2" />
               )}
             </button>
           );

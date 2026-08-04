@@ -1,5 +1,7 @@
 import { useCallback, useRef } from 'react';
 
+import { Image, X } from 'lucide-react';
+
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
 
@@ -62,9 +64,7 @@ export function ImageUploader({
             className="absolute top-1 right-1 size-6 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
             aria-label={`이미지 ${index + 1} 삭제`}
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M2 2l8 8M10 2l-8 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={12} className="text-white" />
           </button>
         </div>
       ))}
@@ -75,26 +75,8 @@ export function ImageUploader({
           className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
           aria-label={emptyLabel ?? '이미지 업로드'}
         >
-          <div className="size-10 bg-box rounded-full flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <rect
-                x="2.25"
-                y="2.25"
-                width="11.5"
-                height="11.5"
-                rx="2"
-                stroke="#d4d4d4"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M4.5 10.5l2.5-2.5 2 2 2.5-2.5 1.5 1.5"
-                stroke="#d4d4d4"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle cx="6" cy="6" r="1" stroke="#d4d4d4" strokeWidth="1.5" />
-            </svg>
+          <div className="size-10 bg-page rounded-full flex items-center justify-center">
+            <Image size={16} className="text-input-border" />
           </div>
           <span className="text-main typo-body-xs-regular">
             {emptyLabel ?? `${images.length}/${maxImages}`}

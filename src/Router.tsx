@@ -34,6 +34,7 @@ import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
 import { NotFound } from './pages/NotFound';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { PersonalArtworksRegister } from './pages/PersonalArtworksRegister';
 import { PolicyPage } from './pages/PolicyPage';
 import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
 import { SearchPage } from './pages/SearchPage';
@@ -73,6 +74,7 @@ export const router = createBrowserRouter([
       { path: 'setting', element: <SettingPage /> },
       { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
       { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
+      { path: 'personal-artworks/register', element: <PersonalArtworksRegister /> },
       { path: 'answer-questions', element: <AnswerPage /> },
       { path: 'invitation-request', element: <InvitationRequestPage /> },
       { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Bookmark, Pencil } from 'lucide-react';
 
 import type { ExhibitionItem } from '@/types/mypage';
+import { cn } from '@/utils/cn';
 import { statusBadgeClass } from '@/utils/mypage';
 
 interface ExhibitionCardProps {
@@ -40,9 +41,9 @@ export function ExhibitionCard({
   };
 
   return (
-    <article className="shrink-0 w-full bg-neutral-50 rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden font-['Pretendard']">
+    <article className="shrink-0 w-full bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
       <div className="px-4 py-3.5 flex justify-start items-start gap-3">
-        <div className="w-24 h-32 rounded-xl overflow-hidden bg-neutral-200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
+        <div className="w-24 h-32 rounded-xl overflow-hidden bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
           {item.thumbnail && (
             <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
           )}
@@ -50,10 +51,13 @@ export function ExhibitionCard({
 
         <div className="flex-1 flex flex-col justify-start items-start min-w-0">
           <div className="self-stretch flex justify-between items-start gap-2">
-            <div className={`px-2 py-0.5 rounded-sm shrink-0 ${statusBadgeClass(item.status)}`}>
-              <span className="text-neutral-50 text-[10px] font-normal leading-3">
-                {item.status}
-              </span>
+            <div
+              className={cn(
+                'inline-flex items-center justify-center px-2 py-0.5 rounded-sm shrink-0',
+                statusBadgeClass(item.status),
+              )}
+            >
+              <span className="typo-body-xxs-regular text-bt-black">{item.status}</span>
             </div>
             {!isArtistView && (
               <button
@@ -62,52 +66,46 @@ export function ExhibitionCard({
                 className="shrink-0"
                 onClick={() => onUnarchive?.(item)}
               >
-                <Bookmark fill="#D70004" color="#D70004" className="size-4" />
+                <Bookmark fill="currentColor" className="size-4 text-bookmark" />
               </button>
             )}
           </div>
 
           <div className="self-stretch pt-2.5">
-            <div className="text-neutral-900 text-base font-bold leading-6 truncate">
-              {item.title}
-            </div>
+            <div className="typo-body-xl-bold text-main truncate">{item.title}</div>
           </div>
           <div className="self-stretch pt-2.5">
-            <div className="text-neutral-800 text-xs font-normal leading-4 truncate">
-              {item.org}
-            </div>
-            <div className="text-neutral-500 text-xs font-normal leading-4">{item.period}</div>
+            <div className="typo-body-xs-regular text-sub700 truncate">{item.org}</div>
+            <div className="typo-body-xs-regular text-hint">{item.period}</div>
           </div>
           <div className="self-stretch pt-4">
-            <div className="text-neutral-400 text-[10px] font-normal leading-3 truncate">
-              {item.place}
-            </div>
+            <div className="typo-body-xxs-regular text-faint truncate">{item.place}</div>
           </div>
         </div>
       </div>
 
       {!isArtistView && (
-        <footer className="min-h-11 px-4 py-2 bg-gray-200 flex flex-col justify-center">
+        <footer className="min-h-11 px-4 py-2 bg-box200 flex flex-col justify-center">
           {isEditingMemo ? (
             <div className="self-stretch flex flex-col gap-2">
               <textarea
                 value={memoInput}
                 onChange={(event) => setMemoInput(event.target.value)}
                 placeholder="메모"
-                className="min-h-10 w-full resize-none bg-transparent text-xs font-normal leading-4 text-neutral-500 outline-none placeholder:text-neutral-400"
+                className="min-h-10 w-full resize-none bg-transparent typo-body-xs-regular text-hint outline-none placeholder:text-faint"
                 autoFocus
               />
               <div className="self-stretch flex justify-end gap-2">
                 <button
                   type="button"
-                  className="text-neutral-400 text-xs font-normal leading-4"
+                  className="typo-body-xs-regular text-faint"
                   onClick={handleCancelMemo}
                 >
                   취소
                 </button>
                 <button
                   type="button"
-                  className="text-neutral-900 text-xs font-semibold leading-4"
+                  className="typo-body-xs-semibold text-main"
                   onClick={handleSaveMemo}
                 >
                   저장
@@ -134,10 +132,10 @@ export function ExhibitionCard({
           ) : (
             <button
               type="button"
-              className="self-stretch flex items-center gap-1.5 text-left text-neutral-400 text-xs font-normal leading-5"
+              className="self-stretch flex items-center gap-1.5 text-left typo-body-xs-regular text-faint"
               onClick={handleStartMemoEdit}
             >
-              <Pencil color="#99A1AF" className="size-3 shrink-0" />
+              <Pencil className="size-3 shrink-0 text-faint" />
               <span>메모</span>
             </button>
           )}
