@@ -125,9 +125,8 @@ export const updateMyDisplayNickname = async (body: { nickname: string }): Promi
   apiRequest('/v1/display/me/nickname', { method: 'PATCH', body });
 
 // GET /v1/display/invitation/:token
-export const getDisplayInvitationByToken = async (
-  token: string,
-): Promise<DisplayMemberInvitationResponseDataDto> => apiRequest(`/v1/display/invitation/${token}`);
+export const getDisplayInvitationByToken = async (token: string): Promise<DisplayDetailDto> =>
+  apiRequest(`/v1/display/invitation/${token}`);
 
 // POST /v1/display/:displayId/invitation
 export const createDisplayInvitation = async (

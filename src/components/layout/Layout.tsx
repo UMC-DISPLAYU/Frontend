@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
 
+import { useRedirectAfterLogin } from '@/hooks/usePendingRedirect';
+
 import { FNB } from './FNB';
 import { FooterContext } from './FooterContext';
 import { Navbar } from './Navbar';
@@ -10,6 +12,8 @@ function LayoutContent() {
   const location = useLocation();
   const matches = useMatches();
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
+
+  useRedirectAfterLogin();
 
   // 하단 네비게이션 바(Navbar) 숨김 경로
   const hideNavbarPaths = [

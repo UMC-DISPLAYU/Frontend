@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import type { DisplayInvitationDto } from '@/api/dto';
 import {
@@ -8,6 +8,7 @@ import {
   useRejectDisplayInvitation,
 } from '@/hooks/queries/useDisplayInvitations';
 import type { Invitation } from '@/types/invitation';
+import { cn } from '@/utils/cn';
 
 type InvitationApiItem = DisplayInvitationDto & {
   displayId?: number;
@@ -45,6 +46,7 @@ const toInvitation = (item: InvitationApiItem): Invitation => {
   return {
     id: String(item.invitationId),
     invitationId: item.invitationId,
+    displayId: item.displayId,
     title,
     department: [school, department].filter(Boolean).join(' '),
     period: `${formatMonthDay(item.startDate ?? item.startedAt)} - ${formatMonthDay(
@@ -58,13 +60,19 @@ const toInvitation = (item: InvitationApiItem): Invitation => {
 
 interface InvitationCardProps {
   item: Invitation;
+  highlighted?: boolean;
   onAccept?: () => void;
   onReject?: () => void;
 }
 
-function InvitationCard({ item, onAccept, onReject }: InvitationCardProps) {
+function InvitationCard({ item, highlighted = false, onAccept, onReject }: InvitationCardProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+    <div
+      className={cn(
+        'flex flex-col gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]',
+        highlighted && 'outline outline-1 outline-offset-[-1px] outline-line-active',
+      )}
+    >
       <div className="flex items-start gap-3">
         <div className="h-32 w-24 shrink-0 overflow-hidden rounded-xl bg-box shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)]">
           {item.posterUrl && (
@@ -153,7 +161,10 @@ function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
 
 export function InvitationRequestPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data, isLoading, isError } = useMyDisplayInvitations();
+  /* 초대 링크를 타고 들어왔다면 어떤 전시의 초대인지 표시해줍니다. */
+  const highlightedDisplayId = Number(searchParams.get('displayId')) || null;
   const rejectInvitation = useRejectDisplayInvitation();
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
@@ -223,6 +234,9 @@ export function InvitationRequestPage() {
               <InvitationCard
                 key={item.id}
                 item={item}
+                highlighted={
+                  highlightedDisplayId !== null && item.displayId === highlightedDisplayId
+                }
                 onAccept={() => handleAccept(item)}
                 onReject={() => handleReject(item)}
               />
