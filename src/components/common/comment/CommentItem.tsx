@@ -20,6 +20,8 @@ type Props = {
   onReplyClick?: (commentId: string, author: string, highlightId: string) => void;
   activeReplyId?: string | null;
   className?: string;
+  /** 댓글/답글 한 줄마다 아래쪽 구분선(및 그에 맞는 여백)을 그린다. 라운지의 기본 gap 기반 레이아웃 대신 사용. */
+  showDivider?: boolean;
 };
 
 export function CommentItem({
@@ -37,6 +39,7 @@ export function CommentItem({
   onReplyClick,
   activeReplyId = null,
   className,
+  showDivider = false,
 }: Props) {
   const commentId = comment.id;
   const isComposingReply = activeReplyId === commentId;
@@ -58,12 +61,16 @@ export function CommentItem({
 
   const contentIndent = isReply ? 'pl-[72px]' : 'pl-9';
 
-  const bleedClasses = isComposingReply ? 'pt-3 -mt-3 pb-3 -mb-3' : '';
+  // 라운지(showDivider=false)는 기본 패딩이 없어서, 답글 작성 중 하이라이트일 때만
+  // 음수 margin으로 상쇄하는 bleed 트릭으로 여백을 만든다. showDivider일 땐 각 줄에
+  // 항상 py-3가 있으므로 트릭 없이 배경색만 얹으면 된다.
+  const bleedClasses = showDivider ? '' : isComposingReply ? 'pt-3 -mt-3 pb-3 -mb-3' : '';
+  const dividerClasses = showDivider ? 'py-3 border-b border-line-soft' : '';
 
   return (
-    <div className={cn('w-full flex flex-col gap-2', className)}>
+    <div className={cn('w-full flex flex-col', showDivider ? 'gap-0' : 'gap-2', className)}>
       <div
-        className={`relative flex flex-col gap-2 -mx-5 px-5 ${bleedClasses} ${isComposingReply ? 'bg-box' : ''}`}
+        className={`relative flex flex-col gap-2 -mx-5 px-5 ${dividerClasses} ${bleedClasses} ${isComposingReply ? 'bg-box' : ''}`}
       >
         {isComposingReply && (
           <div className="absolute top-0 left-0 h-full w-[3px] rounded-r-full bg-[#8E8E93]" />
@@ -150,7 +157,7 @@ export function CommentItem({
       </div>
 
       {!isReply && repliesOpen && replies.length > 0 && (
-        <div className="mt-[32px] flex flex-col gap-[40px]">
+        <div className={showDivider ? 'flex flex-col' : 'mt-[32px] flex flex-col gap-[40px]'}>
           {replies.map((reply) => (
             <CommentItem
               key={reply.id}
@@ -163,6 +170,7 @@ export function CommentItem({
               onDelete={onDelete}
               onReplyClick={onReplyClick}
               activeReplyId={activeReplyId}
+              showDivider={showDivider}
             />
           ))}
         </div>
