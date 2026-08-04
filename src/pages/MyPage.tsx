@@ -69,7 +69,7 @@ export function MyPage() {
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-gray-100 flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <MyPageHeader
         onVerifyArtist={() => {
           navigate('/artist-verification');
