@@ -1,17 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type {
-  CreateLoungeCommentRequestDto,
-  CursorPageRequestDto,
-  UpdateLoungeCommentRequestDto,
-} from '@/api/dto';
+import type { CreateLoungeCommentRequestDto, CursorPageRequestDto } from '@/api/dto';
 import {
   createLoungeComment,
   deleteLoungeComment,
   getLoungeComments,
   likeLoungeComment,
   unlikeLoungeComment,
-  updateLoungeComment,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
@@ -37,36 +32,20 @@ export const useCreateLoungeComment = () => {
   });
 };
 
-export const useUpdateLoungeComment = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      commentId,
-      body,
-    }: {
-      postId: number;
-      commentId: number;
-      body: UpdateLoungeCommentRequestDto;
-    }) => updateLoungeComment(commentId, body),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
-      });
-    },
-  });
+type CommentMutationVariables = {
+  postId: number;
+  commentId: number;
+  parentCommentId?: number;
 };
 
 export const useDeleteLoungeComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: { postId: number; commentId: number }) =>
-      deleteLoungeComment(commentId),
+    mutationFn: ({ commentId }: CommentMutationVariables) => deleteLoungeComment(commentId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
-      });
+      // 댓글·답글 목록은 일부러 무효화하지 않음: 삭제된 항목을 목록에서 지우지 않고
+      // "삭제된 글입니다."로 표시만 바꾸는 UI라서, 목록이 새로 불러와지면 안 됨.
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
     },
   });
@@ -76,12 +55,16 @@ export const useLikeLoungeComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: { postId: number; commentId: number }) =>
-      likeLoungeComment(commentId),
+    mutationFn: ({ commentId }: CommentMutationVariables) => likeLoungeComment(commentId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
+      if (variables.parentCommentId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.loungeComments.replyLists(variables.parentCommentId),
+        });
+      }
     },
   });
 };
@@ -90,12 +73,16 @@ export const useUnlikeLoungeComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: { postId: number; commentId: number }) =>
-      unlikeLoungeComment(commentId),
+    mutationFn: ({ commentId }: CommentMutationVariables) => unlikeLoungeComment(commentId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
+      if (variables.parentCommentId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.loungeComments.replyLists(variables.parentCommentId),
+        });
+      }
     },
   });
 };

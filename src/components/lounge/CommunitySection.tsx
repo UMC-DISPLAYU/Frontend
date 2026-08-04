@@ -39,19 +39,21 @@ export function CommunitySection() {
 
   return (
     <div className="flex flex-col gap-2.5">
-      <div className="flex items-start gap-3.5">
+      <div className="flex items-center justify-between gap-3.5">
         <LoungeCard
-          className="flex-1"
+          className="min-w-0 h-[343px]"
           title="전시후기"
           description={<MultilineText text={'전시를 체험한\n이야기와 감상을 나눠요'} />}
           image={loungeReviewThumbnail}
           onClick={() => navigate('/lounge/review')}
+          bordered
         />
 
-        <div className="flex-1 flex flex-col gap-2.5">
+        <div className="w-[162px] min-w-0 flex flex-col gap-2.5">
           {TIP_CARDS.map(({ category, title, description }) => (
             <LoungeCard
               key={category}
+              className="h-[165px]"
               title={title}
               description={<MultilineText text={description} />}
               onClick={() => navigate(`/lounge/${category}`)}
@@ -61,17 +63,19 @@ export function CommunitySection() {
       </div>
 
       <LoungeCard
-        className="flex items-start justify-between"
+        className="flex justify-between h-[100px]"
         onClick={() => navigate('/lounge/venue')}
       >
-        <div className="flex items-end gap-4">
-          <div className="w-[221px] h-12 flex flex-col justify-end gap-1">
-            <h3 className="typo-body-xl-semibold text-main">전시 장소 대여</h3>
-            <p className="typo-body-xs-regular text-sub600">전시 장소에 대한 정보를 공유해요</p>
+        <div className="flex items-end min-w-0 flex-1">
+          <div className="flex-1 min-w-0 h-12 flex flex-col justify-end gap-px">
+            <h3 className="typo-body-xl-semibold text-main truncate">전시 장소 대여</h3>
+            <p className="typo-body-xs-regular text-sub600 truncate">
+              전시 장소에 대한 정보를 공유해요
+            </p>
           </div>
           <img alt="" className="w-24 h-20 object-cover shrink-0" src={loungeVenueThumbnail} />
         </div>
-        <ArrowUpRight className="size-5 text-faint shrink-0" strokeWidth={1.5} />
+        <ArrowUpRight className="size-5 text-faint shrink-0" strokeWidth={2.5} />
       </LoungeCard>
     </div>
   );

@@ -8,25 +8,22 @@ import { FilterChip } from './FilterChip';
 import { FILTER_TAB_OPTIONS, FILTER_TABS } from './filterOptions';
 
 type FilterModalProps = {
-  activeTab: FilterTab;
   filters: FilterState;
-  onActiveTabChange: (tab: FilterTab) => void;
   onApply: () => void;
   onFilterChange: (tab: FilterTab, value: string) => void;
   onClose: () => void;
+  onReset: () => void;
   onResetAndApply: () => void;
 };
 
 export function FilterModal({
-  activeTab,
   filters,
-  onActiveTabChange,
   onApply,
   onFilterChange,
   onClose,
+  onReset,
   onResetAndApply,
 }: FilterModalProps) {
-  const activeValue = filters[activeTab];
   const activeEntries = (Object.entries(filters) as Array<[FilterTab, string]>).filter(
     ([, value]) => value !== '전체',
   );
@@ -65,23 +62,6 @@ export function FilterModal({
           </button>
         </div>
 
-        <div className="flex items-center border-b border-[#D9D9D9] px-5 shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
-          {FILTER_TABS.map((tab) => (
-            <button
-              className={`h-11 px-2.5 text-sm ${
-                tab === activeTab
-                  ? 'border-b-2 border-neutral-900 font-bold text-neutral-900'
-                  : 'font-normal text-neutral-400'
-              }`}
-              key={tab}
-              onClick={() => onActiveTabChange(tab)}
-              type="button"
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
         {activeEntries.length > 0 ? (
           <div className="flex items-center justify-between bg-neutral-100 px-5 py-3">
             <div className="flex flex-wrap gap-2.5">
@@ -98,7 +78,7 @@ export function FilterModal({
             </div>
             <button
               className="shrink-0 text-xs tracking-tight whitespace-nowrap text-neutral-600 underline"
-              onClick={onResetAndApply}
+              onClick={onReset}
               type="button"
             >
               초기화
@@ -106,17 +86,26 @@ export function FilterModal({
           </div>
         ) : null}
 
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-5 pt-3">
-          <div className="flex flex-wrap gap-x-5 gap-y-3">
-            {FILTER_TAB_OPTIONS[activeTab].map((option) => (
-              <FilterChip
-                key={option}
-                label={option}
-                onClick={() => onFilterChange(activeTab, option)}
-                selected={activeValue === option}
-              />
-            ))}
-          </div>
+        <div className="flex flex-1 flex-col gap-[22px] overflow-y-auto px-5 pt-3 pb-[33px] scrollbar-none">
+          {FILTER_TABS.map((tab) => (
+            <div className="flex flex-col gap-4" key={tab}>
+              <div className="-mx-5 flex items-center self-stretch px-5">
+                <h3 className="typo-body-sm-bold text-main inline-block w-fit border-b-2 border-neutral-900 pb-3">
+                  {tab}
+                </h3>
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-3">
+                {FILTER_TAB_OPTIONS[tab].map((option) => (
+                  <FilterChip
+                    key={option}
+                    label={option}
+                    onClick={() => onFilterChange(tab, option)}
+                    selected={filters[tab] === option}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         <div className="flex flex-col items-center gap-3 border-t border-[#E9E9E9] px-5 pt-3 pb-[46px]">

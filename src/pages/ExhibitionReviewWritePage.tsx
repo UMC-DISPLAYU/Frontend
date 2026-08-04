@@ -1,61 +1,143 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
+import { ErrorView, LoadingView } from '@/components/common';
+import { FNB } from '@/components/layout';
 import { ImageUploadPlaceholder, PostWriteHeader } from '@/components/post-write';
 import { AlertModal, RequiredLabel } from '@/components/ui';
-import { useUploadImage } from '@/hooks/queries/useFile';
-import { useCreateLoungePost } from '@/hooks/queries/useLounge';
+import { isLoungeCategoryKey, LOUNGE_CATEGORY_API_VALUES } from '@/constants/loungeCategories';
+import {
+  useCreateLoungePost,
+  useLoungePostDetail,
+  useUpdateLoungePost,
+} from '@/hooks/queries/useLounge';
+import { getErrorMessage } from '@/utils/error';
 
 const BASE_INPUT_CLASS =
-  'px-3 py-2.5 bg-neutral-50 rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 typo-body-xs-regular text-main placeholder:text-faint leading-4 focus-visible:outline-2 focus-visible:outline-blue-500';
+  'px-3 py-2.5 bg-transparent border-b border-line typo-body-xs-regular text-main placeholder:text-faint leading-4 focus-visible:outline-2 focus-visible:outline-blue-500';
 
 export function ExhibitionReviewWritePage() {
   const navigate = useNavigate();
+  const { category, id } = useParams<{ category: string; id?: string }>();
+  const isValidCategory = isLoungeCategoryKey(category);
+  const isEditMode = Boolean(id);
+  const postId = id ? Number(id) : NaN;
+
+  const {
+    data: existingPost,
+    isPending: isExistingPostPending,
+    isError: isExistingPostError,
+  } = useLoungePostDetail(postId);
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [images, setImages] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [isImagesUploading, setIsImagesUploading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const uploadImage = useUploadImage();
+  const [isPrefilled, setIsPrefilled] = useState(false);
+  if (isEditMode && existingPost && !isPrefilled) {
+    setIsPrefilled(true);
+    setTitle(existingPost.title);
+    setContent(existingPost.content);
+    setImageUrls(existingPost.postImageUrls);
+  }
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isSubmittingRef = useRef(false);
+
   const createLoungePost = useCreateLoungePost();
-  const isSubmitting = uploadImage.isPending || createLoungePost.isPending;
+  const updateLoungePost = useUpdateLoungePost();
+  const isSubmitting = createLoungePost.isPending || updateLoungePost.isPending;
 
-  const canSubmit = title.trim().length > 0 && content.trim().length > 0 && !isSubmitting;
-
-  const handleSubmit = async () => {
-    setSubmitError(null);
-
-    try {
-      const postImageUrls = await Promise.all(
-        images.map((file) => uploadImage.mutateAsync({ file, domain: 'lounge' })),
-      );
-
-      await createLoungePost.mutateAsync({
-        title,
-        content,
-        category: 'DISPLAY_REVIEW',
-        postImageUrls,
-      });
-
-      setIsSubmitted(true);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
-      setSubmitError(`후기 등록에 실패했습니다. (${message})`);
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value.slice(0, 1500));
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
     }
   };
 
-  return (
-    <div className="w-full max-w-105 mx-auto bg-page relative flex flex-col h-dvh">
-      <PostWriteHeader title="글 작성" className="px-5" />
+  const canSubmit =
+    title.trim().length > 0 && content.trim().length > 0 && !isImagesUploading && !isSubmitting;
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden px-5 pb-28">
-        <div className="mt-6">
-          <ImageUploadPlaceholder onFilesChange={setImages} />
+  const handleSubmit = async () => {
+    if (isSubmittingRef.current) return;
+    if (!isValidCategory) return;
+    isSubmittingRef.current = true;
+    setSubmitError(null);
+
+    try {
+      if (isEditMode) {
+        await updateLoungePost.mutateAsync({
+          postId,
+          body: {
+            title,
+            content,
+            category: LOUNGE_CATEGORY_API_VALUES[category],
+            postImageUrls: imageUrls,
+          },
+        });
+      } else {
+        await createLoungePost.mutateAsync({
+          title,
+          content,
+          category: LOUNGE_CATEGORY_API_VALUES[category],
+          postImageUrls: imageUrls,
+        });
+      }
+
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error(error);
+      const message = getErrorMessage(error, '알 수 없는 오류가 발생했습니다.');
+      setSubmitError(`${isEditMode ? '수정' : '등록'}에 실패했습니다. (${message})`);
+    } finally {
+      isSubmittingRef.current = false;
+    }
+  };
+
+  if (!isValidCategory) {
+    return (
+      <ErrorView
+        title="존재하지 않는 게시판입니다"
+        message="요청하신 라운지 게시판을 찾을 수 없습니다."
+        onRetry={() => navigate(-1)}
+      />
+    );
+  }
+
+  if (isEditMode && (!Number.isFinite(postId) || isExistingPostError)) {
+    return (
+      <ErrorView
+        title="게시글을 찾을 수 없습니다"
+        message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
+        onRetry={() => navigate(-1)}
+      />
+    );
+  }
+
+  if (isEditMode && (isExistingPostPending || !isPrefilled)) {
+    return <LoadingView />;
+  }
+
+  return (
+    <div className="w-full max-w-[402px] mx-auto bg-page relative flex min-h-dvh flex-col">
+      <PostWriteHeader title={isEditMode ? '글 수정' : '글 작성'} className="px-5" />
+
+      <main className="flex flex-col pl-[21px] pr-[19px] pb-28">
+        <div className="mt-[31px] shrink-0 -ml-[21px] -mr-[19px] flex px-5">
+          <ImageUploadPlaceholder
+            initialImageUrls={isEditMode ? imageUrls : undefined}
+            onUploadedUrlsChange={setImageUrls}
+            onUploadingChange={setIsImagesUploading}
+          />
         </div>
 
-        <div className="mt-6 flex flex-col gap-3">
+        <div className="mt-6 flex shrink-0 flex-col gap-3">
           <RequiredLabel required htmlFor="review-title">
             제목
           </RequiredLabel>
@@ -72,26 +154,31 @@ export function ExhibitionReviewWritePage() {
           <RequiredLabel required htmlFor="review-content">
             내용
           </RequiredLabel>
-          <div className="px-3 py-2.5 bg-neutral-50 rounded-lg shadow-[0px_0px_8px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300 flex flex-col h-28">
+          <div className="flex min-h-[412px] flex-col justify-between gap-2 border-b border-line px-3 py-2.5">
             <textarea
               id="review-content"
+              ref={textareaRef}
               value={content}
-              maxLength={500}
-              onChange={(e) => setContent(e.target.value)}
+              maxLength={1500}
+              onChange={handleContentChange}
               placeholder="전시에 대해 소개해주세요"
-              className="flex-1 min-h-0 resize-none bg-transparent typo-body-xs-regular text-main placeholder:text-faint leading-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
+              className="min-h-[120px] resize-none overflow-hidden bg-transparent typo-body-xs-regular text-main placeholder:text-faint leading-4 outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 rounded"
             />
             <div className="shrink-0 text-right text-faint typo-body-xs-regular leading-4">
-              {content.length}/500
+              {content.length}/1500
             </div>
           </div>
         </div>
 
         {submitError && <p className="mt-3 typo-body-xs-regular text-red-500">{submitError}</p>}
+
+        <div className="mt-[37px] -ml-[21px] -mr-[19px]">
+          <FNB hasFixedBottomBar />
+        </div>
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 z-40 w-full bg-neutral-50 border-t border-stone-300 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
-        <div className="max-w-105 mx-auto px-5 pt-4 pb-4">
+        <div className="max-w-[402px] mx-auto px-5 pt-4 pb-4">
           <button
             type="button"
             disabled={!canSubmit}
@@ -106,7 +193,10 @@ export function ExhibitionReviewWritePage() {
       </footer>
 
       {isSubmitted && (
-        <AlertModal message="정상적으로 후기가 작성되었습니다." onConfirm={() => navigate(-1)} />
+        <AlertModal
+          message={`정상적으로 게시글이 ${isEditMode ? '수정' : '작성'}되었습니다.`}
+          onConfirm={() => navigate(-1)}
+        />
       )}
     </div>
   );
