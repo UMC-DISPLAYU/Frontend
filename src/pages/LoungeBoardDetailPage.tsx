@@ -2,10 +2,9 @@ import { useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { ErrorView, LoadingView } from '@/components/common';
+import { CommentInputBar, ErrorView, LoadingView } from '@/components/common';
 import {
   LoungeBoardActionBar,
-  LoungeBoardCommentInputBar,
   LoungeBoardCommentItem,
   LoungeBoardHeader,
   LoungeBoardPostDetail,
@@ -179,7 +178,7 @@ export const LoungeBoardDetailPage = () => {
             </div>
           </main>
 
-          <LoungeBoardCommentInputBar
+          <CommentInputBar
             replyTarget={replyTarget}
             onCancelReply={clearReplyTarget}
             onSubmitComment={(content, imageUrls) =>
@@ -191,6 +190,7 @@ export const LoungeBoardDetailPage = () => {
                 { onSuccess: clearReplyTarget },
               )
             }
+            imageUploadDomain="lounge"
           />
         </>
       ) : (
