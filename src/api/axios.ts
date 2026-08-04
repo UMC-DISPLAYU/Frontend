@@ -58,9 +58,14 @@ axiosInstance.interceptors.response.use(
   },
   (error: AxiosError<ApiResponseDto<unknown>>) => {
     const data = error.response?.data;
+    const isRefreshRequest = error.config?.url?.includes('/v1/auth/refresh');
 
-    // 비로그인 상태로 로그인이 필요한 요청을 보내면 로그인 페이지로 이동
-    if (error.response?.status === 401 && window.location.pathname !== '/login') {
+    // 비로그인 상태로 로그인이 필요한 요청을 보내면 로그인 페이지로 이동 (refresh 토큰 요청 제외)
+    if (
+      error.response?.status === 401 &&
+      window.location.pathname !== '/login' &&
+      !isRefreshRequest
+    ) {
       window.location.href = '/login';
     }
 
