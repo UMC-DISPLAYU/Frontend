@@ -16,7 +16,7 @@ export interface CreateLoungePostRequestDto {
 export interface LoungePostBaseDto {
   loungePostId: number;
   title: string;
-  postImageUrl: string | null;
+  postImageUrls: string[];
   content: string;
   category: string;
   postStatus: string;
@@ -37,7 +37,7 @@ export interface LoungePostSummaryDto {
   category: string;
   title: string;
   content: string;
-  postImageUrl: string | null;
+  postImageUrls: string[];
   writer: LoungeWriterDto;
   createdAt: string;
   commentCount: number;
@@ -67,7 +67,7 @@ export type GetLoungePostDetailResponseDto = ApiResponseDto<LoungePostDetailDto>
 
 export interface UpdateLoungePostRequestDto {
   title?: string;
-  postImageUrl?: string | null;
+  postImageUrls?: string[];
   content?: string;
   category?: string;
 }
@@ -88,6 +88,7 @@ export type DeleteLoungePostResponseDto = ApiResponseDto<DeleteLoungePostRespons
 
 export interface CreateLoungeCommentRequestDto {
   content: string;
+  imageUrls?: string[];
 }
 
 export interface LoungeCommentBaseDto {
@@ -96,6 +97,7 @@ export interface LoungeCommentBaseDto {
   content: string;
   commentStatus: string;
   writer: LoungeWriterDto;
+  imageUrls: string[];
 }
 
 export interface CreateLoungeCommentResponseDataDto extends LoungeCommentBaseDto {
@@ -118,19 +120,6 @@ export interface GetLoungeCommentsResponseDataDto extends CursorPageInfoDto {
 }
 
 export type GetLoungeCommentsResponseDto = ApiResponseDto<GetLoungeCommentsResponseDataDto>;
-
-export interface UpdateLoungeCommentRequestDto {
-  content: string;
-}
-
-export interface UpdateLoungeCommentResponseDataDto {
-  loungeCommentId: number;
-  content: string;
-  commentStatus: string;
-  updatedAt: string;
-}
-
-export type UpdateLoungeCommentResponseDto = ApiResponseDto<UpdateLoungeCommentResponseDataDto>;
 
 export interface DeleteLoungeCommentResponseDataDto {
   loungeCommentId: number;
@@ -193,3 +182,18 @@ export interface GetLoungeRepliesResponseDataDto extends CursorPageInfoDto {
 }
 
 export type GetLoungeRepliesResponseDto = ApiResponseDto<GetLoungeRepliesResponseDataDto>;
+
+// ─── 내 활동 (PR #258, 배포됨) ─────────────────────────────────────────────────
+
+export type GetMyLoungePostsResponseDataDto = GetLoungePostsResponseDataDto;
+
+export type GetMyLoungePostsResponseDto = ApiResponseDto<GetMyLoungePostsResponseDataDto>;
+
+export type GetMyLoungeScrapsResponseDataDto = GetLoungePostsResponseDataDto;
+
+export type GetMyLoungeScrapsResponseDto = ApiResponseDto<GetMyLoungeScrapsResponseDataDto>;
+
+// "내 댓글"은 댓글이 아니라 내가 댓글·답글을 남긴 게시글 목록을 게시글 형태로 반환한다 (요청사항 반영, 배포 확인됨)
+export type GetMyLoungeCommentsResponseDataDto = GetLoungePostsResponseDataDto;
+
+export type GetMyLoungeCommentsResponseDto = ApiResponseDto<GetMyLoungeCommentsResponseDataDto>;

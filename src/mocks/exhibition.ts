@@ -173,6 +173,35 @@ export const LOUNGE_POSTS: LoungePost[] = [
 
 const GENERIC_DETAIL_COMMENTS = [
   {
+    id: '0',
+    author: '달의작업실',
+    time: '2026.05.24',
+    content:
+      '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+    likeCount: 12,
+    isLiked: false,
+    replies: [
+      {
+        id: '0-1',
+        author: '달의작업실',
+        time: '2026.05.24',
+        content:
+          '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+        likeCount: 12,
+        isLiked: false,
+      },
+      {
+        id: '0-2',
+        author: '달의작업실',
+        time: '2026.05.24',
+        content:
+          '작품들이 전시 주제와 잘 연결되어 있어서 천천히 보게 되었어요. 특히 색을 다루는 방식이 인상 깊었습니다.',
+        likeCount: 12,
+        isLiked: false,
+      },
+    ],
+  },
+  {
     id: '1',
     author: '미술애호가',
     time: '1시간 전',

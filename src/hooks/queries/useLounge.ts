@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
   CreateLoungePostRequestDto,
@@ -18,10 +18,23 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
-export const useLoungePosts = (params: GetLoungePostsRequestDto = {}) =>
-  useQuery({
+const DEFAULT_LOUNGE_POSTS_SIZE = 20;
+
+export const useLoungePosts = (
+  params: Omit<GetLoungePostsRequestDto, 'cursorId'> = {},
+  options: { enabled?: boolean } = {},
+) =>
+  useInfiniteQuery({
     queryKey: queryKeys.loungePosts.list(params),
-    queryFn: () => getLoungePosts(params),
+    queryFn: ({ pageParam }) =>
+      getLoungePosts({
+        ...params,
+        cursorId: pageParam,
+        size: params.size ?? DEFAULT_LOUNGE_POSTS_SIZE,
+      }),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
+    enabled: options.enabled ?? true,
   });
 
 export const useLoungePostDetail = (postId: number) =>

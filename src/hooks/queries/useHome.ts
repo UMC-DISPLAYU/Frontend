@@ -12,7 +12,7 @@ import { queryKeys } from '@/api/queryKeys';
 
 const graduationDisplaysParams = { size: 3 };
 const closingSoonDisplaysParams = { size: 3 };
-const duPicksParams = { cursor: 1, size: 4 };
+const duPicksParams = { size: 4 };
 const artworkPreviewParams = { type: 'RECOMMEND' as const, page: 0, size: 10 };
 const loungePostsParams = { size: 3 };
 
