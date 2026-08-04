@@ -21,10 +21,11 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
-export const useUserMe = () =>
+export const useUserMe = (options: { enabled?: boolean } = {}) =>
   useQuery({
     queryKey: queryKeys.users.me(),
     queryFn: getUserMe,
+    enabled: options.enabled ?? true,
   });
 
 export const useCheckNickname = () =>
