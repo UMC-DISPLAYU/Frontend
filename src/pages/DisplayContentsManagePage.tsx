@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { MoreHorizontal, Plus, X } from 'lucide-react';
+import { MoreHorizontal, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
@@ -388,7 +388,7 @@ export function DisplayContentsManagePage() {
     <Screen>
       <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
 
-      {/* 제목 + 설명 + 콘텐츠 추가 */}
+      {/* 제목 + 설명 */}
       <div className="flex items-end justify-between gap-6 px-5 pt-3 pb-1">
         <div className="flex flex-col gap-1">
           <p className="typo-body-md-bold text-main">전시 콘텐츠 관리</p>
@@ -396,16 +396,6 @@ export function DisplayContentsManagePage() {
             대표자는 전시 성격에 맞게 콘텐츠를 관리할 수 있어요
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setCreating(true)}
-          className="flex flex-col items-center gap-[3px]"
-        >
-          <span className="grid size-6 place-items-center">
-            <Plus className="size-5 text-main" strokeWidth={2} />
-          </span>
-          <span className="typo-body-xs-bold whitespace-nowrap text-main">콘텐츠 추가</span>
-        </button>
       </div>
 
       {/* 목록 */}
