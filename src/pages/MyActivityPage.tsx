@@ -1,9 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useLocation } from 'react-router-dom';
 
-import { ErrorView } from '@/components/common';
-import { LoungeBoardHeader } from '@/components/lounge-board';
+import type { LoungePostSummaryDto } from '@/api/dto';
+import { ErrorView, LoadingView } from '@/components/common';
+import { LoungeBoardHeader, LoungeBoardPostCard } from '@/components/lounge-board';
+import { toLoungeCategoryKey } from '@/constants/loungeCategories';
+import {
+  useMyLoungeComments,
+  useMyLoungePosts,
+  useMyLoungeScraps,
+} from '@/hooks/queries/useLoungeMyActivity';
+import type { LoungeBoardPost } from '@/types/exhibition';
+import { formatLoungeTime } from '@/utils/date';
 
 type TabKey = 'written' | 'comments' | 'scraps';
 
@@ -22,6 +31,22 @@ function getTabFromState(state: unknown): TabKey {
   return isTabKey(tab) ? tab : 'written';
 }
 
+const toBoardPost = (post: LoungePostSummaryDto): LoungeBoardPost | undefined => {
+  const categoryKey = toLoungeCategoryKey(post.category);
+  if (!categoryKey) return undefined;
+
+  return {
+    id: String(post.loungePostId),
+    category: categoryKey,
+    title: post.title,
+    description: post.content,
+    author: post.writer.nickname,
+    time: formatLoungeTime(post.createdAt),
+    commentCount: post.commentCount,
+    images: post.postImageUrls.length > 0 ? post.postImageUrls : undefined,
+  };
+};
+
 export function MyActivityPage() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabKey>(() => getTabFromState(location.state));
@@ -35,6 +60,38 @@ export function MyActivityPage() {
   }
 
   const activeTabLabel = TABS.find((tab) => tab.key === activeTab)?.label;
+
+  const postsQuery = useMyLoungePosts({ enabled: activeTab === 'written' });
+  const commentsQuery = useMyLoungeComments({ enabled: activeTab === 'comments' });
+  const scrapsQuery = useMyLoungeScraps({ enabled: activeTab === 'scraps' });
+
+  const activeQuery =
+    activeTab === 'written' ? postsQuery : activeTab === 'comments' ? commentsQuery : scrapsQuery;
+  const { data, isPending, isError, hasNextPage, fetchNextPage, isFetchingNextPage } = activeQuery;
+
+  const posts =
+    data?.pages.flatMap((page) => page.posts).flatMap((post) => toBoardPost(post) ?? []) ?? [];
+
+  const triggerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="w-full max-w-105 mx-auto h-dvh bg-page flex flex-col">
@@ -64,8 +121,23 @@ export function MyActivityPage() {
         })}
       </nav>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-10 flex flex-col">
-        <ErrorView fullScreen={false} message={`${activeTabLabel} 항목이 없어요.`} />
+      <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-10 flex flex-col">
+        {isPending ? (
+          <LoadingView fullScreen={false} />
+        ) : isError ? (
+          <ErrorView fullScreen={false} message="불러오지 못했어요. 잠시 후 다시 시도해주세요." />
+        ) : posts.length === 0 && !hasNextPage ? (
+          <ErrorView fullScreen={false} message={`${activeTabLabel} 항목이 없어요.`} />
+        ) : (
+          <div className="flex flex-col gap-3.5">
+            {posts.map((post) => (
+              <LoungeBoardPostCard key={post.id} post={post} />
+            ))}
+
+            <div ref={triggerRef} className="h-4" />
+            {isFetchingNextPage && <LoadingView fullScreen={false} message="불러오는 중..." />}
+          </div>
+        )}
       </main>
     </div>
   );

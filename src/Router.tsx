@@ -80,10 +80,19 @@ export const router = createBrowserRouter([
       { path: 'my-review', element: <MyReviewPage /> },
       { path: 'my-questions', element: <MyQuestionsPage /> },
       { path: 'policy', element: <PolicyPage /> },
-      { path: 'lounge/review/post', element: <ExhibitionReviewWritePage /> },
+      { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },
       { path: 'lounge/my-activity', element: <MyActivityPage /> },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
-      { path: 'lounge/:category/:id', element: <LoungeBoardDetailPage /> },
+      {
+        path: 'lounge/:category/:id',
+        element: <LoungeBoardDetailPage />,
+        handle: { hideNavbar: true },
+      },
+      {
+        path: 'lounge/:category/:id/edit',
+        element: <ExhibitionReviewWritePage />,
+        handle: { hideNavbar: true, hideFooter: true },
+      },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],

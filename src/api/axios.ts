@@ -59,6 +59,11 @@ axiosInstance.interceptors.response.use(
   (error: AxiosError<ApiResponseDto<unknown>>) => {
     const data = error.response?.data;
 
+    // 비로그인 상태로 로그인이 필요한 요청을 보내면 로그인 페이지로 이동
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
+
     if (data?.resultType === 'FAIL') {
       return Promise.reject(
         new ApiError(data.error.message, {

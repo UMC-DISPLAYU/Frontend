@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import { Search } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import type { SearchDisplaysRequestDto } from '@/api/dto';
@@ -8,7 +9,6 @@ import { ErrorView, LoadingView } from '@/components/common';
 import cancelIcon from '../assets/cancel.svg';
 import filterIcon from '../assets/filter.svg';
 import filterSelectedDotIcon from '../assets/filter-selected-dot.svg';
-import searchIcon from '../assets/search.svg';
 import {
   DEFAULT_FILTER_STATE,
   ExhibitionCard,
@@ -78,7 +78,6 @@ export function SearchPage() {
   }
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<FilterTab>('전시분야');
 
   const searchDisplayParams = useMemo(
     () => createSearchDisplayParams(query, filters),
@@ -121,7 +120,7 @@ export function SearchPage() {
             type="text"
             value={query}
           />
-          <img alt="" className="size-5" src={searchIcon} />
+          <Search aria-hidden="true" className="text-hint" size={20} strokeWidth={2} />
         </div>
 
         <div className="-mx-5 flex h-11 items-end gap-5 border-b border-zinc-300 px-5">
@@ -156,10 +155,7 @@ export function SearchPage() {
             <button
               aria-label="필터"
               className="relative flex size-7 shrink-0 items-center justify-center rounded-sm outline outline-1 -outline-offset-1 outline-stone-300"
-              onClick={() => {
-                setModalTab('전시분야');
-                setModalOpen(true);
-              }}
+              onClick={() => setModalOpen(true)}
               type="button"
             >
               <img alt="" className="size-3.5" src={filterIcon} />
@@ -261,12 +257,11 @@ export function SearchPage() {
 
       {modalOpen ? (
         <FilterModal
-          activeTab={modalTab}
           filters={filters}
-          onActiveTabChange={setModalTab}
           onApply={() => setModalOpen(false)}
           onClose={() => setModalOpen(false)}
           onFilterChange={updateFilter}
+          onReset={resetFilters}
           onResetAndApply={() => {
             resetFilters();
             setModalOpen(false);

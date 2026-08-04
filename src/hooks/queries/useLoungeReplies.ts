@@ -4,11 +4,15 @@ import type { CreateLoungeReplyRequestDto, CursorPageRequestDto } from '@/api/dt
 import { createLoungeReply, getLoungeReplies } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
-export const useLoungeReplies = (commentId: number, params: CursorPageRequestDto = {}) =>
+export const useLoungeReplies = (
+  commentId: number,
+  params: CursorPageRequestDto = {},
+  options: { enabled?: boolean } = {},
+) =>
   useQuery({
     queryKey: queryKeys.loungeComments.replies(commentId, params),
     queryFn: () => getLoungeReplies(commentId, params),
-    enabled: Number.isFinite(commentId),
+    enabled: Number.isFinite(commentId) && (options.enabled ?? true),
   });
 
 export const useCreateLoungeReply = () => {

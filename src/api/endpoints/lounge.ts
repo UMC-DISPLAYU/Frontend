@@ -11,6 +11,9 @@ import type {
   GetLoungePostsRequestDto,
   GetLoungePostsResponseDataDto,
   GetLoungeRepliesResponseDataDto,
+  GetMyLoungeCommentsResponseDataDto,
+  GetMyLoungePostsResponseDataDto,
+  GetMyLoungeScrapsResponseDataDto,
   LoungeCommentLikeStatusDto,
   LoungePostDetailDto,
   LoungePostLikeStatusDto,
@@ -104,3 +107,20 @@ export const getLoungeReplies = async (
   params: { cursorId?: number | null; size?: number } = {},
 ): Promise<GetLoungeRepliesResponseDataDto> =>
   apiRequest(`/v1/lounge/comments/${commentId}/replies`, { query: params });
+
+// GET /v1/lounge/me/posts
+export const getMyLoungePosts = async (
+  params: { cursorId?: number | null; size?: number } = {},
+): Promise<GetMyLoungePostsResponseDataDto> => apiRequest('/v1/lounge/me/posts', { query: params });
+
+// GET /v1/lounge/me/scraps
+export const getMyLoungeScraps = async (
+  params: { cursorId?: number | null; size?: number } = {},
+): Promise<GetMyLoungeScrapsResponseDataDto> =>
+  apiRequest('/v1/lounge/me/scraps', { query: params });
+
+// GET /v1/lounge/me/comments (내가 댓글·답글을 남긴 게시글 목록, 게시글 형태로 반환됨)
+export const getMyLoungeComments = async (
+  params: { cursorId?: number | null; size?: number } = {},
+): Promise<GetMyLoungeCommentsResponseDataDto> =>
+  apiRequest('/v1/lounge/me/comments', { query: params });

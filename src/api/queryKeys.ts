@@ -134,6 +134,16 @@ export const queryKeys = {
       [...queryKeys.loungeComments.replyLists(commentId), params ?? {}] as const,
   },
 
+  loungeMe: {
+    all: ['loungeMe'] as const,
+    posts: (params?: CursorPageRequestDto) =>
+      [...queryKeys.loungeMe.all, 'posts', params ?? {}] as const,
+    scraps: (params?: CursorPageRequestDto) =>
+      [...queryKeys.loungeMe.all, 'scraps', params ?? {}] as const,
+    comments: (params?: CursorPageRequestDto) =>
+      [...queryKeys.loungeMe.all, 'comments', params ?? {}] as const,
+  },
+
   archives: {
     all: ['archives'] as const,
 
