@@ -38,6 +38,7 @@ import { SearchPage } from './pages/SearchPage';
 import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
+import { PersonalArtworksRegister } from './pages/PersonalArtworksRegister';
 
 export const router = createBrowserRouter([
   {
@@ -68,6 +69,7 @@ export const router = createBrowserRouter([
       { path: 'setting', element: <SettingPage /> },
       { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
       { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
+      { path: 'personal-artworks/register', element: <PersonalArtworksRegister /> },
       { path: 'answer-questions', element: <AnswerPage /> },
       { path: 'invitation-request', element: <InvitationRequestPage /> },
       { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },

@@ -42,9 +42,6 @@ export function MyPageHeader({
           <button type="button" aria-label="메뉴" onClick={() => navigate('/setting/')}>
             <Menu className="size-5" />
           </button>
-          <button type="button" aria-label="공유" onClick={onShare}>
-            <Share className="size-5" />
-          </button>
         </div>
       </div>
 
@@ -131,7 +128,7 @@ export function MyPageHeader({
             </button>
             <button
               type="button"
-              onClick={() => navigate('/display/register')}
+              onClick={() => navigate('/personal-artworks/register')}
               className="flex-1 h-11 bg-gray-300 rounded-xl flex justify-center items-center"
             >
               <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">

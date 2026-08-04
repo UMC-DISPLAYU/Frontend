@@ -20,6 +20,8 @@ import {
 } from '@/mocks/mypage';
 import { useMyPageStore } from '@/stores/useMyPageStore';
 
+type TabKey = 'exhibition' | 'artwork' | 'artist';
+
 export function MyPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
@@ -105,7 +107,11 @@ export function MyPage() {
         )}
       </section>
 
-      <SettingsSheet onSelect={handleSelectSetting} />
+      <SettingsSheet
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onSelect={handleSelectSetting}
+      />
     </div>
   );
 }
