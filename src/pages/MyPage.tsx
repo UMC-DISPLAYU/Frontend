@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -30,7 +30,9 @@ import {
 import { useMyArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
 import { useMyArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
-import type { ArtistItem, ExhibitionItem, SavedArtworkItem, TabKey } from '@/types/mypage';
+import { useShare } from '@/hooks/useShare';
+import { useMyPageStore } from '@/stores/useMyPageStore';
+import type { ArtistItem, ExhibitionItem, SavedArtworkItem } from '@/types/mypage';
 
 const STATUS_LABEL: Record<string, string> = {
   ONGOING: '전시 중',
@@ -101,11 +103,22 @@ const getImageUrl = (item: ImageLike, fallback = '') =>
 
 export function MyPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isArtistView, setIsArtistView] = useState(false);
+  const { activeTab, isArtistView, isSettingsOpen, setIsSettingsOpen, toggleArtistView } =
+    useMyPageStore();
 
   const { data: userData, isLoading: isUserLoading, error: userError } = useUserMe();
+  const { handleShare: shareUtil } = useShare();
+
+  // 작가 인증 여부에 따라 초기 뷰 설정
+  useEffect(() => {
+    if (userData) {
+      const shouldShowArtistView = userData.isVerified;
+      if (shouldShowArtistView !== isArtistView) {
+        toggleArtistView();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData?.isVerified]); // isArtistView, toggleArtistView는 의존성에서 제외 (무한 루프 방지)
   const archivedExhibitionsQuery = useArchivedExhibitions();
   const archivedArtworksQuery = useArchivedArtworks();
   const archivedArtistsQuery = useArchivedArtists();
@@ -177,17 +190,16 @@ export function MyPage() {
     }));
   }, [archivedArtworksQuery.data]);
 
-  // 가짜 컴포넌트 연결: 백엔드에 내 작품 전체 조회 API가 생기기 전까지 작가 뷰 작품 탭에서만 사용합니다.
   const myArtworks = useMemo<SavedArtworkItem[]>(() => {
-    const items = myArtworksQuery.data?.artworks ?? [];
+    const items = myArtworksQuery.data ?? [];
     return items.map((item) => ({
-      id: String(item.artworkId),
-      artworkId: item.artworkId,
+      id: String(item.personalArtworkId),
+      artworkId: item.personalArtworkId,
       title: item.artworkName,
-      artist: item.artistName,
-      thumbnail: item.artworkImageUrl ?? '',
+      artist: userData?.nickname || userData?.name || '',
+      thumbnail: item.thumbnailUrl ?? '',
     }));
-  }, [myArtworksQuery.data]);
+  }, [myArtworksQuery.data, userData]);
 
   const artists = useMemo<ArtistItem[]>(() => {
     const items = (archivedArtistsQuery.data?.savedArtists ?? []) as ArchivedArtistView[];
@@ -224,10 +236,7 @@ export function MyPage() {
       return;
     }
 
-    setIsArtistView((prev) => !prev);
-    if (isArtistView && activeTab === 'artist') {
-      setActiveTab('exhibition');
-    }
+    toggleArtistView();
   };
 
   const handleSaveExhibitionMemo = (item: ExhibitionItem, value: string) => {
@@ -280,28 +289,21 @@ export function MyPage() {
   const isArtistVerified = userData.isVerified;
   const emptyMessage = `${activeTab === 'exhibition' ? '전시' : activeTab === 'artwork' ? '작품' : '작가'} 데이터가 없습니다.`;
 
+  const handleShare = async () => {
+    const url = `${window.location.origin}/artist/${userData.id}`;
+    await shareUtil(url, `${profile.name} 작가님`);
+  };
+
   return (
-    <div className="w-96 mx-auto h-dvh bg-gray-100 flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <MyPageHeader
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onOpenMenu={() => setIsSettingsOpen(true)}
-        onToggleView={handleToggleView}
         onVerifyArtist={() => {
           navigate('/artist-verification');
         }}
-        onRegister={() => {
-          // TODO: 전시/작품 등록 플로우 연결
-        }}
-        onManage={() => {
-          // TODO: 전시/작품 관리 플로우 연결
-        }}
-        onShare={() => {
-          // TODO: 프로필 공유 동작 연결
-        }}
+        onShare={handleShare}
+        onToggleView={handleToggleView}
         profile={profile}
         isArtistVerified={isArtistVerified}
-        isArtistView={isArtistView}
       />
 
       <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">

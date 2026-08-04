@@ -105,7 +105,7 @@ export function AuthPageHeader({
             onClick={onRegister}
             className="flex-1 h-11 bg-gray-200 rounded-xl flex justify-center items-center gap-1.5"
           >
-            <Bookmark className="size-5" />
+            <Bookmark fill="currentColor" className="size-5 text-bookmark" />
             <span className="text-neutral-900 text-sm font-normal font-['Pretendard'] leading-5">
               작가 저장
             </span>

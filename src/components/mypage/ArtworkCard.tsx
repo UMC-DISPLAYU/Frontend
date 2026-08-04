@@ -39,10 +39,10 @@ export function ArtworkCard({
   };
 
   return (
-    <article className="bg-neutral-50 rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden font-['Pretendard']">
+    <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
       <div className="p-1.5 pb-0">
         <div className="relative rounded-xl overflow-hidden">
-          <div className="w-full h-44 bg-neutral-200">
+          <div className="w-full h-44 bg-box200">
             {item.thumbnail && (
               <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
             )}
@@ -54,39 +54,39 @@ export function ArtworkCard({
               className="absolute bottom-2 right-2"
               onClick={() => onUnarchive?.(item)}
             >
-              <Bookmark color="#D70004" fill="#D70004" className="size-4" />
+              <Bookmark fill="currentColor" className="size-4 text-bookmark" />
             </button>
           )}
         </div>
       </div>
 
       <div className="px-2.5 pt-2 pb-3 flex flex-col gap-1">
-        <div className="text-neutral-900 text-sm font-bold leading-5 truncate">{item.title}</div>
-        <div className="text-neutral-900 text-xs font-normal leading-4 truncate">{item.artist}</div>
+        <div className="typo-body-sm-bold text-main truncate">{item.title}</div>
+        <div className="typo-body-xs-regular text-main truncate">{item.artist}</div>
       </div>
 
       {!isArtistView && (
-        <footer className="min-h-10 px-2.5 py-2 bg-gray-200 flex flex-col justify-center">
+        <footer className="min-h-10 px-2.5 py-2 bg-box200 flex flex-col justify-center">
           {isEditingMemo && (
             <div className="flex flex-col gap-2">
               <textarea
                 value={memoInput}
                 onChange={(event) => setMemoInput(event.target.value)}
                 placeholder="메모"
-                className="min-h-10 w-full resize-none bg-transparent text-xs font-normal leading-4 text-neutral-500 outline-none placeholder:text-neutral-400"
+                className="min-h-10 w-full resize-none bg-transparent typo-body-xs-regular text-hint outline-none placeholder:text-faint"
                 autoFocus
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  className="text-neutral-400 text-xs font-normal leading-4"
+                  className="typo-body-xs-regular text-faint"
                   onClick={handleCancelMemo}
                 >
                   취소
                 </button>
                 <button
                   type="button"
-                  className="text-neutral-900 text-xs font-semibold leading-4"
+                  className="typo-body-xs-semibold text-main"
                   onClick={handleSaveMemo}
                 >
                   저장
@@ -99,14 +99,14 @@ export function ArtworkCard({
               <div className="self-stretch flex items-start gap-2">
                 <button
                   type="button"
-                  className="min-w-0 flex-1 text-left text-neutral-400 text-xs font-normal leading-5 line-clamp-2"
+                  className="min-w-0 flex-1 text-left typo-body-xs-regular text-faint line-clamp-2"
                   onClick={handleStartMemoEdit}
                 >
                   {item.memo}
                 </button>
                 <button
                   type="button"
-                  className="shrink-0 text-neutral-400 text-xs font-normal leading-5 underline"
+                  className="shrink-0 typo-body-xs-regular text-faint underline"
                   onClick={() => onDeleteMemo?.(item)}
                 >
                   삭제
@@ -115,10 +115,10 @@ export function ArtworkCard({
             ) : (
               <button
                 type="button"
-                className="self-stretch flex items-center gap-1.5 text-left text-neutral-400 text-xs font-normal leading-5"
+                className="self-stretch flex items-center gap-1.5 text-left typo-body-xs-regular text-faint"
                 onClick={handleStartMemoEdit}
               >
-                <Pencil color="#99A1AF" className="size-3 shrink-0" />
+                <Pencil className="size-3 shrink-0 text-faint" />
                 <span>메모</span>
               </button>
             ))}
