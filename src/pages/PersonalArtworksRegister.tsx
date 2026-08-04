@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
 import { ImageUploader } from '@/components/common';
 import { ExhibitionHeader } from '@/components/exhibition-register';
 import { RequiredLabel } from '@/components/ui';
-import type { ExhibitionTypeGroup } from '@/constants/exhibition';
-import { EXHIBITION_TYPES } from '@/constants/exhibition';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
@@ -15,6 +13,7 @@ const INPUT_CLASS =
 
 export function PersonalArtworksRegister() {
   const { data: artistProfile } = useMyArtistProfile();
+  const navigate = useNavigate();
 
   const { images, addImages, removeImage } = useImageUpload();
   const {
@@ -23,43 +22,14 @@ export function PersonalArtworksRegister() {
     removeImage: removeProcessImage,
   } = useImageUpload();
   const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
   const [intro, setIntro] = useState('');
-  const [type, setType] = useState<string | null>(null);
-  const [field, setField] = useState<string[]>([]);
   const [year, setYear] = useState('');
   const [material, setMaterial] = useState('');
   const [size, setSize] = useState('');
   const [thoughts, setThoughts] = useState('');
 
-  const [school, setSchool] = useState('');
-  const [department, setDepartment] = useState('');
-  const [organizer, setOrganizer] = useState('');
-
-  // 작가 프로필에서 학교 정보 동기화
-  useEffect(() => {
-    if (artistProfile?.schoolName) {
-      setSchool(artistProfile.schoolName);
-    }
-  }, [artistProfile?.schoolName]);
-
-  const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
-    const found = EXHIBITION_TYPES.find((t) => t.label === type);
-    return found?.group ?? null;
-  }, [type]);
-
-  const navigate = useNavigate();
-
-  const toggleField = (f: string) =>
-    setField((prev) => (prev.includes(f) ? prev.filter((item) => item !== f) : [...prev, f]));
-
-  const isAffiliationValid = () => {
-    if (!selectedGroup) return true;
-    if (selectedGroup === 'institution') {
-      return department.trim() !== '';
-    }
-    return organizer.trim() !== '';
-  };
+  // 작가 프로필 학교 정보를 초기값으로 사용
+  const school = artistProfile?.schoolName || '';
 
   const isFormValid =
     images.length > 0 &&

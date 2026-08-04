@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import type { ArchivedArtistDto, ArchivedArtworkDto, ArchivedExhibitionDto } from '@/api/dto';
 import ExhibitionIcon from '@/assets/exhibit.svg';
-import SchoolIcon from '@/assets/image 3666.svg';
 import FieldIcon from '@/assets/image 3673.svg';
+import SchoolIcon from '@/assets/image 3666.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtistCard,
@@ -15,7 +15,6 @@ import {
   SettingsSheet,
 } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
-import { useShare } from '@/hooks/useShare';
 import {
   useArchivedArtists,
   useArchivedArtworks,
@@ -31,8 +30,9 @@ import {
 import { useMyArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
 import { useMyArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
+import { useShare } from '@/hooks/useShare';
 import { useMyPageStore } from '@/stores/useMyPageStore';
-import type { ArtistItem, ExhibitionItem, SavedArtworkItem, TabKey } from '@/types/mypage';
+import type { ArtistItem, ExhibitionItem, SavedArtworkItem } from '@/types/mypage';
 
 const STATUS_LABEL: Record<string, string> = {
   ONGOING: '전시 중',
@@ -107,6 +107,7 @@ export function MyPage() {
     useMyPageStore();
 
   const { data: userData, isLoading: isUserLoading, error: userError } = useUserMe();
+  const { handleShare: shareUtil } = useShare();
 
   // 작가 인증 여부에 따라 초기 뷰 설정
   useEffect(() => {
@@ -287,8 +288,6 @@ export function MyPage() {
 
   const isArtistVerified = userData.isVerified;
   const emptyMessage = `${activeTab === 'exhibition' ? '전시' : activeTab === 'artwork' ? '작품' : '작가'} 데이터가 없습니다.`;
-
-  const { handleShare: shareUtil } = useShare();
 
   const handleShare = async () => {
     const url = `${window.location.origin}/artist/${userData.id}`;
