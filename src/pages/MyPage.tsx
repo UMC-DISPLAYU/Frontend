@@ -15,7 +15,6 @@ import {
   SettingsSheet,
 } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
-import { useMyPageStore } from '@/stores/useMyPageStore';
 import {
   useArchivedArtists,
   useArchivedArtworks,
@@ -31,6 +30,7 @@ import {
 import { useMyArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
 import { useMyArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
+import { useMyPageStore } from '@/stores/useMyPageStore';
 import type { ArtistItem, ExhibitionItem, SavedArtworkItem, TabKey } from '@/types/mypage';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -115,6 +115,7 @@ export function MyPage() {
         toggleArtistView();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData?.isVerified]); // isArtistView, toggleArtistView는 의존성에서 제외 (무한 루프 방지)
   const archivedExhibitionsQuery = useArchivedExhibitions();
   const archivedArtworksQuery = useArchivedArtworks();
@@ -300,6 +301,7 @@ export function MyPage() {
         alert('링크가 복사되었습니다');
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Share failed:', err);
     }
   };

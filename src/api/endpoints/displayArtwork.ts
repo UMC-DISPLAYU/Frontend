@@ -20,7 +20,6 @@ import type {
   GetArtworkQuestionsResponseDataDto,
   GetDisplayArtworksResponseDataDto,
   GetMyArtworkQuestionsResponseDataDto,
-  GetMyArtworksResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -184,4 +183,3 @@ export const getDisplayArtworks = async (
   apiRequest('/v1/artworks', { query: { displayId } });
 
 // 삭제됨: 개인 작품 API(GET /v1/personal-artworks)로 대체되었습니다.
-// 이 함수는 더 이상 사용되지 않으며, getPersonalArtworks를 사용하세요.

@@ -34,13 +34,13 @@ import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
 import { NotFound } from './pages/NotFound';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { PersonalArtworksRegister } from './pages/PersonalArtworksRegister';
 import { PolicyPage } from './pages/PolicyPage';
 import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
 import { SearchPage } from './pages/SearchPage';
 import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
-import { PersonalArtworksRegister } from './pages/PersonalArtworksRegister';
 
 export const router = createBrowserRouter([
   {

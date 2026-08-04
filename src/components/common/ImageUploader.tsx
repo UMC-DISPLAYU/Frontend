@@ -1,9 +1,9 @@
 import { useCallback, useRef } from 'react';
 
+import { Image, X } from 'lucide-react';
+
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
-
-import { Image, X } from 'lucide-react';
 
 interface ImageUploaderProps {
   images: ImageUploadItem[];

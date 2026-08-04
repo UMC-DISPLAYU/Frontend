@@ -49,6 +49,7 @@ export function useUserProfile() {
             artistProfile = await getMyArtistProfile();
           } catch (err) {
             // 작가 프로필이 없을 수 있음 (인증은 됐지만 프로필 미작성)
+            // eslint-disable-next-line no-console
             console.warn('Artist profile not found:', err);
           }
         }
