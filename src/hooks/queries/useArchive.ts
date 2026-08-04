@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { ArchiveMemoRequestDto } from '@/api/dto';
+import type {
+  ArchiveMemoRequestDto,
+  GetArchivedArtworksResponseDataDto,
+  GetArchivedExhibitionsResponseDataDto,
+} from '@/api/dto';
 import {
   archiveArtist,
   archiveArtwork,
@@ -145,7 +149,21 @@ export const useUpdateArchivedExhibitionMemo = () => {
       archiveDisplayId: number;
       body: ArchiveMemoRequestDto;
     }) => updateArchivedExhibitionMemo(archiveDisplayId, body),
-    onSuccess: () => {
+    onSuccess: (_, { archiveDisplayId, body }) => {
+      queryClient.setQueryData<GetArchivedExhibitionsResponseDataDto>(
+        queryKeys.archives.displays.list(),
+        (previous) =>
+          previous
+            ? {
+                ...previous,
+                savedExhibitions: previous.savedExhibitions.map((exhibition) =>
+                  exhibition.savedExhibitionId === archiveDisplayId
+                    ? { ...exhibition, memo: body.memo }
+                    : exhibition,
+                ),
+              }
+            : previous,
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
     },
   });
@@ -156,7 +174,21 @@ export const useDeleteArchivedExhibitionMemo = () => {
 
   return useMutation({
     mutationFn: (archiveDisplayId: number) => deleteArchivedExhibitionMemo(archiveDisplayId),
-    onSuccess: () => {
+    onSuccess: (_, archiveDisplayId) => {
+      queryClient.setQueryData<GetArchivedExhibitionsResponseDataDto>(
+        queryKeys.archives.displays.list(),
+        (previous) =>
+          previous
+            ? {
+                ...previous,
+                savedExhibitions: previous.savedExhibitions.map((exhibition) =>
+                  exhibition.savedExhibitionId === archiveDisplayId
+                    ? { ...exhibition, memo: null }
+                    : exhibition,
+                ),
+              }
+            : previous,
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
     },
   });
@@ -168,7 +200,21 @@ export const useUpdateArchivedArtworkMemo = () => {
   return useMutation({
     mutationFn: ({ archiveWorkId, body }: { archiveWorkId: number; body: ArchiveMemoRequestDto }) =>
       updateArchivedArtworkMemo(archiveWorkId, body),
-    onSuccess: () => {
+    onSuccess: (_, { archiveWorkId, body }) => {
+      queryClient.setQueryData<GetArchivedArtworksResponseDataDto>(
+        queryKeys.archives.works.list(),
+        (previous) =>
+          previous
+            ? {
+                ...previous,
+                works: previous.works.map((artwork) =>
+                  artwork.archiveWorkId === archiveWorkId
+                    ? { ...artwork, memo: body.memo }
+                    : artwork,
+                ),
+              }
+            : previous,
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
     },
   });
@@ -179,7 +225,19 @@ export const useDeleteArchivedArtworkMemo = () => {
 
   return useMutation({
     mutationFn: (archiveWorkId: number) => deleteArchivedArtworkMemo(archiveWorkId),
-    onSuccess: () => {
+    onSuccess: (_, archiveWorkId) => {
+      queryClient.setQueryData<GetArchivedArtworksResponseDataDto>(
+        queryKeys.archives.works.list(),
+        (previous) =>
+          previous
+            ? {
+                ...previous,
+                works: previous.works.map((artwork) =>
+                  artwork.archiveWorkId === archiveWorkId ? { ...artwork, memo: null } : artwork,
+                ),
+              }
+            : previous,
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
     },
   });

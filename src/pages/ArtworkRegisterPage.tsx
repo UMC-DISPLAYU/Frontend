@@ -1,13 +1,24 @@
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { Check, ChevronLeft, ImagePlus, Info, Plus, UserRound, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Check, ChevronLeft, Info, Plus, UserRound, X } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { BottomButtonBar } from '@/components/common';
+import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
-import { Chip } from '@/components/ui';
-import { EXHIBITION_FIELDS } from '@/constants/exhibition';
+import { ChipGroup } from '@/components/ui';
+import {
+  ARTWORK_FIELD_FALLBACK,
+  ARTWORK_FIELD_MAP,
+  EXHIBITION_FIELDS,
+  MAX_ARTWORK_PROGRESS_IMAGES,
+  MAX_ARTWORK_UPLOAD_IMAGES,
+} from '@/constants/exhibition';
+import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
+import { toProductionYear } from '@/utils/date';
 
 type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'participants';
 type RegisterMode = 'own' | 'proxy';
@@ -30,23 +41,6 @@ const DEFAULT_EXHIBITION = {
 const REPRESENTATIVE = { id: 'owner', name: '최유성', account: 'quietroom' };
 const DIRECT_INPUT_ACCOUNT = '직접입력';
 
-const initialCollaborators = [
-  { id: 'lee', name: '이정우', account: 'quietroom' },
-  { id: 'ko', name: '고상준', account: 'quietroom' },
-];
-
-const proxyAuthorOptions = [
-  { id: 'lee', name: '이정우', account: 'quietroom', verified: true },
-  { id: 'kim-verified', name: '김서윤', account: 'blue.note', verified: true },
-  { id: 'kim-unverified', name: '김서윤', account: 'blue.note', verified: false },
-];
-
-const collaboratorTeamOptions = [
-  { id: 'kim-verified', name: '김서윤', account: 'blue.note', verified: true },
-  { id: 'lee', name: '이정우', account: 'quietroom', verified: true },
-  { id: 'kim-unverified', name: '김서윤', account: 'blue.note', verified: false },
-];
-
 function ArtworkRegisterHeader({ title, onBack }: { title: string; onBack: () => void }) {
   return (
     <header className="flex items-center gap-3 px-5 pt-14.5 pb-3">
@@ -55,35 +49,6 @@ function ArtworkRegisterHeader({ title, onBack }: { title: string; onBack: () =>
       </button>
       <h1 className="typo-body-xl-bold text-main">{title}</h1>
     </header>
-  );
-}
-
-function UploadTile({
-  label,
-  imageUrl,
-  onClick,
-}: {
-  label: string;
-  imageUrl?: string | null;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex size-[100px] flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border border-line bg-card"
-    >
-      {imageUrl ? (
-        <img src={imageUrl} alt={label} className="size-full object-cover" />
-      ) : (
-        <>
-          <span className="grid size-10 place-items-center rounded-full bg-box100">
-            <ImagePlus className="size-[18px] text-line" strokeWidth={1.8} />
-          </span>
-          <span className="typo-body-xs-regular text-main">{label}</span>
-        </>
-      )}
-    </button>
   );
 }
 
@@ -187,17 +152,23 @@ function SheetOption({
   description,
   helper,
   onClick,
+  disabled = false,
 }: {
   title: string;
   description: string;
   helper: React.ReactNode;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-xl border border-line bg-card px-4 py-3.5 text-left shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]"
+      disabled={disabled}
+      className={cn(
+        'w-full rounded-xl border border-line bg-card px-4 py-3.5 text-left shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]',
+        disabled && 'cursor-not-allowed opacity-40',
+      )}
     >
       <p className="typo-body-md-bold text-main">{title}</p>
       <p className="typo-body-xs-regular mt-2.5 text-main">{description}</p>
@@ -224,10 +195,7 @@ function RegisterActionSheet({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
@@ -268,10 +236,7 @@ function DirectCollaboratorSheet({
   const isValid = value.trim().length > 0;
 
   return (
-    <div
-      className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 mx-auto flex w-96 items-end bg-black/40" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
@@ -328,12 +293,15 @@ function AuthorSelectCard({
   verified,
   selected,
   onClick,
+  isMember = true,
 }: {
   name: string;
   account: string;
   verified: boolean;
   selected: boolean;
   onClick: () => void;
+  /* 직접 이름으로 등록된 작가는 계정이 없어 작가로 연결할 수 없습니다. */
+  isMember?: boolean;
 }) {
   return (
     <button
@@ -352,7 +320,11 @@ function AuthorSelectCard({
       <div className="min-w-0 flex-1">
         <p className="typo-body-sm-bold truncate text-main">{name}</p>
         <p className="typo-body-xs-regular mt-2 truncate text-faint">
-          {verified ? account : '작가 인증 후 선택할 수 있어요.'}
+          {verified
+            ? account
+            : isMember
+              ? '작가 인증 후 선택할 수 있어요.'
+              : '직접 입력한 작가는 선택할 수 없어요.'}
         </p>
       </div>
       {verified && (
@@ -498,15 +470,26 @@ export function ArtworkRegisterPage() {
   useHideFooter();
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const displayId = Number(searchParams.get('displayId') ?? 0);
+
+  /* 작품 이미지와 작업과정 이미지를 각각 따로 모아 등록 시 순서대로 업로드합니다. */
+  const artworkUpload = useImageUpload({ domain: 'artwork', maxImages: MAX_ARTWORK_UPLOAD_IMAGES });
+  const processUpload = useImageUpload({
+    domain: 'artwork',
+    maxImages: MAX_ARTWORK_PROGRESS_IMAGES,
+  });
+  const createArtwork = useCreateDisplayArtwork(displayId);
+  const isSubmitting =
+    artworkUpload.isUploading || processUpload.isUploading || createArtwork.isPending;
+
   const [step, setStep] = useState<RegisterStep>('choice');
   const [registerMode, setRegisterMode] = useState<RegisterMode>('own');
   const [activeSheet, setActiveSheet] = useState<RegisterSheet>(null);
-  const [artworkImage, setArtworkImage] = useState<string | null>(null);
-  const [processImage, setProcessImage] = useState<string | null>(null);
   const [selectedProxyAuthorId, setSelectedProxyAuthorId] = useState<string | null>(null);
   const [proxyAuthorName, setProxyAuthorName] = useState('');
   const [proxyAuthorSource, setProxyAuthorSource] = useState<ProxyAuthorSource>('direct');
-  const [directCollaboratorName, setDirectCollaboratorName] = useState('고상준');
+  const [directCollaboratorName, setDirectCollaboratorName] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [field, setField] = useState<string>('회화');
@@ -514,39 +497,99 @@ export function ArtworkRegisterPage() {
   const [medium, setMedium] = useState('아크릴, 캔버스');
   const [size, setSize] = useState('90 × 120 cm');
   const [point, setPoint] = useState('');
-  const [collaborators, setCollaborators] = useState(initialCollaborators);
+  /* userId가 있으면 디유 계정이 연결된 팀원, 없으면 직접 이름을 입력한 작가입니다. */
+  const [collaborators, setCollaborators] = useState<
+    { id: string; name: string; account: string; userId?: number }[]
+  >([]);
   const [qnaAssigneeIds, setQnaAssigneeIds] = useState<string[]>([REPRESENTATIVE.id]);
-  const artworkInputRef = useRef<HTMLInputElement>(null);
-  const processInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedProxyAuthor = proxyAuthorOptions.find(
+  /*
+   * 전시 팀원 목록. 초대를 수락한 팀원만 작가로 지정할 수 있습니다.
+   * 스웨거 TeamMemberResponse에는 작가 인증 여부가 없어 초대 수락 여부로 대신 판정합니다.
+   */
+  const { data: userMe } = useUserMe();
+  const { data: memberList } = useDisplayMembers(displayId);
+  const { data: artworkList } = useDisplayArtworks(displayId);
+
+  const teamAuthorOptions = useMemo(() => {
+    const members = (memberList?.members ?? []).map((member) => ({
+      id: String(member.teamMemberId),
+      userId: member.userId,
+      name: member.displayNickname,
+      account: member.displayNickname,
+      verified: member.accepted !== false,
+      isMember: true,
+    }));
+
+    /*
+     * 직접 이름으로 등록된 작가도 목록에 노출하되 계정이 없어 선택은 막습니다.
+     * 작품 목록 응답(ArtworkItemResponse)에는 artistUserId가 없어
+     * 팀원 닉네임에 없는 작가명을 직접 입력으로 간주합니다.
+     */
+    const registeredNames = new Set(members.map((member) => member.name));
+    const directAuthors = (artworkList?.artworks ?? [])
+      .map((artwork) => artwork.artistName)
+      .filter((name): name is string => Boolean(name))
+      .filter((name) => {
+        if (registeredNames.has(name)) return false;
+        registeredNames.add(name);
+        return true;
+      })
+      .map((name) => ({
+        id: `direct-${name}`,
+        userId: undefined as number | undefined,
+        name,
+        account: DIRECT_INPUT_ACCOUNT,
+        verified: false,
+        isMember: false,
+      }));
+
+    return [...members, ...directAuthors];
+  }, [memberList, artworkList]);
+
+  const selectedProxyAuthor = teamAuthorOptions.find(
     (author) => author.id === selectedProxyAuthorId,
   );
   const displayAuthor = useMemo(() => {
+    /* 본인 등록은 로그인 사용자를, 팀원 선택은 해당 팀원의 계정을 작가로 연결합니다. */
     if (registerMode === 'own') {
-      return { ...REPRESENTATIVE, tag: '작가인증' };
+      return {
+        ...REPRESENTATIVE,
+        name: userMe?.nickname || userMe?.name || REPRESENTATIVE.name,
+        account: userMe?.nickname || REPRESENTATIVE.account,
+        userId: userMe?.id,
+        tag: '작가인증',
+      };
     }
     if (proxyAuthorSource === 'team' && selectedProxyAuthor) {
       return {
         id: selectedProxyAuthor.id,
         name: selectedProxyAuthor.name,
         account: selectedProxyAuthor.account,
+        userId: selectedProxyAuthor.userId,
         tag: '작가인증',
       };
     }
 
+    /* 직접 입력한 작가는 계정이 없어 이름만 전송합니다. */
     return {
       id: 'proxy-author-direct',
       name: proxyAuthorName,
       account: DIRECT_INPUT_ACCOUNT,
+      userId: undefined as number | undefined,
       tag: '대리 등록',
     };
-  }, [proxyAuthorName, proxyAuthorSource, registerMode, selectedProxyAuthor]);
+  }, [proxyAuthorName, proxyAuthorSource, registerMode, selectedProxyAuthor, userMe]);
   const qnaAssigneeOptions = useMemo(() => {
-    const options = [
-      { id: displayAuthor.id, name: displayAuthor.name, account: displayAuthor.account },
+    const options: { id: string; name: string; account: string; userId?: number }[] = [
+      {
+        id: displayAuthor.id,
+        name: displayAuthor.name,
+        account: displayAuthor.account,
+        userId: displayAuthor.userId,
+      },
     ];
-    const addOption = (person: { id: string; name: string; account: string }) => {
+    const addOption = (person: { id: string; name: string; account: string; userId?: number }) => {
       if (options.some((option) => option.id === person.id)) return;
       options.push(person);
     };
@@ -566,13 +609,6 @@ export function ArtworkRegisterPage() {
       : qnaAssigneeOptions[0]?.id
         ? [qnaAssigneeOptions[0].id]
         : [];
-
-  useEffect(() => {
-    return () => {
-      if (artworkImage) URL.revokeObjectURL(artworkImage);
-      if (processImage) URL.revokeObjectURL(processImage);
-    };
-  }, [artworkImage, processImage]);
 
   useEffect(() => {
     if (!activeSheet) return;
@@ -619,19 +655,74 @@ export function ArtworkRegisterPage() {
     navigate(-1);
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, target: 'artwork' | 'process') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const url = URL.createObjectURL(file);
-    if (target === 'artwork') {
-      if (artworkImage) URL.revokeObjectURL(artworkImage);
-      setArtworkImage(url);
-    } else {
-      if (processImage) URL.revokeObjectURL(processImage);
-      setProcessImage(url);
+  /* 이미지를 업로드한 뒤 작품을 등록합니다. */
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
+    setSubmitError(null);
+
+    const files = [...artworkUpload.files, ...processUpload.files];
+
+    let imageUrls: string[] = [];
+    try {
+      imageUrls = await Promise.all(files.map((file) => artworkUpload.uploadImage(file)));
+    } catch {
+      setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
+      return;
     }
-    e.target.value = '';
+
+    const artistUserId = displayAuthor.userId;
+    /*
+     * 스웨거 qaHandlerUserId는 단수라 선택한 담당자 중 첫 번째만 보냅니다.
+     * 계정이 없는 직접 입력 작가는 담당자로 지정할 수 없습니다.
+     */
+    const qaHandlerUserId =
+      selectedQnaAssigneeIds
+        .map((id) => qnaAssigneeOptions.find((person) => person.id === id)?.userId)
+        .find((userId): userId is number => typeof userId === 'number') ?? userMe?.id;
+
+    if (typeof qaHandlerUserId !== 'number') {
+      setSubmitError('Q&A 담당자를 지정할 수 없어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    createArtwork.mutate(
+      {
+        displayId,
+        artworkName: title.trim(),
+        content: description.trim(),
+        type: ARTWORK_FIELD_MAP[field] ?? ARTWORK_FIELD_FALLBACK,
+        productionYear: toProductionYear(year),
+        materialMedia: medium.trim(),
+        size: size.trim(),
+        point: point.trim(),
+        images: imageUrls.map((imageUrl, index) => ({
+          imageUrl,
+          imageType: 'ARTWORK',
+          width: 0,
+          height: 0,
+          sortOrder: index + 1,
+        })),
+        artistName: displayAuthor.name.trim(),
+        artistUserId,
+        /* 계정이 연결된 팀원은 userIds로, 직접 입력한 작가는 rawNames로 보냅니다. */
+        coAuthors: {
+          userIds: collaborators
+            .map((person) => person.userId)
+            .filter((userId): userId is number => typeof userId === 'number'),
+          rawNames: collaborators
+            .filter((person) => typeof person.userId !== 'number')
+            .map((person) => person.name),
+        },
+        qaHandlerUserId,
+      },
+      {
+        onSuccess: () => navigate(`/artworks-manage?displayId=${displayId}`),
+        onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
+      },
+    );
   };
 
   const handleChoiceNext = () => {
@@ -679,7 +770,7 @@ export function ArtworkRegisterPage() {
   };
 
   const openDirectCollaboratorSheet = () => {
-    setDirectCollaboratorName('고상준');
+    setDirectCollaboratorName('');
     setActiveSheet('collaboratorDirect');
   };
 
@@ -703,12 +794,15 @@ export function ArtworkRegisterPage() {
     });
   };
 
-  const addTeamCollaborator = (person: (typeof collaboratorTeamOptions)[number]) => {
+  const addTeamCollaborator = (person: (typeof teamAuthorOptions)[number]) => {
     if (!person.verified) return;
 
     setCollaborators((prev) => {
       if (prev.some((item) => item.id === person.id)) return prev;
-      return [...prev, { id: person.id, name: person.name, account: person.account }];
+      return [
+        ...prev,
+        { id: person.id, name: person.name, account: person.account, userId: person.userId },
+      ];
     });
     setActiveSheet(null);
   };
@@ -819,7 +913,7 @@ export function ArtworkRegisterPage() {
   };
 
   const renderProxyTeamAuthor = () => {
-    const selectedAuthor = proxyAuthorOptions.find((author) => author.id === selectedProxyAuthorId);
+    const selectedAuthor = teamAuthorOptions.find((author) => author.id === selectedProxyAuthorId);
     const canSubmit = Boolean(selectedAuthor?.verified);
 
     return (
@@ -839,16 +933,22 @@ export function ArtworkRegisterPage() {
           </div>
 
           <div className="mt-5 flex flex-col gap-3">
-            {proxyAuthorOptions.map((author) => (
+            {teamAuthorOptions.map((author) => (
               <AuthorSelectCard
                 key={author.id}
                 name={author.name}
                 account={author.account}
                 verified={author.verified}
+                isMember={author.isMember}
                 selected={selectedProxyAuthorId === author.id}
                 onClick={() => setSelectedProxyAuthorId(author.id)}
               />
             ))}
+            {teamAuthorOptions.length === 0 && (
+              <p className="typo-body-xs-regular py-8 text-center text-faint">
+                아직 전시 팀원이 없어요.
+              </p>
+            )}
           </div>
         </main>
         <BottomButtonBar>
@@ -873,10 +973,12 @@ export function ArtworkRegisterPage() {
       <ArtworkRegisterHeader title="전시작 등록" onBack={handleBack} />
       <main className="flex-1 overflow-y-auto px-5 pt-3 pb-8">
         <div className="flex justify-center">
-          <UploadTile
-            label="작품 업로드"
-            imageUrl={artworkImage}
-            onClick={() => artworkInputRef.current?.click()}
+          <ImageUploader
+            images={artworkUpload.images}
+            maxImages={MAX_ARTWORK_UPLOAD_IMAGES}
+            emptyLabel="작품 업로드"
+            onAddImages={artworkUpload.addImages}
+            onRemoveImage={artworkUpload.removeImage}
           />
         </div>
 
@@ -897,16 +999,14 @@ export function ArtworkRegisterPage() {
 
           <section className="flex flex-col gap-3">
             <FieldLabel required>작품분야</FieldLabel>
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="작품분야">
-              {EXHIBITION_FIELDS.map((item) => (
-                <Chip
-                  key={item}
-                  label={item}
-                  selected={field === item}
-                  onClick={() => setField(item)}
-                />
-              ))}
-            </div>
+            <ChipGroup
+              options={EXHIBITION_FIELDS}
+              selected={[field]}
+              onChange={(next) => setField(next[0] ?? field)}
+              maxSelect={1}
+              aria-label="작품분야"
+              className="flex flex-wrap gap-2"
+            />
           </section>
 
           <section className="flex flex-col gap-3">
@@ -926,10 +1026,12 @@ export function ArtworkRegisterPage() {
 
           <section className="flex flex-col gap-3">
             <FieldLabel>작품과정</FieldLabel>
-            <UploadTile
-              label="작업과정 업로드"
-              imageUrl={processImage}
-              onClick={() => processInputRef.current?.click()}
+            <ImageUploader
+              images={processUpload.images}
+              maxImages={MAX_ARTWORK_PROGRESS_IMAGES}
+              emptyLabel="작업과정 업로드"
+              onAddImages={processUpload.addImages}
+              onRemoveImage={processUpload.removeImage}
             />
           </section>
 
@@ -952,20 +1054,6 @@ export function ArtworkRegisterPage() {
           다음
         </button>
       </BottomButtonBar>
-      <input
-        ref={artworkInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleFileChange(e, 'artwork')}
-        className="hidden"
-      />
-      <input
-        ref={processInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleFileChange(e, 'process')}
-        className="hidden"
-      />
     </>
   );
 
@@ -1037,12 +1125,16 @@ export function ArtworkRegisterPage() {
         </section>
       </main>
       <BottomButtonBar>
+        {submitError && (
+          <p className="typo-body-xs-regular mb-2 text-center text-error">{submitError}</p>
+        )}
         <button
           type="button"
-          onClick={() => navigate('/artworks-manage')}
-          className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
         >
-          완료
+          {isSubmitting ? '등록 중' : '완료'}
         </button>
       </BottomButtonBar>
     </>
@@ -1097,7 +1189,12 @@ export function ArtworkRegisterPage() {
         subtitle="작가 인증이 완료된 팀원만 공동 작업자로 추가할 수 있어요."
         bodyClassName="mt-6 flex flex-col gap-2"
       >
-        {collaboratorTeamOptions.map((person) => (
+        {teamAuthorOptions.length === 0 && (
+          <p className="typo-body-xs-regular py-8 text-center text-faint">
+            아직 전시 팀원이 없어요.
+          </p>
+        )}
+        {teamAuthorOptions.map((person) => (
           <CollaboratorTeamCard
             key={person.id}
             name={person.name}

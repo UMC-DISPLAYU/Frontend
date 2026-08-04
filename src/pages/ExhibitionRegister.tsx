@@ -1,27 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import {
-  AffiliationInput,
-  ExhibitionHeader,
-  ImageUploader,
-} from '@/components/exhibition-register';
-import { Chip, RequiredLabel } from '@/components/ui';
+import { ImageUploader } from '@/components/common';
+import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
+import { ChipGroup, RequiredLabel } from '@/components/ui';
 import {
   EXHIBITION_FIELDS,
+  EXHIBITION_TYPE_LABELS,
   EXHIBITION_TYPES,
   type ExhibitionTypeGroup,
+  MAX_POSTER_UPLOAD_IMAGES,
 } from '@/constants/exhibition';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
 
 export function ExhibitionRegister() {
   const { data: artistProfile } = useMyArtistProfile();
+  const imageUpload = useImageUpload({ domain: 'display' });
 
-  const [images, setImages] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [intro, setIntro] = useState('');
@@ -31,6 +31,7 @@ export function ExhibitionRegister() {
   const [school, setSchool] = useState(artistProfile?.schoolName || '');
   const [department, setDepartment] = useState('');
   const [organizer, setOrganizer] = useState('');
+  const schoolValue = school || artistProfile?.schoolName || '';
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
@@ -38,9 +39,6 @@ export function ExhibitionRegister() {
   }, [type]);
 
   const navigate = useNavigate();
-
-  const toggleField = (f: string) =>
-    setField((prev) => (prev.includes(f) ? prev.filter((item) => item !== f) : [...prev, f]));
 
   const isAffiliationValid = () => {
     if (!selectedGroup) return true;
@@ -51,11 +49,31 @@ export function ExhibitionRegister() {
   };
 
   const isFormValid =
-    images.length > 0 &&
+    imageUpload.images.length > 0 &&
     title.trim() !== '' &&
     type !== null &&
     field.length > 0 &&
     isAffiliationValid();
+
+  const goNext = async () => {
+    if (!isFormValid || imageUpload.isUploading) return;
+
+    const imageUrls = await imageUpload.uploadImages();
+
+    navigate('/exhibition/basic', {
+      state: {
+        imageUrls,
+        title,
+        subtitle,
+        intro,
+        type,
+        field,
+        school,
+        department,
+        organizer,
+      },
+    });
+  };
 
   return (
     <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
@@ -64,7 +82,12 @@ export function ExhibitionRegister() {
       <main className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-6 px-5 pt-2 pb-8">
           <div className="flex justify-center">
-            <ImageUploader maxImages={4} onImagesChange={setImages} />
+            <ImageUploader
+              images={imageUpload.images}
+              maxImages={MAX_POSTER_UPLOAD_IMAGES}
+              onAddImages={imageUpload.addImages}
+              onRemoveImage={imageUpload.removeImage}
+            />
           </div>
 
           <div className="flex flex-col gap-3">
@@ -108,30 +131,24 @@ export function ExhibitionRegister() {
 
           <div className="flex flex-col gap-3">
             <RequiredLabel required>전시유형</RequiredLabel>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {EXHIBITION_TYPES.map((t) => (
-                <Chip
-                  key={t.label}
-                  label={t.label}
-                  selected={type === t.label}
-                  onClick={() => setType(t.label)}
-                />
-              ))}
-            </div>
+            <ChipGroup
+              options={EXHIBITION_TYPE_LABELS}
+              selected={type ? [type] : []}
+              onChange={(next) => setType(next[0] ?? null)}
+              maxSelect={1}
+              aria-label="전시유형"
+              className="flex flex-wrap items-center gap-1.5"
+            />
           </div>
 
           <div className="flex flex-col gap-3">
             <RequiredLabel required>전시분야</RequiredLabel>
-            <div className="flex flex-wrap items-center gap-2">
-              {EXHIBITION_FIELDS.map((f) => (
-                <Chip
-                  key={f}
-                  label={f}
-                  selected={field.includes(f)}
-                  onClick={() => toggleField(f)}
-                />
-              ))}
-            </div>
+            <ChipGroup
+              options={EXHIBITION_FIELDS}
+              selected={field}
+              onChange={setField}
+              aria-label="전시분야"
+            />
           </div>
 
           {selectedGroup && (
@@ -139,13 +156,12 @@ export function ExhibitionRegister() {
               <RequiredLabel required>소속 정보</RequiredLabel>
               <AffiliationInput
                 group={selectedGroup}
-                school={school}
+                school={schoolValue}
                 onSchoolChange={setSchool}
                 department={department}
                 onDepartmentChange={setDepartment}
                 organizer={organizer}
                 onOrganizerChange={setOrganizer}
-                readonly
               />
             </div>
           )}
@@ -155,15 +171,11 @@ export function ExhibitionRegister() {
       <footer className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
         <button
           type="button"
-          disabled={!isFormValid}
-          onClick={() =>
-            navigate('/exhibition/basic', {
-              state: { images, title, subtitle, intro, type, field, school, department, organizer },
-            })
-          }
+          disabled={!isFormValid || imageUpload.isUploading}
+          onClick={goNext}
           className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5 disabled:opacity-40"
         >
-          다음
+          {imageUpload.isUploading ? '이미지 업로드 중' : '다음'}
         </button>
       </footer>
     </div>

@@ -1,6 +1,4 @@
 import type {
-  LoginRequestDto,
-  LoginResponseDataDto,
   LogoutRequestDto,
   OAuthAuthorizationUrlResponseDto,
   RefreshTokenResponseDataDto,
@@ -9,10 +7,6 @@ import type {
 } from '@/api/dto';
 
 import { apiRequest } from '../client';
-
-// POST /v1/auth/login
-export const login = async (body: LoginRequestDto): Promise<LoginResponseDataDto> =>
-  apiRequest('/v1/auth/login', { method: 'POST', body });
 
 // GET /auth/kakao/login-url
 export const getKakaoAuthorizationUrl = async (): Promise<OAuthAuthorizationUrlResponseDto> =>

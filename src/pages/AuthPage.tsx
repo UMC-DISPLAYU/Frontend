@@ -1,17 +1,10 @@
 import { useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
-import { ArtworkCard, ExhibitionCard, SettingsSheet } from '@/components/mypage';
-import { AuthPageHeader } from '@/components/mypage/AuthPageHeader';
-import { AUTH_PAGE_PROFILE } from '@/mocks/authPage';
-import { ARTWORKS, EXHIBITIONS } from '@/mocks/mypage';
-import type { TabKey } from '@/types/mypage';
+import { ErrorView } from '@/components/common';
+import { SettingsSheet } from '@/components/mypage';
 
 export function AuthPage() {
-  const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const navigate = useNavigate();
 
   const handleSelectSetting = () => {
     setIsSettingsOpen(false);
@@ -19,36 +12,12 @@ export function AuthPage() {
 
   return (
     <div className="w-96 mx-auto h-dvh bg-gray-100 flex flex-col">
-      <AuthPageHeader
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onOpenMenu={() => setIsSettingsOpen(true)}
-        onRefresh={() => navigate('/my')}
-        onRegister={() => {
-          // TODO: 전시/작품 등록 플로우 연결
-        }}
-        onShare={() => {
-          // TODO: 프로필 공유 동작 연결
-        }}
-        profile={AUTH_PAGE_PROFILE}
-      />
+      <div className="sr-only">
+        <button type="button" onClick={() => setIsSettingsOpen(true)} />
+      </div>
 
       <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
-        {activeTab === 'exhibition' && (
-          <div className="flex flex-col gap-3">
-            {EXHIBITIONS.map((item) => (
-              <ExhibitionCard key={item.id} item={item} isArtistView />
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'artwork' && (
-          <div className="grid grid-cols-2 gap-x-1.5 gap-y-3">
-            {ARTWORKS.map((item) => (
-              <ArtworkCard key={item.id} item={item} />
-            ))}
-          </div>
-        )}
+        <ErrorView fullScreen={false} message="작가 정보를 불러올 데이터가 없습니다." />
       </section>
 
       <SettingsSheet

@@ -7,6 +7,7 @@ interface EmailVerificationFieldProps {
   onSend: () => void;
   sent: boolean;
   error?: string;
+  isSending?: boolean;
 }
 
 export function EmailVerificationField({
@@ -15,6 +16,7 @@ export function EmailVerificationField({
   onSend,
   sent,
   error,
+  isSending = false,
 }: EmailVerificationFieldProps) {
   return (
     <ArtistVerificationField
@@ -37,9 +39,10 @@ export function EmailVerificationField({
         <button
           type="button"
           onClick={onSend}
+          disabled={isSending}
           className="h-10 w-[84px] shrink-0 rounded-xl bg-bt-black typo-body-sm-regular text-white"
         >
-          메일발송
+          {isSending ? '발송중' : '메일발송'}
         </button>
       </div>
     </ArtistVerificationField>

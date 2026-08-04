@@ -1,4 +1,4 @@
-import defaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { LoungeBoardDetail } from '@/types/exhibition';
 
 import { LoungeBoardPostMenu } from './LoungeBoardPostMenu';
@@ -17,7 +17,7 @@ export function LoungeBoardPostDetail({ review, onEdit, onDelete }: Props) {
           <img
             alt=""
             className="size-10 rounded-full shrink-0 border-[1.33px] border-stone-300"
-            src={defaultProfileIcon}
+            src={FALLBACK_PROFILE_IMAGE}
           />
           <div className="flex flex-col items-start gap-1">
             <p className="typo-body-sm-bold text-main">{review.author}</p>

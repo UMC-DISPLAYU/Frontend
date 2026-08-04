@@ -1,15 +1,21 @@
 export type ContentCategoryDto = {
-  id: number;
+  id?: number;
+  categoryId?: number;
   name: string;
   description: string;
-  contentCount: number;
+  contentCount?: number;
+  sortOrder?: number;
   thumbnailUrl?: string;
 };
 
 export type ContentImageDto = {
-  id: number;
+  id?: number;
+  contentId?: number;
   imageUrl: string;
-  order: number;
+  order?: number;
+  width?: number;
+  height?: number;
+  sortOrder?: number;
 };
 
 export type CreateContentCategoryRequestDto = {
@@ -28,6 +34,8 @@ export type UpdateContentCategoryRequestDto = {
 
 export type CreateContentImageRequestDto = {
   imageUrl: string;
+  width?: number;
+  height?: number;
 };
 
 export type CreateContentImageResponseDto = {
@@ -35,10 +43,7 @@ export type CreateContentImageResponseDto = {
 };
 
 export type ReorderContentImagesRequestDto = {
-  contentOrders: {
-    contentId: number;
-    order: number;
-  }[];
+  orderedContentIds: number[];
 };
 
 export type UpdateContentImageRequestDto = {

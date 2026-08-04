@@ -1,23 +1,60 @@
-import { Bookmark } from 'lucide-react';
+import { useState } from 'react';
+
+import { Bookmark, Pencil } from 'lucide-react';
 
 import type { SavedArtworkItem } from '@/types/mypage';
 
 interface ArtworkCardProps {
   item: SavedArtworkItem;
   isArtistView?: boolean;
+  onUnarchive?: (item: SavedArtworkItem) => void;
+  onSaveMemo?: (item: SavedArtworkItem, memo: string) => void;
+  onDeleteMemo?: (item: SavedArtworkItem) => void;
 }
 
-export function ArtworkCard({ item, isArtistView = false }: ArtworkCardProps) {
+export function ArtworkCard({
+  item,
+  isArtistView = false,
+  onUnarchive,
+  onSaveMemo,
+  onDeleteMemo,
+}: ArtworkCardProps) {
+  const hasMemo = Boolean(item.memo);
+  const [isEditingMemo, setIsEditingMemo] = useState(false);
+  const [memoInput, setMemoInput] = useState(item.memo ?? '');
+
+  const handleCancelMemo = () => {
+    setMemoInput(item.memo ?? '');
+    setIsEditingMemo(false);
+  };
+
+  const handleStartMemoEdit = () => {
+    setMemoInput(item.memo ?? '');
+    setIsEditingMemo(true);
+  };
+
+  const handleSaveMemo = () => {
+    onSaveMemo?.(item, memoInput);
+    setIsEditingMemo(false);
+  };
+
   return (
     <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
       <div className="p-1.5 pb-0">
         <div className="relative rounded-xl overflow-hidden">
-          <div className="w-full h-44 bg-box200">
-            <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+          <div className="w-full h-44 bg-neutral-200">
+            {item.thumbnail && (
+              <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+            )}
           </div>
           {!isArtistView && (
-            <button type="button" aria-label="북마크" className="absolute bottom-2 right-2">
-              <Bookmark fill="currentColor" className="size-4 text-heart" />
+            <button
+              type="button"
+              aria-label="북마크 해제"
+              className="absolute bottom-2 right-2"
+              onClick={() => onUnarchive?.(item)}
+            >
+              <Bookmark color="#D70004" fill="#D70004" className="size-4" />
             </button>
           )}
         </div>
@@ -27,6 +64,66 @@ export function ArtworkCard({ item, isArtistView = false }: ArtworkCardProps) {
         <div className="typo-body-sm-bold text-main truncate">{item.title}</div>
         <div className="typo-body-xs-regular text-main truncate">{item.artist}</div>
       </div>
+
+      {!isArtistView && (
+        <footer className="min-h-10 px-2.5 py-2 bg-gray-200 flex flex-col justify-center">
+          {isEditingMemo && (
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={memoInput}
+                onChange={(event) => setMemoInput(event.target.value)}
+                placeholder="메모"
+                className="min-h-10 w-full resize-none bg-transparent text-xs font-normal leading-4 text-neutral-500 outline-none placeholder:text-neutral-400"
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="text-neutral-400 text-xs font-normal leading-4"
+                  onClick={handleCancelMemo}
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  className="text-neutral-900 text-xs font-semibold leading-4"
+                  onClick={handleSaveMemo}
+                >
+                  저장
+                </button>
+              </div>
+            </div>
+          )}
+          {!isEditingMemo &&
+            (hasMemo ? (
+              <div className="self-stretch flex items-start gap-2">
+                <button
+                  type="button"
+                  className="min-w-0 flex-1 text-left text-neutral-400 text-xs font-normal leading-5 line-clamp-2"
+                  onClick={handleStartMemoEdit}
+                >
+                  {item.memo}
+                </button>
+                <button
+                  type="button"
+                  className="shrink-0 text-neutral-400 text-xs font-normal leading-5 underline"
+                  onClick={() => onDeleteMemo?.(item)}
+                >
+                  삭제
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="self-stretch flex items-center gap-1.5 text-left text-neutral-400 text-xs font-normal leading-5"
+                onClick={handleStartMemoEdit}
+              >
+                <Pencil color="#99A1AF" className="size-3 shrink-0" />
+                <span>메모</span>
+              </button>
+            ))}
+        </footer>
+      )}
     </article>
   );
 }

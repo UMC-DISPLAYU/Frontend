@@ -75,8 +75,7 @@ export function CalenderSheet({ open, onClose, value, onConfirm }: CalenderSheet
     const last = end ?? start;
     return ymd(d) >= ymd(start) && ymd(d) <= ymd(last);
   };
-  const isEdge = (d: Date) =>
-    (start && ymd(d) === ymd(start)) || (end && ymd(d) === ymd(end));
+  const isEdge = (d: Date) => (start && ymd(d) === ymd(start)) || (end && ymd(d) === ymd(end));
 
   const confirm = () => {
     if (!start) return;

@@ -3,11 +3,22 @@ import { useEffect, useRef, useState } from 'react';
 import { Heart } from 'lucide-react';
 
 import type { DisplayReviewDto, DisplayReviewReplyDto } from '@/api/dto/display.dto';
-import { useDisplayReviewReplies } from '@/hooks/queries/useDisplayReviewReplies';
-import { useDisplayReviews } from '@/hooks/queries/useDisplayReviews';
+import { BottomCommentBar } from '@/components/common';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import {
+  useCreateDisplayReviewReply,
+  useDeleteDisplayReviewReply,
+  useDisplayReviewReplies,
+  useToggleDisplayReviewReplyLike,
+} from '@/hooks/queries/useDisplayReviewReplies';
+import {
+  useCreateDisplayReview,
+  useDeleteDisplayReview,
+  useDisplayReviews,
+  useToggleDisplayReviewLike,
+} from '@/hooks/queries/useDisplayReviews';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { cn } from '@/utils/cn';
-
-import defaultProfileIcon from '../../assets/DefaultProfileIcon.svg';
 
 // ─── 날짜/시간 포맷 (24시간 미만: N시간, 24시간 이상: YYYY.MM.DD) ─────────────
 
@@ -39,9 +50,13 @@ function formatDateOrTime(iso: string) {
 function ReplyItem({
   reply,
   isMyReply = false,
+  onLike,
+  onDelete,
 }: {
   reply: DisplayReviewReplyDto;
   isMyReply?: boolean;
+  onLike?: () => void;
+  onDelete?: () => void;
 }) {
   return (
     <div className="-mx-5 pl-14 pr-5 py-3 border-b border-line">
@@ -49,11 +64,11 @@ function ReplyItem({
         {/* 아바타 (size-7 = 28px) */}
         <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
           <img
-            src={reply.user?.profileImageUrl || defaultProfileIcon}
+            src={reply.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
             alt={reply.user?.nickname || '사용자'}
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = defaultProfileIcon;
+              (e.currentTarget as HTMLImageElement).src = FALLBACK_PROFILE_IMAGE;
             }}
           />
         </div>
@@ -81,7 +96,7 @@ function ReplyItem({
           <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-faint">
             <div className="flex items-center gap-2">
               {isMyReply && (
-                <button type="button" className="hover:text-main cursor-pointer">
+                <button type="button" onClick={onDelete} className="hover:text-main cursor-pointer">
                   삭제
                 </button>
               )}
@@ -89,6 +104,7 @@ function ReplyItem({
 
             <button
               type="button"
+              onClick={onLike}
               id={`reply-like-${reply.displayReviewReplyId}`}
               className="flex items-center gap-1 hover:text-main text-faint cursor-pointer"
             >
@@ -108,13 +124,32 @@ function ReviewCard({
   displayId,
   review,
   isMyReview = false,
+  myUserId,
+  isReplyTarget = false,
+  showReplies: showRepliesProp,
+  onLike,
+  onDelete,
+  onReply,
 }: {
   displayId: number;
   review: DisplayReviewDto;
   isMyReview?: boolean;
+  myUserId?: number;
+  /* 하단 입력바가 이 후기를 답글 대상으로 잡고 있는지 여부 */
+  isReplyTarget?: boolean;
+  showReplies?: boolean;
+  onLike?: () => void;
+  onDelete?: () => void;
+  onReply?: () => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const images = review.images ?? [];
+
+  const deleteReply = useDeleteDisplayReviewReply(displayId, review.displayReviewId);
+  const likeReply = useToggleDisplayReviewReplyLike(displayId, review.displayReviewId);
+
+  /* 답글을 남긴 직후에는 상위에서 목록을 펼치도록 신호를 보냅니다. */
+  const repliesOpen = showReplies || showRepliesProp === true;
 
   const {
     data: repliesData,
@@ -125,24 +160,31 @@ function ReviewCard({
   } = useDisplayReviewReplies(
     displayId,
     review.displayReviewId,
-    showReplies, // 사용자가 직접 펼쳤을 때만 fetch
+    // 목록이 화면에 보이는 조건과 맞춰야 불필요한 재요청이 생기지 않습니다.
+    repliesOpen || review.replyCount > 0,
   );
 
   const replies = repliesData?.pages.flatMap((p) => p.replies) ?? [];
 
   return (
-    <article className="w-full">
+    <article
+      className={cn(
+        'w-full transition-colors',
+        // 답글 대상으로 선택되면 어떤 후기에 답글을 다는지 드러나게 강조합니다.
+        isReplyTarget && '-mx-5 w-[calc(100%+2.5rem)] bg-box100 px-5',
+      )}
+    >
       {/* 메인 후기 영역 */}
       <div className="-mx-5 px-5 py-3 border-b border-line">
         <div className="w-full inline-flex justify-start items-start gap-1.5">
           {/* 프로필 아바타 (size-7 = 28px) */}
           <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
             <img
-              src={review.user?.profileImageUrl || defaultProfileIcon}
+              src={review.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
               alt={review.user?.nickname || '사용자'}
               className="w-full h-full object-cover"
               onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = defaultProfileIcon;
+                (e.currentTarget as HTMLImageElement).src = FALLBACK_PROFILE_IMAGE;
               }}
             />
           </div>
@@ -167,9 +209,9 @@ function ReviewCard({
                     className="w-full inline-flex justify-start items-start gap-1 overflow-x-auto pb-1"
                     style={{ scrollbarWidth: 'none' }}
                   >
-                    {images.map((img) => (
+                    {images.map((img, index) => (
                       <div
-                        key={img.imageId}
+                        key={img.imageId ?? `${img.imageUrl}-${index}`}
                         className="w-28 h-32 relative rounded-sm overflow-hidden shrink-0 bg-box"
                       >
                         <img
@@ -192,11 +234,7 @@ function ReviewCard({
             {/* 하단 액션: 답글달기 / 댓글 N / 삭제(작성자 전용) + 좋아요 */}
             <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-faint">
               <div className="flex justify-start items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowReplies((prev) => !prev)}
-                  className="hover:text-main cursor-pointer"
-                >
+                <button type="button" onClick={onReply} className="hover:text-main cursor-pointer">
                   답글달기
                 </button>
                 {review.replyCount > 0 && (
@@ -209,7 +247,11 @@ function ReviewCard({
                   </button>
                 )}
                 {isMyReview && (
-                  <button type="button" className="hover:text-main cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={onDelete}
+                    className="hover:text-main cursor-pointer"
+                  >
                     삭제
                   </button>
                 )}
@@ -218,6 +260,7 @@ function ReviewCard({
               <div className="flex justify-start items-center gap-1">
                 <button
                   type="button"
+                  onClick={onLike}
                   id={`review-like-${review.displayReviewId}`}
                   className="flex items-center gap-1 hover:text-main text-hint cursor-pointer"
                 >
@@ -231,7 +274,7 @@ function ReviewCard({
       </div>
 
       {/* 댓글 목록 표시 */}
-      {(showReplies || review.replyCount > 0) && (
+      {(repliesOpen || review.replyCount > 0) && (
         <div>
           {isRepliesPending ? (
             <div className="pl-14 py-2 typo-body-xs-regular text-faint animate-pulse border-b border-line">
@@ -240,7 +283,13 @@ function ReviewCard({
           ) : (
             <>
               {replies.map((reply) => (
-                <ReplyItem key={reply.displayReviewReplyId} reply={reply} />
+                <ReplyItem
+                  key={reply.displayReviewReplyId}
+                  reply={reply}
+                  isMyReply={Boolean(myUserId) && reply.user?.userId === myUserId}
+                  onLike={() => likeReply.mutate(reply.displayReviewReplyId)}
+                  onDelete={() => deleteReply.mutate(reply.displayReviewReplyId)}
+                />
               ))}
               {hasMoreReplies && (
                 <button
@@ -293,6 +342,20 @@ type Props = {
 export function ReviewTab({ className, displayId }: Props) {
   const { data, isPending, isError, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useDisplayReviews(displayId);
+
+  const { data: userMe } = useUserMe();
+  const myUserId = userMe?.id;
+
+  const likeReview = useToggleDisplayReviewLike(displayId);
+  const deleteReview = useDeleteDisplayReview(displayId);
+  const createReview = useCreateDisplayReview(displayId);
+
+  /* 하단 입력바가 답글 모드일 때 대상 후기. null이면 새 후기를 작성합니다. */
+  const [replyTarget, setReplyTarget] = useState<DisplayReviewDto | null>(null);
+  /* 답글을 남긴 후기는 목록을 펼쳐 방금 쓴 답글이 보이게 합니다. */
+  const [openedReplyIds, setOpenedReplyIds] = useState<number[]>([]);
+
+  const createReply = useCreateDisplayReviewReply(displayId, replyTarget?.displayReviewId ?? 0);
 
   const reviews = data?.pages.flatMap((page) => page.reviews) ?? [];
 
@@ -350,7 +413,22 @@ export function ReviewTab({ className, displayId }: Props) {
       {reviews.length > 0 && (
         <div className="flex flex-col">
           {reviews.map((review) => (
-            <ReviewCard key={review.displayReviewId} displayId={displayId} review={review} />
+            <ReviewCard
+              key={review.displayReviewId}
+              displayId={displayId}
+              review={review}
+              isMyReview={Boolean(myUserId) && review.user?.userId === myUserId}
+              myUserId={myUserId}
+              isReplyTarget={replyTarget?.displayReviewId === review.displayReviewId}
+              showReplies={openedReplyIds.includes(review.displayReviewId)}
+              onLike={() => likeReview.mutate(review.displayReviewId)}
+              onDelete={() => deleteReview.mutate(review.displayReviewId)}
+              onReply={() =>
+                setReplyTarget((prev) =>
+                  prev?.displayReviewId === review.displayReviewId ? null : review,
+                )
+              }
+            />
           ))}
 
           {/* 무한 스크롤 감지 트리거 */}
@@ -363,6 +441,38 @@ export function ReviewTab({ className, displayId }: Props) {
           )}
         </div>
       )}
+
+      <BottomCommentBar
+        placeholder="글을 입력하세요."
+        /* 답글에는 이미지를 첨부하지 않습니다. */
+        imageDomain={replyTarget ? undefined : 'display-review'}
+        isSubmitting={replyTarget ? createReply.isPending : createReview.isPending}
+        replyingTo={replyTarget?.user?.nickname}
+        onCancelReply={() => setReplyTarget(null)}
+        onSubmit={({ content, imageUrls }) => {
+          if (replyTarget) {
+            const targetId = replyTarget.displayReviewId;
+
+            createReply.mutate(
+              { content },
+              {
+                onSuccess: () => {
+                  setReplyTarget(null);
+                  setOpenedReplyIds((prev) =>
+                    prev.includes(targetId) ? prev : [...prev, targetId],
+                  );
+                },
+              },
+            );
+            return;
+          }
+
+          createReview.mutate({
+            content,
+            images: imageUrls.map((imageUrl) => ({ imageUrl })),
+          });
+        }}
+      />
     </div>
   );
 }

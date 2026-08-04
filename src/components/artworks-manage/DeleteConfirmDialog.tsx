@@ -5,7 +5,11 @@ interface DeleteConfirmDialogProps {
 
 export function DeleteConfirmDialog({ onCancel, onConfirm }: DeleteConfirmDialogProps) {
   return (
-    <div className="absolute inset-0 grid place-items-center bg-main/35 px-5" role="dialog" aria-modal="true">
+    <div
+      className="absolute inset-0 grid place-items-center bg-main/35 px-5"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="w-80 rounded-[20px] bg-card/50 p-6 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px]">
         <h2 className="typo-body-xl-bold text-center text-main">작품을 삭제할까요?</h2>
         <p className="typo-body-md-regular mt-2 text-center text-sub600">

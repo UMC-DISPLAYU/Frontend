@@ -1,23 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-const SCHOOL_LIST = [
-  '가천대학교',
-  '건국대학교',
-  '경희대학교',
-  '고려대학교',
-  '국민대학교',
-  '단국대학교',
-  '동국대학교',
-  '명지대학교',
-  '서강대학교',
-  '서울대학교',
-  '성균관대학교',
-  '숙명여자대학교',
-  '연세대학교',
-  '중앙대학교',
-  '한양대학교',
-  '홍익대학교',
-] as const;
+import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
 
 interface SchoolSearchInputProps {
   value: string;
@@ -28,12 +11,14 @@ interface SchoolSearchInputProps {
 export function SchoolSearchInput({ value, onChange, readonly = false }: SchoolSearchInputProps) {
   const [schoolQuery, setSchoolQuery] = useState(value);
   const [schoolOpen, setSchoolOpen] = useState(false);
+  const { data: schools = [], isLoading } = useSearchSchools(schoolQuery);
+  const inputValue = readonly || value ? value : schoolQuery;
 
   const filteredSchools = useMemo(() => {
-    const q = schoolQuery.trim();
-    if (!q) return [...SCHOOL_LIST];
-    return SCHOOL_LIST.filter((s) => s.includes(q));
-  }, [schoolQuery]);
+    if (readonly) return [];
+
+    return schools.map((school) => school.name);
+  }, [readonly, schools]);
 
   const selectSchool = useCallback(
     (name: string) => {
@@ -60,7 +45,7 @@ export function SchoolSearchInput({ value, onChange, readonly = false }: SchoolS
         <div className="h-10 px-3 bg-input-soft-bg rounded-2xl outline outline-1 outline-offset-[-1px] outline-line-soft flex items-center gap-2 overflow-hidden">
           <input
             id="school-search"
-            value={readonly ? value : schoolQuery}
+            value={inputValue}
             onChange={(e) => {
               if (!readonly) {
                 setSchoolQuery(e.target.value);
@@ -73,7 +58,9 @@ export function SchoolSearchInput({ value, onChange, readonly = false }: SchoolS
             placeholder="학교명을 검색해주세요"
             readOnly={readonly}
             className={`flex-1 bg-transparent typo-body-sm-regular text-main placeholder:text-hint outline-none rounded ${
-              readonly ? 'cursor-not-allowed' : 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500'
+              readonly
+                ? 'cursor-not-allowed'
+                : 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500'
             }`}
           />
           {!readonly && (
@@ -87,7 +74,9 @@ export function SchoolSearchInput({ value, onChange, readonly = false }: SchoolS
         {!readonly && schoolOpen && (
           <div className="absolute z-50 left-0 right-0 mt-1 bg-card rounded-2xl outline outline-1 outline-offset-[-1px] outline-line shadow-lg overflow-hidden">
             <div className="max-h-56 overflow-y-auto">
-              {filteredSchools.length > 0 ? (
+              {isLoading ? (
+                <div className="px-4 py-3 text-sm text-neutral-400">검색 중입니다</div>
+              ) : filteredSchools.length > 0 ? (
                 filteredSchools.map((s) => (
                   <button
                     key={s}

@@ -3,6 +3,9 @@ import { useRef, useState } from 'react';
 import { ChevronLeft, ImagePlus, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import type { UserProfileDto } from '@/api/dto';
+import { useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
+
 function ProfilePhotoField({
   image,
   onChange,
@@ -45,15 +48,33 @@ function ProfilePhotoField({
 }
 
 export function EditBasicInfoPage() {
+  const { data: userMe } = useUserMe();
+
+  return <EditBasicInfoForm key={userMe?.id ?? 'loading'} userMe={userMe} />;
+}
+
+function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const navigate = useNavigate();
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [activityName, setActivityName] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
+  const [activityName, setActivityName] = useState(userMe?.nickname || userMe?.name || '');
+  const updateUserMe = useUpdateUserMe();
 
   const canSubmit = activityName.trim().length > 0;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
-    navigate(-1);
+
+    updateUserMe.mutate(
+      {
+        nickname: activityName.trim(),
+        ...(profileImage ? { profileImageUrl: profileImage } : {}),
+      },
+      {
+        onSuccess: () => {
+          navigate(-1);
+        },
+      },
+    );
   };
 
   return (
@@ -95,10 +116,10 @@ export function EditBasicInfoPage() {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!canSubmit}
+          disabled={!canSubmit || updateUserMe.isPending}
           className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white transition-opacity disabled:opacity-40"
         >
-          완료
+          {updateUserMe.isPending ? '저장 중' : '완료'}
         </button>
       </footer>
     </div>
