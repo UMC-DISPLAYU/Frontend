@@ -37,10 +37,16 @@ export interface GetArtworkDetailResponseDataDto {
   images: ImageResponseDto[];
   artistName: string;
   artistUserId: number;
+  qaHandlers?: ArtworkQaHandlerDto[];
   exhibitionInfo: ArtworkPreviewExhibitionInfoDto;
   likeCount: number;
   isLiked: boolean;
   isSaved: boolean;
+}
+
+export interface ArtworkQaHandlerDto {
+  userId: number;
+  name: string;
 }
 
 export type GetArtworkDetailResponseDto = ApiResponseDto<GetArtworkDetailResponseDataDto>;
