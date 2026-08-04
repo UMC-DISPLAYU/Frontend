@@ -403,8 +403,8 @@ export function ReviewTab({ className, display, displayId }: Props) {
   const deleteReview = useDeleteDisplayReview(displayId);
   const createReview = useCreateDisplayReview(displayId);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
-  const displayReviewPolicy = useDisplayReviewPolicy();
-  const displayReviewReplyPolicy = useDisplayReviewReplyPolicy();
+  const displayReviewPolicy = useDisplayReviewPolicy(display);
+  const displayReviewReplyPolicy = useDisplayReviewReplyPolicy(display);
 
   /* 하단 입력바가 답글 모드일 때 대상 후기. null이면 새 후기를 작성합니다. */
   const [replyTarget, setReplyTarget] = useState<DisplayReviewDto | null>(null);

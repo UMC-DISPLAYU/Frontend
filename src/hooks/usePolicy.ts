@@ -141,8 +141,7 @@ export function useArtworkPolicy(
 export function useQuestionPolicy(
   question: ArtworkQuestionDto,
   display: DisplayDetailDto,
-  artwork?: GetArtworkDetailResponseDataDto,
-): PolicyPermissionMap<'question'> {
+): PermissionMap<Exclude<PolicyAction<'question'>, `reply.${string}`>> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
@@ -152,22 +151,36 @@ export function useQuestionPolicy(
       delete: () => policies.question.delete(user, question, display),
       like: () => policies.question.like(user),
       unlike: () => policies.question.unlike(user),
+    }),
+    [user, question, display],
+  );
+}
+
+export function useQuestionReplyPolicy(
+  question: ArtworkQuestionDto,
+  display: DisplayDetailDto,
+  artwork?: GetArtworkDetailResponseDataDto,
+  reply?: ArtworkGuestbookReplyDto | null,
+): PermissionMap<Extract<PolicyAction<'question'>, `reply.${string}`>> {
+  const user = useCurrentPolicyUser();
+
+  return useMemo(
+    () => ({
       'reply.view': () => policies.question.reply.view(user, question, display),
       'reply.create': () =>
         artwork ? policies.question.reply.create(user, artwork, display) : false,
       'reply.like': () => policies.question.reply.like(user),
       'reply.unlike': () => policies.question.reply.unlike(user),
-      'reply.delete': (reply?: ArtworkGuestbookReplyDto) =>
-        reply ? policies.question.reply.delete(user, reply, display) : false,
+      'reply.delete': () => (reply ? policies.question.reply.delete(user, reply, display) : false),
     }),
-    [user, question, display, artwork],
+    [user, question, display, artwork, reply],
   );
 }
 
 export function useFeelingPolicy(
   display: DisplayDetailDto,
   feeling?: ArtworkFeelingDto,
-): PolicyPermissionMap<'feeling'> {
+): PermissionMap<Exclude<PolicyAction<'feeling'>, `reply.${string}`>> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
@@ -176,13 +189,25 @@ export function useFeelingPolicy(
       delete: () => (feeling ? policies.feeling.delete(user, feeling, display) : false),
       like: () => policies.feeling.like(user),
       unlike: () => policies.feeling.unlike(user),
+    }),
+    [user, display, feeling],
+  );
+}
+
+export function useFeelingReplyPolicy(
+  display: DisplayDetailDto,
+  reply?: ArtworkGuestbookReplyDto,
+): PermissionMap<Extract<PolicyAction<'feeling'>, `reply.${string}`>> {
+  const user = useCurrentPolicyUser();
+
+  return useMemo(
+    () => ({
       'reply.create': () => policies.feeling.reply.create(user),
       'reply.like': () => policies.feeling.reply.like(user),
       'reply.unlike': () => policies.feeling.reply.unlike(user),
-      'reply.delete': (reply?: ArtworkGuestbookReplyDto) =>
-        reply ? policies.feeling.reply.delete(user, reply, display) : false,
+      'reply.delete': () => (reply ? policies.feeling.reply.delete(user, reply, display) : false),
     }),
-    [user, display, feeling],
+    [user, display, reply],
   );
 }
 
