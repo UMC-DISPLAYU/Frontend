@@ -69,14 +69,15 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   async (error: AxiosError<ApiResponseDto<unknown>>) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as typeof error.config & { _retry?: boolean };
     const data = error.response?.data;
 
-    // 401 에러이고 refresh 요청이 아닌 경우 토큰 갱신 시도
+    // 401 에러이고 refresh 요청이 아니며, 아직 재시도하지 않은 경우 토큰 갱신 시도
     if (
       error.response?.status === 401 &&
       originalRequest &&
-      !originalRequest.url?.includes('/v1/auth/refresh')
+      !originalRequest.url?.includes('/v1/auth/refresh') &&
+      !originalRequest._retry
     ) {
       if (!isRefreshing) {
         isRefreshing = true;
@@ -96,7 +97,8 @@ axiosInstance.interceptors.response.use(
           isRefreshing = false;
           onRefreshed(newAccessToken);
 
-          // 원래 요청 재시도
+          // 원래 요청 재시도 (재시도 플래그 설정)
+          originalRequest._retry = true;
           if (originalRequest.headers) {
             originalRequest.headers.set('Authorization', `Bearer ${newAccessToken}`);
           }
@@ -109,9 +111,10 @@ axiosInstance.interceptors.response.use(
         }
       }
 
-      // 이미 갱신 중이면 대기
+      // 이미 갱신 중이면 대기 (재시도 플래그 설정)
       return new Promise((resolve) => {
         addRefreshSubscriber((token: string) => {
+          originalRequest._retry = true;
           if (originalRequest.headers) {
             originalRequest.headers.set('Authorization', `Bearer ${token}`);
           }

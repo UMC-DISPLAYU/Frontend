@@ -5,6 +5,7 @@ import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { useMyPageStore } from '@/stores/useMyPageStore';
 import type { TabKey } from '@/types/mypage';
+import { cn } from '@/utils/cn';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'exhibition', label: '전시' },
@@ -156,9 +157,10 @@ export function MyPageHeader({
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`relative flex-1 h-11 flex justify-center pt-3 ${
-                isActive ? 'typo-body-sm-bold text-main' : 'typo-body-sm-regular text-faint'
-              }`}
+              className={cn(
+                'relative flex-1 h-11 flex justify-center pt-3',
+                isActive ? 'typo-body-sm-bold text-main' : 'typo-body-sm-regular text-faint',
+              )}
             >
               {tab.label}
               {isActive && (

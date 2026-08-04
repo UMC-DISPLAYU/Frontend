@@ -48,16 +48,21 @@ export function useUserProfile() {
           try {
             artistProfile = await getMyArtistProfile();
           } catch (err) {
-            // 작가 프로필이 없을 수 있음 (인증은 됐지만 프로필 미작성)
-            // eslint-disable-next-line no-console
-            console.warn('Artist profile not found:', err);
+            // 404: 작가 프로필이 아직 생성되지 않음 (정상 케이스)
+            if (err && typeof err === 'object' && 'status' in err && err.status === 404) {
+              // eslint-disable-next-line no-console
+              console.warn('Artist profile not found (404)');
+            } else {
+              // 네트워크 에러나 5xx 에러는 상위로 전파
+              throw err;
+            }
           }
         }
 
         if (!cancelled) {
           const profileData: UserProfileResponse = {
             id: userMe.id,
-            isArtistVerified: userMe.isVerified && !!artistProfile,
+            isArtistVerified: userMe.isVerified,
             profile: {
               name: `${userMe.name} 님`,
               avatar: AvatarImage, // TODO: 실제 프로필 이미지 URL

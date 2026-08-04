@@ -3,13 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ImageUploader } from '@/components/common';
-import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
-import { Chip, RequiredLabel } from '@/components/ui';
-import {
-  EXHIBITION_FIELDS,
-  EXHIBITION_TYPES,
-  type ExhibitionTypeGroup,
-} from '@/constants/exhibition';
+import { ExhibitionHeader } from '@/components/exhibition-register';
+import { RequiredLabel } from '@/components/ui';
+import type { ExhibitionTypeGroup } from '@/constants/exhibition';
+import { EXHIBITION_TYPES } from '@/constants/exhibition';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
@@ -35,9 +32,16 @@ export function PersonalArtworksRegister() {
   const [size, setSize] = useState('');
   const [thoughts, setThoughts] = useState('');
 
-  const [school, setSchool] = useState(artistProfile?.schoolName || '');
+  const [school, setSchool] = useState('');
   const [department, setDepartment] = useState('');
   const [organizer, setOrganizer] = useState('');
+
+  // 작가 프로필에서 학교 정보 동기화
+  useEffect(() => {
+    if (artistProfile?.schoolName) {
+      setSchool(artistProfile.schoolName);
+    }
+  }, [artistProfile?.schoolName]);
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
@@ -60,13 +64,12 @@ export function PersonalArtworksRegister() {
   const isFormValid =
     images.length > 0 &&
     title.trim() !== '' &&
-    type !== null &&
-    field.length > 0 &&
-    isAffiliationValid();
+    year.trim() !== '' &&
+    material.trim() !== '';
 
   return (
     <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
-      <ExhibitionHeader title="작품 등록" backTo="/my" />
+      <ExhibitionHeader title="작품 등록" />
 
       <main className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-6 px-5 pt-2 pb-8">
@@ -81,9 +84,11 @@ export function PersonalArtworksRegister() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <RequiredLabel required>작품명</RequiredLabel>
+            <RequiredLabel required htmlFor="artwork-title">
+              작품명
+            </RequiredLabel>
             <input
-              id="exhibition-title"
+              id="artwork-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="작품명을 입력해주세요"
@@ -92,10 +97,10 @@ export function PersonalArtworksRegister() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <RequiredLabel>작품설명</RequiredLabel>
+            <RequiredLabel htmlFor="artwork-intro">작품설명</RequiredLabel>
             <div className="px-3 py-2.5 border-b border-input-border flex flex-col gap-2">
               <textarea
-                id="exhibition-intro"
+                id="artwork-intro"
                 value={intro}
                 maxLength={1500}
                 onChange={(e) => setIntro(e.target.value)}
@@ -109,9 +114,11 @@ export function PersonalArtworksRegister() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <RequiredLabel required>제작연도</RequiredLabel>
+            <RequiredLabel required htmlFor="artwork-year">
+              제작연도
+            </RequiredLabel>
             <input
-              id="exhibition-subtitle"
+              id="artwork-year"
               value={year}
               maxLength={4}
               onChange={(e) => setYear(e.target.value)}
@@ -121,9 +128,11 @@ export function PersonalArtworksRegister() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <RequiredLabel required>재료/매체</RequiredLabel>
+            <RequiredLabel required htmlFor="artwork-material">
+              재료/매체
+            </RequiredLabel>
             <input
-              id="exhibition-subtitle"
+              id="artwork-material"
               value={material}
               onChange={(e) => setMaterial(e.target.value)}
               placeholder="아크릴, 캔버스"
@@ -132,9 +141,9 @@ export function PersonalArtworksRegister() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <RequiredLabel>규격</RequiredLabel>
+            <RequiredLabel htmlFor="artwork-size">규격</RequiredLabel>
             <input
-              id="exhibition-subtitle"
+              id="artwork-size"
               value={size}
               onChange={(e) => setSize(e.target.value)}
               placeholder="90 × 120 cm"
@@ -154,10 +163,10 @@ export function PersonalArtworksRegister() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <RequiredLabel>감상 포인트</RequiredLabel>
+            <RequiredLabel htmlFor="artwork-thoughts">감상 포인트</RequiredLabel>
             <div className="px-3 py-2.5 border-b border-input-border flex flex-col gap-2">
               <textarea
-                id="exhibition-thoughts"
+                id="artwork-thoughts"
                 value={thoughts}
                 maxLength={1500}
                 onChange={(e) => setThoughts(e.target.value)}
@@ -179,7 +188,7 @@ export function PersonalArtworksRegister() {
           disabled={!isFormValid}
           onClick={() =>
             navigate('/exhibition/basic', {
-              state: { images, title, subtitle, intro, type, field, school, department, organizer },
+              state: { images, title, intro, year, material, size, thoughts },
             })
           }
           className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5 disabled:opacity-40"

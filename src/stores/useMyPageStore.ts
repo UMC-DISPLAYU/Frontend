@@ -20,8 +20,9 @@ export const useMyPageStore = create<MyPageStore>((set) => ({
   toggleArtistView: () =>
     set((state) => {
       const newIsArtistView = !state.isArtistView;
+      // 작가 뷰로 전환할 때, 현재 'artist' 탭이면 'exhibition'으로 변경
       const newActiveTab =
-        newIsArtistView || state.activeTab !== 'artist' ? state.activeTab : 'exhibition';
+        newIsArtistView && state.activeTab === 'artist' ? 'exhibition' : state.activeTab;
 
       return {
         isArtistView: newIsArtistView,

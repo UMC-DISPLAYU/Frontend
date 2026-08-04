@@ -15,6 +15,7 @@ import {
   SettingsSheet,
 } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { useShare } from '@/hooks/useShare';
 import {
   useArchivedArtists,
   useArchivedArtworks,
@@ -287,23 +288,11 @@ export function MyPage() {
   const isArtistVerified = userData.isVerified;
   const emptyMessage = `${activeTab === 'exhibition' ? '전시' : activeTab === 'artwork' ? '작품' : '작가'} 데이터가 없습니다.`;
 
+  const { handleShare: shareUtil } = useShare();
+
   const handleShare = async () => {
     const url = `${window.location.origin}/artist/${userData.id}`;
-
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${profile.name} 작가님`,
-          url,
-        });
-      } else {
-        await navigator.clipboard.writeText(url);
-        alert('링크가 복사되었습니다');
-      }
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Share failed:', err);
-    }
+    await shareUtil(url, `${profile.name} 작가님`);
   };
 
   return (
