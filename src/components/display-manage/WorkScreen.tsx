@@ -3,8 +3,11 @@ import { useState } from 'react';
 import { ChevronRight, Info, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useDisplayContentPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworkCard } from './ArtworkCard';
 import { Header, Screen, SectionTitle } from './Common';
@@ -38,8 +41,25 @@ export function WorkScreen({
   const [selectedContent, setSelectedContent] = useState<{ id: string; title: string } | null>(
     null,
   );
+  const { data: display } = useDisplayDetail(Number(ex.id));
+  const displayContentPolicy = useDisplayContentPolicy(display);
+  const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
+  const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
+  const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
+  const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
+  const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
+  const canReorder = hasPermission(displayContentPolicy, 'reorder');
+  const canManageDisplayContent =
+    canCreateCategory ||
+    canEditCategory ||
+    canDeleteCategory ||
+    canCreateContent ||
+    canDeleteContent ||
+    canReorder;
 
   const handlePhotoCountChange = (_categoryId: number, _count: number) => {
+    void _categoryId;
+    void _count;
     // TODO: 사진 개수 업데이트 로직
     // console.log('Photo count changed:', categoryId, count);
   };
@@ -55,6 +75,9 @@ export function WorkScreen({
         displayId={Number(ex.id)}
         categoryId={Number(selectedContent.id)}
         initialPhotos={initialPhotos}
+        canCreateContent={canCreateContent}
+        canDeleteContent={canDeleteContent}
+        canReorder={canReorder}
         onBack={() => setSelectedContent(null)}
         onPhotoCountChange={(count) => handlePhotoCountChange(Number(selectedContent.id), count)}
       />
@@ -77,12 +100,14 @@ export function WorkScreen({
 
         <div className="flex items-center justify-between mt-6 mb-1">
           <SectionTitle>전시콘텐츠</SectionTitle>
-          <button
-            onClick={() => navigate('/display/contents-manage', { state: { displayId: ex.id } })}
-            className="typo-body-xs-regular flex items-center gap-0.5 border-none bg-transparent text-hint cursor-pointer"
-          >
-            관리하기 <ChevronRight size={13} />
-          </button>
+          {canManageDisplayContent && (
+            <button
+              onClick={() => navigate('/display/contents-manage', { state: { displayId: ex.id } })}
+              className="typo-body-xs-regular flex items-center gap-0.5 border-none bg-transparent text-hint cursor-pointer"
+            >
+              관리하기 <ChevronRight size={13} />
+            </button>
+          )}
         </div>
         <div className="flex flex-col gap-2">
           {work.contents.map((r) => (

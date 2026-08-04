@@ -22,6 +22,9 @@ type InteriorPhotosProps = {
   displayId: number;
   categoryId: number;
   initialPhotos?: Photo[];
+  canCreateContent?: boolean;
+  canDeleteContent?: boolean;
+  canReorder?: boolean;
   onBack?: () => void;
   onPhotoCountChange?: (count: number) => void;
 };
@@ -31,6 +34,9 @@ export function InteriorPhotos({
   displayId,
   categoryId,
   initialPhotos = [],
+  canCreateContent = false,
+  canDeleteContent = false,
+  canReorder = false,
   onBack,
   onPhotoCountChange,
 }: InteriorPhotosProps) {
@@ -46,12 +52,17 @@ export function InteriorPhotos({
   const deleteImage = useDeleteContentImage(scope);
 
   const isBusy = imageUpload.isUploading || createImage.isPending;
+  const canShowActions = canCreateContent || canReorder;
 
   const handleAddPhotos = () => {
+    if (!canCreateContent) return;
+
     fileInputRef.current?.click();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canCreateContent) return;
+
     const files = e.target.files;
     if (!files) return;
 
@@ -94,6 +105,8 @@ export function InteriorPhotos({
   };
 
   const handleRemove = (id: string | number) => {
+    if (!canDeleteContent) return;
+
     const previous = photos;
     const updated = previous.filter((p) => p.id !== id);
 
@@ -110,14 +123,20 @@ export function InteriorPhotos({
   };
 
   const handleReorder = () => {
+    if (!canReorder) return;
+
     setIsReorderMode(!isReorderMode);
   };
 
   const handleDragStart = (index: number) => {
+    if (!isReorderMode || !canReorder) return;
+
     setDraggedIndex(index);
   };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
+    if (!isReorderMode || !canReorder) return;
+
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === index) return;
 
@@ -131,6 +150,8 @@ export function InteriorPhotos({
   };
 
   const handleDragEnd = () => {
+    if (!isReorderMode || !canReorder) return;
+
     setDraggedIndex(null);
     reorderImages.mutate(photos.map((photo) => Number(photo.id)));
   };
@@ -160,33 +181,39 @@ export function InteriorPhotos({
       </div>
 
       {/* 액션 */}
-      <div className="flex gap-2 px-5 pt-4">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileChange}
-          className="hidden"
-        />
-        <button
-          type="button"
-          onClick={handleAddPhotos}
-          disabled={photos.length >= MAX_PHOTOS || isBusy}
-          className="typo-body-sm-bold flex h-11 flex-1 items-center justify-center rounded-xl bg-bt-black text-white disabled:opacity-40"
-        >
-          {isBusy ? '업로드 중' : '사진 추가'}
-        </button>
-        <button
-          type="button"
-          onClick={handleReorder}
-          className={`typo-body-sm-bold h-11 shrink-0 rounded-xl px-4 ${
-            isReorderMode ? 'bg-bt-black text-white' : 'bg-card text-sub700'
-          }`}
-        >
-          {isReorderMode ? '완료' : '순서 편집'}
-        </button>
-      </div>
+      {canShowActions && (
+        <div className="flex gap-2 px-5 pt-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          {canCreateContent && (
+            <button
+              type="button"
+              onClick={handleAddPhotos}
+              disabled={photos.length >= MAX_PHOTOS || isBusy}
+              className="typo-body-sm-bold flex h-11 flex-1 items-center justify-center rounded-xl bg-bt-black text-white disabled:opacity-40"
+            >
+              {isBusy ? '업로드 중' : '사진 추가'}
+            </button>
+          )}
+          {canReorder && (
+            <button
+              type="button"
+              onClick={handleReorder}
+              className={`typo-body-sm-bold h-11 shrink-0 rounded-xl px-4 ${
+                isReorderMode ? 'bg-bt-black text-white' : 'bg-card text-sub700'
+              }`}
+            >
+              {isReorderMode ? '완료' : '순서 편집'}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* 그리드 */}
       {photos.length === 0 ? (
@@ -218,7 +245,7 @@ export function InteriorPhotos({
                 </span>
               )}
 
-              {!isReorderMode && (
+              {!isReorderMode && canDeleteContent && (
                 <button
                   type="button"
                   onClick={() => handleRemove(photo.id)}

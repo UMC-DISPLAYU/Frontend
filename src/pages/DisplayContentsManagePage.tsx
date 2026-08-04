@@ -13,6 +13,8 @@ import {
   useUpdateContentCategory,
 } from '@/hooks/queries/useContentCategories';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Content = {
   id: number;
@@ -50,12 +52,14 @@ function ContentCard({
   onMore,
   onClick,
   dimmed = false,
+  showMore = true,
   moreRef,
 }: {
   content: Content;
   onMore: (e: React.MouseEvent) => void;
   onClick?: () => void;
   dimmed?: boolean;
+  showMore?: boolean;
   moreRef?: React.Ref<HTMLButtonElement>;
 }) {
   return (
@@ -77,43 +81,59 @@ function ContentCard({
           </p>
         </div>
       </div>
-      <button
-        ref={moreRef}
-        type="button"
-        onClick={onMore}
-        aria-label={`${content.title} 더보기`}
-        aria-haspopup="menu"
-        className="self-start p-1"
-      >
-        <MoreHorizontal className="size-5 text-hint" />
-      </button>
+      {showMore && (
+        <button
+          ref={moreRef}
+          type="button"
+          onClick={onMore}
+          aria-label={`${content.title} 더보기`}
+          aria-haspopup="menu"
+          className="self-start p-1"
+        >
+          <MoreHorizontal className="size-5 text-hint" />
+        </button>
+      )}
     </div>
   );
 }
 
 /* 카드 우측 ⋯ 팝오버 */
-function CardPopover({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+function CardPopover({
+  canEdit,
+  canDelete,
+  onEdit,
+  onDelete,
+}: {
+  canEdit: boolean;
+  canDelete: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   return (
     <div
       role="menu"
       className="w-36 overflow-hidden rounded-2xl bg-card shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)] outline outline-1 -outline-offset-1 outline-line"
     >
-      <button
-        type="button"
-        role="menuitem"
-        onClick={onEdit}
-        className="typo-body-xs-regular flex h-10 w-full items-center px-3.5 text-left text-main"
-      >
-        카테고리 수정
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        onClick={onDelete}
-        className="typo-body-xs-regular flex h-10 w-full items-center border-t border-line-soft px-3.5 text-left text-error"
-      >
-        삭제하기
-      </button>
+      {canEdit && (
+        <button
+          type="button"
+          role="menuitem"
+          onClick={onEdit}
+          className="typo-body-xs-regular flex h-10 w-full items-center px-3.5 text-left text-main"
+        >
+          카테고리 수정
+        </button>
+      )}
+      {canDelete && (
+        <button
+          type="button"
+          role="menuitem"
+          onClick={onDelete}
+          className="typo-body-xs-regular flex h-10 w-full items-center border-t border-line-soft px-3.5 text-left text-error"
+        >
+          삭제하기
+        </button>
+      )}
     </div>
   );
 }
@@ -264,6 +284,14 @@ export function DisplayContentsManagePage() {
 
   // API에서 전시 상세 정보 가져오기
   const { data: displayDetail, isLoading, isError } = useDisplayDetail(displayId);
+  const displayContentPolicy = useDisplayContentPolicy(displayDetail);
+  const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
+  const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
+  const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
+  const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
+  const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
+  const canReorder = hasPermission(displayContentPolicy, 'reorder');
+  const canShowCategoryMenu = canEditCategory || canDeleteCategory;
 
   // 콘텐츠 카테고리 생성/수정/삭제
   const createMutation = useCreateContentCategory(displayId);
@@ -324,6 +352,8 @@ export function DisplayContentsManagePage() {
   };
 
   const handlePhotoCountChange = (_categoryId: number, _count: number) => {
+    void _categoryId;
+    void _count;
     // TODO: API 호출로 사진 개수 업데이트
     // console.log('Photo count changed:', categoryId, count);
   };
@@ -378,6 +408,9 @@ export function DisplayContentsManagePage() {
         displayId={displayId}
         categoryId={selectedContent.id}
         initialPhotos={initialPhotos}
+        canCreateContent={canCreateContent}
+        canDeleteContent={canDeleteContent}
+        canReorder={canReorder}
         onBack={() => setSelectedContent(null)}
         onPhotoCountChange={(count) => handlePhotoCountChange(selectedContent.id, count)}
       />
@@ -405,18 +438,21 @@ export function DisplayContentsManagePage() {
             <ContentCard
               content={content}
               dimmed={menuId !== null && menuId !== content.id}
+              showMore={canShowCategoryMenu}
               onClick={() => setSelectedContent(content)}
               onMore={(e) => {
                 e.stopPropagation();
                 setMenuId((prev) => (prev === content.id ? null : content.id));
               }}
             />
-            {menuId === content.id && (
+            {menuId === content.id && canShowCategoryMenu && (
               <div
                 className="absolute top-11 right-4 z-20"
                 onPointerDown={(e) => e.stopPropagation()}
               >
                 <CardPopover
+                  canEdit={canEditCategory}
+                  canDelete={canDeleteCategory}
                   onEdit={() => {
                     setEditing(content);
                     setMenuId(null);
@@ -432,15 +468,17 @@ export function DisplayContentsManagePage() {
         ))}
       </div>
 
-      <BottomBar>
-        <button
-          type="button"
-          onClick={() => setCreating(true)}
-          className="typo-body-sm-bold h-11 w-full rounded-xl bg-bt-black text-white"
-        >
-          {BOTTOM_CTA_LABEL}
-        </button>
-      </BottomBar>
+      {canCreateCategory && (
+        <BottomBar>
+          <button
+            type="button"
+            onClick={() => setCreating(true)}
+            className="typo-body-sm-bold h-11 w-full rounded-xl bg-bt-black text-white"
+          >
+            {BOTTOM_CTA_LABEL}
+          </button>
+        </BottomBar>
+      )}
 
       {editing && (
         <ContentEditSheet content={editing} onClose={() => setEditing(null)} onSave={handleSave} />

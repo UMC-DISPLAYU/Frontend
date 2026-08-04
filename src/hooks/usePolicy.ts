@@ -101,19 +101,21 @@ export function useDisplayCreatePolicy(): PermissionMap<'create'> {
 }
 
 export function useDisplayContentPolicy(
-  display: DisplayDetailDto,
+  display?: DisplayPolicyResource,
 ): PolicyPermissionMap<'displayContent'> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
     () => ({
-      createCategory: () => policies.displayContent.createCategory(user, display),
-      editCategory: () => policies.displayContent.editCategory(user, display),
-      deleteCategory: () => policies.displayContent.deleteCategory(user, display),
-      createContent: () => policies.displayContent.createContent(user, display),
-      editContent: () => policies.displayContent.editContent(user, display),
-      deleteContent: () => policies.displayContent.deleteContent(user, display),
-      reorder: () => policies.displayContent.reorder(user, display),
+      createCategory: () =>
+        display ? policies.displayContent.createCategory(user, display) : false,
+      editCategory: () => (display ? policies.displayContent.editCategory(user, display) : false),
+      deleteCategory: () =>
+        display ? policies.displayContent.deleteCategory(user, display) : false,
+      createContent: () => (display ? policies.displayContent.createContent(user, display) : false),
+      editContent: () => (display ? policies.displayContent.editContent(user, display) : false),
+      deleteContent: () => (display ? policies.displayContent.deleteContent(user, display) : false),
+      reorder: () => (display ? policies.displayContent.reorder(user, display) : false),
     }),
     [user, display],
   );
