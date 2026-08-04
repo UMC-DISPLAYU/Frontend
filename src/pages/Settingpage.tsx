@@ -9,16 +9,18 @@ import { useUserMe } from '@/hooks/queries/useUserProfile';
 
 export function SettingPage() {
   const navigate = useNavigate();
-  const { data: userData } = useUserMe();
+  const { data: userData, isPending } = useUserMe();
   const [showVerificationModal, setShowVerificationModal] = useState(false);
 
-  const isVerified = Boolean(userData?.isVerified);
+  const isVerified = !isPending && Boolean(userData?.isVerified);
 
   const handleBack = () => {
     navigate('/my');
   };
 
   const handleExhibitionRegisterClick = () => {
+    if (isPending) return; // 로딩 중에는 동작하지 않음
+
     if (!isVerified) {
       setShowVerificationModal(true);
       return;
@@ -68,7 +70,7 @@ export function SettingPage() {
           <SettingRow
             title="전시 등록하기"
             desc="전시를 직접 등록하려면 작가 인증이 필요해요."
-            onClick={handleExhibitionRegisterClick}
+            onClick={isPending ? undefined : handleExhibitionRegisterClick}
             last
           />
         </SettingSection>
