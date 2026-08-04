@@ -44,6 +44,10 @@ function canViewPersonalQuestion(
 }
 
 export const policies = {
+  artist: {
+    view: (user: User) => isArtistVerified(user),
+  },
+
   display: {
     create: (user: User) => isArtistVerified(user),
     edit: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),

@@ -63,6 +63,17 @@ export function useDisplayPolicy(display: DisplayDetailDto): PolicyPermissionMap
   );
 }
 
+export function useArtistPolicy(): PolicyPermissionMap<'artist'> {
+  const user = useCurrentPolicyUser();
+
+  return useMemo(
+    () => ({
+      view: () => policies.artist.view(user),
+    }),
+    [user],
+  );
+}
+
 // 전시 생성은 대상 전시가 아직 없으므로 별도 훅으로 제공
 export function useDisplayCreatePolicy(): PermissionMap<'create'> {
   const user = useCurrentPolicyUser();

@@ -42,6 +42,7 @@ const makeUser = (userId = 1) => ({
   provider: 'KAKAO',
   school: '홍익대학교',
   schoolEmail: 'displayu@hongik.ac.kr',
+  isVerified: true,
   isEmailVerified: true,
   createdAt: now(),
   updatedAt: now(),

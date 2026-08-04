@@ -2,10 +2,12 @@ import { ExternalLink, Menu, RefreshCcw, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { useArtistPolicy } from '@/hooks/usePolicy';
 import type { UserProfile } from '@/hooks/useUserProfile';
 import { useMyPageStore } from '@/stores/useMyPageStore';
 import type { TabKey } from '@/types/mypage';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'exhibition', label: '전시' },
@@ -30,6 +32,9 @@ export function MyPageHeader({
 }: MyPageHeaderProps) {
   const navigate = useNavigate();
   const { activeTab, isArtistView, setActiveTab } = useMyPageStore();
+  const artistPolicy = useArtistPolicy();
+  const canViewArtist = hasPermission(artistPolicy, 'view');
+
   return (
     <header className="shrink-0 bg-card">
       <div className="px-5 pt-2 flex justify-between items-center">
@@ -42,9 +47,11 @@ export function MyPageHeader({
           )}
         </div>
         <div className="flex items-center gap-3.5 text-main">
-          <button type="button" aria-label="전환" onClick={onToggleView}>
-            <RefreshCcw className="size-5" />
-          </button>
+          {canViewArtist && (
+            <button type="button" aria-label="전환" onClick={onToggleView}>
+              <RefreshCcw className="size-5" />
+            </button>
+          )}
           <button type="button" aria-label="메뉴" onClick={() => navigate('/setting/')}>
             <Menu className="size-5" />
           </button>
