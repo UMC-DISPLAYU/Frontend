@@ -4,7 +4,10 @@ import { Calendar, Clock, Heart, MapPin } from 'lucide-react';
 
 import type { DisplayDetailDto } from '@/api/dto/display.dto';
 import { useToggleDisplayLike } from '@/hooks/queries/useDisplayDetail';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useArchivePolicy } from '@/hooks/usePolicy';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 import { DisplaySaveButton } from './DisplaySaveButton';
 
@@ -49,6 +52,8 @@ function MetaRow({
 
 export function ExhibitionMeta({ display: ex }: Props) {
   const toggleLike = useToggleDisplayLike();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const archivePolicy = useArchivePolicy();
   /* 좋아요 상태는 토글 응답이 전시 상세 캐시에 반영됩니다. */
   const liked = Boolean((ex as DisplayDetailDto & { isLiked?: boolean }).isLiked);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -64,6 +69,17 @@ export function ExhibitionMeta({ display: ex }: Props) {
 
   const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
   const displayedLikeCount = ex.likeCount ?? 0;
+  const canToggleArchive = hasPermission(archivePolicy, liked ? 'delete' : 'create');
+
+  const handleLikeClick = () => {
+    if (toggleLike.isPending) return;
+    if (!canToggleArchive) {
+      openLoginModal();
+      return;
+    }
+
+    toggleLike.mutate({ displayId: ex.displayId, liked });
+  };
 
   return (
     <section className="px-5 pt-6 pb-4 bg-[#f0f0f3]">
@@ -75,7 +91,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
         <button
           type="button"
           id="meta-heart-btn"
-          onClick={() => toggleLike.mutate({ displayId: ex.displayId, liked })}
+          onClick={handleLikeClick}
           disabled={toggleLike.isPending}
           className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-60"
         >
@@ -111,6 +127,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
           <DisplaySaveButton displayId={ex.displayId} saved={ex.isBookmarked ?? false} />
         </div>
       )}
+      {loginModal}
     </section>
   );
 }

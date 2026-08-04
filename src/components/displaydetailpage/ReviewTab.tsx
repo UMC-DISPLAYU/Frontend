@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Heart } from 'lucide-react';
 
-import type { DisplayReviewDto, DisplayReviewReplyDto } from '@/api/dto/display.dto';
+import type {
+  DisplayDetailDto,
+  DisplayReviewDto,
+  DisplayReviewReplyDto,
+} from '@/api/dto/display.dto';
 import { BottomCommentBar } from '@/components/common';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
@@ -17,8 +21,10 @@ import {
   useDisplayReviews,
   useToggleDisplayReviewLike,
 } from '@/hooks/queries/useDisplayReviews';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useDisplayReviewPolicy, useDisplayReviewReplyPolicy } from '@/hooks/usePolicy';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 // ─── 날짜/시간 포맷 (24시간 미만: N시간, 24시간 이상: YYYY.MM.DD) ─────────────
 
@@ -49,15 +55,37 @@ function formatDateOrTime(iso: string) {
 
 function ReplyItem({
   reply,
-  isMyReply = false,
+  canLike,
+  display,
+  openLoginModal,
   onLike,
   onDelete,
 }: {
   reply: DisplayReviewReplyDto;
-  isMyReply?: boolean;
+  canLike: boolean;
+  display: DisplayDetailDto;
+  openLoginModal: () => void;
   onLike?: () => void;
   onDelete?: () => void;
 }) {
+  const replyPolicy = useDisplayReviewReplyPolicy(display, reply);
+  const canDelete = hasPermission(replyPolicy, 'reply.delete');
+
+  const handleLike = () => {
+    if (!canLike) {
+      openLoginModal();
+      return;
+    }
+
+    onLike?.();
+  };
+
+  const handleDelete = () => {
+    if (!canDelete) return;
+
+    onDelete?.();
+  };
+
   return (
     <div className="-mx-5 pl-14 pr-5 py-3 border-b border-line">
       <div className="w-full inline-flex justify-start items-start gap-1.5">
@@ -95,8 +123,12 @@ function ReplyItem({
 
           <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-faint">
             <div className="flex items-center gap-2">
-              {isMyReply && (
-                <button type="button" onClick={onDelete} className="hover:text-main cursor-pointer">
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="hover:text-main cursor-pointer"
+                >
                   삭제
                 </button>
               )}
@@ -104,7 +136,7 @@ function ReplyItem({
 
             <button
               type="button"
-              onClick={onLike}
+              onClick={handleLike}
               id={`reply-like-${reply.displayReviewReplyId}`}
               className="flex items-center gap-1 hover:text-main text-faint cursor-pointer"
             >
@@ -121,32 +153,53 @@ function ReplyItem({
 // ─── 단일 후기 카드 ──────────────────────────────────────────────────────────
 
 function ReviewCard({
+  display,
   displayId,
   review,
-  isMyReview = false,
-  myUserId,
   isReplyTarget = false,
   showReplies: showRepliesProp,
+  canLike,
+  canLikeReply,
+  openLoginModal,
   onLike,
   onDelete,
   onReply,
 }: {
+  display: DisplayDetailDto;
   displayId: number;
   review: DisplayReviewDto;
-  isMyReview?: boolean;
-  myUserId?: number;
   /* 하단 입력바가 이 후기를 답글 대상으로 잡고 있는지 여부 */
   isReplyTarget?: boolean;
   showReplies?: boolean;
+  canLike: boolean;
+  canLikeReply: boolean;
+  openLoginModal: () => void;
   onLike?: () => void;
   onDelete?: () => void;
   onReply?: () => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const images = review.images ?? [];
+  const reviewPolicy = useDisplayReviewPolicy(display, review);
+  const canDelete = hasPermission(reviewPolicy, 'delete');
 
   const deleteReply = useDeleteDisplayReviewReply(displayId, review.displayReviewId);
   const likeReply = useToggleDisplayReviewReplyLike(displayId, review.displayReviewId);
+
+  const handleLike = () => {
+    if (!canLike) {
+      openLoginModal();
+      return;
+    }
+
+    onLike?.();
+  };
+
+  const handleDelete = () => {
+    if (!canDelete) return;
+
+    onDelete?.();
+  };
 
   /* 답글을 남긴 직후에는 상위에서 목록을 펼치도록 신호를 보냅니다. */
   const repliesOpen = showReplies || showRepliesProp === true;
@@ -246,10 +299,10 @@ function ReviewCard({
                     댓글 {review.replyCount}
                   </button>
                 )}
-                {isMyReview && (
+                {canDelete && (
                   <button
                     type="button"
-                    onClick={onDelete}
+                    onClick={handleDelete}
                     className="hover:text-main cursor-pointer"
                   >
                     삭제
@@ -260,7 +313,7 @@ function ReviewCard({
               <div className="flex justify-start items-center gap-1">
                 <button
                   type="button"
-                  onClick={onLike}
+                  onClick={handleLike}
                   id={`review-like-${review.displayReviewId}`}
                   className="flex items-center gap-1 hover:text-main text-hint cursor-pointer"
                 >
@@ -286,7 +339,9 @@ function ReviewCard({
                 <ReplyItem
                   key={reply.displayReviewReplyId}
                   reply={reply}
-                  isMyReply={Boolean(myUserId) && reply.user?.userId === myUserId}
+                  canLike={canLikeReply}
+                  display={display}
+                  openLoginModal={openLoginModal}
                   onLike={() => likeReply.mutate(reply.displayReviewReplyId)}
                   onDelete={() => deleteReply.mutate(reply.displayReviewReplyId)}
                 />
@@ -336,19 +391,20 @@ function ReviewSkeleton() {
 
 type Props = {
   className?: string;
+  display: DisplayDetailDto;
   displayId: number;
 };
 
-export function ReviewTab({ className, displayId }: Props) {
+export function ReviewTab({ className, display, displayId }: Props) {
   const { data, isPending, isError, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useDisplayReviews(displayId);
-
-  const { data: userMe } = useUserMe();
-  const myUserId = userMe?.id;
 
   const likeReview = useToggleDisplayReviewLike(displayId);
   const deleteReview = useDeleteDisplayReview(displayId);
   const createReview = useCreateDisplayReview(displayId);
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const displayReviewPolicy = useDisplayReviewPolicy();
+  const displayReviewReplyPolicy = useDisplayReviewReplyPolicy();
 
   /* 하단 입력바가 답글 모드일 때 대상 후기. null이면 새 후기를 작성합니다. */
   const [replyTarget, setReplyTarget] = useState<DisplayReviewDto | null>(null);
@@ -415,12 +471,14 @@ export function ReviewTab({ className, displayId }: Props) {
           {reviews.map((review) => (
             <ReviewCard
               key={review.displayReviewId}
+              display={display}
               displayId={displayId}
               review={review}
-              isMyReview={Boolean(myUserId) && review.user?.userId === myUserId}
-              myUserId={myUserId}
               isReplyTarget={replyTarget?.displayReviewId === review.displayReviewId}
               showReplies={openedReplyIds.includes(review.displayReviewId)}
+              canLike={hasPermission(displayReviewPolicy, 'like')}
+              canLikeReply={hasPermission(displayReviewReplyPolicy, 'reply.like')}
+              openLoginModal={openLoginModal}
               onLike={() => likeReview.mutate(review.displayReviewId)}
               onDelete={() => deleteReview.mutate(review.displayReviewId)}
               onReply={() =>
@@ -451,6 +509,11 @@ export function ReviewTab({ className, displayId }: Props) {
         onCancelReply={() => setReplyTarget(null)}
         onSubmit={({ content, imageUrls }) => {
           if (replyTarget) {
+            if (!hasPermission(displayReviewReplyPolicy, 'reply.create')) {
+              openLoginModal();
+              return;
+            }
+
             const targetId = replyTarget.displayReviewId;
 
             createReply.mutate(
@@ -467,12 +530,18 @@ export function ReviewTab({ className, displayId }: Props) {
             return;
           }
 
+          if (!hasPermission(displayReviewPolicy, 'create')) {
+            openLoginModal();
+            return;
+          }
+
           createReview.mutate({
             content,
             images: imageUrls.map((imageUrl) => ({ imageUrl })),
           });
         }}
       />
+      {loginModal}
     </div>
   );
 }

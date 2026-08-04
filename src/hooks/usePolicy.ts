@@ -21,6 +21,7 @@ import type {
 } from '@/api/dto';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { policies } from '@/policies/policies';
+import type { DisplayPolicyResource } from '@/policies/util';
 import { useAuthStore } from '@/stores/authStore';
 import type { PermissionMap, PolicyAction, PolicyPermissionMap, User } from '@/types/policy';
 
@@ -192,7 +193,7 @@ type DisplayReviewReplyPolicy = PermissionMap<
 >;
 
 export function useDisplayReviewPolicy(
-  display: DisplayDetailDto,
+  display?: DisplayPolicyResource,
   review?: DisplayReviewDto,
 ): DisplayReviewPolicy {
   const user = useCurrentPolicyUser();
@@ -202,14 +203,15 @@ export function useDisplayReviewPolicy(
       create: () => policies.displayReview.create(user),
       like: () => policies.displayReview.like(user),
       unlike: () => policies.displayReview.unlike(user),
-      delete: () => (review ? policies.displayReview.delete(user, review, display) : false),
+      delete: () =>
+        review && display ? policies.displayReview.delete(user, review, display) : false,
     }),
     [user, display, review],
   );
 }
 
 export function useDisplayReviewReplyPolicy(
-  display: DisplayDetailDto,
+  display?: DisplayPolicyResource,
   reply?: DisplayReviewReplyDto,
 ): DisplayReviewReplyPolicy {
   const user = useCurrentPolicyUser();
@@ -220,7 +222,7 @@ export function useDisplayReviewReplyPolicy(
       'reply.like': () => policies.displayReview.reply.like(user),
       'reply.unlike': () => policies.displayReview.reply.unlike(user),
       'reply.delete': () =>
-        reply ? policies.displayReview.reply.delete(user, reply, display) : false,
+        reply && display ? policies.displayReview.reply.delete(user, reply, display) : false,
     }),
     [user, display, reply],
   );
