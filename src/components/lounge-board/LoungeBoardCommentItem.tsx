@@ -80,12 +80,18 @@ export function LoungeBoardCommentItem({
       onDelete?.();
       return;
     }
-    deleteReplyMutation.mutate({
-      postId,
-      commentId: Number(targetCommentId),
-      parentCommentId: Number(parentCommentId),
-    });
-    setRemovedReplyIds((prev) => new Set(prev).add(targetCommentId));
+    deleteReplyMutation.mutate(
+      {
+        postId,
+        commentId: Number(targetCommentId),
+        parentCommentId: Number(parentCommentId),
+      },
+      {
+        onSuccess: () => {
+          setRemovedReplyIds((prev) => new Set(prev).add(targetCommentId));
+        },
+      },
+    );
   };
 
   return (
@@ -100,9 +106,9 @@ export function LoungeBoardCommentItem({
       isLikePending={isLikeMutating}
       onDelete={handleDelete}
       onReplyClick={(replyCommentId, author, highlightId) =>
-        onReplyClick?.(Number(replyCommentId), author, highlightId)
+        onReplyClick?.(Number(replyCommentId), author, Number(highlightId))
       }
-      activeReplyId={activeReplyId}
+      activeReplyId={activeReplyId !== null ? String(activeReplyId) : null}
     />
   );
 }

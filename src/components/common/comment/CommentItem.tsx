@@ -17,8 +17,8 @@ type Props = {
   onUnlike?: (commentId: string, parentCommentId?: string) => void;
   isLikePending?: boolean;
   onDelete?: (commentId: string, parentCommentId?: string) => void;
-  onReplyClick?: (commentId: string, author: string, highlightId: number) => void;
-  activeReplyId?: number | null;
+  onReplyClick?: (commentId: string, author: string, highlightId: string) => void;
+  activeReplyId?: string | null;
   className?: string;
 };
 
@@ -39,7 +39,7 @@ export function CommentItem({
   className,
 }: Props) {
   const commentId = comment.id;
-  const isComposingReply = activeReplyId === Number(commentId);
+  const isComposingReply = activeReplyId === commentId;
   const replyCount = comment.replyCount ?? 0;
 
   const handleLikeClick = () => {
@@ -58,8 +58,6 @@ export function CommentItem({
 
   const contentIndent = isReply ? 'pl-[72px]' : 'pl-9';
 
-  // 하이라이트 박스는 프로필 사진 위로 12px, "답글달기" 아래로 12px 더 크게 번지되,
-  // 같은 크기의 음수 margin으로 상쇄해서 실제 레이아웃(다음 요소와의 간격)은 그대로 유지한다.
   const bleedClasses = isComposingReply ? 'pt-3 -mt-3 pb-3 -mb-3' : '';
 
   return (
@@ -81,6 +79,8 @@ export function CommentItem({
               type="button"
               onClick={handleLikeClick}
               disabled={isLikePending}
+              aria-pressed={comment.isLiked}
+              aria-label={`좋아요 ${comment.likeCount}개`}
               className="w-10 h-7 px-2 py-1 rounded-sm flex items-center justify-center gap-0.5 disabled:opacity-50"
             >
               <Heart
@@ -116,7 +116,7 @@ export function CommentItem({
                 onReplyClick?.(
                   isReply ? (parentCommentId ?? commentId) : commentId,
                   comment.author,
-                  Number(commentId),
+                  commentId,
                 )
               }
               className={
