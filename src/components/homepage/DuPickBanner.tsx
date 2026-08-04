@@ -1,12 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { DuPickDto } from '@/api/dto';
+import { ConfirmModal } from '@/components/ui';
+import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
+import { useAuthStore } from '@/stores/authStore';
 import type { DuPickItem } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 type BannerItem = DuPickItem | DuPickDto;
 
@@ -16,7 +20,6 @@ type Props = {
 };
 
 export function DuPickBanner({ items, className }: Props) {
-  const navigate = useNavigate();
   const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: items.length,
   });
@@ -37,14 +40,7 @@ export function DuPickBanner({ items, className }: Props) {
         <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
           <span>DU Pick</span>
         </h2>
-        <button
-          type="button"
-          aria-label="전시 등록 버튼"
-          onClick={() => navigate('/exhibition-register')}
-          className="cursor-pointer border-none bg-transparent p-0"
-        >
-          <Plus strokeWidth={1.5} className="size-8" />
-        </button>
+        <ExhibitionRegisterButton />
       </div>
 
       <div className="px-4">
@@ -114,5 +110,61 @@ export function DuPickBanner({ items, className }: Props) {
         </div>
       </div>
     </section>
+  );
+}
+
+function ExhibitionRegisterButton() {
+  const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const displayCreatePolicy = useDisplayCreatePolicy();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const canCreateDisplay = hasPermission(displayCreatePolicy, 'create');
+
+  const handleClick = () => {
+    if (canCreateDisplay) {
+      navigate('/exhibition-register');
+      return;
+    }
+
+    setIsModalOpen(true);
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="전시 등록 버튼"
+        onClick={handleClick}
+        className="cursor-pointer border-none bg-transparent p-0"
+      >
+        <Plus strokeWidth={1.5} className="size-8" />
+      </button>
+
+      {isModalOpen && !accessToken && (
+        <ConfirmModal
+          message="로그인이 필요한 기능이에요.&#10;로그인하러 갈까요?"
+          confirmLabel="로그인하기"
+          cancelLabel="취소"
+          onConfirm={() => {
+            setIsModalOpen(false);
+            navigate('/login');
+          }}
+          onCancel={() => setIsModalOpen(false)}
+        />
+      )}
+
+      {isModalOpen && accessToken && (
+        <ConfirmModal
+          message="전시를 등록하려면 작가 인증이 필요해요.&#10;학교 메일로 인증할까요?"
+          confirmLabel="학교 메일로 인증하기"
+          cancelLabel="취소"
+          onConfirm={() => {
+            setIsModalOpen(false);
+            navigate('/artist-verification');
+          }}
+          onCancel={() => setIsModalOpen(false)}
+        />
+      )}
+    </>
   );
 }
