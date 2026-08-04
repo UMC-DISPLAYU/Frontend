@@ -13,6 +13,12 @@ export interface ArtworkPolicyResource {
   qaHandlers?: {
     userId: number;
   }[];
+  // 공동 작업자. 작품 상세 조회 응답에 아직 없어 선택 필드로 둡니다.
+  coAuthorUserIds?: number[];
+}
+
+export interface PrivatableResource {
+  isPublic?: boolean;
 }
 
 export interface UserOwnedResource {
@@ -40,20 +46,70 @@ export function isMine(resource: MyResource): boolean {
   return Boolean(resource.isMine ?? resource.isMyPost ?? resource.isMyComment);
 }
 
+export function isArtistVerified(user: User): boolean {
+  return isLoggedIn(user) && user.isArtistVerified;
+}
+
+export function isPrivate(resource: PrivatableResource): boolean {
+  return resource.isPublic === false;
+}
+
 export function isDisplayOwner(user: User, display: DisplayPolicyResource): boolean {
   return isLoggedIn(user) && user.id === display.ownerUserId;
 }
 
+// 전시 소속인. 초대를 수락한 팀원이거나 전시 소유자 본인
+export function isDisplayMember(user: User, display: DisplayPolicyResource): boolean {
+  if (!isLoggedIn(user)) return false;
+
+  return (
+    isDisplayOwner(user, display) ||
+    display.teamMembers.some((member) => member.userId === user.id && member.accepted)
+  );
+}
+
+// 전시 관리(수정/삭제/초대/콘텐츠 편집)는 작가 인증을 받은 소유자만 가능
+export function canManageDisplay(user: User, display: DisplayPolicyResource): boolean {
+  return isArtistVerified(user) && isDisplayOwner(user, display);
+}
+
+// 작품을 만든 사람. 등록자 본인이거나 공동 작업자
+export function isArtworkAuthor(user: User, artwork: ArtworkPolicyResource): boolean {
+  const userId = user.id;
+  if (userId === null) return false;
+
+  return userId === artwork.artistUserId || Boolean(artwork.coAuthorUserIds?.includes(userId));
+}
+
+export function isQaHandler(user: User, artwork: ArtworkPolicyResource): boolean {
+  if (!isLoggedIn(user)) return false;
+
+  return Boolean(artwork.qaHandlers?.some((handler) => handler.userId === user.id));
+}
+
+// 작품 수정/삭제는 작가 인증을 받은 전시 소속인 중 작품을 만든 사람만 가능
 export function canManageArtwork(
   user: User,
   artwork: ArtworkPolicyResource,
   display: DisplayPolicyResource,
 ): boolean {
-  if (!isLoggedIn(user)) return false;
+  return isArtistVerified(user) && isDisplayMember(user, display) && isArtworkAuthor(user, artwork);
+}
 
-  return (
-    user.id === display.ownerUserId ||
-    user.id === artwork.artistUserId ||
-    Boolean(artwork.qaHandlers?.some((handler) => handler.userId === user.id))
-  );
+// 전시 게시물(질문/감상평/리뷰) 삭제는 작성자 본인이거나 작가 인증을 받은 전시 소유자
+export function canModerateDisplayPost(
+  user: User,
+  resource: UserOwnedResource,
+  display: DisplayPolicyResource,
+): boolean {
+  return isOwner(user, resource) || canManageDisplay(user, display);
+}
+
+// 개인 작품 게시물 삭제는 작성자 본인이거나 작가 인증을 받은 작품 주인
+export function canModeratePersonalPost(
+  user: User,
+  resource: UserOwnedResource,
+  personalArtwork: UserOwnedResource,
+): boolean {
+  return isOwner(user, resource) || (isArtistVerified(user) && isOwner(user, personalArtwork));
 }

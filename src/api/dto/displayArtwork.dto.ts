@@ -38,6 +38,8 @@ export interface GetArtworkDetailResponseDataDto {
   artistName: string;
   artistUserId: number;
   qaHandlers?: ArtworkQaHandlerDto[];
+  // 공동 작업자. 서버가 아직 내려주지 않아 없으면 공동 작업자 없음으로 취급합니다.
+  coAuthorUserIds?: number[];
   exhibitionInfo: ArtworkPreviewExhibitionInfoDto;
   likeCount: number;
   isLiked: boolean;

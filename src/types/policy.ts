@@ -4,7 +4,7 @@ export interface User {
 }
 
 export type PolicyActionMap = {
-  display: 'view' | 'edit' | 'inviteMember' | 'delete' | 'forceDeleteArtwork';
+  display: 'create' | 'edit' | 'delete';
   displayContent:
     | 'createCategory'
     | 'editCategory'
@@ -14,22 +14,20 @@ export type PolicyActionMap = {
     | 'deleteContent'
     | 'reorder';
   displayInvitation: 'create' | 'accept' | 'reject';
-  artwork: 'view' | 'create' | 'edit' | 'delete';
+  artwork: 'create' | 'edit' | 'delete';
   question:
     | 'view'
     | 'create'
-    | 'edit'
     | 'delete'
     | 'like'
     | 'unlike'
+    | 'reply.view'
     | 'reply.create'
     | 'reply.like'
     | 'reply.unlike'
     | 'reply.delete';
   feeling:
-    | 'view'
     | 'create'
-    | 'edit'
     | 'delete'
     | 'like'
     | 'unlike'
@@ -38,27 +36,27 @@ export type PolicyActionMap = {
     | 'reply.unlike'
     | 'reply.delete';
   displayReview:
-    | 'view'
     | 'create'
     | 'like'
     | 'unlike'
     | 'delete'
+    | 'reply.create'
+    | 'reply.like'
+    | 'reply.unlike'
+    | 'reply.delete';
+  personalArtwork: 'create' | 'like' | 'unlike' | 'edit' | 'delete';
+  personalQuestion:
+    | 'view'
+    | 'create'
+    | 'delete'
+    | 'like'
+    | 'unlike'
     | 'reply.view'
     | 'reply.create'
     | 'reply.like'
     | 'reply.unlike'
     | 'reply.delete';
-  personalArtwork: 'view' | 'create' | 'like' | 'unlike' | 'edit' | 'delete';
-  personalQuestion:
-    | 'view'
-    | 'create'
-    | 'delete'
-    | 'reply.create'
-    | 'reply.like'
-    | 'reply.unlike'
-    | 'reply.delete';
   personalFeeling:
-    | 'view'
     | 'create'
     | 'like'
     | 'unlike'
@@ -67,10 +65,10 @@ export type PolicyActionMap = {
     | 'reply.like'
     | 'reply.unlike'
     | 'reply.delete';
-  loungePost: 'view' | 'create' | 'edit' | 'delete' | 'like' | 'unlike' | 'scrap' | 'unscrap';
-  loungeComment: 'view' | 'create' | 'delete' | 'like' | 'unlike';
+  loungePost: 'create' | 'edit' | 'delete' | 'like' | 'unlike' | 'scrap';
+  loungeComment: 'create' | 'delete' | 'like' | 'unlike';
   archive: 'create' | 'delete';
-  memo: 'upsert' | 'delete';
+  memo: 'view' | 'upsert' | 'delete';
 };
 
 export type PolicyResource = keyof PolicyActionMap;
