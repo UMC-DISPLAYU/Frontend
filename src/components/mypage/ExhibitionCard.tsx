@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Bookmark, Pencil } from 'lucide-react';
 
 import type { ExhibitionItem } from '@/types/mypage';
@@ -6,16 +8,44 @@ import { statusBadgeClass } from '@/utils/mypage';
 interface ExhibitionCardProps {
   item: ExhibitionItem;
   isArtistView: boolean;
+  onUnarchive?: (item: ExhibitionItem) => void;
+  onSaveMemo?: (item: ExhibitionItem, memo: string) => void;
+  onDeleteMemo?: (item: ExhibitionItem) => void;
 }
 
-export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
+export function ExhibitionCard({
+  item,
+  isArtistView,
+  onUnarchive,
+  onSaveMemo,
+  onDeleteMemo,
+}: ExhibitionCardProps) {
   const hasMemo = Boolean(item.memo);
+  const [isEditingMemo, setIsEditingMemo] = useState(false);
+  const [memoInput, setMemoInput] = useState(item.memo ?? '');
+
+  const handleCancelMemo = () => {
+    setMemoInput(item.memo ?? '');
+    setIsEditingMemo(false);
+  };
+
+  const handleStartMemoEdit = () => {
+    setMemoInput(item.memo ?? '');
+    setIsEditingMemo(true);
+  };
+
+  const handleSaveMemo = () => {
+    onSaveMemo?.(item, memoInput);
+    setIsEditingMemo(false);
+  };
 
   return (
     <article className="shrink-0 w-full bg-neutral-50 rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden font-['Pretendard']">
       <div className="px-4 py-3.5 flex justify-start items-start gap-3">
         <div className="w-24 h-32 rounded-xl overflow-hidden bg-neutral-200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
-          <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+          {item.thumbnail && (
+            <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+          )}
         </div>
 
         <div className="flex-1 flex flex-col justify-start items-start min-w-0">
@@ -26,7 +56,12 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
               </span>
             </div>
             {!isArtistView && (
-              <button type="button" aria-label="북마크" className="shrink-0">
+              <button
+                type="button"
+                aria-label="북마크 해제"
+                className="shrink-0"
+                onClick={() => onUnarchive?.(item)}
+              >
                 <Bookmark fill="#D70004" color="#D70004" className="size-4" />
               </button>
             )}
@@ -52,32 +87,58 @@ export function ExhibitionCard({ item, isArtistView }: ExhibitionCardProps) {
       </div>
 
       {!isArtistView && (
-        <footer className="px-4 py-2 bg-gray-200 flex flex-col justify-start items-start gap-1.5">
-          <div className="self-stretch flex justify-between items-center">
-            <div className="flex justify-start items-center gap-1.5">
-              <Pencil color="#99A1AF" className="size-2.5 shrink-0" />
-              <span className="text-neutral-400 text-xs font-semibold leading-4">내 메모</span>
+        <footer className="min-h-11 px-4 py-2 bg-gray-200 flex flex-col justify-center">
+          {isEditingMemo ? (
+            <div className="self-stretch flex flex-col gap-2">
+              <textarea
+                value={memoInput}
+                onChange={(event) => setMemoInput(event.target.value)}
+                placeholder="메모"
+                className="min-h-10 w-full resize-none bg-transparent text-xs font-normal leading-4 text-neutral-500 outline-none placeholder:text-neutral-400"
+                autoFocus
+              />
+              <div className="self-stretch flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="text-neutral-400 text-xs font-normal leading-4"
+                  onClick={handleCancelMemo}
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  className="text-neutral-900 text-xs font-semibold leading-4"
+                  onClick={handleSaveMemo}
+                >
+                  저장
+                </button>
+              </div>
             </div>
-            {hasMemo && (
+          ) : hasMemo ? (
+            <div className="self-stretch flex items-start gap-2">
               <button
                 type="button"
-                className="text-neutral-400 text-xs font-normal underline leading-4 shrink-0"
+                className="min-w-0 flex-1 text-left text-neutral-400 text-xs font-normal leading-5 line-clamp-2"
+                onClick={handleStartMemoEdit}
               >
-                확인
+                {item.memo}
               </button>
-            )}
-          </div>
-
-          {hasMemo ? (
-            <p className="self-stretch text-neutral-400 text-xs font-normal leading-4 line-clamp-2">
-              {item.memo}
-            </p>
+              <button
+                type="button"
+                className="shrink-0 text-neutral-400 text-xs font-normal leading-5 underline"
+                onClick={() => onDeleteMemo?.(item)}
+              >
+                삭제
+              </button>
+            </div>
           ) : (
             <button
               type="button"
-              className="self-stretch text-left text-stone-300 text-xs font-normal underline leading-4"
+              className="self-stretch flex items-center gap-1.5 text-left text-neutral-400 text-xs font-normal leading-5"
+              onClick={handleStartMemoEdit}
             >
-              메모 작성하기
+              <Pencil color="#99A1AF" className="size-3 shrink-0" />
+              <span>메모</span>
             </button>
           )}
         </footer>

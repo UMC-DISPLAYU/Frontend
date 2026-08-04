@@ -1,13 +1,12 @@
 import { useState } from 'react';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { updateDisplay } from '@/api/endpoints/display';
-import { queryKeys } from '@/api/queryKeys';
 import { BottomButtonBar, PageHeader } from '@/components/common';
 import { RadioOption } from '@/components/visibility-settings';
 import { formatStartDate, VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
+// 가짜 쿼리 훅 사용: 백엔드에 공개 시점 설정 API가 생기면 실제 훅으로 교체해야 합니다.
+import { useOpenTime, useUpdateOpenTime } from '@/hooks/queries/useOpenTime';
 
 interface VisibilityState {
   displayId?: number;
@@ -59,36 +58,36 @@ function VisibilitySection({ title, value, onChange, startDateLabel }: Visibilit
 
 export function VisibilitySettings() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { state } = useLocation() as { state: VisibilityState | null };
 
   const startDateLabel = formatStartDate(state?.startDate);
 
-  const [artworkVisibility, setArtworkVisibility] = useState<VisibilityType>(
-    state?.artworkVisibility ?? 'startDate',
-  );
-  const [contentVisibility, setContentVisibility] = useState<VisibilityType>(
-    state?.contentVisibility ?? 'startDate',
-  );
+  // 가짜 API 연동: 저장된 공개 시점을 불러와 라디오 초기값으로 사용합니다.
+  const { data: openTime } = useOpenTime(state?.displayId);
 
-  const updateMutation = useMutation({
-    mutationFn: (body: {
-      artworkVisibility: VisibilityType;
-      contentVisibility: VisibilityType;
-    }) => {
-      if (!state?.displayId) throw new Error('displayId is required');
-      return updateDisplay(state.displayId, body);
-    },
-    onSuccess: () => {
-      if (state?.displayId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(state.displayId) });
-      }
-      navigate('/exhibition/manage', {
-        replace: true,
-        state: { ...state, artworkVisibility, contentVisibility },
-      });
-    },
-  });
+  // 사용자가 아직 고르지 않았으면 서버 값을, 서버 값도 없으면 기본값을 보여줍니다.
+  const [picked, setPicked] = useState<{
+    artworkVisibility?: VisibilityType;
+    contentVisibility?: VisibilityType;
+  }>({});
+
+  const artworkVisibility =
+    picked.artworkVisibility ??
+    openTime?.artworkVisibility ??
+    state?.artworkVisibility ??
+    'startDate';
+  const contentVisibility =
+    picked.contentVisibility ??
+    openTime?.contentVisibility ??
+    state?.contentVisibility ??
+    'startDate';
+
+  const setArtworkVisibility = (next: VisibilityType) =>
+    setPicked((prev) => ({ ...prev, artworkVisibility: next }));
+  const setContentVisibility = (next: VisibilityType) =>
+    setPicked((prev) => ({ ...prev, contentVisibility: next }));
+
+  const updateMutation = useUpdateOpenTime(state?.displayId);
 
   const save = () => {
     if (!state?.displayId) {
@@ -101,7 +100,17 @@ export function VisibilitySettings() {
     }
 
     // displayId가 있으면 API로 저장
-    updateMutation.mutate({ artworkVisibility, contentVisibility });
+    updateMutation.mutate(
+      { artworkVisibility, contentVisibility },
+      {
+        onSuccess: () => {
+          navigate('/exhibition/manage', {
+            replace: true,
+            state: { ...state, artworkVisibility, contentVisibility },
+          });
+        },
+      },
+    );
   };
 
   return (

@@ -24,9 +24,15 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
     me: () => [...queryKeys.users.all, 'me'] as const,
+    search: (nickname: string) => [...queryKeys.users.all, 'search', nickname] as const,
     artistProfile: () => [...queryKeys.users.me(), 'artist-profile'] as const,
     userArtistProfile: (userId: number) =>
       [...queryKeys.users.all, userId, 'artist-profile'] as const,
+  },
+
+  schools: {
+    all: ['schools'] as const,
+    search: (keyword?: string) => [...queryKeys.schools.all, 'search', keyword ?? ''] as const,
   },
 
   health: {
@@ -53,6 +59,21 @@ export const queryKeys = {
     reviews: (displayId: number) => [...queryKeys.displays.all, 'reviews', displayId] as const,
     reviewReplies: (displayId: number, displayReviewId: number) =>
       [...queryKeys.displays.all, 'reviews', displayId, 'replies', displayReviewId] as const,
+    // 가짜 쿼리 키: 백엔드에 공개 시점 설정 API가 생기기 전까지 공개 설정 화면에서 사용합니다.
+    openTime: (displayId: number) => [...queryKeys.displays.all, 'open-time', displayId] as const,
+  },
+
+  displayInvitations: {
+    all: ['displayInvitations'] as const,
+    lists: () => [...queryKeys.displayInvitations.all, 'list'] as const,
+    me: () => [...queryKeys.displayInvitations.lists(), 'me'] as const,
+    byToken: (token: string) => [...queryKeys.displayInvitations.all, 'token', token] as const,
+  },
+
+  displayMembers: {
+    all: ['displayMembers'] as const,
+    lists: () => [...queryKeys.displayMembers.all, 'list'] as const,
+    byDisplayId: (displayId: number) => [...queryKeys.displayMembers.lists(), displayId] as const,
   },
 
   displayArtworks: {
@@ -62,6 +83,7 @@ export const queryKeys = {
       [...queryKeys.displayArtworks.lists(), 'display', displayId] as const,
     preview: (params?: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params ?? {}] as const,
+    me: () => [...queryKeys.displayArtworks.lists(), 'me'] as const,
     details: () => [...queryKeys.displayArtworks.all, 'detail'] as const,
     detail: (artworkId: number) => [...queryKeys.displayArtworks.details(), artworkId] as const,
   },
@@ -79,12 +101,16 @@ export const queryKeys = {
     all: ['artworkFeelings'] as const,
     lists: () => [...queryKeys.artworkFeelings.all, 'list'] as const,
     list: (artworkId: number) => [...queryKeys.artworkFeelings.lists(), artworkId] as const,
+    replies: (artworkId: number, feelingId: number) =>
+      [...queryKeys.artworkFeelings.all, 'replies', artworkId, feelingId] as const,
   },
 
   artworkQuestions: {
     all: ['artworkQuestions'] as const,
     lists: () => [...queryKeys.artworkQuestions.all, 'list'] as const,
     list: (artworkId: number) => [...queryKeys.artworkQuestions.lists(), artworkId] as const,
+    // 가짜 쿼리 키: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
+    me: () => [...queryKeys.artworkQuestions.lists(), 'me'] as const,
   },
 
   loungePosts: {

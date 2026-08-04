@@ -2,6 +2,13 @@ import { useRef, useState } from 'react';
 
 import { ChevronLeft, X } from 'lucide-react';
 
+import {
+  useCreateContentImage,
+  useDeleteContentImage,
+  useReorderContentImages,
+} from '@/hooks/queries/useContentImages';
+import { useImageUpload } from '@/hooks/useImageUpload';
+
 const MAX_PHOTOS = 20;
 
 type Photo = {
@@ -21,8 +28,8 @@ type InteriorPhotosProps = {
 
 export function InteriorPhotos({
   title = '내부사진',
-  displayId: _displayId,
-  categoryId: _categoryId,
+  displayId,
+  categoryId,
   initialPhotos = [],
   onBack,
   onPhotoCountChange,
@@ -32,49 +39,74 @@ export function InteriorPhotos({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const scope = { displayId, categoryId };
+  const imageUpload = useImageUpload({ domain: 'display' });
+  const createImage = useCreateContentImage(scope);
+  const reorderImages = useReorderContentImages(scope);
+  const deleteImage = useDeleteContentImage(scope);
+
+  const isBusy = imageUpload.isUploading || createImage.isPending;
+
   const handleAddPhotos = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
     const remainingSlots = MAX_PHOTOS - photos.length;
     const filesToAdd = Array.from(files).slice(0, remainingSlots);
 
-    const newPhotos: Photo[] = filesToAdd.map((file, index) => ({
-      id: `${Date.now()}-${index}`,
-      url: URL.createObjectURL(file),
-      alt: file.name,
-    }));
-
-    const updatedPhotos = [...photos, ...newPhotos];
-    setPhotos(updatedPhotos);
-    onPhotoCountChange?.(updatedPhotos.length);
-
-    // Reset input
+    // Reset input (같은 파일을 다시 선택할 수 있도록 즉시 비웁니다)
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
 
-    // TODO: API 호출로 이미지 업로드
-    // await Promise.all(filesToAdd.map(file => uploadAndCreateContentImage(displayId, categoryId, file)));
+    if (filesToAdd.length === 0) return;
+
+    // addImages가 반환한 항목을 그대로 업로드합니다.
+    // uploadImages()는 내부 ref를 읽는데, ref는 리렌더 후에 갱신되어 이 시점에는 비어 있습니다.
+    const added = imageUpload.addImages(filesToAdd);
+
+    try {
+      const uploadedUrls = await Promise.all(
+        added.map((image) => imageUpload.uploadImage(image.file)),
+      );
+      const created = await Promise.all(
+        uploadedUrls.map((imageUrl) => createImage.mutateAsync({ imageUrl })),
+      );
+
+      const newPhotos: Photo[] = created.map((res, index) => ({
+        id: res.contentId,
+        url: uploadedUrls[index],
+        alt: added[index]?.file.name,
+      }));
+
+      setPhotos((prev) => {
+        const updated = [...prev, ...newPhotos];
+        onPhotoCountChange?.(updated.length);
+        return updated;
+      });
+    } finally {
+      imageUpload.clearImages();
+    }
   };
 
   const handleRemove = (id: string | number) => {
-    setPhotos((prev) => {
-      const photo = prev.find((p) => p.id === id);
-      if (photo) {
-        URL.revokeObjectURL(photo.url);
-      }
-      const updatedPhotos = prev.filter((p) => p.id !== id);
-      onPhotoCountChange?.(updatedPhotos.length);
-      return updatedPhotos;
-    });
+    const previous = photos;
+    const updated = previous.filter((p) => p.id !== id);
 
-    // TODO: API 호출로 이미지 삭제
-    // await deleteContentImage(displayId, categoryId, Number(id));
+    setPhotos(updated);
+    onPhotoCountChange?.(updated.length);
+
+    deleteImage.mutate(Number(id), {
+      onError: () => {
+        // 삭제 실패 시 목록을 되돌립니다.
+        setPhotos(previous);
+        onPhotoCountChange?.(previous.length);
+      },
+    });
   };
 
   const handleReorder = () => {
@@ -98,15 +130,9 @@ export function InteriorPhotos({
     setDraggedIndex(index);
   };
 
-  const handleDragEnd = async () => {
+  const handleDragEnd = () => {
     setDraggedIndex(null);
-
-    // TODO: API 호출로 순서 저장
-    // const contentOrders = photos.map((photo, index) => ({
-    //   contentId: Number(photo.id),
-    //   order: index,
-    // }));
-    // await reorderContentImages(displayId, categoryId, { contentOrders });
+    reorderImages.mutate(photos.map((photo) => Number(photo.id)));
   };
   return (
     <div className="min-h-dvh bg-page pb-11">
@@ -146,18 +172,16 @@ export function InteriorPhotos({
         <button
           type="button"
           onClick={handleAddPhotos}
-          disabled={photos.length >= MAX_PHOTOS}
+          disabled={photos.length >= MAX_PHOTOS || isBusy}
           className="typo-body-sm-bold flex h-11 flex-1 items-center justify-center rounded-xl bg-bt-black text-white disabled:opacity-40"
         >
-          사진 추가
+          {isBusy ? '업로드 중' : '사진 추가'}
         </button>
         <button
           type="button"
           onClick={handleReorder}
           className={`typo-body-sm-bold h-11 shrink-0 rounded-xl px-4 ${
-            isReorderMode
-              ? 'bg-bt-black text-white'
-              : 'bg-card text-sub700'
+            isReorderMode ? 'bg-bt-black text-white' : 'bg-card text-sub700'
           }`}
         >
           {isReorderMode ? '완료' : '순서 편집'}
@@ -217,4 +241,3 @@ export function InteriorPhotos({
     </div>
   );
 }
-

@@ -60,15 +60,11 @@ export function ExhibitionRegisterComplete() {
           <div className="flex flex-1 flex-col gap-1.5">
             <SummaryRow
               label="전시작 공개"
-              value={
-                state?.artworkVisibility ? VISIBILITY_LABEL[state.artworkVisibility] : '-'
-              }
+              value={state?.artworkVisibility ? VISIBILITY_LABEL[state.artworkVisibility] : '-'}
             />
             <SummaryRow
               label="콘텐츠 공개"
-              value={
-                state?.contentVisibility ? VISIBILITY_LABEL[state.contentVisibility] : '-'
-              }
+              value={state?.contentVisibility ? VISIBILITY_LABEL[state.contentVisibility] : '-'}
             />
           </div>
         </div>

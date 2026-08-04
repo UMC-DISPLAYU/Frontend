@@ -1,9 +1,15 @@
 import { ExternalLink, Menu, RefreshCcw, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { UserProfile } from '@/hooks/useUserProfile';
-import { TABS } from '@/mocks/mypage';
 import type { TabKey } from '@/types/mypage';
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'exhibition', label: '전시' },
+  { key: 'artwork', label: '작품' },
+  { key: 'artist', label: '작가' },
+];
 
 interface MyPageHeaderProps {
   activeTab: TabKey;
@@ -48,9 +54,11 @@ export function MyPageHeader({
           )}
         </div>
         <div className="flex items-center gap-3.5 text-neutral-900">
-          <button type="button" aria-label="전환" onClick={onToggleView}>
-            <RefreshCcw className="size-5" />
-          </button>
+          {isArtistVerified && (
+            <button type="button" aria-label="전환" onClick={onToggleView}>
+              <RefreshCcw className="size-5" />
+            </button>
+          )}
           <button type="button" aria-label="메뉴" onClick={() => navigate('/setting/')}>
             <Menu className="size-5" />
           </button>
@@ -61,8 +69,11 @@ export function MyPageHeader({
         <div className="flex items-center gap-6">
           <img
             className="size-20 rounded-full border-[2.67px] border-stone-300 object-cover shrink-0"
-            src={profile.avatar}
+            src={profile.avatar || FALLBACK_PROFILE_IMAGE}
             alt={profile.name}
+            onError={(event) => {
+              event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
+            }}
           />
           <div className="flex-1 min-w-0 flex flex-col gap-1.5">
             <div className="text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7 truncate">
