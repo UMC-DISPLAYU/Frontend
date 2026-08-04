@@ -85,7 +85,12 @@ axiosInstance.interceptors.response.use(
           const response = await axiosInstance.post<
             ApiResponseDto<{ accessToken: string }>
           >('/v1/auth/refresh');
-          const newAccessToken = response.data.success.data.accessToken;
+
+          const newAccessToken = response.data?.success?.data?.accessToken;
+
+          if (!newAccessToken) {
+            throw new Error('Failed to refresh access token');
+          }
 
           useAuthStore.getState().setAccessToken(newAccessToken);
           isRefreshing = false;
@@ -99,6 +104,7 @@ axiosInstance.interceptors.response.use(
         } catch (refreshError) {
           isRefreshing = false;
           useAuthStore.getState().clearAccessToken();
+          refreshSubscribers = [];
           return Promise.reject(refreshError);
         }
       }

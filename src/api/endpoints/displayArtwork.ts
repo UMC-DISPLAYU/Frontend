@@ -183,7 +183,5 @@ export const getDisplayArtworks = async (
 ): Promise<GetDisplayArtworksResponseDataDto> =>
   apiRequest('/v1/artworks', { query: { displayId } });
 
-// 가짜 엔드포인트: 백엔드에 내 작품 전체 조회 API가 생기면 실제 경로로 교체해야 합니다.
-// GET /v1/artworks/me
-export const getMyArtworks = async (): Promise<GetMyArtworksResponseDataDto> =>
-  apiRequest('/v1/artworks/me');
+// 삭제됨: 개인 작품 API(GET /v1/personal-artworks)로 대체되었습니다.
+// 이 함수는 더 이상 사용되지 않으며, getPersonalArtworks를 사용하세요.

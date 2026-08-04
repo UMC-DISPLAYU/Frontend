@@ -2,11 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import {
-  AffiliationInput,
-  ExhibitionHeader,
-  ImageUploader,
-} from '@/components/exhibition-register';
+import { ImageUploader } from '@/components/common';
+import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
 import { Chip, RequiredLabel } from '@/components/ui';
 import {
   EXHIBITION_FIELDS,
@@ -14,6 +11,7 @@ import {
   type ExhibitionTypeGroup,
 } from '@/constants/exhibition';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
@@ -21,7 +19,12 @@ const INPUT_CLASS =
 export function PersonalArtworksRegister() {
   const { data: artistProfile } = useMyArtistProfile();
 
-  const [images, setImages] = useState<string[]>([]);
+  const { images, addImages, removeImage } = useImageUpload();
+  const {
+    images: processImages,
+    addImages: addProcessImages,
+    removeImage: removeProcessImage,
+  } = useImageUpload();
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [intro, setIntro] = useState('');
@@ -68,7 +71,13 @@ export function PersonalArtworksRegister() {
       <main className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-6 px-5 pt-2 pb-8">
           <div className="self-stretch flex justify-center">
-            <ImageUploader maxImages={4} onImagesChange={setImages} placeholderText="이미지 업로드"/>
+            <ImageUploader
+              images={images}
+              maxImages={4}
+              onAddImages={addImages}
+              onRemoveImage={removeImage}
+              emptyLabel="이미지 업로드"
+            />
           </div>
 
           <div className="flex flex-col gap-3">
@@ -135,7 +144,13 @@ export function PersonalArtworksRegister() {
 
           <div className="flex flex-col gap-3">
             <RequiredLabel>작품과정</RequiredLabel>
-            <ImageUploader maxImages={4} onImagesChange={setImages} placeholderText="작업과정 업로드" />
+            <ImageUploader
+              images={processImages}
+              maxImages={4}
+              onAddImages={addProcessImages}
+              onRemoveImage={removeProcessImage}
+              emptyLabel="작업과정 업로드"
+            />
           </div>
 
           <div className="flex flex-col gap-3">

@@ -42,7 +42,7 @@ export function ExhibitionCard({
   return (
     <article className="shrink-0 w-full bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
       <div className="px-4 py-3.5 flex justify-start items-start gap-3">
-        <div className="w-24 h-32 rounded-xl overflow-hidden bg-neutral-200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
+        <div className="w-24 h-32 rounded-xl overflow-hidden bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
           {item.thumbnail && (
             <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
           )}
@@ -60,7 +60,7 @@ export function ExhibitionCard({
                 className="shrink-0"
                 onClick={() => onUnarchive?.(item)}
               >
-                <Bookmark fill="#D70004" color="#D70004" className="size-4" />
+                <Bookmark fill="currentColor" className="size-4 text-bookmark" />
               </button>
             )}
           </div>
@@ -79,27 +79,27 @@ export function ExhibitionCard({
       </div>
 
       {!isArtistView && (
-        <footer className="min-h-11 px-4 py-2 bg-gray-200 flex flex-col justify-center">
+        <footer className="min-h-11 px-4 py-2 bg-box200 flex flex-col justify-center">
           {isEditingMemo ? (
             <div className="self-stretch flex flex-col gap-2">
               <textarea
                 value={memoInput}
                 onChange={(event) => setMemoInput(event.target.value)}
                 placeholder="메모"
-                className="min-h-10 w-full resize-none bg-transparent text-xs font-normal leading-4 text-neutral-500 outline-none placeholder:text-neutral-400"
+                className="min-h-10 w-full resize-none bg-transparent typo-body-xs-regular text-hint outline-none placeholder:text-faint"
                 autoFocus
               />
               <div className="self-stretch flex justify-end gap-2">
                 <button
                   type="button"
-                  className="text-neutral-400 text-xs font-normal leading-4"
+                  className="typo-body-xs-regular text-faint"
                   onClick={handleCancelMemo}
                 >
                   취소
                 </button>
                 <button
                   type="button"
-                  className="text-neutral-900 text-xs font-semibold leading-4"
+                  className="typo-body-xs-semibold text-main"
                   onClick={handleSaveMemo}
                 >
                   저장
@@ -126,10 +126,10 @@ export function ExhibitionCard({
           ) : (
             <button
               type="button"
-              className="self-stretch flex items-center gap-1.5 text-left text-neutral-400 text-xs font-normal leading-5"
+              className="self-stretch flex items-center gap-1.5 text-left typo-body-xs-regular text-faint"
               onClick={handleStartMemoEdit}
             >
-              <Pencil color="#99A1AF" className="size-3 shrink-0" />
+              <Pencil className="size-3 shrink-0 text-faint" />
               <span>메모</span>
             </button>
           )}
