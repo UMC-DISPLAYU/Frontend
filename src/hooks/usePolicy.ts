@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import type {
   ArchivedArtworkDto,
@@ -19,13 +19,40 @@ import type {
   PersonalArtworkQuestionResponseDataDto,
   PersonalArtworkResponseDataDto,
 } from '@/api/dto';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { policies } from '@/policies/policies';
+import { useAuthStore } from '@/stores/authStore';
 import type { PermissionMap, PolicyAction, PolicyPermissionMap, User } from '@/types/policy';
 
-export function useDisplayPolicy(
-  user: User,
-  display: DisplayDetailDto,
-): PolicyPermissionMap<'display'> {
+//매 권한 로직 훅을 호출할 때 마다, 사용자 속성을 가져옴
+function useCurrentPolicyUser(): User {
+  const guest: User = {
+    id: null,
+    isArtistVerified: false,
+  };
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const storedUser = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+
+  const { data: me } = useUserMe({ enabled: Boolean(accessToken) });
+
+  useEffect(() => {
+    if (!accessToken || !me) return;
+
+    setUser({
+      id: me.id,
+      isArtistVerified: me.isVerified,
+    });
+  }, [accessToken, me, setUser]);
+
+  if (!accessToken) return guest;
+
+  return storedUser ?? guest;
+}
+
+export function useDisplayPolicy(display: DisplayDetailDto): PolicyPermissionMap<'display'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.display.view(),
@@ -39,9 +66,10 @@ export function useDisplayPolicy(
 }
 
 export function useDisplayContentPolicy(
-  user: User,
   display: DisplayDetailDto,
 ): PolicyPermissionMap<'displayContent'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       createCategory: () => policies.displayContent.createCategory(user, display),
@@ -57,10 +85,11 @@ export function useDisplayContentPolicy(
 }
 
 export function useDisplayInvitationPolicy(
-  user: User,
   display: DisplayDetailDto,
   invitation?: DisplayInvitationDto,
 ): PolicyPermissionMap<'displayInvitation'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       create: () => policies.displayInvitation.create(user, display),
@@ -72,10 +101,11 @@ export function useDisplayInvitationPolicy(
 }
 
 export function useArtworkPolicy(
-  user: User,
   display: DisplayDetailDto,
   artwork?: GetArtworkDetailResponseDataDto,
 ): PolicyPermissionMap<'artwork'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.artwork.view(),
@@ -87,10 +117,9 @@ export function useArtworkPolicy(
   );
 }
 
-export function useQuestionPolicy(
-  user: User,
-  question: ArtworkQuestionDto,
-): PolicyPermissionMap<'question'> {
+export function useQuestionPolicy(question: ArtworkQuestionDto): PolicyPermissionMap<'question'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.question.view(),
@@ -109,10 +138,9 @@ export function useQuestionPolicy(
   );
 }
 
-export function useFeelingPolicy(
-  user: User,
-  feeling?: ArtworkFeelingDto,
-): PolicyPermissionMap<'feeling'> {
+export function useFeelingPolicy(feeling?: ArtworkFeelingDto): PolicyPermissionMap<'feeling'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.feeling.view(),
@@ -137,7 +165,9 @@ type DisplayReviewReplyPolicy = PermissionMap<
   Extract<PolicyAction<'displayReview'>, `reply.${string}`>
 >;
 
-export function useDisplayReviewPolicy(user: User, review?: DisplayReviewDto): DisplayReviewPolicy {
+export function useDisplayReviewPolicy(review?: DisplayReviewDto): DisplayReviewPolicy {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.displayReview.view(),
@@ -151,9 +181,10 @@ export function useDisplayReviewPolicy(user: User, review?: DisplayReviewDto): D
 }
 
 export function useDisplayReviewReplyPolicy(
-  user: User,
   reply?: DisplayReviewReplyDto,
 ): DisplayReviewReplyPolicy {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       'reply.view': () => policies.displayReview.reply.view(),
@@ -167,9 +198,10 @@ export function useDisplayReviewReplyPolicy(
 }
 
 export function usePersonalArtworkPolicy(
-  user: User,
   personalArtwork?: PersonalArtworkResponseDataDto,
 ): PolicyPermissionMap<'personalArtwork'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.personalArtwork.view(),
@@ -185,10 +217,11 @@ export function usePersonalArtworkPolicy(
 }
 
 export function usePersonalQuestionPolicy(
-  user: User,
   question?: PersonalArtworkQuestionResponseDataDto,
   personalArtwork?: PersonalArtworkResponseDataDto,
 ): PolicyPermissionMap<'personalQuestion'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.personalQuestion.view(),
@@ -206,9 +239,10 @@ export function usePersonalQuestionPolicy(
 }
 
 export function usePersonalFeelingPolicy(
-  user: User,
   feeling?: PersonalArtworkFeelingResponseDataDto,
 ): PolicyPermissionMap<'personalFeeling'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.personalFeeling.view(),
@@ -227,9 +261,10 @@ export function usePersonalFeelingPolicy(
 }
 
 export function useLoungePostPolicy(
-  user: User,
   post?: Pick<LoungePostDetailDto, 'isMyPost'>,
 ): PolicyPermissionMap<'loungePost'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.loungePost.view(),
@@ -246,9 +281,10 @@ export function useLoungePostPolicy(
 }
 
 export function useLoungeCommentPolicy(
-  user: User,
   comment?: Pick<LoungeCommentDto | LoungeReplyDto, 'isMyComment'>,
 ): PolicyPermissionMap<'loungeComment'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       view: () => policies.loungeComment.view(),
@@ -261,7 +297,9 @@ export function useLoungeCommentPolicy(
   );
 }
 
-export function useArchivePolicy(user: User): PolicyPermissionMap<'archive'> {
+export function useArchivePolicy(): PolicyPermissionMap<'archive'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       create: () => policies.archive.create(user),
@@ -276,9 +314,10 @@ export const useArchiveArtworkPolicy = useArchivePolicy;
 export const useArchiveArtistPolicy = useArchivePolicy;
 
 export function useMemoPolicy(
-  user: User,
   archiveItem?: Pick<ArchivedArtworkDto, 'userId'>,
 ): PolicyPermissionMap<'memo'> {
+  const user = useCurrentPolicyUser();
+
   return useMemo(
     () => ({
       upsert: () => (archiveItem ? policies.memo.upsert(user, archiveItem) : false),
