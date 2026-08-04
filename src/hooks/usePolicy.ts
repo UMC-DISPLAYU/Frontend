@@ -51,7 +51,7 @@ function useCurrentPolicyUser(): User {
   return storedUser ?? guest;
 }
 
-export function useDisplayPolicy(display: DisplayDetailDto): PolicyPermissionMap<'display'> {
+export function useDisplayPolicy(display: DisplayPolicyResource): PolicyPermissionMap<'display'> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
@@ -72,6 +72,19 @@ export function useArtistPolicy(): PolicyPermissionMap<'artist'> {
       view: () => policies.artist.view(user),
     }),
     [user],
+  );
+}
+
+export function useDisplayArtistNamePolicy(
+  display: DisplayPolicyResource,
+): PolicyPermissionMap<'displayArtistName'> {
+  const user = useCurrentPolicyUser();
+
+  return useMemo(
+    () => ({
+      edit: () => policies.displayArtistName.edit(user, display),
+    }),
+    [user, display],
   );
 }
 
@@ -107,7 +120,7 @@ export function useDisplayContentPolicy(
 }
 
 export function useDisplayInvitationPolicy(
-  display: DisplayDetailDto,
+  display: DisplayPolicyResource,
   invitation?: DisplayInvitationDto,
 ): PolicyPermissionMap<'displayInvitation'> {
   const user = useCurrentPolicyUser();

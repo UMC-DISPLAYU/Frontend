@@ -54,6 +54,11 @@ export const policies = {
     delete: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
   },
 
+  displayArtistName: {
+    edit: (user: User, display: DisplayPolicyResource) =>
+      isArtistVerified(user) && isDisplayMember(user, display),
+  },
+
   displayContent: {
     createCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
     editCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),

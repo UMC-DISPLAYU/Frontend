@@ -87,6 +87,8 @@ export function DisplayManagePage() {
           exhibitions={myDisplays}
           onOpen={setSelected}
           onBack={() => window.history.back()}
+          onDelete={() => {}}
+          onEditArtistName={(ex) => navigate('/exhibition/artist', { state: ex })}
           onRegister={() => navigate('/exhibition-register')}
         />
       )}

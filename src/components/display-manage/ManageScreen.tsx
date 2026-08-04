@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Plus } from 'lucide-react';
 
 import type { ExhibitionItem } from '@/types/mypage';
@@ -10,20 +12,40 @@ export function ManageScreen({
   exhibitions,
   onOpen,
   onBack,
+  onDelete,
+  onEditArtistName,
   onRegister,
 }: {
   exhibitions: ExhibitionItem[];
   onOpen: (ex: ExhibitionItem) => void;
   onBack?: () => void;
+  onDelete: (ex: ExhibitionItem) => void;
+  onEditArtistName: (ex: ExhibitionItem) => void;
   onRegister: () => void;
 }) {
+  const [menuId, setMenuId] = useState<string | null>(null);
+
   return (
     <Screen>
       <Header title="내 전시 관리" onBack={onBack} />
       <div className="flex-1 overflow-y-auto px-5 pt-1.5 pb-4">
         <div className="flex flex-col gap-3.5">
           {exhibitions.map((ex) => (
-            <ExhibitionCard key={ex.id} ex={ex} onClick={() => onOpen(ex)} />
+            <ExhibitionCard
+              key={ex.id}
+              ex={ex}
+              menuOpen={menuId === ex.id}
+              onClick={() => onOpen(ex)}
+              onDelete={() => {
+                onDelete(ex);
+                setMenuId(null);
+              }}
+              onEditArtistName={() => {
+                onEditArtistName(ex);
+                setMenuId(null);
+              }}
+              onToggleMenu={() => setMenuId((prev) => (prev === ex.id ? null : ex.id))}
+            />
           ))}
         </div>
         <button

@@ -13,6 +13,8 @@ import {
   useInviteDisplayMember,
 } from '@/hooks/queries/useDisplayMembers';
 import { useUserSearch } from '@/hooks/queries/useUserSearch';
+import { useDisplayInvitationPolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 /*
  * 링크 생성 응답(invitationUrl)은 그대로 쓰고, 전시 상세의 invitationToken으로 복원할 때만 조립합니다.
@@ -31,6 +33,13 @@ export function TeamManage() {
   const { data: display } = useDisplayDetail(displayId);
   const { data: memberList, isLoading: membersLoading } = useDisplayMembers(displayId);
   const { data: searchResults = [], isFetching: searching } = useUserSearch(keyword);
+  const displayInvitationPolicy = useDisplayInvitationPolicy(
+    display ?? {
+      ownerUserId: 0,
+      teamMembers: [],
+    },
+  );
+  const canCreateInvitation = Boolean(display) && hasPermission(displayInvitationPolicy, 'create');
 
   const invite = useInviteDisplayMember(displayId);
   const createLink = useCreateDisplayInvitationLink(displayId);
@@ -87,24 +96,28 @@ export function TeamManage() {
       <PageHeader title="팀원 초대/관리" onBack={() => navigate(-1)} centered />
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3 pb-8">
-        <div className="flex h-10 items-center gap-2 rounded-xl bg-box px-5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.10),inset_-1px_-1px_1px_0px_rgba(255,255,255,1)]">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="닉네임 검색"
-            className="typo-body-sm-semibold w-full bg-transparent text-main outline-none placeholder:text-faint"
+        {canCreateInvitation && (
+          <div className="flex h-10 items-center gap-2 rounded-xl bg-box px-5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.10),inset_-1px_-1px_1px_0px_rgba(255,255,255,1)]">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="닉네임 검색"
+              className="typo-body-sm-semibold w-full bg-transparent text-main outline-none placeholder:text-faint"
+            />
+            <Search className="size-5 shrink-0 text-hint" strokeWidth={1.5} />
+          </div>
+        )}
+
+        {canCreateInvitation && (
+          <InviteLinkSection
+            inviteLink={inviteLink}
+            enabled={linkEnabled}
+            onToggle={toggleLink}
+            pending={createLink.isPending || disableLink.isPending}
           />
-          <Search className="size-5 shrink-0 text-hint" strokeWidth={1.5} />
-        </div>
+        )}
 
-        <InviteLinkSection
-          inviteLink={inviteLink}
-          enabled={linkEnabled}
-          onToggle={toggleLink}
-          pending={createLink.isPending || disableLink.isPending}
-        />
-
-        {isSearching ? (
+        {canCreateInvitation && isSearching ? (
           <div className="mt-6 flex flex-col gap-3">
             <span className="typo-body-sm-bold text-main">검색 결과</span>
             <ul className="flex flex-col gap-2.5">
