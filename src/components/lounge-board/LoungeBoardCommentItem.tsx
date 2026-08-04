@@ -9,8 +9,11 @@ import {
   useUnlikeLoungeComment,
 } from '@/hooks/queries/useLoungeComments';
 import { useLoungeReplies } from '@/hooks/queries/useLoungeReplies';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useLoungeCommentPolicy } from '@/hooks/usePolicy';
 import type { LoungeBoardComment } from '@/types/exhibition';
 import { formatLoungeTime } from '@/utils/date';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   postId: number;
@@ -35,6 +38,10 @@ export function LoungeBoardCommentItem({
 }: Props) {
   const [repliesOpen, setRepliesOpen] = useState(false);
   const [removedReplyIds, setRemovedReplyIds] = useState<Set<string>>(new Set());
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const loungeCommentPolicy = useLoungeCommentPolicy({
+    isMyComment: Boolean(comment.isMyComment),
+  });
   const commentId = Number(comment.id);
   const isComposingReply = activeReplyId === commentId;
 
@@ -48,6 +55,8 @@ export function LoungeBoardCommentItem({
   const unlikeMutation = useUnlikeLoungeComment();
   const deleteReplyMutation = useDeleteLoungeComment();
   const isLikeMutating = likeMutation.isPending || unlikeMutation.isPending;
+  const canLikeComment = hasPermission(loungeCommentPolicy, 'like');
+  const canDeleteComment = hasPermission(loungeCommentPolicy, 'delete');
 
   const { data: repliesData } = useLoungeReplies(
     commentId,
@@ -72,6 +81,11 @@ export function LoungeBoardCommentItem({
 
   const handleLikeClick = () => {
     if (isLikeMutating) return;
+    if (!canLikeComment) {
+      openLoginModal();
+      return;
+    }
+
     if (comment.isLiked) {
       unlikeMutation.mutate({ postId, commentId, parentCommentId });
     } else {
@@ -160,7 +174,7 @@ export function LoungeBoardCommentItem({
               댓글{replyCount}
             </button>
           )}
-          {!isDeleted && comment.isMyComment && (
+          {!isDeleted && canDeleteComment && (
             <button type="button" onClick={onDelete} className="typo-body-xs-regular text-faint">
               삭제
             </button>
@@ -191,6 +205,7 @@ export function LoungeBoardCommentItem({
           ))}
         </div>
       )}
+      {loginModal}
     </div>
   );
 }
