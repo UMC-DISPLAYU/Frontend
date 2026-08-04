@@ -138,6 +138,7 @@ export interface DisplayDetailDto {
   displayFields: string[];
   region: string;
   likeCount: number;
+  isBookmarked?: boolean;
   period: DisplayPeriodDto;
   artworkContentOpen: string;
   exhibitionContentOpen: string;
@@ -243,6 +244,31 @@ export interface GetDisplayReviewsRequestDto {
   size?: number;
 }
 
+export interface CreateDisplayReviewRequestDto {
+  content: string;
+  images?: DisplayReviewImageRequestDto[];
+}
+
+export interface DisplayReviewImageRequestDto {
+  imageUrl: string;
+  width?: number;
+  height?: number;
+  sortOrder?: number;
+}
+
+export type CreateDisplayReviewResponseDataDto = DisplayReviewDto;
+
+export interface DeleteDisplayReviewResponseDataDto {
+  displayReviewId: number;
+  deletedAt: string;
+}
+
+export interface DisplayReviewLikeResponseDataDto {
+  displayReviewId: number;
+  isLiked: boolean;
+  likeCount: number;
+}
+
 export interface GetDisplayReviewsResponseDataDto {
   reviews: DisplayReviewDto[];
   nextCursorId: number | null;
@@ -268,6 +294,23 @@ export interface DisplayReviewReplyDto {
 export interface GetDisplayReviewRepliesRequestDto {
   cursorId?: number;
   size?: number;
+}
+
+export interface CreateDisplayReviewReplyRequestDto {
+  content: string;
+}
+
+export type CreateDisplayReviewReplyResponseDataDto = DisplayReviewReplyDto;
+
+export interface DeleteDisplayReviewReplyResponseDataDto {
+  displayReviewReplyId: number;
+  deletedAt: string;
+}
+
+export interface DisplayReviewReplyLikeResponseDataDto {
+  displayReviewReplyId: number;
+  isLiked: boolean;
+  likeCount: number;
 }
 
 export interface GetDisplayReviewRepliesResponseDataDto {
@@ -326,13 +369,37 @@ export interface UpdateDisplayRequestDto {
   placeName?: string;
   precautions?: string | null;
   fieldsValid?: boolean;
-  artworkVisibility?: 'immediate' | 'startDate' | 'hidden';
-  contentVisibility?: 'immediate' | 'startDate' | 'hidden';
 }
 
 export type UpdateDisplayResponseDataDto = DisplayDetailDto;
 
 export type UpdateDisplayResponseDto = ApiResponseDto<UpdateDisplayResponseDataDto>;
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export type OpenTimeType = 'immediate' | 'startDate' | 'hidden';
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export interface OpenTimeDto {
+  displayId: number;
+  artworkVisibility: OpenTimeType;
+  contentVisibility: OpenTimeType;
+}
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export type GetOpenTimeResponseDataDto = OpenTimeDto;
+
+export type GetOpenTimeResponseDto = ApiResponseDto<GetOpenTimeResponseDataDto>;
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export interface UpdateOpenTimeRequestDto {
+  artworkVisibility: OpenTimeType;
+  contentVisibility: OpenTimeType;
+}
+
+// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
+export type UpdateOpenTimeResponseDataDto = OpenTimeDto;
+
+export type UpdateOpenTimeResponseDto = ApiResponseDto<UpdateOpenTimeResponseDataDto>;
 
 export interface DeleteDisplayResponseDataDto {
   displayId: number;
@@ -341,10 +408,68 @@ export interface DeleteDisplayResponseDataDto {
 
 export type DeleteDisplayResponseDto = ApiResponseDto<DeleteDisplayResponseDataDto>;
 
+/* 스웨거 응답은 displayId와 likeCount만 담깁니다. 좋아요 여부는 요청 종류로 판단합니다. */
 export interface ToggleDisplayLikeResponseDataDto {
   displayId: number;
-  isLiked: boolean;
+  isLiked?: boolean;
   likeCount: number;
 }
 
 export type ToggleDisplayLikeResponseDto = ApiResponseDto<ToggleDisplayLikeResponseDataDto>;
+
+export interface MyDisplayDto {
+  displayId: number;
+  title: string;
+  isDisplaying: boolean;
+  startDate: string;
+  endDate: string;
+  school: string;
+  department: string;
+  placeName: string;
+  postImageUrl: string;
+}
+
+export interface GetMyDisplaysResponseDataDto {
+  createdDisplays: MyDisplayDto[];
+  participatedDisplays: MyDisplayDto[];
+}
+
+export interface InviteDisplayMemberRequestDto {
+  inviteeUserId: number;
+  role?: 'TEAM_MEM';
+}
+
+export interface DisplayMemberListResponseDataDto {
+  displayId: number;
+  members: DisplayTeamMemberDto[];
+}
+
+export interface DisplayMemberInvitationResponseDataDto {
+  invitationId: number;
+  displayId: number;
+  inviterUserId: number;
+  inviteeUserId: number;
+  status: string;
+  createdAt: string;
+  respondedAt?: string | null;
+}
+
+/* POST /display/{displayId}/invitation — 서버가 완성된 초대 URL을 그대로 내려줍니다. */
+export interface CreateDisplayInvitationLinkResponseDataDto {
+  displayId: number;
+  invitationUrl: string;
+}
+
+/* PATCH /display/{displayId}/invitation/disable */
+export interface DisableDisplayInvitationLinkResponseDataDto {
+  displayId: number;
+  invitationDisabledAt: string;
+}
+
+export interface MyDisplayInvitationListResponseDataDto {
+  invitations: DisplayInvitationDto[];
+}
+
+export interface AcceptDisplayInvitationRequestDto {
+  displayNickname: string;
+}

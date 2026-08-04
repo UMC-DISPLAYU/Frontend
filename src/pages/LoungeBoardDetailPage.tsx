@@ -145,7 +145,7 @@ export const LoungeBoardDetailPage = () => {
                   isSaved={review.isSaved}
                 />
 
-                <div className="w-full flex flex-col gap-[40px]">
+                <div className="w-full flex flex-col">
                   {review.comments
                     .map((comment) => ({
                       comment,

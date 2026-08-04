@@ -3,37 +3,11 @@ import { useRef, useState } from 'react';
 import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const EXHIBITION_FIELDS = [
-  '회화',
-  '디자인',
-  '사진',
-  '건축',
-  '영상',
-  '조소',
-  '패션',
-  '일러스트',
-  '공예',
-  '기타',
-] as const;
-
-const SCHOOL_LIST = [
-  '가천대학교',
-  '건국대학교',
-  '경희대학교',
-  '고려대학교',
-  '국민대학교',
-  '단국대학교',
-  '동국대학교',
-  '명지대학교',
-  '서강대학교',
-  '서울대학교',
-  '성균관대학교',
-  '숙명여자대학교',
-  '연세대학교',
-  '중앙대학교',
-  '한양대학교',
-  '홍익대학교',
-] as const;
+import type { ArtistProfileDto } from '@/api/dto';
+import { ChipGroup } from '@/components/ui';
+import { EXHIBITION_FIELDS } from '@/constants/exhibition';
+import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
+import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 
 const INTRO_MAX = 100;
 
@@ -79,25 +53,50 @@ function ProfilePhotoField({
 }
 
 export function EditArtistProfilePage() {
-  const navigate = useNavigate();
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [activityName, setActivityName] = useState('');
-  const [intro, setIntro] = useState('');
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
-  const [externalLink, setExternalLink] = useState('');
-  const [school, setSchool] = useState('');
-  const [schoolFocused, setSchoolFocused] = useState(false);
+  const { data: artistProfile } = useMyArtistProfile();
 
-  const toggleField = (field: string) => {
-    setSelectedFields((prev) =>
-      prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field],
-    );
-  };
+  return (
+    <EditArtistProfileForm
+      key={artistProfile?.artistName ?? 'loading'}
+      artistProfile={artistProfile}
+    />
+  );
+}
+
+function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfileDto }) {
+  const navigate = useNavigate();
+  const [profileImage, setProfileImage] = useState<string | null>(
+    artistProfile?.profileImageUrl ?? null,
+  );
+  const [activityName, setActivityName] = useState(artistProfile?.artistName ?? '');
+  const [intro, setIntro] = useState(artistProfile?.introduction ?? '');
+  const [selectedFields, setSelectedFields] = useState<string[]>(artistProfile?.fields ?? []);
+  const [externalLink, setExternalLink] = useState(
+    artistProfile?.externalLink ?? artistProfile?.portfolioUrl ?? '',
+  );
+  const [school, setSchool] = useState(artistProfile?.schoolName ?? '');
+  const [schoolFocused, setSchoolFocused] = useState(false);
+  const schoolQuery = useSearchSchools(school);
+  const updateMyArtistProfile = useUpdateMyArtistProfile();
 
   const showSchoolDropdown = schoolFocused && school.trim().length > 0;
 
   const handleSubmit = () => {
-    navigate(-1);
+    updateMyArtistProfile.mutate(
+      {
+        profileImageUrl: profileImage ?? undefined,
+        artistName: activityName.trim(),
+        introduction: intro.trim(),
+        fields: selectedFields,
+        externalLink: externalLink.trim(),
+        univName: school.trim(),
+      },
+      {
+        onSuccess: () => {
+          navigate(-1);
+        },
+      },
+    );
   };
 
   return (
@@ -154,26 +153,12 @@ export function EditArtistProfilePage() {
           {/* 전시분야 */}
           <div className="flex flex-col gap-3">
             <span className="typo-body-sm-bold text-main">전시분야</span>
-            <div className="flex flex-wrap gap-2">
-              {EXHIBITION_FIELDS.map((field) => {
-                const active = selectedFields.includes(field);
-                return (
-                  <button
-                    key={field}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => toggleField(field)}
-                    className={`rounded-sm border px-2.5 py-1.5 transition-colors ${
-                      active
-                        ? 'border-dark text-dark typo-body-xs-bold'
-                        : 'border-line text-sub600  typo-body-xs-regular'
-                    }`}
-                  >
-                    {field}
-                  </button>
-                );
-              })}
-            </div>
+            <ChipGroup
+              options={EXHIBITION_FIELDS}
+              selected={selectedFields}
+              onChange={setSelectedFields}
+              aria-label="전시분야"
+            />
           </div>
 
           {/* 외부 링크 */}
@@ -214,20 +199,39 @@ export function EditArtistProfilePage() {
 
                 {showSchoolDropdown && (
                   <ul className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[208px] overflow-y-auto overscroll-contain rounded-2xl bg-card py-2 shadow-[0px_4px_16px_0px_rgba(0,0,0,0.08)]">
-                    {SCHOOL_LIST.map((name, i) => (
-                      <li key={i}>
+                    {schoolQuery.isLoading ? (
+                      <li className="px-4 py-2.5 typo-body-sm-regular text-faint">검색 중...</li>
+                    ) : schoolQuery.data && schoolQuery.data.length > 0 ? (
+                      schoolQuery.data.map(({ name }) => (
+                        <li key={name}>
+                          <button
+                            type="button"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => {
+                              setSchool(name);
+                              setSchoolFocused(false);
+                            }}
+                            className="w-full px-4 py-2.5 text-left typo-body-sm-regular text-main hover:bg-page"
+                          >
+                            {name}
+                          </button>
+                        </li>
+                      ))
+                    ) : (
+                      <li>
                         <button
                           type="button"
+                          onMouseDown={(event) => event.preventDefault()}
                           onClick={() => {
-                            setSchool(name);
+                            setSchool(school);
                             setSchoolFocused(false);
                           }}
                           className="w-full px-4 py-2.5 text-left typo-body-sm-regular text-main hover:bg-page"
                         >
-                          {name}
+                          {school}
                         </button>
                       </li>
-                    ))}
+                    )}
                   </ul>
                 )}
               </div>
@@ -240,9 +244,12 @@ export function EditArtistProfilePage() {
         <button
           type="button"
           onClick={handleSubmit}
-          className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white"
+          disabled={
+            !activityName.trim() || selectedFields.length === 0 || updateMyArtistProfile.isPending
+          }
+          className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white disabled:opacity-40"
         >
-          완료
+          {updateMyArtistProfile.isPending ? '저장 중' : '완료'}
         </button>
       </footer>
     </div>

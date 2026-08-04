@@ -50,7 +50,17 @@ export function DisplayDetailPage() {
       {activeTab === 'intro' && <IntroTab display={display} />}
       {activeTab === 'artwork' && <ArtworkTab displayId={display.displayId} />}
       {activeTab === 'review' && <ReviewTab displayId={display.displayId} />}
-      <BottomFixedBar button={<DisplaySaveButton />} />
+      {/* 후기 탭은 하단에 댓글 입력바가 자리하므로 전시 저장 바를 띄우지 않습니다. */}
+      {activeTab !== 'review' && (
+        <BottomFixedBar
+          button={
+            <DisplaySaveButton
+              displayId={display.displayId}
+              saved={display.isBookmarked ?? false}
+            />
+          }
+        />
+      )}
     </div>
   );
 }

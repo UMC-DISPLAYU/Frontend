@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
   ConfirmVerificationEmailRequestDto,
@@ -8,9 +8,17 @@ import type {
 import {
   confirmVerificationEmail,
   resendVerificationEmail,
+  searchSchools,
   sendVerificationEmail,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+
+export const useSearchSchools = (keyword: string) =>
+  useQuery({
+    queryKey: queryKeys.schools.search(keyword.trim()),
+    queryFn: () => searchSchools({ keyword: keyword.trim() }),
+    enabled: keyword.trim().length > 0,
+  });
 
 export const useSendVerificationEmail = () =>
   useMutation({

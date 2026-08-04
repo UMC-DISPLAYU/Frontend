@@ -2,17 +2,24 @@ interface ToggleProps {
   checked: boolean;
   onChange: (value: boolean) => void;
   label?: string;
+  disabled?: boolean;
 }
 
-export function Toggle({ checked, onChange, label = '초대 링크 활성화' }: ToggleProps) {
+export function Toggle({
+  checked,
+  onChange,
+  label = '초대 링크 활성화',
+  disabled = false,
+}: ToggleProps) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       aria-label={label}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`flex h-5 w-11 items-center rounded-full p-1 transition-colors ${
+      className={`flex h-5 w-11 items-center rounded-full p-1 transition-colors disabled:opacity-50 ${
         checked ? 'bg-dark' : 'bg-box200'
       }`}
     >

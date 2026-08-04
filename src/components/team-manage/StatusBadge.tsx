@@ -1,13 +1,12 @@
-type MemberStatus = 'owner' | 'verified' | 'unverified' | 'pending';
+type MemberStatus = 'owner' | 'member' | 'pending';
 
 const STATUS_LABEL: Record<MemberStatus, string> = {
   owner: '대표자',
-  verified: '작가 인증 완료',
-  unverified: '작가 미인증',
+  member: '팀원',
   pending: '초대대기',
 };
 
-const isAccent = (status: MemberStatus) => status === 'owner' || status === 'verified';
+const isAccent = (status: MemberStatus) => status === 'owner' || status === 'member';
 
 interface StatusBadgeProps {
   status: MemberStatus;

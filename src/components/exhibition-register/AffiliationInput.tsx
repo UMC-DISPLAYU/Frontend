@@ -23,7 +23,9 @@ export function AffiliationInput({
 }: AffiliationInputProps) {
   if (group === 'institution') {
     return (
-      <div className={`rounded-2xl outline outline-1 outline-offset-[-1px] outline-line ${readonly ? 'overflow-hidden' : ''}`}>
+      <div
+        className={`rounded-2xl outline outline-1 outline-offset-[-1px] outline-line ${readonly ? 'overflow-hidden' : ''}`}
+      >
         <SchoolSearchInput value={school} onChange={onSchoolChange} readonly={readonly} />
 
         <div className="bg-card px-4 py-3.5 flex flex-col gap-2">
@@ -44,7 +46,9 @@ export function AffiliationInput({
   }
 
   return (
-    <div className={`rounded-2xl outline outline-1 outline-offset-[-1px] outline-line ${readonly ? 'overflow-hidden' : ''}`}>
+    <div
+      className={`rounded-2xl outline outline-1 outline-offset-[-1px] outline-line ${readonly ? 'overflow-hidden' : ''}`}
+    >
       <div className="bg-card px-4 py-3.5 flex flex-col gap-2">
         <label htmlFor="organizer-input" className="flex items-center gap-1">
           <span className="text-sub700 typo-body-xs-bold leading-4">주최 / 소속명</span>

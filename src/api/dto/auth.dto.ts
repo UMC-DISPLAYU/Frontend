@@ -11,35 +11,9 @@ export interface AuthUserDto {
   isVerified: boolean;
 }
 
-export interface LoginRequestDto {
-  provider: string;
-  idToken: string;
-}
-
 export interface OAuthAuthorizationUrlResponseDto {
   authorizationUrl: string;
 }
-
-//기존 사용자 응답
-export interface ExistingUserLoginResponseDataDto {
-  isNewUser: false;
-  accessToken: string;
-  refreshToken: string;
-  user: AuthUserDto;
-}
-
-//신규 사용자 응답
-export interface NewUserLoginResponseDataDto {
-  isNewUser: true;
-  signupToken: string;
-  provider: string;
-  name: string;
-  socialEmail: string;
-}
-
-export type LoginResponseDataDto = ExistingUserLoginResponseDataDto | NewUserLoginResponseDataDto;
-
-export type LoginResponseDto = ApiResponseDto<LoginResponseDataDto>;
 
 export interface SignupAgreementDto {
   code: string;

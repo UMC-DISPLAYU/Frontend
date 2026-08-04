@@ -30,15 +30,14 @@ const fetchUserProfile = async (): Promise<UserProfileResponse> => {
   // const response = await fetch('/api/user/profile');
   // return response.json();
 
-  // Mock: 작가 인증된 사용자 데이터
+  // Mock: 작가 미인증 사용자 데이터
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
-        isArtistVerified: true, // false로 변경하면 일반 사용자 UI
+        isArtistVerified: false,
         profile: {
           name: '김지원 님',
           avatar: AvatarImage,
-          // 작가 인증된 경우 (isArtistVerified: true)
           school: '중앙대학교',
           schoolIcon: SchoolIcon,
           field: '회화 · 일러스트',

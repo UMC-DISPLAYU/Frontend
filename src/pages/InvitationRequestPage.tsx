@@ -1,42 +1,83 @@
 import { useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import type { DisplayInvitationDto } from '@/api/dto';
+import {
+  useMyDisplayInvitations,
+  useRejectDisplayInvitation,
+} from '@/hooks/queries/useDisplayInvitations';
 import type { Invitation } from '@/types/invitation';
+import { cn } from '@/utils/cn';
 
-const INVITATIONS: Invitation[] = [
-  {
-    id: 'inv1',
-    title: '형태의 침묵',
-    department: '중앙대학교 디자인학부',
-    period: '05.28 - 06.05',
-    gallery: '중앙대학교 310관 갤러리',
-    inviter: '초대 ·  고상준(sangjun24)',
-    posterUrl: 'https://placehold.co/130x162',
-  },
-  {
-    id: 'inv2',
-    title: '형태의 침묵',
-    department: '중앙대학교 디자인학부',
-    period: '05.28 - 06.05',
-    gallery: '중앙대학교 310관 갤러리',
-    inviter: '초대 ·  고상준(sangjun24)',
-    posterUrl: 'https://placehold.co/130x162',
-  },
-];
+type InvitationApiItem = DisplayInvitationDto & {
+  displayId?: number;
+  displayTitle?: string;
+  title?: string;
+  school?: string;
+  organization?: string;
+  department?: string;
+  startDate?: string;
+  startedAt?: string;
+  endDate?: string;
+  endedAt?: string;
+  placeName?: string;
+  gallery?: string;
+  posterImageUrl?: string;
+  thumbnailUrl?: string;
+  inviterNickname?: string;
+  inviterName?: string;
+  status?: string;
+};
+
+const formatMonthDay = (date?: string) => {
+  if (!date) return '-';
+
+  const [, month, day] = date.split('-');
+  return month && day ? `${month}.${day}` : date;
+};
+
+const toInvitation = (item: InvitationApiItem): Invitation => {
+  const title = item.displayTitle ?? item.title ?? '';
+  const school = item.school ?? item.organization ?? '';
+  const department = item.department ?? '';
+  const inviterName = item.inviterNickname ?? item.inviterName;
+
+  return {
+    id: String(item.invitationId),
+    invitationId: item.invitationId,
+    displayId: item.displayId,
+    title,
+    department: [school, department].filter(Boolean).join(' '),
+    period: `${formatMonthDay(item.startDate ?? item.startedAt)} - ${formatMonthDay(
+      item.endDate ?? item.endedAt,
+    )}`,
+    gallery: item.placeName ?? item.gallery ?? '',
+    inviter: inviterName ? `초대 · ${inviterName}` : '',
+    posterUrl: item.posterImageUrl ?? item.thumbnailUrl ?? null,
+  };
+};
 
 interface InvitationCardProps {
   item: Invitation;
+  highlighted?: boolean;
   onAccept?: () => void;
   onReject?: () => void;
 }
 
-function InvitationCard({ item, onAccept, onReject }: InvitationCardProps) {
+function InvitationCard({ item, highlighted = false, onAccept, onReject }: InvitationCardProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+    <div
+      className={cn(
+        'flex flex-col gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]',
+        highlighted && 'outline outline-1 outline-offset-[-1px] outline-line-active',
+      )}
+    >
       <div className="flex items-start gap-3">
         <div className="h-32 w-24 shrink-0 overflow-hidden rounded-xl bg-box shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)]">
-          <img src={item.posterUrl} alt={item.title} className="size-full object-cover" />
+          {item.posterUrl && (
+            <img src={item.posterUrl} alt={item.title} className="size-full object-cover" />
+          )}
         </div>
 
         <div className="flex flex-1 flex-col gap-2">
@@ -120,8 +161,16 @@ function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
 
 export function InvitationRequestPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { data, isLoading, isError } = useMyDisplayInvitations();
+  /* 초대 링크를 타고 들어왔다면 어떤 전시의 초대인지 표시해줍니다. */
+  const highlightedDisplayId = Number(searchParams.get('displayId')) || null;
+  const rejectInvitation = useRejectDisplayInvitation();
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
+  const invitations = (data?.invitations ?? [])
+    .filter((item) => (item as InvitationApiItem).status !== 'REJECTED')
+    .map((item) => toInvitation(item as InvitationApiItem));
 
   const handleAccept = (item: Invitation) => {
     navigate(`/invitations/${item.id}/artist-name`, { state: { invitation: item } });
@@ -133,10 +182,14 @@ export function InvitationRequestPage() {
   };
 
   const handleRejectConfirm = () => {
-    // TODO: 거절 API 호출
-    // console.log('거절 확인:', selectedInvitation?.id);
-    setRejectModalOpen(false);
-    setSelectedInvitation(null);
+    if (!selectedInvitation) return;
+
+    rejectInvitation.mutate(selectedInvitation.invitationId, {
+      onSuccess: () => {
+        setRejectModalOpen(false);
+        setSelectedInvitation(null);
+      },
+    });
   };
 
   const handleRejectCancel = () => {
@@ -155,14 +208,35 @@ export function InvitationRequestPage() {
                 팀원으로 초대받은 전시를 확인하고 참여 여부를 선택해보세요.
               </p>
             </div>
-            <span className="typo-body-xs-regular text-faint">초대 {INVITATIONS.length}건</span>
+            <span className="typo-body-xs-regular text-faint">초대 {invitations.length}건</span>
           </div>
 
           <div className="flex flex-col gap-3">
-            {INVITATIONS.map((item) => (
+            {isLoading && (
+              <div className="rounded-2xl bg-card px-4 py-8 text-center typo-body-sm-regular text-hint">
+                초대 목록을 불러오는 중이에요.
+              </div>
+            )}
+
+            {isError && (
+              <div className="rounded-2xl bg-card px-4 py-8 text-center typo-body-sm-regular text-hint">
+                초대 목록을 불러오지 못했어요.
+              </div>
+            )}
+
+            {!isLoading && !isError && invitations.length === 0 && (
+              <div className="rounded-2xl bg-card px-4 py-8 text-center typo-body-sm-regular text-hint">
+                받은 초대가 없어요.
+              </div>
+            )}
+
+            {invitations.map((item) => (
               <InvitationCard
                 key={item.id}
                 item={item}
+                highlighted={
+                  highlightedDisplayId !== null && item.displayId === highlightedDisplayId
+                }
                 onAccept={() => handleAccept(item)}
                 onReject={() => handleReject(item)}
               />

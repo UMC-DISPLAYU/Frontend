@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { useAcceptDisplayInvitation } from '@/hooks/queries/useDisplayInvitations';
 import type { Invitation } from '@/types/invitation';
 
 type InfoRow = { label: string; value: string };
@@ -18,6 +19,7 @@ function buildExhibitionInfo(invitation?: Invitation): InfoRow[] {
 export function DisplayArtistNamePage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const acceptInvitation = useAcceptDisplayInvitation();
 
   const invitation = (location.state as { invitation?: Invitation } | null)?.invitation;
   const exhibitionInfo = buildExhibitionInfo(invitation);
@@ -28,13 +30,24 @@ export function DisplayArtistNamePage() {
   const handleSubmit = () => {
     if (!isValid) return;
 
-    // TODO: 참여 완료 API 호출 (invitation?.id 와 artistName 전송)
-    // TODO: 작가(학교 이메일) 인증 여부를 실제 유저 상태/응답에서 가져오기
-    const isVerified = false; // 임시값: 인증되면 true → 완료 화면이 인증 상태로 표시됨
+    const displayNickname = artistName.trim();
+    const invitationId = invitation?.invitationId;
 
-    navigate(`/invitations/${invitation?.id ?? ''}/complete`, {
-      state: { invitation, artistName: artistName.trim(), isVerified },
-    });
+    if (!invitationId) return;
+
+    acceptInvitation.mutate(
+      { invitationId, displayNickname },
+      {
+        onSuccess: () => {
+          // TODO: 작가(학교 이메일) 인증 여부를 실제 유저 상태/응답에서 가져오기
+          const isVerified = false; // 임시값: 인증되면 true → 완료 화면이 인증 상태로 표시됨
+
+          navigate(`/invitations/${invitation.id}/complete`, {
+            state: { invitation, artistName: displayNickname, isVerified },
+          });
+        },
+      },
+    );
   };
 
   return (
@@ -97,12 +110,14 @@ export function DisplayArtistNamePage() {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!isValid || acceptInvitation.isPending}
           className={`typo-body-md-semibold w-full rounded-xl py-4 transition-colors ${
-            isValid ? 'bg-bt-black text-white' : 'bg-bt-gray text-faint'
+            isValid && !acceptInvitation.isPending
+              ? 'bg-bt-black text-white'
+              : 'bg-bt-gray text-faint'
           }`}
         >
-          참여 완료하기
+          {acceptInvitation.isPending ? '참여 처리 중' : '참여 완료하기'}
         </button>
       </div>
     </div>

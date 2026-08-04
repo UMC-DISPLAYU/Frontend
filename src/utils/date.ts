@@ -9,6 +9,16 @@ export function formatDate(dateStr: string): string {
 }
 
 /**
+ * '2026.09.22' 처럼 입력된 값에서 연도만 추출
+ * 연도를 읽을 수 없으면 올해를 반환
+ */
+export function toProductionYear(value: string): number {
+  const year = Number(value.slice(0, 4));
+
+  return Number.isFinite(year) && year > 0 ? year : new Date().getFullYear();
+}
+
+/**
  * 24시간 이내면 상대 시간('N분 전', 'N시간 전'), 지나면 'YYYY.MM.DD' 절대 날짜
  */
 export function formatLoungeTime(createdAt: string): string {

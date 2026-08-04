@@ -1,26 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { LoginRequestDto, LogoutRequestDto, SignupRequestDto } from '@/api/dto';
+import type { LogoutRequestDto, SignupRequestDto } from '@/api/dto';
 import {
   getGoogleAuthorizationUrl,
   getKakaoAuthorizationUrl,
-  login,
   logout,
   signup,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
-
-export const useLogin = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (body: LoginRequestDto) => login(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
-    },
-  });
-};
 
 export const useSignup = () => {
   const queryClient = useQueryClient();

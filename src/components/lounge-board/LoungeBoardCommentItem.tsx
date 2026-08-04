@@ -109,6 +109,7 @@ export function LoungeBoardCommentItem({
         onReplyClick?.(Number(replyCommentId), author, Number(highlightId))
       }
       activeReplyId={activeReplyId !== null ? String(activeReplyId) : null}
+      tightSpacing
     />
   );
 }

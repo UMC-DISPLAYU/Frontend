@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
 
+import { useRedirectAfterLogin } from '@/hooks/usePendingRedirect';
+
 import { FNB } from './FNB';
 import { FooterContext } from './FooterContext';
 import { Navbar } from './Navbar';
@@ -10,6 +12,9 @@ function LayoutContent() {
   const location = useLocation();
   const matches = useMatches();
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
+
+  /* 로그인 전에 보관해 둔 복귀 경로가 있으면 로그인 직후 그곳으로 보냅니다. */
+  useRedirectAfterLogin();
 
   // 라운지 글쓰기 페이지 (/lounge/:category/post, 카테고리 무관)
   const isLoungeWritePath = /^\/lounge\/[^/]+\/post$/.test(location.pathname);
