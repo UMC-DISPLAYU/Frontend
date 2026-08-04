@@ -1,5 +1,7 @@
 import type {
   ArtworkFeelingLikeDto,
+  ArtworkFeelingReplyLikeDto,
+  ArtworkFeelingReplyListResponseDataDto,
   ArtworkQuestionRecordDto,
   CreateArtworkFeelingRequestDto,
   CreateArtworkFeelingResponseDataDto,
@@ -8,6 +10,7 @@ import type {
   CreateArtworkQuestionRequestDto,
   CreateExhibitionArtworkRequestDto,
   CreateExhibitionArtworkResponseDataDto,
+  DeleteArtworkFeelingReplyResponseDataDto,
   DeleteArtworkQuestionResponseDataDto,
   DeleteArtworkResponseDataDto,
   GetArtworkDetailResponseDataDto,
@@ -16,6 +19,8 @@ import type {
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
   GetDisplayArtworksResponseDataDto,
+  GetMyArtworkQuestionsResponseDataDto,
+  GetMyArtworksResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -59,6 +64,11 @@ export const getArtworkQuestions = async (
   artworkId: number,
 ): Promise<GetArtworkQuestionsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/questions`);
 
+// 가짜 엔드포인트: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
+// GET /api/v1/artworks/question/me
+export const getMyArtworkQuestions = async (): Promise<GetMyArtworkQuestionsResponseDataDto> =>
+  apiRequest('/v1/artworks/question/me');
+
 // POST /v1/artworks/:artworkId/questions
 export const createArtworkQuestion = async (
   artworkId: number,
@@ -99,6 +109,14 @@ export const toggleArtworkFeelingLike = async (
 ): Promise<ArtworkFeelingLikeDto | null> =>
   apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/like`, { method: 'POST' });
 
+// GET /v1/artworks/:artworkId/feelings/:feelingId/replies
+export const getArtworkFeelingReplies = async (
+  artworkId: number,
+  feelingId: number,
+  params: { cursorId?: number; size?: number } = {},
+): Promise<ArtworkFeelingReplyListResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/replies`, { query: params });
+
 // PUT /v1/artworks/order
 export const updateArtworkOrder = async (
   _displayId: number,
@@ -131,6 +149,26 @@ export const createArtworkFeelingReply = async (
 ): Promise<unknown> =>
   apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply`, { method: 'POST', body });
 
+// DELETE /v1/artworks/:artworkId/feelings/:feelingId/reply/:feelingReplyId
+export const deleteArtworkFeelingReply = async (
+  artworkId: number,
+  feelingId: number,
+  feelingReplyId: number,
+): Promise<DeleteArtworkFeelingReplyResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply/${feelingReplyId}`, {
+    method: 'DELETE',
+  });
+
+// POST /v1/artworks/:artworkId/feelings/:feelingId/reply/:feelingReplyId/like
+export const toggleArtworkFeelingReplyLike = async (
+  artworkId: number,
+  feelingId: number,
+  feelingReplyId: number,
+): Promise<ArtworkFeelingReplyLikeDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply/${feelingReplyId}/like`, {
+    method: 'POST',
+  });
+
 // POST /v1/artworks/:artworkId/like
 export const likeArtwork = async (artworkId: number): Promise<unknown> =>
   apiRequest(`/v1/artworks/${artworkId}/like`, { method: 'POST' });
@@ -144,3 +182,8 @@ export const getDisplayArtworks = async (
   displayId: number,
 ): Promise<GetDisplayArtworksResponseDataDto> =>
   apiRequest('/v1/artworks', { query: { displayId } });
+
+// 가짜 엔드포인트: 백엔드에 내 작품 전체 조회 API가 생기면 실제 경로로 교체해야 합니다.
+// GET /v1/artworks/me
+export const getMyArtworks = async (): Promise<GetMyArtworksResponseDataDto> =>
+  apiRequest('/v1/artworks/me');

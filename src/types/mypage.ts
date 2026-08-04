@@ -2,6 +2,8 @@ export type TabKey = 'exhibition' | 'artwork' | 'artist';
 
 export interface ExhibitionItem {
   id: string;
+  archiveDisplayId?: number;
+  displayId?: number;
   status: string;
   title: string;
   org: string;
@@ -13,6 +15,8 @@ export interface ExhibitionItem {
 
 export interface SavedArtworkItem {
   id: string;
+  archiveWorkId?: number;
+  artworkId?: number;
   title: string;
   artist: string;
   thumbnail: string;
@@ -21,6 +25,7 @@ export interface SavedArtworkItem {
 
 export interface ArtistItem {
   id: string;
+  artistId?: number;
   name: string;
   field: string;
   registeration: string;

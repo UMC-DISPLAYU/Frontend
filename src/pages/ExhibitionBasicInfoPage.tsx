@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { BottomButtonBar, PageHeader } from '@/components/common';
 import { AddressSearchModal } from '@/components/exhibition-basic-info';
 import { CalenderSheet } from '@/components/ui/CalenderSheet';
-import { type TimeRangeValue,TimeSheet } from '@/components/ui/TimeSheet';
+import { type TimeRangeValue, TimeSheet } from '@/components/ui/TimeSheet';
 
 interface DateValue {
   start: Date;
@@ -15,6 +15,11 @@ interface DateValue {
 }
 
 type SheetType = 'date' | 'time' | null;
+
+const pad = (value: number) => String(value).padStart(2, '0');
+const formatDate = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+const formatTime = (hour: number, minute: number) => `${pad(hour)}:${pad(minute)}`;
 
 /* 밑줄형 입력 래퍼 */
 function Underline({
@@ -76,8 +81,14 @@ export function ExhibitionBasicInfo() {
       state: {
         ...state,
         period: period?.label ?? '',
-        startDate: period?.start.toISOString() ?? null,
-        endDate: period?.end.toISOString() ?? null,
+        startDate: period ? formatDate(period.start) : null,
+        endDate: period ? formatDate(period.end) : null,
+        startTime: operatingHours
+          ? formatTime(operatingHours.startHour, operatingHours.startMinute)
+          : null,
+        endTime: operatingHours
+          ? formatTime(operatingHours.endHour, operatingHours.endMinute)
+          : null,
         openHours: operatingHours?.label ?? '',
         placeName,
         address,
@@ -181,9 +192,7 @@ export function ExhibitionBasicInfo() {
                   className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
                 />
               </Underline>
-              <p className="typo-body-xxs-regular text-faint">
-                @displayu_oo / example@email.com
-              </p>
+              <p className="typo-body-xxs-regular text-faint">@displayu_oo / example@email.com</p>
             </div>
           </div>
 
@@ -224,7 +233,12 @@ export function ExhibitionBasicInfo() {
         </button>
       </BottomButtonBar>
 
-      <CalenderSheet open={sheet === 'date'} onClose={() => setSheet(null)} value={period} onConfirm={setPeriod} />
+      <CalenderSheet
+        open={sheet === 'date'}
+        onClose={() => setSheet(null)}
+        value={period}
+        onConfirm={setPeriod}
+      />
       <TimeSheet
         open={sheet === 'time'}
         onClose={() => setSheet(null)}

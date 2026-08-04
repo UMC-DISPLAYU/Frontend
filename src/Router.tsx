@@ -13,11 +13,13 @@ import { DisplayArtistNamePage } from './pages/DisplayArtistNamePage';
 import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
 import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
+import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
 import { DisplayManagePage } from './pages/DisplayManagePage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
 import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
+import { ExhibitionEditPage } from './pages/ExhibitionEditPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { Homepage } from './pages/Homepage';
@@ -50,6 +52,8 @@ export const router = createBrowserRouter([
       { path: 'my', element: <MyPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'artist-verification', element: <ArtistVerificationPage /> },
+      // 백엔드가 발급하는 초대 URL. display/:id 보다 먼저 매칭되어야 합니다.
+      { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
       { path: 'display/:id', element: <DisplayDetailPage /> },
       { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
       { path: 'display/:id/contents', element: <DisplayContentsPage /> },
@@ -61,10 +65,11 @@ export const router = createBrowserRouter([
       { path: 'exhibition/register-complete', element: <ExhibitionRegisterComplete /> },
       { path: 'lounge', element: <LoungePage /> },
       { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },
+      { path: 'exhibition/edit/:displayId', element: <ExhibitionEditPage /> },
       { path: 'exhibition/artist', element: <ArtistNameSetup /> },
       { path: 'exhibition/manage', element: <ExhibitionManage /> },
       { path: 'exhibition/visibility', element: <VisibilitySettings /> },
-      { path: 'team/manage', element: <TeamManage /> },
+      { path: 'display/:displayId/team/manage', element: <TeamManage /> },
       { path: 'setting', element: <SettingPage /> },
       { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
       { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
@@ -75,10 +80,19 @@ export const router = createBrowserRouter([
       { path: 'my-review', element: <MyReviewPage /> },
       { path: 'my-questions', element: <MyQuestionsPage /> },
       { path: 'policy', element: <PolicyPage /> },
-      { path: 'lounge/review/post', element: <ExhibitionReviewWritePage /> },
+      { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },
       { path: 'lounge/my-activity', element: <MyActivityPage /> },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
-      { path: 'lounge/:category/:id', element: <LoungeBoardDetailPage /> },
+      {
+        path: 'lounge/:category/:id',
+        element: <LoungeBoardDetailPage />,
+        handle: { hideNavbar: true },
+      },
+      {
+        path: 'lounge/:category/:id/edit',
+        element: <ExhibitionReviewWritePage />,
+        handle: { hideNavbar: true, hideFooter: true },
+      },
       // 새 페이지 여기에 추가
       // { path: 'about', element: <About /> },
     ],

@@ -30,7 +30,7 @@ export function AlertModal({ message, confirmLabel = '확인', onConfirm }: Prop
           ref={confirmButtonRef}
           type="button"
           onClick={onConfirm}
-          className="w-full h-11 bg-dark rounded-full flex items-center justify-center text-card typo-body-md-regular"
+          className="w-full h-11 bg-[#9D9D9D] hover:bg-[#111] rounded-full flex items-center justify-center text-card typo-body-md-regular transition-colors"
         >
           {confirmLabel}
         </button>

@@ -6,15 +6,22 @@ import { Toggle } from './Toggle';
 
 interface InviteLinkSectionProps {
   inviteLink: string;
+  enabled: boolean;
+  onToggle: (next: boolean) => void;
+  pending?: boolean;
 }
 
-export function InviteLinkSection({ inviteLink }: InviteLinkSectionProps) {
-  const [linkEnabled, setLinkEnabled] = useState(true);
+export function InviteLinkSection({
+  inviteLink,
+  enabled,
+  onToggle,
+  pending = false,
+}: InviteLinkSectionProps) {
   const [copied, setCopied] = useState(false);
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(`https://${inviteLink}`);
+      await navigator.clipboard.writeText(inviteLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -26,10 +33,10 @@ export function InviteLinkSection({ inviteLink }: InviteLinkSectionProps) {
     <div className="mt-3 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="typo-body-sm-regular text-main">초대 링크 활성화</span>
-        <Toggle checked={linkEnabled} onChange={setLinkEnabled} />
+        <Toggle checked={enabled} onChange={onToggle} disabled={pending} />
       </div>
 
-      {linkEnabled && (
+      {enabled && inviteLink && (
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1">
             <span className="grid h-4 w-7 shrink-0 place-items-center rounded-sm bg-card outline outline-1 outline-offset-[-1px] outline-line-soft">

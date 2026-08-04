@@ -113,7 +113,12 @@ export function AddressSearchModal({ open, onClose, onConfirm }: AddressSearchMo
       ? `${fullAddress} ${detailAddress.trim()}`
       : fullAddress;
 
-    onConfirm(finalAddress, detailAddress.trim(), selectedAddress.latitude, selectedAddress.longitude);
+    onConfirm(
+      finalAddress,
+      detailAddress.trim(),
+      selectedAddress.latitude,
+      selectedAddress.longitude,
+    );
     handleClose();
   };
 
@@ -189,9 +194,7 @@ export function AddressSearchModal({ open, onClose, onConfirm }: AddressSearchMo
                           )}
                         </p>
                       )}
-                      <p className="typo-body-xs-regular text-faint">
-                        {result.jibunAddress}
-                      </p>
+                      <p className="typo-body-xs-regular text-faint">{result.jibunAddress}</p>
                     </div>
                   </button>
                 ))}

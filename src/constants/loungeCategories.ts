@@ -18,3 +18,16 @@ export type LoungeCategoryKey = keyof typeof LOUNGE_CATEGORIES;
 export function isLoungeCategoryKey(value: string | undefined): value is LoungeCategoryKey {
   return !!value && value in LOUNGE_CATEGORIES;
 }
+
+export const LOUNGE_CATEGORY_API_VALUES = {
+  review: 'DISPLAY_REVIEW',
+  tips: 'WORK_TIP',
+  collab: 'COLLABORATION',
+  venue: 'SPACE_RENTAL',
+} as const;
+
+export function toLoungeCategoryKey(apiCategory: string): LoungeCategoryKey | undefined {
+  return (Object.keys(LOUNGE_CATEGORY_API_VALUES) as LoungeCategoryKey[]).find(
+    (key) => LOUNGE_CATEGORY_API_VALUES[key] === apiCategory,
+  );
+}

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Calendar, Clock, Heart, MapPin } from 'lucide-react';
 
 import type { DisplayDetailDto } from '@/api/dto/display.dto';
+import { useToggleDisplayLike } from '@/hooks/queries/useDisplayDetail';
 import { cn } from '@/utils/cn';
 
 import { DisplaySaveButton } from './DisplaySaveButton';
@@ -47,7 +48,9 @@ function MetaRow({
 }
 
 export function ExhibitionMeta({ display: ex }: Props) {
-  const [bookmarked, setBookmarked] = useState(false);
+  const toggleLike = useToggleDisplayLike();
+  /* 좋아요 상태는 토글 응답이 전시 상세 캐시에 반영됩니다. */
+  const liked = Boolean((ex as DisplayDetailDto & { isLiked?: boolean }).isLiked);
   const [isAtTop, setIsAtTop] = useState(true);
 
   useEffect(() => {
@@ -60,7 +63,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
   }, []);
 
   const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
-  const displayedLikeCount = (ex.likeCount ?? 0) + (bookmarked ? 1 : 0);
+  const displayedLikeCount = ex.likeCount ?? 0;
 
   return (
     <section className="px-5 pt-6 pb-4 bg-[#f0f0f3]">
@@ -72,17 +75,18 @@ export function ExhibitionMeta({ display: ex }: Props) {
         <button
           type="button"
           id="meta-heart-btn"
-          onClick={() => setBookmarked((v) => !v)}
-          className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95 cursor-pointer"
+          onClick={() => toggleLike.mutate({ displayId: ex.displayId, liked })}
+          disabled={toggleLike.isPending}
+          className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-60"
         >
           <Heart
             size={17}
             className={cn(
               'transition-colors duration-200',
-              bookmarked ? 'fill-heart text-heart' : 'fill-none text-sub700',
+              liked ? 'fill-heart text-heart' : 'fill-none text-sub700',
             )}
           />
-          <span className={cn('typo-body-xs-regular', bookmarked ? 'text-heart' : 'text-sub700')}>
+          <span className={cn('typo-body-xs-regular', liked ? 'text-heart' : 'text-sub700')}>
             {displayedLikeCount}
           </span>
         </button>
@@ -104,7 +108,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
 
       {!isAtTop && (
         <div className="px-1 pt-10">
-          <DisplaySaveButton />
+          <DisplaySaveButton displayId={ex.displayId} saved={ex.isBookmarked ?? false} />
         </div>
       )}
     </section>

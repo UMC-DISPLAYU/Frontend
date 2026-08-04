@@ -44,3 +44,94 @@ export type CreatePersonalArtworkResponseDto = ApiResponseDto<PersonalArtworkRes
 export type UpdatePersonalArtworkResponseDto = ApiResponseDto<PersonalArtworkResponseDataDto>;
 
 export type DeletePersonalArtworkResponseDto = ApiResponseDto<null>;
+
+export interface PersonalArtworkFeelingImageRequestDto {
+  imageUrl: string;
+  width?: number;
+  height?: number;
+  sortOrder?: number;
+}
+
+export interface CreatePersonalArtworkFeelingRequestDto {
+  content: string;
+  images?: PersonalArtworkFeelingImageRequestDto[];
+}
+
+export interface PersonalArtworkFeelingResponseDataDto {
+  personalFeelingId: number;
+  userId: number;
+  content: string;
+  createdAt: string;
+  images: ImageResponseDto[];
+}
+
+export interface GetPersonalArtworkFeelingsResponseDataDto {
+  feelings: PersonalArtworkFeelingResponseDataDto[];
+}
+
+export interface CreatePersonalArtworkQuestionRequestDto {
+  content: string;
+  isPublic?: boolean;
+}
+
+export interface PersonalArtworkQuestionResponseDataDto {
+  personalQuestionId: number;
+  content: string;
+  isPublic: boolean;
+  answerStatus: 'WAITING' | 'ANSWERED' | string;
+  createdAt: string;
+  userId: number;
+}
+
+export interface GetPersonalArtworkQuestionsResponseDataDto {
+  questions: PersonalArtworkQuestionResponseDataDto[];
+}
+
+export interface CreatePersonalArtworkReplyRequestDto {
+  content: string;
+}
+
+export interface PersonalArtworkFeelingReplyDto {
+  personalFeelingReplyId: number;
+  createdAt: string;
+  content: string;
+  personalFeelingId: number;
+  userId: number;
+  nickname: string;
+  isCreator: boolean;
+}
+
+export interface PersonalArtworkFeelingReplyListResponseDataDto {
+  replies: PersonalArtworkFeelingReplyDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export interface PersonalArtworkQuestionReplyResponseDataDto {
+  personalQuestionReplyId: number;
+  createdAt: string;
+  content: string;
+  personalQuestionId: number;
+  userId: number;
+  nickname: string;
+  isCreator: boolean;
+}
+
+export interface PersonalArtworkLikeResponseDataDto {
+  personalArtworkId: number;
+  isLiked: boolean;
+  likeCount: number;
+}
+
+export interface PersonalArtworkFeelingLikeResponseDataDto {
+  personalFeelingId: number;
+  isLiked: boolean;
+  likeCount: number;
+}
+
+export interface PersonalArtworkFeelingReplyLikeResponseDataDto {
+  personalFeelingReplyId: number;
+  isLiked: boolean;
+  likeCount: number;
+}

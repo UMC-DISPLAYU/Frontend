@@ -7,6 +7,8 @@ interface CodeVerificationFieldProps {
   onResend: () => void;
   confirmed: boolean;
   error?: string;
+  isConfirming?: boolean;
+  isResending?: boolean;
 }
 
 export function CodeVerificationField({
@@ -16,6 +18,8 @@ export function CodeVerificationField({
   onResend,
   confirmed,
   error,
+  isConfirming = false,
+  isResending = false,
 }: CodeVerificationFieldProps) {
   return (
     <ArtistVerificationField label="인증번호" htmlFor="verification-code" className="mt-4">
@@ -39,9 +43,10 @@ export function CodeVerificationField({
         <button
           type="button"
           onClick={onConfirm}
+          disabled={isConfirming}
           className="h-10 w-[84px] shrink-0 rounded-xl bg-bt-black typo-body-sm-regular text-white"
         >
-          인증 확인
+          {isConfirming ? '확인중' : '인증 확인'}
         </button>
       </div>
       {error ? (
@@ -52,9 +57,10 @@ export function CodeVerificationField({
       <button
         type="button"
         onClick={onResend}
+        disabled={isResending}
         className="mt-1 typo-body-xxs-regular text-faint underline"
       >
-        인증번호 재발송
+        {isResending ? '재발송 중' : '인증번호 재발송'}
       </button>
     </ArtistVerificationField>
   );

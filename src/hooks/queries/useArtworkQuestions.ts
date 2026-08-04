@@ -10,6 +10,7 @@ import {
   createArtworkQuestionReply,
   deleteArtworkQuestion,
   getArtworkQuestions,
+  getMyArtworkQuestions,
   updateArtworkQuestion,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -19,6 +20,13 @@ export const useArtworkQuestions = (artworkId: number) =>
     queryKey: queryKeys.artworkQuestions.list(artworkId),
     queryFn: () => getArtworkQuestions(artworkId),
     enabled: Number.isFinite(artworkId),
+  });
+
+// 가짜 쿼리 훅: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
+export const useMyArtworkQuestions = () =>
+  useQuery({
+    queryKey: queryKeys.artworkQuestions.me(),
+    queryFn: getMyArtworkQuestions,
   });
 
 export const useCreateArtworkQuestion = () => {

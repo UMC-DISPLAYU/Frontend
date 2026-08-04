@@ -4,6 +4,7 @@ import { Calendar, ChevronRight, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
+import { useToggleArtworkLike } from '@/hooks/queries/useArtworkDetail';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
@@ -14,8 +15,11 @@ type Props = {
 export function ArtworkMeta({ artwork }: Props) {
   const navigate = useNavigate();
   const [isAtTop, setIsAtTop] = useState(true);
-  const [liked, setLiked] = useState(artwork.isBookmarked ?? false);
-  const [likeCount, setLikeCount] = useState(artwork.bookmarkCount ?? 0);
+
+  /* 좋아요 상태와 개수는 작품 상세 응답을 그대로 씁니다. */
+  const liked = artwork.isBookmarked ?? false;
+  const likeCount = artwork.bookmarkCount ?? 0;
+  const toggleLike = useToggleArtworkLike(artwork.artworkId);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,8 +31,8 @@ export function ArtworkMeta({ artwork }: Props) {
   }, []);
 
   const handleLike = () => {
-    setLiked((prev) => !prev);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+    if (toggleLike.isPending) return;
+    toggleLike.mutate(liked);
   };
 
   return (
@@ -106,7 +110,9 @@ export function ArtworkMeta({ artwork }: Props) {
         </div>
       </button>
 
-      {!isAtTop && <ArtworkSaveButton />}
+      {!isAtTop && (
+        <ArtworkSaveButton artworkId={artwork.artworkId} saved={artwork.isBookmarked ?? false} />
+      )}
     </div>
   );
 }

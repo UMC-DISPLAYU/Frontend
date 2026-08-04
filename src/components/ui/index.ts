@@ -3,6 +3,8 @@ export { BackButton } from './BackButton';
 export { BottomSheet } from './BottomSheet';
 export { CalenderSheet } from './CalenderSheet';
 export { Chip } from './Chip';
+export { ChipGroup } from './ChipGroup';
+export { ConfirmModal } from './ConfirmModal';
 export { LoungePostCard } from './LoungePostCard';
 export { RequiredLabel } from './RequiredLabel';
 export { TimeSheet } from './TimeSheet';
