@@ -7,7 +7,7 @@ import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab'
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
-import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
+import { BottomCommentBar, CommentInputBar, ErrorView, LoadingView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
@@ -27,7 +27,6 @@ import type {
   ArtworkDetail,
   ArtworkGuestbookTab as ArtworkGuestbookSubTabType,
   GuestbookQuestion,
-  GuestbookReview,
 } from '@/types/exhibition';
 
 export function ArtworkDetailPage() {
@@ -43,7 +42,12 @@ export function ArtworkDetailPage() {
   const myUserId = userMe?.id;
 
   const { data: detail, isPending, isError } = useArtworkDetail(artworkId);
-  const { data: feelingsData } = useArtworkFeelings(artworkId);
+  const {
+    data: feelingsData,
+    hasNextPage: hasMoreFeelings,
+    fetchNextPage: fetchMoreFeelings,
+    isFetchingNextPage: isFetchingMoreFeelings,
+  } = useArtworkFeelings(artworkId);
   const { data: questionsData } = useArtworkQuestions(artworkId);
 
   /*
@@ -55,30 +59,31 @@ export function ArtworkDetailPage() {
   const createFeeling = useCreateArtworkFeeling();
   const createQuestion = useCreateArtworkQuestion();
 
-  /* 하단 입력바가 답글 모드일 때 대상 감상/질문. 둘 다 null이면 새 글을 남깁니다. */
-  const [replyTarget, setReplyTarget] = useState<GuestbookReview | null>(null);
-  const [questionReplyTarget, setQuestionReplyTarget] = useState<GuestbookQuestion | null>(null);
+  /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 CommentInputBar가 씀) */
+  const [feelingReplyTarget, setFeelingReplyTarget] = useState<{
+    commentId: number;
+    author: string;
+  } | null>(null);
+  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
+  const clearFeelingReplyTarget = () => {
+    setFeelingReplyTarget(null);
+    setActiveReplyId(null);
+  };
+  const createFeelingReply = useCreateArtworkFeelingReply(
+    artworkId,
+    feelingReplyTarget?.commentId ?? 0,
+  );
 
-  const createFeelingReply = useCreateArtworkFeelingReply(artworkId, replyTarget?.feelingId ?? 0);
+  /* 질문 답변(작가 전용) 대상 — 기존 그대로 유지 */
+  const [questionReplyTarget, setQuestionReplyTarget] = useState<GuestbookQuestion | null>(null);
   const createQuestionReply = useCreateArtworkQuestionReply();
 
+  const feelings = feelingsData?.pages.flatMap((page) => page.feelings) ?? [];
+
   /*
-   * 감상/질문 응답을 방명록 화면이 쓰는 형태로 맞춥니다.
+   * 질문 응답을 방명록 화면이 쓰는 형태로 맞춥니다.
    * 스웨거 응답에는 프로필 이미지와 좋아요 정보가 없어 화면 기본값을 사용합니다.
    */
-  const reviews: GuestbookReview[] = (feelingsData?.feelings ?? []).map((feeling) => ({
-    feelingId: feeling.feelingId,
-    content: feeling.content,
-    createdAt: feeling.createdAt,
-    user: {
-      userId: feeling.user?.userId ?? feeling.userId ?? 0,
-      nickname: feeling.user?.nickname ?? '',
-    },
-    reply: feeling.reply ? { content: feeling.reply.content, createdAt: feeling.createdAt } : null,
-    images: feeling.images?.map((image) => image.imageUrl),
-    isMyReview: Boolean(myUserId) && (feeling.user?.userId ?? feeling.userId) === myUserId,
-  }));
-
   const questions: GuestbookQuestion[] = (questionsData?.questions ?? []).map((question) => ({
     questionId: question.questionId,
     content: question.content,
@@ -95,14 +100,9 @@ export function ArtworkDetailPage() {
     isMyQuestion: Boolean(myUserId) && question.user?.userId === myUserId,
   }));
 
-  /* 답글 대상이 있으면 답글로, 없으면 탭에 맞춰 감상/질문으로 등록합니다. */
-  const handleSendGuestbook = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
+  /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
+  const handleSendQuestion = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
     if (!content) return;
-
-    if (replyTarget) {
-      createFeelingReply.mutate(content, { onSuccess: () => setReplyTarget(null) });
-      return;
-    }
 
     if (questionReplyTarget) {
       createQuestionReply.mutate(
@@ -112,12 +112,7 @@ export function ArtworkDetailPage() {
       return;
     }
 
-    if (activeSubTab === 'question') {
-      createQuestion.mutate({ artworkId, body: { content, isPublic: !isPrivate } });
-      return;
-    }
-
-    createFeeling.mutate({ artworkId, body: { content } });
+    createQuestion.mutate({ artworkId, body: { content, isPublic: !isPrivate } });
   };
 
   if (isPending) {
@@ -184,21 +179,28 @@ export function ArtworkDetailPage() {
       )}
       {activeTab === 'guestbook' && (
         <ArtworkGuestbookTab
-          reviews={reviews}
+          feelings={feelings}
+          hasMoreFeelings={hasMoreFeelings}
+          onLoadMoreFeelings={fetchMoreFeelings}
+          isLoadingMoreFeelings={isFetchingMoreFeelings}
           questions={questions}
           artworkId={artworkId}
+          myUserId={myUserId}
           activeSubTab={activeSubTab}
           onSubTabChange={setActiveSubTab}
           isArtistView={isArtistView}
           onArtistViewChange={setIsArtistView}
-          replyTargetFeelingId={replyTarget?.feelingId ?? null}
-          onReplyTargetChange={setReplyTarget}
+          activeReplyId={activeReplyId}
+          onFeelingReplyClick={(commentId, author, highlightId) => {
+            setFeelingReplyTarget({ commentId, author });
+            setActiveReplyId(highlightId);
+          }}
           replyTargetQuestionId={questionReplyTarget?.questionId ?? null}
           onQuestionReplyTargetChange={setQuestionReplyTarget}
         />
       )}
 
-      {/* 하단 고정 바: 소개 탭은 저장버튼, 방명록 탭은 글쓰기 입력 바 */}
+      {/* 하단 고정 바: 소개 탭은 저장버튼, 감상 탭은 공용 입력바, 질문 탭은 기존 입력바 */}
       {activeTab === 'intro' ? (
         <BottomFixedBar
           button={
@@ -209,24 +211,30 @@ export function ArtworkDetailPage() {
             />
           }
         />
+      ) : activeSubTab === 'review' ? (
+        <CommentInputBar
+          replyTarget={feelingReplyTarget}
+          onCancelReply={clearFeelingReplyTarget}
+          onSubmitComment={(content, imageUrls) =>
+            createFeeling.mutateAsync({
+              artworkId,
+              body: { content, images: imageUrls.map((imageUrl) => ({ imageUrl })) },
+            })
+          }
+          onSubmitReply={(commentId, content) =>
+            // 감상 답글 API는 이미지 첨부를 지원하지 않음
+            createFeelingReply.mutateAsync(content, { onSuccess: clearFeelingReplyTarget })
+          }
+          imageUploadDomain="artwork-feeling"
+        />
       ) : (
         <BottomCommentBar
-          /* 일반인 시점 질문 탭에서만 비공개로 남길 수 있습니다. */
-          showPrivateOption={
-            !replyTarget && !questionReplyTarget && activeSubTab === 'question' && !isArtistView
-          }
-          replyingTo={replyTarget?.user?.nickname ?? questionReplyTarget?.user?.nickname}
-          onCancelReply={() => {
-            setReplyTarget(null);
-            setQuestionReplyTarget(null);
-          }}
-          isSubmitting={
-            createFeelingReply.isPending ||
-            createQuestionReply.isPending ||
-            createFeeling.isPending ||
-            createQuestion.isPending
-          }
-          onSubmit={handleSendGuestbook}
+          /* 일반인 시점에서만 비공개로 남길 수 있습니다. */
+          showPrivateOption={!questionReplyTarget && !isArtistView}
+          replyingTo={questionReplyTarget?.user?.nickname}
+          onCancelReply={() => setQuestionReplyTarget(null)}
+          isSubmitting={createQuestionReply.isPending || createQuestion.isPending}
+          onSubmit={handleSendQuestion}
         />
       )}
     </div>

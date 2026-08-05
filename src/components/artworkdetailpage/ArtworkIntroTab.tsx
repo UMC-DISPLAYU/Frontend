@@ -49,7 +49,7 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
   };
 
   return (
-    <div className="pb-6">
+    <div className="pb-28">
       {/* 작품소개 */}
       <section className="px-5 pt-7 pb-6">
         <div className="flex items-center justify-between mb-3">

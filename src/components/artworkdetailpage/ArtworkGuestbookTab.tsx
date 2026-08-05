@@ -1,306 +1,38 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Heart, Lock } from 'lucide-react';
 
+import type { ArtworkFeelingDto } from '@/api/dto/displayArtwork.dto';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
-import {
-  useArtworkFeelingReplies,
-  useDeleteArtworkFeeling,
-  useDeleteArtworkFeelingReply,
-  useToggleArtworkFeelingLike,
-  useToggleArtworkFeelingReplyLike,
-} from '@/hooks/queries/useArtworkFeelings';
 import {
   useDeleteArtworkQuestion,
   useUpdateArtworkQuestion,
 } from '@/hooks/queries/useArtworkQuestions';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
-import type {
-  ArtworkGuestbookTab,
-  GuestbookQuestion,
-  GuestbookReview,
-  GuestbookReviewReply,
-} from '@/types/exhibition';
+import type { ArtworkGuestbookTab, GuestbookQuestion } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
+import { ArtworkFeelingCommentItem } from './ArtworkFeelingCommentItem';
+
 type Props = {
-  reviews: GuestbookReview[];
+  feelings: ArtworkFeelingDto[];
+  hasMoreFeelings?: boolean;
+  onLoadMoreFeelings?: () => void;
+  isLoadingMoreFeelings?: boolean;
   questions: GuestbookQuestion[];
   artworkId: number;
+  myUserId?: number;
   isArtist?: boolean;
   activeSubTab?: ArtworkGuestbookTab;
   onSubTabChange?: (tab: ArtworkGuestbookTab) => void;
   isArtistView?: boolean;
   onArtistViewChange?: (isArtist: boolean) => void;
-  /* 하단 입력바가 답글 대상으로 잡고 있는 감상 id */
-  replyTargetFeelingId?: number | null;
-  onReplyTargetChange?: (review: GuestbookReview | null) => void;
+  /* 하단 입력바가 답글 대상으로 잡고 있는 감상 id (댓글 하이라이트용) */
+  activeReplyId?: number | null;
+  onFeelingReplyClick?: (commentId: number, author: string, highlightId: number) => void;
   /* 작가가 답변할 질문 id */
   replyTargetQuestionId?: number | null;
   onQuestionReplyTargetChange?: (question: GuestbookQuestion | null) => void;
 };
-
-/* 방명록 감상 탭 댓글(답글) 카드 */
-function ReviewReplyItem({
-  reply,
-  onLike,
-  onDelete,
-}: {
-  reply: GuestbookReviewReply;
-  onLike?: () => void;
-  onDelete?: () => void;
-}) {
-  const liked = reply.isLiked ?? false;
-  const likeCount = reply.likeCount ?? 0;
-
-  const handleLike = () => onLike?.();
-
-  return (
-    <div className="-mx-5 pl-14 pr-5 py-3 border-b border-line">
-      <div className="w-full inline-flex justify-start items-start gap-1.5">
-        {/* 프로필 아바타 */}
-        <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
-          <img
-            src={reply.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
-            alt={reply.user?.nickname || '사용자'}
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* 컨텐츠 */}
-        <div className="flex-1 inline-flex flex-col justify-start items-start gap-3 min-w-0">
-          <div className="w-full flex flex-col justify-start items-start gap-3">
-            <div className="w-full flex flex-col justify-start items-start gap-1">
-              <div className="w-full h-5 inline-flex justify-start items-center gap-2">
-                <div className="flex justify-start items-center gap-2">
-                  <span className="typo-body-sm-bold text-main">{reply.user?.nickname}</span>
-                  {reply.isArtist && <span className="typo-body-xs-regular text-hint">작가</span>}
-                  <span className="typo-body-xs-regular text-hint">{reply.createdAt}</span>
-                </div>
-              </div>
-
-              <p className="w-full typo-body-xs-regular text-sub600 wrap-break-word whitespace-pre-line">
-                {reply.content}
-              </p>
-            </div>
-
-            <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-hint">
-              <div className="flex items-center gap-2">
-                {reply.isMyReply && (
-                  <button
-                    type="button"
-                    onClick={onDelete}
-                    className="hover:text-main cursor-pointer"
-                  >
-                    삭제
-                  </button>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleLike}
-                className="flex items-center gap-1 hover:text-main text-hint cursor-pointer"
-              >
-                <Heart
-                  size={14}
-                  className={cn(
-                    'transition-colors',
-                    liked ? 'fill-main text-main' : 'fill-none text-hint',
-                  )}
-                />
-                <span>{likeCount}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* 방명록 감상 탭 후기 카드 (전시 상세 후기 디자인 적용) */
-function ReviewCard({
-  review,
-  artworkId,
-  isReplyTarget = false,
-  onReply,
-}: {
-  review: GuestbookReview;
-  artworkId: number;
-  isReplyTarget?: boolean;
-  onReply?: () => void;
-}) {
-  const [showReplies, setShowReplies] = useState(false);
-  const { data: userMe } = useUserMe();
-  const myUserId = userMe?.id;
-
-  const images = review.images ?? [];
-  const liked = review.isLiked ?? false;
-  const likeCount = review.likeCount ?? 0;
-
-  const toggleLike = useToggleArtworkFeelingLike();
-  const deleteFeeling = useDeleteArtworkFeeling();
-  const deleteReply = useDeleteArtworkFeelingReply(artworkId, review.feelingId);
-  const likeReply = useToggleArtworkFeelingReplyLike(artworkId, review.feelingId);
-
-  /* 답글 목록은 사용자가 펼쳤을 때만 조회합니다. */
-  const { data: repliesData } = useArtworkFeelingReplies(
-    artworkId,
-    review.feelingId,
-    showReplies || (review.commentCount ?? 0) > 0,
-  );
-
-  /* 답글 응답(ArtworkGuestbookReplyDto)을 화면이 쓰는 형태로 맞춥니다. */
-  const replyList: GuestbookReviewReply[] = repliesData?.replies
-    ? repliesData.replies.map((reply) => ({
-        replyId: reply.feelingReplyId ?? 0,
-        content: reply.content,
-        createdAt: reply.createdAt,
-        user: { userId: reply.userId ?? 0, nickname: reply.nickname ?? '' },
-        isArtist: reply.isCreator,
-        isMyReply: Boolean(myUserId) && reply.userId === myUserId,
-      }))
-    : (review.replies ?? []);
-  const commentCount = review.commentCount ?? replyList.length;
-
-  const handleLike = () => {
-    if (toggleLike.isPending) return;
-    toggleLike.mutate({ artworkId, feelingId: review.feelingId });
-  };
-
-  return (
-    <article
-      className={cn(
-        'w-full transition-colors',
-        // 답글 대상으로 선택되면 어떤 감상에 답글을 다는지 드러나게 강조합니다.
-        isReplyTarget && '-mx-5 w-[calc(100%+2.5rem)] bg-box100 px-5',
-      )}
-    >
-      {/* 메인 후기 영역 */}
-      <div className="-mx-5 px-5 py-3 border-b border-line">
-        <div className="w-full inline-flex justify-start items-start gap-1.5">
-          {/* 프로필 아바타 */}
-          <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
-            <img
-              src={review.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
-              alt={review.user?.nickname || '사용자'}
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          {/* 우측 전체 컨텐츠 Column */}
-          <div className="flex-1 inline-flex flex-col justify-start items-start gap-3 min-w-0">
-            <div className="w-full flex flex-col justify-start items-start gap-3">
-              <div className="w-full flex flex-col justify-start items-start gap-1">
-                {/* 이름 & 작가 태그(선택) & 날짜 */}
-                <div className="w-full h-5 inline-flex justify-start items-center gap-2">
-                  <div className="flex justify-start items-center gap-2">
-                    <span className="typo-body-sm-bold text-main">{review.user?.nickname}</span>
-                    {review.isArtist && (
-                      <span className="typo-body-xs-regular text-hint">작가</span>
-                    )}
-                    <span className="typo-body-xs-regular text-hint">{review.createdAt}</span>
-                  </div>
-                </div>
-
-                {/* 첨부 이미지 목록 */}
-                {images.length > 0 && (
-                  <div
-                    className="w-full inline-flex justify-start items-start gap-1 overflow-x-auto pb-1"
-                    style={{ scrollbarWidth: 'none' }}
-                  >
-                    {images.map((imgUrl, idx) => (
-                      <div
-                        key={idx}
-                        className="w-28 h-32 relative rounded-sm overflow-hidden shrink-0 bg-box"
-                      >
-                        <img
-                          src={imgUrl}
-                          alt="후기 이미지"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 후기 본문 */}
-              <p className="w-full typo-body-xs-regular text-sub600 wrap-break-word whitespace-pre-line">
-                {review.content}
-              </p>
-            </div>
-
-            {/* 하단 액션: 답글달기 / 댓글 N / 삭제 + 좋아요 */}
-            <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-hint">
-              <div className="flex justify-start items-center gap-2">
-                <button type="button" onClick={onReply} className="hover:text-main cursor-pointer">
-                  답글달기
-                </button>
-                {commentCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowReplies((prev) => !prev)}
-                    className="hover:text-main cursor-pointer"
-                  >
-                    댓글 {commentCount}
-                  </button>
-                )}
-                {review.isMyReview && (
-                  <button
-                    type="button"
-                    onClick={() => deleteFeeling.mutate({ artworkId, feelingId: review.feelingId })}
-                    className="hover:text-main cursor-pointer"
-                  >
-                    삭제
-                  </button>
-                )}
-              </div>
-
-              <div className="flex justify-start items-center gap-1">
-                <button
-                  type="button"
-                  onClick={handleLike}
-                  className="flex items-center gap-1 hover:text-main text-hint cursor-pointer"
-                >
-                  <Heart
-                    size={14}
-                    className={cn(
-                      'transition-colors',
-                      liked ? 'fill-main text-main' : 'fill-none text-hint',
-                    )}
-                  />
-                  <span>{likeCount}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 댓글 (답글) 목록 영역 - showReplies 토글시 펼쳐짐 */}
-      {showReplies && (
-        <div className="flex flex-col">
-          {replyList.length > 0 ? (
-            replyList.map((reply) => (
-              <ReviewReplyItem
-                key={reply.replyId}
-                reply={reply}
-                onLike={() => likeReply.mutate(reply.replyId)}
-                onDelete={() => deleteReply.mutate(reply.replyId)}
-              />
-            ))
-          ) : (
-            <div className="-mx-5 px-5 py-3 border-b border-line typo-body-xs-regular text-hint">
-              등록된 댓글이 없습니다.
-            </div>
-          )}
-        </div>
-      )}
-    </article>
-  );
-}
 
 /* 방명록 질문 탭 카드 (일반인 시점 / 작가 시점 지원) */
 function QuestionCard({
@@ -519,16 +251,20 @@ function QuestionCard({
 
 /* 방명록 탭(감상/질문) */
 export function ArtworkGuestbookTab({
-  reviews,
+  feelings,
+  hasMoreFeelings = false,
+  onLoadMoreFeelings,
+  isLoadingMoreFeelings = false,
   questions,
   artworkId,
+  myUserId,
   isArtist = false,
   activeSubTab: controlledSubTab,
   onSubTabChange,
   isArtistView: controlledArtistView,
   onArtistViewChange,
-  replyTargetFeelingId,
-  onReplyTargetChange,
+  activeReplyId,
+  onFeelingReplyClick,
   replyTargetQuestionId,
   onQuestionReplyTargetChange,
 }: Props) {
@@ -537,6 +273,28 @@ export function ArtworkGuestbookTab({
 
   const activeSubTab = controlledSubTab ?? localSubTab;
   const isArtistView = controlledArtistView ?? localArtistView;
+
+  const feelingsTriggerRef = useRef<HTMLDivElement | null>(null);
+
+  // 감상 목록 무한 스크롤 감지
+  useEffect(() => {
+    const el = feelingsTriggerRef.current;
+    if (!el || activeSubTab !== 'review') return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreFeelings && !isLoadingMoreFeelings) {
+          onLoadMoreFeelings?.();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [activeSubTab, hasMoreFeelings, isLoadingMoreFeelings, onLoadMoreFeelings]);
 
   const handleSubTabChange = (tab: ArtworkGuestbookTab) => {
     setLocalSubTab(tab);
@@ -550,7 +308,7 @@ export function ArtworkGuestbookTab({
   };
 
   return (
-    <div className="pb-6">
+    <div className="pb-28">
       {/* 서브탭: 감상 / 질문 */}
       <div className="flex bg-bt-gray">
         {/* 감상 */}
@@ -574,7 +332,7 @@ export function ArtworkGuestbookTab({
               activeSubTab === 'review' ? 'text-main' : 'text-faint',
             )}
           >
-            {reviews.length}
+            {feelings.length}
           </span>
           {activeSubTab === 'review' && (
             <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-main" />
@@ -617,22 +375,28 @@ export function ArtworkGuestbookTab({
             <h2 className="typo-body-xl-bold text-main">감상 후기</h2>
           </div>
           <div className="flex flex-col">
-            {reviews.map((r) => (
-              <ReviewCard
-                key={r.feelingId}
-                review={r}
+            {feelings.map((feeling) => (
+              <ArtworkFeelingCommentItem
+                key={feeling.feelingId}
                 artworkId={artworkId}
-                isReplyTarget={replyTargetFeelingId === r.feelingId}
-                onReply={() =>
-                  onReplyTargetChange?.(replyTargetFeelingId === r.feelingId ? null : r)
-                }
+                feeling={feeling}
+                myUserId={myUserId}
+                activeReplyId={activeReplyId}
+                onReplyClick={onFeelingReplyClick}
               />
             ))}
           </div>
-          {reviews.length === 0 && (
+          {feelings.length === 0 && (
             <p className="typo-body-sm-regular text-faint text-center py-10">
               아직 감상 후기가 없습니다.
             </p>
+          )}
+          {/* 무한 스크롤 감지 트리거 */}
+          <div ref={feelingsTriggerRef} className="h-4" />
+          {isLoadingMoreFeelings && (
+            <div className="py-4 text-center text-sub600 typo-body-xs-regular animate-pulse">
+              불러오는 중...
+            </div>
           )}
         </div>
       )}
