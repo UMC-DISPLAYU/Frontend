@@ -13,6 +13,11 @@ import {
   SchoolSearchField,
 } from '@/components/artist-verification';
 import {
+  ARTIST_FIELD_MAP,
+  type ArtistFieldCode,
+  type ExhibitionField,
+} from '@/constants/exhibition';
+import {
   useConfirmVerificationEmail,
   useResendVerificationEmail,
   useSearchSchools,
@@ -110,10 +115,16 @@ export function ArtistVerificationPage() {
   };
 
   const handleComplete = () => {
+    const activityFields = selectedFields
+      .map((field) => ARTIST_FIELD_MAP[field as ExhibitionField])
+      .filter((field): field is ArtistFieldCode => Boolean(field));
+
+    if (activityFields.length === 0) return;
+
     createMyArtistProfile.mutate(
       {
         artistName: profileName.trim(),
-        activityFields: selectedFields,
+        activityFields,
       },
       {
         onSuccess: () => {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { getMyArtistProfile, getUserMe } from '@/api/endpoints/user';
+import { ARTIST_FIELD_REVERSE_MAP, type ArtistFieldCode } from '@/constants/exhibition';
 
 import AvatarImage from '../assets/Icon (1).svg';
 import SchoolIcon from '../assets/image 3666.svg';
@@ -67,7 +68,9 @@ export function useUserProfile() {
               avatar: AvatarImage, // TODO: 실제 프로필 이미지 URL
               school: artistProfile?.schoolName,
               schoolIcon: artistProfile?.schoolName ? SchoolIcon : undefined,
-              field: artistProfile?.fields.join(' · '),
+              field: artistProfile?.fields
+                .map((code) => ARTIST_FIELD_REVERSE_MAP[code as ArtistFieldCode] ?? code)
+                .join(' · '),
               fieldIcon: artistProfile?.fields.length ? FieldIcon : undefined,
               exhibit: undefined, // TODO: 전시 수 API 연동 필요
               exhibitionIcon: undefined,
