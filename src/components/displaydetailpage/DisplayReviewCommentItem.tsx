@@ -53,7 +53,14 @@ export function DisplayReviewCommentItem({
   onReplyClick,
   activeReplyId = null,
 }: Props) {
-  const [repliesOpen, setRepliesOpen] = useState(review.replyCount > 0);
+  const [repliesOpen, setRepliesOpen] = useState(false);
+
+  const isComposingReply = activeReplyId === review.displayReviewId;
+  const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
+  if (isComposingReply !== prevIsComposingReply) {
+    setPrevIsComposingReply(isComposingReply);
+    if (isComposingReply) setRepliesOpen(true);
+  }
 
   const likeMutation = useToggleDisplayReviewLike(displayId);
   const deleteMutation = useDeleteDisplayReview(displayId);
@@ -61,11 +68,12 @@ export function DisplayReviewCommentItem({
   const deleteReplyMutation = useDeleteDisplayReviewReply(displayId, review.displayReviewId);
   const isLikePending = likeMutation.isPending || likeReplyMutation.isPending;
 
-  const { data: repliesData } = useDisplayReviewReplies(
-    displayId,
-    review.displayReviewId,
-    repliesOpen,
-  );
+  const {
+    data: repliesData,
+    hasNextPage: hasMoreReplies,
+    fetchNextPage: fetchMoreReplies,
+    isFetchingNextPage: isFetchingMoreReplies,
+  } = useDisplayReviewReplies(displayId, review.displayReviewId, repliesOpen);
 
   const replies: CommentData[] = (repliesData?.pages.flatMap((p) => p.replies) ?? []).map(
     (reply) => ({
@@ -90,7 +98,7 @@ export function DisplayReviewCommentItem({
     isLiked: false, // 후기 목록 API에 좋아요 여부가 내려오지 않음
     isMyComment: Boolean(myUserId) && review.user.userId === myUserId,
     replyCount: review.replyCount,
-    images: review.images.map((img) => img.imageUrl),
+    images: review.images.length > 0 ? review.images.map((img) => img.imageUrl) : undefined,
   };
 
   const handleLike = (commentId: string, parentCommentId?: string) => {
@@ -115,6 +123,9 @@ export function DisplayReviewCommentItem({
       replies={replies}
       repliesOpen={repliesOpen}
       onToggleReplies={() => setRepliesOpen((v) => !v)}
+      hasMoreReplies={hasMoreReplies}
+      onLoadMoreReplies={() => fetchMoreReplies()}
+      isLoadingMoreReplies={isFetchingMoreReplies}
       onLike={handleLike}
       onUnlike={handleLike}
       isLikePending={isLikePending}

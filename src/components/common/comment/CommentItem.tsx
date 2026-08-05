@@ -13,6 +13,10 @@ type Props = {
   replies?: CommentData[];
   repliesOpen?: boolean;
   onToggleReplies?: () => void;
+  /** 답글이 더 있어서 "댓글 더보기" 버튼을 보여줄지 여부. */
+  hasMoreReplies?: boolean;
+  onLoadMoreReplies?: () => void;
+  isLoadingMoreReplies?: boolean;
   onLike?: (commentId: string, parentCommentId?: string) => void;
   onUnlike?: (commentId: string, parentCommentId?: string) => void;
   isLikePending?: boolean;
@@ -34,6 +38,9 @@ export function CommentItem({
   replies = [],
   repliesOpen = false,
   onToggleReplies,
+  hasMoreReplies = false,
+  onLoadMoreReplies,
+  isLoadingMoreReplies = false,
   onLike,
   onUnlike,
   isLikePending = false,
@@ -187,6 +194,16 @@ export function CommentItem({
               showDivider={showDivider}
             />
           ))}
+          {hasMoreReplies && (
+            <button
+              type="button"
+              onClick={() => onLoadMoreReplies?.()}
+              disabled={isLoadingMoreReplies}
+              className="pl-9 typo-body-xs-regular text-faint disabled:opacity-50 text-left"
+            >
+              {isLoadingMoreReplies ? '댓글 불러오는 중...' : '댓글 더보기'}
+            </button>
+          )}
         </div>
       )}
     </div>

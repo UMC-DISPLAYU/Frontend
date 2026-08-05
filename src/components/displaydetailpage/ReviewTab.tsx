@@ -147,7 +147,6 @@ export function ReviewTab({ className, displayId }: Props) {
           })
         }
         onSubmitReply={(commentId, content) =>
-          // 전시 후기 답글 API는 이미지 첨부를 지원하지 않음
           createReply.mutateAsync({ content }, { onSuccess: clearReplyTarget })
         }
         imageUploadDomain="display-review"

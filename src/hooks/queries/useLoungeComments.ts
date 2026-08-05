@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type { CreateLoungeCommentRequestDto, CursorPageRequestDto } from '@/api/dto';
 import {
@@ -10,10 +10,16 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
-export const useLoungeComments = (postId: number, params: CursorPageRequestDto = {}) =>
-  useQuery({
+export const useLoungeComments = (
+  postId: number,
+  params: Omit<CursorPageRequestDto, 'cursorId'> = {},
+) =>
+  useInfiniteQuery({
     queryKey: queryKeys.loungeComments.list(postId, params),
-    queryFn: () => getLoungeComments(postId, params),
+    queryFn: ({ pageParam }) =>
+      getLoungeComments(postId, { ...params, cursorId: pageParam ?? undefined }),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled: Number.isFinite(postId),
   });
 

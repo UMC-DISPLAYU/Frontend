@@ -44,19 +44,27 @@ export function LoungeBoardCommentItem({
   const deleteReplyMutation = useDeleteLoungeComment();
   const isLikeMutating = likeMutation.isPending || unlikeMutation.isPending;
 
-  const { data: repliesData } = useLoungeReplies(commentId, {}, { enabled: repliesOpen });
+  const {
+    data: repliesData,
+    hasNextPage: hasMoreReplies,
+    fetchNextPage: fetchMoreReplies,
+    isFetchingNextPage: isFetchingMoreReplies,
+  } = useLoungeReplies(commentId, {}, { enabled: repliesOpen });
 
   const replies: CommentData[] = (
-    repliesData?.replies.map((reply) => ({
-      id: String(reply.loungeCommentId),
-      author: reply.writer.nickname,
-      time: formatLoungeTime(reply.createdAt),
-      content: reply.content,
-      likeCount: reply.likeCount,
-      isLiked: reply.isLiked,
-      isMyComment: reply.isMyComment,
-      images: reply.imageUrls.length > 0 ? reply.imageUrls : undefined,
-    })) ?? []
+    repliesData?.pages
+      .flatMap((page) => page.replies)
+      .map((reply) => ({
+        id: String(reply.loungeCommentId),
+        author: reply.writer.nickname,
+        avatarUrl: reply.writer.profileImageUrl,
+        time: formatLoungeTime(reply.createdAt),
+        content: reply.content,
+        likeCount: reply.likeCount,
+        isLiked: reply.isLiked,
+        isMyComment: reply.isMyComment,
+        images: reply.imageUrls.length > 0 ? reply.imageUrls : undefined,
+      })) ?? []
   ).filter((reply) => !removedReplyIds.has(reply.id));
 
   const handleLike = (targetCommentId: string, parentCommentId?: string) => {
@@ -101,6 +109,9 @@ export function LoungeBoardCommentItem({
       replies={replies}
       repliesOpen={repliesOpen}
       onToggleReplies={() => setRepliesOpen((v) => !v)}
+      hasMoreReplies={hasMoreReplies}
+      onLoadMoreReplies={() => fetchMoreReplies()}
+      isLoadingMoreReplies={isFetchingMoreReplies}
       onLike={handleLike}
       onUnlike={handleUnlike}
       isLikePending={isLikeMutating}

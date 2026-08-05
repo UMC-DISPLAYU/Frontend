@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -49,6 +49,9 @@ export const LoungeBoardDetailPage = () => {
     isPending: isCommentsPending,
     isError: isCommentsError,
     refetch: refetchComments,
+    hasNextPage: hasMoreComments,
+    fetchNextPage: fetchMoreComments,
+    isFetchingNextPage: isFetchingMoreComments,
   } = useLoungeComments(postId);
   const deleteCommentMutation = useDeleteLoungeComment();
   const createCommentMutation = useCreateLoungeComment();
@@ -65,6 +68,28 @@ export const LoungeBoardDetailPage = () => {
     setReplyTarget(null);
     setActiveReplyId(null);
   };
+
+  const commentsTriggerRef = useRef<HTMLDivElement | null>(null);
+
+  // 댓글 목록 무한 스크롤 감지
+  useEffect(() => {
+    const el = commentsTriggerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreComments && !isFetchingMoreComments) {
+          fetchMoreComments();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMoreComments, isFetchingMoreComments, fetchMoreComments]);
 
   const postCategoryKey = post ? toLoungeCategoryKey(post.category) : undefined;
   const isValidPost = isValidCategory && !!post && postCategoryKey === category;
@@ -84,20 +109,23 @@ export const LoungeBoardDetailPage = () => {
           isSaved: post.isScrapped,
           isMyPost: post.isMyPost,
           images: post.postImageUrls.length > 0 ? post.postImageUrls : undefined,
-          comments: commentsData.comments.map(
-            (comment): LoungeBoardComment => ({
-              id: String(comment.loungeCommentId),
-              author: comment.writer.nickname,
-              time: formatLoungeTime(comment.createdAt),
-              content: comment.content,
-              likeCount: comment.likeCount,
-              isLiked: comment.isLiked,
-              isMyComment: comment.isMyComment,
-              replyCount: comment.replyCount,
-              commentStatus: comment.commentStatus,
-              images: comment.imageUrls.length > 0 ? comment.imageUrls : undefined,
-            }),
-          ),
+          comments: commentsData.pages
+            .flatMap((page) => page.comments)
+            .map(
+              (comment): LoungeBoardComment => ({
+                id: String(comment.loungeCommentId),
+                author: comment.writer.nickname,
+                avatarUrl: comment.writer.profileImageUrl,
+                time: formatLoungeTime(comment.createdAt),
+                content: comment.content,
+                likeCount: comment.likeCount,
+                isLiked: comment.isLiked,
+                isMyComment: comment.isMyComment,
+                replyCount: comment.replyCount,
+                commentStatus: comment.commentStatus,
+                images: comment.imageUrls.length > 0 ? comment.imageUrls : undefined,
+              }),
+            ),
         }
       : undefined;
 
@@ -173,6 +201,12 @@ export const LoungeBoardDetailPage = () => {
                         activeReplyId={activeReplyId}
                       />
                     ))}
+                  <div ref={commentsTriggerRef} className="h-4" />
+                  {isFetchingMoreComments && (
+                    <div className="py-4 text-center text-sub600 typo-body-xs-regular animate-pulse">
+                      불러오는 중...
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
