@@ -72,7 +72,7 @@ function LoginContent({
       </div>
 
       {/* Content Overlay */}
-      <div className="relative z-10 flex h-full w-full max-w-100.5 mx-auto flex-col justify-between px-5 pb-10">
+      <div className="relative z-10 flex h-full w-full max-w-md mx-auto flex-col justify-between px-5 pb-10">
         <div className="flex-1" />
 
         {/* Social Buttons & Error - Staggered Cascade */}
@@ -89,7 +89,7 @@ function LoginContent({
             <button
               type="button"
               onClick={onKakao}
-              disabled={isStartingOAuth}
+              disabled={!isUIReady || isStartingOAuth}
               className="typo-body-sm-regular flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl bg-[#FEE500] px-5 py-3.5 text-center text-neutral-800 shadow-[0px_1px_4px_0px_rgba(0,0,0,0.10),0px_4px_18px_0px_rgba(254,229,0,0.35)] transition-transform duration-150 active:scale-[0.98] hover:brightness-105 disabled:opacity-50"
             >
               <img src={kakaoIcon} alt="" aria-hidden="true" className="size-5" />
@@ -109,7 +109,7 @@ function LoginContent({
             <button
               type="button"
               onClick={onGoogle}
-              disabled={isStartingOAuth}
+              disabled={!isUIReady || isStartingOAuth}
               className="typo-body-sm-regular flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl bg-white/70 px-5 py-3.5 text-center text-zinc-800 shadow-[0px_4px_16px_0px_rgba(30,30,60,0.10),inset_0px_2px_0px_0px_rgba(255,255,255,0.90)] outline outline-1 outline-offset-[-1px] outline-gray-300/70 backdrop-blur-sm transition-transform duration-150 active:scale-[0.98] hover:bg-white/80 disabled:opacity-50"
             >
               <img src={googleIcon} alt="" aria-hidden="true" className="size-4" />
@@ -118,7 +118,9 @@ function LoginContent({
           </div>
 
           {error ? (
-            <p className="mt-2 text-center text-xs font-medium leading-4 text-error">{error}</p>
+            <p className="mt-2 text-center text-xs font-medium leading-4 text-error" role="alert">
+              {error}
+            </p>
           ) : null}
         </div>
 
@@ -132,7 +134,8 @@ function LoginContent({
           <button
             type="button"
             onClick={onGuest}
-            className="typo-body-sm-regular cursor-pointer text-center text-sub700 underline transition-opacity hover:opacity-80 active:opacity-60"
+            disabled={!isUIReady}
+            className="typo-body-sm-regular cursor-pointer text-center text-sub700 underline transition-opacity hover:opacity-80 active:opacity-60 disabled:cursor-default"
           >
             비회원으로 감상하기
           </button>

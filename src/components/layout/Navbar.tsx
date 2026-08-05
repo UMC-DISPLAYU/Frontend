@@ -59,7 +59,7 @@ export function Navbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   return (
-    <div className="relative w-full max-w-96 px-2 sm:px-5 py-1.5">
+    <div className="relative w-full max-w-md px-2 sm:px-5 py-1.5">
       <LoginConfirmModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}

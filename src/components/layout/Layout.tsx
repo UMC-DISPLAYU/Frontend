@@ -75,7 +75,7 @@ export function Layout() {
         {/* Navigation Bar (Navbar) */}
         {shouldShowNavbar && (
           <div className="pointer-events-none fixed right-0 bottom-4 left-0 z-50 flex justify-center px-4">
-            <div className="pointer-events-auto flex w-full max-w-96 justify-center">
+            <div className="pointer-events-auto flex w-full max-w-md justify-center">
               <Navbar />
             </div>
           </div>

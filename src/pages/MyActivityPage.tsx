@@ -94,7 +94,7 @@ export function MyActivityPage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className="w-full max-w-[402px] mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
       <LoungeBoardHeader title="내 활동" showWriteButton={false} className="px-5" />
 
       <nav className="mt-[15.5px] px-5 border-b border-zinc-300 flex items-center">

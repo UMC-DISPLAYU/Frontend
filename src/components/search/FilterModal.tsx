@@ -44,7 +44,7 @@ export function FilterModal({
       <div
         aria-labelledby="filter-modal-title"
         aria-modal="true"
-        className="relative mx-auto mt-[129px] flex w-full max-w-[402px] flex-1 flex-col overflow-hidden rounded-t-xl bg-white"
+        className="relative mx-auto mt-[129px] flex w-full max-w-md flex-1 flex-col overflow-hidden rounded-t-xl bg-white"
         ref={modalRef}
         role="dialog"
         tabIndex={-1}

@@ -167,7 +167,7 @@ export function LoungeBoardCommentInputBar({
 
   return (
     <>
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[402px] bg-page border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)] z-50">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-page border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)] z-50">
         {replyTarget && (
           <div className="flex items-center gap-2 pt-[10px] pl-5">
             <span className="text-[12px] leading-[140%] tracking-[-0.36px]">

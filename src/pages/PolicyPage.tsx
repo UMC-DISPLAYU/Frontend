@@ -63,7 +63,7 @@ function PolicyContent({ content }: { content: string }) {
 /* 약관 상세 화면: 목록에서 받은 약관 내용을 전체 화면으로 보여줍니다. */
 function PolicyDetail({ agreement, onBack }: { agreement: AgreementDto; onBack: () => void }) {
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <header className="mt-14.5 flex items-center gap-3 px-5 pb-3 pt-4">
         <button type="button" onClick={onBack} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
@@ -95,7 +95,7 @@ export function PolicyPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       {/* Header */}
       <header className="mt-14.5 flex items-center gap-3 px-5 pb-3 pt-4">
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">

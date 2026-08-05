@@ -22,7 +22,7 @@ export function FNB({ hasFixedBottomBar = false, className }: FNBProps) {
   return (
     <footer
       className={cn(
-        'w-full max-w-[402px] mx-auto bg-line-soft px-4 sm:px-7.5 pt-6 overflow-hidden',
+        'w-full max-w-md mx-auto bg-line-soft px-4 sm:px-7.5 pt-6 overflow-hidden',
         hasFixedBottomBar ? 'pb-28' : 'pb-8',
         className,
       )}
