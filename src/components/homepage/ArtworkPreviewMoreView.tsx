@@ -6,7 +6,7 @@ type Props = {
 
 export function ArtworkPreviewMoreView({ items }: Props) {
   return (
-    <div className="w-full max-w-105 mx-auto bg-page min-h-dvh overflow-x-hidden pt-7 pb-28 font-[Pretendard,sans-serif]">
+    <div className="w-full max-w-[402px] mx-auto bg-page min-h-dvh overflow-x-hidden pt-7 pb-28 font-[Pretendard,sans-serif]">
       <div className="columns-2 gap-2 px-4">
         {items.map((item) => (
           <article

@@ -61,7 +61,7 @@ export const Homepage = () => {
   }
 
   return (
-    <div className="w-full max-w-105 mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5 font-[Pretendard,sans-serif]">
+    <div className="w-full max-w-[402px] mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5 font-[Pretendard,sans-serif]">
       <DuPickBanner items={duPicksData?.duPicks ?? []} />
       <ExhibitionSection
         title="졸업전시"
