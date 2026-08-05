@@ -4,7 +4,10 @@ import { Calendar, Clock, Heart, MapPin } from 'lucide-react';
 
 import type { DisplayDetailDto } from '@/api/dto/display.dto';
 import { useToggleDisplayLike } from '@/hooks/queries/useDisplayDetail';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
+
+import { LoginConfirmModal } from '../common/LoginConfirmModal';
 
 import { DisplaySaveButton } from './DisplaySaveButton';
 
@@ -48,8 +51,9 @@ function MetaRow({
 }
 
 export function ExhibitionMeta({ display: ex }: Props) {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const toggleLike = useToggleDisplayLike();
-  /* 좋아요 상태는 토글 응답이 전시 상세 캐시에 반영됩니다. */
   const liked = Boolean((ex as DisplayDetailDto & { isLiked?: boolean }).isLiked);
   const [isAtTop, setIsAtTop] = useState(true);
 
@@ -65,8 +69,17 @@ export function ExhibitionMeta({ display: ex }: Props) {
   const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
   const displayedLikeCount = ex.likeCount ?? 0;
 
+  const handleLike = () => {
+    if (!accessToken) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+    toggleLike.mutate({ displayId: ex.displayId, liked });
+  };
+
   return (
     <section className="px-5 pt-6 pb-4 bg-[#f0f0f3]">
+      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 flex flex-col gap-1.5">
           <h1 className="typo-body-xl-bold text-main">{ex.title}</h1>
@@ -75,7 +88,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
         <button
           type="button"
           id="meta-heart-btn"
-          onClick={() => toggleLike.mutate({ displayId: ex.displayId, liked })}
+          onClick={handleLike}
           disabled={toggleLike.isPending}
           className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-60"
         >
