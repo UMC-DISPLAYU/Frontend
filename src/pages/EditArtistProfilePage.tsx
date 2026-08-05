@@ -5,7 +5,14 @@ import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
 import { ChipGroup } from '@/components/ui';
-import { EXHIBITION_FIELDS } from '@/constants/exhibition';
+import {
+  ARTIST_FIELD_MAP,
+  ARTIST_FIELD_REVERSE_MAP,
+  type ArtistFieldCode,
+  EXHIBITION_FIELDS,
+  type ExhibitionField,
+  MAX_ARTIST_FIELDS,
+} from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
@@ -70,7 +77,11 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [activityName, setActivityName] = useState(artistProfile?.artistName ?? '');
   const [intro, setIntro] = useState(artistProfile?.introduction ?? '');
-  const [selectedFields, setSelectedFields] = useState<string[]>(artistProfile?.fields ?? []);
+  const [selectedFields, setSelectedFields] = useState<string[]>(
+    (artistProfile?.fields ?? []).map(
+      (code) => ARTIST_FIELD_REVERSE_MAP[code as ArtistFieldCode] ?? code,
+    ),
+  );
   const [externalLink, setExternalLink] = useState(
     artistProfile?.externalLink ?? artistProfile?.portfolioUrl ?? '',
   );
@@ -105,14 +116,28 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
     const uploadedProfileImageUrl = profileImageFile
       ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
       : profileImage;
+    const fields = selectedFields
+      .map((field) => ARTIST_FIELD_MAP[field as ExhibitionField])
+      .filter((field): field is ArtistFieldCode => Boolean(field));
+
+    /*
+     * profileImageUrl·externalLink는 서버에서 http(s) URL 형식을 강제하므로
+     * 빈 값은 필드를 아예 빼서 보냅니다. 빈 문자열을 보내면 검증에서 거절됩니다.
+     * 업로드 전 미리보기용 blob: URL도 서버로 넘어가면 안 됩니다.
+     */
+    const trimmedExternalLink = externalLink.trim();
+    const isSubmittableUrl = (url: string | null | undefined): url is string =>
+      Boolean(url) && /^https?:\/\//.test(url as string);
 
     updateMyArtistProfile.mutate(
       {
-        profileImageUrl: uploadedProfileImageUrl ?? undefined,
+        ...(isSubmittableUrl(uploadedProfileImageUrl)
+          ? { profileImageUrl: uploadedProfileImageUrl }
+          : {}),
         artistName: activityName.trim(),
         introduction: intro.trim(),
-        fields: selectedFields,
-        externalLink: externalLink.trim(),
+        fields,
+        ...(isSubmittableUrl(trimmedExternalLink) ? { externalLink: trimmedExternalLink } : {}),
         univName: school.trim(),
       },
       {
@@ -181,6 +206,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               options={EXHIBITION_FIELDS}
               selected={selectedFields}
               onChange={setSelectedFields}
+              maxSelect={MAX_ARTIST_FIELDS}
               aria-label="전시분야"
             />
           </div>
