@@ -4,7 +4,7 @@ import { ChevronRight, Info, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
-import { useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
@@ -56,6 +56,8 @@ export function WorkScreen({
     canCreateContent ||
     canDeleteContent ||
     canReorder;
+  const artworkPolicy = useArtworkPolicy(display);
+  const canCreateArtwork = hasPermission(artworkPolicy, 'create');
 
   const handlePhotoCountChange = (_categoryId: number, _count: number) => {
     void _categoryId;
@@ -133,14 +135,16 @@ export function WorkScreen({
         </div>
 
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
-          <button
-            type="button"
-            onClick={() => navigate(`/artworks-register?displayId=${ex.id}`)}
-            className="flex h-[158px] w-[118px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
-          >
-            <Plus size={20} className="text-hint" />
-            <span className="typo-body-xs-regular text-sub600">전시작 추가</span>
-          </button>
+          {canCreateArtwork && (
+            <button
+              type="button"
+              onClick={() => navigate(`/artworks-register?displayId=${ex.id}`)}
+              className="flex h-[158px] w-[118px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
+            >
+              <Plus size={20} className="text-hint" />
+              <span className="typo-body-xs-regular text-sub600">전시작 추가</span>
+            </button>
+          )}
           {work.artworks.map((art) => (
             <ArtworkCard key={art.id} art={art} />
           ))}

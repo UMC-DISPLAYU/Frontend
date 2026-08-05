@@ -6,5 +6,7 @@ export interface Work {
   date: string;
   place: string;
   owner: string;
+  artistUserId?: number;
+  coAuthorUserIds?: number[];
   thumbnail?: string;
 }

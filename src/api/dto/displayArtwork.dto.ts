@@ -332,6 +332,8 @@ export interface DisplayArtworkDto {
   artworkId: number;
   artworkName: string;
   artistName: string;
+  artistUserId?: number;
+  coAuthorUserIds?: number[];
   artworkImageUrl: string;
   imageWidth: number;
   imageHeight: number;

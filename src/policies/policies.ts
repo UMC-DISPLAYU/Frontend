@@ -84,6 +84,7 @@ export const policies = {
       canManageArtwork(user, artwork, display),
     delete: (user: User, artwork: ArtworkPolicyResource, display: DisplayPolicyResource) =>
       canManageArtwork(user, artwork, display),
+    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
   },
 
   question: {

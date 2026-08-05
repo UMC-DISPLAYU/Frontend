@@ -21,7 +21,7 @@ import type {
 } from '@/api/dto';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { policies } from '@/policies/policies';
-import type { DisplayPolicyResource } from '@/policies/util';
+import type { ArtworkPolicyResource, DisplayPolicyResource } from '@/policies/util';
 import { useAuthStore } from '@/stores/authStore';
 import type { PermissionMap, PolicyAction, PolicyPermissionMap, User } from '@/types/policy';
 
@@ -138,16 +138,17 @@ export function useDisplayInvitationPolicy(
 }
 
 export function useArtworkPolicy(
-  display: DisplayDetailDto,
-  artwork?: GetArtworkDetailResponseDataDto,
+  display?: DisplayPolicyResource,
+  artwork?: ArtworkPolicyResource,
 ): PolicyPermissionMap<'artwork'> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
     () => ({
-      create: () => policies.artwork.create(user, display),
-      edit: () => (artwork ? policies.artwork.edit(user, artwork, display) : false),
-      delete: () => (artwork ? policies.artwork.delete(user, artwork, display) : false),
+      create: () => (display ? policies.artwork.create(user, display) : false),
+      edit: () => (display && artwork ? policies.artwork.edit(user, artwork, display) : false),
+      delete: () => (display && artwork ? policies.artwork.delete(user, artwork, display) : false),
+      reorder: () => (display ? policies.artwork.reorder(user, display) : false),
     }),
     [user, display, artwork],
   );
