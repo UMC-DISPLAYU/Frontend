@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
 
@@ -19,6 +19,14 @@ export function Layout() {
 
   // 로그인 후 복귀 경로가 있는 경우 이동 처리
   useRedirectAfterLogin();
+
+  // 페이지 전환 시 화면 스크롤 위치 최상단 리셋
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.querySelectorAll('.overflow-y-auto').forEach((el) => {
+      el.scrollTop = 0;
+    });
+  }, [location.pathname]);
 
   // 라운지 글쓰기 페이지 (/lounge/:category/post)
   const isLoungeWritePath = /^\/lounge\/[^/]+\/post$/.test(location.pathname);
