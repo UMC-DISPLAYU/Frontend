@@ -53,14 +53,41 @@ function renderCount(count: number | undefined) {
 
 function ProfileImage({ src }: { src?: string | null }) {
   return (
-    <img
-      src={src || FALLBACK_PROFILE_IMAGE}
-      alt=""
-      className="size-7 rounded-full object-cover"
-      onError={(event) => {
-        event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
-      }}
-    />
+    <div className="size-7 shrink-0 overflow-hidden rounded-full border border-line bg-box">
+      <img
+        src={src || FALLBACK_PROFILE_IMAGE}
+        alt=""
+        className="size-full object-cover"
+        onError={(event) => {
+          event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
+        }}
+      />
+    </div>
+  );
+}
+
+/* 감상·질문 카드 하단의 좋아요 버튼입니다. */
+function LikeButton({
+  liked,
+  count,
+  onClick,
+}: {
+  liked?: boolean;
+  count?: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex cursor-pointer items-center gap-1 text-hint hover:text-main"
+    >
+      <Heart
+        size={14}
+        className={cn('transition-colors', liked ? 'fill-heart text-heart' : 'fill-none text-hint')}
+      />
+      {renderCount(count)}
+    </button>
   );
 }
 
@@ -90,24 +117,34 @@ function PersonalFeelingReplyItem({
   };
 
   return (
-    <div className="ml-9 border-t border-line py-3">
-      <div className="mb-1 flex items-center gap-2">
-        {reply.nickname && <span className="typo-body-sm-bold text-main">{reply.nickname}</span>}
-        <span className="typo-body-xs-regular text-faint">{reply.createdAt}</span>
-      </div>
-      <p className="typo-body-xs-regular whitespace-pre-line text-sub600">{reply.content}</p>
-      <div className="mt-2 flex items-center justify-between typo-body-xs-regular text-hint">
-        {canDelete ? (
-          <button type="button" onClick={() => deleteReply.mutate(reply.personalFeelingReplyId)}>
-            삭제
-          </button>
-        ) : (
-          <span />
-        )}
-        <button type="button" onClick={handleLike} className="flex items-center gap-1">
-          <Heart size={14} />
-          {renderCount(reply.likeCount)}
-        </button>
+    <div className="-mx-5 border-b border-line py-3 pr-5 pl-14">
+      <div className="flex w-full items-start justify-start gap-1.5">
+        <ProfileImage />
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex items-center gap-2">
+            {reply.nickname && (
+              <span className="typo-body-sm-bold text-main">{reply.nickname}</span>
+            )}
+            <span className="typo-body-xs-regular text-faint">{reply.createdAt}</span>
+          </div>
+          <p className="typo-body-xs-regular wrap-break-word whitespace-pre-line text-sub600">
+            {reply.content}
+          </p>
+          <div className="typo-body-xs-regular mt-3 flex w-full items-center justify-between text-faint">
+            <div className="flex items-center gap-2">
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={() => deleteReply.mutate(reply.personalFeelingReplyId)}
+                  className="cursor-pointer hover:text-main"
+                >
+                  삭제
+                </button>
+              )}
+            </div>
+            <LikeButton liked={reply.isLiked} count={reply.likeCount} onClick={handleLike} />
+          </div>
+        </div>
       </div>
       {loginModal}
     </div>
@@ -163,24 +200,32 @@ function PersonalQuestionReply({
   };
 
   return (
-    <div className="ml-9 border-t border-line py-3">
-      <div className="mb-1 flex items-center gap-2">
-        {reply.nickname && <span className="typo-body-sm-bold text-main">{reply.nickname}</span>}
-        <span className="typo-body-xs-regular text-faint">{reply.createdAt}</span>
-      </div>
-      <p className="typo-body-xs-regular whitespace-pre-line text-sub600">{reply.content}</p>
-      <div className="mt-2 flex items-center justify-between typo-body-xs-regular text-hint">
-        {canDelete ? (
-          <button type="button" onClick={() => deleteReply.mutate(reply.personalQuestionReplyId)}>
-            삭제
-          </button>
-        ) : (
-          <span />
-        )}
-        <button type="button" onClick={handleLike} className="flex items-center gap-1">
-          <Heart size={14} />
-          {renderCount(reply.likeCount)}
-        </button>
+    <div className="-mx-5 border-b border-line bg-box100/40 py-3 pr-5 pl-14">
+      <div className="flex w-full items-start justify-start gap-1.5">
+        <ProfileImage />
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="typo-body-sm-bold text-main">{reply.nickname || '작가 답변'}</span>
+            <span className="typo-body-xs-regular text-faint">{reply.createdAt}</span>
+          </div>
+          <p className="typo-body-xs-regular wrap-break-word whitespace-pre-line text-sub600">
+            {reply.content}
+          </p>
+          <div className="typo-body-xs-regular mt-3 flex w-full items-center justify-between text-faint">
+            <div className="flex items-center gap-2">
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={() => deleteReply.mutate(reply.personalQuestionReplyId)}
+                  className="cursor-pointer hover:text-main"
+                >
+                  삭제
+                </button>
+              )}
+            </div>
+            <LikeButton liked={reply.isLiked} count={reply.likeCount} onClick={handleLike} />
+          </div>
+        </div>
       </div>
       {loginModal}
     </div>
@@ -225,35 +270,47 @@ function PersonalReviewCard({
   };
 
   return (
-    <article className={cn('border-b border-line py-3', isReplyTarget && '-mx-5 bg-box100 px-5')}>
-      <div className="flex items-start gap-2">
-        <ProfileImage src={feeling.profileImageUrl} />
-        <div className="min-w-0 flex-1">
-          <div className="mb-1 flex items-center gap-2">
-            {feeling.nickname && (
-              <span className="typo-body-sm-bold text-main">{feeling.nickname}</span>
-            )}
-            <span className="typo-body-xs-regular text-faint">{feeling.createdAt}</span>
-          </div>
-          <p className="typo-body-xs-regular whitespace-pre-line text-sub600">{feeling.content}</p>
-          <div className="mt-3 flex items-center justify-between typo-body-xs-regular text-hint">
-            <div className="flex items-center gap-2">
-              <button type="button" onClick={handleReply}>
-                답글달기
-              </button>
-              {canDelete && (
+    <article
+      className={cn(
+        'w-full transition-colors',
+        /* 답글 대상으로 선택되면 어떤 감상에 답글을 다는지 드러나게 강조합니다. */
+        isReplyTarget && '-mx-5 w-[calc(100%+2.5rem)] bg-box100 px-5',
+      )}
+    >
+      <div className="-mx-5 border-b border-line px-5 py-3">
+        <div className="flex w-full items-start justify-start gap-1.5">
+          <ProfileImage src={feeling.profileImageUrl} />
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center gap-2">
+              {feeling.nickname && (
+                <span className="typo-body-sm-bold text-main">{feeling.nickname}</span>
+              )}
+              <span className="typo-body-xs-regular text-faint">{feeling.createdAt}</span>
+            </div>
+            <p className="typo-body-xs-regular wrap-break-word whitespace-pre-line text-sub600">
+              {feeling.content}
+            </p>
+            <div className="typo-body-xs-regular mt-3 flex w-full items-center justify-between text-faint">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => deleteFeeling.mutate(feeling.personalFeelingId)}
+                  onClick={handleReply}
+                  className="cursor-pointer hover:text-main"
                 >
-                  삭제
+                  답글달기
                 </button>
-              )}
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={() => deleteFeeling.mutate(feeling.personalFeelingId)}
+                    className="cursor-pointer hover:text-main"
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
+              <LikeButton liked={feeling.isLiked} count={feeling.likeCount} onClick={handleLike} />
             </div>
-            <button type="button" onClick={handleLike} className="flex items-center gap-1">
-              <Heart size={14} />
-              {renderCount(feeling.likeCount)}
-            </button>
           </div>
         </div>
       </div>
@@ -310,50 +367,74 @@ function PersonalQuestionCard({
 
   if (!canView) {
     return (
-      <article className="border-b border-line py-4">
-        <div className="flex items-center gap-2">
-          <Lock size={16} className="text-main" />
-          <span className="typo-body-sm-bold text-main">비공개 질문입니다.</span>
+      <article className="w-full">
+        <div className="-mx-5 flex flex-col gap-1.5 border-b border-line px-5 py-4">
+          <div className="flex items-center gap-2">
+            <Lock size={16} className="shrink-0 text-main" strokeWidth={3} />
+            <span className="typo-body-sm-bold text-main">비공개 질문입니다.</span>
+          </div>
+          <div className="typo-body-xs-regular flex items-center gap-2 pl-6 text-faint">
+            <span>{reply ? '답변완료' : '답변대기'}</span>
+            <span>{question.createdAt}</span>
+          </div>
         </div>
       </article>
     );
   }
 
   return (
-    <article className={cn('border-b border-line py-3', isReplyTarget && '-mx-5 bg-box100 px-5')}>
-      <div className="flex items-start gap-2">
-        <ProfileImage src={question.profileImageUrl} />
-        <div className="min-w-0 flex-1">
-          <div className="mb-1 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              {question.nickname && (
-                <span className="typo-body-sm-bold text-main">{question.nickname}</span>
-              )}
-              <span className="typo-body-xs-regular text-faint">{question.createdAt}</span>
-            </div>
-            {!question.isPublic && <Lock size={16} className="text-main" />}
-          </div>
-          <p className="typo-body-xs-regular whitespace-pre-line text-sub600">{question.content}</p>
-          <div className="mt-3 flex items-center justify-between typo-body-xs-regular text-hint">
-            <div className="flex items-center gap-2">
-              {isArtistView && canCreateReply && !reply && (
-                <button type="button" onClick={handleReply}>
-                  답글달기
-                </button>
-              )}
-              {canDelete && (
-                <button
-                  type="button"
-                  onClick={() => deleteQuestion.mutate(question.personalQuestionId)}
-                >
-                  삭제
-                </button>
+    <article
+      className={cn(
+        'w-full transition-colors',
+        /* 답변 대상으로 선택되면 어떤 질문에 답하는지 드러나게 강조합니다. */
+        isReplyTarget && '-mx-5 w-[calc(100%+2.5rem)] bg-box100 px-5',
+      )}
+    >
+      <div className="-mx-5 border-b border-line px-5 py-3">
+        <div className="flex w-full items-start justify-start gap-1.5">
+          <ProfileImage src={question.profileImageUrl} />
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex w-full items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                {question.nickname && (
+                  <span className="typo-body-sm-bold text-main">{question.nickname}</span>
+                )}
+                <span className="typo-body-xs-regular text-faint">{question.createdAt}</span>
+              </div>
+              {!question.isPublic && (
+                <Lock size={16} className="shrink-0 text-main" strokeWidth={3} />
               )}
             </div>
-            <button type="button" onClick={handleLike} className="flex items-center gap-1">
-              <Heart size={14} />
-              {renderCount(question.likeCount)}
-            </button>
+            <p className="typo-body-xs-regular wrap-break-word whitespace-pre-line text-sub600">
+              {question.content}
+            </p>
+            <div className="typo-body-xs-regular mt-3 flex w-full items-center justify-between text-faint">
+              <div className="flex items-center gap-2">
+                {isArtistView && canCreateReply && !reply && (
+                  <button
+                    type="button"
+                    onClick={handleReply}
+                    className="cursor-pointer hover:text-main"
+                  >
+                    답글달기
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={() => deleteQuestion.mutate(question.personalQuestionId)}
+                    className="cursor-pointer hover:text-main"
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
+              <LikeButton
+                liked={question.isLiked}
+                count={question.likeCount}
+                onClick={handleLike}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -450,51 +531,72 @@ export function PersonalArtworkDetailPage() {
 
   return (
     <div className="relative mx-auto min-h-dvh w-full max-w-md bg-page">
+      {/* 히어로 이미지 */}
       <HeroSlider images={displayHeroImages} onBack={() => navigate(-1)} />
 
-      <section className="bg-page px-5 pb-6 pt-5">
+      {/* 작품 메타 (제목, 작가, 제작 정보) */}
+      <section className="bg-page px-5 pt-5 pb-6">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="typo-body-2xl-bold text-main">{artwork.artworkName}</h1>
-            <p className="typo-body-sm-regular text-main">{artwork.type}</p>
-          </div>
+          <h1 className="typo-body-2xl-bold text-main">{artwork.artworkName}</h1>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-2 typo-body-xs-regular text-sub600">
-          <span>{artwork.productionYear}</span>
-          <span>{artwork.materialMedia}</span>
-          {artwork.size && <span>{artwork.size}</span>}
-        </div>
+        {artwork.nickname && (
+          <p className="typo-body-sm-regular -mt-1.5 text-main">{artwork.nickname}</p>
+        )}
+
+        <dl className="mt-4 flex flex-col gap-2">
+          {[
+            { label: '제작연도', value: artwork.productionYear },
+            { label: '재료/매체', value: artwork.materialMedia },
+            { label: '규격', value: artwork.size },
+          ]
+            .filter((item) => Boolean(item.value))
+            .map((item) => (
+              <div key={item.label} className="flex items-start gap-3">
+                <dt className="typo-body-xs-regular w-16 shrink-0 text-faint">{item.label}</dt>
+                <dd className="typo-body-xs-regular min-w-0 flex-1 text-sub600">{item.value}</dd>
+              </div>
+            ))}
+        </dl>
       </section>
 
-      <div className="flex border-b border-line">
-        <button
-          type="button"
-          onClick={() => setActiveTab('intro')}
-          className={cn('h-11 flex-1', activeTab === 'intro' ? 'text-main' : 'text-faint')}
-        >
-          소개
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('guestbook')}
-          className={cn('h-11 flex-1', activeTab === 'guestbook' ? 'text-main' : 'text-faint')}
-        >
-          방명록
-        </button>
-      </div>
+      {/* 소개 / 방명록 탭 */}
+      <nav className="sticky top-0 z-10 flex gap-5.5 border-b-2 border-line-soft bg-page px-5">
+        {(
+          [
+            { key: 'intro', label: '소개' },
+            { key: 'guestbook', label: '방명록' },
+          ] as const
+        ).map((tab) => {
+          const isActive = tab.key === activeTab;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'typo-body-sm-regular relative cursor-pointer py-4 whitespace-nowrap transition-all duration-150',
+                isActive ? 'font-bold text-main' : 'text-faint',
+              )}
+            >
+              {tab.label}
+              {isActive && <span className="absolute -bottom-0.5 right-0 left-0 h-0.5 bg-main" />}
+            </button>
+          );
+        })}
+      </nav>
 
       {activeTab === 'intro' ? (
-        <div className="pb-24">
+        <div className="pb-28">
           {artwork.content && (
-            <section className="px-5 py-6">
+            <section className="px-5 pt-7 pb-6">
               <h2 className="typo-body-xl-bold mb-3 text-main">작품소개</h2>
-              <p className="typo-body-sm-regular whitespace-pre-line text-main">
+              <p className="typo-body-sm-regular whitespace-pre-line text-main leading-relaxed">
                 {artwork.content}
               </p>
             </section>
           )}
           {artwork.images.length > 1 && (
-            <section className="bg-box200 px-5 py-5">
+            <section className="bg-box200 px-5 pt-5 pb-5">
               <h2 className="typo-body-xl-bold mb-3 text-main">작업과정</h2>
               <div className="grid grid-cols-3 gap-2">
                 {artwork.images.slice(1).map((image) => (
@@ -509,59 +611,103 @@ export function PersonalArtworkDetailPage() {
             </section>
           )}
           {artwork.point && (
-            <section className="px-5 py-5">
+            <section className="px-5 pt-5 pb-5">
               <h2 className="typo-body-xl-bold mb-3 text-main">감상 포인트</h2>
-              <p className="typo-body-sm-regular whitespace-pre-line text-main">{artwork.point}</p>
+              <p className="typo-body-sm-regular whitespace-pre-line text-main leading-relaxed">
+                {artwork.point}
+              </p>
             </section>
           )}
         </div>
       ) : (
-        <div className="pb-24">
+        <div className="pb-28">
+          {/* 서브탭: 감상 / 질문 */}
           <div className="flex bg-bt-gray">
-            <button type="button" onClick={() => setActiveSubTab('review')} className="flex-1 py-2">
-              감상 {feelingItems?.length}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveSubTab('question')}
-              className="flex-1 py-2"
-            >
-              질문 {questionItems?.length}
-            </button>
+            {(
+              [
+                { key: 'review', label: '감상', count: feelingItems?.length ?? 0 },
+                { key: 'question', label: '질문', count: questionItems?.length ?? 0 },
+              ] as const
+            ).map((tab) => {
+              const isActive = activeSubTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveSubTab(tab.key)}
+                  className="relative flex flex-1 cursor-pointer flex-col items-center py-1.5 transition-colors duration-150"
+                >
+                  <span
+                    className={cn('typo-body-xs-regular', isActive ? 'text-main' : 'text-faint')}
+                  >
+                    {tab.label}
+                  </span>
+                  <span
+                    className={cn('typo-body-xs-regular', isActive ? 'text-main' : 'text-faint')}
+                  >
+                    {tab.count}
+                  </span>
+                  {isActive && (
+                    <span className="absolute right-0 bottom-0 left-0 h-[1.5px] bg-main" />
+                  )}
+                </button>
+              );
+            })}
           </div>
+
           {activeSubTab === 'review' ? (
-            <div className="px-5">
-              {feelingItems?.map((feeling) => (
-                <PersonalReviewCard
-                  key={feeling.personalFeelingId}
-                  feeling={feeling}
-                  artwork={artwork}
-                  isReplyTarget={replyFeeling?.personalFeelingId === feeling.personalFeelingId}
-                  onReply={() => setReplyFeeling((prev) => (prev ? null : feeling))}
-                />
-              ))}
+            <div className="px-5 pt-2">
+              <div className="py-4">
+                <h2 className="typo-body-xl-bold text-main">감상 후기</h2>
+              </div>
+              <div className="flex flex-col">
+                {feelingItems?.map((feeling) => (
+                  <PersonalReviewCard
+                    key={feeling.personalFeelingId}
+                    feeling={feeling}
+                    artwork={artwork}
+                    isReplyTarget={replyFeeling?.personalFeelingId === feeling.personalFeelingId}
+                    onReply={() => setReplyFeeling((prev) => (prev ? null : feeling))}
+                  />
+                ))}
+              </div>
+              {!feelingItems?.length && (
+                <p className="typo-body-sm-regular py-10 text-center text-faint">
+                  아직 감상 후기가 없습니다.
+                </p>
+              )}
             </div>
           ) : (
-            <div className="px-5">
-              <div className="flex justify-end py-3">
+            <div className="px-5 pt-2">
+              <div className="flex items-center justify-between py-4">
+                <h2 className="typo-body-xl-bold text-main">질문하기</h2>
                 <button
                   type="button"
                   onClick={() => setIsArtistView((prev) => !prev)}
-                  className="typo-body-xs-regular rounded-full border border-line px-2.5 py-1 text-sub600"
+                  className="typo-body-xs-regular cursor-pointer rounded-full border border-line px-2.5 py-1 text-sub600 hover:text-main"
                 >
                   {isArtistView ? '작가 시점' : '일반인 시점'}
                 </button>
               </div>
-              {questionItems?.map((question) => (
-                <PersonalQuestionCard
-                  key={question.personalQuestionId}
-                  question={question}
-                  artwork={artwork}
-                  isArtistView={isArtistView}
-                  isReplyTarget={replyQuestion?.personalQuestionId === question.personalQuestionId}
-                  onReply={() => setReplyQuestion((prev) => (prev ? null : question))}
-                />
-              ))}
+              <div className="flex flex-col">
+                {questionItems?.map((question) => (
+                  <PersonalQuestionCard
+                    key={question.personalQuestionId}
+                    question={question}
+                    artwork={artwork}
+                    isArtistView={isArtistView}
+                    isReplyTarget={
+                      replyQuestion?.personalQuestionId === question.personalQuestionId
+                    }
+                    onReply={() => setReplyQuestion((prev) => (prev ? null : question))}
+                  />
+                ))}
+              </div>
+              {!questionItems?.length && (
+                <p className="typo-body-sm-regular py-10 text-center text-faint">
+                  아직 질문이 없습니다.
+                </p>
+              )}
             </div>
           )}
         </div>
