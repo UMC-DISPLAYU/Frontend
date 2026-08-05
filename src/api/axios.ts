@@ -106,6 +106,9 @@ axiosInstance.interceptors.response.use(
           isRefreshing = false;
           useAuthStore.getState().clearAccessToken();
           refreshSubscribers = [];
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            window.location.replace('/login');
+          }
           return Promise.reject(refreshError);
         }
       }
