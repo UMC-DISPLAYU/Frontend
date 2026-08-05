@@ -39,6 +39,18 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+const onRefreshed = (token: string) => {
+  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers = [];
+};
+
+const addRefreshSubscriber = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
 axiosInstance.interceptors.response.use(
   (response) => {
     const data = response.data as ApiResponseDto<unknown>;
@@ -56,15 +68,58 @@ axiosInstance.interceptors.response.use(
 
     return response;
   },
-  (error: AxiosError<ApiResponseDto<unknown>>) => {
+  async (error: AxiosError<ApiResponseDto<unknown>>) => {
+    const originalRequest = error.config as typeof error.config & { _retry?: boolean };
     const data = error.response?.data;
-    const isRefreshRequest = error.config?.url?.includes('/v1/auth/refresh');
+
+    // 401 에러이고 refresh 요청이 아니며, 아직 재시도하지 않은 경우 토큰 갱신 시도
     if (
       error.response?.status === 401 &&
-      window.location.pathname !== '/login' &&
-      !isRefreshRequest
+      originalRequest &&
+      !originalRequest.url?.includes('/v1/auth/refresh') &&
+      !originalRequest._retry
     ) {
-      window.location.href = '/login';
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        try {
+          const response =
+            await axiosInstance.post<ApiResponseDto<{ accessToken: string }>>('/v1/auth/refresh');
+
+          const newAccessToken = response.data?.success?.data?.accessToken;
+
+          if (!newAccessToken) {
+            throw new Error('Failed to refresh access token');
+          }
+
+          useAuthStore.getState().setAccessToken(newAccessToken);
+          isRefreshing = false;
+          onRefreshed(newAccessToken);
+
+          // 원래 요청 재시도 (재시도 플래그 설정)
+          originalRequest._retry = true;
+          if (originalRequest.headers) {
+            originalRequest.headers.set('Authorization', `Bearer ${newAccessToken}`);
+          }
+          return axiosInstance(originalRequest);
+        } catch (refreshError) {
+          isRefreshing = false;
+          useAuthStore.getState().clearAccessToken();
+          refreshSubscribers = [];
+          return Promise.reject(refreshError);
+        }
+      }
+
+      // 이미 갱신 중이면 대기 (재시도 플래그 설정)
+      return new Promise((resolve) => {
+        addRefreshSubscriber((token: string) => {
+          originalRequest._retry = true;
+          if (originalRequest.headers) {
+            originalRequest.headers.set('Authorization', `Bearer ${token}`);
+          }
+          resolve(axiosInstance(originalRequest));
+        });
+      });
     }
 
     if (data?.resultType === 'FAIL') {
