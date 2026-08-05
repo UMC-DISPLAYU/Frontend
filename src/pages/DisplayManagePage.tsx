@@ -85,7 +85,12 @@ export function DisplayManagePage() {
       ) : (
         <ManageScreen
           exhibitions={myDisplays}
-          onOpen={setSelected}
+          /* 전시를 고르면 해당 전시의 관리 대시보드로 이동합니다. */
+          onOpen={(exhibition) =>
+            navigate('/exhibition/manage', {
+              state: { ...exhibition, displayId: exhibition.displayId ?? Number(exhibition.id) },
+            })
+          }
           onBack={() => window.history.back()}
           onDone={() => navigate('/setting')}
           onDelete={() => {}}
