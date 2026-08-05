@@ -64,7 +64,7 @@ function LoginContent({
       {/* DU Logo & Text Overlay - Smooth Fade In */}
       <div
         className={cn(
-          'absolute top-[26%] left-1/2 z-10 flex w-64 -translate-x-1/2 flex-col items-center transition-all duration-1000 ease-out',
+          'absolute top-[26%] left-1/2 z-10 flex w-64 -translate-x-1/2 flex-col items-center transition-all duration-1000 ease-out will-change-transform',
           isLogoVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
         )}
       >
@@ -81,7 +81,7 @@ function LoginContent({
         />
 
         {/* Horizontal Line with Gradient */}
-        <div className="relative z-10 w-full h-[1.5px] bg-linear-to-r from-[#06032d] via-slate-500 to-[#06032d] mb-2.5 shadow-[0px_2px_2px_rgba(0,0,0,0.25)] opacity-90" />
+        <div className="relative z-10 w-full h-0.5 bg-linear-to-r from-[#06032d] via-slate-500 to-[#06032d] mb-2.5 shadow-[0px_2px_2px_rgba(0,0,0,0.25)] opacity-90" />
 
         {/* Text with Gradient for metallic reflection */}
         <p className="relative z-10 text-transparent bg-clip-text bg-linear-to-r from-[#1a1b41] via-slate-800 to-[#1a1b41] typo-body-md-bold whitespace-nowrap tracking-tight">
