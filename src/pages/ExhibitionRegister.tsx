@@ -68,7 +68,7 @@ export function ExhibitionRegister() {
         intro,
         type,
         field,
-        school,
+        school: schoolValue,
         department,
         organizer,
       },
