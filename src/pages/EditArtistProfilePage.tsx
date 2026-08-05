@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ArtistProfileDto } from '@/api/dto';
 import { ChipGroup } from '@/components/ui';
 import { EXHIBITION_FIELDS } from '@/constants/exhibition';
+import { useUploadImage } from '@/hooks/queries/useFile';
 import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 
@@ -16,16 +17,14 @@ function ProfilePhotoField({
   onChange,
 }: {
   image: string | null;
-  onChange: (dataUrl: string) => void;
+  onChange: (file: File) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onChange(reader.result as string);
-    reader.readAsDataURL(file);
+    onChange(file);
   };
 
   return (
@@ -68,6 +67,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [profileImage, setProfileImage] = useState<string | null>(
     artistProfile?.profileImageUrl ?? null,
   );
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [activityName, setActivityName] = useState(artistProfile?.artistName ?? '');
   const [intro, setIntro] = useState(artistProfile?.introduction ?? '');
   const [selectedFields, setSelectedFields] = useState<string[]>(artistProfile?.fields ?? []);
@@ -78,13 +78,37 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [schoolFocused, setSchoolFocused] = useState(false);
   const schoolQuery = useSearchSchools(school);
   const updateMyArtistProfile = useUpdateMyArtistProfile();
+  const uploadImage = useUploadImage();
 
   const showSchoolDropdown = schoolFocused && school.trim().length > 0;
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    return () => {
+      if (profileImage?.startsWith('blob:')) {
+        URL.revokeObjectURL(profileImage);
+      }
+    };
+  }, [profileImage]);
+
+  const handleProfileImageChange = (file: File) => {
+    setProfileImage((prev) => {
+      if (prev?.startsWith('blob:')) {
+        URL.revokeObjectURL(prev);
+      }
+
+      return URL.createObjectURL(file);
+    });
+    setProfileImageFile(file);
+  };
+
+  const handleSubmit = async () => {
+    const uploadedProfileImageUrl = profileImageFile
+      ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
+      : profileImage;
+
     updateMyArtistProfile.mutate(
       {
-        profileImageUrl: profileImage ?? undefined,
+        profileImageUrl: uploadedProfileImageUrl ?? undefined,
         artistName: activityName.trim(),
         introduction: intro.trim(),
         fields: selectedFields,
@@ -110,7 +134,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
 
       <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-32">
         <div className="mt-10 flex justify-center">
-          <ProfilePhotoField image={profileImage} onChange={setProfileImage} />
+          <ProfilePhotoField image={profileImage} onChange={handleProfileImageChange} />
         </div>
 
         <div className="mt-12 flex flex-col gap-5">
@@ -245,11 +269,14 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           type="button"
           onClick={handleSubmit}
           disabled={
-            !activityName.trim() || selectedFields.length === 0 || updateMyArtistProfile.isPending
+            !activityName.trim() ||
+            selectedFields.length === 0 ||
+            updateMyArtistProfile.isPending ||
+            uploadImage.isPending
           }
           className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white disabled:opacity-40"
         >
-          {updateMyArtistProfile.isPending ? '저장 중' : '완료'}
+          {updateMyArtistProfile.isPending || uploadImage.isPending ? '저장 중' : '완료'}
         </button>
       </footer>
     </div>
