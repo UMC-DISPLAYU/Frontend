@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import displayuLogo from '@/assets/DUfontlogo.svg';
+import displayuLogo from '@/assets/brand/DUfontlogo.svg';
 import googleIcon from '@/assets/onboarding/googleIcon.svg';
 import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
 import onboardingSplash from '@/assets/onboarding/onboarding-splash.svg';

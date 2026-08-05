@@ -1,13 +1,14 @@
 import { NavLink } from 'react-router-dom';
 
-import homeIcon from '../../assets/HomeIcon.svg';
-import homeIconActive from '../../assets/HomeIconActive.svg';
-import loungeIcon from '../../assets/LoungeIcon.svg';
-import loungeIconActive from '../../assets/LoungeIconActive.svg';
-import myIcon from '../../assets/MyIcon.svg';
-import myIconActive from '../../assets/MyIconActive.svg';
-import searchIcon from '../../assets/SearchIcon.svg';
-import searchIconActive from '../../assets/SearchIconActive.svg';
+import homeIcon from '@/assets/nav/HomeIcon.svg';
+import homeIconActive from '@/assets/nav/HomeIconActive.svg';
+import loungeIcon from '@/assets/nav/LoungeIcon.svg';
+import loungeIconActive from '@/assets/nav/LoungeIconActive.svg';
+import myIcon from '@/assets/nav/MyIcon.svg';
+import myIconActive from '@/assets/nav/MyIconActive.svg';
+import searchIcon from '@/assets/nav/SearchIcon.svg';
+import searchIconActive from '@/assets/nav/SearchIconActive.svg';
+
 import { cn } from '../../utils/cn';
 
 type NavId = 'home' | 'lounge' | 'my' | 'search';

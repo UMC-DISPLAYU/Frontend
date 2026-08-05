@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+import cancelIcon from '@/assets/common/cancel.svg';
 import type { FilterState, FilterTab } from '@/types/search';
-
-import cancelIcon from '../../assets/cancel.svg';
 
 import { FilterChip } from './FilterChip';
 import { FILTER_TAB_OPTIONS, FILTER_TABS } from './filterOptions';

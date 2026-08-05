@@ -1,9 +1,9 @@
 import { ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import myCommentsIcon from '@/assets/my-comments.svg';
-import savedPostsIcon from '@/assets/saved-posts.svg';
-import scrapsIcon from '@/assets/scraps.svg';
+import myCommentsIcon from '@/assets/lounge/my-comments.svg';
+import savedPostsIcon from '@/assets/lounge/saved-posts.svg';
+import scrapsIcon from '@/assets/lounge/scraps.svg';
 
 import { LoungeCard } from './LoungeCard';
 

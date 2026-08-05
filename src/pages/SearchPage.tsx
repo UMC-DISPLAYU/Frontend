@@ -4,11 +4,11 @@ import { Search } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import type { SearchDisplaysRequestDto } from '@/api/dto';
+import cancelIcon from '@/assets/common/cancel.svg';
+import filterIcon from '@/assets/search/filter.svg';
+import filterSelectedDotIcon from '@/assets/search/filter-selected-dot.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 
-import cancelIcon from '../assets/cancel.svg';
-import filterIcon from '../assets/filter.svg';
-import filterSelectedDotIcon from '../assets/filter-selected-dot.svg';
 import {
   DEFAULT_FILTER_STATE,
   ExhibitionCard,
