@@ -15,7 +15,7 @@ export type PolicyActionMap = {
     | 'editContent'
     | 'deleteContent'
     | 'reorder';
-  displayInvitation: 'create' | 'accept' | 'reject';
+  displayInvitation: 'create';
   artwork: 'create' | 'edit' | 'delete' | 'reorder';
   question:
     | 'view'

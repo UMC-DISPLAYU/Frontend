@@ -71,10 +71,6 @@ export const policies = {
 
   displayInvitation: {
     create: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
-    accept: (user: User, invitation: { inviteeUserId: number }) =>
-      isLoggedIn(user) && user.id === invitation.inviteeUserId,
-    reject: (user: User, invitation: { inviteeUserId: number }) =>
-      isLoggedIn(user) && user.id === invitation.inviteeUserId,
   },
 
   artwork: {

@@ -5,7 +5,6 @@ import type {
   ArtworkGuestbookReplyDto,
   ArtworkQuestionDto,
   DisplayDetailDto,
-  DisplayInvitationDto,
   DisplayReviewDto,
   DisplayReviewReplyDto,
   GetArtworkDetailResponseDataDto,
@@ -126,17 +125,14 @@ export function useDisplayContentPolicy(
 
 export function useDisplayInvitationPolicy(
   display: DisplayPolicyResource,
-  invitation?: DisplayInvitationDto,
 ): PolicyPermissionMap<'displayInvitation'> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
     () => ({
       create: () => policies.displayInvitation.create(user, display),
-      accept: () => (invitation ? policies.displayInvitation.accept(user, invitation) : false),
-      reject: () => (invitation ? policies.displayInvitation.reject(user, invitation) : false),
     }),
-    [user, display, invitation],
+    [user, display],
   );
 }
 
