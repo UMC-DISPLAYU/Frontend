@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ImageUploader } from '@/components/common';
 import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
@@ -24,15 +24,21 @@ export function ExhibitionRegister() {
   const { data: artistProfile } = useMyArtistProfile({ enabled: !!accessToken });
   const imageUpload = useImageUpload({ domain: 'display' });
 
-  const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [intro, setIntro] = useState('');
-  const [type, setType] = useState<string | null>(null);
-  const [field, setField] = useState<string[]>([]);
+  /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
+  const { state } = useLocation();
+  const restored = (state ?? {}) as Record<string, unknown>;
 
-  const [school, setSchool] = useState(artistProfile?.schoolName || '');
-  const [department, setDepartment] = useState('');
-  const [organizer, setOrganizer] = useState('');
+  const [title, setTitle] = useState((restored.title as string) ?? '');
+  const [subtitle, setSubtitle] = useState((restored.subtitle as string) ?? '');
+  const [intro, setIntro] = useState((restored.intro as string) ?? '');
+  const [type, setType] = useState<string | null>((restored.type as string) ?? null);
+  const [field, setField] = useState<string[]>((restored.field as string[]) ?? []);
+
+  const [school, setSchool] = useState(
+    (restored.school as string) ?? artistProfile?.schoolName ?? '',
+  );
+  const [department, setDepartment] = useState((restored.department as string) ?? '');
+  const [organizer, setOrganizer] = useState((restored.organizer as string) ?? '');
   const schoolValue = school || artistProfile?.schoolName || '';
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {

@@ -62,7 +62,8 @@ export function ArtistNameSetup() {
   const { state } = useLocation();
   const registerState = (state ?? {}) as ExhibitionRegisterState;
   const createDisplay = useCreateDisplay();
-  const [artistName, setArtistName] = useState('');
+  /* 뒤로 갔다 다시 들어와도 입력한 작가명이 남아 있도록 state로 초기화합니다. */
+  const [artistName, setArtistName] = useState(registerState.artistName ?? '');
 
   const info = {
     title: registerState.title ?? '',
@@ -86,6 +87,7 @@ export function ArtistNameSetup() {
       !registerState.endTime ||
       !registerState.placeName ||
       !registerState.address ||
+      !registerState.contact?.trim() ||
       registerState.latitude === null ||
       registerState.latitude === undefined ||
       registerState.longitude === null ||
@@ -108,6 +110,9 @@ export function ArtistNameSetup() {
       latitude: registerState.latitude,
       longitude: registerState.longitude,
       roadAddress: registerState.address.trim(),
+      /* 서버 필수 필드입니다. 작가명은 이 전시에서 쓸 표시명, 문의 방법은 Q&A 계정으로 들어갑니다. */
+      displayNickname: artistName.trim(),
+      qnaAccount: (registerState.contact ?? '').trim(),
       schoolOrOrganization: optionalText(registerState.school),
       departmentOrClub: optionalText(registerState.department),
       hostOrganizationName: optionalText(registerState.organizer),
