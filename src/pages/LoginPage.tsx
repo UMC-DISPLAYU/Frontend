@@ -61,14 +61,32 @@ function LoginContent({
         className="absolute inset-0 h-full w-full object-cover object-center"
       />
 
-      {/* DU Logo SVG Overlay - Smooth Fade In */}
+      {/* DU Logo & Text Overlay - Smooth Fade In */}
       <div
         className={cn(
-          'absolute top-[25%] left-1/2 z-10 flex -translate-x-1/2 flex-col items-center transition-all duration-1000 ease-out',
+          'absolute top-[26%] left-1/2 z-10 flex w-64 -translate-x-1/2 flex-col items-center transition-all duration-1000 ease-out',
           isLogoVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
         )}
       >
-        <img src={displayuLogo} alt="Display U" className="h-12.5 w-25.5 drop-shadow-xs" />
+        {/* DU Logo with Mask Gradient for metallic reflection */}
+        <div
+          className={cn(
+            'relative z-10 h-12.5 w-full mb-6 drop-shadow-xl',
+            'bg-[radial-gradient(ellipse_at_top,#94a3b8_0%,#06032d_50%)]',
+            '[-webkit-mask-image:url(/src/assets/brand/DUfontlogo.svg)] [-webkit-mask-size:contain] [-webkit-mask-repeat:no-repeat] [-webkit-mask-position:center]',
+            'mask-[url(/src/assets/brand/DUfontlogo.svg)] mask-size-contain mask-repeat-no-mask mask-position-center',
+          )}
+          aria-label="Display U"
+          role="img"
+        />
+
+        {/* Horizontal Line with Gradient */}
+        <div className="relative z-10 w-full h-[1.5px] bg-linear-to-r from-[#06032d] via-slate-500 to-[#06032d] mb-2.5 shadow-[0px_2px_2px_rgba(0,0,0,0.25)] opacity-90" />
+
+        {/* Text with Gradient for metallic reflection */}
+        <p className="relative z-10 text-transparent bg-clip-text bg-linear-to-r from-[#1a1b41] via-slate-800 to-[#1a1b41] typo-body-md-bold whitespace-nowrap tracking-tight">
+          전시가 끝난 뒤에도 감상은 계속되도록
+        </p>
       </div>
 
       {/* Content Overlay */}
