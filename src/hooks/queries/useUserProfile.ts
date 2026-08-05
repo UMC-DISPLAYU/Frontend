@@ -21,11 +21,15 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
-export const useUserMe = () =>
-  useQuery({
+export const useUserMe = () => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  return useQuery({
     queryKey: queryKeys.users.me(),
     queryFn: getUserMe,
+    enabled: !!accessToken,
   });
+};
 
 export const useCheckNickname = () =>
   useMutation({
