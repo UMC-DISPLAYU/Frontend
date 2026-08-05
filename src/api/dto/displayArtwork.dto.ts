@@ -262,7 +262,8 @@ export interface CreateExhibitionArtworkRequestDto {
   artistName?: string;
   artistUserId?: number;
   coAuthors: ArtworkCoAuthorsDto;
-  qaHandlerUserId: number;
+  /* 담당자는 여러 명 지정할 수 있고 최소 한 명은 있어야 합니다. */
+  qaHandlerUserIds: number[];
 }
 
 export interface CreateExhibitionArtworkResponseDataDto {
