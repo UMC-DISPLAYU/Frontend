@@ -320,6 +320,21 @@ export function usePersonalQuestionPolicy(
   );
 }
 
+export function usePersonalQuestionReplyPolicy(
+  reply?: PersonalArtworkQuestionReplyResponseDataDto | null,
+): Pick<PolicyPermissionMap<'personalQuestion'>, 'reply.delete' | 'reply.like' | 'reply.unlike'> {
+  const user = useCurrentPolicyUser();
+
+  return useMemo(
+    () => ({
+      'reply.like': () => policies.personalQuestion.reply.like(user),
+      'reply.unlike': () => policies.personalQuestion.reply.unlike(user),
+      'reply.delete': () => (reply ? policies.personalQuestion.reply.delete(user, reply) : false),
+    }),
+    [user, reply],
+  );
+}
+
 export function usePersonalFeelingPolicy(
   feeling?: PersonalArtworkFeelingResponseDataDto,
   personalArtwork?: PersonalArtworkResponseDataDto,
@@ -344,6 +359,25 @@ export function usePersonalFeelingPolicy(
           : false,
     }),
     [user, feeling, personalArtwork],
+  );
+}
+
+export function usePersonalFeelingReplyPolicy(
+  personalArtwork?: PersonalArtworkResponseDataDto,
+  reply?: PersonalArtworkFeelingReplyDto,
+): Pick<PolicyPermissionMap<'personalFeeling'>, 'reply.delete' | 'reply.like' | 'reply.unlike'> {
+  const user = useCurrentPolicyUser();
+
+  return useMemo(
+    () => ({
+      'reply.like': () => policies.personalFeeling.reply.like(user),
+      'reply.unlike': () => policies.personalFeeling.reply.unlike(user),
+      'reply.delete': () =>
+        reply && personalArtwork
+          ? policies.personalFeeling.reply.delete(user, reply, personalArtwork)
+          : false,
+    }),
+    [user, personalArtwork, reply],
   );
 }
 

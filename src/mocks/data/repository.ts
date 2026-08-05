@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MOCK_ARTWORK, MOCK_DISPLAY } from '@/mocks/data';
+import {
+  MOCK_PERSONAL_ARTWORK_FEELING_REPLIES,
+  MOCK_PERSONAL_ARTWORK_FEELINGS,
+  MOCK_PERSONAL_ARTWORK_QUESTION_REPLIES,
+  MOCK_PERSONAL_ARTWORK_QUESTIONS,
+  MOCK_PERSONAL_ARTWORKS,
+} from '@/mocks/data/personalArtwork';
 
 const now = () => new Date().toISOString();
 
@@ -302,27 +309,11 @@ export const mockDb: {
       updatedAt: now(),
     },
   ],
-  personalArtworks: [
-    {
-      personalArtworkId: 1,
-      artworkId: 1,
-      title: '개인 작업 아카이브',
-      artist: '디스플레이유',
-      artistName: '디스플레이유',
-      content: '개인 작업 mock 데이터입니다.',
-      description: '개인 작업 mock 데이터입니다.',
-      type: 'SCULPTURE',
-      productionYear: 2026,
-      materialMedia: 'Mixed media',
-      material: 'Mixed media',
-      size: '가변 설치',
-      images: [{ imageId: 1, imageUrl: MOCK_UPLOAD_IMAGE_URL, width: 1280, height: 1600 }],
-      liked: false,
-      likeCount: 0,
-      createdAt: now(),
-      updatedAt: now(),
-    },
-  ],
+  personalArtworks: [...MOCK_PERSONAL_ARTWORKS],
+  personalArtworkFeelings: [...MOCK_PERSONAL_ARTWORK_FEELINGS],
+  personalArtworkFeelingReplies: [...MOCK_PERSONAL_ARTWORK_FEELING_REPLIES],
+  personalArtworkQuestions: [...MOCK_PERSONAL_ARTWORK_QUESTIONS],
+  personalArtworkQuestionReplies: [...MOCK_PERSONAL_ARTWORK_QUESTION_REPLIES],
   archivedExhibitionIds: new Set<number>(),
   archivedArtworkIds: new Set<number>(),
   archivedArtistIds: new Set<number>(),

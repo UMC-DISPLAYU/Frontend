@@ -5,15 +5,17 @@ import { useNavigate } from 'react-router-dom';
 import { ImageUploader } from '@/components/common';
 import { ExhibitionHeader } from '@/components/exhibition-register';
 import { RequiredLabel } from '@/components/ui';
-import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { usePersonalArtworkPolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
 
 export function PersonalArtworksRegister() {
-  const { data: artistProfile } = useMyArtistProfile();
   const navigate = useNavigate();
+  const personalArtworkPolicy = usePersonalArtworkPolicy();
+  const canCreatePersonalArtwork = hasPermission(personalArtworkPolicy, 'create');
 
   const { images, addImages, removeImage } = useImageUpload();
   const {
@@ -28,11 +30,12 @@ export function PersonalArtworksRegister() {
   const [size, setSize] = useState('');
   const [thoughts, setThoughts] = useState('');
 
-  // 작가 프로필 학교 정보를 초기값으로 사용
-  const school = artistProfile?.schoolName || '';
-
   const isFormValid =
-    images.length > 0 && title.trim() !== '' && year.trim() !== '' && material.trim() !== '';
+    canCreatePersonalArtwork &&
+    images.length > 0 &&
+    title.trim() !== '' &&
+    year.trim() !== '' &&
+    material.trim() !== '';
 
   return (
     <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">

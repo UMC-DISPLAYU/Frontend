@@ -12,6 +12,7 @@ interface ArtworkCardProps {
   onUnarchive?: (item: SavedArtworkItem) => void;
   onSaveMemo?: (item: SavedArtworkItem, memo: string) => void;
   onDeleteMemo?: (item: SavedArtworkItem) => void;
+  onOpen?: (item: SavedArtworkItem) => void;
 }
 
 export function ArtworkCard({
@@ -20,6 +21,7 @@ export function ArtworkCard({
   onUnarchive,
   onSaveMemo,
   onDeleteMemo,
+  onOpen,
 }: ArtworkCardProps) {
   const hasMemo = Boolean(item.memo);
   const memoPolicy = useMemoPolicy(item.userId === undefined ? undefined : { userId: item.userId });
@@ -56,7 +58,10 @@ export function ArtworkCard({
 
   return (
     <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
-      <div className="p-1.5 pb-0">
+      <div
+        onClick={() => onOpen?.(item)}
+        className={onOpen ? 'cursor-pointer p-1.5 pb-0' : 'p-1.5 pb-0'}
+      >
         <div className="relative rounded-xl overflow-hidden">
           <div className="w-full h-44 bg-box200">
             {item.thumbnail && (
@@ -68,7 +73,10 @@ export function ArtworkCard({
               type="button"
               aria-label="북마크 해제"
               className="absolute bottom-2 right-2"
-              onClick={() => onUnarchive?.(item)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onUnarchive?.(item);
+              }}
             >
               <Bookmark fill="currentColor" className="size-4 text-bookmark" />
             </button>
@@ -76,7 +84,14 @@ export function ArtworkCard({
         </div>
       </div>
 
-      <div className="px-2.5 pt-2 pb-3 flex flex-col gap-1">
+      <div
+        onClick={() => onOpen?.(item)}
+        className={
+          onOpen
+            ? 'cursor-pointer px-2.5 pt-2 pb-3 flex flex-col gap-1'
+            : 'px-2.5 pt-2 pb-3 flex flex-col gap-1'
+        }
+      >
         <div className="typo-body-sm-bold text-main truncate">{item.title}</div>
         <div className="typo-body-xs-regular text-main truncate">{item.artist}</div>
       </div>

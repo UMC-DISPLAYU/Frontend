@@ -346,6 +346,11 @@ export function MyPage() {
                 }}
                 onSaveMemo={handleSaveArtworkMemo}
                 onDeleteMemo={handleDeleteArtworkMemo}
+                onOpen={
+                  isArtistView
+                    ? (artwork) => navigate(`/personal-artworks/${artwork.artworkId ?? artwork.id}`)
+                    : undefined
+                }
               />
             ))}
           </div>
