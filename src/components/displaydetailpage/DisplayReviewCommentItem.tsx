@@ -12,31 +12,7 @@ import {
   useDeleteDisplayReview,
   useToggleDisplayReviewLike,
 } from '@/hooks/queries/useDisplayReviews';
-
-// ─── 날짜/시간 포맷 (24시간 미만: N시간, 24시간 이상: YYYY.MM.DD) ─────────────
-
-function formatDateOrTime(iso: string) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-
-  if (diffHours >= 0 && diffHours < 24) {
-    if (diffHours === 0) {
-      const diffMins = Math.floor(diffMs / (1000 * 60));
-      return diffMins <= 1 ? '방금 전' : `${diffMins}분`;
-    }
-    return `${diffHours}시간`;
-  }
-
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${day}`;
-}
+import { formatRelativeTime } from '@/utils/date';
 
 type Props = {
   displayId: number;
@@ -80,7 +56,7 @@ export function DisplayReviewCommentItem({
       id: String(reply.displayReviewReplyId),
       author: reply.user.nickname,
       avatarUrl: reply.user.profileImageUrl,
-      time: formatDateOrTime(reply.createdAt),
+      time: formatRelativeTime(reply.createdAt),
       content: reply.content,
       likeCount: reply.likeCount,
       isLiked: false, // 답글 목록 API에 좋아요 여부가 내려오지 않음
@@ -92,7 +68,7 @@ export function DisplayReviewCommentItem({
     id: String(review.displayReviewId),
     author: review.user.nickname,
     avatarUrl: review.user.profileImageUrl,
-    time: formatDateOrTime(review.createdAt),
+    time: formatRelativeTime(review.createdAt),
     content: review.content,
     likeCount: review.likeCount,
     isLiked: false, // 후기 목록 API에 좋아요 여부가 내려오지 않음

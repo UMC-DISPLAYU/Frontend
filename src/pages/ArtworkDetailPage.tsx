@@ -6,6 +6,7 @@ import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuest
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
+import type { ArtworkDetailTabKey } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { BottomCommentBar, CommentInputBar, ErrorView, LoadingView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
@@ -23,19 +24,14 @@ import {
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
-import type {
-  ArtworkDetail,
-  ArtworkGuestbookTab as ArtworkGuestbookSubTabType,
-  GuestbookQuestion,
-} from '@/types/exhibition';
+import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
 
 export function ArtworkDetailPage() {
   const navigate = useNavigate();
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
 
-  const [activeTab, setActiveTab] = useState<'intro' | 'guestbook'>('intro');
-  const [activeSubTab, setActiveSubTab] = useState<ArtworkGuestbookSubTabType>('review');
+  const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>('intro');
   const [isArtistView, setIsArtistView] = useState(false);
 
   const { data: userMe } = useUserMe();
@@ -170,14 +166,14 @@ export function ArtworkDetailPage() {
       {/* 작품 메타 (제목, 작가, 소속전시, 저장버튼) */}
       <ArtworkMeta artwork={artwork} />
 
-      {/* 소개 / 방명록 탭 */}
+      {/* 소개 / 방명록 / 질문 탭 */}
       <ArtworkTabNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && (
         <ArtworkIntroTab artwork={artwork} artistUserId={detail.artistUserId} />
       )}
-      {activeTab === 'guestbook' && (
+      {(activeTab === 'review' || activeTab === 'question') && (
         <ArtworkGuestbookTab
           feelings={feelings}
           hasMoreFeelings={hasMoreFeelings}
@@ -186,8 +182,7 @@ export function ArtworkDetailPage() {
           questions={questions}
           artworkId={artworkId}
           myUserId={myUserId}
-          activeSubTab={activeSubTab}
-          onSubTabChange={setActiveSubTab}
+          activeTab={activeTab}
           isArtistView={isArtistView}
           onArtistViewChange={setIsArtistView}
           activeReplyId={activeReplyId}
@@ -200,7 +195,6 @@ export function ArtworkDetailPage() {
         />
       )}
 
-      {/* 하단 고정 바: 소개 탭은 저장버튼, 감상 탭은 공용 입력바, 질문 탭은 기존 입력바 */}
       {activeTab === 'intro' ? (
         <BottomFixedBar
           button={
@@ -211,7 +205,7 @@ export function ArtworkDetailPage() {
             />
           }
         />
-      ) : activeSubTab === 'review' ? (
+      ) : activeTab === 'review' ? (
         <CommentInputBar
           replyTarget={feelingReplyTarget}
           onCancelReply={clearFeelingReplyTarget}

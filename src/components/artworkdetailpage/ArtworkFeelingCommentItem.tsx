@@ -10,31 +10,7 @@ import {
   useToggleArtworkFeelingLike,
   useToggleArtworkFeelingReplyLike,
 } from '@/hooks/queries/useArtworkFeelings';
-
-// ─── 날짜/시간 포맷 (24시간 미만: N시간, 24시간 이상: YYYY.MM.DD) ─────────────
-
-function formatDateOrTime(iso: string) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-
-  if (diffHours >= 0 && diffHours < 24) {
-    if (diffHours === 0) {
-      const diffMins = Math.floor(diffMs / (1000 * 60));
-      return diffMins <= 1 ? '방금 전' : `${diffMins}분`;
-    }
-    return `${diffHours}시간`;
-  }
-
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${day}`;
-}
+import { formatRelativeTime } from '@/utils/date';
 
 type Props = {
   artworkId: number;
@@ -77,7 +53,7 @@ export function ArtworkFeelingCommentItem({
     (reply) => ({
       id: String(reply.feelingReplyId ?? 0),
       author: reply.user?.nickname ?? '',
-      time: formatDateOrTime(reply.createdAt),
+      time: formatRelativeTime(reply.createdAt),
       content: reply.content,
       likeCount: reply.likeCount ?? 0,
       isLiked: false, // 목록 API에 "내가 눌렀는지"는 안 내려옴 (개수만 내려옴)
@@ -88,7 +64,7 @@ export function ArtworkFeelingCommentItem({
   const comment: CommentData = {
     id: String(feeling.feelingId),
     author: feeling.user?.nickname ?? '',
-    time: formatDateOrTime(feeling.createdAt),
+    time: formatRelativeTime(feeling.createdAt),
     content: feeling.content,
     likeCount: feeling.likeCount,
     isLiked: false, // 목록 API에 "내가 눌렀는지"는 안 내려옴 (개수만 내려옴)

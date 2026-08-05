@@ -9,7 +9,7 @@ import {
 } from '@/hooks/queries/useLoungeComments';
 import { useLoungeReplies } from '@/hooks/queries/useLoungeReplies';
 import type { LoungeBoardComment } from '@/types/exhibition';
-import { formatLoungeTime } from '@/utils/date';
+import { formatRelativeTime } from '@/utils/date';
 
 type Props = {
   postId: number;
@@ -58,7 +58,7 @@ export function LoungeBoardCommentItem({
         id: String(reply.loungeCommentId),
         author: reply.writer.nickname,
         avatarUrl: reply.writer.profileImageUrl,
-        time: formatLoungeTime(reply.createdAt),
+        time: formatRelativeTime(reply.createdAt),
         content: reply.content,
         likeCount: reply.likeCount,
         isLiked: reply.isLiked,

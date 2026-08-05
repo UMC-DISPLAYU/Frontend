@@ -10,6 +10,7 @@ import {
 } from '@/hooks/queries/useArtworkQuestions';
 import type { ArtworkGuestbookTab, GuestbookQuestion } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
+import { formatRelativeTime } from '@/utils/date';
 
 import { ArtworkFeelingCommentItem } from './ArtworkFeelingCommentItem';
 
@@ -22,8 +23,8 @@ type Props = {
   artworkId: number;
   myUserId?: number;
   isArtist?: boolean;
-  activeSubTab?: ArtworkGuestbookTab;
-  onSubTabChange?: (tab: ArtworkGuestbookTab) => void;
+  /* 상위 탭바(소개/방명록/질문)가 결정한 현재 섹션 */
+  activeTab: ArtworkGuestbookTab;
   isArtistView?: boolean;
   onArtistViewChange?: (isArtist: boolean) => void;
   /* 하단 입력바가 답글 대상으로 잡고 있는 감상 id (댓글 하이라이트용) */
@@ -87,7 +88,7 @@ function QuestionCard({
           </div>
           <div className="flex items-center gap-2 typo-body-xs-regular text-faint pl-6">
             <span>{replyStatus}</span>
-            <span>{question.createdAt}</span>
+            <span>{formatRelativeTime(question.createdAt)}</span>
           </div>
         </div>
       </article>
@@ -121,7 +122,9 @@ function QuestionCard({
               <div className="w-full flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <span className="typo-body-sm-bold text-main">{question.user?.nickname}</span>
-                  <span className="typo-body-xs-regular text-faint">{question.createdAt}</span>
+                  <span className="typo-body-xs-regular text-faint">
+                    {formatRelativeTime(question.createdAt)}
+                  </span>
                 </div>
                 {!question.isPublic && (
                   <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
@@ -234,7 +237,9 @@ function QuestionCard({
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="typo-body-sm-bold text-main">작가 답변</span>
-                <span className="typo-body-xs-regular text-faint">{question.reply.createdAt}</span>
+                <span className="typo-body-xs-regular text-faint">
+                  {formatRelativeTime(question.reply.createdAt)}
+                </span>
               </div>
               <p className="typo-body-xs-regular text-sub600 leading-relaxed">
                 {question.reply.content}
@@ -259,8 +264,7 @@ export function ArtworkGuestbookTab({
   artworkId,
   myUserId,
   isArtist = false,
-  activeSubTab: controlledSubTab,
-  onSubTabChange,
+  activeTab,
   isArtistView: controlledArtistView,
   onArtistViewChange,
   activeReplyId,
@@ -268,10 +272,8 @@ export function ArtworkGuestbookTab({
   replyTargetQuestionId,
   onQuestionReplyTargetChange,
 }: Props) {
-  const [localSubTab, setLocalSubTab] = useState<ArtworkGuestbookTab>('review');
   const [localArtistView, setLocalArtistView] = useState(isArtist);
 
-  const activeSubTab = controlledSubTab ?? localSubTab;
   const isArtistView = controlledArtistView ?? localArtistView;
 
   const feelingsTriggerRef = useRef<HTMLDivElement | null>(null);
@@ -279,7 +281,7 @@ export function ArtworkGuestbookTab({
   // 감상 목록 무한 스크롤 감지
   useEffect(() => {
     const el = feelingsTriggerRef.current;
-    if (!el || activeSubTab !== 'review') return;
+    if (!el || activeTab !== 'review') return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -294,12 +296,7 @@ export function ArtworkGuestbookTab({
     return () => {
       observer.disconnect();
     };
-  }, [activeSubTab, hasMoreFeelings, isLoadingMoreFeelings, onLoadMoreFeelings]);
-
-  const handleSubTabChange = (tab: ArtworkGuestbookTab) => {
-    setLocalSubTab(tab);
-    onSubTabChange?.(tab);
-  };
+  }, [activeTab, hasMoreFeelings, isLoadingMoreFeelings, onLoadMoreFeelings]);
 
   const handleArtistViewToggle = () => {
     const nextVal = !isArtistView;
@@ -309,67 +306,8 @@ export function ArtworkGuestbookTab({
 
   return (
     <div className="pb-28">
-      {/* 서브탭: 감상 / 질문 */}
-      <div className="flex bg-bt-gray">
-        {/* 감상 */}
-        <button
-          type="button"
-          id="guestbook-subtab-review"
-          onClick={() => handleSubTabChange('review')}
-          className="relative flex-1 flex flex-col items-center py-1.5 transition-colors duration-150 cursor-pointer"
-        >
-          <span
-            className={cn(
-              'typo-body-xs-regular',
-              activeSubTab === 'review' ? 'text-main' : 'text-faint',
-            )}
-          >
-            감상
-          </span>
-          <span
-            className={cn(
-              'typo-body-xs-regular',
-              activeSubTab === 'review' ? 'text-main' : 'text-faint',
-            )}
-          >
-            {feelings.length}
-          </span>
-          {activeSubTab === 'review' && (
-            <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-main" />
-          )}
-        </button>
-
-        {/* 질문 */}
-        <button
-          type="button"
-          id="guestbook-subtab-question"
-          onClick={() => handleSubTabChange('question')}
-          className="relative flex-1 flex flex-col items-center py-1.5 transition-colors duration-150 cursor-pointer"
-        >
-          <span
-            className={cn(
-              'typo-body-xs-regular',
-              activeSubTab === 'question' ? 'text-main' : 'text-faint',
-            )}
-          >
-            질문
-          </span>
-          <span
-            className={cn(
-              'typo-body-xs-regular',
-              activeSubTab === 'question' ? 'text-main' : 'text-faint',
-            )}
-          >
-            {questions.length}
-          </span>
-          {activeSubTab === 'question' && (
-            <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-main" />
-          )}
-        </button>
-      </div>
-
       {/* ── 감상 탭 ── */}
-      {activeSubTab === 'review' && (
+      {activeTab === 'review' && (
         <div className="px-5 pt-2">
           <div className="py-4">
             <h2 className="typo-body-xl-bold text-main">감상 후기</h2>
@@ -402,7 +340,7 @@ export function ArtworkGuestbookTab({
       )}
 
       {/* ── 질문 탭 ── */}
-      {activeSubTab === 'question' && (
+      {activeTab === 'question' && (
         <div className="px-5 pt-2">
           <div className="flex items-center justify-between py-4">
             <h2 className="typo-body-xl-bold text-main">질문하기</h2>

@@ -22,7 +22,7 @@ import {
 } from '@/hooks/queries/useLoungeComments';
 import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
 import type { LoungeBoardComment, LoungeBoardDetail } from '@/types/exhibition';
-import { formatLoungeTime } from '@/utils/date';
+import { formatRelativeTime } from '@/utils/date';
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -116,7 +116,7 @@ export const LoungeBoardDetailPage = () => {
                 id: String(comment.loungeCommentId),
                 author: comment.writer.nickname,
                 avatarUrl: comment.writer.profileImageUrl,
-                time: formatLoungeTime(comment.createdAt),
+                time: formatRelativeTime(comment.createdAt),
                 content: comment.content,
                 likeCount: comment.likeCount,
                 isLiked: comment.isLiked,
