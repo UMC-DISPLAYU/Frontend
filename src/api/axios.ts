@@ -106,7 +106,14 @@ axiosInstance.interceptors.response.use(
           isRefreshing = false;
           useAuthStore.getState().clearAccessToken();
           refreshSubscribers = [];
-          return Promise.reject(refreshError);
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            import('@/utils/pendingRedirect').then(({ savePendingRedirect }) => {
+              savePendingRedirect(window.location.pathname + window.location.search);
+              window.location.replace('/login');
+            });
+          } else {
+            return Promise.reject(refreshError);
+          }
         }
       }
 

@@ -14,14 +14,12 @@ import {
 } from '@/constants/exhibition';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { useAuthStore } from '@/stores/authStore';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
 
 export function ExhibitionRegister() {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const { data: artistProfile } = useMyArtistProfile({ enabled: !!accessToken });
+  const { data: artistProfile } = useMyArtistProfile();
   const imageUpload = useImageUpload({ domain: 'display' });
 
   const [title, setTitle] = useState('');

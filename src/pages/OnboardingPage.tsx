@@ -274,7 +274,7 @@ const POLICY_DOCUMENTS: Record<
 function MobileShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-[#f0f0f0] font-[Pretendard,sans-serif]">
-      <div className="relative flex h-dvh w-full max-w-[402px] flex-col overflow-hidden bg-white">
+      <div className="relative flex h-dvh w-full max-w-md flex-col overflow-hidden bg-white">
         {children}
       </div>
     </div>

@@ -2,7 +2,9 @@ import { type ChangeEvent, type KeyboardEvent, useRef, useState } from 'react';
 
 import { Check, ImageIcon, SendHorizontal, X } from 'lucide-react';
 
+import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 
 type Props = {
@@ -32,6 +34,8 @@ export function BottomCommentBar({
   showPrivateOption = false,
   className = '',
 }: Props) {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [content, setContent] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +56,11 @@ export function BottomCommentBar({
   };
 
   const submit = async () => {
+    if (!accessToken) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     if (!canSubmit) return;
 
     try {
@@ -79,6 +88,7 @@ export function BottomCommentBar({
         className,
       )}
     >
+      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       {replyingTo && (
         <div className="-mx-5 mb-3 flex items-center justify-between gap-2 border-b border-line-soft px-5 pb-3">
           <span className="typo-body-xs-regular truncate text-hint">
@@ -139,6 +149,12 @@ export function BottomCommentBar({
 
         <input
           value={content}
+          onFocus={(e) => {
+            if (!accessToken) {
+              e.target.blur();
+              setIsLoginModalOpen(true);
+            }
+          }}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}

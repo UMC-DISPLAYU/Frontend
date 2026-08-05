@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { Heart } from 'lucide-react';
 
-import defaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import defaultProfileIcon from '@/assets/common/DefaultProfileIcon.svg';
 import {
   useDeleteLoungeComment,
   useLikeLoungeComment,

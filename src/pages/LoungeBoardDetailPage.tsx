@@ -103,7 +103,7 @@ export const LoungeBoardDetailPage = () => {
       : undefined;
 
   return (
-    <div className="w-full max-w-[402px] mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
       <LoungeBoardHeader
         title={isValidCategory ? LOUNGE_CATEGORIES[category] : '라운지'}
         showWriteButton={false}

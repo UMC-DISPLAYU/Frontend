@@ -126,7 +126,7 @@ export function ExhibitionReviewWritePage() {
   }
 
   return (
-    <div className="w-full max-w-[402px] mx-auto bg-page relative flex min-h-dvh flex-col">
+    <div className="w-full max-w-md mx-auto bg-page relative flex min-h-dvh flex-col">
       <PostWriteHeader title={isEditMode ? '글 수정' : '글 작성'} className="px-5" />
 
       <main className="flex flex-col pl-[21px] pr-[19px] pb-28">
@@ -179,7 +179,7 @@ export function ExhibitionReviewWritePage() {
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 z-40 w-full bg-neutral-50 border-t border-stone-300 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
-        <div className="max-w-[402px] mx-auto px-5 pt-4 pb-4">
+        <div className="max-w-md mx-auto px-5 pt-4 pb-4">
           <button
             type="button"
             disabled={!canSubmit}

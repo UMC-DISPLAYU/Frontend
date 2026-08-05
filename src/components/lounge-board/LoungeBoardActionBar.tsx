@@ -1,11 +1,15 @@
+import { useState } from 'react';
+
 import { Bookmark, Heart } from 'lucide-react';
 
+import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import {
   useLikeLoungePost,
   useScrapLoungePost,
   useUnlikeLoungePost,
   useUnscrapLoungePost,
 } from '@/hooks/queries/useLounge';
+import { useAuthStore } from '@/stores/authStore';
 
 type Props = {
   postId: number;
@@ -15,6 +19,8 @@ type Props = {
 };
 
 export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Props) {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const likeMutation = useLikeLoungePost();
   const unlikeMutation = useUnlikeLoungePost();
   const scrapMutation = useScrapLoungePost();
@@ -24,6 +30,10 @@ export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Pr
   const isScrapMutating = scrapMutation.isPending || unscrapMutation.isPending;
 
   const handleLikeClick = () => {
+    if (!accessToken) {
+      setIsLoginModalOpen(true);
+      return;
+    }
     if (isLikeMutating) return;
     if (isLiked) {
       unlikeMutation.mutate(postId);
@@ -33,6 +43,10 @@ export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Pr
   };
 
   const handleSaveClick = () => {
+    if (!accessToken) {
+      setIsLoginModalOpen(true);
+      return;
+    }
     if (isScrapMutating) return;
     if (isSaved) {
       unscrapMutation.mutate(postId);
@@ -43,6 +57,7 @@ export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Pr
 
   return (
     <div className="w-full flex flex-col gap-5">
+      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <div className="flex flex-col">
         <div className="-mx-5 border-t border-zinc-300" />
 
