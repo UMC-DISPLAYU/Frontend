@@ -2,7 +2,9 @@ import { useState } from 'react';
 
 import { Bookmark, Pencil } from 'lucide-react';
 
+import { useMemoPolicy } from '@/hooks/usePolicy';
 import type { SavedArtworkItem } from '@/types/mypage';
+import { hasPermission } from '@/utils/hasPermission';
 
 interface ArtworkCardProps {
   item: SavedArtworkItem;
@@ -20,6 +22,10 @@ export function ArtworkCard({
   onDeleteMemo,
 }: ArtworkCardProps) {
   const hasMemo = Boolean(item.memo);
+  const memoPolicy = useMemoPolicy(item.userId === undefined ? undefined : { userId: item.userId });
+  const canViewMemo = hasPermission(memoPolicy, 'view');
+  const canUpsertMemo = hasPermission(memoPolicy, 'upsert');
+  const canDeleteMemo = hasPermission(memoPolicy, 'delete');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoInput, setMemoInput] = useState(item.memo ?? '');
 
@@ -29,13 +35,23 @@ export function ArtworkCard({
   };
 
   const handleStartMemoEdit = () => {
+    if (!canUpsertMemo) return;
+
     setMemoInput(item.memo ?? '');
     setIsEditingMemo(true);
   };
 
   const handleSaveMemo = () => {
+    if (!canUpsertMemo) return;
+
     onSaveMemo?.(item, memoInput);
     setIsEditingMemo(false);
+  };
+
+  const handleDeleteMemo = () => {
+    if (!canDeleteMemo) return;
+
+    onDeleteMemo?.(item);
   };
 
   return (
@@ -65,7 +81,7 @@ export function ArtworkCard({
         <div className="typo-body-xs-regular text-main truncate">{item.artist}</div>
       </div>
 
-      {!isArtistView && (
+      {!isArtistView && canViewMemo && (
         <footer className="min-h-10 px-2.5 py-2 bg-box200 flex flex-col justify-center">
           {isEditingMemo && (
             <div className="flex flex-col gap-2">
@@ -104,15 +120,17 @@ export function ArtworkCard({
                 >
                   {item.memo}
                 </button>
-                <button
-                  type="button"
-                  className="shrink-0 typo-body-xs-regular text-faint underline"
-                  onClick={() => onDeleteMemo?.(item)}
-                >
-                  삭제
-                </button>
+                {canDeleteMemo && (
+                  <button
+                    type="button"
+                    className="shrink-0 typo-body-xs-regular text-faint underline"
+                    onClick={handleDeleteMemo}
+                  >
+                    삭제
+                  </button>
+                )}
               </div>
-            ) : (
+            ) : canUpsertMemo ? (
               <button
                 type="button"
                 className="self-stretch flex items-center gap-1.5 text-left typo-body-xs-regular text-faint"
@@ -121,7 +139,7 @@ export function ArtworkCard({
                 <Pencil className="size-3 shrink-0 text-faint" />
                 <span>메모</span>
               </button>
-            ))}
+            ) : null)}
         </footer>
       )}
     </article>

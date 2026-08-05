@@ -4,6 +4,7 @@ export interface ExhibitionItem {
   id: string;
   archiveDisplayId?: number;
   displayId?: number;
+  userId?: number;
   status: string;
   title: string;
   org: string;
@@ -17,6 +18,7 @@ export interface SavedArtworkItem {
   id: string;
   archiveWorkId?: number;
   artworkId?: number;
+  userId?: number;
   title: string;
   artist: string;
   thumbnail: string;

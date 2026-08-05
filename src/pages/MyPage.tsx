@@ -165,6 +165,7 @@ export function MyPage() {
       id: String(item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId),
       archiveDisplayId: item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId,
       displayId: item.displayId,
+      userId: item.userId ?? userData?.id,
       status: STATUS_LABEL[item.status] ?? item.status ?? '전시 중',
       title: item.title ?? item.name ?? '',
       org: item.organization ?? item.department ?? '',
@@ -173,7 +174,7 @@ export function MyPage() {
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
     }));
-  }, [archivedExhibitionsQuery.data]);
+  }, [archivedExhibitionsQuery.data, userData?.id]);
 
   const myExhibitions = myDisplaysQuery.data ?? [];
 
@@ -183,12 +184,13 @@ export function MyPage() {
       id: String(item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId),
       archiveWorkId: item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId,
       artworkId: item.artworkId,
+      userId: item.userId ?? userData?.id,
       title: item.title ?? item.artworkTitle ?? '작품',
       artist: item.artist ?? item.artistName ?? '',
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
     }));
-  }, [archivedArtworksQuery.data]);
+  }, [archivedArtworksQuery.data, userData?.id]);
 
   const myArtworks = useMemo<SavedArtworkItem[]>(() => {
     const items = myArtworksQuery.data ?? [];
