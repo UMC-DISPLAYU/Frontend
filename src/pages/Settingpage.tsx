@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
+import { useLogout } from '@/hooks/queries/useAuth';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
@@ -12,6 +13,18 @@ export function SettingPage() {
     useArtistVerificationRequiredModal();
   const artistPolicy = useArtistPolicy();
   const canViewArtist = hasPermission(artistPolicy, 'view');
+  const logoutMutation = useLogout();
+
+  const handleLogout = () => {
+    logoutMutation.mutate(
+      {},
+      {
+        onSuccess: () => {
+          navigate('/login', { replace: true });
+        },
+      },
+    );
+  };
 
   const handleBack = () => {
     navigate('/my');
@@ -115,8 +128,10 @@ export function SettingPage() {
           <button
             type="button"
             className="typo-body-md-semibold h-14 w-full rounded-2xl bg-card text-main"
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
           >
-            로그아웃
+            {logoutMutation.isPending ? '로그아웃 중...' : '로그아웃'}
           </button>
         </div>
       </div>
