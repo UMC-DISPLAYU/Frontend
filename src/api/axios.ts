@@ -83,9 +83,8 @@ axiosInstance.interceptors.response.use(
         isRefreshing = true;
 
         try {
-          const response = await axiosInstance.post<
-            ApiResponseDto<{ accessToken: string }>
-          >('/v1/auth/refresh');
+          const response =
+            await axiosInstance.post<ApiResponseDto<{ accessToken: string }>>('/v1/auth/refresh');
 
           const newAccessToken = response.data?.success?.data?.accessToken;
 
