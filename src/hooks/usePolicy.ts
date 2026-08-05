@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
 import type {
-  ArchivedArtworkDto,
   ArtworkFeelingDto,
   ArtworkGuestbookReplyDto,
   ArtworkQuestionDto,
@@ -21,7 +20,11 @@ import type {
 } from '@/api/dto';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { policies } from '@/policies/policies';
-import type { ArtworkPolicyResource, DisplayPolicyResource } from '@/policies/util';
+import type {
+  ArtworkPolicyResource,
+  DisplayPolicyResource,
+  UserOwnedResource,
+} from '@/policies/util';
 import { useAuthStore } from '@/stores/authStore';
 import type { PermissionMap, PolicyAction, PolicyPermissionMap, User } from '@/types/policy';
 
@@ -398,9 +401,7 @@ export const useArchiveDisplayPolicy = useArchivePolicy;
 export const useArchiveArtworkPolicy = useArchivePolicy;
 export const useArchiveArtistPolicy = useArchivePolicy;
 
-export function useMemoPolicy(
-  archiveItem?: Pick<ArchivedArtworkDto, 'userId'>,
-): PolicyPermissionMap<'memo'> {
+export function useMemoPolicy(archiveItem?: UserOwnedResource): PolicyPermissionMap<'memo'> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
