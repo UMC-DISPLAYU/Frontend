@@ -177,37 +177,21 @@ export const displayHandlers = [
       return success('/api/v1/display', display);
     }),
   ),
-  // 가짜 API: 백엔드에 공개 시점 설정 API가 생기기 전까지 공개 설정 화면에서 사용합니다.
-  ...paths('/api/v1/open-time/{displayId}').map((path) =>
-    http.get(path, ({ params }) => {
-      const display = findDisplay(toNumber(params.displayId, 101));
-
-      return success('/api/v1/open-time/{displayId}', {
-        displayId: display.displayId,
-        artworkVisibility: display.artworkVisibility ?? 'startDate',
-        contentVisibility: display.contentVisibility ?? 'startDate',
-      });
-    }),
-  ),
-  // 가짜 API: 백엔드에 공개 시점 설정 API가 생기기 전까지 공개 설정 화면에서 사용합니다.
-  ...paths('/api/v1/open-time/{displayId}').map((path) =>
+  /* 공개 시점 조회는 전시 상세 응답에 포함되어 별도 핸들러가 없습니다. */
+  ...paths('/api/v1/display/{displayId}/reservation').map((path) =>
     http.patch(path, async ({ params, request }) => {
       const body = await readJson<{
-        artworkVisibility?: string;
-        contentVisibility?: string;
+        artworkContentOpen?: string;
+        exhibitionContentOpen?: string;
       }>(request);
       const display = findDisplay(toNumber(params.displayId, 101));
 
-      display.artworkVisibility =
-        body.artworkVisibility ?? display.artworkVisibility ?? 'startDate';
-      display.contentVisibility =
-        body.contentVisibility ?? display.contentVisibility ?? 'startDate';
+      display.artworkContentOpen =
+        body.artworkContentOpen ?? display.artworkContentOpen ?? 'ON_EXHIBITION';
+      display.exhibitionContentOpen =
+        body.exhibitionContentOpen ?? display.exhibitionContentOpen ?? 'ON_EXHIBITION';
 
-      return success('/api/v1/open-time/{displayId}', {
-        displayId: display.displayId,
-        artworkVisibility: display.artworkVisibility,
-        contentVisibility: display.contentVisibility,
-      });
+      return success('/api/v1/display/{displayId}/reservation', display);
     }),
   ),
   ...paths('/api/v1/display/closing-soon').map((path) =>
