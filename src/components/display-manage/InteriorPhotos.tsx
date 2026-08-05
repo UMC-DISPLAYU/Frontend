@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 
 import { ChevronLeft, X } from 'lucide-react';
 
+import { DEFAULT_CONTENT_IMAGE_HEIGHT, DEFAULT_CONTENT_IMAGE_WIDTH } from '@/constants';
 import {
   useCreateContentImage,
   useDeleteContentImage,
@@ -85,7 +86,13 @@ export function InteriorPhotos({
         added.map((image) => imageUpload.uploadImage(image.file)),
       );
       const created = await Promise.all(
-        uploadedUrls.map((imageUrl) => createImage.mutateAsync({ imageUrl })),
+        uploadedUrls.map((imageUrl) =>
+          createImage.mutateAsync({
+            imageUrl,
+            width: DEFAULT_CONTENT_IMAGE_WIDTH,
+            height: DEFAULT_CONTENT_IMAGE_HEIGHT,
+          }),
+        ),
       );
 
       const newPhotos: Photo[] = created.map((res, index) => ({

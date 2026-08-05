@@ -70,8 +70,13 @@ export interface CursorPaginationDto<TCursor = number | string> {
   hasNext: boolean;
 }
 
+/*
+ * 서버가 isThumbnail·sortOrder·width·height를 원시 타입으로 받아
+ * 값이 없으면 역직렬화 단계에서 요청이 거절됩니다. 그래서 모두 필수로 둡니다.
+ */
 export interface ImageRequestDto {
   imageUrl: string;
+  isThumbnail: boolean;
   imageType: string;
   width: number;
   height: number;
