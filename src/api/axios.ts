@@ -83,9 +83,8 @@ axiosInstance.interceptors.response.use(
         isRefreshing = true;
 
         try {
-          const response = await axiosInstance.post<
-            ApiResponseDto<{ accessToken: string }>
-          >('/v1/auth/refresh');
+          const response =
+            await axiosInstance.post<ApiResponseDto<{ accessToken: string }>>('/v1/auth/refresh');
 
           const newAccessToken = response.data?.success?.data?.accessToken;
 
@@ -107,7 +106,14 @@ axiosInstance.interceptors.response.use(
           isRefreshing = false;
           useAuthStore.getState().clearAccessToken();
           refreshSubscribers = [];
-          return Promise.reject(refreshError);
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            import('@/utils/pendingRedirect').then(({ savePendingRedirect }) => {
+              savePendingRedirect(window.location.pathname + window.location.search);
+              window.location.replace('/login');
+            });
+          } else {
+            return Promise.reject(refreshError);
+          }
         }
       }
 

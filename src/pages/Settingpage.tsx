@@ -5,14 +5,27 @@ import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
 import { ConfirmModal } from '@/components/ui';
+import { useLogout } from '@/hooks/queries/useAuth';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 
 export function SettingPage() {
   const navigate = useNavigate();
   const { data: userData, isPending } = useUserMe();
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const logoutMutation = useLogout();
 
   const isVerified = !isPending && Boolean(userData?.isVerified);
+
+  const handleLogout = () => {
+    logoutMutation.mutate(
+      {},
+      {
+        onSuccess: () => {
+          navigate('/login', { replace: true });
+        },
+      },
+    );
+  };
 
   const handleBack = () => {
     navigate('/my');
@@ -109,8 +122,10 @@ export function SettingPage() {
           <button
             type="button"
             className="typo-body-md-semibold h-14 w-full rounded-2xl bg-card text-main"
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
           >
-            로그아웃
+            {logoutMutation.isPending ? '로그아웃 중...' : '로그아웃'}
           </button>
         </div>
       </div>

@@ -24,24 +24,34 @@ import {
   updateArchivedExhibitionMemo,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
-export const useArchivedExhibitions = () =>
-  useQuery({
+export const useArchivedExhibitions = () => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  return useQuery({
     queryKey: queryKeys.archives.displays.list(),
     queryFn: getArchivedExhibitions,
+    enabled: !!accessToken,
   });
+};
 
-export const useArchivedArtworks = () =>
-  useQuery({
+export const useArchivedArtworks = () => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  return useQuery({
     queryKey: queryKeys.archives.works.list(),
     queryFn: getArchivedArtworks,
+    enabled: !!accessToken,
   });
+};
 
-export const useArchivedArtists = () =>
-  useQuery({
+export const useArchivedArtists = () => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  return useQuery({
     queryKey: queryKeys.archives.artists.list(),
     queryFn: getArchivedArtists,
+    enabled: !!accessToken,
   });
+};
 
 export const useArchivedExhibition = (savedExhibitionId: number) =>
   useQuery({

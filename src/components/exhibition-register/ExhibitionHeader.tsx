@@ -12,7 +12,7 @@ export function ExhibitionHeader({ title = '전시 기본 정보' }: ExhibitionH
     <div className="relative flex items-center justify-center px-5 py-4 flex-shrink-0">
       <button
         type="button"
-        onClick={() => navigate('/my')}
+        onClick={() => navigate(-1)}
         className="cursor-pointer absolute left-5"
         aria-label="뒤로가기"
       >

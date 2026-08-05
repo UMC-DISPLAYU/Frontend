@@ -32,10 +32,7 @@ export function PersonalArtworksRegister() {
   const school = artistProfile?.schoolName || '';
 
   const isFormValid =
-    images.length > 0 &&
-    title.trim() !== '' &&
-    year.trim() !== '' &&
-    material.trim() !== '';
+    images.length > 0 && title.trim() !== '' && year.trim() !== '' && material.trim() !== '';
 
   return (
     <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
@@ -148,7 +145,6 @@ export function PersonalArtworksRegister() {
               </div>
             </div>
           </div>
-
         </div>
       </main>
 

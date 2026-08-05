@@ -3,9 +3,9 @@ import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArchivedArtistDto, ArchivedArtworkDto, ArchivedExhibitionDto } from '@/api/dto';
-import ExhibitionIcon from '@/assets/exhibit.svg';
-import SchoolIcon from '@/assets/image 3666.svg';
-import FieldIcon from '@/assets/image 3673.svg';
+import ExhibitionIcon from '@/assets/mypage/exhibit.svg';
+import SchoolIcon from '@/assets/mypage/image 3666.svg';
+import FieldIcon from '@/assets/mypage/image 3673.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtistCard,

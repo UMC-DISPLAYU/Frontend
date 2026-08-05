@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import { getMyArtistProfile, getUserMe } from '@/api/endpoints/user';
-
-import AvatarImage from '../assets/Icon (1).svg';
-import SchoolIcon from '../assets/image 3666.svg';
-import FieldIcon from '../assets/image 3673.svg';
+import AvatarImage from '@/assets/mypage/Icon (1).svg';
+import SchoolIcon from '@/assets/mypage/image 3666.svg';
+import FieldIcon from '@/assets/mypage/image 3673.svg';
 
 export interface UserProfile {
   name: string;

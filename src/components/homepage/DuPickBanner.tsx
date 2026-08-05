@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { DuPickDto } from '@/api/dto';
+import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
+import { useAuthStore } from '@/stores/authStore';
 import type { DuPickItem } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
@@ -17,6 +19,8 @@ type Props = {
 
 export function DuPickBanner({ items, className }: Props) {
   const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: items.length,
   });
@@ -33,6 +37,11 @@ export function DuPickBanner({ items, className }: Props) {
 
   return (
     <section className={cn('pb-7', className)}>
+      <LoginConfirmModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        redirectPath="/exhibition-register"
+      />
       <div className="px-4 mb-2.5 flex items-center justify-between">
         <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
           <span>DU Pick</span>
@@ -40,7 +49,13 @@ export function DuPickBanner({ items, className }: Props) {
         <button
           type="button"
           aria-label="전시 등록 버튼"
-          onClick={() => navigate('/exhibition-register')}
+          onClick={() => {
+            if (!accessToken) {
+              setIsLoginModalOpen(true);
+            } else {
+              navigate('/exhibition-register');
+            }
+          }}
           className="cursor-pointer border-none bg-transparent p-0"
         >
           <Plus strokeWidth={1.5} className="size-8" />

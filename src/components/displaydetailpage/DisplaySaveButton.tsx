@@ -1,6 +1,10 @@
+import { useState } from 'react';
+
 import { Bookmark } from 'lucide-react';
 
+import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useArchiveExhibition, useUnarchiveExhibition } from '@/hooks/queries/useArchive';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 
 interface DisplaySaveButtonProps {
@@ -17,11 +21,17 @@ export function DisplaySaveButton({
   displayId,
   saved = false,
 }: DisplaySaveButtonProps) {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const archive = useArchiveExhibition();
   const unarchive = useUnarchiveExhibition();
   const isPending = archive.isPending || unarchive.isPending;
 
   const toggleSave = () => {
+    if (!accessToken) {
+      setIsLoginModalOpen(true);
+      return;
+    }
     if (isPending || displayId <= 0) return;
 
     if (saved) unarchive.mutate(displayId);
@@ -29,19 +39,22 @@ export function DisplaySaveButton({
   };
 
   return (
-    <button
-      type="button"
-      id={id}
-      onClick={toggleSave}
-      disabled={isPending}
-      aria-pressed={saved}
-      className={cn(
-        'w-full py-3.5 rounded-xl bg-main text-white typo-body-sm-bold tracking-tight transition-all duration-200 active:scale-90 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60',
-        className,
-      )}
-    >
-      <Bookmark size={15} fill={saved ? 'currentColor' : 'none'} />
-      {saved ? '저장됨' : '전시 저장'}
-    </button>
+    <>
+      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <button
+        type="button"
+        id={id}
+        onClick={toggleSave}
+        disabled={isPending}
+        aria-pressed={saved}
+        className={cn(
+          'w-full py-3.5 rounded-xl bg-main text-white typo-body-sm-bold tracking-tight transition-all duration-200 active:scale-90 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60',
+          className,
+        )}
+      >
+        <Bookmark size={15} fill={saved ? 'currentColor' : 'none'} />
+        {saved ? '저장됨' : '전시 저장'}
+      </button>
+    </>
   );
 }
