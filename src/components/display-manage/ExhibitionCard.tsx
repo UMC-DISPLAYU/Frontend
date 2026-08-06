@@ -1,6 +1,6 @@
 import { MoreHorizontal } from 'lucide-react';
 
-import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useDisplayArtistNamePolicy, useDisplayPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
@@ -24,21 +24,22 @@ export function ExhibitionCard({
   onEditArtistName: () => void;
   onToggleMenu: () => void;
 }) {
-  const { data: display } = useDisplayDetail(Number(ex.id));
-  const displayPolicy = useDisplayPolicy(
-    display ?? {
-      ownerUserId: 0,
-      teamMembers: [],
-    },
-  );
-  const displayArtistNamePolicy = useDisplayArtistNamePolicy(
-    display ?? {
-      ownerUserId: 0,
-      teamMembers: [],
-    },
-  );
-  const canDelete = Boolean(display) && hasPermission(displayPolicy, 'delete');
-  const canEditArtistName = Boolean(display) && hasPermission(displayArtistNamePolicy, 'edit');
+  const { data: userMe } = useUserMe();
+
+  /*
+   * 내 전시 목록 응답이 생성/참여를 구분해 주므로 전시 상세를 따로 조회하지 않습니다.
+   * 목록에 있다는 것 자체가 소속인이고, isOwner로 소유자 여부를 판단합니다.
+   */
+  const myUserId = userMe?.id;
+  const policyDisplay = {
+    ownerUserId: ex.isOwner ? (myUserId ?? 0) : 0,
+    teamMembers: myUserId ? [{ userId: myUserId, accepted: true }] : [],
+  };
+
+  const displayPolicy = useDisplayPolicy(policyDisplay);
+  const displayArtistNamePolicy = useDisplayArtistNamePolicy(policyDisplay);
+  const canDelete = hasPermission(displayPolicy, 'delete');
+  const canEditArtistName = hasPermission(displayArtistNamePolicy, 'edit');
   const canShowMenu = canEditArtistName || canDelete;
 
   return (
