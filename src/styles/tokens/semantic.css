@@ -29,7 +29,6 @@
   --fg-error: var(--palette-red);
 
   /* Filter */
-  --filter-bg: var(--palette-gray-white);
   --filter-border-off: var(--palette-gray-300);
   --filter-border-on: var(--palette-gray-black);
   --filter-text-off: var(--palette-gray-600);
