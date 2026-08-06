@@ -1,13 +1,44 @@
+import { useState } from 'react';
+
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
+import { ConfirmModal } from '@/components/ui';
+import { useLogout } from '@/hooks/queries/useAuth';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 
 export function SettingPage() {
   const navigate = useNavigate();
+  const { data: userData, isPending } = useUserMe();
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const logoutMutation = useLogout();
+
+  const isVerified = !isPending && Boolean(userData?.isVerified);
+
+  const handleLogout = () => {
+    logoutMutation.mutate(
+      {},
+      {
+        onSuccess: () => {
+          navigate('/login', { replace: true });
+        },
+      },
+    );
+  };
 
   const handleBack = () => {
     navigate('/my');
+  };
+
+  const handleExhibitionRegisterClick = () => {
+    if (isPending) return; // 로딩 중에는 동작하지 않음
+
+    if (!isVerified) {
+      setShowVerificationModal(true);
+      return;
+    }
+    navigate('/exhibition-register');
   };
 
   return (
@@ -41,16 +72,18 @@ export function SettingPage() {
             badge={1}
             onClick={() => navigate('/invitation-request')}
           />
-          <SettingRow
-            title="답변할 질문"
-            desc="내가 담당한 작품 질문에 답변해요."
-            badge={2}
-            onClick={() => navigate('/answer-questions')}
-          />
+          {isVerified && (
+            <SettingRow
+              title="답변할 질문"
+              desc="내가 담당한 작품 질문에 답변해요."
+              badge={2}
+              onClick={() => navigate('/answer-questions')}
+            />
+          )}
           <SettingRow
             title="전시 등록하기"
             desc="전시를 직접 등록하려면 작가 인증이 필요해요."
-            onClick={() => navigate('/exhibition-register')}
+            onClick={isPending ? undefined : handleExhibitionRegisterClick}
             last
           />
         </SettingSection>
@@ -89,17 +122,26 @@ export function SettingPage() {
           <button
             type="button"
             className="typo-body-md-semibold h-14 w-full rounded-2xl bg-card text-main"
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
           >
-            로그아웃
-          </button>
-          <button
-            type="button"
-            className="typo-body-md-semibold h-14 w-full rounded-2xl bg-card text-error"
-          >
-            회원탈퇴
+            {logoutMutation.isPending ? '로그아웃 중...' : '로그아웃'}
           </button>
         </div>
       </div>
+
+      {showVerificationModal && (
+        <ConfirmModal
+          message="전시를 등록하려면 작가 인증이 필요해요.&#10;학교 메일로 인증할까요?"
+          confirmLabel="학교 메일로 인증하기"
+          cancelLabel="취소"
+          onConfirm={() => {
+            setShowVerificationModal(false);
+            navigate('/artist-verification');
+          }}
+          onCancel={() => setShowVerificationModal(false)}
+        />
+      )}
     </div>
   );
 }

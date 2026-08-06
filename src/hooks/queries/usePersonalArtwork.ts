@@ -10,10 +10,11 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
-export const usePersonalArtworks = () =>
+export const usePersonalArtworks = (userId: number) =>
   useQuery({
-    queryKey: queryKeys.personalArtworks.list(),
-    queryFn: getPersonalArtworks,
+    queryKey: [...queryKeys.personalArtworks.list(), userId],
+    queryFn: () => getPersonalArtworks(userId),
+    enabled: Number.isFinite(userId) && userId > 0,
   });
 
 export const usePersonalArtwork = (personalArtworkId: number) =>

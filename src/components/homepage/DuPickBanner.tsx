@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { DuPickDto } from '@/api/dto';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
+import { useAuthStore } from '@/stores/authStore';
 import type { DuPickItem } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
@@ -17,6 +18,7 @@ type Props = {
 
 export function DuPickBanner({ items, className }: Props) {
   const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
   const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: items.length,
   });
@@ -40,7 +42,13 @@ export function DuPickBanner({ items, className }: Props) {
         <button
           type="button"
           aria-label="전시 등록 버튼"
-          onClick={() => navigate('/exhibition-register')}
+          onClick={() => {
+            if (!accessToken) {
+              navigate('/login');
+            } else {
+              navigate('/exhibition-register');
+            }
+          }}
           className="cursor-pointer border-none bg-transparent p-0"
         >
           <Plus strokeWidth={1.5} className="size-8" />
