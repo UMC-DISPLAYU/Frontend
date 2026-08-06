@@ -43,10 +43,10 @@ export const DISPLAY_FIELD_MAP: Record<string, string> = {
   디자인: 'DESIGN',
   사진: 'PHOTOGRAPHY',
   건축: 'ARCHITECTURE',
-  영상: 'MEDIA',
+  영상: 'VIDEO',
   조소: 'SCULPTURE',
   패션: 'FASHION',
-  일러스트: 'DESIGN',
+  일러스트: 'ILLUSTRATION',
   공예: 'CRAFT',
   기타: 'ETC',
 } satisfies Record<ExhibitionField, string>;
