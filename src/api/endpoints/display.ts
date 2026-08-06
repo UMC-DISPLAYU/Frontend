@@ -26,16 +26,15 @@ import type {
   GetDuPicksRequestDto,
   GetDuPicksResponseDataDto,
   GetMyDisplaysResponseDataDto,
-  GetOpenTimeResponseDataDto,
   HomeExhibitionDto,
   InviteDisplayMemberRequestDto,
   MyDisplayInvitationListResponseDataDto,
   SearchDisplaysRequestDto,
   ToggleDisplayLikeResponseDataDto,
   UpdateDisplayRequestDto,
+  UpdateDisplayReservationRequestDto,
+  UpdateDisplayReservationResponseDataDto,
   UpdateDisplayResponseDataDto,
-  UpdateOpenTimeRequestDto,
-  UpdateOpenTimeResponseDataDto,
 } from '@/api/dto';
 
 import { apiRequest } from '../client';
@@ -90,18 +89,13 @@ export const updateDisplay = async (
 ): Promise<UpdateDisplayResponseDataDto> =>
   apiRequest('/v1/display', { method: 'PATCH', body: { displayId, ...body } });
 
-// 가짜 엔드포인트: 백엔드에 공개 시점 설정 API가 생기면 실제 경로로 교체해야 합니다.
-// GET /v1/open-time/{displayId}
-export const getOpenTime = async (displayId: number): Promise<GetOpenTimeResponseDataDto> =>
-  apiRequest(`/v1/open-time/${displayId}`);
-
-// 가짜 엔드포인트: 백엔드에 공개 시점 설정 API가 생기면 실제 경로로 교체해야 합니다.
-// PATCH /v1/open-time/{displayId}
-export const updateOpenTime = async (
+// PATCH /v1/display/{displayId}/reservation
+// 공개 시점 조회는 별도 API 없이 전시 상세 조회 응답을 사용합니다.
+export const updateDisplayReservation = async (
   displayId: number,
-  body: UpdateOpenTimeRequestDto,
-): Promise<UpdateOpenTimeResponseDataDto> =>
-  apiRequest(`/v1/open-time/${displayId}`, { method: 'PATCH', body });
+  body: UpdateDisplayReservationRequestDto,
+): Promise<UpdateDisplayReservationResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reservation`, { method: 'PATCH', body });
 
 // POST /v1/display/like
 export const toggleDisplayLike = async (

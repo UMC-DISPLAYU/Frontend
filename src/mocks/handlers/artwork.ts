@@ -8,48 +8,47 @@ const now = () => new Date().toISOString();
 const findArtwork = (artworkId: number) =>
   mockDb.artworks.find((artwork: any) => artwork.artworkId === artworkId) ?? mockDb.artworks[0];
 
-// 가짜 API 응답 데이터: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
 const myArtworkQuestions = [
   {
     questionId: 1,
+    personalQuestionId: null,
     artworkId: 1001,
+    personalArtworkId: null,
     artworkName: '빛의 결',
     content:
       '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
-    answerStatus: 'PENDING',
+    answerStatus: 'WAITING',
     isPublic: false,
+    questionerId: 11,
+    questionerNickname: 'artseeker_j',
     createdAt: now(),
-    user: {
-      userId: 11,
-      nickname: 'artseeker_j',
-    },
   },
   {
     questionId: 2,
+    personalQuestionId: null,
     artworkId: 1001,
+    personalArtworkId: null,
     artworkName: '빛의 결',
     content:
       '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
-    answerStatus: 'PENDING',
+    answerStatus: 'WAITING',
     isPublic: true,
+    questionerId: 12,
+    questionerNickname: 'artseeker_j',
     createdAt: now(),
-    user: {
-      userId: 12,
-      nickname: 'artseeker_j',
-    },
   },
   {
     questionId: 3,
+    personalQuestionId: null,
     artworkId: 1002,
+    personalArtworkId: null,
     artworkName: '형태의 침묵',
     content: '작품 설명에서 말한 반복되는 선의 의미가 궁금합니다.',
     answerStatus: 'ANSWERED',
     isPublic: true,
+    questionerId: 13,
+    questionerNickname: 'viewer_08',
     createdAt: now(),
-    user: {
-      userId: 13,
-      nickname: 'viewer_08',
-    },
   },
 ];
 
@@ -161,13 +160,17 @@ export const artworkHandlers = [
       }),
     ),
   ),
-  // 가짜 API: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
-  ...paths('/api/v1/artworks/question/me').map((path) =>
-    http.get(path, () =>
-      success('/api/v1/artworks/question/me', {
-        questions: myArtworkQuestions,
-      }),
-    ),
+  ...paths('/api/v1/artworks/questions/received').map((path) =>
+    http.get(path, ({ request }) => {
+      const answerStatus = new URL(request.url).searchParams.get('answerStatus');
+
+      return success('/api/v1/artworks/questions/received', {
+        questions: myArtworkQuestions.filter((question) => question.answerStatus === answerStatus),
+        nextCursor: null,
+        size: 10,
+        hasNext: false,
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
     http.get(path, ({ params }) =>

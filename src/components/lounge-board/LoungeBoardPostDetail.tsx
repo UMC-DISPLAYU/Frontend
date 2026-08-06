@@ -1,5 +1,7 @@
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { useLoungePostPolicy } from '@/hooks/usePolicy';
 import type { LoungeBoardDetail } from '@/types/exhibition';
+import { hasPermission } from '@/utils/hasPermission';
 
 import { LoungeBoardPostMenu } from './LoungeBoardPostMenu';
 
@@ -10,6 +12,11 @@ type Props = {
 };
 
 export function LoungeBoardPostDetail({ review, onEdit, onDelete }: Props) {
+  const post = { isMyPost: Boolean(review.isMyPost) };
+  const loungePostPolicy = useLoungePostPolicy(post);
+  const canShowPostMenu =
+    hasPermission(loungePostPolicy, 'edit') || hasPermission(loungePostPolicy, 'delete');
+
   return (
     <div className="w-full flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
@@ -25,9 +32,7 @@ export function LoungeBoardPostDetail({ review, onEdit, onDelete }: Props) {
           </div>
         </div>
 
-        {review.isMyPost && onEdit && onDelete && (
-          <LoungeBoardPostMenu onEdit={onEdit} onDelete={onDelete} />
-        )}
+        {canShowPostMenu && <LoungeBoardPostMenu post={post} onEdit={onEdit} onDelete={onDelete} />}
       </div>
 
       <div className="flex flex-col gap-3.5">

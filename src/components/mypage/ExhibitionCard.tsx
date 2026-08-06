@@ -2,8 +2,10 @@ import { useState } from 'react';
 
 import { Bookmark, Pencil } from 'lucide-react';
 
+import { useMemoPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 import { statusBadgeClass } from '@/utils/mypage';
 
 interface ExhibitionCardProps {
@@ -22,6 +24,10 @@ export function ExhibitionCard({
   onDeleteMemo,
 }: ExhibitionCardProps) {
   const hasMemo = Boolean(item.memo);
+  const memoPolicy = useMemoPolicy(item.userId === undefined ? undefined : { userId: item.userId });
+  const canViewMemo = hasPermission(memoPolicy, 'view');
+  const canUpsertMemo = hasPermission(memoPolicy, 'upsert');
+  const canDeleteMemo = hasPermission(memoPolicy, 'delete');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoInput, setMemoInput] = useState(item.memo ?? '');
 
@@ -31,13 +37,23 @@ export function ExhibitionCard({
   };
 
   const handleStartMemoEdit = () => {
+    if (!canUpsertMemo) return;
+
     setMemoInput(item.memo ?? '');
     setIsEditingMemo(true);
   };
 
   const handleSaveMemo = () => {
+    if (!canUpsertMemo) return;
+
     onSaveMemo?.(item, memoInput);
     setIsEditingMemo(false);
+  };
+
+  const handleDeleteMemo = () => {
+    if (!canDeleteMemo) return;
+
+    onDeleteMemo?.(item);
   };
 
   return (
@@ -84,7 +100,7 @@ export function ExhibitionCard({
         </div>
       </div>
 
-      {!isArtistView && (
+      {!isArtistView && canViewMemo && (
         <footer className="min-h-11 px-4 py-2 bg-box200 flex flex-col justify-center">
           {isEditingMemo ? (
             <div className="self-stretch flex flex-col gap-2">
@@ -121,15 +137,17 @@ export function ExhibitionCard({
               >
                 {item.memo}
               </button>
-              <button
-                type="button"
-                className="shrink-0 text-neutral-400 text-xs font-normal leading-5 underline"
-                onClick={() => onDeleteMemo?.(item)}
-              >
-                삭제
-              </button>
+              {canDeleteMemo && (
+                <button
+                  type="button"
+                  className="shrink-0 text-neutral-400 text-xs font-normal leading-5 underline"
+                  onClick={handleDeleteMemo}
+                >
+                  삭제
+                </button>
+              )}
             </div>
-          ) : (
+          ) : canUpsertMemo ? (
             <button
               type="button"
               className="self-stretch flex items-center gap-1.5 text-left typo-body-xs-regular text-faint"
@@ -138,7 +156,7 @@ export function ExhibitionCard({
               <Pencil className="size-3 shrink-0 text-faint" />
               <span>메모</span>
             </button>
-          )}
+          ) : null}
         </footer>
       )}
     </article>

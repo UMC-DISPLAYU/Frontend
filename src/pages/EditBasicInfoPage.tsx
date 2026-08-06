@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ChevronLeft, ImagePlus, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { UserProfileDto } from '@/api/dto';
+import { useUploadImage } from '@/hooks/queries/useFile';
 import { useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
 
 function ProfilePhotoField({
@@ -11,16 +12,14 @@ function ProfilePhotoField({
   onChange,
 }: {
   image: string | null;
-  onChange: (dataUrl: string) => void;
+  onChange: (file: File) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onChange(reader.result as string);
-    reader.readAsDataURL(file);
+    onChange(file);
   };
 
   return (
@@ -56,18 +55,43 @@ export function EditBasicInfoPage() {
 function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [activityName, setActivityName] = useState(userMe?.nickname || userMe?.name || '');
   const updateUserMe = useUpdateUserMe();
+  const uploadImage = useUploadImage();
 
   const canSubmit = activityName.trim().length > 0;
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    return () => {
+      if (profileImage?.startsWith('blob:')) {
+        URL.revokeObjectURL(profileImage);
+      }
+    };
+  }, [profileImage]);
+
+  const handleProfileImageChange = (file: File) => {
+    setProfileImage((prev) => {
+      if (prev?.startsWith('blob:')) {
+        URL.revokeObjectURL(prev);
+      }
+
+      return URL.createObjectURL(file);
+    });
+    setProfileImageFile(file);
+  };
+
+  const handleSubmit = async () => {
     if (!canSubmit) return;
+
+    const uploadedProfileImageUrl = profileImageFile
+      ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
+      : profileImage;
 
     updateUserMe.mutate(
       {
         nickname: activityName.trim(),
-        ...(profileImage ? { profileImageUrl: profileImage } : {}),
+        ...(uploadedProfileImageUrl ? { profileImageUrl: uploadedProfileImageUrl } : {}),
       },
       {
         onSuccess: () => {
@@ -88,7 +112,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
 
       <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-40">
         <div className="mt-10 flex justify-center">
-          <ProfilePhotoField image={profileImage} onChange={setProfileImage} />
+          <ProfilePhotoField image={profileImage} onChange={handleProfileImageChange} />
         </div>
 
         <div className="mt-12 flex flex-col gap-3">
@@ -116,10 +140,10 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!canSubmit || updateUserMe.isPending}
+          disabled={!canSubmit || updateUserMe.isPending || uploadImage.isPending}
           className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white transition-opacity disabled:opacity-40"
         >
-          {updateUserMe.isPending ? '저장 중' : '완료'}
+          {updateUserMe.isPending || uploadImage.isPending ? '저장 중' : '완료'}
         </button>
       </footer>
     </div>

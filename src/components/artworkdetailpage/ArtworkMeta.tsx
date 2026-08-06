@@ -4,21 +4,22 @@ import { Calendar, ChevronRight, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
-import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useToggleArtworkLike } from '@/hooks/queries/useArtworkDetail';
-import { useAuthStore } from '@/stores/authStore';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useArchivePolicy } from '@/hooks/usePolicy';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   artwork: ArtworkDetail;
 };
 
 export function ArtworkMeta({ artwork }: Props) {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const navigate = useNavigate();
   const [isAtTop, setIsAtTop] = useState(true);
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const archivePolicy = useArchivePolicy();
 
   /* 좋아요 상태와 개수는 작품 상세 응답을 그대로 씁니다. */
   const liked = artwork.isBookmarked ?? false;
@@ -35,17 +36,17 @@ export function ArtworkMeta({ artwork }: Props) {
   }, []);
 
   const handleLike = () => {
-    if (!accessToken) {
-      setIsLoginModalOpen(true);
+    if (toggleLike.isPending) return;
+    if (!hasPermission(archivePolicy, liked ? 'delete' : 'create')) {
+      openLoginModal();
       return;
     }
-    if (toggleLike.isPending) return;
+
     toggleLike.mutate(liked);
   };
 
   return (
     <div className="bg-page px-5 pt-5 pb-6">
-      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       {/* 제목/하트 */}
       <div className="flex items-start justify-between gap-3">
         <h1 className="typo-body-2xl-bold text-main">{artwork.artworkName}</h1>
@@ -122,6 +123,7 @@ export function ArtworkMeta({ artwork }: Props) {
       {!isAtTop && (
         <ArtworkSaveButton artworkId={artwork.artworkId} saved={artwork.isBookmarked ?? false} />
       )}
+      {loginModal}
     </div>
   );
 }

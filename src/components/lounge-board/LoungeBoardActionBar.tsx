@@ -1,15 +1,14 @@
-import { useState } from 'react';
-
 import { Bookmark, Heart } from 'lucide-react';
 
-import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import {
   useLikeLoungePost,
   useScrapLoungePost,
   useUnlikeLoungePost,
   useUnscrapLoungePost,
 } from '@/hooks/queries/useLounge';
-import { useAuthStore } from '@/stores/authStore';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useLoungePostPolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   postId: number;
@@ -19,8 +18,8 @@ type Props = {
 };
 
 export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Props) {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const loungePostPolicy = useLoungePostPolicy();
   const likeMutation = useLikeLoungePost();
   const unlikeMutation = useUnlikeLoungePost();
   const scrapMutation = useScrapLoungePost();
@@ -28,13 +27,16 @@ export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Pr
 
   const isLikeMutating = likeMutation.isPending || unlikeMutation.isPending;
   const isScrapMutating = scrapMutation.isPending || unscrapMutation.isPending;
+  const canLikePost = hasPermission(loungePostPolicy, isLiked ? 'unlike' : 'like');
+  const canScrapPost = hasPermission(loungePostPolicy, 'scrap');
 
   const handleLikeClick = () => {
-    if (!accessToken) {
-      setIsLoginModalOpen(true);
+    if (isLikeMutating) return;
+    if (!canLikePost) {
+      openLoginModal();
       return;
     }
-    if (isLikeMutating) return;
+
     if (isLiked) {
       unlikeMutation.mutate(postId);
     } else {
@@ -43,11 +45,12 @@ export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Pr
   };
 
   const handleSaveClick = () => {
-    if (!accessToken) {
-      setIsLoginModalOpen(true);
+    if (isScrapMutating) return;
+    if (!canScrapPost) {
+      openLoginModal();
       return;
     }
-    if (isScrapMutating) return;
+
     if (isSaved) {
       unscrapMutation.mutate(postId);
     } else {
@@ -57,7 +60,6 @@ export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Pr
 
   return (
     <div className="w-full flex flex-col gap-5">
-      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <div className="flex flex-col">
         <div className="-mx-5 border-t border-zinc-300" />
 
@@ -96,6 +98,8 @@ export function LoungeBoardActionBar({ postId, likeCount, isLiked, isSaved }: Pr
       </div>
 
       <div className="-mx-5 h-1 bg-zinc-300" />
+
+      {loginModal}
     </div>
   );
 }

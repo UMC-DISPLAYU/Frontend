@@ -1,11 +1,10 @@
-import { useState } from 'react';
-
 import { Bookmark } from 'lucide-react';
 
-import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useArchiveExhibition, useUnarchiveExhibition } from '@/hooks/queries/useArchive';
-import { useAuthStore } from '@/stores/authStore';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useArchivePolicy } from '@/hooks/usePolicy';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 interface DisplaySaveButtonProps {
   className?: string;
@@ -21,18 +20,19 @@ export function DisplaySaveButton({
   displayId,
   saved = false,
 }: DisplaySaveButtonProps) {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const archive = useArchiveExhibition();
   const unarchive = useUnarchiveExhibition();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const archivePolicy = useArchivePolicy();
   const isPending = archive.isPending || unarchive.isPending;
+  const canToggleArchive = hasPermission(archivePolicy, saved ? 'delete' : 'create');
 
   const toggleSave = () => {
-    if (!accessToken) {
-      setIsLoginModalOpen(true);
+    if (isPending || displayId <= 0) return;
+    if (!canToggleArchive) {
+      openLoginModal();
       return;
     }
-    if (isPending || displayId <= 0) return;
 
     if (saved) unarchive.mutate(displayId);
     else archive.mutate(displayId);
@@ -40,7 +40,6 @@ export function DisplaySaveButton({
 
   return (
     <>
-      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <button
         type="button"
         id={id}
@@ -55,6 +54,7 @@ export function DisplaySaveButton({
         <Bookmark size={15} fill={saved ? 'currentColor' : 'none'} />
         {saved ? '저장됨' : '전시 저장'}
       </button>
+      {loginModal}
     </>
   );
 }

@@ -4,7 +4,10 @@ import { Image, Loader2, SendHorizontal, X } from 'lucide-react';
 
 import { AlertModal } from '@/components/ui';
 import { useUploadImage } from '@/hooks/queries/useFile';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useLoungeCommentPolicy } from '@/hooks/usePolicy';
 import { getErrorMessage } from '@/utils/error';
+import { hasPermission } from '@/utils/hasPermission';
 
 const MAX_IMAGES = 5;
 
@@ -33,6 +36,8 @@ export function LoungeBoardCommentInputBar({
   onSubmitComment,
   onSubmitReply,
 }: Props) {
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const loungeCommentPolicy = useLoungeCommentPolicy();
   const [text, setText] = useState('');
   const [images, setImages] = useState<UploadItem[]>([]);
   const [showMaxWarning, setShowMaxWarning] = useState(false);
@@ -75,6 +80,7 @@ export function LoungeBoardCommentInputBar({
   }, [replyTarget]);
 
   const isUploading = images.some((item) => item.status === 'uploading');
+  const canCreateComment = hasPermission(loungeCommentPolicy, 'create');
 
   const uploadFile = useCallback(
     async (id: string, file: File) => {
@@ -143,6 +149,10 @@ export function LoungeBoardCommentInputBar({
     e?.preventDefault();
     const trimmed = text.trim();
     if (!trimmed || isUploading || isSubmitting) return;
+    if (!canCreateComment) {
+      openLoginModal();
+      return;
+    }
 
     const imageUrls = images
       .filter((item) => item.status === 'done')
@@ -271,6 +281,7 @@ export function LoungeBoardCommentInputBar({
       )}
       {uploadError && <AlertModal message={uploadError} onConfirm={() => setUploadError(null)} />}
       {submitError && <AlertModal message={submitError} onConfirm={() => setSubmitError(null)} />}
+      {loginModal}
     </>
   );
 }

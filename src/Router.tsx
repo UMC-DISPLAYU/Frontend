@@ -35,6 +35,7 @@ import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
 import { NotFound } from './pages/NotFound';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { PersonalArtworkDetailPage } from './pages/PersonalArtworkDetailPage';
 import { PersonalArtworksRegister } from './pages/PersonalArtworksRegister';
 import { PolicyPage } from './pages/PolicyPage';
 import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
@@ -58,6 +59,8 @@ export const router = createBrowserRouter([
       { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
       { path: 'display/:id/contents', element: <DisplayContentsPage /> },
       { path: 'lounge', element: <LoungePage /> },
+      /* 개인 작품 상세는 비회원도 열람할 수 있습니다. */
+      { path: 'personal-artworks/:personalArtworkId', element: <PersonalArtworkDetailPage /> },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
       {
         path: 'lounge/:category/:id',

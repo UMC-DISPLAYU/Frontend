@@ -2,16 +2,25 @@ import { Pencil, Trash2 } from 'lucide-react';
 
 import type { Work } from '@/types/artworkManage';
 
-import { PrimaryButton, Thumbnail } from './Common';
+import { Thumbnail } from './Common';
 
 interface WorkActionSheetProps {
   work: Work;
+  canEdit: boolean;
+  canDelete: boolean;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export function WorkActionSheet({ work, onClose, onEdit, onDelete }: WorkActionSheetProps) {
+export function WorkActionSheet({
+  work,
+  canEdit,
+  canDelete,
+  onClose,
+  onEdit,
+  onDelete,
+}: WorkActionSheetProps) {
   return (
     <>
       <div className="absolute inset-0 bg-main/35" onClick={onClose} />
@@ -32,38 +41,40 @@ export function WorkActionSheet({ work, onClose, onEdit, onDelete }: WorkActionS
         </div>
 
         <div className="mt-3">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="flex w-full items-center gap-4 px-2 py-4 text-left"
-          >
-            <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-card">
-              <Pencil className="size-4 text-main" />
-            </span>
-            <span>
-              <span className="typo-body-sm-regular block text-main">작품 정보 수정</span>
-              <span className="typo-body-sm-regular block text-faint">
-                작품명, 설명, 작가 정보 수정
+          {canEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="flex w-full items-center gap-4 px-2 py-4 text-left"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-card">
+                <Pencil className="size-4 text-main" />
               </span>
-            </span>
-          </button>
+              <span>
+                <span className="typo-body-sm-regular block text-main">작품 정보 수정</span>
+                <span className="typo-body-sm-regular block text-faint">
+                  작품명, 설명, 작가 정보 수정
+                </span>
+              </span>
+            </button>
+          )}
 
-          <button
-            type="button"
-            onClick={onDelete}
-            className="flex w-full items-center gap-4 px-2 py-4 text-left"
-          >
-            <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-card">
-              <Trash2 className="size-4 text-error" />
-            </span>
-            <span>
-              <span className="typo-body-sm-regular block text-error">작품 삭제</span>
-              <span className="typo-body-sm-regular block text-faint">전시에서 작품 제거</span>
-            </span>
-          </button>
+          {canDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="flex w-full items-center gap-4 px-2 py-4 text-left"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-card">
+                <Trash2 className="size-4 text-error" />
+              </span>
+              <span>
+                <span className="typo-body-sm-regular block text-error">작품 삭제</span>
+                <span className="typo-body-sm-regular block text-faint">전시에서 작품 제거</span>
+              </span>
+            </button>
+          )}
         </div>
-
-        <PrimaryButton>전시보기</PrimaryButton>
       </div>
     </>
   );

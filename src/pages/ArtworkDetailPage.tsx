@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
+import type { DisplayDetailDto, GetArtworkDetailResponseDataDto } from '@/api/dto';
 import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
@@ -23,12 +24,20 @@ import {
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import {
+  useFeelingPolicy,
+  useFeelingReplyPolicy,
+  useQuestionPolicy,
+  useQuestionReplyPolicy,
+} from '@/hooks/usePolicy';
 import type {
   ArtworkDetail,
   ArtworkGuestbookTab as ArtworkGuestbookSubTabType,
   GuestbookQuestion,
   GuestbookReview,
 } from '@/types/exhibition';
+import { hasPermission } from '@/utils/hasPermission';
 
 export function ArtworkDetailPage() {
   const navigate = useNavigate();
@@ -54,6 +63,7 @@ export function ArtworkDetailPage() {
 
   const createFeeling = useCreateArtworkFeeling();
   const createQuestion = useCreateArtworkQuestion();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
 
   /* 하단 입력바가 답글 모드일 때 대상 감상/질문. 둘 다 null이면 새 글을 남깁니다. */
   const [replyTarget, setReplyTarget] = useState<GuestbookReview | null>(null);
@@ -61,6 +71,30 @@ export function ArtworkDetailPage() {
 
   const createFeelingReply = useCreateArtworkFeelingReply(artworkId, replyTarget?.feelingId ?? 0);
   const createQuestionReply = useCreateArtworkQuestionReply();
+  const policyDisplay = (display ?? {
+    ownerUserId: 0,
+    teamMembers: [],
+  }) as DisplayDetailDto;
+  const policyArtwork = (detail ?? {
+    artistUserId: 0,
+    qaHandlers: [],
+  }) as GetArtworkDetailResponseDataDto;
+  const feelingPolicy = useFeelingPolicy(policyDisplay, undefined);
+  const feelingReplyPolicy = useFeelingReplyPolicy(policyDisplay);
+  const fallbackQuestion: GuestbookQuestion = {
+    questionId: 0,
+    content: '',
+    isPublic: true,
+    createdAt: '',
+    user: { userId: 0, nickname: '' },
+    reply: null,
+  };
+  const questionPolicy = useQuestionPolicy(questionReplyTarget ?? fallbackQuestion, policyDisplay);
+  const questionReplyPolicy = useQuestionReplyPolicy(
+    questionReplyTarget ?? fallbackQuestion,
+    policyDisplay,
+    policyArtwork,
+  );
 
   /*
    * 감상/질문 응답을 방명록 화면이 쓰는 형태로 맞춥니다.
@@ -89,36 +123,21 @@ export function ArtworkDetailPage() {
       nickname: question.user?.nickname ?? '',
     },
     reply: question.reply
-      ? { content: question.reply.content, createdAt: question.createdAt }
+      ? {
+          questionReplyId: question.reply.questionReplyId,
+          queReplyId: question.reply.queReplyId,
+          questionId: question.reply.questionId,
+          content: question.reply.content,
+          createdAt: question.reply.createdAt,
+          userId: question.reply.userId ?? question.reply.creatorId,
+          nickname: question.reply.nickname ?? question.reply.creatorName,
+          creatorId: question.reply.creatorId,
+          creatorName: question.reply.creatorName,
+        }
       : null,
     /* 본인 질문이면 시점과 무관하게 수정·삭제할 수 있습니다. */
     isMyQuestion: Boolean(myUserId) && question.user?.userId === myUserId,
   }));
-
-  /* 답글 대상이 있으면 답글로, 없으면 탭에 맞춰 감상/질문으로 등록합니다. */
-  const handleSendGuestbook = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
-    if (!content) return;
-
-    if (replyTarget) {
-      createFeelingReply.mutate(content, { onSuccess: () => setReplyTarget(null) });
-      return;
-    }
-
-    if (questionReplyTarget) {
-      createQuestionReply.mutate(
-        { artworkId, questionId: questionReplyTarget.questionId, body: { content } },
-        { onSuccess: () => setQuestionReplyTarget(null) },
-      );
-      return;
-    }
-
-    if (activeSubTab === 'question') {
-      createQuestion.mutate({ artworkId, body: { content, isPublic: !isPrivate } });
-      return;
-    }
-
-    createFeeling.mutate({ artworkId, body: { content } });
-  };
 
   if (isPending) {
     return <LoadingView message="작품 정보를 불러오는 중..." />;
@@ -136,6 +155,51 @@ export function ArtworkDetailPage() {
 
   const source = display as (typeof display & { posterImageUrl?: string }) | undefined;
   const displayPoster = source?.posterImageUrl ?? source?.images?.[0]?.imageUrl ?? '';
+
+  /* 답글 대상이 있으면 답글로, 없으면 탭에 맞춰 감상/질문으로 등록합니다. */
+  const handleSendGuestbook = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
+    if (!content) return;
+
+    if (replyTarget) {
+      if (!hasPermission(feelingReplyPolicy, 'reply.create')) {
+        openLoginModal();
+        return;
+      }
+
+      createFeelingReply.mutate(content, { onSuccess: () => setReplyTarget(null) });
+      return;
+    }
+
+    if (questionReplyTarget) {
+      if (!hasPermission(questionReplyPolicy, 'reply.create')) {
+        openLoginModal();
+        return;
+      }
+
+      createQuestionReply.mutate(
+        { artworkId, questionId: questionReplyTarget.questionId, body: { content } },
+        { onSuccess: () => setQuestionReplyTarget(null) },
+      );
+      return;
+    }
+
+    if (activeSubTab === 'question') {
+      if (!hasPermission(questionPolicy, 'create')) {
+        openLoginModal();
+        return;
+      }
+
+      createQuestion.mutate({ artworkId, body: { content, isPublic: !isPrivate } });
+      return;
+    }
+
+    if (!hasPermission(feelingPolicy, 'create')) {
+      openLoginModal();
+      return;
+    }
+
+    createFeeling.mutate({ artworkId, body: { content } });
+  };
 
   /* 화면이 쓰는 ArtworkDetail 형태로 변환합니다. */
   const artwork: ArtworkDetail = {
@@ -187,6 +251,8 @@ export function ArtworkDetailPage() {
           reviews={reviews}
           questions={questions}
           artworkId={artworkId}
+          artwork={detail}
+          display={policyDisplay}
           activeSubTab={activeSubTab}
           onSubTabChange={setActiveSubTab}
           isArtistView={isArtistView}
@@ -229,6 +295,7 @@ export function ArtworkDetailPage() {
           onSubmit={handleSendGuestbook}
         />
       )}
+      {loginModal}
     </div>
   );
 }
