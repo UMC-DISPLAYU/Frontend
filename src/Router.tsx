@@ -23,6 +23,7 @@ import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
 import { Homepage } from './pages/Homepage';
+import { InteriorPhotosPage } from './pages/InteriorPhotosPage';
 import { InvitationRequestPage } from './pages/InvitationRequestPage';
 import { LoginPage } from './pages/LoginPage';
 import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
@@ -130,6 +131,7 @@ export const router = createBrowserRouter([
               { path: 'team', element: <TeamManage /> },
               { path: 'visibility', element: <VisibilitySettings /> },
               { path: 'contents', element: <DisplayContentsManagePage /> },
+              { path: 'contents/:categoryId', element: <InteriorPhotosPage /> },
               { path: 'artworks', element: <ArtworksManagePage /> },
               { path: 'artworks/add', element: <ArtworkRegisterPage /> },
               { path: 'complete', element: <ExhibitionRegisterComplete /> },

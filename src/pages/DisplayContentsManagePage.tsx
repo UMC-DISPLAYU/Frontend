@@ -5,7 +5,6 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 
 import { LoadingView } from '@/components/common';
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
-import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import {
@@ -310,7 +309,6 @@ export function DisplayContentsManagePage() {
   const [editing, setEditing] = useState<Content | null>(null);
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<Content | null>(null);
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   // API 데이터를 Content 형식으로 변환
@@ -401,31 +399,7 @@ export function DisplayContentsManagePage() {
     );
   }
 
-  // 상세 화면 표시 중이면 InteriorPhotos 렌더링
-  if (selectedContent) {
-    const category = displayDetail?.contentCategories?.find(
-      (cat) => cat.categoryId === selectedContent.id,
-    );
-    const initialPhotos =
-      category?.contents.map((content) => ({
-        id: content.contentId,
-        url: content.imageUrl,
-      })) ?? [];
-
-    return (
-      <InteriorPhotos
-        title={selectedContent.title}
-        displayId={displayId}
-        categoryId={selectedContent.id}
-        initialPhotos={initialPhotos}
-        canCreateContent={canCreateContent}
-        canDeleteContent={canDeleteContent}
-        canReorder={canReorder}
-        onBack={() => setSelectedContent(null)}
-        onPhotoCountChange={(count) => handlePhotoCountChange(selectedContent.id, count)}
-      />
-    );
-  }
+  // 상세 화면 표시 중이면 InteriorPhotos 렌더링 로직을 지우고 navigate로 변경했습니다.
 
   return (
     <Screen>
@@ -449,7 +423,7 @@ export function DisplayContentsManagePage() {
               content={content}
               dimmed={menuId !== null && menuId !== content.id}
               showMore={canShowCategoryMenu}
-              onClick={() => setSelectedContent(content)}
+              onClick={() => navigate(`/exhibition/${displayId}/contents/${content.id}`)}
               onMore={(e) => {
                 e.stopPropagation();
                 setMenuId((prev) => (prev === content.id ? null : content.id));

@@ -13,7 +13,6 @@ import { ArtworkCard } from './ArtworkCard';
 import { Header, Screen, SectionTitle } from './Common';
 import { ContentRow } from './ContentRow';
 import { ExhibitionMeta } from './ExhibitionMeta';
-import { InteriorPhotos } from './InteriorPhotos';
 import { Poster } from './Poster';
 
 interface WorkData {
@@ -38,9 +37,6 @@ export function WorkScreen({
   onManageArtworks: () => void;
 }) {
   const navigate = useNavigate();
-  const [selectedContent, setSelectedContent] = useState<{ id: string; title: string } | null>(
-    null,
-  );
   const { data: display } = useDisplayDetail(Number(ex.id));
   const displayContentPolicy = useDisplayContentPolicy(display);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
@@ -65,26 +61,6 @@ export function WorkScreen({
     // TODO: 사진 개수 업데이트 로직
     // console.log('Photo count changed:', categoryId, count);
   };
-
-  // 콘텐츠 상세 화면 표시 중이면 InteriorPhotos 렌더링
-  if (selectedContent) {
-    const contentData = work.contents.find((c) => c.id === selectedContent.id);
-    const initialPhotos = contentData?.photos ?? [];
-
-    return (
-      <InteriorPhotos
-        title={selectedContent.title}
-        displayId={Number(ex.id)}
-        categoryId={Number(selectedContent.id)}
-        initialPhotos={initialPhotos}
-        canCreateContent={canCreateContent}
-        canDeleteContent={canDeleteContent}
-        canReorder={canReorder}
-        onBack={() => setSelectedContent(null)}
-        onPhotoCountChange={(count) => handlePhotoCountChange(Number(selectedContent.id), count)}
-      />
-    );
-  }
 
   return (
     <Screen>
@@ -116,7 +92,7 @@ export function WorkScreen({
             <ContentRow
               key={r.id}
               row={r}
-              onClick={() => setSelectedContent({ id: r.id, title: r.title })}
+              onClick={() => navigate(`/exhibition/${ex.id}/contents/${r.id}`)}
             />
           ))}
         </div>
