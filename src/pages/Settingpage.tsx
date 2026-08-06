@@ -21,7 +21,7 @@ export function SettingPage() {
   const isVerified = !isPending && Boolean(userData?.isVerified);
   const invitationCount = invitationsData?.invitations?.length ?? 0;
   const pendingQuestionCount =
-    questionsData?.questions?.filter((q) => q.answerStatus === 'PENDING').length ?? 0;
+    questionsData?.questions?.filter((q) => q.answerStatus === 'WAITING').length ?? 0;
 
   const handleLogout = () => {
     logoutMutation.mutate(

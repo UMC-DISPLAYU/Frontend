@@ -19,7 +19,7 @@ interface Question {
 }
 
 const formatAnswerStatus = (answerStatus: string) => {
-  if (answerStatus === 'PENDING') return '답변예정';
+  if (answerStatus === 'WAITING') return '답변예정';
   if (answerStatus === 'ANSWERED') return '답변완료';
 
   return '';
@@ -120,16 +120,15 @@ export function AnswerPage() {
   const [tab, setTab] = useState<TabKey>('done');
   // 가짜 API 연동: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 GET /api/v1/artworks/question/me 응답을 사용합니다.
   const { data, isError, isLoading } = useMyArtworkQuestions();
-  const questions = data?.questions;
+  const questions = data?.questions ?? [];
 
   const items = questions
-    ? questions
-        .filter((question) =>
-          tab === 'pending'
-            ? question.answerStatus === 'PENDING'
-            : question.answerStatus === 'ANSWERED',
-        )
-        .map<Question>((question) => ({
+    .filter((question) =>
+      tab === 'pending'
+        ? question.answerStatus === 'WAITING'
+        : question.answerStatus === 'ANSWERED',
+    )
+    .map<Question>((question) => ({
           id: String(question.questionId),
           exhibition: question.artworkName,
           desc: question.content,
@@ -137,8 +136,7 @@ export function AnswerPage() {
           time: getRelativeTime(question.createdAt),
           status: formatAnswerStatus(question.answerStatus),
           isOpen: question.isPublic,
-        }))
-    : [];
+        }));
 
   const handleDone = () => {
     navigate(-1);

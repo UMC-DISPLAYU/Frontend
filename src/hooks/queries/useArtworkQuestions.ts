@@ -26,7 +26,7 @@ export const useArtworkQuestions = (artworkId: number) =>
 export const useMyArtworkQuestions = () =>
   useQuery({
     queryKey: queryKeys.artworkQuestions.me(),
-    queryFn: getMyArtworkQuestions,
+    queryFn: () => getMyArtworkQuestions(),
   });
 
 export const useCreateArtworkQuestion = () => {

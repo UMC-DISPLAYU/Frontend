@@ -25,7 +25,8 @@ export interface ArchivedExhibitionDto {
 }
 
 export interface GetArchivedExhibitionsResponseDataDto {
-  savedExhibitions: ArchivedExhibitionDto[];
+  savedExhibitions?: ArchivedExhibitionDto[];
+  displays?: ArchivedExhibitionDto[];
 }
 
 export type GetArchivedExhibitionsResponseDto =

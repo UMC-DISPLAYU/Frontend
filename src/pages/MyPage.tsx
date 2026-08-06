@@ -166,7 +166,6 @@ export function MyPage() {
     const items = (archivedExhibitionsQuery.data?.savedExhibitions ??
       archivedExhibitionsQuery.data?.displays ??
       []) as ArchivedExhibitionView[];
-    console.log('🔍 First item structure:', items[0]);
     return items.map((item) => ({
       id: String(item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId),
       archiveDisplayId: item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId,
