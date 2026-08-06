@@ -148,7 +148,11 @@ export function ExhibitionManage() {
           {canEditDisplay && (
             <button
               type="button"
-              onClick={() => navigate(`/exhibition/${exhibition.id}/edit`, { state })}
+              onClick={() =>
+                navigate(`/exhibition/${exhibition.id}/edit`, {
+                  state: { ...state, displayDetail: source },
+                })
+              }
               className="flex items-center gap-3 rounded-xl bg-card px-4 py-3"
             >
               <div className="flex flex-1 flex-col gap-1 text-left">

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 
 import { Calendar, Clock, MapPin } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
+import type { DisplayDetailDto } from '@/api/dto';
 import { BottomButtonBar, PageHeader } from '@/components/common';
 import { AddressSearchModal } from '@/components/exhibition-basic-info';
 import { CalenderSheet } from '@/components/ui/CalenderSheet';
 import { type TimeRangeValue, TimeSheet } from '@/components/ui/TimeSheet';
+import { useUpdateDisplay } from '@/hooks/queries/useDisplayBrowse';
 
 interface DateValue {
   start: Date;
@@ -50,22 +52,58 @@ function Label({ children, required }: { children: React.ReactNode; required?: b
 export function ExhibitionBasicInfo() {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { displayId: paramDisplayId } = useParams();
+  const displayId = Number(paramDisplayId ?? 0);
+  const updateDisplay = useUpdateDisplay(displayId);
 
   /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
   const restored = (state ?? {}) as Record<string, unknown>;
+  const displayDetail = (state?.displayDetail as DisplayDetailDto) || null;
 
-  const [period, setPeriod] = useState<DateValue | null>(
-    (restored.periodValue as DateValue) ?? null,
-  );
+  const parseDate = (d?: string) => (d ? new Date(d) : new Date());
+
+  const initialPeriod =
+    (restored.periodValue as DateValue) ??
+    (displayDetail?.period
+      ? {
+          start: parseDate(displayDetail.period.startDate),
+          end: parseDate(displayDetail.period.endDate),
+          label: `${displayDetail.period.startDate.split('-').join('.')} - ${displayDetail.period.endDate.split('-').join('.')}`,
+        }
+      : null);
+
+  const initialOperatingHours =
+    (restored.operatingHoursValue as TimeRangeValue) ??
+    (displayDetail?.period
+      ? {
+          startHour: parseInt(displayDetail.period.startTime.split(':')[0] || '0'),
+          startMinute: parseInt(displayDetail.period.startTime.split(':')[1] || '0'),
+          endHour: parseInt(displayDetail.period.endTime.split(':')[0] || '0'),
+          endMinute: parseInt(displayDetail.period.endTime.split(':')[1] || '0'),
+          label: `${displayDetail.period.startTime} - ${displayDetail.period.endTime}`,
+        }
+      : null);
+
+  const [period, setPeriod] = useState<DateValue | null>(initialPeriod);
   const [operatingHours, setOperatingHours] = useState<TimeRangeValue | null>(
-    (restored.operatingHoursValue as TimeRangeValue) ?? null,
+    initialOperatingHours,
   );
-  const [placeName, setPlaceName] = useState((restored.placeName as string) ?? '');
-  const [address, setAddress] = useState((restored.address as string) ?? '');
-  const [latitude, setLatitude] = useState<number | null>((restored.latitude as number) ?? null);
-  const [longitude, setLongitude] = useState<number | null>((restored.longitude as number) ?? null);
-  const [contact, setContact] = useState((restored.contact as string) ?? '');
-  const [notice, setNotice] = useState((restored.notice as string) ?? '');
+  const [placeName, setPlaceName] = useState(
+    (restored.placeName as string) ?? displayDetail?.location?.placeName ?? '',
+  );
+  const [address, setAddress] = useState(
+    (restored.address as string) ?? displayDetail?.location?.placeName ?? '',
+  );
+  const [latitude, setLatitude] = useState<number | null>(
+    (restored.latitude as number) ?? displayDetail?.location?.latitude ?? null,
+  );
+  const [longitude, setLongitude] = useState<number | null>(
+    (restored.longitude as number) ?? displayDetail?.location?.longitude ?? null,
+  );
+  const [contact, setContact] = useState(
+    (restored.contact as string) ?? displayDetail?.qnaAccount ?? '',
+  );
+  const [notice, setNotice] = useState((restored.notice as string) ?? displayDetail?.note ?? '');
 
   const [sheet, setSheet] = useState<SheetType>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -86,6 +124,36 @@ export function ExhibitionBasicInfo() {
   };
 
   const goNext = () => {
+    if (displayId > 0) {
+      updateDisplay.mutate(
+        {
+          title: state.title,
+          subtitle: state.subtitle || null,
+          description: state.intro || null,
+          type: state.type,
+          fields: state.field,
+          schoolOrOrganization: state.school,
+          departmentOrClub: state.department || null,
+          placeName,
+          precautions: notice || null,
+          startDate: period ? formatDate(period.start) : undefined,
+          endDate: period ? formatDate(period.end) : undefined,
+          openTime: operatingHours
+            ? formatTime(operatingHours.startHour, operatingHours.startMinute)
+            : undefined,
+          closeTime: operatingHours
+            ? formatTime(operatingHours.endHour, operatingHours.endMinute)
+            : undefined,
+          posterImageUrl: state.imageUrls?.[0] || undefined,
+        },
+        {
+          onSuccess: () => navigate(`/exhibition/${displayId}/manage`, { replace: true }),
+          onError: () => alert('수정에 실패했습니다.'),
+        },
+      );
+      return;
+    }
+
     navigate('/exhibition/register/artist', {
       state: {
         ...state,
@@ -237,11 +305,11 @@ export function ExhibitionBasicInfo() {
       <BottomButtonBar>
         <button
           type="button"
-          disabled={!canNext}
+          disabled={!canNext || updateDisplay.isPending}
           onClick={goNext}
-          className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
+          className="typo-body-sm-bold inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-dark py-3 text-card disabled:opacity-40"
         >
-          다음
+          {updateDisplay.isPending ? '저장 중...' : displayId > 0 ? '저장' : '다음'}
         </button>
       </BottomButtonBar>
 

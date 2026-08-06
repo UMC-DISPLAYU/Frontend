@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
+import type { DisplayDetailDto } from '@/api/dto';
 import { ImageUploader } from '@/components/common';
 import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
 import { ChipGroup, RequiredLabel } from '@/components/ui';
@@ -22,30 +23,42 @@ const INPUT_CLASS =
 export function ExhibitionRegister() {
   const { data: artistProfile } = useMyArtistProfile();
   const imageUpload = useImageUpload({ domain: 'display' });
+  const navigate = useNavigate();
+  const { displayId: paramDisplayId } = useParams();
+  const displayId = Number(paramDisplayId ?? 0);
 
   /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
   const { state } = useLocation();
+  const displayDetail = (state?.displayDetail as DisplayDetailDto) || null;
+
+  // 수정 모드 진입 시 최우선순위로 displayDetail 데이터를 기반으로 채웁니다.
+  // 단, 다음 단계에서 뒤로가기(state 복원)한 경우를 위해 restored에 합칩니다.
   const restored = (state ?? {}) as Record<string, unknown>;
+  const initialTitle = (restored.title as string) ?? displayDetail?.title ?? '';
+  const initialSubtitle = (restored.subtitle as string) ?? displayDetail?.subtitle ?? '';
+  const initialIntro = (restored.intro as string) ?? displayDetail?.content ?? '';
+  const initialType = (restored.type as string) ?? displayDetail?.displayType ?? null;
+  const initialField = (restored.field as string[]) ?? displayDetail?.displayFields ?? [];
+  const initialSchool =
+    (restored.school as string) ?? displayDetail?.organization ?? artistProfile?.schoolName ?? '';
+  const initialDepartment = (restored.department as string) ?? displayDetail?.department ?? '';
+  const initialOrganizer = (restored.organizer as string) ?? displayDetail?.organization ?? '';
 
-  const [title, setTitle] = useState((restored.title as string) ?? '');
-  const [subtitle, setSubtitle] = useState((restored.subtitle as string) ?? '');
-  const [intro, setIntro] = useState((restored.intro as string) ?? '');
-  const [type, setType] = useState<string | null>((restored.type as string) ?? null);
-  const [field, setField] = useState<string[]>((restored.field as string[]) ?? []);
+  const [title, setTitle] = useState(initialTitle);
+  const [subtitle, setSubtitle] = useState(initialSubtitle);
+  const [intro, setIntro] = useState(initialIntro);
+  const [type, setType] = useState<string | null>(initialType);
+  const [field, setField] = useState<string[]>(initialField);
 
-  const [school, setSchool] = useState(
-    (restored.school as string) ?? artistProfile?.schoolName ?? '',
-  );
-  const [department, setDepartment] = useState((restored.department as string) ?? '');
-  const [organizer, setOrganizer] = useState((restored.organizer as string) ?? '');
+  const [school, setSchool] = useState(initialSchool);
+  const [department, setDepartment] = useState(initialDepartment);
+  const [organizer, setOrganizer] = useState(initialOrganizer);
   const schoolValue = school || artistProfile?.schoolName || '';
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
     return found?.group ?? null;
   }, [type]);
-
-  const navigate = useNavigate();
 
   const isAffiliationValid = () => {
     if (!selectedGroup) return true;
@@ -55,8 +68,16 @@ export function ExhibitionRegister() {
     return organizer.trim() !== '';
   };
 
+  const [initialImages, setInitialImages] = useState<string[]>(
+    displayDetail?.images?.map((img) => img.imageUrl) || [],
+  );
+
+  const handleRemoveInitialImage = (url: string) => {
+    setInitialImages((prev) => prev.filter((img) => img !== url));
+  };
+
   const isFormValid =
-    imageUpload.images.length > 0 &&
+    (imageUpload.images.length > 0 || initialImages.length > 0) &&
     title.trim() !== '' &&
     type !== null &&
     field.length > 0 &&
@@ -65,10 +86,15 @@ export function ExhibitionRegister() {
   const goNext = async () => {
     if (!isFormValid || imageUpload.isUploading) return;
 
-    const imageUrls = await imageUpload.uploadImages();
+    const newImageUrls = imageUpload.images.length > 0 ? await imageUpload.uploadImages() : [];
+    const imageUrls = [...initialImages, ...newImageUrls];
 
-    navigate('/exhibition/register/basic', {
+    const nextPath =
+      displayId > 0 ? `/exhibition/${displayId}/edit/basic` : '/exhibition/register/basic';
+
+    navigate(nextPath, {
       state: {
+        ...state,
         imageUrls,
         title,
         subtitle,
@@ -91,9 +117,11 @@ export function ExhibitionRegister() {
           <div className="flex justify-center">
             <ImageUploader
               images={imageUpload.images}
+              initialImages={initialImages}
               maxImages={MAX_POSTER_UPLOAD_IMAGES}
               onAddImages={imageUpload.addImages}
               onRemoveImage={imageUpload.removeImage}
+              onRemoveInitialImage={handleRemoveInitialImage}
             />
           </div>
 
