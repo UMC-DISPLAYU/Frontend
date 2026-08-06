@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MoreHorizontal, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { LoadingView } from '@/components/common';
 import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
 import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
@@ -370,14 +371,7 @@ export function DisplayContentsManagePage() {
   }
 
   if (isLoading) {
-    return (
-      <Screen>
-        <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
-        <div className="flex flex-1 items-center justify-center">
-          <div className="typo-body-sm-regular text-faint">로딩 중...</div>
-        </div>
-      </Screen>
-    );
+    return <LoadingView message="전시 콘텐츠를 불러오는 중..." />;
   }
 
   if (isError || !displayDetail) {

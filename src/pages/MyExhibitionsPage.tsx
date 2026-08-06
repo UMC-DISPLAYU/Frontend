@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
+import { LoadingView } from '@/components/common';
 import { ManageScreen } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
@@ -11,11 +12,7 @@ export function MyExhibitionsPage() {
   const { data: myDisplays = [], isLoading } = useMyDisplays();
 
   if (isLoading) {
-    return (
-      <div className="w-96 mx-auto h-dvh bg-page flex items-center justify-center">
-        <div>로딩 중...</div>
-      </div>
-    );
+    return <LoadingView message="전시 목록을 불러오는 중..." />;
   }
 
   return (

@@ -1,5 +1,6 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
+import { LoadingView } from '@/components/common';
 import { WorkScreen } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
@@ -23,11 +24,7 @@ export function ExhibitionWorkPage() {
   const { data: displayArtworks } = useDisplayArtworks(Number(displayId));
 
   if (!exhibition && !displayDetail) {
-    return (
-      <div className="w-96 mx-auto h-dvh bg-page flex items-center justify-center">
-        <div>로딩 중...</div>
-      </div>
-    );
+    return <LoadingView message="전시 정보를 불러오는 중..." />;
   }
 
   const exItem: ExhibitionItem = exhibition ?? {

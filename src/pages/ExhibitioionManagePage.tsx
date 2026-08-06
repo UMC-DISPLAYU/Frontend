@@ -1,5 +1,5 @@
 import { ChevronRight, Info } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { BottomButtonBar, PageHeader } from '@/components/common';
 import {
@@ -42,10 +42,11 @@ export function ExhibitionManage() {
   useHideFooter();
 
   const navigate = useNavigate();
+  const { displayId: paramDisplayId } = useParams();
   const { state } = useLocation();
 
-  // 등록된 전시 데이터를 서버에서 불러옵니다. state는 등록 직후 화면 전환용으로만 사용합니다.
-  const displayId = Number(state?.displayId ?? state?.id ?? 0);
+  // 등록된 전시 데이터를 서버에서 불러옵니다. URL 파라미터나 state에서 displayId를 가져옵니다.
+  const displayId = Number(paramDisplayId ?? state?.displayId ?? state?.id ?? 0);
   const { data: display } = useDisplayDetail(displayId);
   const { data: memberList } = useDisplayMembers(displayId);
   const displayPolicy = useDisplayPolicy(
