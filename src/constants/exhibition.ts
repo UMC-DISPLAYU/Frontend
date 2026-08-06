@@ -10,16 +10,16 @@ export const EXHIBITION_TYPES = [
 ] as const;
 
 export const EXHIBITION_FIELDS = [
-  '회화',
-  '디자인',
-  '사진',
-  '건축',
-  '영상',
-  '조소',
-  '패션',
-  '일러스트',
-  '공예',
-  '기타',
+  'PAINTING',
+  'DESIGN',
+  'PHOTOGRAPHY',
+  'ARCHITECTURE',
+  'VIDEO',
+  'SCULPTURE',
+  'FASHION',
+  'ILLUSTRATION',
+  'CRAFT',
+  'ETC',
 ] as const;
 
 export const EXHIBITION_TYPE_LABELS = EXHIBITION_TYPES.map((type) => type.label);
@@ -37,18 +37,17 @@ export const DISPLAY_TYPE_MAP: Record<string, CreateDisplayRequestDto['type']> =
   '기타 단체 전시': 'ETC',
 } satisfies Record<ExhibitionType, CreateDisplayRequestDto['type']>;
 
-//백엔드에서 다른 Enum을 사용해서 따로 분리했습니다. 수정되는대로 변경하도록 하겠습니다.
 export const DISPLAY_FIELD_MAP: Record<string, string> = {
-  회화: 'PAINTING',
-  디자인: 'DESIGN',
-  사진: 'PHOTOGRAPHY',
-  건축: 'ARCHITECTURE',
-  영상: 'MEDIA',
-  조소: 'SCULPTURE',
-  패션: 'FASHION',
-  일러스트: 'DESIGN',
-  공예: 'CRAFT',
-  기타: 'ETC',
+  PAINTING: 'PAINTING',
+  DESIGN: 'DESIGN',
+  PHOTOGRAPHY: 'PHOTOGRAPHY',
+  ARCHITECTURE: 'ARCHITECTURE',
+  VIDEO: 'VIDEO',
+  SCULPTURE: 'SCULPTURE',
+  FASHION: 'FASHION',
+  ILLUSTRATION: 'ILLUSTRATION',
+  CRAFT: 'CRAFT',
+  ETC: 'ETC',
 } satisfies Record<ExhibitionField, string>;
 
 export type ArtistFieldCode =
@@ -64,19 +63,19 @@ export type ArtistFieldCode =
   | 'ETC';
 
 export const ARTIST_FIELD_MAP: Record<ExhibitionField, ArtistFieldCode> = {
-  회화: 'PAINTING',
-  디자인: 'DESIGN',
-  사진: 'PHOTOGRAPHY',
-  건축: 'ARCHITECTURE',
-  영상: 'VIDEO',
-  조소: 'SCULPTURE',
-  패션: 'FASHION',
-  일러스트: 'ILLUSTRATION',
-  공예: 'CRAFT',
-  기타: 'ETC',
+  PAINTING: 'PAINTING',
+  DESIGN: 'DESIGN',
+  PHOTOGRAPHY: 'PHOTOGRAPHY',
+  ARCHITECTURE: 'ARCHITECTURE',
+  VIDEO: 'VIDEO',
+  SCULPTURE: 'SCULPTURE',
+  FASHION: 'FASHION',
+  ILLUSTRATION: 'ILLUSTRATION',
+  CRAFT: 'CRAFT',
+  ETC: 'ETC',
 };
 
-export const ARTIST_FIELD_REVERSE_MAP: Record<ArtistFieldCode, ExhibitionField> = {
+export const EXHIBITION_FIELD_LABELS: Record<ExhibitionField, string> = {
   PAINTING: '회화',
   DESIGN: '디자인',
   PHOTOGRAPHY: '사진',
@@ -87,6 +86,19 @@ export const ARTIST_FIELD_REVERSE_MAP: Record<ArtistFieldCode, ExhibitionField> 
   FASHION: '패션',
   ILLUSTRATION: '일러스트',
   ETC: '기타',
+};
+
+export const ARTIST_FIELD_REVERSE_MAP: Record<ArtistFieldCode, ExhibitionField> = {
+  PAINTING: 'PAINTING',
+  DESIGN: 'DESIGN',
+  PHOTOGRAPHY: 'PHOTOGRAPHY',
+  ARCHITECTURE: 'ARCHITECTURE',
+  VIDEO: 'VIDEO',
+  CRAFT: 'CRAFT',
+  SCULPTURE: 'SCULPTURE',
+  FASHION: 'FASHION',
+  ILLUSTRATION: 'ILLUSTRATION',
+  ETC: 'ETC',
 };
 
 /* 작가 인증에서 주요 활동 분야로 고를 수 있는 최대 개수입니다. */
