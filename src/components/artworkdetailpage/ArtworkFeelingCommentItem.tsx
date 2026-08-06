@@ -62,11 +62,13 @@ export function ArtworkFeelingCommentItem({
     isFetchingNextPage: isFetchingMoreReplies,
   } = useArtworkFeelingReplies(artworkId, feeling.feelingId, repliesOpen);
 
-  const replies: CommentData[] = (repliesData?.pages.flatMap((p) => p.replies) ?? []).map(
-    (reply) => {
+  const replies: CommentData[] = (repliesData?.pages.flatMap((p) => p.replies) ?? [])
+    // feelingReplyId가 없는 답글은 식별자가 없어 목록 key/좋아요·삭제 대상으로 쓸 수 없으므로 제외합니다.
+    .filter((reply) => reply.feelingReplyId != null)
+    .map((reply) => {
       const isMyComment = Boolean(myUserId) && reply.user?.userId === myUserId;
       return {
-        id: String(reply.feelingReplyId ?? 0),
+        id: String(reply.feelingReplyId),
         author: reply.user?.nickname ?? '',
         avatarUrl: reply.user?.profileImageUrl,
         time: formatRelativeTime(reply.createdAt),
@@ -76,8 +78,7 @@ export function ArtworkFeelingCommentItem({
         isMyComment,
         canDelete: isMyComment || isModerator,
       };
-    },
-  );
+    });
 
   const isMyFeeling =
     feeling.isMine ?? (Boolean(myUserId) && (feeling.user?.userId ?? feeling.userId) === myUserId);
