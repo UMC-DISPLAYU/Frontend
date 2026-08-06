@@ -28,6 +28,13 @@
   --fg-link: var(--palette-blue);
   --fg-error: var(--palette-red);
 
+  /* Filter */
+  --filter-bg: var(--palette-gray-white);
+  --filter-border-off: var(--palette-gray-300);
+  --filter-border-on: var(--palette-gray-black);
+  --filter-text-off: var(--palette-gray-600);
+  --filter-text-on: var(--palette-gray-black);
+
   /* Input — Default (기본형) */
   --input-border: var(--palette-gray-300);
   --input-placeholder: var(--palette-gray-400);
