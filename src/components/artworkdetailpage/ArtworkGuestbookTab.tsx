@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Heart, Lock } from 'lucide-react';
+import { ChevronDown, Heart, Lock, Plus } from 'lucide-react';
 
 import type { ArtworkFeelingDto } from '@/api/dto/displayArtwork.dto';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
@@ -77,34 +77,42 @@ function QuestionCard({
   const replyStatus = question.reply ? '답변완료' : '답변대기';
   const isSecretForUser = !question.isPublic && !isArtistView && !question.isMyQuestion;
 
+  const cardClassName =
+    'w-full rounded-[18px] bg-card shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]';
+
+  const answerStatusRow = (onClick?: () => void) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center justify-end gap-0.5 p-4 border-t border-line-soft"
+    >
+      <span className="typo-body-xs-regular text-sub600">{replyStatus}</span>
+      <ChevronDown size={16} className="text-sub600" />
+    </button>
+  );
+
   // 1) 일반인 시점 비공개 질문 카드
   if (isSecretForUser) {
     return (
-      <article className="w-full">
-        <div className="-mx-5 px-5 py-4 border-b border-line flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
-            <span className="typo-body-sm-bold text-main">비공개 질문입니다.</span>
+      <article className={cardClassName}>
+        <div className="flex items-center justify-between px-4 py-3.5">
+          <div className="flex flex-col gap-1">
+            <span className="typo-body-md-bold text-main">비공개 질문입니다.</span>
+            <span className="typo-body-xs-regular text-sub600">
+              {formatRelativeTime(question.createdAt)}
+            </span>
           </div>
-          <div className="flex items-center gap-2 typo-body-xs-regular text-faint pl-6">
-            <span>{replyStatus}</span>
-            <span>{formatRelativeTime(question.createdAt)}</span>
-          </div>
+          <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
         </div>
+        {answerStatusRow()}
       </article>
     );
   }
 
   // 2) 공개 질문 카드 및 작가 시점 질문 카드
   return (
-    <article
-      className={cn(
-        'w-full transition-colors',
-        // 답변 대상으로 선택되면 어떤 질문에 답하는지 드러나게 강조합니다.
-        isReplyTarget && '-mx-5 w-[calc(100%+2.5rem)] bg-box100 px-5',
-      )}
-    >
-      <div className="-mx-5 px-5 py-3 border-b border-line">
+    <article className={cn(cardClassName, 'transition-colors', isReplyTarget && 'bg-box100')}>
+      <div className="px-4 py-3.5">
         <div className="w-full inline-flex justify-start items-start gap-1.5">
           {/* 프로필 아바타 */}
           <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
@@ -165,7 +173,7 @@ function QuestionCard({
               )}
             </div>
 
-            {/* 하단 액션: 답글달기 / 댓글 N / 삭제 + 좋아요 */}
+            {/* 하단 액션: 답글달기 / 수정 / 삭제 + 좋아요 */}
             <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-faint">
               <div className="flex justify-start items-center gap-2">
                 {/* 질문 답변은 작가만 남길 수 있습니다. */}
@@ -176,15 +184,6 @@ function QuestionCard({
                     className="hover:text-main cursor-pointer"
                   >
                     답글달기
-                  </button>
-                )}
-                {(question.commentCount ?? (question.reply ? 1 : 0)) > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowReplies((prev) => !prev)}
-                    className="hover:text-main cursor-pointer"
-                  >
-                    댓글 {question.commentCount ?? (question.reply ? 1 : 0)}
                   </button>
                 )}
                 {question.isMyQuestion && !editing && (
@@ -230,9 +229,12 @@ function QuestionCard({
         </div>
       </div>
 
-      {/* 댓글/답변 펼치기 목록 */}
+      {/* 답변완료/답변대기 펼치기 줄 (누르면 답변 펼침) */}
+      {answerStatusRow(() => setShowReplies((prev) => !prev))}
+
+      {/* 답변 펼치기 내용 */}
       {showReplies && (
-        <div className="-mx-5 pl-14 pr-5 py-3 border-b border-line bg-box100/40 flex flex-col gap-2">
+        <div className="px-4 pb-4 flex flex-col gap-2 border-t border-line-soft pt-3">
           {question.reply ? (
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
@@ -342,9 +344,11 @@ export function ArtworkGuestbookTab({
       {/* ── 질문 탭 ── */}
       {activeTab === 'question' && (
         <div className="px-5 pt-2">
-          <div className="flex items-center justify-between py-4">
+          <div className="flex items-center py-4">
             <h2 className="typo-body-xl-bold text-main">질문하기</h2>
-            <div className="flex items-center gap-2">
+            {/* 작가/일반인 시점 전환은 테스트용 — 실제 화면엔 없지만, 로그인 왔다갔다 안 해도
+                되게 남겨두고 가운데에 배치한다. */}
+            <div className="flex-1 flex justify-center">
               <button
                 type="button"
                 onClick={handleArtistViewToggle}
@@ -353,8 +357,11 @@ export function ArtworkGuestbookTab({
                 {isArtistView ? '작가 시점' : '일반인 시점'}
               </button>
             </div>
+            <button type="button" aria-label="질문 작성" className="text-main">
+              <Plus size={20} />
+            </button>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-[14px] mt-[15px]">
             {questions.map((q) => (
               <QuestionCard
                 key={q.questionId}
