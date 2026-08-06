@@ -88,7 +88,7 @@ export function ExhibitionManage() {
   const workExhibition: ExhibitionItem = exhibition;
 
   const goVisibility = () => {
-    navigate('/exhibition/visibility', {
+    navigate(`/exhibition/${displayId}/visibility`, {
       state: {
         ...state,
         displayId: displayId || undefined,
@@ -100,7 +100,7 @@ export function ExhibitionManage() {
   };
 
   const goDisplayWork = () => {
-    navigate('/display/manage', {
+    navigate(`/exhibition/${displayId}/work`, {
       state: { initialExhibition: workExhibition },
     });
   };
@@ -131,7 +131,7 @@ export function ExhibitionManage() {
             </div>
             <OutlineButton
               weight="semibold"
-              onClick={() => navigate(`/display/${displayId}/team/manage`)}
+              onClick={() => navigate(`/exhibition/${displayId}/team`)}
             >
               팀원 초대/관리
             </OutlineButton>
@@ -147,7 +147,7 @@ export function ExhibitionManage() {
           {canEditDisplay && (
             <button
               type="button"
-              onClick={() => navigate(`/exhibition/edit/${exhibition.id}`, { state })}
+              onClick={() => navigate(`/exhibition/${exhibition.id}/edit`, { state })}
               className="flex items-center gap-3 rounded-xl bg-card px-4 py-3"
             >
               <div className="flex flex-1 flex-col gap-1 text-left">
@@ -181,7 +181,7 @@ export function ExhibitionManage() {
             type="button"
             className="typo-body-sm-bold h-11 flex-1 rounded-xl bg-dark text-white"
             onClick={() =>
-              navigate('/exhibition/register-complete', {
+              navigate(`/exhibition/${displayId}/complete`, {
                 state: {
                   title: exhibition.title,
                   school: source?.organization ?? state?.school,

@@ -35,7 +35,7 @@ export function SettingPage() {
       openArtistVerificationModal();
       return;
     }
-    navigate('/exhibition-register');
+    navigate('/exhibition/register');
   };
 
   return (
@@ -70,7 +70,7 @@ export function SettingPage() {
           <SettingRow
             title="내 전시 관리"
             desc="대표자 또는 팀원으로 참여 중인 전시를 관리해요."
-            onClick={() => navigate('/display/manage')}
+            onClick={() => navigate('/my/exhibitions')}
           />
           <SettingRow
             title="초대 요청"

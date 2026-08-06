@@ -15,7 +15,6 @@ import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
 import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
-import { DisplayManagePage } from './pages/DisplayManagePage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
@@ -23,6 +22,7 @@ import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
 import { ExhibitionEditPage } from './pages/ExhibitionEditPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
+import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
 import { Homepage } from './pages/Homepage';
 import { InvitationRequestPage } from './pages/InvitationRequestPage';
 import { LoginPage } from './pages/LoginPage';
@@ -30,6 +30,7 @@ import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
 import { LoungeBoardPage } from './pages/LoungeBoardPage';
 import { LoungePage } from './pages/LoungePage';
 import { MyActivityPage } from './pages/MyActivityPage';
+import { MyExhibitionsPage } from './pages/MyExhibitionsPage';
 import { MyPage } from './pages/MyPage';
 import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
@@ -75,18 +76,31 @@ export const router = createBrowserRouter([
         children: [
           { path: 'my', element: <MyPage /> },
           { path: 'artist-verification', element: <ArtistVerificationPage /> },
-          { path: 'display/manage', element: <DisplayManagePage /> },
-          { path: 'display/contents-manage', element: <DisplayContentsManagePage /> },
-          { path: 'artworks-manage', element: <ArtworksManagePage /> },
-          { path: 'artworks-register', element: <ArtworkRegisterPage /> },
-          { path: 'exhibition-register', element: <ExhibitionRegister /> },
-          { path: 'exhibition/register-complete', element: <ExhibitionRegisterComplete /> },
-          { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },
-          { path: 'exhibition/edit/:displayId', element: <ExhibitionEditPage /> },
-          { path: 'exhibition/artist', element: <ArtistNameSetup /> },
-          { path: 'exhibition/manage', element: <ExhibitionManage /> },
-          { path: 'exhibition/visibility', element: <VisibilitySettings /> },
-          { path: 'display/:displayId/team/manage', element: <TeamManage /> },
+
+          // 내 전시 관리 목록
+          { path: 'my/exhibitions', element: <MyExhibitionsPage /> },
+
+          // 1. 전시 등록 플로우
+          { path: 'exhibition/register', element: <ExhibitionRegister /> },
+          { path: 'exhibition/register/basic', element: <ExhibitionBasicInfo /> },
+          { path: 'exhibition/register/artist', element: <ArtistNameSetup /> },
+
+          // 2. 특정 전시 관리 플로우 (ID 발급 후)
+          {
+            path: 'exhibition/:displayId',
+            children: [
+              { path: 'manage', element: <ExhibitionManage /> },
+              { path: 'work', element: <ExhibitionWorkPage /> },
+              { path: 'edit', element: <ExhibitionEditPage /> },
+              { path: 'team', element: <TeamManage /> },
+              { path: 'visibility', element: <VisibilitySettings /> },
+              { path: 'contents', element: <DisplayContentsManagePage /> },
+              { path: 'artworks', element: <ArtworksManagePage /> },
+              { path: 'artworks/add', element: <ArtworkRegisterPage /> },
+              { path: 'complete', element: <ExhibitionRegisterComplete /> },
+            ],
+          },
+
           { path: 'setting', element: <SettingPage /> },
           { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
           { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
