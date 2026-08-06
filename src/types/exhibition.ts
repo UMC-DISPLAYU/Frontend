@@ -67,26 +67,6 @@ export interface LoungeBoardDetail {
   comments: LoungeBoardComment[];
 }
 
-// ─── Work Management Types ────────────────────────────────────────────────────
-
-export interface WorkContent {
-  id: string;
-  title: string;
-  meta: string;
-}
-
-export interface ArtworkItemInWork {
-  id: string;
-  title: string;
-  artist: string;
-  image: string | null;
-}
-
-export interface WorkData {
-  contents: WorkContent[];
-  artworks: ArtworkItemInWork[];
-}
-
 // ─── Detail Types ──────────────────────────────────────────────────────────
 
 export type DetailTabKey = 'intro' | 'artwork' | 'review';
