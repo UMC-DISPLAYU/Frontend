@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { ChevronLeft, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import type { ArtworkPreviewItemDto } from '@/api/dto';
 import { FILTER_CONFIG } from '@/components/search/filterOptions';
@@ -16,19 +16,22 @@ type Props = {
   onClose?: () => void;
 };
 
-// 각 작품의 카테고리를 추출/매핑하는 헬퍼 함수
+// 각 작품의 카테고리를 매핑하는 헬퍼 함수
 function getItemCategory(item: ArtworkPreviewItemDto, index: number): string {
   for (const cat of CATEGORY_LABELS) {
-    if (item.artworkName.includes(cat) || item.exhibitionInfo?.exhibitionTitle?.includes(cat)) {
+    if (
+      item.artworkName.includes(cat) ||
+      item.exhibitionInfo?.exhibitionTitle?.includes(cat) ||
+      ('field' in item && typeof item.field === 'string' && item.field.includes(cat))
+    ) {
       return cat;
     }
   }
-  // 목 데이터에 카테고리명이 직접 없는 경우 인덱스 기반으로 균등 할당
+  // 목 데이터에 분야명이 직접 포함되지 않은 경우 인덱스로 균등 분배
   return CATEGORY_LABELS[index % CATEGORY_LABELS.length];
 }
 
 export function ArtworkPreviewMoreView({ items, onClose }: Props) {
-  const navigate = useNavigate();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // 마운트 시 최상단으로 자동 스크롤
@@ -147,10 +150,10 @@ export function ArtworkPreviewMoreView({ items, onClose }: Props) {
       <div className="grid grid-cols-2 gap-2.5 px-5">
         {filteredItems.length > 0 ? (
           filteredItems.map((item) => (
-            <article
+            <Link
               key={item.artworkId}
-              onClick={() => navigate(`/artwork/${item.artworkId}`)}
-              className="relative h-64 overflow-hidden rounded-2xl bg-box200 cursor-pointer hover:opacity-95 active:scale-[0.98] transition-all group"
+              to={`/artwork/${item.artworkId}`}
+              className="relative h-64 overflow-hidden rounded-2xl bg-box200 cursor-pointer hover:opacity-95 active:scale-[0.98] transition-all group block focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
             >
               {item.artworkImageUrl ? (
                 <img
@@ -171,7 +174,7 @@ export function ArtworkPreviewMoreView({ items, onClose }: Props) {
                   {item.artistName || item.exhibitionInfo?.exhibitionTitle}
                 </p>
               </div>
-            </article>
+            </Link>
           ))
         ) : (
           <div className="col-span-2 py-16 text-center text-hint typo-body-sm-regular">

@@ -28,10 +28,17 @@ interface Props {
 // ─── 헬퍼 ──────────────────────────────────────────────────────────────────
 
 function getItemFields(item: BannerItem): { title: string; description: string } {
-  const title = 'name' in item ? item.title || item.name || '' : item.title;
-  const description =
-    'date' in item ? [item.date, item.location].filter(Boolean).join(' ') : item.subtitle;
-  return { title, description };
+  // DTO 필수 속성인 duPickId를 기반으로 DTO와 DuPickItem 구분
+  if ('duPickId' in item) {
+    return {
+      title: item.title,
+      description: item.subtitle,
+    };
+  }
+  return {
+    title: item.title || item.name || '',
+    description: [item.date, item.location].filter(Boolean).join(' '),
+  };
 }
 
 // ─── CardItem (단일 배너 카드) ───────────────────────────────────────────────
@@ -103,7 +110,7 @@ function CardItem({ item, isActive }: CardProps) {
 // ─── DuPickBanner (메인 캐러셀 컴포넌트) ───────────────────────────────────────
 
 export function DuPickBanner({ items, className }: Props) {
-  const { activeIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
+  const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: items.length,
   });
 
@@ -111,13 +118,29 @@ export function DuPickBanner({ items, className }: Props) {
 
   const absRatio = Math.min(Math.abs(dragOffset) / MAX_DRAG_OFFSET, 1);
 
+  // 키보드 사용자 접근성 지원 (ArrowLeft / ArrowRight 키로 슬라이드 전환)
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev + 1) % items.length);
+    }
+  };
+
   return (
     <section className={cn('pb-7', className)}>
       <div
         {...handlers}
+        tabIndex={0}
+        role="region"
+        aria-label="DU Pick 추천 캐러셀"
+        onKeyDown={handleKeyDown}
         className={cn(
           'relative flex h-65 items-center justify-center overflow-hidden px-3',
           'cursor-grab select-none touch-pan-y',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-main focus-visible:ring-offset-2 rounded-xl',
           isDragging && 'cursor-grabbing',
         )}
       >
@@ -131,8 +154,6 @@ export function DuPickBanner({ items, className }: Props) {
 
           let cardHeight = CARD_HEIGHT_INACTIVE;
           let isActive = false;
-
-          // 카드 관련 주석 이해하기 쉽게 달아놓았습니다. 수정하실 때 참고하세요!
 
           if (diff === 0) {
             // 중앙 카드: 드래그 시 260px -> 224px 축소

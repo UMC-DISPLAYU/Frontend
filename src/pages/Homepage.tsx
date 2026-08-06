@@ -103,7 +103,7 @@ export const Homepage = () => {
         <button
           type="button"
           className="flex size-7 items-center justify-center cursor-pointer relative z-10"
-          aria-label="메뉴"
+          aria-label="전시 등록"
           onClick={handlePlusClick}
         >
           <Plus className="size-8 text-main" strokeWidth={1.8} />
