@@ -53,12 +53,12 @@ function LoginContent({
 }) {
   return (
     <main className="fixed inset-0 flex w-full h-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
-      {/* Background Image - Wall-to-Wall (상단 노치 포함 물리 화면 전체 덮기) */}
+      {/* Background Image - Wall-to-Wall (PNG 이미지 상단 천장/조명이 잘리지 않도록 object-top 정렬) */}
       <img
         src={onboardingSplash}
         alt=""
         aria-hidden="true"
-        className="fixed inset-0 h-full w-full object-cover object-center pointer-events-none"
+        className="fixed inset-0 h-full w-full object-cover object-top pointer-events-none"
       />
 
       {/* DU Logo & Text Overlay - Smooth Fade In */}
