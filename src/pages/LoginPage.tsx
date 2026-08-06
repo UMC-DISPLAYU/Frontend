@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import displayuLogo from '@/assets/brand/DUfontlogo.svg';
 import googleIcon from '@/assets/onboarding/googleIcon.svg';
 import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
+import loginLogo from '@/assets/onboarding/login-logo.svg';
 import onboardingSplash from '@/assets/onboarding/onboarding-splash.svg';
 import { useGoogleAuthorizationUrl, useKakaoAuthorizationUrl } from '@/hooks/queries/useAuth';
 import { cn } from '@/utils/cn';
 
-const LOGIN_ASSETS = [displayuLogo, kakaoIcon, googleIcon, onboardingSplash];
+const LOGIN_ASSETS = [loginLogo, kakaoIcon, googleIcon, onboardingSplash];
 
 function preloadImages(srcList: string[]) {
   return Promise.all(
@@ -64,26 +64,21 @@ function LoginContent({
       {/* DU Logo & Text Overlay - Smooth Fade In */}
       <div
         className={cn(
-          'absolute top-[26%] left-1/2 z-10 flex w-64 -translate-x-1/2 flex-col items-center transition-all duration-1000 ease-out will-change-transform',
+          'absolute top-[16%] left-1/2 z-10 flex w-64 -translate-x-1/2 flex-col items-center transition-all duration-1000 ease-out will-change-transform',
           isLogoVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
         )}
       >
-        {/* DU Logo with Mask Gradient for metallic reflection */}
-        <div
-          className={cn(
-            'relative z-10 h-12.5 w-full mb-6 drop-shadow-xl',
-            'bg-[radial-gradient(ellipse_at_top,#94a3b8_0%,#06032d_50%)]',
-            '[-webkit-mask-image:url(/src/assets/brand/DUfontlogo.svg)] [-webkit-mask-size:contain] [-webkit-mask-repeat:no-repeat] [-webkit-mask-position:center]',
-            'mask-[url(/src/assets/brand/DUfontlogo.svg)] mask-size-contain mask-repeat-no-mask mask-position-center',
-          )}
-          aria-label="Display U"
-          role="img"
+        {/* DU Logo (login-logo with built-in reflection) */}
+        <img
+          src={loginLogo}
+          alt="Display U"
+          className="relative z-10 w-56 h-auto mb-2 object-contain"
         />
 
         {/* Horizontal Line with Gradient */}
         <div className="relative z-10 w-full h-0.5 bg-linear-to-r from-[#06032d] via-slate-500 to-[#06032d] mb-2.5 shadow-[0px_2px_2px_rgba(0,0,0,0.25)] opacity-90" />
 
-        {/* Text with Gradient for metallic reflection */}
+        {/* Subtitle Text with Metallic Gradient */}
         <p className="relative z-10 text-transparent bg-clip-text bg-linear-to-r from-[#1a1b41] via-slate-800 to-[#1a1b41] typo-body-md-bold whitespace-nowrap tracking-tight">
           전시가 끝난 뒤에도 감상은 계속되도록
         </p>
