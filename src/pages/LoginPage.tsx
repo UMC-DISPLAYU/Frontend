@@ -52,21 +52,13 @@ function LoginContent({
   error?: string;
 }) {
   return (
-    <main
-      className="relative flex w-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]"
-      style={{ minHeight: '100vh' }}
-    >
+    <main className="fixed inset-0 flex w-full h-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
       {/* Background Image - Wall-to-Wall */}
-      {/* 노치 영역 빈 공간(회색/흰색) 노출을 막기 위해, safe-area 높이만큼 위로 이미지를 강제로 끌어올림 */}
       <img
         src={onboardingSplash}
         alt=""
         aria-hidden="true"
-        className="absolute left-0 w-full object-cover object-top pointer-events-none z-0"
-        style={{
-          top: 'calc(-1 * env(safe-area-inset-top, 0px))',
-          height: 'calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))',
-        }}
+        className="fixed inset-0 h-full w-full object-cover object-top pointer-events-none z-0"
       />
 
       {/* DU Logo & Text Overlay - Smooth Fade In */}
