@@ -320,6 +320,23 @@ export interface GetDisplayReviewRepliesResponseDataDto {
   hasNext: boolean;
 }
 
+export interface MyDisplayReviewDto {
+  displayReviewId: number;
+  displayId: number;
+  displayName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface GetMyDisplayReviewsResponseDataDto {
+  reviews: MyDisplayReviewDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export type GetMyDisplayReviewsResponseDto = ApiResponseDto<GetMyDisplayReviewsResponseDataDto>;
+
 export interface CreateDisplayRequestDto {
   title: string;
   posterImageUrl: string;

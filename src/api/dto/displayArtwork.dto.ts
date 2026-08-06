@@ -95,6 +95,23 @@ export type UpdateArtworkFeelingResponseDto = ApiResponseDto<UpdateArtworkFeelin
 
 export type DeleteArtworkFeelingResponseDto = ApiResponseDto<null>;
 
+export interface MyArtworkFeelingDto {
+  artworkId: number | null;
+  personalArtworkId: number | null;
+  artworkName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface GetMyArtworkFeelingsResponseDataDto {
+  feelings: MyArtworkFeelingDto[];
+  nextCursor: string | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export type GetMyArtworkFeelingsResponseDto = ApiResponseDto<GetMyArtworkFeelingsResponseDataDto>;
+
 export interface ArtworkQuestionDto {
   questionId: number;
   content: string;
@@ -110,24 +127,25 @@ export interface GetArtworkQuestionsResponseDataDto {
 
 export type GetArtworkQuestionsResponseDto = ApiResponseDto<GetArtworkQuestionsResponseDataDto>;
 
-// 가짜 DTO: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
 export interface MyArtworkQuestionDto {
-  questionId: number;
-  artworkId: number;
+  questionId: number | null;
+  personalQuestionId: number | null;
+  artworkId: number | null;
+  personalArtworkId: number | null;
   artworkName: string;
   content: string;
-  answerStatus: 'PENDING' | 'ANSWERED';
   isPublic: boolean;
+  answerStatus: 'WAITING' | 'ANSWERED';
   createdAt: string;
-  user: ArtworkGuestbookUserDto;
 }
 
-// 가짜 DTO: GET /api/v1/artworks/question/me 응답 데이터입니다.
 export interface GetMyArtworkQuestionsResponseDataDto {
   questions: MyArtworkQuestionDto[];
+  nextCursor: string | null;
+  size: number;
+  hasNext: boolean;
 }
 
-// 가짜 DTO: GET /api/v1/artworks/question/me API 응답입니다.
 export type GetMyArtworkQuestionsResponseDto = ApiResponseDto<GetMyArtworkQuestionsResponseDataDto>;
 
 export interface CreateArtworkQuestionRequestDto {

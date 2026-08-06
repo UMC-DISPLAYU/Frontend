@@ -1,9 +1,11 @@
 import { useState } from 'react';
 
+import { ChevronLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import type { DisplayInvitationDto } from '@/api/dto';
 import {
+  useAcceptDisplayInvitation,
   useMyDisplayInvitations,
   useRejectDisplayInvitation,
 } from '@/hooks/queries/useDisplayInvitations';
@@ -200,6 +202,13 @@ export function InvitationRequestPage() {
   return (
     <>
       <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
+        <header className="flex items-center gap-3 px-5 pt-4 pb-3">
+          <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
+            <ChevronLeft className="size-7 text-main" strokeWidth={2} />
+          </button>
+          <h1 className="typo-body-xl-bold text-main">초대 요청</h1>
+        </header>
+
         <section className="flex-1 min-h-0 overflow-y-auto px-5 pb-5 pt-3">
           <div className="flex flex-col items-end gap-1 pb-4">
             <div className="flex w-full flex-col gap-1">

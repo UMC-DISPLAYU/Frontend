@@ -141,8 +141,12 @@ export function MyPage() {
 
   const profile = useMemo(
     () => ({
-      name: userData?.nickname || userData?.name || '사용자',
-      avatar: userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
+      name: isArtistView
+        ? myArtistProfileQuery.data?.artistName || userData?.nickname || userData?.name || '사용자'
+        : userData?.nickname || userData?.name || '사용자',
+      avatar: isArtistView
+        ? myArtistProfileQuery.data?.profileImageUrl || userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE
+        : userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
       caption: '내가 저장한 작품 확인하기',
       isVerified: Boolean(userData?.isVerified),
       school: myArtistProfileQuery.data?.schoolName || userData?.schoolEmail?.split('@')[1] || '',
@@ -155,12 +159,14 @@ export function MyPage() {
       portfolioUrl:
         myArtistProfileQuery.data?.portfolioUrl || myArtistProfileQuery.data?.externalLink || '',
     }),
-    [myArtistProfileQuery.data, myDisplaysQuery.data?.length, userData],
+    [isArtistView, myArtistProfileQuery.data, myDisplaysQuery.data?.length, userData],
   );
 
   const exhibitions = useMemo<ExhibitionItem[]>(() => {
     const items = (archivedExhibitionsQuery.data?.savedExhibitions ??
+      archivedExhibitionsQuery.data?.displays ??
       []) as ArchivedExhibitionView[];
+    console.log('🔍 First item structure:', items[0]);
     return items.map((item) => ({
       id: String(item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId),
       archiveDisplayId: item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId,

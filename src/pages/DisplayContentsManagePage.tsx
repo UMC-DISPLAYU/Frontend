@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MoreHorizontal, Plus, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
+import { Header, Screen } from '@/components/display-manage/Common';
 import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
@@ -442,7 +442,6 @@ export function DisplayContentsManagePage() {
         ))}
       </div>
 
-      <BottomBar>
         <button
           type="button"
           onClick={() => setCreating(true)}
@@ -450,7 +449,6 @@ export function DisplayContentsManagePage() {
         >
           {BOTTOM_CTA_LABEL}
         </button>
-      </BottomBar>
 
       {editing && (
         <ContentEditSheet content={editing} onClose={() => setEditing(null)} onSave={handleSave} />

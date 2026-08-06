@@ -6,15 +6,22 @@ import { useNavigate } from 'react-router-dom';
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
 import { ConfirmModal } from '@/components/ui';
 import { useLogout } from '@/hooks/queries/useAuth';
+import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
+import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 
 export function SettingPage() {
   const navigate = useNavigate();
   const { data: userData, isPending } = useUserMe();
+  const { data: invitationsData } = useMyDisplayInvitations();
+  const { data: questionsData } = useMyArtworkQuestions();
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const logoutMutation = useLogout();
 
   const isVerified = !isPending && Boolean(userData?.isVerified);
+  const invitationCount = invitationsData?.invitations?.length ?? 0;
+  const pendingQuestionCount =
+    questionsData?.questions?.filter((q) => q.answerStatus === 'PENDING').length ?? 0;
 
   const handleLogout = () => {
     logoutMutation.mutate(
@@ -69,14 +76,14 @@ export function SettingPage() {
           <SettingRow
             title="초대 요청"
             desc="받은 전시 초대를 확인해요."
-            badge={1}
+            badge={invitationCount > 0 ? invitationCount : undefined}
             onClick={() => navigate('/invitation-request')}
           />
           {isVerified && (
             <SettingRow
               title="답변할 질문"
               desc="내가 담당한 작품 질문에 답변해요."
-              badge={2}
+              badge={pendingQuestionCount > 0 ? pendingQuestionCount : undefined}
               onClick={() => navigate('/answer-questions')}
             />
           )}
