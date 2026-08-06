@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Bookmark, ChevronRight, ChevronUp } from 'lucide-react';
 
+import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
   useArchiveArtist,
@@ -9,6 +10,7 @@ import {
   useUnarchiveArtist,
 } from '@/hooks/queries/useArchive';
 import { useUserArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useAuthStore } from '@/stores/authStore';
 import type { ArtworkDetail } from '@/types/exhibition';
 
 type Props = {
@@ -18,6 +20,8 @@ type Props = {
 };
 
 export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
   /* 작가 닉네임과 프로필 이미지는 작가 프로필 조회로 채웁니다. */
@@ -42,6 +46,10 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
 
   /* 북마크를 누르면 내가 저장한 작가 목록에 추가/제거합니다. */
   const toggleArtistBookmark = () => {
+    if (!accessToken) {
+      setIsLoginModalOpen(true);
+      return;
+    }
     if (!artistUserId || isPending) return;
 
     if (isSaved) unarchiveArtist.mutate(artistUserId);
@@ -50,6 +58,7 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
 
   return (
     <div className="pb-28">
+      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       {/* 작품소개 */}
       <section className="px-5 pt-7 pb-6">
         <div className="flex items-center justify-between mb-3">

@@ -11,6 +11,7 @@ import type {
   CreateExhibitionArtworkRequestDto,
   CreateExhibitionArtworkResponseDataDto,
   DeleteArtworkFeelingReplyResponseDataDto,
+  DeleteArtworkQuestionReplyResponseDataDto,
   DeleteArtworkQuestionResponseDataDto,
   DeleteArtworkResponseDataDto,
   GetArtworkDetailResponseDataDto,
@@ -20,6 +21,7 @@ import type {
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
   GetDisplayArtworksResponseDataDto,
+  GetMyArtworkQuestionsRequestDto,
   GetMyArtworkQuestionsResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
@@ -66,10 +68,11 @@ export const getArtworkQuestions = async (
   artworkId: number,
 ): Promise<GetArtworkQuestionsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/questions`);
 
-// 가짜 엔드포인트: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
-// GET /api/v1/artworks/question/me
-export const getMyArtworkQuestions = async (): Promise<GetMyArtworkQuestionsResponseDataDto> =>
-  apiRequest('/v1/artworks/question/me');
+// GET /v1/artworks/questions/received
+export const getMyArtworkQuestions = async (
+  params: GetMyArtworkQuestionsRequestDto,
+): Promise<GetMyArtworkQuestionsResponseDataDto> =>
+  apiRequest('/v1/artworks/questions/received', { query: params });
 
 // POST /v1/artworks/:artworkId/questions
 export const createArtworkQuestion = async (
@@ -102,6 +105,16 @@ export const createArtworkQuestionReply = async (
   apiRequest(`/v1/artworks/${artworkId}/questions/${questionId}/reply`, {
     method: 'POST',
     body,
+  });
+
+// DELETE /v1/artworks/:artworkId/questions/:questionId/reply/:questionReplyId
+export const deleteArtworkQuestionReply = async (
+  artworkId: number,
+  questionId: number,
+  questionReplyId: number,
+): Promise<DeleteArtworkQuestionReplyResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/questions/${questionId}/reply/${questionReplyId}`, {
+    method: 'DELETE',
   });
 
 // POST /v1/artworks/:artworkId/feelings/:feelingId/like

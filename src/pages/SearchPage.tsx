@@ -4,11 +4,11 @@ import { Search } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import type { SearchDisplaysRequestDto } from '@/api/dto';
+import cancelIcon from '@/assets/common/cancel.svg';
+import filterIcon from '@/assets/search/filter.svg';
+import filterSelectedDotIcon from '@/assets/search/filter-selected-dot.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 
-import cancelIcon from '../assets/cancel.svg';
-import filterIcon from '../assets/filter.svg';
-import filterSelectedDotIcon from '../assets/filter-selected-dot.svg';
 import {
   DEFAULT_FILTER_STATE,
   ExhibitionCard,
@@ -105,7 +105,7 @@ export function SearchPage() {
   const resetFilters = () => setFilters(DEFAULT_FILTER_STATE);
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-[402px] flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-md flex-col bg-page">
       <div className="flex flex-col bg-page px-5 pt-5">
         <div className="flex h-[62px] flex-col justify-start gap-1 self-stretch">
           <h1 className="text-slate-900 text-3xl font-['Aldrich'] leading-10">Explore</h1>

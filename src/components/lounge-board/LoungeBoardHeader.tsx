@@ -2,6 +2,9 @@ import { ChevronLeft, SquarePen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { LoungeCategoryKey } from '@/constants/loungeCategories';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useLoungePostPolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   title: string;
@@ -17,6 +20,20 @@ export function LoungeBoardHeader({
   className = '',
 }: Props) {
   const navigate = useNavigate();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const loungePostPolicy = useLoungePostPolicy();
+  const canCreatePost = hasPermission(loungePostPolicy, 'create');
+
+  const handleWriteClick = () => {
+    if (!category) return;
+
+    if (canCreatePost) {
+      navigate(`/lounge/${category}/post`);
+      return;
+    }
+
+    openLoginModal();
+  };
 
   return (
     <div className={`relative flex items-center pt-[11px] ${className}`}>
@@ -30,13 +47,16 @@ export function LoungeBoardHeader({
       {showWriteButton && category && (
         <button
           type="button"
-          onClick={() => navigate(`/lounge/${category}/post`)}
+          onClick={handleWriteClick}
           className="absolute top-[14px] right-[33px] flex flex-col items-center gap-1"
         >
           <SquarePen className="size-3.5 text-faint" />
           <span className="typo-body-xs-regular text-faint">글 작성</span>
         </button>
       )}
+
+      {/* null 이 아니면 실행 */}
+      {loginModal}
     </div>
   );
 }

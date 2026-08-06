@@ -1,6 +1,6 @@
 import { Heart } from 'lucide-react';
 
-import defaultProfileIcon from '@/assets/DefaultProfileIcon.svg';
+import defaultProfileIcon from '@/assets/common/DefaultProfileIcon.svg';
 import { cn } from '@/utils/cn';
 
 import type { CommentData } from './types';
@@ -148,7 +148,7 @@ export function CommentItem({
                 댓글{replyCount}
               </button>
             )}
-            {!isDeleted && comment.isMyComment && (
+            {!isDeleted && (comment.canDelete ?? comment.isMyComment) && (
               <button
                 type="button"
                 onClick={handleDeleteClick}

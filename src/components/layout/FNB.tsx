@@ -1,4 +1,4 @@
-import DUfontlogo from '@/assets/DUfontlogo.svg';
+import DUfontlogo from '@/assets/brand/DUfontlogo.svg';
 import { cn } from '@/utils/cn';
 
 interface DUMember {

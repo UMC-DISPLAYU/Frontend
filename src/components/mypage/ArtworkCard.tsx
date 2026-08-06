@@ -2,7 +2,9 @@ import { useState } from 'react';
 
 import { Bookmark, Pencil } from 'lucide-react';
 
+import { useMemoPolicy } from '@/hooks/usePolicy';
 import type { SavedArtworkItem } from '@/types/mypage';
+import { hasPermission } from '@/utils/hasPermission';
 
 interface ArtworkCardProps {
   item: SavedArtworkItem;
@@ -10,6 +12,7 @@ interface ArtworkCardProps {
   onUnarchive?: (item: SavedArtworkItem) => void;
   onSaveMemo?: (item: SavedArtworkItem, memo: string) => void;
   onDeleteMemo?: (item: SavedArtworkItem) => void;
+  onOpen?: (item: SavedArtworkItem) => void;
 }
 
 export function ArtworkCard({
@@ -18,10 +21,30 @@ export function ArtworkCard({
   onUnarchive,
   onSaveMemo,
   onDeleteMemo,
+  onOpen,
 }: ArtworkCardProps) {
   const hasMemo = Boolean(item.memo);
+  const memoPolicy = useMemoPolicy(item.userId === undefined ? undefined : { userId: item.userId });
+  const canViewMemo = hasPermission(memoPolicy, 'view');
+  const canUpsertMemo = hasPermission(memoPolicy, 'upsert');
+  const canDeleteMemo = hasPermission(memoPolicy, 'delete');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoInput, setMemoInput] = useState(item.memo ?? '');
+
+  /* 카드 영역은 div라서 키보드로도 열 수 있도록 역할과 키 처리를 함께 부여합니다. */
+  const openHandlers = onOpen
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        onClick: () => onOpen(item),
+        onKeyDown: (event: React.KeyboardEvent) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+
+          event.preventDefault();
+          onOpen(item);
+        },
+      }
+    : {};
 
   const handleCancelMemo = () => {
     setMemoInput(item.memo ?? '');
@@ -29,18 +52,28 @@ export function ArtworkCard({
   };
 
   const handleStartMemoEdit = () => {
+    if (!canUpsertMemo) return;
+
     setMemoInput(item.memo ?? '');
     setIsEditingMemo(true);
   };
 
   const handleSaveMemo = () => {
+    if (!canUpsertMemo) return;
+
     onSaveMemo?.(item, memoInput);
     setIsEditingMemo(false);
   };
 
+  const handleDeleteMemo = () => {
+    if (!canDeleteMemo) return;
+
+    onDeleteMemo?.(item);
+  };
+
   return (
     <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
-      <div className="p-1.5 pb-0">
+      <div {...openHandlers} className={onOpen ? 'cursor-pointer p-1.5 pb-0' : 'p-1.5 pb-0'}>
         <div className="relative rounded-xl overflow-hidden">
           <div className="w-full h-44 bg-box200">
             {item.thumbnail && (
@@ -52,7 +85,10 @@ export function ArtworkCard({
               type="button"
               aria-label="북마크 해제"
               className="absolute bottom-2 right-2"
-              onClick={() => onUnarchive?.(item)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onUnarchive?.(item);
+              }}
             >
               <Bookmark fill="currentColor" className="size-4 text-bookmark" />
             </button>
@@ -60,12 +96,19 @@ export function ArtworkCard({
         </div>
       </div>
 
-      <div className="px-2.5 pt-2 pb-3 flex flex-col gap-1">
+      <div
+        {...openHandlers}
+        className={
+          onOpen
+            ? 'cursor-pointer px-2.5 pt-2 pb-3 flex flex-col gap-1'
+            : 'px-2.5 pt-2 pb-3 flex flex-col gap-1'
+        }
+      >
         <div className="typo-body-sm-bold text-main truncate">{item.title}</div>
         <div className="typo-body-xs-regular text-main truncate">{item.artist}</div>
       </div>
 
-      {!isArtistView && (
+      {!isArtistView && canViewMemo && (
         <footer className="min-h-10 px-2.5 py-2 bg-box200 flex flex-col justify-center">
           {isEditingMemo && (
             <div className="flex flex-col gap-2">
@@ -104,15 +147,17 @@ export function ArtworkCard({
                 >
                   {item.memo}
                 </button>
-                <button
-                  type="button"
-                  className="shrink-0 typo-body-xs-regular text-faint underline"
-                  onClick={() => onDeleteMemo?.(item)}
-                >
-                  삭제
-                </button>
+                {canDeleteMemo && (
+                  <button
+                    type="button"
+                    className="shrink-0 typo-body-xs-regular text-faint underline"
+                    onClick={handleDeleteMemo}
+                  >
+                    삭제
+                  </button>
+                )}
               </div>
-            ) : (
+            ) : canUpsertMemo ? (
               <button
                 type="button"
                 className="self-stretch flex items-center gap-1.5 text-left typo-body-xs-regular text-faint"
@@ -121,7 +166,7 @@ export function ArtworkCard({
                 <Pencil className="size-3 shrink-0 text-faint" />
                 <span>메모</span>
               </button>
-            ))}
+            ) : null)}
         </footer>
       )}
     </article>

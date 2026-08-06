@@ -8,8 +8,11 @@ import {
   useUnlikeLoungeComment,
 } from '@/hooks/queries/useLoungeComments';
 import { useLoungeReplies } from '@/hooks/queries/useLoungeReplies';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useLoungeCommentPolicy } from '@/hooks/usePolicy';
 import type { LoungeBoardComment } from '@/types/exhibition';
 import { formatRelativeTime } from '@/utils/date';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   postId: number;
@@ -30,6 +33,13 @@ export function LoungeBoardCommentItem({
 }: Props) {
   const [repliesOpen, setRepliesOpen] = useState(false);
   const [removedReplyIds, setRemovedReplyIds] = useState<Set<string>>(new Set());
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const loungeCommentPolicy = useLoungeCommentPolicy({
+    isMyComment: Boolean(comment.isMyComment),
+  });
+  /* like/unlike/delete는 로그인 여부만 확인하면 됩니다 — 삭제 버튼 자체는
+   * CommentItem이 isMyComment일 때만 노출하므로 소유권 재검증은 불필요합니다. */
+  const isLoggedIn = hasPermission(loungeCommentPolicy, 'like');
   const commentId = Number(comment.id);
   const isComposingReply = activeReplyId === commentId;
 
@@ -68,6 +78,10 @@ export function LoungeBoardCommentItem({
   ).filter((reply) => !removedReplyIds.has(reply.id));
 
   const handleLike = (targetCommentId: string, parentCommentId?: string) => {
+    if (!isLoggedIn) {
+      openLoginModal();
+      return;
+    }
     likeMutation.mutate({
       postId,
       commentId: Number(targetCommentId),
@@ -76,6 +90,10 @@ export function LoungeBoardCommentItem({
   };
 
   const handleUnlike = (targetCommentId: string, parentCommentId?: string) => {
+    if (!isLoggedIn) {
+      openLoginModal();
+      return;
+    }
     unlikeMutation.mutate({
       postId,
       commentId: Number(targetCommentId),
@@ -84,6 +102,10 @@ export function LoungeBoardCommentItem({
   };
 
   const handleDelete = (targetCommentId: string, parentCommentId?: string) => {
+    if (!isLoggedIn) {
+      openLoginModal();
+      return;
+    }
     if (!parentCommentId) {
       onDelete?.();
       return;
@@ -103,24 +125,27 @@ export function LoungeBoardCommentItem({
   };
 
   return (
-    <CommentItem
-      comment={comment}
-      isDeleted={isDeleted}
-      replies={replies}
-      repliesOpen={repliesOpen}
-      onToggleReplies={() => setRepliesOpen((v) => !v)}
-      hasMoreReplies={hasMoreReplies}
-      onLoadMoreReplies={() => fetchMoreReplies()}
-      isLoadingMoreReplies={isFetchingMoreReplies}
-      onLike={handleLike}
-      onUnlike={handleUnlike}
-      isLikePending={isLikeMutating}
-      onDelete={handleDelete}
-      onReplyClick={(replyCommentId, author, highlightId) =>
-        onReplyClick?.(Number(replyCommentId), author, Number(highlightId))
-      }
-      activeReplyId={activeReplyId !== null ? String(activeReplyId) : null}
-      tightSpacing
-    />
+    <>
+      <CommentItem
+        comment={comment}
+        isDeleted={isDeleted}
+        replies={replies}
+        repliesOpen={repliesOpen}
+        onToggleReplies={() => setRepliesOpen((v) => !v)}
+        hasMoreReplies={hasMoreReplies}
+        onLoadMoreReplies={() => fetchMoreReplies()}
+        isLoadingMoreReplies={isFetchingMoreReplies}
+        onLike={handleLike}
+        onUnlike={handleUnlike}
+        isLikePending={isLikeMutating}
+        onDelete={handleDelete}
+        onReplyClick={(replyCommentId, author, highlightId) =>
+          onReplyClick?.(Number(replyCommentId), author, Number(highlightId))
+        }
+        activeReplyId={activeReplyId !== null ? String(activeReplyId) : null}
+        tightSpacing
+      />
+      {loginModal}
+    </>
   );
 }

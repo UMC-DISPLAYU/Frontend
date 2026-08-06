@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
+import type { DisplayDetailDto, GetArtworkDetailResponseDataDto } from '@/api/dto';
 import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
@@ -24,7 +25,15 @@ import {
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import {
+  useFeelingPolicy,
+  useFeelingReplyPolicy,
+  useQuestionPolicy,
+  useQuestionReplyPolicy,
+} from '@/hooks/usePolicy';
 import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
+import { hasPermission } from '@/utils/hasPermission';
 
 export function ArtworkDetailPage() {
   const navigate = useNavigate();
@@ -54,6 +63,7 @@ export function ArtworkDetailPage() {
 
   const createFeeling = useCreateArtworkFeeling();
   const createQuestion = useCreateArtworkQuestion();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
 
   /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 CommentInputBar가 씀) */
   const [feelingReplyTarget, setFeelingReplyTarget] = useState<{
@@ -73,6 +83,30 @@ export function ArtworkDetailPage() {
   /* 질문 답변(작가 전용) 대상 — 기존 그대로 유지 */
   const [questionReplyTarget, setQuestionReplyTarget] = useState<GuestbookQuestion | null>(null);
   const createQuestionReply = useCreateArtworkQuestionReply();
+  const policyDisplay = (display ?? {
+    ownerUserId: 0,
+    teamMembers: [],
+  }) as DisplayDetailDto;
+  const policyArtwork = (detail ?? {
+    artistUserId: 0,
+    qaHandlers: [],
+  }) as GetArtworkDetailResponseDataDto;
+  const feelingPolicy = useFeelingPolicy(policyDisplay, undefined);
+  const feelingReplyPolicy = useFeelingReplyPolicy(policyDisplay);
+  const fallbackQuestion: GuestbookQuestion = {
+    questionId: 0,
+    content: '',
+    isPublic: true,
+    createdAt: '',
+    user: { userId: 0, nickname: '' },
+    reply: null,
+  };
+  const questionPolicy = useQuestionPolicy(questionReplyTarget ?? fallbackQuestion, policyDisplay);
+  const questionReplyPolicy = useQuestionReplyPolicy(
+    questionReplyTarget ?? fallbackQuestion,
+    policyDisplay,
+    policyArtwork,
+  );
 
   const feelings = feelingsData?.pages.flatMap((page) => page.feelings) ?? [];
 
@@ -90,7 +124,17 @@ export function ArtworkDetailPage() {
       nickname: question.user?.nickname ?? '',
     },
     reply: question.reply
-      ? { content: question.reply.content, createdAt: question.createdAt }
+      ? {
+          questionReplyId: question.reply.questionReplyId,
+          queReplyId: question.reply.queReplyId,
+          questionId: question.reply.questionId,
+          content: question.reply.content,
+          createdAt: question.reply.createdAt,
+          userId: question.reply.userId ?? question.reply.creatorId,
+          nickname: question.reply.nickname ?? question.reply.creatorName,
+          creatorId: question.reply.creatorId,
+          creatorName: question.reply.creatorName,
+        }
       : null,
     /* 본인 질문이면 시점과 무관하게 수정·삭제할 수 있습니다. */
     isMyQuestion: Boolean(myUserId) && question.user?.userId === myUserId,
@@ -101,10 +145,20 @@ export function ArtworkDetailPage() {
     if (!content) return;
 
     if (questionReplyTarget) {
+      if (!hasPermission(questionReplyPolicy, 'reply.create')) {
+        openLoginModal();
+        return;
+      }
+
       createQuestionReply.mutate(
         { artworkId, questionId: questionReplyTarget.questionId, body: { content } },
         { onSuccess: () => setQuestionReplyTarget(null) },
       );
+      return;
+    }
+
+    if (!hasPermission(questionPolicy, 'create')) {
+      openLoginModal();
       return;
     }
 
@@ -182,6 +236,8 @@ export function ArtworkDetailPage() {
           questions={questions}
           artworkId={artworkId}
           myUserId={myUserId}
+          artwork={detail}
+          display={policyDisplay}
           activeTab={activeTab}
           isArtistView={isArtistView}
           onArtistViewChange={setIsArtistView}
@@ -209,16 +265,24 @@ export function ArtworkDetailPage() {
         <CommentInputBar
           replyTarget={feelingReplyTarget}
           onCancelReply={clearFeelingReplyTarget}
-          onSubmitComment={(content, imageUrls) =>
-            createFeeling.mutateAsync({
+          onSubmitComment={(content, imageUrls) => {
+            if (!hasPermission(feelingPolicy, 'create')) {
+              openLoginModal();
+              return Promise.resolve();
+            }
+            return createFeeling.mutateAsync({
               artworkId,
               body: { content, images: imageUrls.map((imageUrl) => ({ imageUrl })) },
-            })
-          }
-          onSubmitReply={(commentId, content) =>
+            });
+          }}
+          onSubmitReply={(commentId, content) => {
+            if (!hasPermission(feelingReplyPolicy, 'reply.create')) {
+              openLoginModal();
+              return Promise.resolve();
+            }
             // 감상 답글 API는 이미지 첨부를 지원하지 않음
-            createFeelingReply.mutateAsync(content, { onSuccess: clearFeelingReplyTarget })
-          }
+            return createFeelingReply.mutateAsync(content, { onSuccess: clearFeelingReplyTarget });
+          }}
           imageUploadDomain="artwork-feeling"
         />
       ) : (
@@ -231,6 +295,7 @@ export function ArtworkDetailPage() {
           onSubmit={handleSendQuestion}
         />
       )}
+      {loginModal}
     </div>
   );
 }

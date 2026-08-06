@@ -1,3 +1,4 @@
+import type { ArtworkQuestionDto } from '@/api/dto';
 import type { LoungeCategoryKey } from '@/constants/loungeCategories';
 
 // ─── Home Types ────────────────────────────────────────────────────────────
@@ -177,20 +178,10 @@ export interface GuestbookReview {
   commentCount?: number;
 }
 
-export interface GuestbookQuestion {
-  questionId: number;
-  content: string;
-  isPublic: boolean;
-  createdAt: string;
-  user: {
-    userId: number;
-    nickname: string;
+export interface GuestbookQuestion extends ArtworkQuestionDto {
+  user: ArtworkQuestionDto['user'] & {
     profileImageUrl?: string;
   };
-  reply: {
-    content: string;
-    createdAt: string;
-  } | null;
   commentCount?: number;
   likeCount?: number;
   isLiked?: boolean;

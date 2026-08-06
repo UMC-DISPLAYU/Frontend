@@ -16,11 +16,16 @@ export const useMyDisplays = ({ enabled = true }: { enabled?: boolean } = {}) =>
     enabled,
     queryFn: async () => {
       const data = await getMyDisplays();
-      const displays = [...data.createdDisplays, ...data.participatedDisplays];
+      /* 응답이 생성/참여를 나눠 주므로 전시 상세를 따로 조회하지 않고 소유 여부를 판단합니다. */
+      const displays = [
+        ...data.createdDisplays.map((display) => ({ display, isOwner: true })),
+        ...data.participatedDisplays.map((display) => ({ display, isOwner: false })),
+      ];
 
-      return displays.map((display) => ({
+      return displays.map(({ display, isOwner }) => ({
         id: String(display.displayId),
         displayId: display.displayId,
+        isOwner,
         status: display.isDisplaying ? '전시 중' : '전시 종료',
         title: display.title,
         org: display.school || display.department,

@@ -1,5 +1,8 @@
 import { SaveButtonUI } from '@/components/ui/SaveButtonUI';
 import { useArchiveArtwork, useUnarchiveArtwork } from '@/hooks/queries/useArchive';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useArchivePolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   className?: string;
@@ -12,23 +15,33 @@ type Props = {
 export function ArtworkSaveButton({ className = '', id, artworkId, saved = false }: Props) {
   const archive = useArchiveArtwork();
   const unarchive = useUnarchiveArtwork();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const archivePolicy = useArchivePolicy();
   const isPending = archive.isPending || unarchive.isPending;
+  const canToggleArchive = hasPermission(archivePolicy, saved ? 'delete' : 'create');
 
   const toggleSave = () => {
     if (isPending || artworkId <= 0) return;
+    if (!canToggleArchive) {
+      openLoginModal();
+      return;
+    }
 
     if (saved) unarchive.mutate(artworkId);
     else archive.mutate(artworkId);
   };
 
   return (
-    <SaveButtonUI
-      text={saved ? '저장됨' : '작품 저장'}
-      variant="dark"
-      isSaved={saved}
-      onClick={toggleSave}
-      className={className}
-      id={id}
-    />
+    <>
+      <SaveButtonUI
+        text={saved ? '저장됨' : '작품 저장'}
+        variant="dark"
+        isSaved={saved}
+        onClick={toggleSave}
+        className={className}
+        id={id}
+      />
+      {loginModal}
+    </>
   );
 }

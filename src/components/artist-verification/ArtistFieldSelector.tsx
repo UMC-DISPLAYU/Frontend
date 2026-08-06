@@ -1,5 +1,9 @@
 import { ChipGroup, RequiredLabel } from '@/components/ui';
-import { EXHIBITION_FIELDS, MAX_ARTIST_FIELDS } from '@/constants/exhibition';
+import {
+  EXHIBITION_FIELD_LABELS,
+  EXHIBITION_FIELDS,
+  MAX_ARTIST_FIELDS,
+} from '@/constants/exhibition';
 
 interface ArtistFieldSelectorProps {
   selectedFields: string[];
@@ -15,6 +19,7 @@ export function ArtistFieldSelector({ selectedFields, onChange }: ArtistFieldSel
       </p>
       <ChipGroup
         options={EXHIBITION_FIELDS}
+        labels={EXHIBITION_FIELD_LABELS}
         selected={selectedFields}
         onChange={onChange}
         maxSelect={MAX_ARTIST_FIELDS}

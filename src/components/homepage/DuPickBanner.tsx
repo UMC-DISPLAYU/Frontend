@@ -4,10 +4,16 @@ import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { DuPickDto } from '@/api/dto';
+import {
+  useArtistVerificationRequiredModal,
+  useLoginRequiredModal,
+} from '@/hooks/usePermissionRequiredModal';
+import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
 import { useAuthStore } from '@/stores/authStore';
 import type { DuPickItem } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 type BannerItem = DuPickItem | DuPickDto;
 
@@ -17,8 +23,6 @@ type Props = {
 };
 
 export function DuPickBanner({ items, className }: Props) {
-  const navigate = useNavigate();
-  const accessToken = useAuthStore((state) => state.accessToken);
   const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: items.length,
   });
@@ -39,20 +43,7 @@ export function DuPickBanner({ items, className }: Props) {
         <h2 className="flex items-center gap-1.5 typo-heading-3xl text-main">
           <span>DU Pick</span>
         </h2>
-        <button
-          type="button"
-          aria-label="전시 등록 버튼"
-          onClick={() => {
-            if (!accessToken) {
-              navigate('/login');
-            } else {
-              navigate('/exhibition-register');
-            }
-          }}
-          className="cursor-pointer border-none bg-transparent p-0"
-        >
-          <Plus strokeWidth={1.5} className="size-8" />
-        </button>
+        <ExhibitionRegisterButton />
       </div>
 
       <div className="px-4">
@@ -122,5 +113,46 @@ export function DuPickBanner({ items, className }: Props) {
         </div>
       </div>
     </section>
+  );
+}
+
+function ExhibitionRegisterButton() {
+  const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { artistVerificationModal, openArtistVerificationModal } =
+    useArtistVerificationRequiredModal();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const displayCreatePolicy = useDisplayCreatePolicy();
+  const canCreateDisplay = hasPermission(displayCreatePolicy, 'create');
+
+  const handleClick = () => {
+    if (canCreateDisplay) {
+      navigate('/exhibition-register');
+      return;
+    }
+
+    if (accessToken) {
+      openArtistVerificationModal();
+      return;
+    }
+
+    openLoginModal();
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="전시 등록 버튼"
+        onClick={handleClick}
+        className="cursor-pointer border-none bg-transparent p-0"
+      >
+        <Plus strokeWidth={1.5} className="size-8" />
+      </button>
+
+      {/* null 이 아니면 실행 */}
+      {loginModal}
+      {artistVerificationModal}
+    </>
   );
 }

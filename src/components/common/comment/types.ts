@@ -7,6 +7,7 @@ export interface CommentData {
   likeCount: number;
   isLiked: boolean;
   isMyComment?: boolean;
+  canDelete?: boolean;
   replyCount?: number;
   images?: string[];
 }
