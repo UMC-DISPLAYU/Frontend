@@ -127,7 +127,7 @@ function ExhibitionRegisterButton() {
 
   const handleClick = () => {
     if (canCreateDisplay) {
-      navigate('/exhibition-register');
+      navigate('/exhibition/register');
       return;
     }
 

@@ -104,7 +104,7 @@ export function WorkScreen({
           <SectionTitle>전시콘텐츠</SectionTitle>
           {canManageDisplayContent && (
             <button
-              onClick={() => navigate('/display/contents-manage', { state: { displayId: ex.id } })}
+              onClick={() => navigate(`/exhibition/${ex.id}/contents`)}
               className="typo-body-xs-regular flex items-center gap-0.5 border-none bg-transparent text-hint cursor-pointer"
             >
               관리하기 <ChevronRight size={13} />
@@ -138,7 +138,7 @@ export function WorkScreen({
           {canCreateArtwork && (
             <button
               type="button"
-              onClick={() => navigate(`/artworks-register?displayId=${ex.id}`)}
+              onClick={() => navigate(`/exhibition/${ex.id}/artworks/add`)}
               className="flex h-[158px] w-[118px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
             >
               <Plus size={20} className="text-hint" />

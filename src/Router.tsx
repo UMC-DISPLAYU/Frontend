@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { Layout } from './components/layout';
@@ -45,6 +45,16 @@ import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
 
+const validateNumericId =
+  (paramName: string) =>
+  ({ params }: LoaderFunctionArgs) => {
+    const idNum = Number(params[paramName]);
+    if (!Number.isFinite(idNum) || idNum <= 0) {
+      throw new Response('Not Found', { status: 404 });
+    }
+    return null;
+  };
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -56,15 +66,37 @@ export const router = createBrowserRouter([
       { path: 'search', element: <SearchPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
-      { path: 'display/:id', element: <DisplayDetailPage /> },
-      { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
-      { path: 'display/:id/contents', element: <DisplayContentsPage /> },
+      {
+        path: 'display/:id',
+        loader: validateNumericId('id'),
+        errorElement: <NotFound />,
+        element: <DisplayDetailPage />,
+      },
+      {
+        path: 'artwork/:artworkId',
+        loader: validateNumericId('artworkId'),
+        errorElement: <NotFound />,
+        element: <ArtworkDetailPage />,
+      },
+      {
+        path: 'display/:id/contents',
+        loader: validateNumericId('id'),
+        errorElement: <NotFound />,
+        element: <DisplayContentsPage />,
+      },
       { path: 'lounge', element: <LoungePage /> },
       /* 개인 작품 상세는 비회원도 열람할 수 있습니다. */
-      { path: 'personal-artworks/:personalArtworkId', element: <PersonalArtworkDetailPage /> },
+      {
+        path: 'personal-artworks/:personalArtworkId',
+        loader: validateNumericId('personalArtworkId'),
+        errorElement: <NotFound />,
+        element: <PersonalArtworkDetailPage />,
+      },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
       {
         path: 'lounge/:category/:id',
+        loader: validateNumericId('id'),
+        errorElement: <NotFound />,
         element: <LoungeBoardDetailPage />,
         handle: { hideNavbar: true },
       },
@@ -79,6 +111,7 @@ export const router = createBrowserRouter([
 
           // 내 전시 관리 목록
           { path: 'my/exhibitions', element: <MyExhibitionsPage /> },
+          { path: 'artworks-register', element: <ArtworkRegisterPage /> },
 
           // 1. 전시 등록 플로우
           { path: 'exhibition/register', element: <ExhibitionRegister /> },
@@ -88,6 +121,8 @@ export const router = createBrowserRouter([
           // 2. 특정 전시 관리 플로우 (ID 발급 후)
           {
             path: 'exhibition/:displayId',
+            loader: validateNumericId('displayId'),
+            errorElement: <NotFound />,
             children: [
               { path: 'manage', element: <ExhibitionManage /> },
               { path: 'work', element: <ExhibitionWorkPage /> },
