@@ -28,6 +28,12 @@
   --fg-link: var(--palette-blue);
   --fg-error: var(--palette-red);
 
+  /* Filter */
+  --filter-border-off: var(--palette-gray-300);
+  --filter-border-on: var(--palette-gray-black);
+  --filter-text-off: var(--palette-gray-600);
+  --filter-text-on: var(--palette-gray-black);
+
   /* Navbar */
   --navbar-fg: var(--palette-gray-150);
 

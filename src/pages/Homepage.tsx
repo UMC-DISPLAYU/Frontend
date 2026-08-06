@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 
+import { Plus, Search } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { refreshToken } from '@/api/endpoints';
+import displayuLogo from '@/assets/brand/DUfontlogo.svg';
 import { ArtworkPreviewMoreView } from '@/components/homepage/ArtworkPreviewMoreView';
 import { ArtworkPreviewSection } from '@/components/homepage/ArtworkPreviewSection';
 import { DuPickBanner } from '@/components/homepage/DuPickBanner';
@@ -15,7 +17,13 @@ import {
   useHomeArtworkPreview,
   useHomeLoungePosts,
 } from '@/hooks/queries/useHome';
+import {
+  useArtistVerificationRequiredModal,
+  useLoginRequiredModal,
+} from '@/hooks/usePermissionRequiredModal';
+import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import { useAuthStore } from '@/stores/authStore';
+import { hasPermission } from '@/utils/hasPermission';
 
 export const Homepage = () => {
   const [isArtworkPreviewOpen, setIsArtworkPreviewOpen] = useState(false);
@@ -31,11 +39,31 @@ export const Homepage = () => {
   const closingSoonExhibitions = closingSoonData?.exhibitions ?? [];
   const artworkPreviewItems = artworkPreviewData?.artworks ?? [];
 
-  useEffect(() => {
-    const accessToken = searchParams.get('accessToken');
+  const { artistVerificationModal, openArtistVerificationModal } =
+    useArtistVerificationRequiredModal();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const displayCreatePolicy = useDisplayCreatePolicy();
+  const canCreateDisplay = hasPermission(displayCreatePolicy, 'create');
+
+  const handlePlusClick = () => {
+    if (canCreateDisplay) {
+      navigate('/exhibition-register');
+      return;
+    }
 
     if (accessToken) {
-      setAccessToken(accessToken);
+      openArtistVerificationModal();
+      return;
+    }
+
+    openLoginModal();
+  };
+
+  useEffect(() => {
+    const token = searchParams.get('accessToken');
+
+    if (token) {
+      setAccessToken(token);
       navigate('/home', { replace: true });
     }
   }, [navigate, searchParams, setAccessToken]);
@@ -48,8 +76,8 @@ export const Homepage = () => {
     }
 
     void refreshToken()
-      .then(({ accessToken }) => {
-        setAccessToken(accessToken);
+      .then(({ accessToken: newAccessToken }) => {
+        setAccessToken(newAccessToken);
       })
       .catch(() => {
         // 비회원/게스트일 수 있으므로 조용히 무시 (refresh token 쿠키 자체가 없는 경우)
@@ -57,11 +85,48 @@ export const Homepage = () => {
   }, [accessToken, setAccessToken]);
 
   if (isArtworkPreviewOpen) {
-    return <ArtworkPreviewMoreView items={artworkPreviewItems} />;
+    return (
+      <ArtworkPreviewMoreView
+        items={artworkPreviewItems}
+        onClose={() => setIsArtworkPreviewOpen(false)}
+      />
+    );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5 font-[Pretendard,sans-serif]">
+    <div className="w-full max-w-md mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5 pb-20 font-[Pretendard,sans-serif]">
+      {loginModal}
+      {artistVerificationModal}
+
+      {/* Homepage Header */}
+      <div className="relative px-5 w-full flex justify-between items-center mb-6 h-8">
+        <button
+          type="button"
+          className="flex size-7 items-center justify-center cursor-pointer relative z-10"
+          aria-label="전시 등록"
+          onClick={handlePlusClick}
+        >
+          <Plus className="size-8 text-main" strokeWidth={1.8} />
+        </button>
+
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+          <img
+            src={displayuLogo}
+            alt="Display U"
+            className="h-7 w-auto object-contain pointer-events-auto"
+          />
+        </div>
+
+        <button
+          type="button"
+          className="flex size-8 items-center justify-center cursor-pointer relative z-10"
+          aria-label="검색"
+          onClick={() => navigate('/search')}
+        >
+          <Search className="size-5.5 text-main" strokeWidth={2} />
+        </button>
+      </div>
+
       <DuPickBanner items={duPicksData?.duPicks ?? []} />
       <ExhibitionSection
         title="졸업전시"

@@ -29,6 +29,12 @@
   --color-link: var(--fg-link);
   --color-error: var(--fg-error);
 
+  /* Filter */
+  --color-filter-border-off: var(--filter-border-off);
+  --color-filter-border-on: var(--filter-border-on);
+  --color-filter-text-off: var(--filter-text-off);
+  --color-filter-text-on: var(--filter-text-on);
+
   /* Navbar */
   --color-navbar-fg: var(--navbar-fg);
 

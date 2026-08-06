@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 
+import { Link } from 'react-router-dom';
+
 import type { ArtworkPreviewItemDto } from '@/api/dto';
 import { SectionHeader } from '@/components/homepage/SectionHeader';
 
@@ -29,9 +31,10 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
         className="flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-none"
       >
         {items.map((item) => (
-          <div
+          <Link
             key={item.artworkId}
-            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box200"
+            to={`/artwork/${item.artworkId}`}
+            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box200 cursor-pointer hover:opacity-90 active:scale-95 transition-all block focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
           >
             {item.artworkImageUrl && (
               <img
@@ -46,7 +49,7 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
               <p className="typo-body-sm-bold text-white">{item.artworkName}</p>
               <p className="typo-body-xxs-regular text-tag-gray">{item.artistName}</p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>
