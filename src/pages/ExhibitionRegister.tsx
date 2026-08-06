@@ -6,6 +6,7 @@ import { ImageUploader } from '@/components/common';
 import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
 import { ChipGroup, RequiredLabel } from '@/components/ui';
 import {
+  EXHIBITION_FIELD_LABELS,
   EXHIBITION_FIELDS,
   EXHIBITION_TYPE_LABELS,
   EXHIBITION_TYPES,
@@ -151,6 +152,7 @@ export function ExhibitionRegister() {
             <RequiredLabel required>전시분야</RequiredLabel>
             <ChipGroup
               options={EXHIBITION_FIELDS}
+              labels={EXHIBITION_FIELD_LABELS}
               selected={field}
               onChange={setField}
               aria-label="전시분야"

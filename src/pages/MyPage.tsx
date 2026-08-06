@@ -15,6 +15,7 @@ import {
   SettingsSheet,
 } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
 import {
   useArchivedArtists,
   useArchivedArtworks,
@@ -147,7 +148,10 @@ export function MyPage() {
       isVerified: Boolean(userData?.isVerified),
       school: myArtistProfileQuery.data?.schoolName || userData?.schoolEmail?.split('@')[1] || '',
       schoolIcon: SchoolIcon,
-      field: myArtistProfileQuery.data?.fields?.join(' · ') ?? '',
+      field:
+        myArtistProfileQuery.data?.fields
+          ?.map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code)
+          .join(' · ') ?? '',
       fieldIcon: FieldIcon,
       exhibit: `${myDisplaysQuery.data?.length ?? 0}_작`,
       exhibitionIcon: ExhibitionIcon,

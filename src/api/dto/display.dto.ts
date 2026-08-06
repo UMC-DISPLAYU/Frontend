@@ -125,9 +125,9 @@ export type GetDisplayMapResponseDto = ApiResponseDto<GetDisplayMapResponseDataD
 
 /*
  * 공개 시점은 전시 상세 조회로 읽고, 수정은 예약 API로 보냅니다.
- * HIDDEN은 아직 서버 스웨거에 없어 요청이 거절될 수 있습니다.
+ * 숨김(HIDDEN)은 서버가 아직 지원하지 않아 요청 값에서 제외합니다.
  */
-export type DisplayContentOpenType = 'IMMEDIATELY' | 'ON_EXHIBITION' | 'HIDDEN';
+export type DisplayContentOpenType = 'IMMEDIATELY' | 'ON_EXHIBITION';
 
 export interface DisplayDetailDto {
   displayId: number;

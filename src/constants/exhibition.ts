@@ -37,15 +37,20 @@ export const DISPLAY_TYPE_MAP: Record<string, CreateDisplayRequestDto['type']> =
   '기타 단체 전시': 'ETC',
 } satisfies Record<ExhibitionType, CreateDisplayRequestDto['type']>;
 
+/*
+ * 전시 등록은 작가 활동분야와 다른 enum을 씁니다.
+ * 영상은 MEDIA로 보내야 하고 ILLUSTRATION은 서버에 없어 DESIGN으로 대체합니다.
+ * (서버 enum: PAINTING·DESIGN·PHOTOGRAPHY·ARCHITECTURE·MEDIA·CRAFT·SCULPTURE·FASHION·COMPLEX·ETC)
+ */
 export const DISPLAY_FIELD_MAP: Record<string, string> = {
   PAINTING: 'PAINTING',
   DESIGN: 'DESIGN',
   PHOTOGRAPHY: 'PHOTOGRAPHY',
   ARCHITECTURE: 'ARCHITECTURE',
-  VIDEO: 'VIDEO',
+  VIDEO: 'MEDIA',
   SCULPTURE: 'SCULPTURE',
   FASHION: 'FASHION',
-  ILLUSTRATION: 'ILLUSTRATION',
+  ILLUSTRATION: 'DESIGN',
   CRAFT: 'CRAFT',
   ETC: 'ETC',
 } satisfies Record<ExhibitionField, string>;

@@ -7,8 +7,8 @@ import type { ArtistProfileDto } from '@/api/dto';
 import { ChipGroup } from '@/components/ui';
 import {
   ARTIST_FIELD_MAP,
-  ARTIST_FIELD_REVERSE_MAP,
   type ArtistFieldCode,
+  EXHIBITION_FIELD_LABELS,
   EXHIBITION_FIELDS,
   type ExhibitionField,
   MAX_ARTIST_FIELDS,
@@ -77,11 +77,8 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [activityName, setActivityName] = useState(artistProfile?.artistName ?? '');
   const [intro, setIntro] = useState(artistProfile?.introduction ?? '');
-  const [selectedFields, setSelectedFields] = useState<string[]>(
-    (artistProfile?.fields ?? []).map(
-      (code) => ARTIST_FIELD_REVERSE_MAP[code as ArtistFieldCode] ?? code,
-    ),
-  );
+  /* 서버 응답과 선택지가 모두 영어 코드라 그대로 사용합니다. */
+  const [selectedFields, setSelectedFields] = useState<string[]>(artistProfile?.fields ?? []);
   const [externalLink, setExternalLink] = useState(
     artistProfile?.externalLink ?? artistProfile?.portfolioUrl ?? '',
   );
@@ -204,6 +201,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
             <span className="typo-body-sm-bold text-main">전시분야</span>
             <ChipGroup
               options={EXHIBITION_FIELDS}
+              labels={EXHIBITION_FIELD_LABELS}
               selected={selectedFields}
               onChange={setSelectedFields}
               maxSelect={MAX_ARTIST_FIELDS}

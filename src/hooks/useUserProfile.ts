@@ -4,7 +4,7 @@ import { getMyArtistProfile, getUserMe } from '@/api/endpoints/user';
 import AvatarImage from '@/assets/mypage/Icon (1).svg';
 import SchoolIcon from '@/assets/mypage/image 3666.svg';
 import FieldIcon from '@/assets/mypage/image 3673.svg';
-import { ARTIST_FIELD_REVERSE_MAP, type ArtistFieldCode } from '@/constants/exhibition';
+import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
 
 export interface UserProfile {
   name: string;
@@ -68,7 +68,7 @@ export function useUserProfile() {
               school: artistProfile?.schoolName,
               schoolIcon: artistProfile?.schoolName ? SchoolIcon : undefined,
               field: artistProfile?.fields
-                .map((code) => ARTIST_FIELD_REVERSE_MAP[code as ArtistFieldCode] ?? code)
+                .map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code)
                 .join(' · '),
               fieldIcon: artistProfile?.fields.length ? FieldIcon : undefined,
               exhibit: undefined, // TODO: 전시 수 API 연동 필요

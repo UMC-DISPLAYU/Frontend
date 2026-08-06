@@ -62,13 +62,6 @@ function VisibilitySection({
             startDateLabel ? `${startDateLabel} 부터 노출돼요.` : '전시 시작일부터 노출돼요.'
           }
         />
-        <RadioOption
-          checked={value === 'hidden'}
-          disabled={disabled}
-          onSelect={() => onChange('hidden')}
-          title={VISIBILITY_LABEL.hidden}
-          description="관람자에게 노출되지 않아요."
-        />
       </div>
     </section>
   );
