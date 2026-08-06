@@ -57,7 +57,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
   const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
     null,
   );
-  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const clearReplyTarget = () => {
     setReplyTarget(null);
     setActiveReplyId(null);
@@ -66,7 +66,10 @@ export function ReviewTab({ className, display, displayId }: Props) {
   const createReview = useCreateDisplayReview(displayId);
   const createReply = useCreateDisplayReviewReply(displayId, replyTarget?.commentId ?? 0);
 
-  const reviews = data?.pages.flatMap((page) => page.reviews) ?? [];
+  const reviews = (data?.pages.flatMap((page) => page.reviews) ?? []).filter(
+    // 답글 없는 삭제된 후기는 목록에서 완전히 제외 (답글이 있으면 "삭제된 글입니다"로 표시)
+    (review) => !(review.isDeleted && review.replyCount === 0),
+  );
 
   const triggerRef = useRef<HTMLDivElement | null>(null);
 
@@ -149,18 +152,17 @@ export function ReviewTab({ className, display, displayId }: Props) {
 
       <BottomCommentBar
         placeholder="글을 입력하세요."
-        /* 답글 생성 API는 이미지 필드를 지원하지 않습니다. */
-        imageDomain={replyTarget ? undefined : 'display-review'}
+        imageDomain="display-review"
         isSubmitting={replyTarget ? createReply.isPending : createReview.isPending}
         replyingTo={replyTarget?.author}
         onCancelReply={clearReplyTarget}
-        onSubmit={({ content, imageUrls }) => {
+        onSubmit={({ content, images }) => {
           if (replyTarget) {
             if (!hasPermission(replyPolicy, 'reply.create')) {
               openLoginModal();
               return;
             }
-            createReply.mutate({ content }, { onSuccess: clearReplyTarget });
+            createReply.mutate({ content, images }, { onSuccess: clearReplyTarget });
             return;
           }
 
@@ -169,10 +171,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
             return;
           }
 
-          createReview.mutate({
-            content,
-            images: imageUrls.map((imageUrl) => ({ imageUrl })),
-          });
+          createReview.mutate({ content, images });
         }}
       />
       {loginModal}

@@ -8,14 +8,19 @@ import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useLoungeCommentPolicy } from '@/hooks/usePolicy';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
+import { readImageDimensions } from '@/utils/image';
 
 const MAX_IMAGES = 5;
+
+export type CommentImage = { imageUrl: string; width: number; height: number };
 
 type UploadItem = {
   id: string;
   previewUrl: string;
   status: 'uploading' | 'done';
   uploadedUrl?: string;
+  width?: number;
+  height?: number;
 };
 
 type ReplyTarget = {
@@ -26,8 +31,8 @@ type ReplyTarget = {
 type Props = {
   replyTarget: ReplyTarget | null;
   onCancelReply: () => void;
-  onSubmitComment: (content: string, imageUrls: string[]) => Promise<unknown>;
-  onSubmitReply: (commentId: number, content: string, imageUrls: string[]) => Promise<unknown>;
+  onSubmitComment: (content: string, images: CommentImage[]) => Promise<unknown>;
+  onSubmitReply: (commentId: number, content: string, images: CommentImage[]) => Promise<unknown>;
   imageUploadDomain: string;
 };
 
@@ -87,9 +92,14 @@ export function CommentInputBar({
   const uploadFile = useCallback(
     async (id: string, file: File) => {
       try {
-        const uploadedUrl = await uploadImage.mutateAsync({ file, domain: imageUploadDomain });
+        const [uploadedUrl, { width, height }] = await Promise.all([
+          uploadImage.mutateAsync({ file, domain: imageUploadDomain }),
+          readImageDimensions(file),
+        ]);
         setImages((prev) =>
-          prev.map((item) => (item.id === id ? { ...item, status: 'done', uploadedUrl } : item)),
+          prev.map((item) =>
+            item.id === id ? { ...item, status: 'done', uploadedUrl, width, height } : item,
+          ),
         );
       } catch (error) {
         const stillExists = imagesRef.current.some((item) => item.id === id);
@@ -156,16 +166,20 @@ export function CommentInputBar({
       return;
     }
 
-    const imageUrls = images
+    const submitImages: CommentImage[] = images
       .filter((item) => item.status === 'done')
-      .map((item) => item.uploadedUrl as string);
+      .map((item) => ({
+        imageUrl: item.uploadedUrl as string,
+        width: item.width as number,
+        height: item.height as number,
+      }));
 
     setIsSubmitting(true);
     try {
       if (replyTarget) {
-        await onSubmitReply(replyTarget.commentId, trimmed, imageUrls);
+        await onSubmitReply(replyTarget.commentId, trimmed, submitImages);
       } else {
-        await onSubmitComment(trimmed, imageUrls);
+        await onSubmitComment(trimmed, submitImages);
       }
       setText('');
       imagesRef.current.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));

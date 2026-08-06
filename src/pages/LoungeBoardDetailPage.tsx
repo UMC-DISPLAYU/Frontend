@@ -61,7 +61,7 @@ export const LoungeBoardDetailPage = () => {
   const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
     null,
   );
-  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [deletedCommentIds, setDeletedCommentIds] = useState<Set<string>>(new Set());
 
   const clearReplyTarget = () => {
@@ -215,12 +215,19 @@ export const LoungeBoardDetailPage = () => {
           <CommentInputBar
             replyTarget={replyTarget}
             onCancelReply={clearReplyTarget}
-            onSubmitComment={(content, imageUrls) =>
-              createCommentMutation.mutateAsync({ postId, body: { content, imageUrls } })
+            onSubmitComment={(content, images) =>
+              createCommentMutation.mutateAsync({
+                postId,
+                body: { content, imageUrls: images.map((image) => image.imageUrl) },
+              })
             }
-            onSubmitReply={(commentId, content, imageUrls) =>
+            onSubmitReply={(commentId, content, images) =>
               createReplyMutation.mutateAsync(
-                { postId, commentId, body: { content, imageUrls } },
+                {
+                  postId,
+                  commentId,
+                  body: { content, imageUrls: images.map((image) => image.imageUrl) },
+                },
                 { onSuccess: clearReplyTarget },
               )
             }

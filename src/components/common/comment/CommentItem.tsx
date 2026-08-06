@@ -52,7 +52,14 @@ export function CommentItem({
   showDivider = false,
 }: Props) {
   const commentId = comment.id;
-  const isComposingReply = activeReplyId === commentId;
+  /*
+   * 최상위 댓글/후기와 답글은 서로 다른 id 시퀀스(예: displayReviewId vs
+   * displayReviewReplyId)를 쓰기 때문에 숫자가 우연히 겹칠 수 있다. activeReplyId를
+   * comment.id와 그냥 비교하면 답글 하나에 답글달기를 눌렀는데 우연히 id가 같은
+   * 부모 댓글까지 같이 하이라이트되는 문제가 생겨서, isReply까지 합친 키로 비교한다.
+   */
+  const highlightKey = isReply ? `reply-${commentId}` : `comment-${commentId}`;
+  const isComposingReply = activeReplyId === highlightKey;
   const replyCount = comment.replyCount ?? 0;
 
   const handleLikeClick = () => {
@@ -127,7 +134,7 @@ export function CommentItem({
                   onReplyClick?.(
                     isReply ? (parentCommentId ?? commentId) : commentId,
                     comment.author,
-                    commentId,
+                    highlightKey,
                   )
                 }
                 className={

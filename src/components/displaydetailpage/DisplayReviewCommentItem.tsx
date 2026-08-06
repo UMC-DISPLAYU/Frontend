@@ -22,8 +22,8 @@ type Props = {
   displayId: number;
   review: DisplayReviewDto;
   myUserId?: number;
-  onReplyClick?: (commentId: number, author: string, highlightId: number) => void;
-  activeReplyId?: number | null;
+  onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
+  activeReplyId?: string | null;
 };
 
 export function DisplayReviewCommentItem({
@@ -43,7 +43,7 @@ export function DisplayReviewCommentItem({
   /* 삭제는 작성자 본인이거나, 이 전시를 관리하는 작가(모더레이터)면 가능합니다. */
   const isModerator = hasPermission(displayPolicy, 'edit');
 
-  const isComposingReply = activeReplyId === review.displayReviewId;
+  const isComposingReply = activeReplyId === `comment-${review.displayReviewId}`;
   const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
   if (isComposingReply !== prevIsComposingReply) {
     setPrevIsComposingReply(isComposingReply);
@@ -73,14 +73,18 @@ export function DisplayReviewCommentItem({
         time: formatRelativeTime(reply.createdAt),
         content: reply.content,
         likeCount: reply.likeCount,
-        isLiked: false, // 답글 목록 API에 좋아요 여부가 내려오지 않음
+        isLiked: reply.isLiked,
         isMyComment,
         canDelete: isMyComment || isModerator,
+        images:
+          reply.images && reply.images.length > 0
+            ? reply.images.map((img) => img.imageUrl)
+            : undefined,
       };
     },
   );
 
-  const isMyReview = Boolean(myUserId) && review.user.userId === myUserId;
+  const isMyReview = review.isMine;
   const comment: CommentData = {
     id: String(review.displayReviewId),
     author: review.user.nickname,
@@ -88,7 +92,7 @@ export function DisplayReviewCommentItem({
     time: formatRelativeTime(review.createdAt),
     content: review.content,
     likeCount: review.likeCount,
-    isLiked: false, // 후기 목록 API에 좋아요 여부가 내려오지 않음
+    isLiked: review.isLiked,
     isMyComment: isMyReview,
     canDelete: isMyReview || isModerator,
     replyCount: review.replyCount,
@@ -123,6 +127,7 @@ export function DisplayReviewCommentItem({
     <>
       <CommentItem
         comment={comment}
+        isDeleted={review.isDeleted}
         replies={replies}
         repliesOpen={repliesOpen}
         onToggleReplies={() => setRepliesOpen((v) => !v)}
@@ -134,9 +139,9 @@ export function DisplayReviewCommentItem({
         isLikePending={isLikePending}
         onDelete={handleDelete}
         onReplyClick={(commentId, author, highlightId) =>
-          onReplyClick?.(Number(commentId), author, Number(highlightId))
+          onReplyClick?.(Number(commentId), author, highlightId)
         }
-        activeReplyId={activeReplyId !== null ? String(activeReplyId) : null}
+        activeReplyId={activeReplyId}
         tightSpacing
         showDivider
       />

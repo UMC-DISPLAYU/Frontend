@@ -6,11 +6,18 @@ import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
+import { readImageDimensions } from '@/utils/image';
+
+export type BottomCommentBarImage = { imageUrl: string; width: number; height: number };
 
 type Props = {
   placeholder?: string;
-  /* 업로드가 끝난 이미지 URL과 함께 입력한 내용을 전달합니다. */
-  onSubmit: (payload: { content: string; imageUrls: string[]; isPrivate: boolean }) => void;
+  /* 업로드가 끝난 이미지와 함께 입력한 내용을 전달합니다. */
+  onSubmit: (payload: {
+    content: string;
+    images: BottomCommentBarImage[];
+    isPrivate: boolean;
+  }) => void;
   isSubmitting?: boolean;
   /* 이미지 업로드 도메인. 지정하지 않으면 이미지 첨부 없이 텍스트만 입력받습니다. */
   imageDomain?: string;
@@ -64,9 +71,20 @@ export function BottomCommentBar({
     if (!canSubmit) return;
 
     try {
-      const imageUrls = images.length > 0 ? await uploadImages() : [];
+      const [imageUrls, dimensions] =
+        images.length > 0
+          ? await Promise.all([
+              uploadImages(),
+              Promise.all(images.map((image) => readImageDimensions(image.file))),
+            ])
+          : [[], []];
+      const submitImages: BottomCommentBarImage[] = imageUrls.map((imageUrl, index) => ({
+        imageUrl,
+        width: dimensions[index].width,
+        height: dimensions[index].height,
+      }));
 
-      onSubmit({ content: content.trim(), imageUrls, isPrivate });
+      onSubmit({ content: content.trim(), images: submitImages, isPrivate });
       setContent('');
       setIsPrivate(false);
       clearImages();

@@ -21,8 +21,8 @@ type Props = {
   feeling: ArtworkFeelingDto;
   display: DisplayDetailDto;
   myUserId?: number;
-  onReplyClick?: (commentId: number, author: string, highlightId: number) => void;
-  activeReplyId?: number | null;
+  onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
+  activeReplyId?: string | null;
 };
 
 export function ArtworkFeelingCommentItem({
@@ -42,7 +42,7 @@ export function ArtworkFeelingCommentItem({
   /* 삭제는 작성자 본인이거나, 이 전시를 관리하는 작가(모더레이터)면 가능합니다. */
   const isModerator = hasPermission(displayPolicy, 'edit');
 
-  const isComposingReply = activeReplyId === feeling.feelingId;
+  const isComposingReply = activeReplyId === `comment-${feeling.feelingId}`;
   const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
   if (isComposingReply !== prevIsComposingReply) {
     setPrevIsComposingReply(isComposingReply);
@@ -68,24 +68,27 @@ export function ArtworkFeelingCommentItem({
       return {
         id: String(reply.feelingReplyId ?? 0),
         author: reply.user?.nickname ?? '',
+        avatarUrl: reply.user?.profileImageUrl,
         time: formatRelativeTime(reply.createdAt),
         content: reply.content,
         likeCount: reply.likeCount ?? 0,
-        isLiked: false, // 목록 API에 "내가 눌렀는지"는 안 내려옴 (개수만 내려옴)
+        isLiked: reply.isLiked ?? false,
         isMyComment,
         canDelete: isMyComment || isModerator,
       };
     },
   );
 
-  const isMyFeeling = Boolean(myUserId) && (feeling.user?.userId ?? feeling.userId) === myUserId;
+  const isMyFeeling =
+    feeling.isMine ?? (Boolean(myUserId) && (feeling.user?.userId ?? feeling.userId) === myUserId);
   const comment: CommentData = {
     id: String(feeling.feelingId),
     author: feeling.user?.nickname ?? '',
+    avatarUrl: feeling.user?.profileImageUrl,
     time: formatRelativeTime(feeling.createdAt),
     content: feeling.content,
     likeCount: feeling.likeCount,
-    isLiked: false, // 목록 API에 "내가 눌렀는지"는 안 내려옴 (개수만 내려옴)
+    isLiked: feeling.isLiked ?? false,
     isMyComment: isMyFeeling,
     canDelete: isMyFeeling || isModerator,
     replyCount: feeling.replyCount,
@@ -123,6 +126,7 @@ export function ArtworkFeelingCommentItem({
     <>
       <CommentItem
         comment={comment}
+        isDeleted={feeling.isDeleted}
         replies={replies}
         repliesOpen={repliesOpen}
         onToggleReplies={() => setRepliesOpen((v) => !v)}
@@ -134,9 +138,9 @@ export function ArtworkFeelingCommentItem({
         isLikePending={isLikePending}
         onDelete={handleDelete}
         onReplyClick={(commentId, author, highlightId) =>
-          onReplyClick?.(Number(commentId), author, Number(highlightId))
+          onReplyClick?.(Number(commentId), author, highlightId)
         }
-        activeReplyId={activeReplyId !== null ? String(activeReplyId) : null}
+        activeReplyId={activeReplyId}
         tightSpacing
         showDivider
       />

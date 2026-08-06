@@ -38,8 +38,8 @@ type Props = {
   isArtistView?: boolean;
   onArtistViewChange?: (isArtist: boolean) => void;
   /* 하단 입력바가 답글 대상으로 잡고 있는 감상 id (댓글 하이라이트용) */
-  activeReplyId?: number | null;
-  onFeelingReplyClick?: (commentId: number, author: string, highlightId: number) => void;
+  activeReplyId?: string | null;
+  onFeelingReplyClick?: (commentId: number, author: string, highlightId: string) => void;
   /* 작가가 답변할 질문 id */
   replyTargetQuestionId?: number | null;
   onQuestionReplyTargetChange?: (question: GuestbookQuestion | null) => void;

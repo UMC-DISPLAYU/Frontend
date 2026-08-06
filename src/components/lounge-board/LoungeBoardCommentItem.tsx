@@ -19,8 +19,8 @@ type Props = {
   comment: LoungeBoardComment;
   isDeleted?: boolean;
   onDelete?: () => void;
-  onReplyClick?: (commentId: number, author: string, highlightId: number) => void;
-  activeReplyId?: number | null;
+  onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
+  activeReplyId?: string | null;
 };
 
 export function LoungeBoardCommentItem({
@@ -41,7 +41,7 @@ export function LoungeBoardCommentItem({
    * CommentItem이 isMyComment일 때만 노출하므로 소유권 재검증은 불필요합니다. */
   const isLoggedIn = hasPermission(loungeCommentPolicy, 'like');
   const commentId = Number(comment.id);
-  const isComposingReply = activeReplyId === commentId;
+  const isComposingReply = activeReplyId === `comment-${commentId}`;
 
   const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
   if (isComposingReply !== prevIsComposingReply) {
@@ -140,9 +140,9 @@ export function LoungeBoardCommentItem({
         isLikePending={isLikeMutating}
         onDelete={handleDelete}
         onReplyClick={(replyCommentId, author, highlightId) =>
-          onReplyClick?.(Number(replyCommentId), author, Number(highlightId))
+          onReplyClick?.(Number(replyCommentId), author, highlightId)
         }
-        activeReplyId={activeReplyId !== null ? String(activeReplyId) : null}
+        activeReplyId={activeReplyId}
         tightSpacing
       />
       {loginModal}

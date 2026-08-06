@@ -70,7 +70,7 @@ export function ArtworkDetailPage() {
     commentId: number;
     author: string;
   } | null>(null);
-  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const clearFeelingReplyTarget = () => {
     setFeelingReplyTarget(null);
     setActiveReplyId(null);
@@ -108,7 +108,10 @@ export function ArtworkDetailPage() {
     policyArtwork,
   );
 
-  const feelings = feelingsData?.pages.flatMap((page) => page.feelings) ?? [];
+  const feelings = (feelingsData?.pages.flatMap((page) => page.feelings) ?? []).filter(
+    // 답글 없는 삭제된 감상은 목록에서 완전히 제외 (답글이 있으면 "삭제된 글입니다"로 표시)
+    (feeling) => !(feeling.isDeleted && feeling.replyCount === 0),
+  );
 
   /*
    * 질문 응답을 방명록 화면이 쓰는 형태로 맞춥니다.
@@ -265,14 +268,14 @@ export function ArtworkDetailPage() {
         <CommentInputBar
           replyTarget={feelingReplyTarget}
           onCancelReply={clearFeelingReplyTarget}
-          onSubmitComment={(content, imageUrls) => {
+          onSubmitComment={(content, images) => {
             if (!hasPermission(feelingPolicy, 'create')) {
               openLoginModal();
               return Promise.resolve();
             }
             return createFeeling.mutateAsync({
               artworkId,
-              body: { content, images: imageUrls.map((imageUrl) => ({ imageUrl })) },
+              body: { content, images },
             });
           }}
           onSubmitReply={(commentId, content) => {

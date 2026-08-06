@@ -13,6 +13,7 @@ export interface ArtworkGuestbookUserDto {
   userId: number;
   nickname: string;
   isCreator?: boolean;
+  profileImageUrl?: string | null;
 }
 
 export interface ArtworkGuestbookReplyDto {
@@ -24,6 +25,7 @@ export interface ArtworkGuestbookReplyDto {
   createdAt: string;
   user?: ArtworkGuestbookUserDto;
   likeCount?: number;
+  isLiked?: boolean;
   /* 질문 답변(작가 답변)은 user 대신 이 필드들로 내려온다. */
   creatorId?: number;
   creatorName?: string;
@@ -66,9 +68,12 @@ export interface ArtworkFeelingDto {
   userId?: number;
   content: string;
   createdAt: string;
+  isDeleted?: boolean;
+  isMine?: boolean;
   user: ArtworkGuestbookUserDto;
   images?: ImageResponseDto[];
   likeCount: number;
+  isLiked?: boolean;
   replyCount: number;
 }
 
