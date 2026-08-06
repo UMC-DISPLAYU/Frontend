@@ -28,6 +28,9 @@
   --fg-link: var(--palette-blue);
   --fg-error: var(--palette-red);
 
+  /* Navbar */
+  --navbar-fg: var(--palette-gray-150);
+
   /* Input — Default (기본형) */
   --input-border: var(--palette-gray-300);
   --input-placeholder: var(--palette-gray-400);
