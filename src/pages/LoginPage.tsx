@@ -52,8 +52,14 @@ function LoginContent({
   error?: string;
 }) {
   return (
-    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
-      {/* Background Image - Wall-to-Wall */}
+    <main
+      className="relative flex w-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]"
+      style={{
+        marginTop: 'calc(-1 * env(safe-area-inset-top))',
+        height: 'calc(100dvh + env(safe-area-inset-top))',
+      }}
+    >
+      {/* Background Image - Wall-to-Wall (safe area 포함 전체 덮기) */}
       <img
         src={onboardingSplash}
         alt=""
