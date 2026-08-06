@@ -86,7 +86,7 @@ export function ExhibitionBasicInfo() {
   };
 
   const goNext = () => {
-    navigate('/exhibition/artist', {
+    navigate('/exhibition/register/artist', {
       state: {
         ...state,
         period: period?.label ?? '',

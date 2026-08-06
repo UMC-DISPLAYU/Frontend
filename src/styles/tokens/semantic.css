@@ -34,6 +34,9 @@
   --filter-text-off: var(--palette-gray-600);
   --filter-text-on: var(--palette-gray-black);
 
+  /* Navbar */
+  --navbar-fg: var(--palette-gray-150);
+
   /* Input — Default (기본형) */
   --input-border: var(--palette-gray-300);
   --input-placeholder: var(--palette-gray-400);

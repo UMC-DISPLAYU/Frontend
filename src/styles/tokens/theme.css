@@ -35,6 +35,9 @@
   --color-filter-text-off: var(--filter-text-off);
   --color-filter-text-on: var(--filter-text-on);
 
+  /* Navbar */
+  --color-navbar-fg: var(--navbar-fg);
+
   /* Input — Default (기본형) */
   --color-input-border: var(--input-border);
   --color-input-placeholder: var(--input-placeholder);
