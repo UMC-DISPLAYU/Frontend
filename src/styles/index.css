@@ -6,23 +6,6 @@
 @import './tokens/theme.css';
 @import './tokens/typography.css';
 
-:root {
-  --sat: env(safe-area-inset-top);
-  --sar: env(safe-area-inset-right);
-  --sab: env(safe-area-inset-bottom);
-  --sal: env(safe-area-inset-left);
-}
-
-html,
-body,
-#root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100%;
-  background-color: var(--bg-page, #f0f0f3);
-}
-
 /* Custom Loader */
 .loader {
   width: 40px;

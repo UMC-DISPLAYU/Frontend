@@ -52,13 +52,13 @@ function LoginContent({
   error?: string;
 }) {
   return (
-    <main className="fixed inset-0 flex w-full h-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
+    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
       {/* Background Image - Wall-to-Wall */}
       <img
         src={onboardingSplash}
         alt=""
         aria-hidden="true"
-        className="fixed inset-0 h-full w-full object-cover object-top pointer-events-none z-0"
+        className="absolute inset-0 h-full w-full object-cover object-center"
       />
 
       {/* DU Logo & Text Overlay - Smooth Fade In */}
