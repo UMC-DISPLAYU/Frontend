@@ -85,7 +85,12 @@ export const Homepage = () => {
   }, [accessToken, setAccessToken]);
 
   if (isArtworkPreviewOpen) {
-    return <ArtworkPreviewMoreView items={artworkPreviewItems} />;
+    return (
+      <ArtworkPreviewMoreView
+        items={artworkPreviewItems}
+        onClose={() => setIsArtworkPreviewOpen(false)}
+      />
+    );
   }
 
   return (

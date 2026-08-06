@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import type { ArtworkPreviewItemDto } from '@/api/dto';
 import { SectionHeader } from '@/components/homepage/SectionHeader';
 
@@ -9,6 +11,7 @@ type Props = {
 };
 
 export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -31,7 +34,8 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
         {items.map((item) => (
           <div
             key={item.artworkId}
-            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box200"
+            onClick={() => navigate(`/artwork/${item.artworkId}`)}
+            className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box200 cursor-pointer hover:opacity-90 active:scale-95 transition-all"
           >
             {item.artworkImageUrl && (
               <img
