@@ -52,7 +52,7 @@ export function MyPageHeader({
       </div>
 
       <div className="px-5 pt-5 pb-5 flex flex-col gap-3.5">
-        <div className="flex items-center gap-6">
+        <div className="flex gap-6">
           <img
             className="size-20 rounded-full border-[2.67px] border-line object-cover shrink-0"
             src={profile.avatar || FALLBACK_PROFILE_IMAGE}
@@ -61,8 +61,8 @@ export function MyPageHeader({
               event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
             }}
           />
-          <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-            <div className="typo-body-2xl-bold text-main truncate">{profile.name}</div>
+          <div className="flex-1 min-w-0 flex flex-col gap-3">
+            <div className="typo-body-xl-bold text-main truncate">{profile.name}</div>
             {isArtistView ? (
               <div className="flex items-center gap-5.5">
                 <div className="w-17.5 flex flex-col items-center gap-0.5">

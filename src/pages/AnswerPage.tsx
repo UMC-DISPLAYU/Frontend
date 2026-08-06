@@ -145,7 +145,7 @@ export function AnswerPage() {
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col overflow-hidden">
+    <div className="max-w-md mx-auto h-dvh bg-page flex flex-col overflow-hidden">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />

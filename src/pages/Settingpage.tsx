@@ -42,7 +42,7 @@ export function SettingPage() {
   };
 
   return (
-    <div className="w-96 mx-auto min-h-screen bg-page">
+    <div className="max-w-md mx-auto min-h-screen bg-page">
       <SettingHeader onBack={handleBack} />
 
       <div className="flex flex-col gap-8 px-5 pb-10">

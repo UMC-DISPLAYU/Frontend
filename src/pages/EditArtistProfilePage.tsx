@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
 
-import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
+import { ChevronLeft, ImagePlus, Loader2, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
 import { ChipGroup } from '@/components/ui';
 import { EXHIBITION_FIELDS } from '@/constants/exhibition';
+import { useUploadImage } from '@/hooks/queries/useFile';
 import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 
@@ -14,18 +15,18 @@ const INTRO_MAX = 100;
 function ProfilePhotoField({
   image,
   onChange,
+  isUploading,
 }: {
   image: string | null;
-  onChange: (dataUrl: string) => void;
+  onChange: (file: File) => void;
+  isUploading: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onChange(reader.result as string);
-    reader.readAsDataURL(file);
+    onChange(file);
   };
 
   return (
@@ -34,14 +35,26 @@ function ProfilePhotoField({
         type="button"
         onClick={() => inputRef.current?.click()}
         aria-label="프로필 사진 등록"
-        className="flex size-24 flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border border-line bg-card"
+        disabled={isUploading}
+        className="flex size-24 flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border border-line bg-card disabled:opacity-50 relative"
       >
         {image ? (
-          <img src={image} alt="프로필 미리보기" className="size-full object-cover" />
+          <>
+            <img src={image} alt="프로필 미리보기" className="size-full object-cover" />
+            {isUploading && (
+              <div className="absolute inset-0 bg-dark/50 flex items-center justify-center">
+                <Loader2 className="size-6 text-white animate-spin" />
+              </div>
+            )}
+          </>
         ) : (
           <>
             <span className="flex size-10 items-center justify-center rounded-full bg-page text-faint">
-              <ImagePlus className="size-[18px]" strokeWidth={1.5} />
+              {isUploading ? (
+                <Loader2 className="size-[18px] animate-spin" strokeWidth={1.5} />
+              ) : (
+                <ImagePlus className="size-[18px]" strokeWidth={1.5} />
+              )}
             </span>
             <span className="typo-body-xs-regular text-main">프로필 사진</span>
           </>
@@ -65,9 +78,11 @@ export function EditArtistProfilePage() {
 
 function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfileDto }) {
   const navigate = useNavigate();
-  const [profileImage, setProfileImage] = useState<string | null>(
+  const [previewImage, setPreviewImage] = useState<string | null>(
     artistProfile?.profileImageUrl ?? null,
   );
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [activityName, setActivityName] = useState(artistProfile?.artistName ?? '');
   const [intro, setIntro] = useState(artistProfile?.introduction ?? '');
   const [selectedFields, setSelectedFields] = useState<string[]>(artistProfile?.fields ?? []);
@@ -78,13 +93,37 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [schoolFocused, setSchoolFocused] = useState(false);
   const schoolQuery = useSearchSchools(school);
   const updateMyArtistProfile = useUpdateMyArtistProfile();
+  const uploadImage = useUploadImage();
 
   const showSchoolDropdown = schoolFocused && school.trim().length > 0;
+
+  const handleImageChange = async (file: File) => {
+    // 미리보기용 data URL 생성
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPreviewImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // S3에 이미지 업로드
+    setIsImageUploading(true);
+    try {
+      const fileUrl = await uploadImage.mutateAsync({ file, domain: 'artist-profile' });
+      setUploadedImageUrl(fileUrl);
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+      setPreviewImage(artistProfile?.profileImageUrl ?? null);
+      setUploadedImageUrl(null);
+    } finally {
+      setIsImageUploading(false);
+    }
+  };
 
   const handleSubmit = () => {
     updateMyArtistProfile.mutate(
       {
-        profileImageUrl: profileImage ?? undefined,
+        profileImageUrl: uploadedImageUrl ?? undefined,
         artistName: activityName.trim(),
         introduction: intro.trim(),
         fields: selectedFields,
@@ -100,7 +139,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
+    <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
@@ -110,7 +149,11 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
 
       <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-32">
         <div className="mt-10 flex justify-center">
-          <ProfilePhotoField image={profileImage} onChange={setProfileImage} />
+          <ProfilePhotoField
+            image={previewImage}
+            onChange={handleImageChange}
+            isUploading={isImageUploading}
+          />
         </div>
 
         <div className="mt-12 flex flex-col gap-5">
@@ -245,7 +288,10 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           type="button"
           onClick={handleSubmit}
           disabled={
-            !activityName.trim() || selectedFields.length === 0 || updateMyArtistProfile.isPending
+            !activityName.trim() ||
+            selectedFields.length === 0 ||
+            isImageUploading ||
+            updateMyArtistProfile.isPending
           }
           className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white disabled:opacity-40"
         >

@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import type { ArchivedArtistDto, ArchivedArtworkDto, ArchivedExhibitionDto } from '@/api/dto';
 import ExhibitionIcon from '@/assets/mypage/exhibit.svg';
-import SchoolIcon from '@/assets/mypage/image 3666.svg';
-import FieldIcon from '@/assets/mypage/image 3673.svg';
+import SchoolIcon from '@/assets/mypage/school.svg';
+import FieldIcon from '@/assets/mypage/field.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtistCard,
@@ -295,7 +295,7 @@ export function MyPage() {
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
+    <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
       <MyPageHeader
         onVerifyArtist={() => {
           navigate('/artist-verification');
