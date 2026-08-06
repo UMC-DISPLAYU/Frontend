@@ -120,7 +120,7 @@ export function VisibilitySettings() {
   const save = () => {
     if (!state?.displayId) {
       // displayId가 없으면 router state로만 전달 (등록 플로우)
-      navigate('/exhibition/manage', {
+      navigate(`/exhibition/${state?.displayId}/manage`, {
         replace: true,
         state: { ...state, artworkVisibility, contentVisibility },
       });
@@ -135,7 +135,7 @@ export function VisibilitySettings() {
       },
       {
         onSuccess: () => {
-          navigate('/exhibition/manage', {
+          navigate(`/exhibition/${state?.displayId}/manage`, {
             replace: true,
             state: { ...state, artworkVisibility, contentVisibility },
           });

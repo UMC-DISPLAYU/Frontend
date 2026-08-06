@@ -67,7 +67,7 @@ export function ExhibitionRegister() {
 
     const imageUrls = await imageUpload.uploadImages();
 
-    navigate('/exhibition/basic', {
+    navigate('/exhibition/register/basic', {
       state: {
         imageUrls,
         title,
