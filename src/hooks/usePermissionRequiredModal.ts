@@ -2,24 +2,17 @@ import { createElement, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
+import { LoginConfirmModal } from '@/components/common';
 import { ConfirmModal } from '@/components/ui';
 
+/* 로그인 안내는 공용 LoginConfirmModal을 그대로 사용합니다. */
 export function useLoginRequiredModal() {
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  const loginModal = isOpen
-    ? createElement(ConfirmModal, {
-        message: '로그인이 필요한 기능이에요.&#10;로그인하러 갈까요?',
-        confirmLabel: '로그인하기',
-        cancelLabel: '취소',
-        onConfirm: () => {
-          setIsOpen(false);
-          navigate('/login');
-        },
-        onCancel: () => setIsOpen(false),
-      })
-    : null;
+  const loginModal = createElement(LoginConfirmModal, {
+    isOpen,
+    onClose: () => setIsOpen(false),
+  });
 
   return {
     loginModal,

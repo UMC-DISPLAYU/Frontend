@@ -21,12 +21,16 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
-export const useUserMe = (options: { enabled?: boolean } = {}) =>
-  useQuery({
+/* 비로그인 상태에서는 호출하지 않고, 호출부에서 추가 조건을 줄 수 있습니다. */
+export const useUserMe = (options: { enabled?: boolean } = {}) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  return useQuery({
     queryKey: queryKeys.users.me(),
     queryFn: getUserMe,
-    enabled: options.enabled ?? true,
+    enabled: !!accessToken && (options.enabled ?? true),
   });
+};
 
 export const useCheckNickname = () =>
   useMutation({

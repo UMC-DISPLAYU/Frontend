@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto } from '@/api/dto/display.dto';
-import DUfontlogo from '@/assets/DUfontlogo.svg';
+import DUfontlogo from '@/assets/brand/DUfontlogo.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { parseDisplayId } from '@/utils/parseDisplayId';

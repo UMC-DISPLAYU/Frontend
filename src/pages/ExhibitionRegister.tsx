@@ -14,14 +14,12 @@ import {
 } from '@/constants/exhibition';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { useAuthStore } from '@/stores/authStore';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
 
 export function ExhibitionRegister() {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const { data: artistProfile } = useMyArtistProfile({ enabled: !!accessToken });
+  const { data: artistProfile } = useMyArtistProfile();
   const imageUpload = useImageUpload({ domain: 'display' });
 
   /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
