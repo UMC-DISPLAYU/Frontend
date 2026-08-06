@@ -5,8 +5,11 @@ import { useNavigate } from 'react-router-dom';
 
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import { useToggleArtworkLike } from '@/hooks/queries/useArtworkDetail';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useArchivePolicy } from '@/hooks/usePolicy';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   artwork: ArtworkDetail;
@@ -15,6 +18,8 @@ type Props = {
 export function ArtworkMeta({ artwork }: Props) {
   const navigate = useNavigate();
   const [isAtTop, setIsAtTop] = useState(true);
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const archivePolicy = useArchivePolicy();
 
   /* 좋아요 상태와 개수는 작품 상세 응답을 그대로 씁니다. */
   const liked = artwork.isBookmarked ?? false;
@@ -32,6 +37,11 @@ export function ArtworkMeta({ artwork }: Props) {
 
   const handleLike = () => {
     if (toggleLike.isPending) return;
+    if (!hasPermission(archivePolicy, liked ? 'delete' : 'create')) {
+      openLoginModal();
+      return;
+    }
+
     toggleLike.mutate(liked);
   };
 
@@ -113,6 +123,7 @@ export function ArtworkMeta({ artwork }: Props) {
       {!isAtTop && (
         <ArtworkSaveButton artworkId={artwork.artworkId} saved={artwork.isBookmarked ?? false} />
       )}
+      {loginModal}
     </div>
   );
 }

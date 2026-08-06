@@ -4,7 +4,10 @@ import { Image, Loader2, SendHorizontal, X } from 'lucide-react';
 
 import { AlertModal } from '@/components/ui';
 import { useUploadImage } from '@/hooks/queries/useFile';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useLoungeCommentPolicy } from '@/hooks/usePolicy';
 import { getErrorMessage } from '@/utils/error';
+import { hasPermission } from '@/utils/hasPermission';
 
 const MAX_IMAGES = 5;
 
@@ -35,6 +38,8 @@ export function CommentInputBar({
   onSubmitReply,
   imageUploadDomain,
 }: Props) {
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const loungeCommentPolicy = useLoungeCommentPolicy();
   const [text, setText] = useState('');
   const [images, setImages] = useState<UploadItem[]>([]);
   const [showMaxWarning, setShowMaxWarning] = useState(false);
@@ -77,6 +82,7 @@ export function CommentInputBar({
   }, [replyTarget]);
 
   const isUploading = images.some((item) => item.status === 'uploading');
+  const canCreateComment = hasPermission(loungeCommentPolicy, 'create');
 
   const uploadFile = useCallback(
     async (id: string, file: File) => {
@@ -145,6 +151,10 @@ export function CommentInputBar({
     e?.preventDefault();
     const trimmed = text.trim();
     if (!trimmed || isUploading || isSubmitting) return;
+    if (!canCreateComment) {
+      openLoginModal();
+      return;
+    }
 
     const imageUrls = images
       .filter((item) => item.status === 'done')
@@ -169,7 +179,7 @@ export function CommentInputBar({
 
   return (
     <>
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[402px] bg-page border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)] z-50">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-page border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)] z-50">
         {replyTarget && (
           <div className="flex items-center gap-2 pt-[10px] pl-5">
             <span className="text-[12px] leading-[140%] tracking-[-0.36px]">
@@ -273,6 +283,7 @@ export function CommentInputBar({
       )}
       {uploadError && <AlertModal message={uploadError} onConfirm={() => setUploadError(null)} />}
       {submitError && <AlertModal message={submitError} onConfirm={() => setSubmitError(null)} />}
+      {loginModal}
     </>
   );
 }

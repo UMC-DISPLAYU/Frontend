@@ -123,6 +123,12 @@ export interface GetDisplayMapResponseDataDto {
 
 export type GetDisplayMapResponseDto = ApiResponseDto<GetDisplayMapResponseDataDto>;
 
+/*
+ * 공개 시점은 전시 상세 조회로 읽고, 수정은 예약 API로 보냅니다.
+ * 숨김(HIDDEN)은 서버가 아직 지원하지 않아 요청 값에서 제외합니다.
+ */
+export type DisplayContentOpenType = 'IMMEDIATELY' | 'ON_EXHIBITION';
+
 export interface DisplayDetailDto {
   displayId: number;
   ownerUserId: number;
@@ -140,8 +146,8 @@ export interface DisplayDetailDto {
   likeCount: number;
   isBookmarked?: boolean;
   period: DisplayPeriodDto;
-  artworkContentOpen: string;
-  exhibitionContentOpen: string;
+  artworkContentOpen: DisplayContentOpenType;
+  exhibitionContentOpen: DisplayContentOpenType;
   status: string;
   invitationToken: string | null;
   invitationDisabledAt: string | null;
@@ -334,6 +340,9 @@ export interface CreateDisplayRequestDto {
   latitude: number;
   longitude: number;
   roadAddress: string;
+  /* 서버 필수값입니다. 이 전시에서 쓸 표시명과 문의(Q&A) 계정입니다. */
+  displayNickname: string;
+  qnaAccount: string;
   schoolOrOrganization?: string;
   departmentOrClub?: string;
   hostOrganizationName?: string;
@@ -375,31 +384,15 @@ export type UpdateDisplayResponseDataDto = DisplayDetailDto;
 
 export type UpdateDisplayResponseDto = ApiResponseDto<UpdateDisplayResponseDataDto>;
 
-// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
-export type OpenTimeType = 'immediate' | 'startDate' | 'hidden';
-
-// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
-export interface OpenTimeDto {
-  displayId: number;
-  artworkVisibility: OpenTimeType;
-  contentVisibility: OpenTimeType;
+export interface UpdateDisplayReservationRequestDto {
+  artworkContentOpen: DisplayContentOpenType;
+  exhibitionContentOpen: DisplayContentOpenType;
 }
 
-// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
-export type GetOpenTimeResponseDataDto = OpenTimeDto;
+export type UpdateDisplayReservationResponseDataDto = DisplayDetailDto;
 
-export type GetOpenTimeResponseDto = ApiResponseDto<GetOpenTimeResponseDataDto>;
-
-// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
-export interface UpdateOpenTimeRequestDto {
-  artworkVisibility: OpenTimeType;
-  contentVisibility: OpenTimeType;
-}
-
-// 가짜 DTO: 백엔드에 공개 시점 설정 API가 생기면 스웨거 기준 DTO로 교체해야 합니다.
-export type UpdateOpenTimeResponseDataDto = OpenTimeDto;
-
-export type UpdateOpenTimeResponseDto = ApiResponseDto<UpdateOpenTimeResponseDataDto>;
+export type UpdateDisplayReservationResponseDto =
+  ApiResponseDto<UpdateDisplayReservationResponseDataDto>;
 
 export interface DeleteDisplayResponseDataDto {
   displayId: number;

@@ -146,7 +146,7 @@ export function CommentItem({
                 댓글{replyCount}
               </button>
             )}
-            {!isDeleted && comment.isMyComment && (
+            {!isDeleted && (comment.canDelete ?? comment.isMyComment) && (
               <button
                 type="button"
                 onClick={handleDeleteClick}

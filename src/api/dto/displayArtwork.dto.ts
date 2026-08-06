@@ -17,10 +17,14 @@ export interface ArtworkGuestbookUserDto {
 export interface ArtworkGuestbookReplyDto {
   feelingReplyId?: number;
   questionReplyId?: number;
+  queReplyId?: number;
+  questionId?: number;
   content: string;
   createdAt: string;
   userId?: number;
   nickname?: string;
+  creatorId?: number;
+  creatorName?: string;
   isCreator?: boolean;
   isTeamMember?: boolean;
 }
@@ -37,10 +41,18 @@ export interface GetArtworkDetailResponseDataDto {
   images: ImageResponseDto[];
   artistName: string;
   artistUserId: number;
+  qaHandlers?: ArtworkQaHandlerDto[];
+  // 공동 작업자. 서버가 아직 내려주지 않아 없으면 공동 작업자 없음으로 취급합니다.
+  coAuthorUserIds?: number[];
   exhibitionInfo: ArtworkPreviewExhibitionInfoDto;
   likeCount: number;
   isLiked: boolean;
   isSaved: boolean;
+}
+
+export interface ArtworkQaHandlerDto {
+  userId: number;
+  name: string;
 }
 
 export type GetArtworkDetailResponseDto = ApiResponseDto<GetArtworkDetailResponseDataDto>;
@@ -99,7 +111,10 @@ export interface ArtworkQuestionDto {
   questionId: number;
   content: string;
   isPublic: boolean;
+  answerStatus?: 'WAITING' | 'ANSWERED';
   createdAt: string;
+  displayArtworkId?: number;
+  userId?: number;
   user: ArtworkGuestbookUserDto;
   reply: ArtworkGuestbookReplyDto | null;
 }
@@ -110,24 +125,32 @@ export interface GetArtworkQuestionsResponseDataDto {
 
 export type GetArtworkQuestionsResponseDto = ApiResponseDto<GetArtworkQuestionsResponseDataDto>;
 
-// 가짜 DTO: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
 export interface MyArtworkQuestionDto {
-  questionId: number;
-  artworkId: number;
+  questionId: number | null;
+  personalQuestionId: number | null;
+  artworkId: number | null;
+  personalArtworkId: number | null;
   artworkName: string;
   content: string;
-  answerStatus: 'PENDING' | 'ANSWERED';
+  answerStatus: 'WAITING' | 'ANSWERED';
   isPublic: boolean;
+  questionerId: number;
+  questionerNickname: string;
   createdAt: string;
-  user: ArtworkGuestbookUserDto;
 }
 
-// 가짜 DTO: GET /api/v1/artworks/question/me 응답 데이터입니다.
 export interface GetMyArtworkQuestionsResponseDataDto {
   questions: MyArtworkQuestionDto[];
+  nextCursor: string | null;
+  size: number;
+  hasNext: boolean;
 }
 
-// 가짜 DTO: GET /api/v1/artworks/question/me API 응답입니다.
+export interface GetMyArtworkQuestionsRequestDto extends Partial<OffsetPageRequestDto> {
+  answerStatus: 'WAITING' | 'ANSWERED';
+  cursor?: string;
+}
+
 export type GetMyArtworkQuestionsResponseDto = ApiResponseDto<GetMyArtworkQuestionsResponseDataDto>;
 
 export interface CreateArtworkQuestionRequestDto {
@@ -157,7 +180,7 @@ export interface UpdateArtworkQuestionRequestDto {
 export type UpdateArtworkQuestionResponseDto = ApiResponseDto<ArtworkQuestionRecordDto>;
 
 export interface DeleteArtworkQuestionResponseDataDto {
-  artQueId: number;
+  questionId: number;
   deletedAt: string;
 }
 
@@ -171,14 +194,21 @@ export interface CreateArtworkQuestionReplyResponseDataDto {
   queReplyId: number;
   content: string;
   createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  id2: number;
-  createrId: number;
+  questionId: number;
+  creatorId: number;
+  creatorName: string;
 }
 
 export type CreateArtworkQuestionReplyResponseDto =
   ApiResponseDto<CreateArtworkQuestionReplyResponseDataDto>;
+
+export interface DeleteArtworkQuestionReplyResponseDataDto {
+  questionReplyId: number;
+  deletedAt: string;
+}
+
+export type DeleteArtworkQuestionReplyResponseDto =
+  ApiResponseDto<DeleteArtworkQuestionReplyResponseDataDto>;
 
 export interface ArtworkFeelingLikeDto {
   artLikeId: number;
@@ -232,7 +262,8 @@ export interface CreateExhibitionArtworkRequestDto {
   artistName?: string;
   artistUserId?: number;
   coAuthors: ArtworkCoAuthorsDto;
-  qaHandlerUserId: number;
+  /* 담당자는 여러 명 지정할 수 있고 최소 한 명은 있어야 합니다. */
+  qaHandlerUserIds: number[];
 }
 
 export interface CreateExhibitionArtworkResponseDataDto {
@@ -302,6 +333,8 @@ export interface DisplayArtworkDto {
   artworkId: number;
   artworkName: string;
   artistName: string;
+  artistUserId?: number;
+  coAuthorUserIds?: number[];
   artworkImageUrl: string;
   imageWidth: number;
   imageHeight: number;

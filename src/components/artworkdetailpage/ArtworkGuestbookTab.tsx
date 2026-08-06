@@ -2,6 +2,12 @@ import { useState } from 'react';
 
 import { Heart, Lock } from 'lucide-react';
 
+import type {
+  ArtworkFeelingDto,
+  ArtworkGuestbookReplyDto,
+  DisplayDetailDto,
+  GetArtworkDetailResponseDataDto,
+} from '@/api/dto';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
   useArtworkFeelingReplies,
@@ -12,9 +18,16 @@ import {
 } from '@/hooks/queries/useArtworkFeelings';
 import {
   useDeleteArtworkQuestion,
+  useDeleteArtworkQuestionReply,
   useUpdateArtworkQuestion,
 } from '@/hooks/queries/useArtworkQuestions';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import {
+  useFeelingPolicy,
+  useFeelingReplyPolicy,
+  useQuestionPolicy,
+  useQuestionReplyPolicy,
+} from '@/hooks/usePolicy';
 import type {
   ArtworkGuestbookTab,
   GuestbookQuestion,
@@ -22,11 +35,14 @@ import type {
   GuestbookReviewReply,
 } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   reviews: GuestbookReview[];
   questions: GuestbookQuestion[];
   artworkId: number;
+  artwork: GetArtworkDetailResponseDataDto;
+  display: DisplayDetailDto;
   isArtist?: boolean;
   activeSubTab?: ArtworkGuestbookTab;
   onSubTabChange?: (tab: ArtworkGuestbookTab) => void;
@@ -43,17 +59,42 @@ type Props = {
 /* 방명록 감상 탭 댓글(답글) 카드 */
 function ReviewReplyItem({
   reply,
+  display,
   onLike,
   onDelete,
 }: {
   reply: GuestbookReviewReply;
+  display: DisplayDetailDto;
   onLike?: () => void;
   onDelete?: () => void;
 }) {
   const liked = reply.isLiked ?? false;
   const likeCount = reply.likeCount ?? 0;
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const replyPolicyResource: ArtworkGuestbookReplyDto = {
+    content: reply.content,
+    createdAt: reply.createdAt,
+    userId: reply.user.userId,
+    nickname: reply.user.nickname,
+  };
+  const feelingReplyPolicy = useFeelingReplyPolicy(display, replyPolicyResource);
+  const canLike = hasPermission(feelingReplyPolicy, liked ? 'reply.unlike' : 'reply.like');
+  const canDelete = hasPermission(feelingReplyPolicy, 'reply.delete');
 
-  const handleLike = () => onLike?.();
+  const handleLike = () => {
+    if (!canLike) {
+      openLoginModal();
+      return;
+    }
+
+    onLike?.();
+  };
+
+  const handleDelete = () => {
+    if (!canDelete) return;
+
+    onDelete?.();
+  };
 
   return (
     <div className="-mx-5 pl-14 pr-5 py-3 border-b border-line">
@@ -86,10 +127,10 @@ function ReviewReplyItem({
 
             <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-hint">
               <div className="flex items-center gap-2">
-                {reply.isMyReply && (
+                {canDelete && (
                   <button
                     type="button"
-                    onClick={onDelete}
+                    onClick={handleDelete}
                     className="hover:text-main cursor-pointer"
                   >
                     삭제
@@ -115,6 +156,7 @@ function ReviewReplyItem({
           </div>
         </div>
       </div>
+      {loginModal}
     </div>
   );
 }
@@ -123,21 +165,38 @@ function ReviewReplyItem({
 function ReviewCard({
   review,
   artworkId,
+  display,
   isReplyTarget = false,
   onReply,
 }: {
   review: GuestbookReview;
   artworkId: number;
+  display: DisplayDetailDto;
   isReplyTarget?: boolean;
   onReply?: () => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
-  const { data: userMe } = useUserMe();
-  const myUserId = userMe?.id;
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
 
   const images = review.images ?? [];
   const liked = review.isLiked ?? false;
   const likeCount = review.likeCount ?? 0;
+  const feelingPolicyResource: ArtworkFeelingDto = {
+    feelingId: review.feelingId,
+    content: review.content,
+    createdAt: review.createdAt,
+    userId: review.user.userId,
+    user: {
+      userId: review.user.userId,
+      nickname: review.user.nickname,
+    },
+    reply: null,
+  };
+  const feelingPolicy = useFeelingPolicy(display, feelingPolicyResource);
+  const feelingReplyPolicy = useFeelingReplyPolicy(display);
+  const canLike = hasPermission(feelingPolicy, liked ? 'unlike' : 'like');
+  const canDelete = hasPermission(feelingPolicy, 'delete');
+  const canCreateReply = hasPermission(feelingReplyPolicy, 'reply.create');
 
   const toggleLike = useToggleArtworkFeelingLike();
   const deleteFeeling = useDeleteArtworkFeeling();
@@ -159,14 +218,27 @@ function ReviewCard({
         createdAt: reply.createdAt,
         user: { userId: reply.userId ?? 0, nickname: reply.nickname ?? '' },
         isArtist: reply.isCreator,
-        isMyReply: Boolean(myUserId) && reply.userId === myUserId,
       }))
     : (review.replies ?? []);
   const commentCount = review.commentCount ?? replyList.length;
 
   const handleLike = () => {
     if (toggleLike.isPending) return;
+    if (!canLike) {
+      openLoginModal();
+      return;
+    }
+
     toggleLike.mutate({ artworkId, feelingId: review.feelingId });
+  };
+
+  const handleReply = () => {
+    if (!canCreateReply) {
+      openLoginModal();
+      return;
+    }
+
+    onReply?.();
   };
 
   return (
@@ -235,7 +307,11 @@ function ReviewCard({
             {/* 하단 액션: 답글달기 / 댓글 N / 삭제 + 좋아요 */}
             <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-hint">
               <div className="flex justify-start items-center gap-2">
-                <button type="button" onClick={onReply} className="hover:text-main cursor-pointer">
+                <button
+                  type="button"
+                  onClick={handleReply}
+                  className="hover:text-main cursor-pointer"
+                >
                   답글달기
                 </button>
                 {commentCount > 0 && (
@@ -247,7 +323,7 @@ function ReviewCard({
                     댓글 {commentCount}
                   </button>
                 )}
-                {review.isMyReview && (
+                {canDelete && (
                   <button
                     type="button"
                     onClick={() => deleteFeeling.mutate({ artworkId, feelingId: review.feelingId })}
@@ -287,6 +363,7 @@ function ReviewCard({
               <ReviewReplyItem
                 key={reply.replyId}
                 reply={reply}
+                display={display}
                 onLike={() => likeReply.mutate(reply.replyId)}
                 onDelete={() => deleteReply.mutate(reply.replyId)}
               />
@@ -298,6 +375,7 @@ function ReviewCard({
           )}
         </div>
       )}
+      {loginModal}
     </article>
   );
 }
@@ -306,12 +384,16 @@ function ReviewCard({
 function QuestionCard({
   question,
   artworkId,
+  artwork,
+  display,
   isArtistView = false,
   isReplyTarget = false,
   onReply,
 }: {
   question: GuestbookQuestion;
   artworkId: number;
+  artwork: GetArtworkDetailResponseDataDto;
+  display: DisplayDetailDto;
   isArtistView?: boolean;
   isReplyTarget?: boolean;
   onReply?: () => void;
@@ -325,7 +407,17 @@ function QuestionCard({
   const likeCount = question.likeCount ?? 0;
 
   const deleteQuestion = useDeleteArtworkQuestion();
+  const deleteQuestionReply = useDeleteArtworkQuestionReply();
   const updateQuestion = useUpdateArtworkQuestion();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const questionPolicy = useQuestionPolicy(question, display);
+  const questionReplyPolicy = useQuestionReplyPolicy(question, display, artwork, question.reply);
+  const canView = hasPermission(questionPolicy, 'view');
+  const canLike = hasPermission(questionPolicy, liked ? 'unlike' : 'like');
+  const canDelete = hasPermission(questionPolicy, 'delete');
+  const canViewReply = hasPermission(questionReplyPolicy, 'reply.view');
+  const canCreateReply = hasPermission(questionReplyPolicy, 'reply.create');
+  const canDeleteReply = hasPermission(questionReplyPolicy, 'reply.delete');
 
   const submitEdit = () => {
     const content = editContent.trim();
@@ -341,11 +433,42 @@ function QuestionCard({
     );
   };
 
+  const handleReply = () => {
+    if (!canCreateReply) {
+      openLoginModal();
+      return;
+    }
+
+    onReply?.();
+  };
+
+  const handleDelete = () => {
+    if (!canDelete) return;
+
+    deleteQuestion.mutate({ artworkId, questionId: question.questionId });
+  };
+
+  const handleLike = () => {
+    if (!canLike) {
+      openLoginModal();
+    }
+  };
+
+  const handleDeleteReply = () => {
+    const questionReplyId = question.reply?.questionReplyId ?? question.reply?.queReplyId;
+    if (!canDeleteReply || !questionReplyId) return;
+
+    deleteQuestionReply.mutate({
+      artworkId,
+      questionId: question.questionId,
+      questionReplyId,
+    });
+  };
+
   const replyStatus = question.reply ? '답변완료' : '답변대기';
-  const isSecretForUser = !question.isPublic && !isArtistView && !question.isMyQuestion;
 
   // 1) 일반인 시점 비공개 질문 카드
-  if (isSecretForUser) {
+  if (!canView) {
     return (
       <article className="w-full">
         <div className="-mx-5 px-5 py-4 border-b border-line flex flex-col gap-1.5">
@@ -437,7 +560,7 @@ function QuestionCard({
                 {isArtistView && !question.reply && (
                   <button
                     type="button"
-                    onClick={onReply}
+                    onClick={handleReply}
                     className="hover:text-main cursor-pointer"
                   >
                     답글달기
@@ -464,12 +587,10 @@ function QuestionCard({
                     수정
                   </button>
                 )}
-                {(question.isMyQuestion || isArtistView) && (
+                {canDelete && (
                   <button
                     type="button"
-                    onClick={() =>
-                      deleteQuestion.mutate({ artworkId, questionId: question.questionId })
-                    }
+                    onClick={handleDelete}
                     className="hover:text-main cursor-pointer"
                   >
                     삭제
@@ -479,7 +600,11 @@ function QuestionCard({
 
               <div className="flex justify-start items-center gap-1">
                 {/* 질문 좋아요 API가 없어 표시만 합니다. */}
-                <div className="flex items-center gap-1 text-hint">
+                <button
+                  type="button"
+                  onClick={handleLike}
+                  className="flex items-center gap-1 text-hint"
+                >
                   <Heart
                     size={14}
                     className={cn(
@@ -488,7 +613,7 @@ function QuestionCard({
                     )}
                   />
                   <span>{likeCount}</span>
-                </div>
+                </button>
               </div>
             </div>
           </div>
@@ -498,11 +623,24 @@ function QuestionCard({
       {/* 댓글/답변 펼치기 목록 */}
       {showReplies && (
         <div className="-mx-5 pl-14 pr-5 py-3 border-b border-line bg-box100/40 flex flex-col gap-2">
-          {question.reply ? (
+          {question.reply && canViewReply ? (
             <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span className="typo-body-sm-bold text-main">작가 답변</span>
-                <span className="typo-body-xs-regular text-faint">{question.reply.createdAt}</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="typo-body-sm-bold text-main">작가 답변</span>
+                  <span className="typo-body-xs-regular text-faint">
+                    {question.reply.createdAt}
+                  </span>
+                </div>
+                {canDeleteReply && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteReply}
+                    className="typo-body-xs-regular text-faint hover:text-main"
+                  >
+                    삭제
+                  </button>
+                )}
               </div>
               <p className="typo-body-xs-regular text-sub600 leading-relaxed">
                 {question.reply.content}
@@ -513,6 +651,7 @@ function QuestionCard({
           )}
         </div>
       )}
+      {loginModal}
     </article>
   );
 }
@@ -522,6 +661,8 @@ export function ArtworkGuestbookTab({
   reviews,
   questions,
   artworkId,
+  artwork,
+  display,
   isArtist = false,
   activeSubTab: controlledSubTab,
   onSubTabChange,
@@ -622,6 +763,7 @@ export function ArtworkGuestbookTab({
                 key={r.feelingId}
                 review={r}
                 artworkId={artworkId}
+                display={display}
                 isReplyTarget={replyTargetFeelingId === r.feelingId}
                 onReply={() =>
                   onReplyTargetChange?.(replyTargetFeelingId === r.feelingId ? null : r)
@@ -658,6 +800,8 @@ export function ArtworkGuestbookTab({
                 key={q.questionId}
                 question={q}
                 artworkId={artworkId}
+                artwork={artwork}
+                display={display}
                 isArtistView={isArtistView}
                 isReplyTarget={replyTargetQuestionId === q.questionId}
                 onReply={() =>

@@ -60,7 +60,6 @@ export const queryKeys = {
     reviewReplies: (displayId: number, displayReviewId: number) =>
       [...queryKeys.displays.all, 'reviews', displayId, 'replies', displayReviewId] as const,
     // 가짜 쿼리 키: 백엔드에 공개 시점 설정 API가 생기기 전까지 공개 설정 화면에서 사용합니다.
-    openTime: (displayId: number) => [...queryKeys.displays.all, 'open-time', displayId] as const,
   },
 
   displayInvitations: {

@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { CommentInputBar } from '@/components/common';
+import type { DisplayDetailDto } from '@/api/dto/display.dto';
+import { BottomCommentBar } from '@/components/common';
 import { useCreateDisplayReviewReply } from '@/hooks/queries/useDisplayReviewReplies';
 import { useCreateDisplayReview, useDisplayReviews } from '@/hooks/queries/useDisplayReviews';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useDisplayReviewPolicy, useDisplayReviewReplyPolicy } from '@/hooks/usePolicy';
 import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 import { DisplayReviewCommentItem } from './DisplayReviewCommentItem';
 
@@ -35,15 +39,20 @@ function ReviewSkeleton() {
 
 type Props = {
   className?: string;
+  display: DisplayDetailDto;
   displayId: number;
 };
 
-export function ReviewTab({ className, displayId }: Props) {
+export function ReviewTab({ className, display, displayId }: Props) {
   const { data, isPending, isError, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useDisplayReviews(displayId);
 
   const { data: userMe } = useUserMe();
   const myUserId = userMe?.id;
+
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const reviewPolicy = useDisplayReviewPolicy(display);
+  const replyPolicy = useDisplayReviewReplyPolicy(display);
 
   const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
     null,
@@ -115,6 +124,7 @@ export function ReviewTab({ className, displayId }: Props) {
           {reviews.map((review) => (
             <DisplayReviewCommentItem
               key={review.displayReviewId}
+              display={display}
               displayId={displayId}
               review={review}
               myUserId={myUserId}
@@ -137,20 +147,35 @@ export function ReviewTab({ className, displayId }: Props) {
         </div>
       )}
 
-      <CommentInputBar
-        replyTarget={replyTarget}
+      <BottomCommentBar
+        placeholder="글을 입력하세요."
+        /* 답글 생성 API는 이미지 필드를 지원하지 않습니다. */
+        imageDomain={replyTarget ? undefined : 'display-review'}
+        isSubmitting={replyTarget ? createReply.isPending : createReview.isPending}
+        replyingTo={replyTarget?.author}
         onCancelReply={clearReplyTarget}
-        onSubmitComment={(content, imageUrls) =>
-          createReview.mutateAsync({
+        onSubmit={({ content, imageUrls }) => {
+          if (replyTarget) {
+            if (!hasPermission(replyPolicy, 'reply.create')) {
+              openLoginModal();
+              return;
+            }
+            createReply.mutate({ content }, { onSuccess: clearReplyTarget });
+            return;
+          }
+
+          if (!hasPermission(reviewPolicy, 'create')) {
+            openLoginModal();
+            return;
+          }
+
+          createReview.mutate({
             content,
             images: imageUrls.map((imageUrl) => ({ imageUrl })),
-          })
-        }
-        onSubmitReply={(commentId, content) =>
-          createReply.mutateAsync({ content }, { onSuccess: clearReplyTarget })
-        }
-        imageUploadDomain="display-review"
+          });
+        }}
       />
+      {loginModal}
     </div>
   );
 }

@@ -7,12 +7,11 @@ import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
 import { ChipGroup } from '@/components/ui';
 import {
-  ARTWORK_FIELD_FALLBACK,
   ARTWORK_FIELD_MAP,
-  EXHIBITION_FIELDS,
-  MAX_ARTWORK_PROGRESS_IMAGES,
-  MAX_ARTWORK_UPLOAD_IMAGES,
-} from '@/constants/exhibition';
+  DEFAULT_ARTWORK_IMAGE_HEIGHT,
+  DEFAULT_ARTWORK_IMAGE_WIDTH,
+} from '@/constants';
+import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
 import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
@@ -550,12 +549,23 @@ export function ArtworkRegisterPage() {
   const selectedProxyAuthor = teamAuthorOptions.find(
     (author) => author.id === selectedProxyAuthorId,
   );
+
+  /*
+   * 전시작에는 계정 닉네임이 아니라 이 전시에서 쓰는 작가명(displayNickname)을 표시합니다.
+   * 팀원 목록에 내가 없을 때만 계정 정보로 대신합니다.
+   */
+  const myDisplayNickname = useMemo(
+    () =>
+      (memberList?.members ?? []).find((member) => member.userId === userMe?.id)?.displayNickname,
+    [memberList, userMe?.id],
+  );
+
   const displayAuthor = useMemo(() => {
     /* 본인 등록은 로그인 사용자를, 팀원 선택은 해당 팀원의 계정을 작가로 연결합니다. */
     if (registerMode === 'own') {
       return {
         ...REPRESENTATIVE,
-        name: userMe?.nickname || userMe?.name || REPRESENTATIVE.name,
+        name: myDisplayNickname || userMe?.nickname || userMe?.name || REPRESENTATIVE.name,
         account: userMe?.nickname || REPRESENTATIVE.account,
         userId: userMe?.id,
         tag: '작가인증',
@@ -579,22 +589,55 @@ export function ArtworkRegisterPage() {
       userId: undefined as number | undefined,
       tag: '대리 등록',
     };
-  }, [proxyAuthorName, proxyAuthorSource, registerMode, selectedProxyAuthor, userMe]);
+  }, [
+    myDisplayNickname,
+    proxyAuthorName,
+    proxyAuthorSource,
+    registerMode,
+    selectedProxyAuthor,
+    userMe,
+  ]);
+
+  /*
+   * 공동 작업자에서는 작품 작가만 뺍니다.
+   * 본인 등록이면 내가 작가라 목록에 안 뜨고,
+   * 대리 등록이면 나도 함께 작업한 팀원일 수 있어 그대로 남습니다.
+   */
+  const collaboratorOptions = useMemo(
+    () =>
+      teamAuthorOptions.filter(
+        (author) =>
+          author.id !== displayAuthor.id &&
+          (author.userId === undefined || author.userId !== displayAuthor.userId),
+      ),
+    [teamAuthorOptions, displayAuthor],
+  );
+
   const qnaAssigneeOptions = useMemo(() => {
-    const options: { id: string; name: string; account: string; userId?: number }[] = [
-      {
-        id: displayAuthor.id,
-        name: displayAuthor.name,
-        account: displayAuthor.account,
-        userId: displayAuthor.userId,
-      },
-    ];
+    /* 직접 입력한 작가는 연결할 계정이 없어 Q&A 담당자로 지정할 수 없습니다. */
+    const hasAccount = (person: { userId?: number }) => person.userId !== undefined;
+
+    const options: { id: string; name: string; account: string; userId?: number }[] = hasAccount(
+      displayAuthor,
+    )
+      ? [
+          {
+            id: displayAuthor.id,
+            name: displayAuthor.name,
+            account: displayAuthor.account,
+            userId: displayAuthor.userId,
+          },
+        ]
+      : [];
     const addOption = (person: { id: string; name: string; account: string; userId?: number }) => {
-      if (options.some((option) => option.id === person.id)) return;
+      /* 같은 계정이 작가와 공동 작업자로 겹칠 수 있어 userId까지 확인합니다. */
+      if (options.some((option) => option.id === person.id || option.userId === person.userId)) {
+        return;
+      }
       options.push(person);
     };
 
-    collaborators.forEach((person) => {
+    collaborators.filter(hasAccount).forEach((person) => {
       addOption(person);
     });
 
@@ -603,12 +646,8 @@ export function ArtworkRegisterPage() {
   const selectedQnaAssigneeIds = qnaAssigneeIds.filter((id) =>
     qnaAssigneeOptions.some((person) => person.id === id),
   );
-  const effectiveQnaAssigneeIds =
-    selectedQnaAssigneeIds.length > 0
-      ? selectedQnaAssigneeIds
-      : qnaAssigneeOptions[0]?.id
-        ? [qnaAssigneeOptions[0].id]
-        : [];
+  /* 담당자는 자동으로 정하지 않고 사용자가 직접 고르게 둡니다. */
+  const effectiveQnaAssigneeIds = selectedQnaAssigneeIds;
 
   useEffect(() => {
     if (!activeSheet) return;
@@ -663,11 +702,15 @@ export function ArtworkRegisterPage() {
 
     setSubmitError(null);
 
-    const files = [...artworkUpload.files, ...processUpload.files];
-
-    let imageUrls: string[] = [];
+    let artworkImageUrls: string[] = [];
+    let processImageUrls: string[] = [];
     try {
-      imageUrls = await Promise.all(files.map((file) => artworkUpload.uploadImage(file)));
+      artworkImageUrls = await Promise.all(
+        artworkUpload.files.map((file) => artworkUpload.uploadImage(file)),
+      );
+      processImageUrls = await Promise.all(
+        processUpload.files.map((file) => processUpload.uploadImage(file)),
+      );
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
       return;
@@ -675,16 +718,19 @@ export function ArtworkRegisterPage() {
 
     const artistUserId = displayAuthor.userId;
     /*
-     * 스웨거 qaHandlerUserId는 단수라 선택한 담당자 중 첫 번째만 보냅니다.
-     * 계정이 없는 직접 입력 작가는 담당자로 지정할 수 없습니다.
+     * 선택한 담당자를 모두 보냅니다.
+     * 서버가 최소 한 명을 요구해서 고르지 않았으면 등록을 막습니다.
      */
-    const qaHandlerUserId =
-      selectedQnaAssigneeIds
-        .map((id) => qnaAssigneeOptions.find((person) => person.id === id)?.userId)
-        .find((userId): userId is number => typeof userId === 'number') ?? userMe?.id;
+    const qaHandlerUserIds = Array.from(
+      new Set(
+        effectiveQnaAssigneeIds
+          .map((id) => qnaAssigneeOptions.find((person) => person.id === id)?.userId)
+          .filter((userId): userId is number => typeof userId === 'number'),
+      ),
+    );
 
-    if (typeof qaHandlerUserId !== 'number') {
-      setSubmitError('Q&A 담당자를 지정할 수 없어요. 잠시 후 다시 시도해주세요.');
+    if (qaHandlerUserIds.length === 0) {
+      setSubmitError('Q&A 담당자를 선택해주세요.');
       return;
     }
 
@@ -693,18 +739,34 @@ export function ArtworkRegisterPage() {
         displayId,
         artworkName: title.trim(),
         content: description.trim(),
-        type: ARTWORK_FIELD_MAP[field] ?? ARTWORK_FIELD_FALLBACK,
+        type: ARTWORK_FIELD_MAP[field] ?? ARTWORK_FIELD_MAP['기타'],
         productionYear: toProductionYear(year),
         materialMedia: medium.trim(),
         size: size.trim(),
         point: point.trim(),
-        images: imageUrls.map((imageUrl, index) => ({
-          imageUrl,
-          imageType: 'ARTWORK',
-          width: 0,
-          height: 0,
-          sortOrder: index + 1,
-        })),
+        /*
+         * 작품 이미지와 작업과정 이미지를 imageType으로 구분해 보냅니다.
+         * 서버가 width/height를 @Positive 원시 int로 받아 0이나 누락은 거절되어 고정값을 씁니다.
+         */
+        images: [
+          ...artworkImageUrls.map((imageUrl, index) => ({
+            imageUrl,
+            /* 대표 이미지는 작품 이미지 중 첫 장만 지정합니다. */
+            isThumbnail: index === 0,
+            imageType: 'ARTWORK',
+            width: DEFAULT_ARTWORK_IMAGE_WIDTH,
+            height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
+            sortOrder: index + 1,
+          })),
+          ...processImageUrls.map((imageUrl, index) => ({
+            imageUrl,
+            isThumbnail: false,
+            imageType: 'WORK_PROCESS',
+            width: DEFAULT_ARTWORK_IMAGE_WIDTH,
+            height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
+            sortOrder: index + 1,
+          })),
+        ],
         artistName: displayAuthor.name.trim(),
         artistUserId,
         /* 계정이 연결된 팀원은 userIds로, 직접 입력한 작가는 rawNames로 보냅니다. */
@@ -716,7 +778,7 @@ export function ArtworkRegisterPage() {
             .filter((person) => typeof person.userId !== 'number')
             .map((person) => person.name),
         },
-        qaHandlerUserId,
+        qaHandlerUserIds,
       },
       {
         onSuccess: () => navigate(`/artworks-manage?displayId=${displayId}`),
@@ -776,18 +838,14 @@ export function ArtworkRegisterPage() {
 
   const toggleQnaAssignee = (id: string) => {
     setQnaAssigneeIds((prev) => {
-      const currentIds = prev.filter((personId) =>
+      /* 자동 선택을 하지 않으므로 사용자가 고른 값만 유지합니다. */
+      const baseIds = prev.filter((personId) =>
         qnaAssigneeOptions.some((person) => person.id === personId),
       );
-      const baseIds =
-        currentIds.length > 0
-          ? currentIds
-          : qnaAssigneeOptions[0]?.id
-            ? [qnaAssigneeOptions[0].id]
-            : [];
 
       if (baseIds.includes(id)) {
-        return baseIds.length === 1 ? baseIds : baseIds.filter((personId) => personId !== id);
+        /* 담당자 0명은 제출 시점에 막으므로 마지막 한 명도 해제할 수 있습니다. */
+        return baseIds.filter((personId) => personId !== id);
       }
 
       return [...baseIds, id];
@@ -1000,7 +1058,7 @@ export function ArtworkRegisterPage() {
           <section className="flex flex-col gap-3">
             <FieldLabel required>작품분야</FieldLabel>
             <ChipGroup
-              options={EXHIBITION_FIELDS}
+              options={Object.keys(ARTWORK_FIELD_MAP)}
               selected={[field]}
               onChange={(next) => setField(next[0] ?? field)}
               maxSelect={1}
@@ -1121,6 +1179,11 @@ export function ArtworkRegisterPage() {
                 onClick={() => toggleQnaAssignee(person.id)}
               />
             ))}
+            {qnaAssigneeOptions.length === 0 && (
+              <p className="typo-body-xs-regular rounded-[14px] bg-card px-4 py-3 text-hint">
+                직접 입력한 작가는 Q&amp;A 담당자로 지정할 수 없어요.
+              </p>
+            )}
           </div>
         </section>
       </main>
@@ -1189,12 +1252,12 @@ export function ArtworkRegisterPage() {
         subtitle="작가 인증이 완료된 팀원만 공동 작업자로 추가할 수 있어요."
         bodyClassName="mt-6 flex flex-col gap-2"
       >
-        {teamAuthorOptions.length === 0 && (
+        {collaboratorOptions.length === 0 && (
           <p className="typo-body-xs-regular py-8 text-center text-faint">
             아직 전시 팀원이 없어요.
           </p>
         )}
-        {teamAuthorOptions.map((person) => (
+        {collaboratorOptions.map((person) => (
           <CollaboratorTeamCard
             key={person.id}
             name={person.name}

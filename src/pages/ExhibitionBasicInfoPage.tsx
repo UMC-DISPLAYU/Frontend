@@ -51,19 +51,28 @@ export function ExhibitionBasicInfo() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  const [period, setPeriod] = useState<DateValue | null>(null);
-  const [operatingHours, setOperatingHours] = useState<TimeRangeValue | null>(null);
-  const [placeName, setPlaceName] = useState('');
-  const [address, setAddress] = useState('');
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [contact, setContact] = useState('');
-  const [notice, setNotice] = useState('');
+  /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
+  const restored = (state ?? {}) as Record<string, unknown>;
+
+  const [period, setPeriod] = useState<DateValue | null>(
+    (restored.periodValue as DateValue) ?? null,
+  );
+  const [operatingHours, setOperatingHours] = useState<TimeRangeValue | null>(
+    (restored.operatingHoursValue as TimeRangeValue) ?? null,
+  );
+  const [placeName, setPlaceName] = useState((restored.placeName as string) ?? '');
+  const [address, setAddress] = useState((restored.address as string) ?? '');
+  const [latitude, setLatitude] = useState<number | null>((restored.latitude as number) ?? null);
+  const [longitude, setLongitude] = useState<number | null>((restored.longitude as number) ?? null);
+  const [contact, setContact] = useState((restored.contact as string) ?? '');
+  const [notice, setNotice] = useState((restored.notice as string) ?? '');
 
   const [sheet, setSheet] = useState<SheetType>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
-  const canNext = period && placeName.trim() && address.trim();
+  /* 문의 방법은 서버에서 qnaAccount로 받는 필수값입니다. */
+  /* 운영 시간은 서버에서 openTime·closeTime 필수값으로 받으므로 함께 확인합니다. */
+  const canNext = period && operatingHours && placeName.trim() && address.trim() && contact.trim();
 
   const handleAddressConfirm = (
     fullAddress: string,
@@ -81,6 +90,9 @@ export function ExhibitionBasicInfo() {
       state: {
         ...state,
         period: period?.label ?? '',
+        /* 뒤로 왔을 때 달력·시간 선택 상태를 그대로 되살리기 위한 원본 값입니다. */
+        periodValue: period,
+        operatingHoursValue: operatingHours,
         startDate: period ? formatDate(period.start) : null,
         endDate: period ? formatDate(period.end) : null,
         startTime: operatingHours
@@ -181,7 +193,7 @@ export function ExhibitionBasicInfo() {
 
           {/* 문의 방법 */}
           <div className="flex flex-col gap-3">
-            <Label>문의 방법</Label>
+            <Label required>문의 방법</Label>
             <div className="flex flex-col gap-1.5">
               <Underline>
                 <input

@@ -13,7 +13,9 @@ import { useHideFooter } from '@/components/layout';
 import { type VisibilityType } from '@/constants/visibility';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useDisplayPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
+import { hasPermission } from '@/utils/hasPermission';
 
 const formatMonthDay = (date: string | undefined) => {
   if (!date) return '';
@@ -46,6 +48,13 @@ export function ExhibitionManage() {
   const displayId = Number(state?.displayId ?? state?.id ?? 0);
   const { data: display } = useDisplayDetail(displayId);
   const { data: memberList } = useDisplayMembers(displayId);
+  const displayPolicy = useDisplayPolicy(
+    display ?? {
+      ownerUserId: 0,
+      teamMembers: [],
+    },
+  );
+  const canEditDisplay = Boolean(display) && hasPermission(displayPolicy, 'edit');
 
   /* 팀원 목록의 accepted로 참여팀원과 초대대기를 나눕니다. */
   const teamMembers = memberList?.members ?? [];
@@ -135,19 +144,21 @@ export function ExhibitionManage() {
             onSettingsClick={goVisibility}
           />
 
-          <button
-            type="button"
-            onClick={() => navigate(`/exhibition/edit/${exhibition.id}`, { state })}
-            className="flex items-center gap-3 rounded-xl bg-card px-4 py-3"
-          >
-            <div className="flex flex-1 flex-col gap-1 text-left">
-              <span className="typo-body-xs-bold text-main">기본 정보 수정</span>
-              <span className="typo-body-xs-regular text-faint">
-                전시명, 소개, 기간, 장소, 유의사항 수정
-              </span>
-            </div>
-            <ChevronRight className="size-4 shrink-0 text-hint" strokeWidth={1} />
-          </button>
+          {canEditDisplay && (
+            <button
+              type="button"
+              onClick={() => navigate(`/exhibition/edit/${exhibition.id}`, { state })}
+              className="flex items-center gap-3 rounded-xl bg-card px-4 py-3"
+            >
+              <div className="flex flex-1 flex-col gap-1 text-left">
+                <span className="typo-body-xs-bold text-main">기본 정보 수정</span>
+                <span className="typo-body-xs-regular text-faint">
+                  전시명, 소개, 기간, 장소, 유의사항 수정
+                </span>
+              </div>
+              <ChevronRight className="size-4 shrink-0 text-hint" strokeWidth={1} />
+            </button>
+          )}
 
           <div className="flex items-start gap-2 rounded-2xl bg-card p-3.5 mb-11.75">
             <Info className="size-4 shrink-0 text-faint" strokeWidth={1} />

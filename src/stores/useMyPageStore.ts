@@ -14,7 +14,7 @@ interface MyPageStore {
 export const useMyPageStore = create<MyPageStore>((set) => ({
   activeTab: 'exhibition',
   isSettingsOpen: false,
-  isArtistView: true,
+  isArtistView: false,
   setActiveTab: (tab) => set({ activeTab: tab }),
   setIsSettingsOpen: (open) => set({ isSettingsOpen: open }),
   toggleArtistView: () =>

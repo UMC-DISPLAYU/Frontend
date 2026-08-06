@@ -4,9 +4,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { BottomButtonBar, PageHeader } from '@/components/common';
 import { RadioOption } from '@/components/visibility-settings';
-import { formatStartDate, VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
-// 가짜 쿼리 훅 사용: 백엔드에 공개 시점 설정 API가 생기면 실제 훅으로 교체해야 합니다.
-import { useOpenTime, useUpdateOpenTime } from '@/hooks/queries/useOpenTime';
+import {
+  CONTENT_OPEN_TO_VISIBILITY,
+  formatStartDate,
+  VISIBILITY_LABEL,
+  VISIBILITY_TO_CONTENT_OPEN,
+  type VisibilityType,
+} from '@/constants/visibility';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useUpdateDisplayReservation } from '@/hooks/queries/useDisplayReservation';
+import { useDisplayPolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 interface VisibilityState {
   displayId?: number;
@@ -16,13 +24,20 @@ interface VisibilityState {
 }
 
 interface VisibilitySectionProps {
+  disabled?: boolean;
   title: string;
   value: VisibilityType;
   onChange: (next: VisibilityType) => void;
   startDateLabel: string | null;
 }
 
-function VisibilitySection({ title, value, onChange, startDateLabel }: VisibilitySectionProps) {
+function VisibilitySection({
+  disabled = false,
+  title,
+  value,
+  onChange,
+  startDateLabel,
+}: VisibilitySectionProps) {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
@@ -33,23 +48,19 @@ function VisibilitySection({ title, value, onChange, startDateLabel }: Visibilit
       <div role="radiogroup" aria-label={title} className="flex flex-col gap-2">
         <RadioOption
           checked={value === 'immediate'}
+          disabled={disabled}
           onSelect={() => onChange('immediate')}
           title={VISIBILITY_LABEL.immediate}
           description="등록 즉시 관람자에게 노출돼요."
         />
         <RadioOption
           checked={value === 'startDate'}
+          disabled={disabled}
           onSelect={() => onChange('startDate')}
           title={VISIBILITY_LABEL.startDate}
           description={
             startDateLabel ? `${startDateLabel} 부터 노출돼요.` : '전시 시작일부터 노출돼요.'
           }
-        />
-        <RadioOption
-          checked={value === 'hidden'}
-          onSelect={() => onChange('hidden')}
-          title={VISIBILITY_LABEL.hidden}
-          description="관람자에게 노출되지 않아요."
         />
       </div>
     </section>
@@ -62,8 +73,21 @@ export function VisibilitySettings() {
 
   const startDateLabel = formatStartDate(state?.startDate);
 
-  // 가짜 API 연동: 저장된 공개 시점을 불러와 라디오 초기값으로 사용합니다.
-  const { data: openTime } = useOpenTime(state?.displayId);
+  /* 공개 시점은 전시 상세 응답에 포함되어 있어 별도 조회가 없습니다. */
+  const { data: display } = useDisplayDetail(state?.displayId ?? 0);
+  const displayPolicy = useDisplayPolicy(
+    display ?? {
+      ownerUserId: 0,
+      teamMembers: [],
+    },
+  );
+  /*
+   * 전시 등록 중에는 아직 displayId가 없어 권한을 판정할 대상이 없습니다.
+   * 이때는 값을 다음 단계로 넘기기만 하므로 편집을 허용합니다.
+   */
+  const canEditDisplay = state?.displayId
+    ? Boolean(display) && hasPermission(displayPolicy, 'edit')
+    : true;
 
   // 사용자가 아직 고르지 않았으면 서버 값을, 서버 값도 없으면 기본값을 보여줍니다.
   const [picked, setPicked] = useState<{
@@ -73,12 +97,16 @@ export function VisibilitySettings() {
 
   const artworkVisibility =
     picked.artworkVisibility ??
-    openTime?.artworkVisibility ??
+    (display?.artworkContentOpen
+      ? CONTENT_OPEN_TO_VISIBILITY[display.artworkContentOpen]
+      : undefined) ??
     state?.artworkVisibility ??
     'startDate';
   const contentVisibility =
     picked.contentVisibility ??
-    openTime?.contentVisibility ??
+    (display?.exhibitionContentOpen
+      ? CONTENT_OPEN_TO_VISIBILITY[display.exhibitionContentOpen]
+      : undefined) ??
     state?.contentVisibility ??
     'startDate';
 
@@ -87,7 +115,7 @@ export function VisibilitySettings() {
   const setContentVisibility = (next: VisibilityType) =>
     setPicked((prev) => ({ ...prev, contentVisibility: next }));
 
-  const updateMutation = useUpdateOpenTime(state?.displayId);
+  const updateMutation = useUpdateDisplayReservation(state?.displayId);
 
   const save = () => {
     if (!state?.displayId) {
@@ -101,7 +129,10 @@ export function VisibilitySettings() {
 
     // displayId가 있으면 API로 저장
     updateMutation.mutate(
-      { artworkVisibility, contentVisibility },
+      {
+        artworkContentOpen: VISIBILITY_TO_CONTENT_OPEN[artworkVisibility],
+        exhibitionContentOpen: VISIBILITY_TO_CONTENT_OPEN[contentVisibility],
+      },
       {
         onSuccess: () => {
           navigate('/exhibition/manage', {
@@ -129,12 +160,14 @@ export function VisibilitySettings() {
 
         <div className="mt-8 flex flex-col gap-8">
           <VisibilitySection
+            disabled={!canEditDisplay}
             title="전시작 공개 시점"
             value={artworkVisibility}
             onChange={setArtworkVisibility}
             startDateLabel={startDateLabel}
           />
           <VisibilitySection
+            disabled={!canEditDisplay}
             title="전시콘텐츠 공개 시점"
             value={contentVisibility}
             onChange={setContentVisibility}
@@ -143,15 +176,17 @@ export function VisibilitySettings() {
         </div>
       </div>
 
-      <BottomButtonBar withBorder={false}>
-        <button
-          type="button"
-          onClick={save}
-          className="typo-body-sm-bold h-11 w-full rounded-lg bg-dark text-white"
-        >
-          저장하기
-        </button>
-      </BottomButtonBar>
+      {canEditDisplay && (
+        <BottomButtonBar withBorder={false}>
+          <button
+            type="button"
+            onClick={save}
+            className="typo-body-sm-bold h-11 w-full rounded-lg bg-dark text-white"
+          >
+            저장하기
+          </button>
+        </BottomButtonBar>
+      )}
     </div>
   );
 }
