@@ -33,6 +33,7 @@ type ExhibitionRegisterState = {
   longitude?: number | null;
   contact?: string;
   notice?: string;
+  artistName?: string;
 };
 
 const getRegion = (address: string): CreateDisplayRequestDto['region'] => {
