@@ -71,7 +71,8 @@ export function ExhibitionBasicInfo() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   /* 문의 방법은 서버에서 qnaAccount로 받는 필수값입니다. */
-  const canNext = period && placeName.trim() && address.trim() && contact.trim();
+  /* 운영 시간은 서버에서 openTime·closeTime 필수값으로 받으므로 함께 확인합니다. */
+  const canNext = period && operatingHours && placeName.trim() && address.trim() && contact.trim();
 
   const handleAddressConfirm = (
     fullAddress: string,

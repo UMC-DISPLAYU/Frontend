@@ -31,6 +31,21 @@ export function ArtworkCard({
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoInput, setMemoInput] = useState(item.memo ?? '');
 
+  /* 카드 영역은 div라서 키보드로도 열 수 있도록 역할과 키 처리를 함께 부여합니다. */
+  const openHandlers = onOpen
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        onClick: () => onOpen(item),
+        onKeyDown: (event: React.KeyboardEvent) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+
+          event.preventDefault();
+          onOpen(item);
+        },
+      }
+    : {};
+
   const handleCancelMemo = () => {
     setMemoInput(item.memo ?? '');
     setIsEditingMemo(false);
@@ -58,10 +73,7 @@ export function ArtworkCard({
 
   return (
     <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
-      <div
-        onClick={() => onOpen?.(item)}
-        className={onOpen ? 'cursor-pointer p-1.5 pb-0' : 'p-1.5 pb-0'}
-      >
+      <div {...openHandlers} className={onOpen ? 'cursor-pointer p-1.5 pb-0' : 'p-1.5 pb-0'}>
         <div className="relative rounded-xl overflow-hidden">
           <div className="w-full h-44 bg-box200">
             {item.thumbnail && (
@@ -85,7 +97,7 @@ export function ArtworkCard({
       </div>
 
       <div
-        onClick={() => onOpen?.(item)}
+        {...openHandlers}
         className={
           onOpen
             ? 'cursor-pointer px-2.5 pt-2 pb-3 flex flex-col gap-1'

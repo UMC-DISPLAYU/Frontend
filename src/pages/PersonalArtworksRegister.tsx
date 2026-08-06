@@ -49,7 +49,9 @@ export function PersonalArtworksRegister() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const createPersonalArtwork = useCreatePersonalArtwork();
-  const isSubmitting = createPersonalArtwork.isPending;
+  /* 이미지 업로드는 mutation 시작 전에 실행되므로 제출 전 구간까지 함께 잠급니다. */
+  const [isUploading, setIsUploading] = useState(false);
+  const isSubmitting = isUploading || createPersonalArtwork.isPending;
 
   const isFormValid =
     canCreatePersonalArtwork &&
@@ -66,6 +68,7 @@ export function PersonalArtworksRegister() {
 
     let artworkImageUrls: string[] = [];
     let processImageUrls: string[] = [];
+    setIsUploading(true);
     try {
       artworkImageUrls = await Promise.all(
         images.map((image) => artworkUpload.uploadImage(image.file)),
@@ -76,6 +79,8 @@ export function PersonalArtworksRegister() {
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
       return;
+    } finally {
+      setIsUploading(false);
     }
 
     /*

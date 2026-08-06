@@ -50,8 +50,9 @@ export function isArtistVerified(user: User): boolean {
   return isLoggedIn(user) && user.isArtistVerified;
 }
 
+/* isPublic이 누락된 응답을 공개로 보면 비공개 질문이 노출되므로 명시적 true만 공개로 봅니다. */
 export function isPrivate(resource: PrivatableResource): boolean {
-  return resource.isPublic === false;
+  return resource.isPublic !== true;
 }
 
 export function isDisplayOwner(user: User, display: DisplayPolicyResource): boolean {
@@ -62,9 +63,10 @@ export function isDisplayOwner(user: User, display: DisplayPolicyResource): bool
 export function isDisplayMember(user: User, display: DisplayPolicyResource): boolean {
   if (!isLoggedIn(user)) return false;
 
+  /* 서버 응답에서 teamMembers가 누락될 수 있어 옵셔널 체이닝으로 방어합니다. */
   return (
     isDisplayOwner(user, display) ||
-    display.teamMembers.some((member) => member.userId === user.id && member.accepted)
+    (display.teamMembers?.some((member) => member.userId === user.id && member.accepted) ?? false)
   );
 }
 

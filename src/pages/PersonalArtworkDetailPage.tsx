@@ -487,7 +487,10 @@ export function PersonalArtworkDetailPage() {
     );
   }
 
-  const heroImages = formatImageUrls(artwork.images);
+  /* 히어로는 작품 이미지만, 작업과정 섹션은 WORK_PROCESS 이미지만 사용합니다. */
+  const artworkImages = artwork.images.filter((image) => image.imageType !== 'WORK_PROCESS');
+  const processImages = artwork.images.filter((image) => image.imageType === 'WORK_PROCESS');
+  const heroImages = formatImageUrls(artworkImages);
   const displayHeroImages = heroImages.length > 0 ? heroImages : [FALLBACK_POSTER_IMAGE];
   const feelingItems = feelings?.feelings;
   const questionItems = questions?.questions;
@@ -595,11 +598,11 @@ export function PersonalArtworkDetailPage() {
               </p>
             </section>
           )}
-          {artwork.images.length > 1 && (
+          {processImages.length > 0 && (
             <section className="bg-box200 px-5 pt-5 pb-5">
               <h2 className="typo-body-xl-bold mb-3 text-main">작업과정</h2>
               <div className="grid grid-cols-3 gap-2">
-                {artwork.images.slice(1).map((image) => (
+                {processImages.map((image) => (
                   <img
                     key={image.imageUrl}
                     src={image.imageUrl}

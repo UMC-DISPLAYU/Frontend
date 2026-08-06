@@ -55,7 +55,8 @@ export function LoungeBoardCommentItem({
   const unlikeMutation = useUnlikeLoungeComment();
   const deleteReplyMutation = useDeleteLoungeComment();
   const isLikeMutating = likeMutation.isPending || unlikeMutation.isPending;
-  const canLikeComment = hasPermission(loungeCommentPolicy, 'like');
+  /* 좋아요 취소는 unlike 정책을 따르므로 현재 상태에 맞는 액션을 확인합니다. */
+  const canLikeComment = hasPermission(loungeCommentPolicy, comment.isLiked ? 'unlike' : 'like');
   const canDeleteComment = hasPermission(loungeCommentPolicy, 'delete');
 
   const { data: repliesData } = useLoungeReplies(

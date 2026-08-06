@@ -698,11 +698,15 @@ export function ArtworkRegisterPage() {
 
     setSubmitError(null);
 
-    const files = [...artworkUpload.files, ...processUpload.files];
-
-    let imageUrls: string[] = [];
+    let artworkImageUrls: string[] = [];
+    let processImageUrls: string[] = [];
     try {
-      imageUrls = await Promise.all(files.map((file) => artworkUpload.uploadImage(file)));
+      artworkImageUrls = await Promise.all(
+        artworkUpload.files.map((file) => artworkUpload.uploadImage(file)),
+      );
+      processImageUrls = await Promise.all(
+        processUpload.files.map((file) => processUpload.uploadImage(file)),
+      );
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
       return;
@@ -737,18 +741,28 @@ export function ArtworkRegisterPage() {
         size: size.trim(),
         point: point.trim(),
         /*
-         * 서버가 width/height를 @Positive 원시 int로 받아 0이나 누락은 거절됩니다.
-         * 화면에서 실제 크기를 쓰지 않으므로 고정값을 보냅니다.
+         * 작품 이미지와 작업과정 이미지를 imageType으로 구분해 보냅니다.
+         * 서버가 width/height를 @Positive 원시 int로 받아 0이나 누락은 거절되어 고정값을 씁니다.
          */
-        images: imageUrls.map((imageUrl, index) => ({
-          imageUrl,
-          /* 첫 번째 이미지를 대표 이미지로 씁니다. */
-          isThumbnail: index === 0,
-          imageType: 'ARTWORK',
-          width: DEFAULT_ARTWORK_IMAGE_WIDTH,
-          height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
-          sortOrder: index + 1,
-        })),
+        images: [
+          ...artworkImageUrls.map((imageUrl, index) => ({
+            imageUrl,
+            /* 대표 이미지는 작품 이미지 중 첫 장만 지정합니다. */
+            isThumbnail: index === 0,
+            imageType: 'ARTWORK',
+            width: DEFAULT_ARTWORK_IMAGE_WIDTH,
+            height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
+            sortOrder: index + 1,
+          })),
+          ...processImageUrls.map((imageUrl, index) => ({
+            imageUrl,
+            isThumbnail: false,
+            imageType: 'WORK_PROCESS',
+            width: DEFAULT_ARTWORK_IMAGE_WIDTH,
+            height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
+            sortOrder: index + 1,
+          })),
+        ],
         artistName: displayAuthor.name.trim(),
         artistUserId,
         /* 계정이 연결된 팀원은 userIds로, 직접 입력한 작가는 rawNames로 보냅니다. */
@@ -820,18 +834,14 @@ export function ArtworkRegisterPage() {
 
   const toggleQnaAssignee = (id: string) => {
     setQnaAssigneeIds((prev) => {
-      const currentIds = prev.filter((personId) =>
+      /* 자동 선택을 하지 않으므로 사용자가 고른 값만 유지합니다. */
+      const baseIds = prev.filter((personId) =>
         qnaAssigneeOptions.some((person) => person.id === personId),
       );
-      const baseIds =
-        currentIds.length > 0
-          ? currentIds
-          : qnaAssigneeOptions[0]?.id
-            ? [qnaAssigneeOptions[0].id]
-            : [];
 
       if (baseIds.includes(id)) {
-        return baseIds.length === 1 ? baseIds : baseIds.filter((personId) => personId !== id);
+        /* 담당자 0명은 제출 시점에 막으므로 마지막 한 명도 해제할 수 있습니다. */
+        return baseIds.filter((personId) => personId !== id);
       }
 
       return [...baseIds, id];

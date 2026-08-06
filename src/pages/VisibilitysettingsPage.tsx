@@ -88,7 +88,13 @@ export function VisibilitySettings() {
       teamMembers: [],
     },
   );
-  const canEditDisplay = Boolean(display) && hasPermission(displayPolicy, 'edit');
+  /*
+   * 전시 등록 중에는 아직 displayId가 없어 권한을 판정할 대상이 없습니다.
+   * 이때는 값을 다음 단계로 넘기기만 하므로 편집을 허용합니다.
+   */
+  const canEditDisplay = state?.displayId
+    ? Boolean(display) && hasPermission(displayPolicy, 'edit')
+    : true;
 
   // 사용자가 아직 고르지 않았으면 서버 값을, 서버 값도 없으면 기본값을 보여줍니다.
   const [picked, setPicked] = useState<{

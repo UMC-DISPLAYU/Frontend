@@ -38,7 +38,12 @@ export function ExhibitionCard({
 
   const displayPolicy = useDisplayPolicy(policyDisplay);
   const displayArtistNamePolicy = useDisplayArtistNamePolicy(policyDisplay);
-  const canDelete = hasPermission(displayPolicy, 'delete');
+  /*
+   * 전시 삭제 API가 아직 없어 메뉴에 노출하지 않습니다.
+   * 서버에 엔드포인트가 생기면 이 상수를 제거하고 정책 판정만 남기면 됩니다.
+   */
+  const IS_DISPLAY_DELETE_SUPPORTED = false;
+  const canDelete = IS_DISPLAY_DELETE_SUPPORTED && hasPermission(displayPolicy, 'delete');
   const canEditArtistName = hasPermission(displayArtistNamePolicy, 'edit');
   const canShowMenu = canEditArtistName || canDelete;
 
