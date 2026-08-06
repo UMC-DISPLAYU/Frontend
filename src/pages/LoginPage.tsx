@@ -52,15 +52,10 @@ function LoginContent({
   error?: string;
 }) {
   return (
-    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
-      {/* Background Image - Wall-to-Wall */}
-      <img
-        src={onboardingSplash}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover object-center"
-      />
-
+    <main
+      className="fixed inset-0 flex w-full h-full flex-col overflow-hidden bg-cover bg-top bg-no-repeat font-[Pretendard,sans-serif]"
+      style={{ backgroundImage: `url(${onboardingSplash})` }}
+    >
       {/* DU Logo & Text Overlay - Smooth Fade In */}
       <div
         className={cn(
