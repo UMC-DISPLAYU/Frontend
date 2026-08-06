@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { CommentInputBar, ErrorView, LoadingView } from '@/components/common';
+import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import {
   LoungeBoardActionBar,
   LoungeBoardCommentItem,
@@ -212,26 +212,25 @@ export const LoungeBoardDetailPage = () => {
             </div>
           </main>
 
-          <CommentInputBar
-            replyTarget={replyTarget}
+          <BottomCommentBar
+            placeholder="댓글을 입력하세요."
+            imageDomain="lounge"
+            isSubmitting={
+              replyTarget ? createReplyMutation.isPending : createCommentMutation.isPending
+            }
+            replyingTo={replyTarget?.author}
             onCancelReply={clearReplyTarget}
-            onSubmitComment={(content, images) =>
-              createCommentMutation.mutateAsync({
-                postId,
-                body: { content, imageUrls: images.map((image) => image.imageUrl) },
-              })
-            }
-            onSubmitReply={(commentId, content, images) =>
-              createReplyMutation.mutateAsync(
-                {
-                  postId,
-                  commentId,
-                  body: { content, imageUrls: images.map((image) => image.imageUrl) },
-                },
-                { onSuccess: clearReplyTarget },
-              )
-            }
-            imageUploadDomain="lounge"
+            onSubmit={({ content, images }) => {
+              const imageUrls = images.map((image) => image.imageUrl);
+              if (replyTarget) {
+                createReplyMutation.mutate(
+                  { postId, commentId: replyTarget.commentId, body: { content, imageUrls } },
+                  { onSuccess: clearReplyTarget },
+                );
+                return;
+              }
+              createCommentMutation.mutate({ postId, body: { content, imageUrls } });
+            }}
           />
         </>
       ) : (

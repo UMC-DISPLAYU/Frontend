@@ -9,7 +9,7 @@ import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import type { ArtworkDetailTabKey } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
-import { BottomCommentBar, CommentInputBar, ErrorView, LoadingView } from '@/components/common';
+import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
@@ -65,7 +65,7 @@ export function ArtworkDetailPage() {
   const createQuestion = useCreateArtworkQuestion();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
 
-  /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 CommentInputBar가 씀) */
+  /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 BottomCommentBar가 씀) */
   const [feelingReplyTarget, setFeelingReplyTarget] = useState<{
     commentId: number;
     author: string;
@@ -265,28 +265,30 @@ export function ArtworkDetailPage() {
           }
         />
       ) : activeTab === 'review' ? (
-        <CommentInputBar
-          replyTarget={feelingReplyTarget}
+        <BottomCommentBar
+          placeholder="글을 입력하세요."
+          imageDomain="artwork-feeling"
+          isSubmitting={feelingReplyTarget ? createFeelingReply.isPending : createFeeling.isPending}
+          replyingTo={feelingReplyTarget?.author}
           onCancelReply={clearFeelingReplyTarget}
-          onSubmitComment={(content, images) => {
+          onSubmit={({ content, images }) => {
+            if (feelingReplyTarget) {
+              if (!hasPermission(feelingReplyPolicy, 'reply.create')) {
+                openLoginModal();
+                return;
+              }
+              // 감상 답글 API는 이미지 첨부를 지원하지 않음
+              createFeelingReply.mutate(content, { onSuccess: clearFeelingReplyTarget });
+              return;
+            }
+
             if (!hasPermission(feelingPolicy, 'create')) {
               openLoginModal();
-              return Promise.resolve();
+              return;
             }
-            return createFeeling.mutateAsync({
-              artworkId,
-              body: { content, images },
-            });
+
+            createFeeling.mutate({ artworkId, body: { content, images } });
           }}
-          onSubmitReply={(commentId, content) => {
-            if (!hasPermission(feelingReplyPolicy, 'reply.create')) {
-              openLoginModal();
-              return Promise.resolve();
-            }
-            // 감상 답글 API는 이미지 첨부를 지원하지 않음
-            return createFeelingReply.mutateAsync(content, { onSuccess: clearFeelingReplyTarget });
-          }}
-          imageUploadDomain="artwork-feeling"
         />
       ) : (
         <BottomCommentBar
