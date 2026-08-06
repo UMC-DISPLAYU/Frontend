@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import googleIcon from '@/assets/onboarding/googleIcon.svg';
 import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
 import loginLogo from '@/assets/onboarding/login-logo.svg';
-import onboardingSplash from '@/assets/onboarding/onboarding-splash.svg';
+import onboardingSplash from '@/assets/onboarding/onboarding-splash.png';
 import { useGoogleAuthorizationUrl, useKakaoAuthorizationUrl } from '@/hooks/queries/useAuth';
 import { cn } from '@/utils/cn';
 
@@ -184,17 +184,31 @@ export function LoginPage() {
   };
 
   useEffect(() => {
-    void preloadImages(LOGIN_ASSETS);
+    let isMounted = true;
+    let logoTimer: number;
+    let uiTimer: number;
 
-    const logoTimer = window.setTimeout(() => {
-      setIsLogoVisible(true);
-    }, 100);
+    preloadImages(LOGIN_ASSETS)
+      .then(() => {
+        if (!isMounted) return;
 
-    const uiTimer = window.setTimeout(() => {
-      setIsUIReady(true);
-    }, 1000);
+        logoTimer = window.setTimeout(() => {
+          setIsLogoVisible(true);
+        }, 100);
+
+        uiTimer = window.setTimeout(() => {
+          setIsUIReady(true);
+        }, 1000);
+      })
+      .catch(() => {
+        // 이미지가 로드 실패하더라도 UI는 띄워주기 위해 폴백 처리
+        if (!isMounted) return;
+        setIsLogoVisible(true);
+        setIsUIReady(true);
+      });
 
     return () => {
+      isMounted = false;
       window.clearTimeout(logoTimer);
       window.clearTimeout(uiTimer);
     };
