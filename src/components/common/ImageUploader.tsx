@@ -33,10 +33,8 @@ export function ImageUploader({
   const totalImages = images.length + initialImages.length;
 
   const handleImageClick = useCallback(() => {
-    if (totalImages < maxImages) {
-      fileInputRef.current?.click();
-    }
-  }, [totalImages, maxImages]);
+    fileInputRef.current?.click();
+  }, []);
 
   const handleImageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,21 +88,21 @@ export function ImageUploader({
           </button>
         </div>
       ))}
-      {totalImages < maxImages && (
-        <button
-          type="button"
-          onClick={handleImageClick}
-          className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
-          aria-label={emptyLabel ?? '이미지 업로드'}
+      <button
+        type="button"
+        onClick={handleImageClick}
+        className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
+        aria-label={emptyLabel ?? '이미지 업로드'}
+      >
+        <div className="size-10 bg-page rounded-full flex items-center justify-center">
+          <Image size={16} className="text-input-border" />
+        </div>
+        <span
+          className={`typo-body-xs-regular ${totalImages > maxImages ? 'text-error' : 'text-main'}`}
         >
-          <div className="size-10 bg-page rounded-full flex items-center justify-center">
-            <Image size={16} className="text-input-border" />
-          </div>
-          <span className="text-main typo-body-xs-regular">
-            {emptyLabel ?? `${totalImages}/${maxImages}`}
-          </span>
-        </button>
-      )}
+          {emptyLabel ?? `${totalImages}/${maxImages}`}
+        </span>
+      </button>
       <input
         ref={fileInputRef}
         type="file"
