@@ -82,9 +82,6 @@ export const DEFAULT_FILTER_STATE: FilterState = {
   지역: [],
 };
 
-export const getFilterOptionValue = ({ options }: FilterConfig, label: string) =>
-  options.find((option) => option.label === label)?.value ?? null;
-
 export const getFilterOptionValues = ({ options }: FilterConfig, labels: string[]) => {
   if (!labels || labels.length === 0) return null;
   const values = labels

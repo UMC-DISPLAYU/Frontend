@@ -1,27 +1,15 @@
 import { Link } from 'react-router-dom';
 
+import { formatDate } from '@/utils/date';
+
 import type { Exhibition } from '../types';
 
 type ExhibitionCardProps = {
   exhibition: Exhibition;
 };
 
-const formatDateRange = (startedAt: string, endedAt: string) => {
-  const formatDate = (dateText: string) => {
-    const date = new Date(dateText);
-
-    if (Number.isNaN(date.getTime())) {
-      return dateText;
-    }
-
-    return `${String(date.getUTCMonth() + 1).padStart(2, '0')}.${String(date.getUTCDate()).padStart(
-      2,
-      '0',
-    )}`;
-  };
-
-  return `${formatDate(startedAt)} - ${formatDate(endedAt)}`;
-};
+const formatDateRange = (startedAt: string, endedAt: string) =>
+  `${formatDate(startedAt)} - ${formatDate(endedAt)}`;
 
 export function ExhibitionCard({ exhibition }: ExhibitionCardProps) {
   return (
