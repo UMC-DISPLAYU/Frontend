@@ -52,7 +52,7 @@ export const exhibitionRegisterSchema = z
 
     if (isInstitution && (!data.department || data.department.trim() === '')) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['department'],
         message: '학과를 입력해주세요.',
       });
@@ -62,7 +62,7 @@ export const exhibitionRegisterSchema = z
 
     if (isOrganization && (!data.organizer || data.organizer.trim() === '')) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['organizer'],
         message: '단체명을 입력해주세요.',
       });
