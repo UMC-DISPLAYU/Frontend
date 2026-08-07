@@ -3,15 +3,26 @@ import { useState } from 'react';
 import { MoreVertical } from 'lucide-react';
 
 import { ConfirmModal } from '@/components/ui';
+import { useLoungePostPolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
-  onEdit: () => void;
-  onDelete: () => void;
+  post: {
+    isMyPost: boolean;
+  };
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
-export function LoungeBoardPostMenu({ onEdit, onDelete }: Props) {
+export function LoungeBoardPostMenu({ post, onEdit, onDelete }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const loungePostPolicy = useLoungePostPolicy(post);
+  // 메뉴바 자체에서도 권한 체크를 하지만, 더 방어적으로 만들기 위해 여기서도 권한 제어를 넣었습니다.
+  const canEdit = hasPermission(loungePostPolicy, 'edit');
+  const canDelete = hasPermission(loungePostPolicy, 'delete');
+
+  if (!canEdit && !canDelete) return null;
 
   return (
     <div className="relative">
@@ -29,32 +40,36 @@ export function LoungeBoardPostMenu({ onEdit, onDelete }: Props) {
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
           <div
-            className="absolute right-0 top-full z-50 mt-2 h-[82px] w-[100px] rounded-[14px] border border-[#C4C4C4] bg-[#FCFCFC] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)]"
+            className="absolute right-0 top-full z-50 mt-2 w-[100px] rounded-[14px] border border-[#C4C4C4] bg-[#FCFCFC] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)]"
             style={{ fontFamily: 'Pretendard' }}
           >
-            <button
-              type="button"
-              onClick={() => {
-                setIsOpen(false);
-                onEdit();
-              }}
-              className="absolute inset-x-0 top-0 flex h-[40px] translate-y-[1px] items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#111]"
-            >
-              수정
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onEdit?.();
+                }}
+                className="flex h-10 w-full items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#111]"
+              >
+                수정
+              </button>
+            )}
 
-            <div className="absolute top-[40px] right-0 left-0 border-t border-[#E9E9E9]" />
+            {canEdit && canDelete && <div className="border-t border-[#E9E9E9]" />}
 
-            <button
-              type="button"
-              onClick={() => {
-                setIsOpen(false);
-                setIsConfirmingDelete(true);
-              }}
-              className="absolute inset-x-0 top-[40px] flex h-[40px] items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#C32427]"
-            >
-              삭제
-            </button>
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsConfirmingDelete(true);
+                }}
+                className="flex h-10 w-full items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#C32427]"
+              >
+                삭제
+              </button>
+            )}
           </div>
         </>
       )}
@@ -65,7 +80,7 @@ export function LoungeBoardPostMenu({ onEdit, onDelete }: Props) {
           onCancel={() => setIsConfirmingDelete(false)}
           onConfirm={() => {
             setIsConfirmingDelete(false);
-            onDelete();
+            onDelete?.();
           }}
         />
       )}

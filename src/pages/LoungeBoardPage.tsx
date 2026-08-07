@@ -13,7 +13,7 @@ import {
 } from '@/constants/loungeCategories';
 import { useLoungePosts } from '@/hooks/queries/useLounge';
 import type { LoungeBoardPost } from '@/types/exhibition';
-import { formatLoungeTime } from '@/utils/date';
+import { formatRelativeTime } from '@/utils/date';
 
 const toBoardPost = (
   post: LoungePostSummaryDto,
@@ -24,7 +24,7 @@ const toBoardPost = (
   title: post.title,
   description: post.content,
   author: post.writer.nickname,
-  time: formatLoungeTime(post.createdAt),
+  time: formatRelativeTime(post.createdAt),
   commentCount: post.commentCount,
   images: post.postImageUrls.length > 0 ? post.postImageUrls : undefined,
 });

@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
+import type { DisplayDetailDto, GetArtworkDetailResponseDataDto } from '@/api/dto';
 import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
+import type { ArtworkDetailTabKey } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
@@ -23,27 +25,34 @@ import {
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
-import type {
-  ArtworkDetail,
-  ArtworkGuestbookTab as ArtworkGuestbookSubTabType,
-  GuestbookQuestion,
-  GuestbookReview,
-} from '@/types/exhibition';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import {
+  useFeelingPolicy,
+  useFeelingReplyPolicy,
+  useQuestionPolicy,
+  useQuestionReplyPolicy,
+} from '@/hooks/usePolicy';
+import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
+import { hasPermission } from '@/utils/hasPermission';
 
 export function ArtworkDetailPage() {
   const navigate = useNavigate();
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
 
-  const [activeTab, setActiveTab] = useState<'intro' | 'guestbook'>('intro');
-  const [activeSubTab, setActiveSubTab] = useState<ArtworkGuestbookSubTabType>('review');
+  const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>('intro');
   const [isArtistView, setIsArtistView] = useState(false);
 
   const { data: userMe } = useUserMe();
   const myUserId = userMe?.id;
 
   const { data: detail, isPending, isError } = useArtworkDetail(artworkId);
-  const { data: feelingsData } = useArtworkFeelings(artworkId);
+  const {
+    data: feelingsData,
+    hasNextPage: hasMoreFeelings,
+    fetchNextPage: fetchMoreFeelings,
+    isFetchingNextPage: isFetchingMoreFeelings,
+  } = useArtworkFeelings(artworkId);
   const { data: questionsData } = useArtworkQuestions(artworkId);
 
   /*
@@ -54,31 +63,67 @@ export function ArtworkDetailPage() {
 
   const createFeeling = useCreateArtworkFeeling();
   const createQuestion = useCreateArtworkQuestion();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
 
-  /* 하단 입력바가 답글 모드일 때 대상 감상/질문. 둘 다 null이면 새 글을 남깁니다. */
-  const [replyTarget, setReplyTarget] = useState<GuestbookReview | null>(null);
+  /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 BottomCommentBar가 씀) */
+  const [feelingReplyTarget, setFeelingReplyTarget] = useState<{
+    commentId: number;
+    author: string;
+  } | null>(null);
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const clearFeelingReplyTarget = () => {
+    setFeelingReplyTarget(null);
+    setActiveReplyId(null);
+  };
+  const handleFeelingReplyClick = useCallback(
+    (commentId: number, author: string, highlightId: string) => {
+      setFeelingReplyTarget({ commentId, author });
+      setActiveReplyId(highlightId);
+    },
+    [],
+  );
+  const createFeelingReply = useCreateArtworkFeelingReply(
+    artworkId,
+    feelingReplyTarget?.commentId ?? 0,
+  );
+
+  /* 질문 답변(작가 전용) 대상 — 기존 그대로 유지 */
   const [questionReplyTarget, setQuestionReplyTarget] = useState<GuestbookQuestion | null>(null);
-
-  const createFeelingReply = useCreateArtworkFeelingReply(artworkId, replyTarget?.feelingId ?? 0);
   const createQuestionReply = useCreateArtworkQuestionReply();
+  const policyDisplay = (display ?? {
+    ownerUserId: 0,
+    teamMembers: [],
+  }) as DisplayDetailDto;
+  const policyArtwork = (detail ?? {
+    artistUserId: 0,
+    qaHandlers: [],
+  }) as GetArtworkDetailResponseDataDto;
+  const feelingPolicy = useFeelingPolicy(policyDisplay, undefined);
+  const feelingReplyPolicy = useFeelingReplyPolicy(policyDisplay);
+  const fallbackQuestion: GuestbookQuestion = {
+    questionId: 0,
+    content: '',
+    isPublic: true,
+    createdAt: '',
+    user: { userId: 0, nickname: '' },
+    reply: null,
+  };
+  const questionPolicy = useQuestionPolicy(questionReplyTarget ?? fallbackQuestion, policyDisplay);
+  const questionReplyPolicy = useQuestionReplyPolicy(
+    questionReplyTarget ?? fallbackQuestion,
+    policyDisplay,
+    policyArtwork,
+  );
+
+  const feelings = (feelingsData?.pages.flatMap((page) => page.feelings) ?? []).filter(
+    // 답글 없는 삭제된 감상은 목록에서 완전히 제외 (답글이 있으면 "삭제된 글입니다"로 표시)
+    (feeling) => !(feeling.isDeleted && feeling.replyCount === 0),
+  );
 
   /*
-   * 감상/질문 응답을 방명록 화면이 쓰는 형태로 맞춥니다.
+   * 질문 응답을 방명록 화면이 쓰는 형태로 맞춥니다.
    * 스웨거 응답에는 프로필 이미지와 좋아요 정보가 없어 화면 기본값을 사용합니다.
    */
-  const reviews: GuestbookReview[] = (feelingsData?.feelings ?? []).map((feeling) => ({
-    feelingId: feeling.feelingId,
-    content: feeling.content,
-    createdAt: feeling.createdAt,
-    user: {
-      userId: feeling.user?.userId ?? feeling.userId ?? 0,
-      nickname: feeling.user?.nickname ?? '',
-    },
-    reply: feeling.reply ? { content: feeling.reply.content, createdAt: feeling.createdAt } : null,
-    images: feeling.images?.map((image) => image.imageUrl),
-    isMyReview: Boolean(myUserId) && (feeling.user?.userId ?? feeling.userId) === myUserId,
-  }));
-
   const questions: GuestbookQuestion[] = (questionsData?.questions ?? []).map((question) => ({
     questionId: question.questionId,
     content: question.content,
@@ -89,22 +134,32 @@ export function ArtworkDetailPage() {
       nickname: question.user?.nickname ?? '',
     },
     reply: question.reply
-      ? { content: question.reply.content, createdAt: question.createdAt }
+      ? {
+          questionReplyId: question.reply.questionReplyId,
+          queReplyId: question.reply.queReplyId,
+          questionId: question.reply.questionId,
+          content: question.reply.content,
+          createdAt: question.reply.createdAt,
+          userId: question.reply.userId ?? question.reply.creatorId,
+          nickname: question.reply.nickname ?? question.reply.creatorName,
+          creatorId: question.reply.creatorId,
+          creatorName: question.reply.creatorName,
+        }
       : null,
     /* 본인 질문이면 시점과 무관하게 수정·삭제할 수 있습니다. */
     isMyQuestion: Boolean(myUserId) && question.user?.userId === myUserId,
   }));
 
-  /* 답글 대상이 있으면 답글로, 없으면 탭에 맞춰 감상/질문으로 등록합니다. */
-  const handleSendGuestbook = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
+  /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
+  const handleSendQuestion = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
     if (!content) return;
 
-    if (replyTarget) {
-      createFeelingReply.mutate(content, { onSuccess: () => setReplyTarget(null) });
-      return;
-    }
-
     if (questionReplyTarget) {
+      if (!hasPermission(questionReplyPolicy, 'reply.create')) {
+        openLoginModal();
+        return;
+      }
+
       createQuestionReply.mutate(
         { artworkId, questionId: questionReplyTarget.questionId, body: { content } },
         { onSuccess: () => setQuestionReplyTarget(null) },
@@ -112,12 +167,12 @@ export function ArtworkDetailPage() {
       return;
     }
 
-    if (activeSubTab === 'question') {
-      createQuestion.mutate({ artworkId, body: { content, isPublic: !isPrivate } });
+    if (!hasPermission(questionPolicy, 'create')) {
+      openLoginModal();
       return;
     }
 
-    createFeeling.mutate({ artworkId, body: { content } });
+    createQuestion.mutate({ artworkId, body: { content, isPublic: !isPrivate } });
   };
 
   if (isPending) {
@@ -155,7 +210,8 @@ export function ArtworkDetailPage() {
     exhibitionPeriod: detail.exhibitionInfo?.exhibitionPeriod ?? '',
     exhibitionThumbnail: displayPoster,
     bookmarkCount: detail.likeCount ?? 0,
-    isBookmarked: detail.isLiked ?? false,
+    isLiked: detail.isLiked ?? false,
+    isArchived: false,
   };
 
   /* 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
@@ -175,30 +231,34 @@ export function ArtworkDetailPage() {
       {/* 작품 메타 (제목, 작가, 소속전시, 저장버튼) */}
       <ArtworkMeta artwork={artwork} />
 
-      {/* 소개 / 방명록 탭 */}
+      {/* 소개 / 방명록 / 질문 탭 */}
       <ArtworkTabNav activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && (
         <ArtworkIntroTab artwork={artwork} artistUserId={detail.artistUserId} />
       )}
-      {activeTab === 'guestbook' && (
+      {(activeTab === 'review' || activeTab === 'question') && (
         <ArtworkGuestbookTab
-          reviews={reviews}
+          feelings={feelings}
+          hasMoreFeelings={hasMoreFeelings}
+          onLoadMoreFeelings={fetchMoreFeelings}
+          isLoadingMoreFeelings={isFetchingMoreFeelings}
           questions={questions}
           artworkId={artworkId}
-          activeSubTab={activeSubTab}
-          onSubTabChange={setActiveSubTab}
+          myUserId={myUserId}
+          artwork={detail}
+          display={policyDisplay}
+          activeTab={activeTab}
           isArtistView={isArtistView}
           onArtistViewChange={setIsArtistView}
-          replyTargetFeelingId={replyTarget?.feelingId ?? null}
-          onReplyTargetChange={setReplyTarget}
+          activeReplyId={activeReplyId}
+          onFeelingReplyClick={handleFeelingReplyClick}
           replyTargetQuestionId={questionReplyTarget?.questionId ?? null}
           onQuestionReplyTargetChange={setQuestionReplyTarget}
         />
       )}
 
-      {/* 하단 고정 바: 소개 탭은 저장버튼, 방명록 탭은 글쓰기 입력 바 */}
       {activeTab === 'intro' ? (
         <BottomFixedBar
           button={
@@ -209,26 +269,43 @@ export function ArtworkDetailPage() {
             />
           }
         />
+      ) : activeTab === 'review' ? (
+        <BottomCommentBar
+          placeholder="글을 입력하세요."
+          imageDomain="artwork-feeling"
+          isSubmitting={feelingReplyTarget ? createFeelingReply.isPending : createFeeling.isPending}
+          replyingTo={feelingReplyTarget?.author}
+          onCancelReply={clearFeelingReplyTarget}
+          onSubmit={({ content, images }) => {
+            if (feelingReplyTarget) {
+              if (!hasPermission(feelingReplyPolicy, 'reply.create')) {
+                openLoginModal();
+                return;
+              }
+              // 감상 답글 API는 이미지 첨부를 지원하지 않음
+              createFeelingReply.mutate(content, { onSuccess: clearFeelingReplyTarget });
+              return;
+            }
+
+            if (!hasPermission(feelingPolicy, 'create')) {
+              openLoginModal();
+              return;
+            }
+
+            createFeeling.mutate({ artworkId, body: { content, images } });
+          }}
+        />
       ) : (
         <BottomCommentBar
-          /* 일반인 시점 질문 탭에서만 비공개로 남길 수 있습니다. */
-          showPrivateOption={
-            !replyTarget && !questionReplyTarget && activeSubTab === 'question' && !isArtistView
-          }
-          replyingTo={replyTarget?.user?.nickname ?? questionReplyTarget?.user?.nickname}
-          onCancelReply={() => {
-            setReplyTarget(null);
-            setQuestionReplyTarget(null);
-          }}
-          isSubmitting={
-            createFeelingReply.isPending ||
-            createQuestionReply.isPending ||
-            createFeeling.isPending ||
-            createQuestion.isPending
-          }
-          onSubmit={handleSendGuestbook}
+          /* 일반인 시점에서만 비공개로 남길 수 있습니다. */
+          showPrivateOption={!questionReplyTarget && !isArtistView}
+          replyingTo={questionReplyTarget?.user?.nickname}
+          onCancelReply={() => setQuestionReplyTarget(null)}
+          isSubmitting={createQuestionReply.isPending || createQuestion.isPending}
+          onSubmit={handleSendQuestion}
         />
       )}
+      {loginModal}
     </div>
   );
 }

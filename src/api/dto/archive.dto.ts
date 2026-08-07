@@ -12,6 +12,7 @@ export type UnarchiveExhibitionResponseDto = ApiResponseDto<ArchivedExhibitionSt
 export interface ArchivedExhibitionDto {
   savedExhibitionId: number;
   displayId: number;
+  userId?: number;
   title: string;
   thumbnailUrl: string;
   organization: string;

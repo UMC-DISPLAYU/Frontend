@@ -1,9 +1,8 @@
-import { useState } from 'react';
-
-import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { SaveButtonUI } from '@/components/ui/SaveButtonUI';
 import { useArchiveArtwork, useUnarchiveArtwork } from '@/hooks/queries/useArchive';
-import { useAuthStore } from '@/stores/authStore';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useArchivePolicy } from '@/hooks/usePolicy';
+import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   className?: string;
@@ -14,18 +13,19 @@ type Props = {
 };
 
 export function ArtworkSaveButton({ className = '', id, artworkId, saved = false }: Props) {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const archive = useArchiveArtwork();
   const unarchive = useUnarchiveArtwork();
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const archivePolicy = useArchivePolicy();
   const isPending = archive.isPending || unarchive.isPending;
+  const canToggleArchive = hasPermission(archivePolicy, saved ? 'delete' : 'create');
 
   const toggleSave = () => {
-    if (!accessToken) {
-      setIsLoginModalOpen(true);
+    if (isPending || artworkId <= 0) return;
+    if (!canToggleArchive) {
+      openLoginModal();
       return;
     }
-    if (isPending || artworkId <= 0) return;
 
     if (saved) unarchive.mutate(artworkId);
     else archive.mutate(artworkId);
@@ -33,7 +33,6 @@ export function ArtworkSaveButton({ className = '', id, artworkId, saved = false
 
   return (
     <>
-      <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <SaveButtonUI
         text={saved ? '저장됨' : '작품 저장'}
         variant="dark"
@@ -42,6 +41,7 @@ export function ArtworkSaveButton({ className = '', id, artworkId, saved = false
         className={className}
         id={id}
       />
+      {loginModal}
     </>
   );
 }

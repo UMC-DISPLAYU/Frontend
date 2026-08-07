@@ -49,15 +49,12 @@ export function DisplayDetailPage() {
       <DetailTabNav activeTab={activeTab} onTabChange={setActiveTab} />
       {activeTab === 'intro' && <IntroTab display={display} />}
       {activeTab === 'artwork' && <ArtworkTab displayId={display.displayId} />}
-      {activeTab === 'review' && <ReviewTab displayId={display.displayId} />}
+      {activeTab === 'review' && <ReviewTab display={display} displayId={display.displayId} />}
       {/* 후기 탭은 하단에 댓글 입력바가 자리하므로 전시 저장 바를 띄우지 않습니다. */}
       {activeTab !== 'review' && (
         <BottomFixedBar
           button={
-            <DisplaySaveButton
-              displayId={display.displayId}
-              saved={display.isBookmarked ?? false}
-            />
+            <DisplaySaveButton displayId={display.displayId} saved={display.isArchived ?? false} />
           }
         />
       )}

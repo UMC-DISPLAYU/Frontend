@@ -10,7 +10,7 @@ export function ExhibitionMeta({
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-3">
       {showBadge && (
-        <span className="typo-body-xxs-regular inline-block text-white bg-tag-blue px-2 py-0.5 rounded mb-3">
+        <span className="typo-body-xxs-regular inline-block text-white px-2 py-0.5 rounded mb-3">
           {ex.status}
         </span>
       )}

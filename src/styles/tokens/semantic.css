@@ -17,6 +17,7 @@
   --bg-heart: var(--palette-red);
   --bg-bookmark: var(--palette-gray-300);
   --bg-logo: var(--palette-navy);
+  --bg-fnb: var(--palette-gray-200);
 
   /* Foreground — 텍스트와 아이콘이 같은 스케일을 공유한다 */
   --fg-main: var(--palette-gray-black);
@@ -27,6 +28,15 @@
   --fg-white: var(--palette-gray-white);
   --fg-link: var(--palette-blue);
   --fg-error: var(--palette-red);
+
+  /* Filter */
+  --filter-border-off: var(--palette-gray-300);
+  --filter-border-on: var(--palette-gray-black);
+  --filter-text-off: var(--palette-gray-600);
+  --filter-text-on: var(--palette-gray-black);
+
+  /* Navbar */
+  --navbar-fg: var(--palette-gray-150);
 
   /* Input — Default (기본형) */
   --input-border: var(--palette-gray-300);
@@ -46,8 +56,8 @@
   --modal-btn-hover-fg: var(--palette-gray-white);
 
   /* Tag */
-  --tag-blue: var(--palette-blue);
-  --tag-gray: var(--palette-token-200);
+  --tag-bg: var(--palette-token-200);
+  --tag-fg: var(--palette-gray-black);
 
   /* Button */
   --bt-gray: var(--palette-gray-200);

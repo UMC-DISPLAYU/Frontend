@@ -13,7 +13,20 @@ import {
   useDisplayArtworks,
   useUpdateArtworkOrder,
 } from '@/hooks/queries/useDisplayArtworks';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useArtworkPolicy } from '@/hooks/usePolicy';
+import type { ArtworkPolicyResource } from '@/policies/util';
 import type { Work } from '@/types/artworkManage';
+import { hasPermission } from '@/utils/hasPermission';
+
+function getArtworkPolicyResource(work: Work | null): ArtworkPolicyResource | undefined {
+  if (!work || work.artistUserId === undefined) return undefined;
+
+  return {
+    artistUserId: work.artistUserId,
+    coAuthorUserIds: work.coAuthorUserIds,
+  };
+}
 
 export function ArtworksManagePage() {
   const navigate = useNavigate();
@@ -22,15 +35,16 @@ export function ArtworksManagePage() {
   // 새로고침이나 링크 진입에서도 유지되도록 쿼리 스트링으로 받습니다.
   const displayId = Number(searchParams.get('displayId') ?? 0);
 
-  const { data } = useDisplayArtworks(displayId);
-  const deleteArtworkMutation = useDeleteArtwork(displayId);
-  const updateOrder = useUpdateArtworkOrder(displayId);
-
   const [screen, setScreen] = useState<'manage' | 'order'>('manage');
   const [sheetWork, setSheetWork] = useState<Work | null>(null);
   const [confirming, setConfirming] = useState(false);
   // 순서 편집 중에는 사용자가 끌어놓은 순서를 우선 보여줍니다.
   const [orderedWorks, setOrderedWorks] = useState<Work[] | null>(null);
+
+  const { data } = useDisplayArtworks(displayId);
+  const { data: display } = useDisplayDetail(displayId);
+  const deleteArtworkMutation = useDeleteArtwork(displayId);
+  const updateOrder = useUpdateArtworkOrder(displayId);
 
   const fetchedWorks = useMemo<Work[]>(
     () =>
@@ -42,12 +56,17 @@ export function ArtworksManagePage() {
         date: '',
         place: '',
         owner: artwork.artistName,
+        artistUserId: artwork.artistUserId,
+        coAuthorUserIds: artwork.coAuthorUserIds,
         thumbnail: artwork.artworkImageUrl,
       })),
     [data],
   );
 
   const works = orderedWorks ?? fetchedWorks;
+  const sheetArtworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(sheetWork));
+  const canEditSheetArtwork = hasPermission(sheetArtworkPolicy, 'edit');
+  const canDeleteSheetArtwork = hasPermission(sheetArtworkPolicy, 'delete');
 
   const handleDelete = () => {
     if (sheetWork) {
@@ -83,6 +102,7 @@ export function ArtworksManagePage() {
       {screen === 'manage' ? (
         <ManageScreen
           works={works}
+          display={display}
           onOpenSheet={setSheetWork}
           onEditOrder={() => setScreen('order')}
           onAddArtwork={() => navigate(`/artworks-register?displayId=${displayId}`)}
@@ -92,9 +112,11 @@ export function ArtworksManagePage() {
         <OrderScreen works={works} onReorder={handleReorder} onBack={handleOrderBack} />
       )}
 
-      {sheetWork && (
+      {sheetWork && (canEditSheetArtwork || canDeleteSheetArtwork) && (
         <WorkActionSheet
           work={sheetWork}
+          canEdit={canEditSheetArtwork}
+          canDelete={canDeleteSheetArtwork}
           onClose={() => setSheetWork(null)}
           onEdit={() => {}}
           onDelete={() => setConfirming(true)}

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 
-import { Bookmark, MapPin } from 'lucide-react';
+import { Bookmark, Calendar, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import type { NearbyDisplay } from '../../hooks/useNearbyDisplays';
@@ -56,27 +56,23 @@ export function ExhibitionMapCard({
     <Link
       to={`/display/${exhibition.displayId}`}
       onClick={handleCardClick}
-      className={`flex w-full cursor-pointer items-start gap-3 rounded-2xl p-3.5 text-left no-underline shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_1px_1px_4px_0px_rgba(1,8,21,0.20),inset_-2px_-2px_2px_0px_rgba(255,255,255,0.90)] ${
-        selected ? 'bg-box outline outline-1 -outline-offset-1 outline-line' : 'bg-box100'
-      }`}
+      className="flex justify-between items-center w-full py-4.5 bg-white border-b border-line cursor-pointer"
     >
-      <img
-        src={exhibition.posterImageUrl}
-        alt=""
-        className="h-32 w-24 shrink-0 rounded-xl bg-box200 object-cover"
-      />
+      <div className="flex gap-4.5 overflow-hidden">
+        <div className="size-[84px] shrink-0 rounded-lg overflow-hidden bg-box">
+          <img
+            src={exhibition.posterImageUrl}
+            alt={exhibition.title}
+            className="size-full object-cover"
+          />
+        </div>
 
-      <div className="flex flex-1 flex-col gap-4">
-        <span className="w-fit rounded-sm bg-box200 px-2 py-0.5">
-          <span className="typo-body-xxs-regular text-main">{exhibition.status}</span>
-        </span>
+        <div className="flex flex-col gap-2 min-w-0">
+          <h3 className="typo-body-base-bold text-main truncate">{exhibition.title}</h3>
 
-        <div className="flex flex-col gap-2.5">
-          <h3 className="typo-body-md-bold text-main">{exhibition.title}</h3>
-
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col">
-              <span className="typo-body-xs-regular text-sub700">{exhibition.hostName}</span>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <Calendar className="size-2.5 text-faint" strokeWidth={1.7} aria-hidden />
               <span className="typo-body-xs-regular text-hint">{exhibition.period}</span>
             </div>
 
@@ -90,7 +86,6 @@ export function ExhibitionMapCard({
 
       <button
         type="button"
-        aria-label={exhibition.isBookmarked ? '북마크 해제' : '북마크'}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -98,11 +93,7 @@ export function ExhibitionMapCard({
         }}
         className="shrink-0 focus:outline-none focus:ring-2 focus:ring-main focus:ring-offset-2"
       >
-        <Bookmark
-          className={exhibition.isBookmarked ? 'size-4 fill-main text-main' : 'size-4 text-faint'}
-          strokeWidth={1.2}
-          aria-hidden
-        />
+        <Bookmark className="size-4 text-faint" strokeWidth={1.2} aria-hidden />
       </button>
     </Link>
   );

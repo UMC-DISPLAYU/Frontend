@@ -12,16 +12,26 @@ export interface ArtworkImageDto extends ImageResponseDto {
 export interface ArtworkGuestbookUserDto {
   userId: number;
   nickname: string;
+  isCreator?: boolean;
+  profileImageUrl?: string | null;
 }
 
 export interface ArtworkGuestbookReplyDto {
   feelingReplyId?: number;
   questionReplyId?: number;
+  queReplyId?: number;
+  questionId?: number;
   content: string;
   createdAt: string;
+  user?: ArtworkGuestbookUserDto;
+  likeCount?: number;
+  isLiked?: boolean;
+  /* 질문 답변(작가 답변)은 user 대신 이 필드들로 내려온다. */
+  creatorId?: number;
+  creatorName?: string;
+  isCreator?: boolean;
   userId?: number;
   nickname?: string;
-  isCreator?: boolean;
   isTeamMember?: boolean;
 }
 
@@ -37,10 +47,18 @@ export interface GetArtworkDetailResponseDataDto {
   images: ImageResponseDto[];
   artistName: string;
   artistUserId: number;
+  qaHandlers?: ArtworkQaHandlerDto[];
+  // 공동 작업자. 서버가 아직 내려주지 않아 없으면 공동 작업자 없음으로 취급합니다.
+  coAuthorUserIds?: number[];
   exhibitionInfo: ArtworkPreviewExhibitionInfoDto;
   likeCount: number;
   isLiked: boolean;
   isSaved: boolean;
+}
+
+export interface ArtworkQaHandlerDto {
+  userId: number;
+  name: string;
 }
 
 export type GetArtworkDetailResponseDto = ApiResponseDto<GetArtworkDetailResponseDataDto>;
@@ -50,13 +68,24 @@ export interface ArtworkFeelingDto {
   userId?: number;
   content: string;
   createdAt: string;
+  isDeleted?: boolean;
+  isMine?: boolean;
   user: ArtworkGuestbookUserDto;
   images?: ImageResponseDto[];
-  reply: ArtworkGuestbookReplyDto | null;
+  likeCount: number;
+  isLiked?: boolean;
+  replyCount: number;
+}
+
+export interface GetArtworkFeelingsRequestDto {
+  cursorId?: number;
 }
 
 export interface GetArtworkFeelingsResponseDataDto {
   feelings: ArtworkFeelingDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
 }
 
 export type GetArtworkFeelingsResponseDto = ApiResponseDto<GetArtworkFeelingsResponseDataDto>;
@@ -116,7 +145,10 @@ export interface ArtworkQuestionDto {
   questionId: number;
   content: string;
   isPublic: boolean;
+  answerStatus?: 'WAITING' | 'ANSWERED';
   createdAt: string;
+  displayArtworkId?: number;
+  userId?: number;
   user: ArtworkGuestbookUserDto;
   reply: ArtworkGuestbookReplyDto | null;
 }
@@ -198,7 +230,7 @@ export interface UpdateArtworkQuestionRequestDto {
 export type UpdateArtworkQuestionResponseDto = ApiResponseDto<ArtworkQuestionRecordDto>;
 
 export interface DeleteArtworkQuestionResponseDataDto {
-  artQueId: number;
+  questionId: number;
   deletedAt: string;
 }
 
@@ -212,20 +244,26 @@ export interface CreateArtworkQuestionReplyResponseDataDto {
   queReplyId: number;
   content: string;
   createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  id2: number;
-  createrId: number;
+  questionId: number;
+  creatorId: number;
+  creatorName: string;
 }
 
 export type CreateArtworkQuestionReplyResponseDto =
   ApiResponseDto<CreateArtworkQuestionReplyResponseDataDto>;
 
+export interface DeleteArtworkQuestionReplyResponseDataDto {
+  questionReplyId: number;
+  deletedAt: string;
+}
+
+export type DeleteArtworkQuestionReplyResponseDto =
+  ApiResponseDto<DeleteArtworkQuestionReplyResponseDataDto>;
+
 export interface ArtworkFeelingLikeDto {
-  artLikeId: number;
-  createdAt: string;
-  id2: number;
-  userId: number;
+  feelingId: number;
+  liked: boolean;
+  likeCount: number;
 }
 
 export type ToggleArtworkFeelingLikeResponseDto = ApiResponseDto<ArtworkFeelingLikeDto | null>;
@@ -239,7 +277,7 @@ export interface ArtworkFeelingReplyListResponseDataDto {
 
 export interface ArtworkFeelingReplyLikeDto {
   feelingReplyId: number;
-  isLiked: boolean;
+  liked: boolean;
   likeCount: number;
 }
 
@@ -273,7 +311,8 @@ export interface CreateExhibitionArtworkRequestDto {
   artistName?: string;
   artistUserId?: number;
   coAuthors: ArtworkCoAuthorsDto;
-  qaHandlerUserId: number;
+  /* 담당자는 여러 명 지정할 수 있고 최소 한 명은 있어야 합니다. */
+  qaHandlerUserIds: number[];
 }
 
 export interface CreateExhibitionArtworkResponseDataDto {
@@ -343,6 +382,8 @@ export interface DisplayArtworkDto {
   artworkId: number;
   artworkName: string;
   artistName: string;
+  artistUserId?: number;
+  coAuthorUserIds?: number[];
   artworkImageUrl: string;
   imageWidth: number;
   imageHeight: number;

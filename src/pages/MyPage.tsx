@@ -15,6 +15,7 @@ import {
   SettingsSheet,
 } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
 import {
   useArchivedArtists,
   useArchivedArtworks,
@@ -151,7 +152,10 @@ export function MyPage() {
       isVerified: Boolean(userData?.isVerified),
       school: myArtistProfileQuery.data?.schoolName || userData?.schoolEmail?.split('@')[1] || '',
       schoolIcon: SchoolIcon,
-      field: myArtistProfileQuery.data?.fields?.join(' · ') ?? '',
+      field:
+        myArtistProfileQuery.data?.fields
+          ?.map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code)
+          .join(' · ') ?? '',
       fieldIcon: FieldIcon,
       exhibit: `${myDisplaysQuery.data?.length ?? 0}_작`,
       exhibitionIcon: ExhibitionIcon,
@@ -170,6 +174,7 @@ export function MyPage() {
       id: String(item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId),
       archiveDisplayId: item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId,
       displayId: item.displayId,
+      userId: item.userId ?? userData?.id,
       status: STATUS_LABEL[item.status] ?? item.status ?? '전시 중',
       title: item.title ?? item.name ?? '',
       org: item.organization ?? item.department ?? '',
@@ -178,7 +183,7 @@ export function MyPage() {
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
     }));
-  }, [archivedExhibitionsQuery.data]);
+  }, [archivedExhibitionsQuery.data, userData?.id]);
 
   const myExhibitions = myDisplaysQuery.data ?? [];
 
@@ -188,12 +193,13 @@ export function MyPage() {
       id: String(item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId),
       archiveWorkId: item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId,
       artworkId: item.artworkId,
+      userId: item.userId ?? userData?.id,
       title: item.title ?? item.artworkTitle ?? '작품',
       artist: item.artist ?? item.artistName ?? '',
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
     }));
-  }, [archivedArtworksQuery.data]);
+  }, [archivedArtworksQuery.data, userData?.id]);
 
   const myArtworks = useMemo<SavedArtworkItem[]>(() => {
     const items = myArtworksQuery.data ?? [];
@@ -349,6 +355,11 @@ export function MyPage() {
                 }}
                 onSaveMemo={handleSaveArtworkMemo}
                 onDeleteMemo={handleDeleteArtworkMemo}
+                onOpen={
+                  isArtistView
+                    ? (artwork) => navigate(`/personal-artworks/${artwork.artworkId ?? artwork.id}`)
+                    : undefined
+                }
               />
             ))}
           </div>

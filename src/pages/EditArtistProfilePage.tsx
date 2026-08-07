@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ChevronLeft, ImagePlus, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -112,6 +112,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [activityName, setActivityName] = useState(artistProfile?.artistName ?? '');
   const [intro, setIntro] = useState(artistProfile?.introduction ?? '');
+  /* 서버 응답과 선택지가 모두 영어 코드라 그대로 사용합니다. */
   const [selectedFields, setSelectedFields] = useState<string[]>(artistProfile?.fields ?? []);
   const [externalLink, setExternalLink] = useState(
     artistProfile?.externalLink ?? artistProfile?.portfolioUrl ?? '',
@@ -219,6 +220,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
             <span className="typo-body-sm-bold text-main">전시분야</span>
             <ChipGroup
               options={EXHIBITION_FIELDS}
+              labels={EXHIBITION_FIELD_LABELS}
               selected={selectedFields}
               onChange={(values) => {
                 if (values.length <= 2) {
@@ -278,7 +280,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           }
           className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white disabled:opacity-40"
         >
-          {updateMyArtistProfile.isPending ? '저장 중' : '완료'}
+          {updateMyArtistProfile.isPending || uploadImage.isPending ? '저장 중' : '완료'}
         </button>
       </footer>
     </div>

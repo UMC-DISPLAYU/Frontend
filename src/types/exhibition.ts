@@ -1,3 +1,4 @@
+import type { ArtworkQuestionDto } from '@/api/dto';
 import type { LoungeCategoryKey } from '@/constants/loungeCategories';
 
 // ─── Home Types ────────────────────────────────────────────────────────────
@@ -40,6 +41,7 @@ export interface LoungeBoardPost {
 export interface LoungeBoardComment {
   id: string;
   author: string;
+  avatarUrl?: string | null;
   time: string;
   content: string;
   likeCount: number;
@@ -79,7 +81,7 @@ export interface ExhibitionDetail {
   hours: string;
   location: string;
   bookmarkCount: number;
-  isBookmarked: boolean;
+  isArchived: boolean;
   heroImages: string[];
   description: string;
   contentImages: string[];
@@ -136,7 +138,9 @@ export interface ArtworkDetail {
   exhibitionPeriod: string;
   exhibitionThumbnail: string;
   bookmarkCount: number;
-  isBookmarked: boolean;
+  isArchived: boolean;
+  isLiked?: boolean;
+  likeCount?: number;
 }
 
 export interface GuestbookReviewReply {
@@ -176,20 +180,10 @@ export interface GuestbookReview {
   commentCount?: number;
 }
 
-export interface GuestbookQuestion {
-  questionId: number;
-  content: string;
-  isPublic: boolean;
-  createdAt: string;
-  user: {
-    userId: number;
-    nickname: string;
+export interface GuestbookQuestion extends ArtworkQuestionDto {
+  user: ArtworkQuestionDto['user'] & {
     profileImageUrl?: string;
   };
-  reply: {
-    content: string;
-    createdAt: string;
-  } | null;
   commentCount?: number;
   likeCount?: number;
   isLiked?: boolean;

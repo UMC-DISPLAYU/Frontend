@@ -3,6 +3,7 @@ import type {
   CreatePersonalArtworkQuestionRequestDto,
   CreatePersonalArtworkReplyRequestDto,
   GetPersonalArtworkFeelingsResponseDataDto,
+  GetPersonalArtworkQuestionReplyResponseDataDto,
   GetPersonalArtworkQuestionsResponseDataDto,
   GetPersonalArtworksResponseDataDto,
   PersonalArtworkFeelingLikeResponseDataDto,
@@ -10,6 +11,8 @@ import type {
   PersonalArtworkFeelingReplyListResponseDataDto,
   PersonalArtworkFeelingResponseDataDto,
   PersonalArtworkLikeResponseDataDto,
+  PersonalArtworkQuestionLikeResponseDataDto,
+  PersonalArtworkQuestionReplyLikeResponseDataDto,
   PersonalArtworkQuestionReplyResponseDataDto,
   PersonalArtworkQuestionResponseDataDto,
   PersonalArtworkRequestDto,
@@ -155,6 +158,15 @@ export const deletePersonalArtworkQuestion = async (
     method: 'DELETE',
   });
 
+// POST /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/like
+export const togglePersonalArtworkQuestionLike = async (
+  personalArtworkId: number,
+  personalQuestionId: number,
+): Promise<PersonalArtworkQuestionLikeResponseDataDto> =>
+  apiRequest(`/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/like`, {
+    method: 'POST',
+  });
+
 // POST /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/reply
 export const createPersonalArtworkQuestionReply = async (
   personalArtworkId: number,
@@ -165,3 +177,32 @@ export const createPersonalArtworkQuestionReply = async (
     method: 'POST',
     body,
   });
+
+// GET /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/reply
+export const getPersonalArtworkQuestionReply = async (
+  personalArtworkId: number,
+  personalQuestionId: number,
+): Promise<GetPersonalArtworkQuestionReplyResponseDataDto> =>
+  apiRequest(`/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/reply`);
+
+// DELETE /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/reply/:personalQuestionReplyId
+export const deletePersonalArtworkQuestionReply = async (
+  personalArtworkId: number,
+  personalQuestionId: number,
+  personalQuestionReplyId: number,
+): Promise<unknown> =>
+  apiRequest(
+    `/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/reply/${personalQuestionReplyId}`,
+    { method: 'DELETE' },
+  );
+
+// POST /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/reply/:personalQuestionReplyId/like
+export const togglePersonalArtworkQuestionReplyLike = async (
+  personalArtworkId: number,
+  personalQuestionId: number,
+  personalQuestionReplyId: number,
+): Promise<PersonalArtworkQuestionReplyLikeResponseDataDto> =>
+  apiRequest(
+    `/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/reply/${personalQuestionReplyId}/like`,
+    { method: 'POST' },
+  );

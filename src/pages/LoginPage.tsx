@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import displayuLogo from '@/assets/brand/DUfontlogo.svg';
+import { logout } from '@/api/endpoints';
 import googleIcon from '@/assets/onboarding/googleIcon.svg';
 import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
-import onboardingSplash from '@/assets/onboarding/onboarding-splash.svg';
+import loginLogo from '@/assets/onboarding/login-logo.svg';
+import onboardingSplash from '@/assets/onboarding/onboarding-splash.png';
 import { useGoogleAuthorizationUrl, useKakaoAuthorizationUrl } from '@/hooks/queries/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 
-const LOGIN_ASSETS = [displayuLogo, kakaoIcon, googleIcon, onboardingSplash];
+const LOGIN_ASSETS = [loginLogo, kakaoIcon, googleIcon, onboardingSplash];
 
 function preloadImages(srcList: string[]) {
   return Promise.all(
@@ -52,7 +54,7 @@ function LoginContent({
   error?: string;
 }) {
   return (
-    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
+    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page">
       {/* Background Image - Wall-to-Wall */}
       <img
         src={onboardingSplash}
@@ -64,26 +66,21 @@ function LoginContent({
       {/* DU Logo & Text Overlay - Smooth Fade In */}
       <div
         className={cn(
-          'absolute top-[26%] left-1/2 z-10 flex w-64 -translate-x-1/2 flex-col items-center transition-all duration-1000 ease-out will-change-transform',
+          'absolute top-[16%] left-1/2 z-10 flex w-64 -translate-x-1/2 flex-col items-center transition-all duration-1000 ease-out will-change-transform',
           isLogoVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
         )}
       >
-        {/* DU Logo with Mask Gradient for metallic reflection */}
-        <div
-          className={cn(
-            'relative z-10 h-12.5 w-full mb-6 drop-shadow-xl',
-            'bg-[radial-gradient(ellipse_at_top,#94a3b8_0%,#06032d_50%)]',
-            '[-webkit-mask-image:url(/src/assets/brand/DUfontlogo.svg)] [-webkit-mask-size:contain] [-webkit-mask-repeat:no-repeat] [-webkit-mask-position:center]',
-            'mask-[url(/src/assets/brand/DUfontlogo.svg)] mask-size-contain mask-repeat-no-mask mask-position-center',
-          )}
-          aria-label="Display U"
-          role="img"
+        {/* DU Logo (login-logo with built-in reflection) */}
+        <img
+          src={loginLogo}
+          alt="Display U"
+          className="relative z-10 w-56 h-auto mb-2 object-contain"
         />
 
         {/* Horizontal Line with Gradient */}
         <div className="relative z-10 w-full h-0.5 bg-linear-to-r from-[#06032d] via-slate-500 to-[#06032d] mb-2.5 shadow-[0px_2px_2px_rgba(0,0,0,0.25)] opacity-90" />
 
-        {/* Text with Gradient for metallic reflection */}
+        {/* Subtitle Text with Metallic Gradient */}
         <p className="relative z-10 text-transparent bg-clip-text bg-linear-to-r from-[#1a1b41] via-slate-800 to-[#1a1b41] typo-body-md-bold whitespace-nowrap tracking-tight">
           전시가 끝난 뒤에도 감상은 계속되도록
         </p>
@@ -189,30 +186,70 @@ export function LoginPage() {
   };
 
   useEffect(() => {
-    void preloadImages(LOGIN_ASSETS);
+    let isMounted = true;
+    let logoTimer: number;
+    let uiTimer: number;
 
-    const logoTimer = window.setTimeout(() => {
-      setIsLogoVisible(true);
-    }, 100);
+    preloadImages(LOGIN_ASSETS)
+      .then(() => {
+        if (!isMounted) return;
 
-    const uiTimer = window.setTimeout(() => {
-      setIsUIReady(true);
-    }, 1000);
+        logoTimer = window.setTimeout(() => {
+          setIsLogoVisible(true);
+        }, 100);
+
+        uiTimer = window.setTimeout(() => {
+          setIsUIReady(true);
+        }, 1000);
+      })
+      .catch(() => {
+        // 이미지가 로드 실패하더라도 UI는 띄워주기 위해 폴백 처리
+        if (!isMounted) return;
+        setIsLogoVisible(true);
+        setIsUIReady(true);
+      });
 
     return () => {
+      isMounted = false;
       window.clearTimeout(logoTimer);
       window.clearTimeout(uiTimer);
     };
   }, []);
 
   return (
-    <div className="flex min-h-dvh w-full items-center justify-center bg-page font-[Pretendard,sans-serif]">
+    <div className="flex min-h-dvh w-full items-center justify-center bg-page">
       <LoginContent
         isLogoVisible={isLogoVisible}
         isUIReady={isUIReady}
         isStartingOAuth={isStartingOAuth}
         error={authError}
-        onGuest={() => navigate('/home')}
+        onGuest={async () => {
+          try {
+            await logout({});
+            useAuthStore.getState().clearAuth();
+            navigate('/home');
+          } catch (err: unknown) {
+            const status =
+              (err as { status?: number; response?: { status?: number } })?.status ??
+              (err as { response?: { status?: number } })?.response?.status;
+
+            const isServerErrorOrNetwork =
+              (status !== undefined && status >= 500) ||
+              (err as { code?: string })?.code === 'ERR_NETWORK' ||
+              (err as Error)?.message === 'Network Error' ||
+              (err as Error)?.message?.includes('Network');
+
+            if (isServerErrorOrNetwork) {
+              setAuthError(
+                (err as Error)?.message || '로그아웃 처리 중 네트워크/서버 오류가 발생했습니다.',
+              );
+              return;
+            }
+
+            useAuthStore.getState().clearAuth();
+            navigate('/home');
+          }
+        }}
         onKakao={() => {
           void startOAuthLogin('kakao');
         }}

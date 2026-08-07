@@ -1,10 +1,9 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ChevronLeft, Info, Loader2, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { UserProfileDto } from '@/api/dto';
-import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
 import { cn } from '@/utils/cn';
@@ -16,7 +15,6 @@ function ProfilePhotoField({
 }: {
   image: string | null;
   onChange: (file: File) => void;
-  isUploading: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -24,7 +22,6 @@ function ProfilePhotoField({
     const file = e.target.files?.[0];
     if (!file) return;
     onChange(file);
-    e.currentTarget.value = '';
   };
 
   return (
@@ -63,11 +60,9 @@ export function EditBasicInfoPage() {
 
 function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const navigate = useNavigate();
-  const [previewImage, setPreviewImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [isImageUploading, setIsImageUploading] = useState(false);
-  const [profileName, setProfileName] = useState(userMe?.nickname || userMe?.name || '');
-  const [isDuplicateChecked, setIsDuplicateChecked] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [activityName, setActivityName] = useState(userMe?.nickname || userMe?.name || '');
   const updateUserMe = useUpdateUserMe();
   const uploadImage = useUploadImage();
 
@@ -127,13 +122,36 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
     }
   };
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    return () => {
+      if (profileImage?.startsWith('blob:')) {
+        URL.revokeObjectURL(profileImage);
+      }
+    };
+  }, [profileImage]);
+
+  const handleProfileImageChange = (file: File) => {
+    setProfileImage((prev) => {
+      if (prev?.startsWith('blob:')) {
+        URL.revokeObjectURL(prev);
+      }
+
+      return URL.createObjectURL(file);
+    });
+    setProfileImageFile(file);
+  };
+
+  const handleSubmit = async () => {
     if (!canSubmit) return;
+
+    const uploadedProfileImageUrl = profileImageFile
+      ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
+      : profileImage;
 
     updateUserMe.mutate(
       {
-        nickname: profileName.trim(),
-        ...(uploadedImageUrl ? { profileImageUrl: uploadedImageUrl } : {}),
+        nickname: activityName.trim(),
+        ...(uploadedProfileImageUrl ? { profileImageUrl: uploadedProfileImageUrl } : {}),
       },
       {
         onSuccess: () => {
@@ -152,13 +170,9 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>
       </header>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-60">
-        <div className="mt-[24px] flex justify-center">
-          <ProfilePhotoField
-            image={previewImage}
-            onChange={handleImageChange}
-            isUploading={isImageUploading}
-          />
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-40">
+        <div className="mt-10 flex justify-center">
+          <ProfilePhotoField image={profileImage} onChange={handleProfileImageChange} />
         </div>
 
         <div className="mt-[60px] flex flex-col gap-3">
@@ -227,10 +241,10 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!canSubmit || updateUserMe.isPending}
-          className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-card transition-opacity disabled:opacity-40"
+          disabled={!canSubmit || updateUserMe.isPending || uploadImage.isPending}
+          className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white transition-opacity disabled:opacity-40"
         >
-          {updateUserMe.isPending ? '저장 중' : '완료'}
+          {updateUserMe.isPending || uploadImage.isPending ? '저장 중' : '완료'}
         </button>
       </footer>
     </div>

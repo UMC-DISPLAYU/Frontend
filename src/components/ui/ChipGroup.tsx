@@ -6,6 +6,8 @@ interface ChipGroupProps {
   options: readonly string[];
   selected: string[];
   onChange: (selected: string[]) => void;
+  /* 값과 화면 표시가 다를 때 쓰는 라벨 매핑입니다. 없으면 값을 그대로 보여줍니다. */
+  labels?: Record<string, string>;
   /* 선택 가능한 최대 개수입니다. 생략하면 제한 없이 고를 수 있습니다. */
   maxSelect?: number;
   'aria-label'?: string;
@@ -22,6 +24,7 @@ export const ChipGroup = memo(function ChipGroup({
   options,
   selected,
   onChange,
+  labels,
   maxSelect,
   'aria-label': ariaLabel,
   'aria-describedby': ariaDescribedBy,
@@ -58,7 +61,7 @@ export const ChipGroup = memo(function ChipGroup({
       {options.map((option) => (
         <Chip
           key={option}
-          label={option}
+          label={labels?.[option] ?? option}
           selected={selected.includes(option)}
           onClick={() => handleClick(option)}
           role={isSingleSelect ? 'radio' : 'checkbox'}
