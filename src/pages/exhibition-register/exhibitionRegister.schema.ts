@@ -84,8 +84,8 @@ export const exhibitionBasicInfoSchema = z.object({
   // 전시 장소 정보
   placeName: z.string().trim().min(1, { message: '장소명을 입력해주세요.' }),
   address: z.string().trim().min(1, { message: '상세 주소를 입력해주세요.' }),
-  latitude: z.number({ required_error: '위도를 선택해주세요.' }),
-  longitude: z.number({ required_error: '경도를 선택해주세요.' }),
+  latitude: z.number({ message: '위도를 선택해주세요.' }),
+  longitude: z.number({ message: '경도를 선택해주세요.' }),
 
   // 문의 계정 (Q&A 계정)
   contact: z.string().trim().min(1, { message: '문의처를 입력해주세요.' }),
