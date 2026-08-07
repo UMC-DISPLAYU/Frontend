@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
+import { cn } from '@/utils/cn';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const MONTHS_TO_SHOW = 12;
@@ -171,15 +172,15 @@ function MonthBox({ year, month, start, end, inRange, handlePick }: MonthBoxProp
             >
               {active && (
                 <div
-                  className={[
+                  className={cn(
                     'absolute inset-y-0 bg-cal-active',
                     roundedLeft ? 'left-1/2 -ml-4 rounded-l-full' : 'left-0',
                     roundedRight ? 'right-1/2 -mr-4 rounded-r-full' : 'right-0',
-                  ].join(' ')}
+                  )}
                 />
               )}
               <span
-                className={[
+                className={cn(
                   'relative z-10 flex size-8 items-center justify-center rounded-full typo-body-md-regular',
                   isPast
                     ? 'text-faint opacity-40'
@@ -188,7 +189,7 @@ function MonthBox({ year, month, start, end, inRange, handlePick }: MonthBoxProp
                       : active
                         ? 'text-white'
                         : 'text-sub700',
-                ].join(' ')}
+                )}
               >
                 {date.getDate()}
               </span>
