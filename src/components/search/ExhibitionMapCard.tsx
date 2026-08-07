@@ -14,7 +14,6 @@ interface ExhibitionMapCardProps {
 
 export function ExhibitionMapCard({
   exhibition,
-  selected = false,
   onClick,
   onToggleBookmark,
 }: ExhibitionMapCardProps) {

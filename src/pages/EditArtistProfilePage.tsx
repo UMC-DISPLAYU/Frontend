@@ -70,19 +70,11 @@ function ProfilePhotoField({
 export function EditArtistProfilePage() {
   const navigate = useNavigate();
   const { data: artistProfile, error, isError } = useMyArtistProfile();
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // 작가 프로필이 없으면 (404 에러만) 작가 인증 모달 표시
-  useEffect(() => {
-    if (isError && !showVerificationModal) {
-      const is404 = isAxiosError(error) && error.response?.status === 404;
-      if (is404) {
-        setShowVerificationModal(true);
-      }
-    }
-  }, [isError, error, showVerificationModal]);
+  const is404 = isError && isAxiosError(error) && error.response?.status === 404;
 
-  if (showVerificationModal) {
+  if (is404) {
     return (
       <ConfirmModal
         message="작가 프로필을 설정하려면 먼저 작가 인증을 완료해주세요."

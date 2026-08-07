@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
-import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworkCard } from './ArtworkCard';
