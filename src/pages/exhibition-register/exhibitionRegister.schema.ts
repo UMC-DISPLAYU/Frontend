@@ -25,7 +25,7 @@ export const exhibitionRegisterSchema = z
       .or(z.literal('')),
 
     type: z
-      .string({ invalid_type_error: '전시 유형을 선택해주세요.' })
+      .string()
       .nullable()
       .refine(
         (val) => val !== null && (EXHIBITION_TYPE_LABELS as readonly string[]).includes(val),
