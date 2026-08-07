@@ -16,12 +16,13 @@ export interface NearbyDisplay {
   title: string;
   posterImageUrl: string;
   status: string; // 예: '전시 중' - startDate/endDate로 계산
-  hostName: string; // locationName 사용
-  period: string; // startDate ~ endDate 포맷
-  placeName: string;
+  schoolDepartmentName?: string;
+  startDate: string;
+  endDate: string;
+  locationName: string;
   latitude: number;
   longitude: number;
-  isArchived: boolean; // 현재 API에 없음, 추후 추가 필요
+  isArchived: boolean;
 }
 
 export interface NearbyParams {
@@ -50,24 +51,28 @@ async function fetchNearbyDisplays(params: NearbyParams): Promise<NearbyDisplay[
   const requestDto: GetDisplayMapRequestDto = {
     ...bounds,
     searchWord: params.searchWord || undefined,
-    // cursor와 size는 optional이므로 제거해봄
   };
 
   const response = await getDisplayMap(requestDto);
 
   // API 응답(DisplayMapMarkerDto)을 NearbyDisplay 형태로 변환
-  return response.markers.map((marker) => ({
-    displayId: marker.displayId,
-    title: marker.title,
-    posterImageUrl: marker.posterImageUrl,
-    status: getDisplayStatus(marker.startDate, marker.endDate),
-    hostName: marker.locationName, // API에 hostName이 없으므로 locationName 사용
-    period: `${formatDate(marker.startDate)} - ${formatDate(marker.endDate)}`,
-    placeName: marker.locationName,
-    latitude: marker.latitude,
-    longitude: marker.longitude,
-    isArchived: false, // TODO: 북마크 API 연동 필요
-  }));
+  return response.markers.map((marker) => {
+    const markerObj = marker as Record<string, unknown>;
+
+    return {
+      displayId: marker.displayId,
+      title: marker.title,
+      posterImageUrl: marker.posterImageUrl,
+      status: getDisplayStatus(marker.startDate, marker.endDate),
+      schoolDepartmentName: markerObj?.schoolDepartmentName as string | undefined,
+      startDate: marker.startDate,
+      endDate: marker.endDate,
+      locationName: marker.locationName,
+      latitude: marker.latitude,
+      longitude: marker.longitude,
+      isArchived: false,
+    };
+  });
 }
 
 export function useNearbyDisplays(params: NearbyParams | null) {

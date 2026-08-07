@@ -26,8 +26,8 @@ export function ExhibitionMapMarker({ title, selected, onClick }: ExhibitionMapM
       <span
         className={
           selected
-            ? 'mt-[3px] size-2.5 rounded-full bg-dark'
-            : 'mt-[3px] size-2 rounded-full bg-faint'
+            ? 'mt-0.75 size-2.5 rounded-full bg-dark'
+            : 'mt-0.75 size-2 rounded-full bg-faint'
         }
       />
     </button>

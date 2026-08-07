@@ -244,7 +244,10 @@ export function SearchPage() {
               </p>
             ) : (
               <div className="flex flex-col gap-3">
-                {nearbyExhibitions.map((exhibition) => (
+                {(selectedMapId
+                  ? nearbyExhibitions.filter((ex) => ex.displayId === selectedMapId)
+                  : nearbyExhibitions
+                ).map((exhibition) => (
                   <ExhibitionMapCard
                     exhibition={exhibition}
                     key={exhibition.displayId}

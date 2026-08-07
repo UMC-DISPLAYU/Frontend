@@ -1,9 +1,10 @@
 import { useRef } from 'react';
 
-import { Bookmark, Calendar, MapPin } from 'lucide-react';
+import { Bookmark } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import type { NearbyDisplay } from '@/hooks/useNearbyDisplays';
+import { formatDate } from '@/utils/date';
 
 interface ExhibitionMapCardProps {
   exhibition: NearbyDisplay;
@@ -14,6 +15,7 @@ interface ExhibitionMapCardProps {
 
 export function ExhibitionMapCard({
   exhibition,
+  selected,
   onClick,
   onToggleBookmark,
 }: ExhibitionMapCardProps) {
@@ -51,49 +53,77 @@ export function ExhibitionMapCard({
     }
   };
 
+  const schoolDeptText = exhibition.schoolDepartmentName;
+
   return (
     <Link
       to={`/display/${exhibition.displayId}`}
       onClick={handleCardClick}
-      className="flex justify-between items-center w-full py-4.5 bg-white border-b border-line cursor-pointer"
+      className="h-40 w-full rounded-2xl bg-box100 px-4 py-3.5 no-underline transition-all cursor-pointer shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_2px_2px_3px_0px_rgba(0,0,0,0.20),inset_-2px_-2px_3px_0px_rgba(255,255,255,1.00)]"
     >
-      <div className="flex gap-4.5 overflow-hidden">
-        <div className="size-[84px] shrink-0 rounded-lg overflow-hidden bg-box">
-          <img
-            src={exhibition.posterImageUrl}
-            alt={exhibition.title}
-            className="size-full object-cover"
-          />
-        </div>
+      <div className="flex items-start gap-2.5 self-stretch">
+        <div className="flex flex-1 items-start gap-3 min-w-0 h-32">
+          {/* 포스터 이미지 */}
+          <div className="relative h-33 w-24 shrink-0 overflow-hidden rounded-xl bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)]">
+            <img
+              src={exhibition.posterImageUrl}
+              alt={exhibition.title}
+              className="size-full object-cover"
+            />
+          </div>
 
-        <div className="flex flex-col gap-2 min-w-0">
-          <h3 className="typo-body-base-bold text-main truncate">{exhibition.title}</h3>
-
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1">
-              <Calendar className="size-2.5 text-faint" strokeWidth={1.7} aria-hidden />
-              <span className="typo-body-xs-regular text-hint">{exhibition.period}</span>
+          {/* 우측 정보 영역 */}
+          <div className="flex flex-1 flex-col justify-start items-start gap-4 min-w-0">
+            {/* 전시 태그: 디자인 토큰 bg-tag-bg, text-tag-fg */}
+            <div className="inline-flex items-start justify-start rounded-sm bg-tag-bg px-2 py-0.5">
+              <span className="text-tag-fg typo-body-xxs-regular">{exhibition.status}</span>
             </div>
 
-            <div className="flex items-center gap-1">
-              <MapPin className="size-2.5 text-faint" strokeWidth={1.7} aria-hidden />
-              <span className="typo-body-xxs-regular text-faint">{exhibition.placeName}</span>
+            <div className="flex flex-col items-start justify-start gap-2.5 self-stretch min-w-0">
+              {/* 1. 전시 타이틀 */}
+              <div className="self-stretch truncate typo-body-md-bold text-main">
+                {exhibition.title}
+              </div>
+
+              <div className="flex flex-col items-start justify-start gap-4 self-stretch min-w-0">
+                <div className="flex flex-col items-start justify-start self-stretch min-w-0">
+                  {/* 2. schoolDepartmentName */}
+                  <div className="self-stretch truncate typo-body-xs-regular text-sub700">
+                    {schoolDeptText || '\u00A0'}
+                  </div>
+                  {/* 3. 스타트 엔드 시간 */}
+                  <div className="self-stretch typo-body-xs-regular text-hint">
+                    {formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}
+                  </div>
+                </div>
+
+                {/* 4. locationName */}
+                <div className="inline-flex h-4 items-center justify-start gap-2 self-stretch">
+                  <div className="flex h-4 items-end justify-start gap-2 w-full min-w-0">
+                    <div className="truncate typo-body-xxs-regular text-faint w-full">
+                      {exhibition.locationName}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onToggleBookmark?.();
-        }}
-        className="shrink-0 focus:outline-none focus:ring-2 focus:ring-main focus:ring-offset-2"
-      >
-        <Bookmark className="size-4 text-faint" strokeWidth={1.2} aria-hidden />
-      </button>
+        {/* 북마크 아이콘 */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleBookmark?.();
+          }}
+          className="size-4 shrink-0 focus:outline-none cursor-pointer"
+          aria-label="북마크"
+        >
+          <Bookmark className="size-4 text-stone-400" strokeWidth={1.5} aria-hidden />
+        </button>
+      </div>
     </Link>
   );
 }

@@ -17,7 +17,7 @@ const IDLE_DEBOUNCE_MS = 250;
 interface ExhibitionMapProps {
   exhibitions: NearbyDisplay[];
   selectedId: number | null;
-  onSelect: (id: number) => void;
+  onSelect: (id: number | null) => void;
   onBoundsChange: (params: NearbyParams) => void;
 }
 
@@ -98,6 +98,7 @@ export function ExhibitionMap({
         center={DEFAULT_CENTER}
         level={DEFAULT_LEVEL}
         style={{ width: '100%', height: '100%' }}
+        onClick={() => onSelect(null)}
         onIdle={handleIdle}
         onCreate={(map) => {
           mapRef.current = map;
@@ -127,7 +128,7 @@ export function ExhibitionMap({
         aria-label="내 위치로 이동"
         className="absolute bottom-4 right-4 z-10 flex size-12 items-center justify-center rounded-full bg-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
       >
-        <LocateFixed className={`size-6 text-neutral-700 ${isLocating ? 'animate-pulse' : ''}`} />
+        <LocateFixed className={`size-6 text-sub700 ${isLocating ? 'animate-pulse' : ''}`} />
       </button>
     </div>
   );
