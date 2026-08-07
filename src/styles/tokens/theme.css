@@ -18,6 +18,7 @@
   --color-heart: var(--bg-heart);
   --color-bookmark: var(--bg-bookmark);
   --color-logo: var(--bg-logo);
+  --color-fnb: var(--bg-fnb);
 
   /* Foreground (text + icon) */
   --color-main: var(--fg-main);
