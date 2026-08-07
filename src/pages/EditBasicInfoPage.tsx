@@ -16,7 +16,7 @@ import {
   noSpecialCharSchema,
   type OnboardingNicknameFormValues,
   onboardingNicknameSchema,
-} from '@/schemas/user.schema';
+} from '@/pages/onboarding/onboarding.schema';
 import { cn } from '@/utils/cn';
 
 function ProfilePhotoField({

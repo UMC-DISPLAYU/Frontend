@@ -187,11 +187,14 @@ export function ExhibitionRegister() {
               onRemoveImage={imageUpload.removeImage}
               onRemoveInitialImage={handleRemoveInitialImage}
             />
-            {isSubmitted && errors.imageUrls && (
-              <span className="typo-body-xxs-regular text-error text-center px-2">
-                {errors.imageUrls.message}
-              </span>
-            )}
+            {errors.imageUrls &&
+              (errors.imageUrls.type === 'too_big' ||
+                errors.imageUrls.type === 'max' ||
+                isSubmitted) && (
+                <span className="typo-body-xxs-regular text-error text-center px-2">
+                  {errors.imageUrls.message}
+                </span>
+              )}
           </div>
 
           <div className="flex flex-col gap-1.5">

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ChevronLeft, ImagePlus, Info, Search } from 'lucide-react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
@@ -16,6 +18,12 @@ import {
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { cn } from '@/utils/cn';
+
+import {
+  type EditArtistProfileFormValues,
+  editArtistProfileSchema,
+} from './editArtistProfile.schema';
 
 const INTRO_MAX = 100;
 
@@ -75,20 +83,41 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
     artistProfile?.profileImageUrl ?? null,
   );
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
-  const [activityName, setActivityName] = useState(artistProfile?.artistName ?? '');
-  const [intro, setIntro] = useState(artistProfile?.introduction ?? '');
-  /* 서버 응답과 선택지가 모두 영어 코드라 그대로 사용합니다. */
-  const [selectedFields, setSelectedFields] = useState<string[]>(artistProfile?.fields ?? []);
-  const [externalLink, setExternalLink] = useState(
-    artistProfile?.externalLink ?? artistProfile?.portfolioUrl ?? '',
-  );
-  const [school, setSchool] = useState(artistProfile?.schoolName ?? '');
-  const [schoolFocused, setSchoolFocused] = useState(false);
-  const schoolQuery = useSearchSchools(school);
   const updateMyArtistProfile = useUpdateMyArtistProfile();
   const uploadImage = useUploadImage();
 
-  const showSchoolDropdown = schoolFocused && school.trim().length > 0;
+  // 작가인증 여부 확인 (학교명이 있으면 고정)
+  const isSchoolFixed = Boolean(artistProfile?.schoolName);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors, isValid },
+  } = useForm<EditArtistProfileFormValues>({
+    resolver: zodResolver(editArtistProfileSchema),
+    mode: 'onChange',
+    defaultValues: {
+      artistName: artistProfile?.artistName ?? '',
+      introduction: artistProfile?.introduction ?? '',
+      fields: artistProfile?.fields ?? [],
+      externalLink: artistProfile?.externalLink ?? artistProfile?.portfolioUrl ?? '',
+      univName: artistProfile?.schoolName ?? '',
+    },
+  });
+
+  const artistName = useWatch({ control, name: 'artistName' }) ?? '';
+  const introduction = useWatch({ control, name: 'introduction' }) ?? '';
+  const externalLink = useWatch({ control, name: 'externalLink' }) ?? '';
+  const selectedFields = useWatch({ control, name: 'fields' }) ?? [];
+  const school = useWatch({ control, name: 'univName' }) ?? '';
+
+  const [schoolFocused, setSchoolFocused] = useState(false);
+  const schoolQuery = useSearchSchools(school);
+  const showSchoolDropdown = !isSchoolFixed && schoolFocused && school.trim().length > 0;
+
+  const canSubmit = isValid && !updateMyArtistProfile.isPending && !uploadImage.isPending;
 
   useEffect(() => {
     return () => {
@@ -109,20 +138,18 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
     setProfileImageFile(file);
   };
 
-  const handleSubmit = async () => {
+  const onFormSubmit = async (data: EditArtistProfileFormValues) => {
+    if (!canSubmit) return;
+
     const uploadedProfileImageUrl = profileImageFile
       ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
       : profileImage;
-    const fields = selectedFields
+
+    const fieldsToSend = (data.fields ?? [])
       .map((field) => ARTIST_FIELD_MAP[field as ExhibitionField])
       .filter((field): field is ArtistFieldCode => Boolean(field));
 
-    /*
-     * profileImageUrl·externalLink는 서버에서 http(s) URL 형식을 강제하므로
-     * 빈 값은 필드를 아예 빼서 보냅니다. 빈 문자열을 보내면 검증에서 거절됩니다.
-     * 업로드 전 미리보기용 blob: URL도 서버로 넘어가면 안 됩니다.
-     */
-    const trimmedExternalLink = externalLink.trim();
+    const trimmedExternalLink = data.externalLink?.trim() ?? '';
     const isSubmittableUrl = (url: string | null | undefined): url is string =>
       Boolean(url) && /^https?:\/\//.test(url as string);
 
@@ -131,9 +158,9 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
         ...(isSubmittableUrl(uploadedProfileImageUrl)
           ? { profileImageUrl: uploadedProfileImageUrl }
           : {}),
-        artistName: activityName.trim(),
-        introduction: intro.trim(),
-        fields,
+        artistName: data.artistName.trim(),
+        introduction: data.introduction?.trim() ?? '',
+        fields: fieldsToSend,
         ...(isSubmittableUrl(trimmedExternalLink) ? { externalLink: trimmedExternalLink } : {}),
         univName: school.trim(),
       },
@@ -159,41 +186,57 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           <ProfilePhotoField image={profileImage} onChange={handleProfileImageChange} />
         </div>
 
-        <div className="mt-12 flex flex-col gap-5">
+        <form
+          id="edit-artist-profile-form"
+          onSubmit={handleSubmit(onFormSubmit)}
+          className="mt-12 flex flex-col gap-5"
+        >
           {/* 활동명 */}
           <div className="flex flex-col gap-3">
-            <label htmlFor="activityName" className="typo-body-sm-bold text-main">
+            <label htmlFor="artistName" className="typo-body-sm-bold text-main">
               활동명
             </label>
             <input
-              id="activityName"
-              value={activityName}
-              onChange={(e) => setActivityName(e.target.value)}
-              maxLength={30}
-              placeholder="활동명 입력(최대 30자)"
+              id="artistName"
+              maxLength={15}
+              placeholder="활동명 입력(최대 15자)"
               className="h-9 rounded-lg border border-line bg-card px-3 typo-body-xs-regular text-main outline-none placeholder:text-faint focus:border-line-active"
+              {...register('artistName')}
             />
+            {errors.artistName?.message && (
+              <span className="typo-body-xxs-regular text-error px-1">
+                {errors.artistName.message}
+              </span>
+            )}
           </div>
 
           {/* 전시소개 */}
           <div className="flex flex-col gap-3">
-            <label htmlFor="intro" className="typo-body-sm-bold text-main">
+            <label htmlFor="introduction" className="typo-body-sm-bold text-main">
               전시소개
             </label>
             <div className="rounded-lg border border-line bg-card px-3 py-2.5">
               <textarea
-                id="intro"
-                value={intro}
-                onChange={(e) => setIntro(e.target.value.slice(0, INTRO_MAX))}
+                id="introduction"
                 maxLength={INTRO_MAX}
                 placeholder="전시에 대해 소개해주세요"
                 rows={4}
                 className="w-full resize-none bg-transparent typo-body-xs-regular text-main outline-none placeholder:text-faint"
+                {...register('introduction', {
+                  onChange: (e) => {
+                    setValue('introduction', e.target.value.slice(0, INTRO_MAX));
+                  },
+                })}
               />
               <div className="text-right typo-body-xs-regular text-faint">
-                {intro.length}/{INTRO_MAX}
+                {introduction.length}/{INTRO_MAX}
               </div>
             </div>
+            {errors.introduction?.message && (
+              <span className="typo-body-xxs-regular text-error px-1">
+                {errors.introduction.message}
+              </span>
+            )}
           </div>
 
           {/* 전시분야 */}
@@ -203,10 +246,14 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               options={EXHIBITION_FIELDS}
               labels={EXHIBITION_FIELD_LABELS}
               selected={selectedFields}
-              onChange={setSelectedFields}
-              maxSelect={MAX_ARTIST_FIELDS}
+              onChange={(fields) => {
+                setValue('fields', fields, { shouldValidate: true });
+              }}
               aria-label="전시분야"
             />
+            {errors.fields?.message && (
+              <span className="typo-body-xxs-regular text-error px-1">{errors.fields.message}</span>
+            )}
           </div>
 
           {/* 외부 링크 */}
@@ -216,11 +263,15 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
             </label>
             <input
               id="externalLink"
-              value={externalLink}
-              onChange={(e) => setExternalLink(e.target.value)}
               placeholder="포트폴리오, 인스타그램, 개인 웹사이트 링크"
               className="h-11 rounded-2xl bg-card px-3.5 typo-body-sm-regular text-tag-blue outline-none placeholder:text-faint"
+              {...register('externalLink')}
             />
+            {errors.externalLink?.message && (
+              <span className="typo-body-xxs-regular text-error px-1">
+                {errors.externalLink.message}
+              </span>
+            )}
           </div>
 
           {/* 소속 정보 */}
@@ -232,17 +283,27 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               </label>
 
               <div className="relative">
-                <div className="flex h-10 items-center gap-2 rounded-2xl bg-page border border-line px-3">
+                <div
+                  className={cn(
+                    'flex h-10 items-center gap-2 rounded-2xl bg-page border border-line px-3',
+                    isSchoolFixed && 'opacity-60 bg-gray-100',
+                  )}
+                >
                   <input
                     id="school"
                     value={school}
-                    onChange={(e) => setSchool(e.target.value)}
+                    onChange={(e) => {
+                      setValue('univName', e.target.value, { shouldValidate: true });
+                    }}
                     onFocus={() => setSchoolFocused(true)}
                     onBlur={() => setTimeout(() => setSchoolFocused(false), 120)}
-                    placeholder="학교명을 검색해주세요"
+                    placeholder={isSchoolFixed ? school : '학교명을 검색해주세요'}
+                    disabled={isSchoolFixed}
                     className="min-w-0 flex-1 bg-transparent typo-body-sm-regular text-main outline-none placeholder:text-line"
                   />
-                  <Search className="size-4 shrink-0 text-faint" strokeWidth={1.5} />
+                  {!isSchoolFixed && (
+                    <Search className="size-4 shrink-0 text-faint" strokeWidth={1.5} />
+                  )}
                 </div>
 
                 {showSchoolDropdown && (
@@ -256,7 +317,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
                             type="button"
                             onMouseDown={(event) => event.preventDefault()}
                             onClick={() => {
-                              setSchool(name);
+                              setValue('univName', name, { shouldValidate: true });
                               setSchoolFocused(false);
                             }}
                             className="w-full px-4 py-2.5 text-left typo-body-sm-regular text-main hover:bg-page"
@@ -271,7 +332,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
                           type="button"
                           onMouseDown={(event) => event.preventDefault()}
                           onClick={() => {
-                            setSchool(school);
+                            setValue('univName', school, { shouldValidate: true });
                             setSchoolFocused(false);
                           }}
                           className="w-full px-4 py-2.5 text-left typo-body-sm-regular text-main hover:bg-page"
@@ -285,19 +346,14 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               </div>
             </div>
           </div>
-        </div>
+        </form>
       </main>
 
       <footer className="sticky bottom-0 bg-gradient-to-b from-transparent via-page/80 to-page px-5 pb-8 pt-6">
         <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={
-            !activityName.trim() ||
-            selectedFields.length === 0 ||
-            updateMyArtistProfile.isPending ||
-            uploadImage.isPending
-          }
+          form="edit-artist-profile-form"
+          type="submit"
+          disabled={!canSubmit}
           className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white disabled:opacity-40"
         >
           {updateMyArtistProfile.isPending || uploadImage.isPending ? '저장 중' : '완료'}

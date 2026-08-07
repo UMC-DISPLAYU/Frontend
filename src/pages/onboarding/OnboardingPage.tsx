@@ -11,6 +11,9 @@ import type { AgreementDto } from '@/api/dto';
 import { useAgreements } from '@/hooks/queries/useAgreements';
 import { useSignup } from '@/hooks/queries/useAuth';
 import { useCheckNickname } from '@/hooks/queries/useUserProfile';
+import { useAuthStore } from '@/stores/authStore';
+import { cn } from '@/utils/cn';
+
 import {
   alphaNumericKoSchema,
   nicknameLengthSchema,
@@ -18,9 +21,7 @@ import {
   noSpecialCharSchema,
   type OnboardingNicknameFormValues,
   onboardingNicknameSchema,
-} from '@/schemas/user.schema';
-import { useAuthStore } from '@/stores/authStore';
-import { cn } from '@/utils/cn';
+} from './onboarding.schema';
 
 type Step = 'terms' | 'termsDetail' | 'nickname' | 'done';
 type TermKey = 'over14' | 'service' | 'privacy' | 'location';

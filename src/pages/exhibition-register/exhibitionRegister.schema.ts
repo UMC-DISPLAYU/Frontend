@@ -13,7 +13,7 @@ export const exhibitionRegisterSchema = z
       .array(z.string())
       .min(1, { message: '전시 포스터 이미지를 최소 1장 이상 등록해주세요.' })
       .max(MAX_POSTER_UPLOAD_IMAGES, {
-        message: `전시 포스터 이미지는 최대 ${MAX_POSTER_UPLOAD_IMAGES}장까지 등록할 수 있습니다.`,
+        message: '전시 포스터 이미지는 최대 5장까지 등록할 수 있습니다.',
       }),
 
     title: z.string().trim().min(1, { message: '전시명을 입력해주세요.' }),

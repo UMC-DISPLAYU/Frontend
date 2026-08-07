@@ -3,7 +3,8 @@ import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
-import { ArtistVerificationPage } from './pages/ArtistVerificationPage';
+import { ArtistVerificationPage } from './pages/artist-verification';
+import { EditArtistProfilePage } from './pages/artist-verification';
 import { ArtworkDetailPage } from './pages/ArtworkDetailPage';
 import { ArtworkRegisterPage } from './pages/ArtworkRegisterPage';
 import { ArtworksManagePage } from './pages/ArtworksManagePage';
@@ -14,7 +15,6 @@ import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
 import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
-import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
 import {
