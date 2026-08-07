@@ -170,8 +170,11 @@ export function ArtistNameSetup() {
           {/* 작가명 입력 */}
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-3">
-              <RequiredLabel required>전시 작가명</RequiredLabel>
+              <RequiredLabel required htmlFor="artist-name">
+                전시 작가명
+              </RequiredLabel>
               <input
+                id="artist-name"
                 value={artistName}
                 onChange={(e) => setArtistName(e.target.value)}
                 placeholder="홍길동"
