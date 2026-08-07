@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -75,6 +75,13 @@ export function ArtworkDetailPage() {
     setFeelingReplyTarget(null);
     setActiveReplyId(null);
   };
+  const handleFeelingReplyClick = useCallback(
+    (commentId: number, author: string, highlightId: string) => {
+      setFeelingReplyTarget({ commentId, author });
+      setActiveReplyId(highlightId);
+    },
+    [],
+  );
   const createFeelingReply = useCreateArtworkFeelingReply(
     artworkId,
     feelingReplyTarget?.commentId ?? 0,
@@ -245,10 +252,7 @@ export function ArtworkDetailPage() {
           isArtistView={isArtistView}
           onArtistViewChange={setIsArtistView}
           activeReplyId={activeReplyId}
-          onFeelingReplyClick={(commentId, author, highlightId) => {
-            setFeelingReplyTarget({ commentId, author });
-            setActiveReplyId(highlightId);
-          }}
+          onFeelingReplyClick={handleFeelingReplyClick}
           replyTargetQuestionId={questionReplyTarget?.questionId ?? null}
           onQuestionReplyTargetChange={setQuestionReplyTarget}
         />

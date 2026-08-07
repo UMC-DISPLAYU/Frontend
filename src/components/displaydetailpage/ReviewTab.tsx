@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { DisplayDetailDto } from '@/api/dto/display.dto';
 import { BottomCommentBar } from '@/components/common';
@@ -62,6 +62,11 @@ export function ReviewTab({ className, display, displayId }: Props) {
     setReplyTarget(null);
     setActiveReplyId(null);
   };
+
+  const handleReplyClick = useCallback((commentId: number, author: string, highlightId: string) => {
+    setReplyTarget({ commentId, author });
+    setActiveReplyId(highlightId);
+  }, []);
 
   const createReview = useCreateDisplayReview(displayId);
   const createReply = useCreateDisplayReviewReply(displayId, replyTarget?.commentId ?? 0);
@@ -132,10 +137,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
               review={review}
               myUserId={myUserId}
               activeReplyId={activeReplyId}
-              onReplyClick={(commentId, author, highlightId) => {
-                setReplyTarget({ commentId, author });
-                setActiveReplyId(highlightId);
-              }}
+              onReplyClick={handleReplyClick}
             />
           ))}
 

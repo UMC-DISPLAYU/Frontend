@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { DisplayDetailDto } from '@/api/dto/display.dto';
 import type { ArtworkFeelingDto } from '@/api/dto/displayArtwork.dto';
@@ -25,7 +25,7 @@ type Props = {
   activeReplyId?: string | null;
 };
 
-export function ArtworkFeelingCommentItem({
+export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem({
   artworkId,
   feeling,
   display,
@@ -43,11 +43,12 @@ export function ArtworkFeelingCommentItem({
   const isModerator = hasPermission(displayPolicy, 'edit');
 
   const isComposingReply = activeReplyId === `comment-${feeling.feelingId}`;
-  const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
-  if (isComposingReply !== prevIsComposingReply) {
-    setPrevIsComposingReply(isComposingReply);
-    if (isComposingReply) setRepliesOpen(true);
-  }
+
+  useEffect(() => {
+    if (isComposingReply) {
+      setRepliesOpen(true);
+    }
+  }, [isComposingReply]);
 
   const likeMutation = useToggleArtworkFeelingLike();
   const deleteMutation = useDeleteArtworkFeeling();
@@ -62,66 +63,87 @@ export function ArtworkFeelingCommentItem({
     isFetchingNextPage: isFetchingMoreReplies,
   } = useArtworkFeelingReplies(artworkId, feeling.feelingId, repliesOpen);
 
-  const replies: CommentData[] = (repliesData?.pages.flatMap((p) => p.replies) ?? [])
-    // feelingReplyId가 없는 답글은 식별자가 없어 목록 key/좋아요·삭제 대상으로 쓸 수 없으므로 제외합니다.
-    .filter((reply) => reply.feelingReplyId != null)
-    .map((reply) => {
-      const isMyComment = Boolean(myUserId) && reply.user?.userId === myUserId;
-      return {
-        id: String(reply.feelingReplyId),
-        author: reply.user?.nickname ?? '',
-        avatarUrl: reply.user?.profileImageUrl,
-        time: formatRelativeTime(reply.createdAt),
-        content: reply.content,
-        likeCount: reply.likeCount ?? 0,
-        isLiked: reply.isLiked ?? false,
-        isMyComment,
-        canDelete: isMyComment || isModerator,
-      };
-    });
+  const replies: CommentData[] = useMemo(
+    () =>
+      (repliesData?.pages.flatMap((p) => p.replies) ?? [])
+        // feelingReplyId가 없는 답글은 식별자가 없어 목록 key/좋아요·삭제 대상으로 쓸 수 없으므로 제외합니다.
+        .filter((reply) => reply.feelingReplyId != null)
+        .map((reply) => {
+          const isMyComment = Boolean(myUserId) && reply.user?.userId === myUserId;
+          return {
+            id: String(reply.feelingReplyId),
+            author: reply.user?.nickname ?? '',
+            avatarUrl: reply.user?.profileImageUrl,
+            time: formatRelativeTime(reply.createdAt),
+            content: reply.content,
+            likeCount: reply.likeCount ?? 0,
+            isLiked: reply.isLiked ?? false,
+            isMyComment,
+            canDelete: isMyComment || isModerator,
+          };
+        }),
+    [repliesData, myUserId, isModerator],
+  );
 
   const isMyFeeling =
     feeling.isMine ?? (Boolean(myUserId) && (feeling.user?.userId ?? feeling.userId) === myUserId);
-  const comment: CommentData = {
-    id: String(feeling.feelingId),
-    author: feeling.user?.nickname ?? '',
-    avatarUrl: feeling.user?.profileImageUrl,
-    time: formatRelativeTime(feeling.createdAt),
-    content: feeling.content,
-    likeCount: feeling.likeCount,
-    isLiked: feeling.isLiked ?? false,
-    isMyComment: isMyFeeling,
-    canDelete: isMyFeeling || isModerator,
-    replyCount: feeling.replyCount,
-    images:
-      feeling.images && feeling.images.length > 0
-        ? feeling.images.map((img) => img.imageUrl)
-        : undefined,
-  };
+  const comment: CommentData = useMemo(
+    () => ({
+      id: String(feeling.feelingId),
+      author: feeling.user?.nickname ?? '',
+      avatarUrl: feeling.user?.profileImageUrl,
+      time: formatRelativeTime(feeling.createdAt),
+      content: feeling.content,
+      likeCount: feeling.likeCount,
+      isLiked: feeling.isLiked ?? false,
+      isMyComment: isMyFeeling,
+      canDelete: isMyFeeling || isModerator,
+      replyCount: feeling.replyCount,
+      images:
+        feeling.images && feeling.images.length > 0
+          ? feeling.images.map((img) => img.imageUrl)
+          : undefined,
+    }),
+    [feeling, isMyFeeling, isModerator],
+  );
 
-  const handleLike = (commentId: string, parentCommentId?: string) => {
-    if (!isLoggedIn) {
-      openLoginModal();
-      return;
-    }
-    if (parentCommentId) {
-      likeReplyMutation.mutate(Number(commentId));
-    } else {
-      likeMutation.mutate({ artworkId, feelingId: Number(commentId) });
-    }
-  };
+  const handleLike = useCallback(
+    (commentId: string, parentCommentId?: string) => {
+      if (!isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      if (parentCommentId) {
+        likeReplyMutation.mutate(Number(commentId));
+      } else {
+        likeMutation.mutate({ artworkId, feelingId: Number(commentId) });
+      }
+    },
+    [isLoggedIn, openLoginModal, likeReplyMutation, likeMutation, artworkId],
+  );
 
-  const handleDelete = (commentId: string, parentCommentId?: string) => {
-    if (!isLoggedIn) {
-      openLoginModal();
-      return;
-    }
-    if (parentCommentId) {
-      deleteReplyMutation.mutate(Number(commentId));
-    } else {
-      deleteMutation.mutate({ artworkId, feelingId: Number(commentId) });
-    }
-  };
+  const handleDelete = useCallback(
+    (commentId: string, parentCommentId?: string) => {
+      if (!isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      if (parentCommentId) {
+        deleteReplyMutation.mutate(Number(commentId));
+      } else {
+        deleteMutation.mutate({ artworkId, feelingId: Number(commentId) });
+      }
+    },
+    [isLoggedIn, openLoginModal, deleteReplyMutation, deleteMutation, artworkId],
+  );
+
+  const handleToggleReplies = useCallback(() => setRepliesOpen((v) => !v), []);
+  const handleLoadMoreReplies = useCallback(() => fetchMoreReplies(), [fetchMoreReplies]);
+  const handleReplyClick = useCallback(
+    (commentId: string, author: string, highlightId: string) =>
+      onReplyClick?.(Number(commentId), author, highlightId),
+    [onReplyClick],
+  );
 
   return (
     <>
@@ -130,17 +152,15 @@ export function ArtworkFeelingCommentItem({
         isDeleted={feeling.isDeleted}
         replies={replies}
         repliesOpen={repliesOpen}
-        onToggleReplies={() => setRepliesOpen((v) => !v)}
+        onToggleReplies={handleToggleReplies}
         hasMoreReplies={hasMoreReplies}
-        onLoadMoreReplies={() => fetchMoreReplies()}
+        onLoadMoreReplies={handleLoadMoreReplies}
         isLoadingMoreReplies={isFetchingMoreReplies}
         onLike={handleLike}
         onUnlike={handleLike}
         isLikePending={isLikePending}
         onDelete={handleDelete}
-        onReplyClick={(commentId, author, highlightId) =>
-          onReplyClick?.(Number(commentId), author, highlightId)
-        }
+        onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
         tightSpacing
         showDivider
@@ -148,4 +168,4 @@ export function ArtworkFeelingCommentItem({
       {loginModal}
     </>
   );
-}
+});

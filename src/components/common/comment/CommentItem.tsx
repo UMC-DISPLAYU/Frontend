@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { Heart } from 'lucide-react';
 
 import defaultProfileIcon from '@/assets/common/DefaultProfileIcon.svg';
@@ -30,7 +32,7 @@ type Props = {
   showDivider?: boolean;
 };
 
-export function CommentItem({
+export const CommentItem = memo(function CommentItem({
   comment,
   isReply = false,
   parentCommentId,
@@ -217,4 +219,4 @@ export function CommentItem({
       )}
     </div>
   );
-}
+});

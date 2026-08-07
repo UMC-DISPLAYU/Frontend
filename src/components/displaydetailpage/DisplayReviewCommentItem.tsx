@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { DisplayDetailDto, DisplayReviewDto } from '@/api/dto/display.dto';
 import type { CommentData } from '@/components/common';
@@ -26,7 +26,7 @@ type Props = {
   activeReplyId?: string | null;
 };
 
-export function DisplayReviewCommentItem({
+export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
   display,
   displayId,
   review,
@@ -44,11 +44,12 @@ export function DisplayReviewCommentItem({
   const isModerator = hasPermission(displayPolicy, 'edit');
 
   const isComposingReply = activeReplyId === `comment-${review.displayReviewId}`;
-  const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
-  if (isComposingReply !== prevIsComposingReply) {
-    setPrevIsComposingReply(isComposingReply);
-    if (isComposingReply) setRepliesOpen(true);
-  }
+
+  useEffect(() => {
+    if (isComposingReply) {
+      setRepliesOpen(true);
+    }
+  }, [isComposingReply]);
 
   const likeMutation = useToggleDisplayReviewLike(displayId);
   const deleteMutation = useDeleteDisplayReview(displayId);
@@ -63,65 +64,84 @@ export function DisplayReviewCommentItem({
     isFetchingNextPage: isFetchingMoreReplies,
   } = useDisplayReviewReplies(displayId, review.displayReviewId, repliesOpen);
 
-  const replies: CommentData[] = (repliesData?.pages.flatMap((p) => p.replies) ?? []).map(
-    (reply) => {
-      const isMyComment = Boolean(myUserId) && reply.user.userId === myUserId;
-      return {
-        id: String(reply.displayReviewReplyId),
-        author: reply.user.nickname,
-        avatarUrl: reply.user.profileImageUrl,
-        time: formatRelativeTime(reply.createdAt),
-        content: reply.content,
-        likeCount: reply.likeCount,
-        isLiked: reply.isLiked,
-        isMyComment,
-        canDelete: isMyComment || isModerator,
-        images:
-          reply.images && reply.images.length > 0
-            ? reply.images.map((img) => img.imageUrl)
-            : undefined,
-      };
-    },
+  const replies: CommentData[] = useMemo(
+    () =>
+      (repliesData?.pages.flatMap((p) => p.replies) ?? []).map((reply) => {
+        const isMyComment = Boolean(myUserId) && reply.user.userId === myUserId;
+        return {
+          id: String(reply.displayReviewReplyId),
+          author: reply.user.nickname,
+          avatarUrl: reply.user.profileImageUrl,
+          time: formatRelativeTime(reply.createdAt),
+          content: reply.content,
+          likeCount: reply.likeCount,
+          isLiked: reply.isLiked,
+          isMyComment,
+          canDelete: isMyComment || isModerator,
+          images:
+            reply.images && reply.images.length > 0
+              ? reply.images.map((img) => img.imageUrl)
+              : undefined,
+        };
+      }),
+    [repliesData, myUserId, isModerator],
   );
 
   const isMyReview = review.isMine;
-  const comment: CommentData = {
-    id: String(review.displayReviewId),
-    author: review.user.nickname,
-    avatarUrl: review.user.profileImageUrl,
-    time: formatRelativeTime(review.createdAt),
-    content: review.content,
-    likeCount: review.likeCount,
-    isLiked: review.isLiked,
-    isMyComment: isMyReview,
-    canDelete: isMyReview || isModerator,
-    replyCount: review.replyCount,
-    images: review.images.length > 0 ? review.images.map((img) => img.imageUrl) : undefined,
-  };
+  const comment: CommentData = useMemo(
+    () => ({
+      id: String(review.displayReviewId),
+      author: review.user.nickname,
+      avatarUrl: review.user.profileImageUrl,
+      time: formatRelativeTime(review.createdAt),
+      content: review.content,
+      likeCount: review.likeCount,
+      isLiked: review.isLiked,
+      isMyComment: isMyReview,
+      canDelete: isMyReview || isModerator,
+      replyCount: review.replyCount,
+      images: review.images.length > 0 ? review.images.map((img) => img.imageUrl) : undefined,
+    }),
+    [review, isMyReview, isModerator],
+  );
 
-  const handleLike = (commentId: string, parentCommentId?: string) => {
-    if (!isLoggedIn) {
-      openLoginModal();
-      return;
-    }
-    if (parentCommentId) {
-      likeReplyMutation.mutate(Number(commentId));
-    } else {
-      likeMutation.mutate(Number(commentId));
-    }
-  };
+  const handleLike = useCallback(
+    (commentId: string, parentCommentId?: string) => {
+      if (!isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      if (parentCommentId) {
+        likeReplyMutation.mutate(Number(commentId));
+      } else {
+        likeMutation.mutate(Number(commentId));
+      }
+    },
+    [isLoggedIn, openLoginModal, likeReplyMutation, likeMutation],
+  );
 
-  const handleDelete = (commentId: string, parentCommentId?: string) => {
-    if (!isLoggedIn) {
-      openLoginModal();
-      return;
-    }
-    if (parentCommentId) {
-      deleteReplyMutation.mutate(Number(commentId));
-    } else {
-      deleteMutation.mutate(Number(commentId));
-    }
-  };
+  const handleDelete = useCallback(
+    (commentId: string, parentCommentId?: string) => {
+      if (!isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      if (parentCommentId) {
+        deleteReplyMutation.mutate(Number(commentId));
+      } else {
+        deleteMutation.mutate(Number(commentId));
+      }
+    },
+    [isLoggedIn, openLoginModal, deleteReplyMutation, deleteMutation],
+  );
+
+  const handleToggleReplies = useCallback(() => setRepliesOpen((v) => !v), []);
+  const handleLoadMoreReplies = useCallback(() => fetchMoreReplies(), [fetchMoreReplies]);
+  const handleReplyClick = useCallback(
+    (commentId: string, author: string, highlightId: string) =>
+      onReplyClick?.(Number(commentId), author, highlightId),
+    [onReplyClick],
+  );
 
   return (
     <>
@@ -130,17 +150,15 @@ export function DisplayReviewCommentItem({
         isDeleted={review.isDeleted}
         replies={replies}
         repliesOpen={repliesOpen}
-        onToggleReplies={() => setRepliesOpen((v) => !v)}
+        onToggleReplies={handleToggleReplies}
         hasMoreReplies={hasMoreReplies}
-        onLoadMoreReplies={() => fetchMoreReplies()}
+        onLoadMoreReplies={handleLoadMoreReplies}
         isLoadingMoreReplies={isFetchingMoreReplies}
         onLike={handleLike}
         onUnlike={handleLike}
         isLikePending={isLikePending}
         onDelete={handleDelete}
-        onReplyClick={(commentId, author, highlightId) =>
-          onReplyClick?.(Number(commentId), author, highlightId)
-        }
+        onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
         tightSpacing
         showDivider
@@ -148,4 +166,4 @@ export function DisplayReviewCommentItem({
       {loginModal}
     </>
   );
-}
+});

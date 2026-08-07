@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -68,6 +68,19 @@ export const LoungeBoardDetailPage = () => {
     setReplyTarget(null);
     setActiveReplyId(null);
   };
+
+  const handleReplyClick = useCallback((commentId: number, author: string, highlightId: string) => {
+    setReplyTarget({ commentId, author });
+    setActiveReplyId(highlightId);
+  }, []);
+
+  const handleDeleteComment = useCallback(
+    (commentId: string) => {
+      deleteCommentMutation.mutate({ postId, commentId: Number(commentId) });
+      setDeletedCommentIds((prev) => new Set(prev).add(commentId));
+    },
+    [deleteCommentMutation, postId],
+  );
 
   const commentsTriggerRef = useRef<HTMLDivElement | null>(null);
 
@@ -190,14 +203,8 @@ export const LoungeBoardDetailPage = () => {
                         postId={postId}
                         comment={comment}
                         isDeleted={isDeleted}
-                        onDelete={() => {
-                          deleteCommentMutation.mutate({ postId, commentId: Number(comment.id) });
-                          setDeletedCommentIds((prev) => new Set(prev).add(comment.id));
-                        }}
-                        onReplyClick={(commentId, author, highlightId) => {
-                          setReplyTarget({ commentId, author });
-                          setActiveReplyId(highlightId);
-                        }}
+                        onDelete={handleDeleteComment}
+                        onReplyClick={handleReplyClick}
                         activeReplyId={activeReplyId}
                       />
                     ))}
