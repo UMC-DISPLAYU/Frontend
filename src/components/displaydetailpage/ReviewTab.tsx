@@ -140,7 +140,7 @@ function ReplyItem({
               id={`reply-like-${reply.displayReviewReplyId}`}
               className="flex items-center gap-1 hover:text-main text-faint cursor-pointer"
             >
-              <Heart size={14} className="fill-none text-sub700" />
+              <Heart width={12} height={17} className="fill-none text-sub700" />
               <span>{reply.likeCount ?? 0}</span>
             </button>
           </div>
@@ -317,7 +317,7 @@ function ReviewCard({
                   id={`review-like-${review.displayReviewId}`}
                   className="flex items-center gap-1 hover:text-main text-hint cursor-pointer"
                 >
-                  <Heart size={14} className="fill-none text-hint" />
+                  <Heart size={20} className="fill-none text-hint" />
                   <span>{review.likeCount ?? 0}</span>
                 </button>
               </div>
@@ -438,7 +438,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className={cn('px-5 py-6 pb-28 overflow-x-hidden', className)}>
+    <div className={cn('px-5 py-6 pb-28 overflow-x-hidden min-h-100', className)}>
       {/* 헤더 */}
       <h2 className="typo-body-xl-bold text-main mb-4">전시 후기</h2>
 

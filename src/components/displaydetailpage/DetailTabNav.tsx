@@ -14,7 +14,7 @@ type Props = {
 
 export function DetailTabNav({ activeTab, onTabChange }: Props) {
   return (
-    <nav className="bg-page sticky top-0 z-10 border-b-2 border-line-soft flex px-5 gap-10">
+    <nav className="bg-page sticky top-0 z-10 border-b border-line-soft flex px-5 gap-[22px]">
       {DETAIL_TABS.map((tab) => {
         const isActive = tab.key === activeTab;
         return (
@@ -24,12 +24,12 @@ export function DetailTabNav({ activeTab, onTabChange }: Props) {
             type="button"
             onClick={() => onTabChange(tab.key)}
             className={cn(
-              'py-4 typo-body-sm-regular transition-all duration-150 relative whitespace-nowrap',
+              'pt-4 pb-[17px] typo-body-sm-regular transition-all duration-150 relative whitespace-nowrap',
               isActive ? 'text-main font-bold' : 'text-faint',
             )}
           >
             {tab.label}
-            {isActive && <span className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-main" />}
+            {isActive && <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-main" />}
           </button>
         );
       })}

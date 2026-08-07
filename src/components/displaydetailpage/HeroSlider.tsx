@@ -1,13 +1,11 @@
-import { BackButton } from '@/components/ui/BackButton';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
 import { cn } from '@/utils/cn';
 
 type Props = {
   images: string[];
-  onBack: () => void;
 };
 
-export function HeroSlider({ images, onBack }: Props) {
+export function HeroSlider({ images }: Props) {
   const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: images.length,
   });
@@ -36,8 +34,6 @@ export function HeroSlider({ images, onBack }: Props) {
           </div>
         ))}
       </div>
-
-      <BackButton id="display-back-btn" onClick={onBack} className="absolute top-4 left-4 z-20" />
 
       {images.length > 1 && (
         <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2">
