@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useMutation } from '@tanstack/react-query';
 import { LocateFixed } from 'lucide-react';
@@ -7,11 +7,23 @@ import { CustomOverlayMap, Map, useKakaoLoader } from 'react-kakao-maps-sdk';
 import type { NearbyDisplay, NearbyParams } from '@/hooks/useNearbyDisplays';
 import { getAccurateUserLocation, getGeolocationErrorMessage } from '@/utils/geolocation';
 
-import { ExhibitionMapMarker } from './ExhibitionMapMarker';
+import { ExhibitionMapMarker, ExhibitionMapSelectedOverlay } from './ExhibitionMapMarker';
 
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 const DEFAULT_LEVEL = 6;
 const IDLE_DEBOUNCE_MS = 250;
+
+const MAP_STATE_KEY = 'SEARCH_MAP_VIEW_STATE';
+
+const getSavedMapState = (): { center: { lat: number; lng: number }; level: number } | null => {
+  try {
+    const saved = sessionStorage.getItem(MAP_STATE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {
+    // Ignore storage parse errors
+  }
+  return null;
+};
 
 interface ExhibitionMapProps {
   exhibitions: NearbyDisplay[];
@@ -27,6 +39,7 @@ export function ExhibitionMap({
   onBoundsChange,
 }: ExhibitionMapProps) {
   const appkey = import.meta.env.VITE_KAKAO_MAP_KEY;
+  const [initialMapState] = useState(getSavedMapState);
 
   const [loading, error] = useKakaoLoader({
     appkey,
@@ -54,6 +67,14 @@ export function ExhibitionMap({
       const bounds = map.getBounds();
       const ne = bounds.getNorthEast();
       const sw = bounds.getSouthWest();
+      const center = { lat: map.getCenter().getLat(), lng: map.getCenter().getLng() };
+      const level = map.getLevel();
+
+      try {
+        sessionStorage.setItem(MAP_STATE_KEY, JSON.stringify({ center, level }));
+      } catch {
+        // Ignore storage errors
+      }
 
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
@@ -76,6 +97,27 @@ export function ExhibitionMap({
     };
   }, []);
 
+  const lastPannedIdRef = useRef<number | null>(null);
+
+  // 마커/카드가 클릭되어 selectedId가 '새롭게' 변경된 시점에 딱 1회만 이동
+  // 이동 후 사용자가 지도를 자유롭게 드래그하거나 탐색할 때는 위치가 강제로 고정/재이동되지 않음
+  useEffect(() => {
+    if (!mapRef.current || !selectedId) {
+      lastPannedIdRef.current = selectedId;
+      return;
+    }
+
+    if (lastPannedIdRef.current !== selectedId) {
+      lastPannedIdRef.current = selectedId;
+      const target = exhibitions.find((ex) => ex.displayId === selectedId);
+      if (target) {
+        const latLng = new kakao.maps.LatLng(target.latitude, target.longitude);
+        mapRef.current.setCenter(latLng);
+        mapRef.current.panBy(0, -45);
+      }
+    }
+  }, [selectedId, exhibitions]);
+
   if (error) {
     return (
       <div className="flex size-full items-center justify-center bg-box100">
@@ -94,8 +136,8 @@ export function ExhibitionMap({
   return (
     <div className="relative size-full">
       <Map
-        center={DEFAULT_CENTER}
-        level={DEFAULT_LEVEL}
+        center={initialMapState?.center ?? DEFAULT_CENTER}
+        level={initialMapState?.level ?? DEFAULT_LEVEL}
         style={{ width: '100%', height: '100%' }}
         onClick={() => onSelect(null)}
         onIdle={handleIdle}
@@ -104,20 +146,24 @@ export function ExhibitionMap({
           handleIdle(map);
         }}
       >
-        {exhibitions.map((ex) => (
-          <CustomOverlayMap
-            key={ex.displayId}
-            position={{ lat: ex.latitude, lng: ex.longitude }}
-            yAnchor={1}
-            zIndex={ex.displayId === selectedId ? 10 : 1}
-          >
-            <ExhibitionMapMarker
-              title={ex.title}
-              selected={ex.displayId === selectedId}
-              onClick={() => onSelect(ex.displayId)}
-            />
-          </CustomOverlayMap>
-        ))}
+        {exhibitions.map((ex) => {
+          const isSelected = ex.displayId === selectedId;
+          return (
+            <CustomOverlayMap
+              key={ex.displayId}
+              position={{ lat: ex.latitude, lng: ex.longitude }}
+              yAnchor={isSelected ? 1.05 : 1}
+              zIndex={isSelected ? 20 : 1}
+              clickable={true}
+            >
+              {isSelected ? (
+                <ExhibitionMapSelectedOverlay exhibition={ex} onClose={() => onSelect(null)} />
+              ) : (
+                <ExhibitionMapMarker title={ex.title} onClick={() => onSelect(ex.displayId)} />
+              )}
+            </CustomOverlayMap>
+          );
+        })}
       </Map>
 
       <button

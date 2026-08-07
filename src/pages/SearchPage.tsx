@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Search, X } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import type { SearchDisplaysRequestDto } from '@/api/dto';
 import filterIcon from '@/assets/search/filter.svg';
 import filterSelectedDotIcon from '@/assets/search/filter-selected-dot.svg';
-import { ErrorView, LoadingView } from '@/components/common';
+import { LoadingView } from '@/components/common';
 import { getFilterOptionValues } from '@/components/search/filter/filterOptions';
 
 import {
@@ -43,15 +43,61 @@ const createSearchDisplayParams = (query: string, filters: FilterState) => {
 
 export function SearchPage() {
   const location = useLocation();
-  const [urlSearchParams] = useSearchParams();
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams();
 
-  const [query, setQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<ExploreTab>('list');
-  const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
-  const [nearbyParams, setNearbyParams] = useState<NearbyParams | null>(null);
-
+  const paramTab = urlSearchParams.get('tab');
   const paramType = urlSearchParams.get('type');
   const paramStatus = urlSearchParams.get('status');
+
+  const [query, setQuery] = useState('');
+  const activeTab: ExploreTab = paramTab === 'map' ? 'map' : 'list';
+  const [selectedMapId, setSelectedMapIdState] = useState<number | null>(() => {
+    const saved = sessionStorage.getItem('SEARCH_SELECTED_MAP_ID');
+    return saved ? Number(saved) : null;
+  });
+  const [nearbyParams, setNearbyParams] = useState<NearbyParams | null>(null);
+
+  const setSelectedMapId = (id: number | null) => {
+    setSelectedMapIdState(id);
+    if (id !== null) {
+      sessionStorage.setItem('SEARCH_SELECTED_MAP_ID', String(id));
+    } else {
+      sessionStorage.removeItem('SEARCH_SELECTED_MAP_ID');
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      sessionStorage.setItem('SEARCH_PAGE_SCROLL_Y', String(window.scrollY));
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const savedY = sessionStorage.getItem('SEARCH_PAGE_SCROLL_Y');
+    if (savedY) {
+      setTimeout(() => {
+        window.scrollTo(0, Number(savedY));
+      }, 50);
+    }
+  }, [activeTab]);
+
+  const handleTabChange = (tab: ExploreTab) => {
+    setUrlSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (tab === 'map') {
+          next.set('tab', 'map');
+        } else {
+          next.delete('tab');
+        }
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
   const stateFilters = (location.state as { filters?: Partial<FilterState> })?.filters;
   const targetFiltersKey = `${paramType ?? ''}_${paramStatus ?? ''}_${JSON.stringify(stateFilters ?? {})}`;
 
@@ -122,7 +168,7 @@ export function SearchPage() {
           </p>
         </div>
 
-        <div className="mt-2.5 flex h-10 items-center justify-between rounded-xl bg-box px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.14),inset_-1px_-1px_1px_0px_rgba(255,255,255,1.00)]">
+        <div className="mt-2.5 flex h-10 items-center justify-between rounded-xl bg-box px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.14),inset_-1px_-1px_1px_0px_rgba(255,255,255,1.00)] mb-3">
           <input
             className="typo-body-sm-regular h-5 flex-1 bg-transparent placeholder:text-faint focus:outline-none"
             onChange={(event) => setQuery(event.target.value)}
@@ -132,15 +178,17 @@ export function SearchPage() {
           />
           <Search aria-hidden="true" className="text-hint" size={18} strokeWidth={2} />
         </div>
+      </div>
 
-        <div className="-mx-5 flex h-11 items-end gap-3.5 border-b border-line-soft px-5">
+      <div className="sticky top-0 z-20 flex flex-col bg-page">
+        <div className="flex h-11 items-end gap-3.5 border-b border-line-soft px-5">
           <button
             className={`border-b-2 px-0 pb-3 cursor-pointer ${
               activeTab === 'list'
                 ? 'typo-body-sm-bold border-main text-main'
                 : 'typo-body-sm-regular border-transparent text-faint'
             }`}
-            onClick={() => setActiveTab('list')}
+            onClick={() => handleTabChange('list')}
             type="button"
           >
             전시목록
@@ -151,12 +199,23 @@ export function SearchPage() {
                 ? 'typo-body-sm-bold border-main text-main'
                 : 'typo-body-sm-regular border-transparent text-faint'
             }`}
-            onClick={() => setActiveTab('map')}
+            onClick={() => handleTabChange('map')}
             type="button"
           >
             지도
           </button>
         </div>
+
+        {activeTab === 'map' ? (
+          <div className="h-75 w-full border-b border-line-soft">
+            <ExhibitionMap
+              exhibitions={nearbyExhibitions}
+              onBoundsChange={setNearbyParams}
+              onSelect={setSelectedMapId}
+              selectedId={selectedMapId}
+            />
+          </div>
+        ) : null}
       </div>
 
       {activeTab === 'list' ? (
@@ -227,37 +286,26 @@ export function SearchPage() {
           </div>
         </div>
       ) : (
-        <div className="relative flex flex-1 flex-col">
-          <div className="h-100 w-full">
-            <ExhibitionMap
-              exhibitions={nearbyExhibitions}
-              onBoundsChange={setNearbyParams}
-              onSelect={setSelectedMapId}
-              selectedId={selectedMapId}
-            />
-          </div>
-
-          <div className="flex-1 overflow-y-auto bg-gray-100 px-5 pt-4 pb-24">
-            {nearbyExhibitions.length === 0 ? (
-              <p className="flex items-center justify-center py-8 text-center text-sm text-neutral-400">
-                이 지역에 전시가 없습니다
-              </p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {(selectedMapId
-                  ? nearbyExhibitions.filter((ex) => ex.displayId === selectedMapId)
-                  : nearbyExhibitions
-                ).map((exhibition) => (
-                  <ExhibitionMapCard
-                    exhibition={exhibition}
-                    key={exhibition.displayId}
-                    onClick={() => setSelectedMapId(exhibition.displayId)}
-                    selected={selectedMapId === exhibition.displayId}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="flex-1 bg-gray-100 px-5 pt-4 pb-24">
+          {nearbyExhibitions.length === 0 ? (
+            <p className="flex items-center justify-center py-8 text-center text-sm text-neutral-400">
+              이 지역에 전시가 없습니다
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {(selectedMapId
+                ? nearbyExhibitions.filter((ex) => ex.displayId === selectedMapId)
+                : nearbyExhibitions
+              ).map((exhibition) => (
+                <ExhibitionMapCard
+                  exhibition={exhibition}
+                  key={exhibition.displayId}
+                  onClick={() => setSelectedMapId(exhibition.displayId)}
+                  selected={selectedMapId === exhibition.displayId}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 

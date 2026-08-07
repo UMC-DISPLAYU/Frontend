@@ -24,13 +24,10 @@ interface ExhibitionMapCardProps {
 
 export function ExhibitionMapCard({
   exhibition,
-  selected,
   onClick,
   onToggleBookmark,
 }: ExhibitionMapCardProps) {
   const navigate = useNavigate();
-  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const clickCountRef = useRef<number>(0);
 
   const archive = useArchiveExhibition();
   const unarchive = useUnarchiveExhibition();
@@ -65,25 +62,8 @@ export function ExhibitionMapCard({
       return;
     }
 
-    clickCountRef.current++;
-
-    if (clickCountRef.current === 1) {
-      // 첫 번째 클릭: 300ms 대기
-      clickTimeoutRef.current = setTimeout(() => {
-        // 싱글클릭: 지도 핀 선택
-        if (onClick) {
-          onClick();
-        }
-        clickCountRef.current = 0;
-      }, 300);
-    } else if (clickCountRef.current === 2) {
-      // 두 번째 클릭: 타이머 취소하고 페이지 이동
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-        clickTimeoutRef.current = null;
-      }
-      clickCountRef.current = 0;
-      navigate(`/display/${exhibition.displayId}`);
+    if (onClick) {
+      onClick();
     }
   };
 
