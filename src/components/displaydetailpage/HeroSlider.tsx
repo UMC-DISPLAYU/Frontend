@@ -1,11 +1,14 @@
+import { BackButton } from '@/components/ui/BackButton';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
 import { cn } from '@/utils/cn';
 
 type Props = {
   images: string[];
+  /* 페이지 자체에서 뒤로가기 버튼을 fixed로 따로 그릴 경우(전시상세 페이지) 생략합니다. */
+  onBack?: () => void;
 };
 
-export function HeroSlider({ images }: Props) {
+export function HeroSlider({ images, onBack }: Props) {
   const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: images.length,
   });
@@ -34,6 +37,10 @@ export function HeroSlider({ images }: Props) {
           </div>
         ))}
       </div>
+
+      {onBack && (
+        <BackButton id="display-back-btn" onClick={onBack} className="absolute top-4 left-4 z-20" />
+      )}
 
       {images.length > 1 && (
         <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2">
