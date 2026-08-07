@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { EXHIBITION_FIELDS, EXHIBITION_TYPE_LABELS } from '@/constants/exhibition';
 
+// 1. 전시 기본 정보 입력 스키마 (첫 페이지: ExhibitionRegister)
 export const exhibitionRegisterSchema = z
   .object({
     imageUrls: z
@@ -69,3 +70,39 @@ export const exhibitionRegisterSchema = z
   });
 
 export type ExhibitionRegisterFormValues = z.infer<typeof exhibitionRegisterSchema>;
+
+// 2. 전시 기본 정보 추가 입력 스키마 (두 번째 페이지: ExhibitionBasicInfo)
+export const exhibitionBasicInfoSchema = z.object({
+  // 전시 기간 (시작일, 종료일 필수)
+  startDate: z.string().min(1, { message: '전시 시작일을 입력해주세요.' }),
+  endDate: z.string().min(1, { message: '전시 종료일을 입력해주세요.' }),
+
+  // 운영 시간 (오픈 시간, 마감 시간 필수)
+  startTime: z.string().min(1, { message: '운영 시작 시간을 입력해주세요.' }),
+  endTime: z.string().min(1, { message: '운영 종료 시간을 입력해주세요.' }),
+
+  // 전시 장소 정보
+  placeName: z.string().trim().min(1, { message: '장소명을 입력해주세요.' }),
+  address: z.string().trim().min(1, { message: '상세 주소를 입력해주세요.' }),
+  latitude: z.number({ required_error: '위도를 선택해주세요.' }),
+  longitude: z.number({ required_error: '경도를 선택해주세요.' }),
+
+  // 문의 계정 (Q&A 계정)
+  contact: z.string().trim().min(1, { message: '문의처를 입력해주세요.' }),
+
+  // 유의 사항 (선택)
+  notice: z.string().trim().optional().or(z.literal('')),
+});
+
+export type ExhibitionBasicInfoFormValues = z.infer<typeof exhibitionBasicInfoSchema>;
+
+// 3. 전시 작가명 설정 스키마 (세 번째 페이지: ArtistNameSetup)
+export const artistNameSetupSchema = z.object({
+  artistName: z
+    .string()
+    .trim()
+    .min(1, { message: '작가명을 입력해주세요.' })
+    .max(50, { message: '작가명은 50자 이하로 입력해주세요.' }),
+});
+
+export type ArtistNameSetupFormValues = z.infer<typeof artistNameSetupSchema>;

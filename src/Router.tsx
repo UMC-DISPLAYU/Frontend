@@ -3,7 +3,6 @@ import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
-import { ArtistNameSetup } from './pages/ArtistNameSetup';
 import { ArtistVerificationPage } from './pages/ArtistVerificationPage';
 import { ArtworkDetailPage } from './pages/ArtworkDetailPage';
 import { ArtworkRegisterPage } from './pages/ArtworkRegisterPage';
@@ -18,8 +17,11 @@ import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
-import { ExhibitionRegister } from './pages/exhibition-register';
-import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
+import {
+  ArtistNameSetup,
+  ExhibitionBasicInfo,
+  ExhibitionRegister,
+} from './pages/exhibition-register';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
 import { Homepage } from './pages/Homepage';
