@@ -18,7 +18,7 @@ import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
-import { ExhibitionRegister } from './pages/exhibition-register/ExhibitionRegister';
+import { ExhibitionRegister } from './pages/exhibition-register';
 import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
