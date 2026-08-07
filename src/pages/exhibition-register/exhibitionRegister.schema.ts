@@ -39,30 +39,30 @@ export const exhibitionRegisterSchema = z
     department: z.string().trim().optional(),
     organizer: z.string().trim().optional(),
   })
-  .refine(
-    (data) => {
-      const isInstitution =
-        data.type === '졸업 전시' ||
-        data.type === '과제 전시' ||
-        data.type === '학과·학회 전시' ||
-        data.type === '연합 전시';
+  .superRefine((data, ctx) => {
+    const isInstitution =
+      data.type === '졸업 전시' ||
+      data.type === '과제 전시' ||
+      data.type === '학과·학회 전시' ||
+      data.type === '연합 전시';
 
-      if (isInstitution) {
-        return !!data.department && data.department.trim() !== '';
-      }
+    if (isInstitution && (!data.department || data.department.trim() === '')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['department'],
+        message: '학과를 입력해주세요.',
+      });
+    }
 
-      const isOrganization = data.type === '소모임·동아리 전시' || data.type === '기타 단체 전시';
+    const isOrganization = data.type === '소모임·동아리 전시' || data.type === '기타 단체 전시';
 
-      if (isOrganization) {
-        return !!data.organizer && data.organizer.trim() !== '';
-      }
-
-      return true;
-    },
-    {
-      message: '소속 정보를 입력해주세요.',
-      path: ['department'],
-    },
-  );
+    if (isOrganization && (!data.organizer || data.organizer.trim() === '')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['organizer'],
+        message: '단체명을 입력해주세요.',
+      });
+    }
+  });
 
 export type ExhibitionRegisterFormValues = z.infer<typeof exhibitionRegisterSchema>;
