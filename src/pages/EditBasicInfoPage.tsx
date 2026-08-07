@@ -7,7 +7,7 @@ import type { UserProfileDto } from '@/api/dto';
 import { LoadingView } from '@/components/common';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { useUploadImage } from '@/hooks/queries/useFile';
-import { useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
+import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
 import { cn } from '@/utils/cn';
 
 function ProfilePhotoField({
@@ -67,9 +67,10 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const [profileImage, setProfileImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileName, setProfileName] = useState(userMe?.nickname || userMe?.name || '');
-  const [isDuplicateChecked, setIsDuplicateChecked] = useState(false);
+  const [nicknameCheckResult, setNicknameCheckResult] = useState<'available' | 'unavailable' | null>(null);
   const updateUserMe = useUpdateUserMe();
   const uploadImage = useUploadImage();
+  const checkNickname = useCheckNickname();
 
   const validateProfileName = (name: string) => {
     const korEngNumRegex = /^[가-힣a-zA-Z0-9]*$/;
@@ -87,21 +88,27 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   };
 
   const validation = validateProfileName(profileName);
-  const canSubmit = validation.isValid && isDuplicateChecked && !uploadImage.isPending;
+  const canSubmit = validation.isValid && nicknameCheckResult === 'available' && !uploadImage.isPending;
 
   const handleProfileNameChange = (value: string) => {
     setProfileName(value);
-    setIsDuplicateChecked(false);
+    setNicknameCheckResult(null);
   };
 
   const handleDuplicateCheck = () => {
-    // TODO: 실제 중복 확인 API 호출
-    setIsDuplicateChecked(true);
+    checkNickname.mutate(
+      { nickname: profileName.trim() },
+      {
+        onSuccess: (data) => {
+          setNicknameCheckResult(data.isAvailable ? 'available' : 'unavailable');
+        },
+      },
+    );
   };
 
   const handleClearInput = () => {
     setProfileName('');
-    setIsDuplicateChecked(false);
+    setNicknameCheckResult(null);
   };
 
   useEffect(() => {
@@ -199,6 +206,18 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
               </button>
             </div>
           </div>
+          {nicknameCheckResult && (
+            <div
+              className={cn(
+                'self-stretch h-4 justify-start typo-body-xxs-regular',
+                nicknameCheckResult === 'available' ? 'text-link' : 'text-error',
+              )}
+            >
+              {nicknameCheckResult === 'available'
+                ? '사용 가능한 닉네임이에요.'
+                : '사용 불가한 닉네임이에요.'}
+            </div>
+          )}
         </div>
 
         <div className="mt-12.5 flex flex-col gap-2">
