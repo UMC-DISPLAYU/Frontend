@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, ChevronLeft, Info, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import { ApiError } from '@/api/axios';
@@ -9,7 +11,16 @@ import type { AgreementDto } from '@/api/dto';
 import { useAgreements } from '@/hooks/queries/useAgreements';
 import { useSignup } from '@/hooks/queries/useAuth';
 import { useCheckNickname } from '@/hooks/queries/useUserProfile';
+import {
+  alphaNumericKoSchema,
+  nicknameLengthSchema,
+  noSpaceSchema,
+  noSpecialCharSchema,
+  type OnboardingNicknameFormValues,
+  onboardingNicknameSchema,
+} from '@/schemas/user.schema';
 import { useAuthStore } from '@/stores/authStore';
+import { cn } from '@/utils/cn';
 
 type Step = 'terms' | 'termsDetail' | 'nickname' | 'done';
 type TermKey = 'over14' | 'service' | 'privacy' | 'location';
@@ -635,11 +646,27 @@ function NicknameScreen({
   onSubmit: (nickname: string) => void;
   submitError?: string;
 }) {
-  const [nickname, setNickname] = useState('');
   const [status, setStatus] = useState<NicknameStatus>('idle');
   const [checkedNickname, setCheckedNickname] = useState('');
   const checkNickname = useCheckNickname();
-  const isNicknameShapeValid = /^[가-힣a-zA-Z0-9]{5,15}$/.test(nickname);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors },
+  } = useForm<OnboardingNicknameFormValues>({
+    resolver: zodResolver(onboardingNicknameSchema),
+    mode: 'onChange',
+    defaultValues: {
+      nickname: '',
+    },
+  });
+
+  const nickname = useWatch({ control, name: 'nickname' }) ?? '';
+  const isNicknameShapeValid = onboardingNicknameSchema.safeParse({ nickname }).success;
+
   const canSubmit =
     status === 'available' && checkedNickname === nickname && isNicknameShapeValid && !isSubmitting;
 
@@ -670,6 +697,10 @@ function NicknameScreen({
           ? '중복 확인에 실패했어요.'
           : '';
 
+  const onFormSubmit = (data: OnboardingNicknameFormValues) => {
+    onSubmit(data.nickname);
+  };
+
   return (
     <main className="flex h-full flex-1 flex-col bg-white px-5 pb-10 pt-[58px]">
       <button
@@ -691,7 +722,11 @@ function NicknameScreen({
           방명록, 게시판, 프로필에서 표시되는 이름이에요.
         </p>
 
-        <section className="mt-9 flex w-full flex-col gap-3">
+        <form
+          id="onboarding-nickname-form"
+          onSubmit={handleSubmit(onFormSubmit)}
+          className="mt-9 flex w-full flex-col gap-3"
+        >
           <label
             className="text-[14px] font-bold leading-[19.6px] tracking-[-0.42px] text-[#111]"
             htmlFor="nickname"
@@ -702,15 +737,15 @@ function NicknameScreen({
             <div className="flex h-[38px] min-w-0 flex-1 items-center px-3 py-[10px]">
               <input
                 id="nickname"
-                value={nickname}
                 maxLength={15}
-                onChange={(event) => {
-                  setNickname(event.target.value);
-                  setCheckedNickname('');
-                  setStatus('idle');
-                }}
                 placeholder="닉네임"
                 className="min-w-0 flex-1 bg-transparent text-[12px] leading-[18px] tracking-[-0.36px] text-[#111] outline-none placeholder:text-[#9d9d9d]"
+                {...register('nickname', {
+                  onChange: () => {
+                    setCheckedNickname('');
+                    setStatus('idle');
+                  },
+                })}
               />
             </div>
             <div className="flex h-[38px] shrink-0 items-center gap-[10px]">
@@ -718,7 +753,7 @@ function NicknameScreen({
                 <button
                   type="button"
                   onClick={() => {
-                    setNickname('');
+                    setValue('nickname', '', { shouldValidate: true });
                     setCheckedNickname('');
                     setStatus('idle');
                   }}
@@ -739,17 +774,54 @@ function NicknameScreen({
               </button>
             </div>
           </div>
-        </section>
+        </form>
 
-        <div className="mt-6 flex flex-col gap-2 text-[12px] leading-[16.8px] tracking-[-0.36px] text-[#9d9d9d]">
-          <p>한글 · 영문 · 숫자</p>
-          <p>5 ~ 15자</p>
-          <p>특수문자 불가</p>
-          <p>공백 불가</p>
+        {/* 실시간 개별 조건 피드백 */}
+        <div className="mt-[20px] flex flex-col gap-2">
+          <p
+            className={cn(
+              'typo-body-xs-regular',
+              nickname.length > 0 && alphaNumericKoSchema.safeParse(nickname).success
+                ? 'text-sub600'
+                : 'text-faint',
+            )}
+          >
+            한글 · 영문 · 숫자
+          </p>
+          <p
+            className={cn(
+              'typo-body-xs-regular',
+              nickname.length > 0 && nicknameLengthSchema.safeParse(nickname).success
+                ? 'text-sub600'
+                : 'text-faint',
+            )}
+          >
+            2 ~ 15자
+          </p>
+          <p
+            className={cn(
+              'typo-body-xs-regular',
+              nickname.length > 0 && noSpecialCharSchema.safeParse(nickname).success
+                ? 'text-sub600'
+                : 'text-faint',
+            )}
+          >
+            특수문자 불가
+          </p>
+          <p
+            className={cn(
+              'typo-body-xs-regular',
+              nickname.length > 0 && noSpaceSchema.safeParse(nickname).success
+                ? 'text-sub600'
+                : 'text-faint',
+            )}
+          >
+            공백 불가
+          </p>
         </div>
         <p
           className={`mt-3 min-h-[17px] text-[12px] leading-[16.8px] tracking-[-0.36px] ${
-            status === 'available' ? 'text-[#22a06b]' : 'text-[#ef4444]'
+            status === 'available' ? 'text-sub600' : 'text-error'
           }`}
         >
           {statusMessage}
@@ -772,9 +844,9 @@ function NicknameScreen({
       ) : null}
 
       <button
-        type="button"
+        form="onboarding-nickname-form"
+        type="submit"
         disabled={!canSubmit}
-        onClick={() => onSubmit(nickname)}
         className="mt-5 flex h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold leading-5 tracking-[-0.42px] text-white disabled:bg-[#d7d7df]"
       >
         {isSubmitting ? '가입 중' : '가입 완료하기'}
