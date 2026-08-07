@@ -117,6 +117,8 @@ export interface DisplayMapMarkerDto {
   posterImageUrl: string;
   latitude: number;
   longitude: number;
+  schoolDepartmentName?: string;
+  isArchived?: boolean;
 }
 
 export interface GetDisplayMapResponseDataDto {

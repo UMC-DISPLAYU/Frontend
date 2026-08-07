@@ -56,23 +56,19 @@ async function fetchNearbyDisplays(params: NearbyParams): Promise<NearbyDisplay[
   const response = await getDisplayMap(requestDto);
 
   // API 응답(DisplayMapMarkerDto)을 NearbyDisplay 형태로 변환
-  return response.markers.map((marker) => {
-    const markerObj = marker as Record<string, unknown>;
-
-    return {
-      displayId: marker.displayId,
-      title: marker.title,
-      posterImageUrl: marker.posterImageUrl,
-      status: getDisplayStatus(marker.startDate, marker.endDate),
-      schoolDepartmentName: markerObj?.schoolDepartmentName as string | undefined,
-      startDate: marker.startDate,
-      endDate: marker.endDate,
-      locationName: marker.locationName,
-      latitude: marker.latitude,
-      longitude: marker.longitude,
-      isArchived: false,
-    };
-  });
+  return response.markers.map((marker) => ({
+    displayId: marker.displayId,
+    title: marker.title,
+    posterImageUrl: marker.posterImageUrl,
+    status: getDisplayStatus(marker.startDate, marker.endDate),
+    schoolDepartmentName: marker.schoolDepartmentName,
+    startDate: marker.startDate,
+    endDate: marker.endDate,
+    locationName: marker.locationName,
+    latitude: marker.latitude,
+    longitude: marker.longitude,
+    isArchived: marker.isArchived ?? false,
+  }));
 }
 
 export function useNearbyDisplays(params: NearbyParams | null) {
