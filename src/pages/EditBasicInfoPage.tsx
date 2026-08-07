@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { ChevronLeft, Info, Loader2, Plus, X } from 'lucide-react';
+import { ChevronLeft, Info, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { LoadingView } from '@/components/common';
 
 import type { UserProfileDto } from '@/api/dto';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
@@ -43,7 +44,7 @@ function ProfilePhotoField({
         />
         {isUploading && (
           <div className="absolute inset-0 bg-dark/50 flex items-center justify-center">
-            <Loader2 className="size-6 text-white animate-spin" />
+            <LoadingView fullScreen={false} message="" className="!bg-transparent" />
           </div>
         )}
       </button>
