@@ -28,13 +28,15 @@ type Props = {
   onCancelReply: () => void;
   onSubmitComment: (content: string, imageUrls: string[]) => Promise<unknown>;
   onSubmitReply: (commentId: number, content: string, imageUrls: string[]) => Promise<unknown>;
+  imageUploadDomain: string;
 };
 
-export function LoungeBoardCommentInputBar({
+export function CommentInputBar({
   replyTarget,
   onCancelReply,
   onSubmitComment,
   onSubmitReply,
+  imageUploadDomain,
 }: Props) {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const loungeCommentPolicy = useLoungeCommentPolicy();
@@ -85,7 +87,7 @@ export function LoungeBoardCommentInputBar({
   const uploadFile = useCallback(
     async (id: string, file: File) => {
       try {
-        const uploadedUrl = await uploadImage.mutateAsync({ file, domain: 'lounge' });
+        const uploadedUrl = await uploadImage.mutateAsync({ file, domain: imageUploadDomain });
         setImages((prev) =>
           prev.map((item) => (item.id === id ? { ...item, status: 'done', uploadedUrl } : item)),
         );
@@ -102,7 +104,7 @@ export function LoungeBoardCommentInputBar({
         });
       }
     },
-    [uploadImage],
+    [uploadImage, imageUploadDomain],
   );
 
   const handleFileChange = useCallback(
