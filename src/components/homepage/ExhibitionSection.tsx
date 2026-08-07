@@ -1,9 +1,7 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { Bookmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { HomeExhibitionDto } from '@/api/dto';
-import { queryKeys } from '@/api/queryKeys';
 import { SectionHeader } from '@/components/homepage/SectionHeader';
 import {
   useArchivedExhibitions,
@@ -55,6 +53,7 @@ function ExhibitionCard({
           type="button"
           aria-label={isSaved ? '북마크 취소' : '북마크'}
           aria-pressed={isSaved}
+          onKeyDown={(e) => e.stopPropagation()}
           onClick={(e) => onBookmarkClick(item.displayId, isSaved, e)}
           className="absolute inset-e-0 bottom-0 px-2.5 pb-2 flex items-end justify-end cursor-pointer"
         >
@@ -93,8 +92,7 @@ export function ExhibitionSection({ title, items, linkTo }: Props) {
   const unarchive = useUnarchiveExhibition();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
-  const { data: archivedData, isLoading: isArchiveLoading } = useArchivedExhibitions();
-  const queryClient = useQueryClient();
+  const { data: archivedData } = useArchivedExhibitions();
 
   const savedExhibitionIds = new Set(archivedData?.savedExhibitions?.map((s) => s.displayId) ?? []);
 

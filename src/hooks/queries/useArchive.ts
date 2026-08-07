@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   ArchivedExhibitionDto,
   ArchiveMemoRequestDto,
-  DisplayDetailDto,
   GetArchivedArtworksResponseDataDto,
   GetArchivedExhibitionsResponseDataDto,
 } from '@/api/dto';
@@ -101,8 +100,10 @@ export const useArchiveExhibition = () => {
       return { previousList };
     },
     onError: (_, __, context) => {
-      if (context?.previousList) {
+      if (context?.previousList !== undefined) {
         queryClient.setQueryData(queryKeys.archives.displays.list(), context.previousList);
+      } else {
+        queryClient.removeQueries({ queryKey: queryKeys.archives.displays.list() });
       }
     },
     onSettled: (_, __, exhibitionId) => {
@@ -137,8 +138,10 @@ export const useUnarchiveExhibition = () => {
       return { previousList };
     },
     onError: (_, __, context) => {
-      if (context?.previousList) {
+      if (context?.previousList !== undefined) {
         queryClient.setQueryData(queryKeys.archives.displays.list(), context.previousList);
+      } else {
+        queryClient.removeQueries({ queryKey: queryKeys.archives.displays.list() });
       }
     },
     onSettled: (_, __, exhibitionId) => {

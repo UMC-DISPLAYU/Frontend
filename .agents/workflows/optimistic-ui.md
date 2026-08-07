@@ -27,9 +27,11 @@ const useToggleItem = () => {
       return { previous };
     },
     onError: (_err, _newItem, context) => {
-      // 4) Rollback to previous snapshot on error
-      if (context?.previous) {
+      // 4) Rollback to previous snapshot on error (remove cache if no previous data existed)
+      if (context?.previous !== undefined) {
         queryClient.setQueryData(['items'], context.previous);
+      } else {
+        queryClient.removeQueries({ queryKey: ['items'] });
       }
     },
     onSettled: () => {
@@ -44,4 +46,5 @@ const useToggleItem = () => {
 
 - Keep `onMutate` concise (only insert/update the required ID/fields).
 - Always return `{ previous }` for rollback.
+- If no previous cache existed before mutation, remove the query cache in `onError` (`removeQueries`) to prevent leftover dirty optimistic data.
 - Invalidate queries in `onSettled` for final server sync.
