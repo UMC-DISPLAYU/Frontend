@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { AffiliationInput } from '@/components/exhibition-register';
@@ -20,6 +20,8 @@ const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
 
 export function ExhibitionRegister() {
+  const { displayId: paramDisplayId } = useParams();
+  const displayId = Number(paramDisplayId ?? 0);
   const { data: artistProfile } = useMyArtistProfile();
   const imageUpload = useImageUpload({ domain: 'display' });
 
@@ -67,7 +69,10 @@ export function ExhibitionRegister() {
 
     const imageUrls = await imageUpload.uploadImages();
 
-    navigate('/exhibition/register/basic', {
+    const nextPath =
+      displayId > 0 ? `/exhibition/${displayId}/edit/basic` : '/exhibition/register/basic';
+
+    navigate(nextPath, {
       state: {
         imageUrls,
         title,
