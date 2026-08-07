@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
@@ -66,9 +67,8 @@ export function ExhibitionRegister() {
     handleSubmit,
     control,
     setValue,
-    watch,
     reset,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isSubmitted },
   } = useForm<ExhibitionRegisterFormValues>({
     resolver: zodResolver(exhibitionRegisterSchema),
     mode: 'onChange',
@@ -85,8 +85,8 @@ export function ExhibitionRegister() {
     },
   });
 
-  const type = watch('type');
-  const intro = watch('intro') ?? '';
+  const type = useWatch({ control, name: 'type' });
+  const intro = useWatch({ control, name: 'intro' }) ?? '';
 
   useEffect(() => {
     if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
@@ -187,7 +187,7 @@ export function ExhibitionRegister() {
               onRemoveImage={imageUpload.removeImage}
               onRemoveInitialImage={handleRemoveInitialImage}
             />
-            {errors.imageUrls && (
+            {isSubmitted && errors.imageUrls && (
               <span className="typo-body-xxs-regular text-error self-start px-2">
                 {errors.imageUrls.message}
               </span>
