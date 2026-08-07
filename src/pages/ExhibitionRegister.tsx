@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from 'react';
 
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -30,12 +31,16 @@ export function ExhibitionRegister() {
 
   /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
   const { state } = useLocation();
-  const { data: fetchedDetail, isPending: isDetailPending } = useDisplayDetail(displayId);
+  const { data: fetchedDetail } = useDisplayDetail(displayId);
+
+  const restored = useMemo(() => {
+    return displayId > 0 && !state?.displayDetail ? {} : (state ?? {});
+  }, [displayId, state]);
+
   const displayDetail = (state?.displayDetail as DisplayDetailDto) || fetchedDetail || null;
 
   // 수정 모드 진입 시 최우선순위로 displayDetail 데이터를 기반으로 채웁니다.
   // 단, 다음 단계에서 뒤로가기(state 복원)한 경우를 위해 restored에 합칩니다.
-  const restored = (state ?? {}) as Record<string, unknown>;
   const initialTitle = (restored.title as string) ?? displayDetail?.title ?? '';
   const initialSubtitle = (restored.subtitle as string) ?? displayDetail?.subtitle ?? '';
   const initialIntro = (restored.intro as string) ?? displayDetail?.content ?? '';
@@ -70,8 +75,10 @@ export function ExhibitionRegister() {
       setSchool((prev) => (restored.school as string) ?? fetchedDetail.organization ?? prev);
       setDepartment((prev) => (restored.department as string) ?? fetchedDetail.department ?? prev);
       setOrganizer((prev) => (restored.organizer as string) ?? fetchedDetail.organization ?? prev);
-      setInitialImages((prev) => 
-        restored.imageUrls ? (restored.imageUrls as string[]) : fetchedDetail.images?.map(img => img.imageUrl) || prev
+      setInitialImages((prev) =>
+        restored.imageUrls
+          ? (restored.imageUrls as string[])
+          : fetchedDetail.images?.map((img) => img.imageUrl) || prev,
       );
     }
   }, [displayId, state, fetchedDetail, restored]);
@@ -88,8 +95,6 @@ export function ExhibitionRegister() {
     }
     return organizer.trim() !== '';
   };
-
-
 
   const handleRemoveInitialImage = (url: string) => {
     setInitialImages((prev) => prev.filter((img) => img !== url));
