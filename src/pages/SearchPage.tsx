@@ -274,7 +274,7 @@ export function SearchPage() {
               <LoadingView fullScreen={false} message="전시를 검색하는 중..." />
             ) : isError || exhibitions.length === 0 ? (
               <div className="flex flex-1 justify-center pt-36 text-center">
-                <p className="typo-body-xl-regular text-faint">결과가 없습니다</p>
+                <p className="typo-body-lg-regular text-faint">결과가 없습니다</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-x-2.5 gap-y-5">
