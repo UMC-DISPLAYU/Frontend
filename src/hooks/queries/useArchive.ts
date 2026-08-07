@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
+  ArchivedExhibitionDto,
   ArchiveMemoRequestDto,
+  DisplayDetailDto,
   GetArchivedArtworksResponseDataDto,
   GetArchivedExhibitionsResponseDataDto,
 } from '@/api/dto';
@@ -79,12 +81,35 @@ export const useArchiveExhibition = () => {
 
   return useMutation({
     mutationFn: archiveExhibition,
-    onSuccess: (_, exhibitionId) =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(exhibitionId) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() }),
-      ]),
+    onMutate: async (exhibitionId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.archives.displays.all() });
+
+      const previousList = queryClient.getQueryData<GetArchivedExhibitionsResponseDataDto>(
+        queryKeys.archives.displays.list(),
+      );
+
+      const newItem = { displayId: exhibitionId } as ArchivedExhibitionDto;
+
+      queryClient.setQueryData<GetArchivedExhibitionsResponseDataDto>(
+        queryKeys.archives.displays.list(),
+        (old) => ({
+          ...old,
+          savedExhibitions: [...(old?.savedExhibitions ?? []), newItem],
+        }),
+      );
+
+      return { previousList };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(queryKeys.archives.displays.list(), context.previousList);
+      }
+    },
+    onSettled: (_, __, exhibitionId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(exhibitionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+    },
   });
 };
 
@@ -93,12 +118,34 @@ export const useUnarchiveExhibition = () => {
 
   return useMutation({
     mutationFn: unarchiveExhibition,
-    onSuccess: (_, exhibitionId) =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(exhibitionId) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() }),
-      ]),
+    onMutate: async (exhibitionId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.archives.displays.all() });
+
+      const previousList = queryClient.getQueryData<GetArchivedExhibitionsResponseDataDto>(
+        queryKeys.archives.displays.list(),
+      );
+
+      queryClient.setQueryData<GetArchivedExhibitionsResponseDataDto>(
+        queryKeys.archives.displays.list(),
+        (old) => ({
+          ...old,
+          savedExhibitions:
+            old?.savedExhibitions?.filter((s) => s.displayId !== exhibitionId) ?? [],
+        }),
+      );
+
+      return { previousList };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(queryKeys.archives.displays.list(), context.previousList);
+      }
+    },
+    onSettled: (_, __, exhibitionId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(exhibitionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+    },
   });
 };
 
