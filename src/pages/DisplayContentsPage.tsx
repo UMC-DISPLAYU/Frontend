@@ -66,7 +66,7 @@ export function DisplayContentsPage() {
             )}
           </div>
 
-          <div className="mt-[17px] flex flex-col w-full gap-0">
+          <div className="mt-[17px] flex flex-col w-full gap-0 px-5">
             {selectedCategory.contents.map((item) => (
               <div key={item.contentId} className="w-full bg-box overflow-hidden">
                 <img
@@ -138,7 +138,7 @@ export function DisplayContentsPage() {
                     className="absolute inset-0 pointer-events-none"
                     style={{
                       background:
-                        'linear-gradient(180deg, rgba(102, 102, 102, 0.00) 47.49%, rgba(0, 0, 0, 0.85) 82.16%)',
+                        'linear-gradient(180deg, rgba(102, 102, 102, 0.00) 47.49%, rgba(0, 0, 0, 0.6) 82.16%)',
                     }}
                   />
                   <div className="absolute bottom-3 left-3 flex flex-col gap-0.5 right-3">
