@@ -87,6 +87,7 @@ export const getMyArtworkQuestions = async (params: {
 export const getReceivedArtworkQuestions = async (params: {
   cursor?: string;
   size?: number;
+  answerStatus?: 'WAITING' | 'ANSWERED';
 } = {}): Promise<GetReceivedArtworkQuestionsResponseDataDto> =>
   apiRequest('/v1/artworks/questions/received', { query: params });
 

@@ -28,23 +28,10 @@ export const useMyDisplays = ({ enabled = true }: { enabled?: boolean } = {}) =>
         isOwner,
         status: display.isDisplaying ? '전시 중' : '전시 종료',
         title: display.title,
-        org: '대표자',
+        org: isOwner ? '대표자' : '팀원',
         period: `${formatDate(display.startDate)} – ${formatDate(display.endDate)}`,
         place: display.placeName,
         thumbnail: display.postImageUrl,
       }));
-
-      const participatedDisplays = data.participatedDisplays.map((display) => ({
-        id: String(display.displayId),
-        displayId: display.displayId,
-        status: display.isDisplaying ? '전시 중' : '전시 종료',
-        title: display.title,
-        org: '팀원',
-        period: `${formatDate(display.startDate)} – ${formatDate(display.endDate)}`,
-        place: display.placeName,
-        thumbnail: display.postImageUrl,
-      }));
-
-      return [...createdDisplays, ...participatedDisplays];
     },
   });

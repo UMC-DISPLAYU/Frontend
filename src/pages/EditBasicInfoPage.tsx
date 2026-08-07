@@ -4,6 +4,7 @@ import { ChevronLeft, Info, Loader2, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { UserProfileDto } from '@/api/dto';
+import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
 import { cn } from '@/utils/cn';
@@ -15,6 +16,7 @@ function ProfilePhotoField({
 }: {
   image: string | null;
   onChange: (file: File) => void;
+  isUploading: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -22,6 +24,7 @@ function ProfilePhotoField({
     const file = e.target.files?.[0];
     if (!file) return;
     onChange(file);
+    e.currentTarget.value = '';
   };
 
   return (
@@ -62,7 +65,8 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
-  const [activityName, setActivityName] = useState(userMe?.nickname || userMe?.name || '');
+  const [profileName, setProfileName] = useState(userMe?.nickname || userMe?.name || '');
+  const [isDuplicateChecked, setIsDuplicateChecked] = useState(false);
   const updateUserMe = useUpdateUserMe();
   const uploadImage = useUploadImage();
 
@@ -82,7 +86,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   };
 
   const validation = validateProfileName(profileName);
-  const canSubmit = validation.isValid && isDuplicateChecked && !isImageUploading;
+  const canSubmit = validation.isValid && isDuplicateChecked && !uploadImage.isPending;
 
   const handleProfileNameChange = (value: string) => {
     setProfileName(value);
@@ -97,29 +101,6 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const handleClearInput = () => {
     setProfileName('');
     setIsDuplicateChecked(false);
-  };
-
-  const handleImageChange = async (file: File) => {
-    // 미리보기용 data URL 생성
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPreviewImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // S3에 이미지 업로드
-    setIsImageUploading(true);
-    try {
-      const fileUrl = await uploadImage.mutateAsync({ file, domain: 'profile' });
-      setUploadedImageUrl(fileUrl);
-    } catch (error) {
-      console.error('이미지 업로드 실패:', error);
-      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
-      setPreviewImage(userMe?.profileImageUrl ?? null);
-      setUploadedImageUrl(null);
-    } finally {
-      setIsImageUploading(false);
-    }
   };
 
   useEffect(() => {
@@ -150,7 +131,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
 
     updateUserMe.mutate(
       {
-        nickname: activityName.trim(),
+        nickname: profileName.trim(),
         ...(uploadedProfileImageUrl ? { profileImageUrl: uploadedProfileImageUrl } : {}),
       },
       {
@@ -170,9 +151,13 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>
       </header>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-40">
-        <div className="mt-10 flex justify-center">
-          <ProfilePhotoField image={profileImage} onChange={handleProfileImageChange} />
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-60">
+        <div className="mt-[24px] flex justify-center">
+          <ProfilePhotoField
+            image={profileImage}
+            onChange={handleProfileImageChange}
+            isUploading={uploadImage.isPending}
+          />
         </div>
 
         <div className="mt-[60px] flex flex-col gap-3">
@@ -216,16 +201,33 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         </div>
 
         <div className="mt-12.5 flex flex-col gap-2">
-          <div className={cn('typo-body-xs-regular', validation.korEngNum ? 'text-sub600' : 'text-faint')}>
+          <div
+            className={cn(
+              'typo-body-xs-regular',
+              validation.korEngNum ? 'text-sub600' : 'text-faint',
+            )}
+          >
             한글 · 영문 · 숫자
           </div>
-          <div className={cn('typo-body-xs-regular', validation.length ? 'text-sub600' : 'text-faint')}>
+          <div
+            className={cn('typo-body-xs-regular', validation.length ? 'text-sub600' : 'text-faint')}
+          >
             5 ~ 15자
           </div>
-          <div className={cn('typo-body-xs-regular', validation.noSpecialChars ? 'text-sub600' : 'text-faint')}>
+          <div
+            className={cn(
+              'typo-body-xs-regular',
+              validation.noSpecialChars ? 'text-sub600' : 'text-faint',
+            )}
+          >
             특수문자 불가
           </div>
-          <div className={cn('typo-body-xs-regular', validation.noSpaces ? 'text-sub600' : 'text-faint')}>
+          <div
+            className={cn(
+              'typo-body-xs-regular',
+              validation.noSpaces ? 'text-sub600' : 'text-faint',
+            )}
+          >
             공백 불가
           </div>
         </div>
@@ -241,10 +243,10 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!canSubmit || updateUserMe.isPending || uploadImage.isPending}
-          className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white transition-opacity disabled:opacity-40"
+          disabled={!canSubmit || updateUserMe.isPending}
+          className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-card transition-opacity disabled:opacity-40"
         >
-          {updateUserMe.isPending || uploadImage.isPending ? '저장 중' : '완료'}
+          {updateUserMe.isPending ? '저장 중' : '완료'}
         </button>
       </footer>
     </div>

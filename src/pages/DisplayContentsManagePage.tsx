@@ -469,7 +469,6 @@ export function DisplayContentsManagePage() {
       </div>
 
       {canCreateCategory && (
-        <BottomBar>
           <button
             type="button"
             onClick={() => setCreating(true)}
@@ -477,7 +476,6 @@ export function DisplayContentsManagePage() {
           >
             {BOTTOM_CTA_LABEL}
           </button>
-        </BottomBar>
       )}
 
       {editing && (

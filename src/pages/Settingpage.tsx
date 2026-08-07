@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
 import { useLogout } from '@/hooks/queries/useAuth';
+import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
+import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
@@ -14,6 +16,12 @@ export function SettingPage() {
   const artistPolicy = useArtistPolicy();
   const canViewArtist = hasPermission(artistPolicy, 'view');
   const logoutMutation = useLogout();
+
+  const { data: invitationsData } = useMyDisplayInvitations();
+  const { data: questionsData } = useMyArtworkQuestions({ answerStatus: 'WAITING' });
+
+  const invitationCount = invitationsData?.invitations?.length ?? 0;
+  const pendingQuestionCount = questionsData?.questions?.length ?? 0;
 
   const handleLogout = () => {
     logoutMutation.mutate(

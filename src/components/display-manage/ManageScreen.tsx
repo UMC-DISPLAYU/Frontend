@@ -88,7 +88,6 @@ export function ManageScreen({
           </button>
         )}
       </div>
-      <BottomBar>
         <button
           type="button"
           onClick={onDone}
@@ -96,7 +95,7 @@ export function ManageScreen({
         >
           완료
         </button>
-      </div>
+
     </Screen>
   );
 }

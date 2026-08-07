@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   CreateArtworkQuestionReplyRequestDto,
   CreateArtworkQuestionRequestDto,
-  GetMyArtworkQuestionsRequestDto,
   UpdateArtworkQuestionRequestDto,
 } from '@/api/dto';
 import {
@@ -12,7 +11,7 @@ import {
   deleteArtworkQuestion,
   deleteArtworkQuestionReply,
   getArtworkQuestions,
-  getMyArtworkQuestions,
+  getReceivedArtworkQuestions,
   updateArtworkQuestion,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -24,10 +23,14 @@ export const useArtworkQuestions = (artworkId: number) =>
     enabled: Number.isFinite(artworkId),
   });
 
-export const useMyArtworkQuestions = (params: GetMyArtworkQuestionsRequestDto) =>
+export const useMyArtworkQuestions = (params?: {
+  cursor?: string;
+  size?: number;
+  answerStatus?: 'WAITING' | 'ANSWERED';
+}) =>
   useQuery({
-    queryKey: queryKeys.artworkQuestions.me(),
-    queryFn: () => getMyArtworkQuestions(),
+    queryKey: [...queryKeys.artworkQuestions.me(), params] as const,
+    queryFn: () => getReceivedArtworkQuestions(params),
   });
 
 export const useCreateArtworkQuestion = () => {

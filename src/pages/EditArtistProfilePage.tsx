@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ArtistProfileDto } from '@/api/dto';
 import { ConfirmModal } from '@/components/ui';
 import { ChipGroup } from '@/components/ui';
-import { EXHIBITION_FIELDS } from '@/constants/exhibition';
+import { EXHIBITION_FIELDS, EXHIBITION_FIELD_LABELS } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 

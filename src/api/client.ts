@@ -15,7 +15,7 @@ interface ApiRequestOptions<TBody> {
 
 // Query string builder for endpoint request params
 export const createQueryString = (query?: QueryParams): string => {
-  if (!query) {
+  if (!query || Object.keys(query).length === 0) {
     return '';
   }
 

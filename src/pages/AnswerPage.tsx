@@ -118,15 +118,12 @@ function Tabs({ value, onChange }: TabsProps) {
 export function AnswerPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabKey>('done');
-  const { data, isError, isLoading } = useReceivedArtworkQuestions();
+  const { data, isError, isLoading } = useReceivedArtworkQuestions({
+    answerStatus: tab === 'pending' ? 'WAITING' : 'ANSWERED',
+  });
   const questions = data?.questions ?? [];
 
   const items = questions
-    .filter((question) =>
-      tab === 'pending'
-        ? question.answerStatus === 'WAITING'
-        : question.answerStatus === 'ANSWERED',
-    )
     .map<Question>((question) => ({
           id: String(question.questionId),
           exhibition: question.artworkName,
