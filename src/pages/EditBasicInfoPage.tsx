@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import { ChevronLeft, Info, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { LoadingView } from '@/components/common';
 
 import type { UserProfileDto } from '@/api/dto';
+import { LoadingView } from '@/components/common';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
