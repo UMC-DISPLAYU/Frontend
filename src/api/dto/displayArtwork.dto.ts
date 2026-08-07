@@ -148,6 +148,29 @@ export interface GetMyArtworkQuestionsResponseDataDto {
 
 export type GetMyArtworkQuestionsResponseDto = ApiResponseDto<GetMyArtworkQuestionsResponseDataDto>;
 
+export interface ReceivedArtworkQuestionDto {
+  questionId: number;
+  personalQuestionId: number | null;
+  artworkId: number;
+  personalArtworkId: number | null;
+  artworkName: string;
+  content: string;
+  isPublic: boolean;
+  answerStatus: 'WAITING' | 'ANSWERED';
+  questionerId: number;
+  questionerNickname: string;
+  createdAt: string;
+}
+
+export interface GetReceivedArtworkQuestionsResponseDataDto {
+  questions: ReceivedArtworkQuestionDto[];
+  nextCursor: string | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export type GetReceivedArtworkQuestionsResponseDto = ApiResponseDto<GetReceivedArtworkQuestionsResponseDataDto>;
+
 export interface CreateArtworkQuestionRequestDto {
   content: string;
   isPublic: boolean;

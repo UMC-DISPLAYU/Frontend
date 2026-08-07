@@ -4,7 +4,7 @@ import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
-import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
+import { useReceivedArtworkQuestions } from '@/hooks/queries/useReceivedArtworkQuestions';
 
 type TabKey = 'pending' | 'done';
 
@@ -118,8 +118,7 @@ function Tabs({ value, onChange }: TabsProps) {
 export function AnswerPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabKey>('done');
-  // 가짜 API 연동: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 GET /api/v1/artworks/question/me 응답을 사용합니다.
-  const { data, isError, isLoading } = useMyArtworkQuestions();
+  const { data, isError, isLoading } = useReceivedArtworkQuestions();
   const questions = data?.questions ?? [];
 
   const items = questions
@@ -132,7 +131,7 @@ export function AnswerPage() {
           id: String(question.questionId),
           exhibition: question.artworkName,
           desc: question.content,
-          user: question.user.nickname,
+          user: question.questionerNickname,
           time: getRelativeTime(question.createdAt),
           status: formatAnswerStatus(question.answerStatus),
           isOpen: question.isPublic,

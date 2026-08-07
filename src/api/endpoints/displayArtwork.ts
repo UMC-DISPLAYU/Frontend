@@ -19,7 +19,9 @@ import type {
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
   GetDisplayArtworksResponseDataDto,
+  GetMyArtworkFeelingsResponseDataDto,
   GetMyArtworkQuestionsResponseDataDto,
+  GetReceivedArtworkQuestionsResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -76,6 +78,13 @@ export const getMyArtworkQuestions = async (params: {
   size?: number;
 } = {}): Promise<GetMyArtworkQuestionsResponseDataDto> =>
   apiRequest('/v1/artworks/questions/me', { query: params });
+
+// GET /api/v1/artworks/questions/received
+export const getReceivedArtworkQuestions = async (params: {
+  cursor?: string;
+  size?: number;
+} = {}): Promise<GetReceivedArtworkQuestionsResponseDataDto> =>
+  apiRequest('/v1/artworks/questions/received', { query: params });
 
 // POST /v1/artworks/:artworkId/questions
 export const createArtworkQuestion = async (
