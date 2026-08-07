@@ -114,8 +114,10 @@ export function ArtistNameSetup() {
       /* 서버 필수 필드입니다. 작가명은 이 전시에서 쓸 표시명, 문의 방법은 Q&A 계정으로 들어갑니다. */
       displayNickname: artistName.trim(),
       qnaAccount: (registerState.contact ?? '').trim(),
-      schoolOrOrganization: optionalText(registerState.school || registerState.organizer) ?? '',
-      departmentOrClub: optionalText(registerState.department),
+      schoolOrOrganization: registerState.school ? registerState.school : null,
+      departmentOrClub: registerState.school
+        ? (optionalText(registerState.department) ?? null)
+        : null,
       subtitle: optionalText(registerState.subtitle),
       description: optionalText(registerState.intro),
       precautions: optionalText(registerState.notice),
@@ -140,7 +142,7 @@ export function ArtistNameSetup() {
   };
 
   return (
-    <div className="mx-auto flex h-dvh w-96 flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <header className="flex shrink-0 items-center gap-3 px-5 pt-6 pb-3">
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />

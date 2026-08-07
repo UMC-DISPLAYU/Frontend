@@ -53,58 +53,64 @@ export function ImageUploader({
   );
 
   return (
-    <div className="mt-2 flex gap-2 flex-wrap">
-      {initialImages.map((url, index) => (
-        <div
-          key={url}
-          className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
-        >
-          <img src={url} alt={`기존 이미지 ${index + 1}`} className="w-full h-full object-cover" />
-          <button
-            type="button"
-            onClick={() => onRemoveInitialImage?.(url)}
-            className="absolute top-1 right-1 size-6 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
-            aria-label={`기존 이미지 ${index + 1} 삭제`}
+    <>
+      <div className="flex gap-2 flex-wrap">
+        {initialImages.map((url, index) => (
+          <div
+            key={url}
+            className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
           >
-            <X size={12} className="text-white" />
-          </button>
-        </div>
-      ))}
-      {images.map((image, index) => (
-        <div
-          key={image.id}
-          className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
-        >
-          <img
-            src={image.previewUrl}
-            alt={`새로운 이미지 ${index + 1}`}
-            className="w-full h-full object-cover"
-          />
-          <button
-            type="button"
-            onClick={() => onRemoveImage(image.id)}
-            className="absolute top-1 right-1 size-6 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
-            aria-label={`새로운 이미지 ${index + 1} 삭제`}
-          >
-            <X size={12} className="text-white" />
-          </button>
-        </div>
-      ))}
-      {totalImages < maxImages && (
-        <button
-          type="button"
-          onClick={handleImageClick}
-          className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
-          aria-label={emptyLabel ?? '이미지 업로드'}
-        >
-          <div className="size-10 bg-page rounded-full flex items-center justify-center">
-            <Image size={16} className="text-input-border" />
+            <img
+              src={url}
+              alt={`기존 이미지 ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => onRemoveInitialImage?.(url)}
+              className="absolute top-1 right-1 size-6 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
+              aria-label={`기존 이미지 ${index + 1} 삭제`}
+            >
+              <X size={12} className="text-white" />
+            </button>
           </div>
-          <span className="text-main typo-body-xs-regular">
-            {emptyLabel ?? `${totalImages}/${maxImages}`}
-          </span>
-        </button>
-      )}
+        ))}
+        {images.map((image, index) => (
+          <div
+            key={image.id}
+            className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
+          >
+            <img
+              src={image.previewUrl}
+              alt={`새로운 이미지 ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => onRemoveImage(image.id)}
+              className="absolute top-1 right-1 size-6 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
+              aria-label={`새로운 이미지 ${index + 1} 삭제`}
+            >
+              <X size={12} className="text-white" />
+            </button>
+          </div>
+        ))}
+        {totalImages < maxImages && (
+          <button
+            type="button"
+            onClick={handleImageClick}
+            className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
+            aria-label={emptyLabel ?? '이미지 업로드'}
+          >
+            <div className="size-10 bg-page rounded-full flex items-center justify-center">
+              <Image size={16} className="text-input-border" />
+            </div>
+            <span className="text-main typo-body-xs-regular">
+              {emptyLabel ?? `${totalImages}/${maxImages}`}
+            </span>
+          </button>
+        )}
+      </div>
       <input
         ref={fileInputRef}
         type="file"
@@ -114,6 +120,6 @@ export function ImageUploader({
         className="hidden"
         aria-label="이미지 파일 선택"
       />
-    </div>
+    </>
   );
 }

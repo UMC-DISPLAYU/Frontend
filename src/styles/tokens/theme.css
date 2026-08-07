@@ -62,6 +62,9 @@
   --color-line-soft: var(--line-soft);
   --color-line-active: var(--line-active);
 
-  /* Overlay */
-  --color-scrim: var(--scrim);
+  /* 디자인 토큰 수정하다가 발견했는데 --color-scrim 가 semantic에 정의가 되지 않아서 그냥 삭제했습니다 */
+
+  /* Calendar */
+  --color-cal-active: var(--cal-active);
+  --color-cal-edge: var(--cal-edge);
 }

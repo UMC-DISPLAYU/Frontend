@@ -343,8 +343,8 @@ export interface CreateDisplayRequestDto {
   /* 서버 필수값입니다. 이 전시에서 쓸 표시명과 문의(Q&A) 계정입니다. */
   displayNickname: string;
   qnaAccount: string;
-  schoolOrOrganization: string;
-  departmentOrClub?: string;
+  schoolOrOrganization?: string | null;
+  departmentOrClub?: string | null;
   subtitle?: string;
   description?: string;
   precautions?: string | null;

@@ -5,4 +5,3 @@ export { ErrorView } from './ErrorView';
 export { ImageUploader } from './ImageUploader';
 export { LoadingView } from './LoadingView';
 export { LoginConfirmModal } from './LoginConfirmModal';
-export { PageHeader } from './PageHeader';

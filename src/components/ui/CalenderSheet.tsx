@@ -107,33 +107,54 @@ export function CalenderSheet({ open, onClose, value, onConfirm }: CalenderSheet
             </div>
             <div className="grid grid-cols-7 gap-y-1">
               {buildMonthGrid(year, month).map(({ date, inMonth }, i) => {
-                const active = inRange(date);
-                const edge = isEdge(date);
+                const active = inMonth && inRange(date);
+                const isStart = inMonth && start && ymd(date) === ymd(start);
+                const isEnd =
+                  inMonth && (end ? ymd(date) === ymd(end) : start && ymd(date) === ymd(start));
+                const edge = isStart || isEnd;
                 const isPast = ymd(date) < ymd(today());
+
+                const isSun = date.getDay() === 0;
+                const isSat = date.getDay() === 6;
+                const isFirstDayOfMonth = date.getDate() === 1;
+                const isLastDayOfMonth = date.getDate() === new Date(year, month + 1, 0).getDate();
+
+                const roundedLeft = isStart || isSun || isFirstDayOfMonth;
+                const roundedRight = isEnd || isSat || isLastDayOfMonth;
+
                 return (
                   <button
                     key={i}
                     type="button"
                     onClick={() => handlePick(date)}
-                    disabled={isPast}
-                    className="flex h-9 items-center justify-center disabled:cursor-not-allowed"
+                    disabled={isPast || !inMonth}
+                    className="relative flex h-8 items-center justify-center disabled:cursor-not-allowed"
                   >
-                    <span
-                      className={[
-                        'flex size-8 items-center justify-center rounded-full typo-body-sm-regular',
-                        isPast
-                          ? 'text-faint opacity-40'
-                          : edge
-                            ? 'bg-dark text-white'
-                            : active
-                              ? 'bg-box200 text-main'
-                              : inMonth
-                                ? 'text-main'
-                                : 'text-faint',
-                      ].join(' ')}
-                    >
-                      {date.getDate()}
-                    </span>
+                    {active && (
+                      <div
+                        className={[
+                          'absolute inset-y-0 bg-cal-active',
+                          roundedLeft ? 'left-1/2 -ml-4 rounded-l-full' : 'left-0',
+                          roundedRight ? 'right-1/2 -mr-4 rounded-r-full' : 'right-0',
+                        ].join(' ')}
+                      />
+                    )}
+                    {inMonth ? (
+                      <span
+                        className={[
+                          'relative z-10 flex size-8 items-center justify-center rounded-full typo-body-md-regular',
+                          isPast
+                            ? 'text-faint opacity-40'
+                            : edge
+                              ? 'bg-cal-edge text-white'
+                              : active
+                                ? 'text-white'
+                                : 'text-sub700',
+                        ].join(' ')}
+                      >
+                        {date.getDate()}
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}
@@ -143,7 +164,7 @@ export function CalenderSheet({ open, onClose, value, onConfirm }: CalenderSheet
       </div>
 
       {/* 확인 바 */}
-      <div className="sticky bottom-0 bg-page px-5 py-4">
+      <div className="sticky bottom-0 z-20 bg-page px-5 py-4">
         <button
           type="button"
           disabled={!start}

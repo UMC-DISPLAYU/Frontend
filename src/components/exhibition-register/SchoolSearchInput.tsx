@@ -36,13 +36,13 @@ export function SchoolSearchInput({ value, onChange, readonly = false }: SchoolS
   }, [readonly]);
 
   return (
-    <div className="bg-card px-4 py-3.5 border-b border-line flex flex-col gap-2">
+    <div className="px-4 py-3.5 border-b border-line flex flex-col gap-2">
       <label htmlFor="school-search" className="flex items-center gap-1">
-        <span className="text-sub600 typo-body-xs-bold leading-4">학교 / 기관명</span>
+        <span className="text-dark typo-body-xs-bold leading-4">학교 / 기관명</span>
         <span className="text-red-400 typo-body-xs-regular leading-5">*</span>
       </label>
       <div className="relative">
-        <div className="h-10 px-3 bg-input-soft-bg rounded-2xl outline outline-1 outline-offset-[-1px] outline-line-soft flex items-center gap-2 overflow-hidden">
+        <div className="h-10 px-3 bg-input-soft-bg rounded-2xl outline -outline-offset-1 outline-input-soft-border flex items-center gap-2 overflow-hidden">
           <input
             id="school-search"
             value={inputValue}
@@ -57,10 +57,8 @@ export function SchoolSearchInput({ value, onChange, readonly = false }: SchoolS
             onBlur={() => setTimeout(() => setSchoolOpen(false), 200)}
             placeholder="학교명을 검색해주세요"
             readOnly={readonly}
-            className={`flex-1 bg-transparent typo-body-sm-regular text-main placeholder:text-hint outline-none rounded ${
-              readonly
-                ? 'cursor-not-allowed'
-                : 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500'
+            className={`flex-1 bg-transparent typo-body-sm-regular placeholder:text-hint outline-none rounded ${
+              readonly ? 'cursor-not-allowed text-hint' : 'text-main'
             }`}
           />
           {!readonly && (
@@ -72,7 +70,7 @@ export function SchoolSearchInput({ value, onChange, readonly = false }: SchoolS
         </div>
 
         {!readonly && schoolOpen && (
-          <div className="absolute z-50 left-0 right-0 mt-1 bg-card rounded-2xl outline outline-1 outline-offset-[-1px] outline-line shadow-lg overflow-hidden">
+          <div className="absolute z-50 left-0 right-0 mt-1 bg-card rounded-2xl outline -outline-offset-1 outline-line shadow-lg overflow-hidden">
             <div className="max-h-56 overflow-y-auto">
               {isLoading ? (
                 <div className="px-4 py-3 text-sm text-neutral-400">검색 중입니다</div>

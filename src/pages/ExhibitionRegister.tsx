@@ -1,12 +1,10 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import type { DisplayDetailDto } from '@/api/dto';
 import { ImageUploader } from '@/components/common';
-import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
-import { ChipGroup, RequiredLabel } from '@/components/ui';
+import { AffiliationInput } from '@/components/exhibition-register';
+import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
   EXHIBITION_FIELD_LABELS,
   EXHIBITION_FIELDS,
@@ -15,7 +13,6 @@ import {
   type ExhibitionTypeGroup,
   MAX_POSTER_UPLOAD_IMAGES,
 } from '@/constants/exhibition';
-import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
@@ -25,68 +22,30 @@ const INPUT_CLASS =
 export function ExhibitionRegister() {
   const { data: artistProfile } = useMyArtistProfile();
   const imageUpload = useImageUpload({ domain: 'display' });
-  const navigate = useNavigate();
-  const { displayId: paramDisplayId } = useParams();
-  const displayId = Number(paramDisplayId ?? 0);
 
   /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
   const { state } = useLocation();
-  const { data: fetchedDetail } = useDisplayDetail(displayId);
+  const restored = (state ?? {}) as Record<string, unknown>;
 
-  const restored = useMemo(() => {
-    return displayId > 0 && !state?.displayDetail ? {} : (state ?? {});
-  }, [displayId, state]);
+  const [title, setTitle] = useState((restored.title as string) ?? '');
+  const [subtitle, setSubtitle] = useState((restored.subtitle as string) ?? '');
+  const [intro, setIntro] = useState((restored.intro as string) ?? '');
+  const [type, setType] = useState<string | null>((restored.type as string) ?? null);
+  const [field, setField] = useState<string[]>((restored.field as string[]) ?? []);
 
-  const displayDetail = (state?.displayDetail as DisplayDetailDto) || fetchedDetail || null;
-
-  // 수정 모드 진입 시 최우선순위로 displayDetail 데이터를 기반으로 채웁니다.
-  // 단, 다음 단계에서 뒤로가기(state 복원)한 경우를 위해 restored에 합칩니다.
-  const initialTitle = (restored.title as string) ?? displayDetail?.title ?? '';
-  const initialSubtitle = (restored.subtitle as string) ?? displayDetail?.subtitle ?? '';
-  const initialIntro = (restored.intro as string) ?? displayDetail?.content ?? '';
-  const initialType = (restored.type as string) ?? displayDetail?.displayType ?? null;
-  const initialField = (restored.field as string[]) ?? displayDetail?.displayFields ?? [];
-  const initialSchool =
-    (restored.school as string) ?? displayDetail?.organization ?? artistProfile?.schoolName ?? '';
-  const initialDepartment = (restored.department as string) ?? displayDetail?.department ?? '';
-  const initialOrganizer = (restored.organizer as string) ?? displayDetail?.organization ?? '';
-
-  const [title, setTitle] = useState(initialTitle);
-  const [subtitle, setSubtitle] = useState(initialSubtitle);
-  const [intro, setIntro] = useState(initialIntro);
-  const [type, setType] = useState<string | null>(initialType);
-  const [field, setField] = useState<string[]>(initialField);
-
-  const [school, setSchool] = useState(initialSchool);
-  const [department, setDepartment] = useState(initialDepartment);
-  const [organizer, setOrganizer] = useState(initialOrganizer);
-  const schoolValue = school || artistProfile?.schoolName || '';
-  const [initialImages, setInitialImages] = useState<string[]>(
-    displayDetail?.images?.map((img) => img.imageUrl) || [],
+  const [school, setSchool] = useState(
+    (restored.school as string) ?? artistProfile?.schoolName ?? '',
   );
-
-  useEffect(() => {
-    if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
-      setTitle((prev) => (restored.title as string) ?? fetchedDetail.title ?? prev);
-      setSubtitle((prev) => (restored.subtitle as string) ?? fetchedDetail.subtitle ?? prev);
-      setIntro((prev) => (restored.intro as string) ?? fetchedDetail.content ?? prev);
-      setType((prev) => (restored.type as string) ?? fetchedDetail.displayType ?? prev);
-      setField((prev) => (restored.field as string[]) ?? fetchedDetail.displayFields ?? prev);
-      setSchool((prev) => (restored.school as string) ?? fetchedDetail.organization ?? prev);
-      setDepartment((prev) => (restored.department as string) ?? fetchedDetail.department ?? prev);
-      setOrganizer((prev) => (restored.organizer as string) ?? fetchedDetail.organization ?? prev);
-      setInitialImages((prev) =>
-        restored.imageUrls
-          ? (restored.imageUrls as string[])
-          : fetchedDetail.images?.map((img) => img.imageUrl) || prev,
-      );
-    }
-  }, [displayId, state, fetchedDetail, restored]);
+  const [department, setDepartment] = useState((restored.department as string) ?? '');
+  const [organizer, setOrganizer] = useState((restored.organizer as string) ?? '');
+  const schoolValue = school || artistProfile?.schoolName || '';
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
     return found?.group ?? null;
   }, [type]);
+
+  const navigate = useNavigate();
 
   const isAffiliationValid = () => {
     if (!selectedGroup) return true;
@@ -96,12 +55,8 @@ export function ExhibitionRegister() {
     return organizer.trim() !== '';
   };
 
-  const handleRemoveInitialImage = (url: string) => {
-    setInitialImages((prev) => prev.filter((img) => img !== url));
-  };
-
   const isFormValid =
-    (imageUpload.images.length > 0 || initialImages.length > 0) &&
+    imageUpload.images.length > 0 &&
     title.trim() !== '' &&
     type !== null &&
     field.length > 0 &&
@@ -110,15 +65,10 @@ export function ExhibitionRegister() {
   const goNext = async () => {
     if (!isFormValid || imageUpload.isUploading) return;
 
-    const newImageUrls = imageUpload.images.length > 0 ? await imageUpload.uploadImages() : [];
-    const imageUrls = [...initialImages, ...newImageUrls];
+    const imageUrls = await imageUpload.uploadImages();
 
-    const nextPath =
-      displayId > 0 ? `/exhibition/${displayId}/edit/basic` : '/exhibition/register/basic';
-
-    navigate(nextPath, {
+    navigate('/exhibition/register/basic', {
       state: {
-        ...state,
         imageUrls,
         title,
         subtitle,
@@ -133,23 +83,21 @@ export function ExhibitionRegister() {
   };
 
   return (
-    <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
-      <ExhibitionHeader />
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+      <ExhibitionHeader title="전시 등록" />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-6 px-5 pt-2 pb-8">
-          <div className="flex justify-center">
+      <main className="flex-1 overflow-y-auto pb-24">
+        <div className="flex flex-col px-5">
+          <div className="flex justify-center pb-6">
             <ImageUploader
               images={imageUpload.images}
-              initialImages={initialImages}
               maxImages={MAX_POSTER_UPLOAD_IMAGES}
               onAddImages={imageUpload.addImages}
               onRemoveImage={imageUpload.removeImage}
-              onRemoveInitialImage={handleRemoveInitialImage}
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-6">
             <RequiredLabel required>전시명</RequiredLabel>
             <input
               id="exhibition-title"
@@ -160,7 +108,7 @@ export function ExhibitionRegister() {
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-5">
             <RequiredLabel>전시 부제목</RequiredLabel>
             <input
               id="exhibition-subtitle"
@@ -171,7 +119,7 @@ export function ExhibitionRegister() {
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-5">
             <RequiredLabel>전시소개</RequiredLabel>
             <div className="px-3 py-2.5 border-b border-input-border flex flex-col gap-2">
               <textarea
@@ -188,7 +136,7 @@ export function ExhibitionRegister() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-5">
             <RequiredLabel required>전시유형</RequiredLabel>
             <ChipGroup
               options={EXHIBITION_TYPE_LABELS}
@@ -196,11 +144,11 @@ export function ExhibitionRegister() {
               onChange={(next) => setType(next[0] ?? null)}
               maxSelect={1}
               aria-label="전시유형"
-              className="flex flex-wrap items-center gap-1.5"
+              className="flex flex-wrap items-center gap-2"
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-5">
             <RequiredLabel required>전시분야</RequiredLabel>
             <ChipGroup
               options={EXHIBITION_FIELDS}
@@ -208,6 +156,7 @@ export function ExhibitionRegister() {
               selected={field}
               onChange={setField}
               aria-label="전시분야"
+              className="flex flex-wrap items-center gap-2"
             />
           </div>
 
@@ -222,13 +171,14 @@ export function ExhibitionRegister() {
                 onDepartmentChange={setDepartment}
                 organizer={organizer}
                 onOrganizerChange={setOrganizer}
+                readonly={true}
               />
             </div>
           )}
         </div>
       </main>
 
-      <footer className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-5 py-4 bg-card border-t border-line z-50">
         <button
           type="button"
           disabled={!isFormValid || imageUpload.isUploading}

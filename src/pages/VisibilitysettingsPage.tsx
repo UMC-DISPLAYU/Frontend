@@ -2,7 +2,8 @@ import { useState } from 'react';
 
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar, PageHeader } from '@/components/common';
+import { BottomButtonBar } from '@/components/common';
+import { ExhibitionHeader } from '@/components/ui';
 import { RadioOption } from '@/components/visibility-settings';
 import {
   CONTENT_OPEN_TO_VISIBILITY,
@@ -147,7 +148,7 @@ export function VisibilitySettings() {
 
   return (
     <div className="mx-auto flex h-dvh w-96 flex-col bg-page">
-      <PageHeader title="공개 설정" onBack={() => navigate(-1)} />
+      <ExhibitionHeader title="공개 설정" onBack={() => navigate(-1)} />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3 pb-6">
         <div className="flex flex-col gap-1">

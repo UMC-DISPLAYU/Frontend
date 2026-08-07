@@ -1,7 +1,7 @@
 import { ChevronRight, Info } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar, PageHeader } from '@/components/common';
+import { BottomButtonBar } from '@/components/common';
 import {
   ExhibitionCard,
   OutlineButton,
@@ -10,6 +10,7 @@ import {
   VisibilitySection,
 } from '@/components/exhibition-manage';
 import { useHideFooter } from '@/components/layout';
+import { ExhibitionHeader } from '@/components/ui';
 import { type VisibilityType } from '@/constants/visibility';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
@@ -108,7 +109,7 @@ export function ExhibitionManage() {
 
   return (
     <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
-      <PageHeader title="전시관리" onBack={() => navigate(-1)} />
+      <ExhibitionHeader title="전시관리" onBack={() => navigate(-1)} />
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3">
         <div className="flex flex-col gap-5">
