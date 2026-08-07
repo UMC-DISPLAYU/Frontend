@@ -7,7 +7,6 @@ import type { ImageUploadItem } from '@/hooks/useImageUpload';
 
 interface ImageUploaderProps {
   images: ImageUploadItem[];
-  initialImages?: string[];
   maxImages?: number;
   /* 비어 있는 타일에 표시할 문구입니다. 생략하면 "현재 개수/최대 개수"를 보여줍니다. */
   emptyLabel?: string;
@@ -15,28 +14,23 @@ interface ImageUploaderProps {
   multiple?: boolean;
   onAddImages: (files: FileList | File[]) => void;
   onRemoveImage: (id: string) => void;
-  onRemoveInitialImage?: (url: string) => void;
 }
 
 export function ImageUploader({
   images,
-  initialImages = [],
   maxImages = MAX_POSTER_UPLOAD_IMAGES,
   emptyLabel,
   multiple = true,
   onAddImages,
   onRemoveImage,
-  onRemoveInitialImage,
 }: ImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const totalImages = images.length + initialImages.length;
-
   const handleImageClick = useCallback(() => {
-    if (totalImages < maxImages) {
+    if (images.length < maxImages) {
       fileInputRef.current?.click();
     }
-  }, [totalImages, maxImages]);
+  }, [images.length, maxImages]);
 
   const handleImageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,26 +49,6 @@ export function ImageUploader({
   return (
     <>
       <div className="flex gap-2 flex-wrap">
-        {initialImages.map((url, index) => (
-          <div
-            key={url}
-            className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
-          >
-            <img
-              src={url}
-              alt={`기존 이미지 ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-            <button
-              type="button"
-              onClick={() => onRemoveInitialImage?.(url)}
-              className="absolute top-1 right-1 size-6 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
-              aria-label={`기존 이미지 ${index + 1} 삭제`}
-            >
-              <X size={12} className="text-white" />
-            </button>
-          </div>
-        ))}
         {images.map((image, index) => (
           <div
             key={image.id}
@@ -95,7 +69,7 @@ export function ImageUploader({
             </button>
           </div>
         ))}
-        {totalImages < maxImages && (
+        {images.length < maxImages && (
           <button
             type="button"
             onClick={handleImageClick}
@@ -106,7 +80,7 @@ export function ImageUploader({
               <Image size={16} className="text-input-border" />
             </div>
             <span className="text-main typo-body-xs-regular">
-              {emptyLabel ?? `${totalImages}/${maxImages}`}
+              {emptyLabel ?? `${images.length}/${maxImages}`}
             </span>
           </button>
         )}
