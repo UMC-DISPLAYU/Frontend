@@ -1,14 +1,18 @@
+import type { ArtworkGuestbookTab } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
+export type ArtworkDetailTabKey = 'intro' | ArtworkGuestbookTab;
+
 type Props = {
-  activeTab: 'intro' | 'guestbook';
-  onTabChange: (tab: 'intro' | 'guestbook') => void;
+  activeTab: ArtworkDetailTabKey;
+  onTabChange: (tab: ArtworkDetailTabKey) => void;
 };
 
 export function ArtworkTabNav({ activeTab, onTabChange }: Props) {
-  const tabs: { key: 'intro' | 'guestbook'; label: string }[] = [
+  const tabs: { key: ArtworkDetailTabKey; label: string }[] = [
     { key: 'intro', label: '소개' },
-    { key: 'guestbook', label: '방명록' },
+    { key: 'review', label: '방명록' },
+    { key: 'question', label: '질문' },
   ];
 
   return (

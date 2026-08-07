@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { CommentInputBar, ErrorView, LoadingView } from '@/components/common';
+import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import {
   LoungeBoardActionBar,
   LoungeBoardCommentItem,
@@ -22,7 +22,7 @@ import {
 } from '@/hooks/queries/useLoungeComments';
 import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
 import type { LoungeBoardComment, LoungeBoardDetail } from '@/types/exhibition';
-import { formatLoungeTime } from '@/utils/date';
+import { formatRelativeTime } from '@/utils/date';
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -61,13 +61,26 @@ export const LoungeBoardDetailPage = () => {
   const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
     null,
   );
-  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [deletedCommentIds, setDeletedCommentIds] = useState<Set<string>>(new Set());
 
   const clearReplyTarget = () => {
     setReplyTarget(null);
     setActiveReplyId(null);
   };
+
+  const handleReplyClick = useCallback((commentId: number, author: string, highlightId: string) => {
+    setReplyTarget({ commentId, author });
+    setActiveReplyId(highlightId);
+  }, []);
+
+  const handleDeleteComment = useCallback(
+    (commentId: string) => {
+      deleteCommentMutation.mutate({ postId, commentId: Number(commentId) });
+      setDeletedCommentIds((prev) => new Set(prev).add(commentId));
+    },
+    [deleteCommentMutation, postId],
+  );
 
   const commentsTriggerRef = useRef<HTMLDivElement | null>(null);
 
@@ -116,7 +129,7 @@ export const LoungeBoardDetailPage = () => {
                 id: String(comment.loungeCommentId),
                 author: comment.writer.nickname,
                 avatarUrl: comment.writer.profileImageUrl,
-                time: formatLoungeTime(comment.createdAt),
+                time: formatRelativeTime(comment.createdAt),
                 content: comment.content,
                 likeCount: comment.likeCount,
                 isLiked: comment.isLiked,
@@ -190,14 +203,8 @@ export const LoungeBoardDetailPage = () => {
                         postId={postId}
                         comment={comment}
                         isDeleted={isDeleted}
-                        onDelete={() => {
-                          deleteCommentMutation.mutate({ postId, commentId: Number(comment.id) });
-                          setDeletedCommentIds((prev) => new Set(prev).add(comment.id));
-                        }}
-                        onReplyClick={(commentId, author, highlightId) => {
-                          setReplyTarget({ commentId, author });
-                          setActiveReplyId(highlightId);
-                        }}
+                        onDelete={handleDeleteComment}
+                        onReplyClick={handleReplyClick}
                         activeReplyId={activeReplyId}
                       />
                     ))}
@@ -212,19 +219,25 @@ export const LoungeBoardDetailPage = () => {
             </div>
           </main>
 
-          <CommentInputBar
-            replyTarget={replyTarget}
+          <BottomCommentBar
+            placeholder="댓글을 입력하세요."
+            imageDomain="lounge"
+            isSubmitting={
+              replyTarget ? createReplyMutation.isPending : createCommentMutation.isPending
+            }
+            replyingTo={replyTarget?.author}
             onCancelReply={clearReplyTarget}
-            onSubmitComment={(content, imageUrls) =>
-              createCommentMutation.mutateAsync({ postId, body: { content, imageUrls } })
-            }
-            onSubmitReply={(commentId, content, imageUrls) =>
-              createReplyMutation.mutateAsync(
-                { postId, commentId, body: { content, imageUrls } },
-                { onSuccess: clearReplyTarget },
-              )
-            }
-            imageUploadDomain="lounge"
+            onSubmit={({ content, images }) => {
+              const imageUrls = images.map((image) => image.imageUrl);
+              if (replyTarget) {
+                createReplyMutation.mutate(
+                  { postId, commentId: replyTarget.commentId, body: { content, imageUrls } },
+                  { onSuccess: clearReplyTarget },
+                );
+                return;
+              }
+              createCommentMutation.mutate({ postId, body: { content, imageUrls } });
+            }}
           />
         </>
       ) : (

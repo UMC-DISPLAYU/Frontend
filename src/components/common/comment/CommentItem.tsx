@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { Heart } from 'lucide-react';
 
 import defaultProfileIcon from '@/assets/common/DefaultProfileIcon.svg';
@@ -30,7 +32,7 @@ type Props = {
   showDivider?: boolean;
 };
 
-export function CommentItem({
+export const CommentItem = memo(function CommentItem({
   comment,
   isReply = false,
   parentCommentId,
@@ -52,7 +54,14 @@ export function CommentItem({
   showDivider = false,
 }: Props) {
   const commentId = comment.id;
-  const isComposingReply = activeReplyId === commentId;
+  /*
+   * 최상위 댓글/후기와 답글은 서로 다른 id 시퀀스(예: displayReviewId vs
+   * displayReviewReplyId)를 쓰기 때문에 숫자가 우연히 겹칠 수 있다. activeReplyId를
+   * comment.id와 그냥 비교하면 답글 하나에 답글달기를 눌렀는데 우연히 id가 같은
+   * 부모 댓글까지 같이 하이라이트되는 문제가 생겨서, isReply까지 합친 키로 비교한다.
+   */
+  const highlightKey = isReply ? `reply-${commentId}` : `comment-${commentId}`;
+  const isComposingReply = activeReplyId === highlightKey;
   const replyCount = comment.replyCount ?? 0;
 
   const handleLikeClick = () => {
@@ -80,12 +89,12 @@ export function CommentItem({
   return (
     <div className={cn('w-full flex flex-col', tightSpacing ? 'gap-0' : 'gap-2', className)}>
       <div
-        className={`relative flex flex-col gap-2 -mx-5 px-5 ${dividerClasses} ${bleedClasses} ${isComposingReply ? 'bg-box' : ''}`}
+        className={`relative flex flex-col -mx-5 px-5 ${dividerClasses} ${bleedClasses} ${isComposingReply ? 'bg-box' : ''}`}
       >
         {isComposingReply && (
           <div className="absolute top-0 left-0 h-full w-[3px] rounded-r-full bg-[#8E8E93]" />
         )}
-        <div className={`flex items-center gap-2 ${isReply ? 'pl-9' : ''}`}>
+        <div className={`flex items-center gap-1.5 ${isReply ? 'pl-9' : ''}`}>
           <img
             alt=""
             className="size-7 rounded-full shrink-0 object-cover"
@@ -95,17 +104,13 @@ export function CommentItem({
             }}
           />
           <div className="flex-1 flex items-center gap-2">
-            <span className="typo-body-sm-semibold text-main">{comment.author}</span>
+            <span className="typo-body-sm-bold text-main">{comment.author}</span>
             <span className="typo-body-xs-regular text-hint">{comment.time}</span>
           </div>
         </div>
 
-        <p className={`${contentIndent} typo-body-sm-regular text-sub600`}>
-          {isDeleted ? '삭제된 글입니다.' : comment.content}
-        </p>
-
         {!isDeleted && comment.images && comment.images.length > 0 && (
-          <div className={`${contentIndent} flex gap-1 overflow-x-auto scrollbar-none`}>
+          <div className={`${contentIndent} mt-1 flex gap-1 overflow-x-auto scrollbar-none`}>
             {comment.images.map((url) => (
               <div
                 key={url}
@@ -116,7 +121,13 @@ export function CommentItem({
           </div>
         )}
 
-        <div className={`${contentIndent} flex items-center justify-between gap-2`}>
+        <p
+          className={`${contentIndent} ${!isDeleted && comment.images && comment.images.length > 0 ? 'mt-3' : 'mt-1'} typo-body-sm-regular text-sub600`}
+        >
+          {isDeleted ? '삭제된 글입니다.' : comment.content}
+        </p>
+
+        <div className={`${contentIndent} mt-3 flex items-center justify-between gap-2`}>
           <div className="flex items-center gap-2">
             {!isDeleted && (
               <button
@@ -125,7 +136,7 @@ export function CommentItem({
                   onReplyClick?.(
                     isReply ? (parentCommentId ?? commentId) : commentId,
                     comment.author,
-                    commentId,
+                    highlightKey,
                   )
                 }
                 className={
@@ -208,4 +219,4 @@ export function CommentItem({
       )}
     </div>
   );
-}
+});

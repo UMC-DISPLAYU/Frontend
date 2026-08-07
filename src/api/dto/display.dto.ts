@@ -240,9 +240,12 @@ export interface DisplayReviewDto {
   displayReviewId: number;
   content: string;
   createdAt: string;
+  isDeleted: boolean;
+  isMine: boolean;
   user: DisplayReviewUserDto;
   images: DisplayReviewImageDto[];
   likeCount: number;
+  isLiked: boolean;
   replyCount: number;
 }
 
@@ -289,6 +292,13 @@ export interface DisplayReviewReplyUserDto {
   profileImageUrl: string | null;
 }
 
+export interface DisplayReviewReplyImageDto {
+  imageUrl: string;
+  width?: number;
+  height?: number;
+  sortOrder?: number;
+}
+
 export interface DisplayReviewReplyDto {
   displayReviewReplyId: number;
   content: string;
@@ -296,6 +306,8 @@ export interface DisplayReviewReplyDto {
   user: DisplayReviewReplyUserDto;
   isTeamMember: boolean;
   likeCount: number;
+  isLiked: boolean;
+  images?: DisplayReviewReplyImageDto[];
 }
 
 export interface GetDisplayReviewRepliesRequestDto {
@@ -305,6 +317,7 @@ export interface GetDisplayReviewRepliesRequestDto {
 
 export interface CreateDisplayReviewReplyRequestDto {
   content: string;
+  images?: DisplayReviewImageRequestDto[];
 }
 
 export type CreateDisplayReviewReplyResponseDataDto = DisplayReviewReplyDto;

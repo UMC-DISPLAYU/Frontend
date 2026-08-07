@@ -12,6 +12,8 @@ export interface ArtworkImageDto extends ImageResponseDto {
 export interface ArtworkGuestbookUserDto {
   userId: number;
   nickname: string;
+  isCreator?: boolean;
+  profileImageUrl?: string | null;
 }
 
 export interface ArtworkGuestbookReplyDto {
@@ -21,11 +23,15 @@ export interface ArtworkGuestbookReplyDto {
   questionId?: number;
   content: string;
   createdAt: string;
-  userId?: number;
-  nickname?: string;
+  user?: ArtworkGuestbookUserDto;
+  likeCount?: number;
+  isLiked?: boolean;
+  /* 질문 답변(작가 답변)은 user 대신 이 필드들로 내려온다. */
   creatorId?: number;
   creatorName?: string;
   isCreator?: boolean;
+  userId?: number;
+  nickname?: string;
   isTeamMember?: boolean;
 }
 
@@ -62,13 +68,24 @@ export interface ArtworkFeelingDto {
   userId?: number;
   content: string;
   createdAt: string;
+  isDeleted?: boolean;
+  isMine?: boolean;
   user: ArtworkGuestbookUserDto;
   images?: ImageResponseDto[];
-  reply: ArtworkGuestbookReplyDto | null;
+  likeCount: number;
+  isLiked?: boolean;
+  replyCount: number;
+}
+
+export interface GetArtworkFeelingsRequestDto {
+  cursorId?: number;
 }
 
 export interface GetArtworkFeelingsResponseDataDto {
   feelings: ArtworkFeelingDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
 }
 
 export type GetArtworkFeelingsResponseDto = ApiResponseDto<GetArtworkFeelingsResponseDataDto>;
@@ -211,10 +228,9 @@ export type DeleteArtworkQuestionReplyResponseDto =
   ApiResponseDto<DeleteArtworkQuestionReplyResponseDataDto>;
 
 export interface ArtworkFeelingLikeDto {
-  artLikeId: number;
-  createdAt: string;
-  id2: number;
-  userId: number;
+  feelingId: number;
+  liked: boolean;
+  likeCount: number;
 }
 
 export type ToggleArtworkFeelingLikeResponseDto = ApiResponseDto<ArtworkFeelingLikeDto | null>;
@@ -228,7 +244,7 @@ export interface ArtworkFeelingReplyListResponseDataDto {
 
 export interface ArtworkFeelingReplyLikeDto {
   feelingReplyId: number;
-  isLiked: boolean;
+  liked: boolean;
   likeCount: number;
 }
 

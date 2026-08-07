@@ -1,49 +1,48 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
-import type { DisplayDetailDto, DisplayReviewDto } from '@/api/dto/display.dto';
+import type { DisplayDetailDto } from '@/api/dto/display.dto';
+import type { ArtworkFeelingDto } from '@/api/dto/displayArtwork.dto';
 import type { CommentData } from '@/components/common';
 import { CommentItem } from '@/components/common';
 import {
-  useDeleteDisplayReviewReply,
-  useDisplayReviewReplies,
-  useToggleDisplayReviewReplyLike,
-} from '@/hooks/queries/useDisplayReviewReplies';
-import {
-  useDeleteDisplayReview,
-  useToggleDisplayReviewLike,
-} from '@/hooks/queries/useDisplayReviews';
+  useArtworkFeelingReplies,
+  useDeleteArtworkFeeling,
+  useDeleteArtworkFeelingReply,
+  useToggleArtworkFeelingLike,
+  useToggleArtworkFeelingReplyLike,
+} from '@/hooks/queries/useArtworkFeelings';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
-import { useDisplayPolicy, useDisplayReviewPolicy } from '@/hooks/usePolicy';
+import { useDisplayPolicy, useFeelingPolicy } from '@/hooks/usePolicy';
 import { formatRelativeTime } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
+  artworkId: number;
+  feeling: ArtworkFeelingDto;
   display: DisplayDetailDto;
-  displayId: number;
-  review: DisplayReviewDto;
   myUserId?: number;
   onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
   activeReplyId?: string | null;
 };
 
-export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
+export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem({
+  artworkId,
+  feeling,
   display,
-  displayId,
-  review,
   myUserId,
   onReplyClick,
   activeReplyId = null,
 }: Props) {
   const [repliesOpen, setRepliesOpen] = useState(false);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
-  const reviewPolicy = useDisplayReviewPolicy(display);
+  const feelingPolicy = useFeelingPolicy(display);
   const displayPolicy = useDisplayPolicy(display);
   /* like/unlike/create는 로그인 여부만 확인하면 됩니다. */
-  const isLoggedIn = hasPermission(reviewPolicy, 'like');
+  const isLoggedIn = hasPermission(feelingPolicy, 'like');
   /* 삭제는 작성자 본인이거나, 이 전시를 관리하는 작가(모더레이터)면 가능합니다. */
   const isModerator = hasPermission(displayPolicy, 'edit');
 
-  const isComposingReply = activeReplyId === `comment-${review.displayReviewId}`;
+  const isComposingReply = activeReplyId === `comment-${feeling.feelingId}`;
 
   useEffect(() => {
     if (isComposingReply) {
@@ -51,10 +50,10 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
     }
   }, [isComposingReply]);
 
-  const likeMutation = useToggleDisplayReviewLike(displayId);
-  const deleteMutation = useDeleteDisplayReview(displayId);
-  const likeReplyMutation = useToggleDisplayReviewReplyLike(displayId, review.displayReviewId);
-  const deleteReplyMutation = useDeleteDisplayReviewReply(displayId, review.displayReviewId);
+  const likeMutation = useToggleArtworkFeelingLike();
+  const deleteMutation = useDeleteArtworkFeeling();
+  const likeReplyMutation = useToggleArtworkFeelingReplyLike(artworkId, feeling.feelingId);
+  const deleteReplyMutation = useDeleteArtworkFeelingReply(artworkId, feeling.feelingId);
   const isLikePending = likeMutation.isPending || likeReplyMutation.isPending;
 
   const {
@@ -62,47 +61,50 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
     hasNextPage: hasMoreReplies,
     fetchNextPage: fetchMoreReplies,
     isFetchingNextPage: isFetchingMoreReplies,
-  } = useDisplayReviewReplies(displayId, review.displayReviewId, repliesOpen);
+  } = useArtworkFeelingReplies(artworkId, feeling.feelingId, repliesOpen);
 
   const replies: CommentData[] = useMemo(
     () =>
-      (repliesData?.pages.flatMap((p) => p.replies) ?? []).map((reply) => {
-        const isMyComment = Boolean(myUserId) && reply.user.userId === myUserId;
-        return {
-          id: String(reply.displayReviewReplyId),
-          author: reply.user.nickname,
-          avatarUrl: reply.user.profileImageUrl,
-          time: formatRelativeTime(reply.createdAt),
-          content: reply.content,
-          likeCount: reply.likeCount,
-          isLiked: reply.isLiked,
-          isMyComment,
-          canDelete: isMyComment || isModerator,
-          images:
-            reply.images && reply.images.length > 0
-              ? reply.images.map((img) => img.imageUrl)
-              : undefined,
-        };
-      }),
+      (repliesData?.pages.flatMap((p) => p.replies) ?? [])
+        // feelingReplyId가 없는 답글은 식별자가 없어 목록 key/좋아요·삭제 대상으로 쓸 수 없으므로 제외합니다.
+        .filter((reply) => reply.feelingReplyId != null)
+        .map((reply) => {
+          const isMyComment = Boolean(myUserId) && reply.user?.userId === myUserId;
+          return {
+            id: String(reply.feelingReplyId),
+            author: reply.user?.nickname ?? '',
+            avatarUrl: reply.user?.profileImageUrl,
+            time: formatRelativeTime(reply.createdAt),
+            content: reply.content,
+            likeCount: reply.likeCount ?? 0,
+            isLiked: reply.isLiked ?? false,
+            isMyComment,
+            canDelete: isMyComment || isModerator,
+          };
+        }),
     [repliesData, myUserId, isModerator],
   );
 
-  const isMyReview = review.isMine;
+  const isMyFeeling =
+    feeling.isMine ?? (Boolean(myUserId) && (feeling.user?.userId ?? feeling.userId) === myUserId);
   const comment: CommentData = useMemo(
     () => ({
-      id: String(review.displayReviewId),
-      author: review.user.nickname,
-      avatarUrl: review.user.profileImageUrl,
-      time: formatRelativeTime(review.createdAt),
-      content: review.content,
-      likeCount: review.likeCount,
-      isLiked: review.isLiked,
-      isMyComment: isMyReview,
-      canDelete: isMyReview || isModerator,
-      replyCount: review.replyCount,
-      images: review.images.length > 0 ? review.images.map((img) => img.imageUrl) : undefined,
+      id: String(feeling.feelingId),
+      author: feeling.user?.nickname ?? '',
+      avatarUrl: feeling.user?.profileImageUrl,
+      time: formatRelativeTime(feeling.createdAt),
+      content: feeling.content,
+      likeCount: feeling.likeCount,
+      isLiked: feeling.isLiked ?? false,
+      isMyComment: isMyFeeling,
+      canDelete: isMyFeeling || isModerator,
+      replyCount: feeling.replyCount,
+      images:
+        feeling.images && feeling.images.length > 0
+          ? feeling.images.map((img) => img.imageUrl)
+          : undefined,
     }),
-    [review, isMyReview, isModerator],
+    [feeling, isMyFeeling, isModerator],
   );
 
   const handleLike = useCallback(
@@ -114,10 +116,10 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
       if (parentCommentId) {
         likeReplyMutation.mutate(Number(commentId));
       } else {
-        likeMutation.mutate(Number(commentId));
+        likeMutation.mutate({ artworkId, feelingId: Number(commentId) });
       }
     },
-    [isLoggedIn, openLoginModal, likeReplyMutation, likeMutation],
+    [isLoggedIn, openLoginModal, likeReplyMutation, likeMutation, artworkId],
   );
 
   const handleDelete = useCallback(
@@ -129,10 +131,10 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
       if (parentCommentId) {
         deleteReplyMutation.mutate(Number(commentId));
       } else {
-        deleteMutation.mutate(Number(commentId));
+        deleteMutation.mutate({ artworkId, feelingId: Number(commentId) });
       }
     },
-    [isLoggedIn, openLoginModal, deleteReplyMutation, deleteMutation],
+    [isLoggedIn, openLoginModal, deleteReplyMutation, deleteMutation, artworkId],
   );
 
   const handleToggleReplies = useCallback(() => setRepliesOpen((v) => !v), []);
@@ -147,7 +149,7 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
     <>
       <CommentItem
         comment={comment}
-        isDeleted={review.isDeleted}
+        isDeleted={feeling.isDeleted}
         replies={replies}
         repliesOpen={repliesOpen}
         onToggleReplies={handleToggleReplies}

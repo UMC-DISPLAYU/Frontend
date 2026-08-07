@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { CommentData } from '@/components/common';
 import { CommentItem } from '@/components/common';
@@ -11,19 +11,19 @@ import { useLoungeReplies } from '@/hooks/queries/useLoungeReplies';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useLoungeCommentPolicy } from '@/hooks/usePolicy';
 import type { LoungeBoardComment } from '@/types/exhibition';
-import { formatLoungeTime } from '@/utils/date';
+import { formatRelativeTime } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   postId: number;
   comment: LoungeBoardComment;
   isDeleted?: boolean;
-  onDelete?: () => void;
-  onReplyClick?: (commentId: number, author: string, highlightId: number) => void;
-  activeReplyId?: number | null;
+  onDelete?: (commentId: string) => void;
+  onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
+  activeReplyId?: string | null;
 };
 
-export function LoungeBoardCommentItem({
+export const LoungeBoardCommentItem = memo(function LoungeBoardCommentItem({
   postId,
   comment,
   isDeleted = false,
@@ -41,13 +41,13 @@ export function LoungeBoardCommentItem({
    * CommentItem이 isMyComment일 때만 노출하므로 소유권 재검증은 불필요합니다. */
   const isLoggedIn = hasPermission(loungeCommentPolicy, 'like');
   const commentId = Number(comment.id);
-  const isComposingReply = activeReplyId === commentId;
+  const isComposingReply = activeReplyId === `comment-${commentId}`;
 
-  const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
-  if (isComposingReply !== prevIsComposingReply) {
-    setPrevIsComposingReply(isComposingReply);
-    if (isComposingReply) setRepliesOpen(true);
-  }
+  useEffect(() => {
+    if (isComposingReply) {
+      setRepliesOpen(true);
+    }
+  }, [isComposingReply]);
 
   const likeMutation = useLikeLoungeComment();
   const unlikeMutation = useUnlikeLoungeComment();
@@ -61,68 +61,89 @@ export function LoungeBoardCommentItem({
     isFetchingNextPage: isFetchingMoreReplies,
   } = useLoungeReplies(commentId, {}, { enabled: repliesOpen });
 
-  const replies: CommentData[] = (
-    repliesData?.pages
-      .flatMap((page) => page.replies)
-      .map((reply) => ({
-        id: String(reply.loungeCommentId),
-        author: reply.writer.nickname,
-        avatarUrl: reply.writer.profileImageUrl,
-        time: formatLoungeTime(reply.createdAt),
-        content: reply.content,
-        likeCount: reply.likeCount,
-        isLiked: reply.isLiked,
-        isMyComment: reply.isMyComment,
-        images: reply.imageUrls.length > 0 ? reply.imageUrls : undefined,
-      })) ?? []
-  ).filter((reply) => !removedReplyIds.has(reply.id));
+  const replies: CommentData[] = useMemo(
+    () =>
+      (
+        repliesData?.pages
+          .flatMap((page) => page.replies)
+          .map((reply) => ({
+            id: String(reply.loungeCommentId),
+            author: reply.writer.nickname,
+            avatarUrl: reply.writer.profileImageUrl,
+            time: formatRelativeTime(reply.createdAt),
+            content: reply.content,
+            likeCount: reply.likeCount,
+            isLiked: reply.isLiked,
+            isMyComment: reply.isMyComment,
+            images: reply.imageUrls.length > 0 ? reply.imageUrls : undefined,
+          })) ?? []
+      ).filter((reply) => !removedReplyIds.has(reply.id)),
+    [repliesData, removedReplyIds],
+  );
 
-  const handleLike = (targetCommentId: string, parentCommentId?: string) => {
-    if (!isLoggedIn) {
-      openLoginModal();
-      return;
-    }
-    likeMutation.mutate({
-      postId,
-      commentId: Number(targetCommentId),
-      parentCommentId: parentCommentId ? Number(parentCommentId) : undefined,
-    });
-  };
-
-  const handleUnlike = (targetCommentId: string, parentCommentId?: string) => {
-    if (!isLoggedIn) {
-      openLoginModal();
-      return;
-    }
-    unlikeMutation.mutate({
-      postId,
-      commentId: Number(targetCommentId),
-      parentCommentId: parentCommentId ? Number(parentCommentId) : undefined,
-    });
-  };
-
-  const handleDelete = (targetCommentId: string, parentCommentId?: string) => {
-    if (!isLoggedIn) {
-      openLoginModal();
-      return;
-    }
-    if (!parentCommentId) {
-      onDelete?.();
-      return;
-    }
-    deleteReplyMutation.mutate(
-      {
+  const handleLike = useCallback(
+    (targetCommentId: string, parentCommentId?: string) => {
+      if (!isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      likeMutation.mutate({
         postId,
         commentId: Number(targetCommentId),
-        parentCommentId: Number(parentCommentId),
-      },
-      {
-        onSuccess: () => {
-          setRemovedReplyIds((prev) => new Set(prev).add(targetCommentId));
+        parentCommentId: parentCommentId ? Number(parentCommentId) : undefined,
+      });
+    },
+    [isLoggedIn, openLoginModal, likeMutation, postId],
+  );
+
+  const handleUnlike = useCallback(
+    (targetCommentId: string, parentCommentId?: string) => {
+      if (!isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      unlikeMutation.mutate({
+        postId,
+        commentId: Number(targetCommentId),
+        parentCommentId: parentCommentId ? Number(parentCommentId) : undefined,
+      });
+    },
+    [isLoggedIn, openLoginModal, unlikeMutation, postId],
+  );
+
+  const handleDelete = useCallback(
+    (targetCommentId: string, parentCommentId?: string) => {
+      if (!isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      if (!parentCommentId) {
+        onDelete?.(targetCommentId);
+        return;
+      }
+      deleteReplyMutation.mutate(
+        {
+          postId,
+          commentId: Number(targetCommentId),
+          parentCommentId: Number(parentCommentId),
         },
-      },
-    );
-  };
+        {
+          onSuccess: () => {
+            setRemovedReplyIds((prev) => new Set(prev).add(targetCommentId));
+          },
+        },
+      );
+    },
+    [isLoggedIn, openLoginModal, onDelete, deleteReplyMutation, postId],
+  );
+
+  const handleToggleReplies = useCallback(() => setRepliesOpen((v) => !v), []);
+  const handleLoadMoreReplies = useCallback(() => fetchMoreReplies(), [fetchMoreReplies]);
+  const handleReplyClick = useCallback(
+    (replyCommentId: string, author: string, highlightId: string) =>
+      onReplyClick?.(Number(replyCommentId), author, highlightId),
+    [onReplyClick],
+  );
 
   return (
     <>
@@ -131,21 +152,19 @@ export function LoungeBoardCommentItem({
         isDeleted={isDeleted}
         replies={replies}
         repliesOpen={repliesOpen}
-        onToggleReplies={() => setRepliesOpen((v) => !v)}
+        onToggleReplies={handleToggleReplies}
         hasMoreReplies={hasMoreReplies}
-        onLoadMoreReplies={() => fetchMoreReplies()}
+        onLoadMoreReplies={handleLoadMoreReplies}
         isLoadingMoreReplies={isFetchingMoreReplies}
         onLike={handleLike}
         onUnlike={handleUnlike}
         isLikePending={isLikeMutating}
         onDelete={handleDelete}
-        onReplyClick={(replyCommentId, author, highlightId) =>
-          onReplyClick?.(Number(replyCommentId), author, Number(highlightId))
-        }
-        activeReplyId={activeReplyId !== null ? String(activeReplyId) : null}
+        onReplyClick={handleReplyClick}
+        activeReplyId={activeReplyId}
         tightSpacing
       />
       {loginModal}
     </>
   );
-}
+});
