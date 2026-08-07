@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { isAxiosError } from 'axios';
 import { ChevronLeft, ImagePlus, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -73,7 +74,7 @@ export function EditArtistProfilePage() {
 
   // 작가 프로필이 없으면 (404 에러만) 작가 인증 모달 표시
   if (isError && !showVerificationModal) {
-    const is404 = (error as any)?.response?.status === 404;
+    const is404 = isAxiosError(error) && error.response?.status === 404;
     if (is404) {
       setShowVerificationModal(true);
     }
