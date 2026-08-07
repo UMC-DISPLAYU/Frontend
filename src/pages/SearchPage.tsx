@@ -1,26 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import type { SearchDisplaysRequestDto } from '@/api/dto';
+import cancelIcon from '@/assets/common/cancel.svg';
 import filterIcon from '@/assets/search/filter.svg';
 import filterSelectedDotIcon from '@/assets/search/filter-selected-dot.svg';
-import { LoadingView } from '@/components/common';
-import { getFilterOptionValues } from '@/components/search/filter/filterOptions';
+import { ErrorView, LoadingView } from '@/components/common';
 
 import {
   DEFAULT_FILTER_STATE,
   ExhibitionCard,
-  ExhibitionMap,
-  ExhibitionMapCard,
   FIELD_OPTIONS,
   FILTER_CONFIG,
   FilterChip,
   FilterModal,
   type FilterState,
   type FilterTab,
+  getFilterOptionValue,
 } from '../components/search';
+import { ExhibitionMap } from '../components/search/ExhibitionMap';
+import { ExhibitionMapCard } from '../components/search/ExhibitionMapCard';
 import { useSearchDisplays } from '../hooks/queries/useDisplayBrowse';
 import { type NearbyParams, useNearbyDisplays } from '../hooks/useNearbyDisplays';
 
@@ -33,9 +34,9 @@ const createSearchDisplayParams = (query: string, filters: FilterState) => {
     size: 20,
   };
 
-  (Object.entries(filters) as Array<[FilterTab, string[]]>).forEach(([tab, labels]) => {
+  (Object.entries(filters) as Array<[FilterTab, string]>).forEach(([tab, label]) => {
     const config = FILTER_CONFIG[tab];
-    params[config.param] = getFilterOptionValues(config, labels);
+    params[config.param] = getFilterOptionValue(config, label);
   });
 
   return params;
@@ -43,61 +44,15 @@ const createSearchDisplayParams = (query: string, filters: FilterState) => {
 
 export function SearchPage() {
   const location = useLocation();
-  const [urlSearchParams, setUrlSearchParams] = useSearchParams();
-
-  const paramTab = urlSearchParams.get('tab');
-  const paramType = urlSearchParams.get('type');
-  const paramStatus = urlSearchParams.get('status');
+  const [urlSearchParams] = useSearchParams();
 
   const [query, setQuery] = useState('');
-  const activeTab: ExploreTab = paramTab === 'map' ? 'map' : 'list';
-  const [selectedMapId, setSelectedMapIdState] = useState<number | null>(() => {
-    const saved = sessionStorage.getItem('SEARCH_SELECTED_MAP_ID');
-    return saved ? Number(saved) : null;
-  });
+  const [activeTab, setActiveTab] = useState<ExploreTab>('list');
+  const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
   const [nearbyParams, setNearbyParams] = useState<NearbyParams | null>(null);
 
-  const setSelectedMapId = (id: number | null) => {
-    setSelectedMapIdState(id);
-    if (id !== null) {
-      sessionStorage.setItem('SEARCH_SELECTED_MAP_ID', String(id));
-    } else {
-      sessionStorage.removeItem('SEARCH_SELECTED_MAP_ID');
-    }
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      sessionStorage.setItem('SEARCH_PAGE_SCROLL_Y', String(window.scrollY));
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const savedY = sessionStorage.getItem('SEARCH_PAGE_SCROLL_Y');
-    if (savedY) {
-      setTimeout(() => {
-        window.scrollTo(0, Number(savedY));
-      }, 50);
-    }
-  }, [activeTab]);
-
-  const handleTabChange = (tab: ExploreTab) => {
-    setUrlSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (tab === 'map') {
-          next.set('tab', 'map');
-        } else {
-          next.delete('tab');
-        }
-        return next;
-      },
-      { replace: true },
-    );
-  };
-
+  const paramType = urlSearchParams.get('type');
+  const paramStatus = urlSearchParams.get('status');
   const stateFilters = (location.state as { filters?: Partial<FilterState> })?.filters;
   const targetFiltersKey = `${paramType ?? ''}_${paramStatus ?? ''}_${JSON.stringify(stateFilters ?? {})}`;
 
@@ -105,8 +60,8 @@ export function SearchPage() {
   const [filters, setFilters] = useState<FilterState>(() => {
     const base: FilterState = { ...DEFAULT_FILTER_STATE };
     if (stateFilters) return { ...base, ...stateFilters };
-    if (paramType) base['전시유형'] = [paramType];
-    if (paramStatus) base['전시상태'] = [paramStatus];
+    if (paramType) base['전시유형'] = paramType;
+    if (paramStatus) base['전시상태'] = paramStatus;
     return base;
   });
 
@@ -116,8 +71,8 @@ export function SearchPage() {
     if (stateFilters) {
       setFilters({ ...base, ...stateFilters });
     } else {
-      if (paramType) base['전시유형'] = [paramType];
-      if (paramStatus) base['전시상태'] = [paramStatus];
+      if (paramType) base['전시유형'] = paramType;
+      if (paramStatus) base['전시상태'] = paramStatus;
       setFilters(base);
     }
   }
@@ -139,21 +94,12 @@ export function SearchPage() {
   const { data: nearbyData } = useNearbyDisplays(nearbyParamsWithSearch);
   const nearbyExhibitions = nearbyData ?? [];
 
-  const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string[]]>).flatMap(
-    ([tab, values]) => (values ?? []).map((val) => ({ tab, value: val })),
+  const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string]>).filter(
+    ([, value]) => value !== '전체',
   );
 
   const updateFilter = (tab: FilterTab, value: string) => {
-    setFilters((prev) => {
-      const current = prev[tab] ?? [];
-      if (value === '전체') {
-        return { ...prev, [tab]: [] };
-      }
-      const updated = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      return { ...prev, [tab]: updated };
-    });
+    setFilters((prev) => ({ ...prev, [tab]: prev[tab] === value ? '전체' : value }));
   };
 
   const resetFilters = () => setFilters(DEFAULT_FILTER_STATE);
@@ -161,66 +107,51 @@ export function SearchPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-md flex-col bg-page">
       <div className="flex flex-col bg-page px-5 pt-5">
-        <div className="flex h-15.5 flex-col justify-start gap-1 self-stretch">
-          <h1 className="typo-heading-3xl text-logo">Explore</h1>
-          <p className="typo-body-xs-regular text-hint">
-            저장한 전시와 작품, 작가를 다시 꺼내보세요.
-          </p>
+        <div className="flex h-[62px] flex-col justify-start gap-1 self-stretch">
+          <h1 className="text-slate-900 text-3xl font-['Aldrich'] leading-10">Explore</h1>
+          <p className="text-xs text-neutral-500">저장한 전시와 작품, 작가를 다시 꺼내보세요.</p>
         </div>
 
-        <div className="mt-2.5 flex h-10 items-center justify-between rounded-xl bg-box px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.14),inset_-1px_-1px_1px_0px_rgba(255,255,255,1.00)] mb-3">
+        <div className="mt-2.5 flex h-10 items-center justify-between rounded-xl bg-gray-200 px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.14),inset_-1px_-1px_1px_0px_rgba(255,255,255,1.00)]">
           <input
-            className="typo-body-sm-regular h-5 flex-1 bg-transparent placeholder:text-faint focus:outline-none"
+            className="h-5 flex-1 bg-transparent text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search..."
             type="text"
             value={query}
           />
-          <Search aria-hidden="true" className="text-hint" size={18} strokeWidth={2} />
+          <Search aria-hidden="true" className="text-hint" size={20} strokeWidth={2} />
         </div>
-      </div>
 
-      <div className="sticky top-0 z-20 flex flex-col bg-page">
-        <div className="flex h-11 items-end gap-3.5 border-b border-line-soft px-5">
+        <div className="-mx-5 flex h-11 items-end gap-5 border-b border-zinc-300 px-5">
           <button
-            className={`border-b-2 px-0 pb-3 cursor-pointer ${
+            className={`border-b-2 px-0 pb-3 text-sm ${
               activeTab === 'list'
-                ? 'typo-body-sm-bold border-main text-main'
-                : 'typo-body-sm-regular border-transparent text-faint'
+                ? 'border-neutral-900 font-bold text-neutral-900'
+                : 'border-transparent font-normal text-neutral-400'
             }`}
-            onClick={() => handleTabChange('list')}
+            onClick={() => setActiveTab('list')}
             type="button"
           >
             전시목록
           </button>
           <button
-            className={`border-b-2 px-0 pb-3 cursor-pointer ${
+            className={`border-b-2 px-0 pb-3 text-sm ${
               activeTab === 'map'
-                ? 'typo-body-sm-bold border-main text-main'
-                : 'typo-body-sm-regular border-transparent text-faint'
+                ? 'border-neutral-900 font-bold text-neutral-900'
+                : 'border-transparent font-normal text-neutral-400'
             }`}
-            onClick={() => handleTabChange('map')}
+            onClick={() => setActiveTab('map')}
             type="button"
           >
             지도
           </button>
         </div>
-
-        {activeTab === 'map' ? (
-          <div className="h-75 w-full border-b border-line-soft">
-            <ExhibitionMap
-              exhibitions={nearbyExhibitions}
-              onBoundsChange={setNearbyParams}
-              onSelect={setSelectedMapId}
-              selectedId={selectedMapId}
-            />
-          </div>
-        ) : null}
       </div>
 
       {activeTab === 'list' ? (
         <div className="flex flex-1 flex-col">
-          <div className="flex items-center gap-1.5 px-5 pt-3.5">
+          <div className="flex items-center gap-1.5 px-5 pt-[14px]">
             <button
               aria-label="필터"
               className="relative flex size-7 shrink-0 items-center justify-center rounded-sm outline outline-1 -outline-offset-1 outline-stone-300"
@@ -239,7 +170,7 @@ export function SearchPage() {
                   key={field}
                   label={field}
                   onClick={() => updateFilter('전시분야', field)}
-                  selected={(filters['전시분야'] ?? []).includes(field)}
+                  selected={filters['전시분야'] === field}
                 />
               ))}
             </div>
@@ -248,19 +179,19 @@ export function SearchPage() {
           {activeFilterEntries.length > 0 ? (
             <div className="flex items-center justify-between px-5 pt-2.5">
               <div className="flex flex-wrap gap-2.5">
-                {activeFilterEntries.map(({ tab, value }) => (
+                {activeFilterEntries.map(([tab, value]) => (
                   <button
-                    className="flex shrink-0 items-center gap-1 typo-body-xs-regular text-sub700 hover:text-main cursor-pointer"
-                    key={`${tab}-${value}`}
+                    className="flex shrink-0 items-center gap-1 text-xs tracking-tight whitespace-nowrap text-neutral-600"
+                    key={tab}
                     onClick={() => updateFilter(tab, value)}
                     type="button"
                   >
-                    {value} <X size={12} />
+                    {value} <img alt="" className="size-4" src={cancelIcon} />
                   </button>
                 ))}
               </div>
               <button
-                className="shrink-0 typo-body-xs-regular text-sub700 underline cursor-pointer"
+                className="shrink-0 text-xs tracking-tight whitespace-nowrap text-neutral-600 underline"
                 onClick={resetFilters}
                 type="button"
               >
@@ -272,10 +203,17 @@ export function SearchPage() {
           <div className="flex flex-1 flex-col px-5 pt-4 pb-24">
             {isLoading ? (
               <LoadingView fullScreen={false} message="전시를 검색하는 중..." />
-            ) : isError || exhibitions.length === 0 ? (
-              <div className="flex flex-1 justify-center pt-36 text-center">
-                <p className="typo-body-lg-regular text-faint">결과가 없습니다</p>
-              </div>
+            ) : isError ? (
+              <ErrorView
+                fullScreen={false}
+                title="전시를 불러오지 못했습니다"
+                message="검색 결과를 가져오는 중 오류가 발생했습니다."
+                onRetry={() => window.location.reload()}
+              />
+            ) : exhibitions.length === 0 ? (
+              <p className="flex flex-1 items-center justify-center text-center text-xl text-neutral-400">
+                결과가 없습니다
+              </p>
             ) : (
               <div className="grid grid-cols-2 gap-x-2.5 gap-y-5">
                 {exhibitions.map((exhibition) => (
@@ -286,26 +224,34 @@ export function SearchPage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 bg-page px-5 pt-4 pb-24">
-          {nearbyExhibitions.length === 0 ? (
-            <p className="flex items-center justify-center py-16 text-center typo-body-md-regular text-faint">
-              이 지역에 전시가 없습니다
-            </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {(selectedMapId
-                ? nearbyExhibitions.filter((ex) => ex.displayId === selectedMapId)
-                : nearbyExhibitions
-              ).map((exhibition) => (
-                <ExhibitionMapCard
-                  exhibition={exhibition}
-                  key={exhibition.displayId}
-                  onClick={() => setSelectedMapId(exhibition.displayId)}
-                  selected={selectedMapId === exhibition.displayId}
-                />
-              ))}
-            </div>
-          )}
+        <div className="relative flex flex-1 flex-col">
+          <div className="h-[400px] w-full">
+            <ExhibitionMap
+              exhibitions={nearbyExhibitions}
+              onBoundsChange={setNearbyParams}
+              onSelect={setSelectedMapId}
+              selectedId={selectedMapId}
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto bg-gray-100 px-5 pt-4 pb-24">
+            {nearbyExhibitions.length === 0 ? (
+              <p className="flex items-center justify-center py-8 text-center text-sm text-neutral-400">
+                이 지역에 전시가 없습니다
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {nearbyExhibitions.map((exhibition) => (
+                  <ExhibitionMapCard
+                    exhibition={exhibition}
+                    key={exhibition.displayId}
+                    onClick={() => setSelectedMapId(exhibition.displayId)}
+                    selected={selectedMapId === exhibition.displayId}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

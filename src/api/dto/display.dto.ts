@@ -65,8 +65,6 @@ export interface DisplayListItemDto {
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
-  isArchived: boolean;
-  schoolDepartmentName?: string;
 }
 
 export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {
@@ -117,8 +115,6 @@ export interface DisplayMapMarkerDto {
   posterImageUrl: string;
   latitude: number;
   longitude: number;
-  schoolDepartmentName?: string;
-  isArchived?: boolean;
 }
 
 export interface GetDisplayMapResponseDataDto {

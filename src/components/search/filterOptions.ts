@@ -23,8 +23,8 @@ export const FILTER_CONFIG: Record<FilterTab, FilterConfig> = {
       { label: '디자인', value: 'DESIGN' },
       { label: '사진', value: 'PHOTOGRAPHY' },
       { label: '건축', value: 'ARCHITECTURE' },
-      { label: '조소', value: 'SCULPTURE' },
       { label: '영상', value: 'VIDEO' },
+      { label: '조소', value: 'SCULPTURE' },
       { label: '패션', value: 'FASHION' },
       { label: '일러스트', value: 'INTERDISCIPLINARY' },
       { label: '공예', value: 'CRAFTS' },
@@ -76,16 +76,11 @@ export const FILTER_TAB_OPTIONS: Record<FilterTab, string[]> = {
 };
 
 export const DEFAULT_FILTER_STATE: FilterState = {
-  전시분야: [],
-  전시상태: [],
-  전시유형: [],
-  지역: [],
+  전시분야: '전체',
+  전시상태: '전체',
+  전시유형: '전체',
+  지역: '전체',
 };
 
-export const getFilterOptionValues = ({ options }: FilterConfig, labels: string[]) => {
-  if (!labels || labels.length === 0) return null;
-  const values = labels
-    .map((label) => options.find((option) => option.label === label)?.value)
-    .filter((v): v is string => Boolean(v));
-  return values.length > 0 ? values.join(',') : null;
-};
+export const getFilterOptionValue = ({ options }: FilterConfig, label: string) =>
+  options.find((option) => option.label === label)?.value ?? null;

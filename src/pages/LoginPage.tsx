@@ -226,11 +226,29 @@ export function LoginPage() {
         onGuest={async () => {
           try {
             await logout({});
-          } catch {
-            //
+            useAuthStore.getState().clearAuth();
+            navigate('/home');
+          } catch (err: unknown) {
+            const status =
+              (err as { status?: number; response?: { status?: number } })?.status ??
+              (err as { response?: { status?: number } })?.response?.status;
+
+            const isServerErrorOrNetwork =
+              (status !== undefined && status >= 500) ||
+              (err as { code?: string })?.code === 'ERR_NETWORK' ||
+              (err as Error)?.message === 'Network Error' ||
+              (err as Error)?.message?.includes('Network');
+
+            if (isServerErrorOrNetwork) {
+              setAuthError(
+                (err as Error)?.message || '로그아웃 처리 중 네트워크/서버 오류가 발생했습니다.',
+              );
+              return;
+            }
+
+            useAuthStore.getState().clearAuth();
+            navigate('/home');
           }
-          useAuthStore.getState().clearAuth();
-          navigate('/home');
         }}
         onKakao={() => {
           void startOAuthLogin('kakao');

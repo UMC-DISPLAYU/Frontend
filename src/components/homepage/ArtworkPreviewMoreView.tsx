@@ -4,9 +4,8 @@ import { ChevronLeft, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import type { ArtworkPreviewItemDto } from '@/api/dto';
+import { FILTER_CONFIG } from '@/components/search/filterOptions';
 import { cn } from '@/utils/cn';
-
-import { FILTER_CONFIG } from '../search';
 
 // '전체' 옵션을 제외한 순수 카테고리 필터 목록
 const CATEGORY_OPTIONS = FILTER_CONFIG.전시분야.options.filter((opt) => opt.value !== null);
