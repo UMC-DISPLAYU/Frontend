@@ -179,7 +179,7 @@ export function VisibilitySettings() {
       </div>
 
       {canEditDisplay && (
-        <BottomButtonBar withBorder={false}>
+        <BottomButtonBar>
           <button
             type="button"
             onClick={save}

@@ -325,7 +325,7 @@ export function ExhibitionBasicInfo() {
         </div>
       </main>
 
-      <BottomButtonBar withShadow={false}>
+      <BottomButtonBar>
         <button
           type="button"
           disabled={!canNext || updateDisplay.isPending || isFetchingDetail}

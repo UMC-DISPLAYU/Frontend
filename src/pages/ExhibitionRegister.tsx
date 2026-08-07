@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { ImageUploader } from '@/components/common';
+import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { AffiliationInput } from '@/components/exhibition-register';
 import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
@@ -178,7 +178,7 @@ export function ExhibitionRegister() {
         </div>
       </main>
 
-      <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-5 py-4 bg-card border-t border-line z-50">
+      <BottomButtonBar>
         <button
           type="button"
           disabled={!isFormValid || imageUpload.isUploading}
@@ -187,7 +187,7 @@ export function ExhibitionRegister() {
         >
           {imageUpload.isUploading ? '이미지 업로드 중' : '다음'}
         </button>
-      </footer>
+      </BottomButtonBar>
     </div>
   );
 }
