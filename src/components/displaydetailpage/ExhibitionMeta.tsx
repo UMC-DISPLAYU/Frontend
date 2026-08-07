@@ -124,7 +124,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
 
       {!isAtTop && (
         <div className="px-1 pt-10">
-          <DisplaySaveButton displayId={ex.displayId} saved={ex.isBookmarked ?? false} />
+          <DisplaySaveButton displayId={ex.displayId} saved={ex.isArchived ?? false} />
         </div>
       )}
       {loginModal}

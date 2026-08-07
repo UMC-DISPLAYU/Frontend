@@ -22,7 +22,7 @@ export function ErrorView({
   return (
     <div
       className={cn(
-        'w-full max-w-md mx-auto flex flex-col items-center justify-center gap-3 p-6 bg-page text-center select-none font-[Pretendard,sans-serif]',
+        'w-full max-w-md mx-auto flex flex-col items-center justify-center gap-3 p-6 bg-page text-center select-none',
         fullScreen ? 'h-dvh' : 'flex-1 my-auto min-h-60',
         className,
       )}

@@ -17,6 +17,7 @@
   --bg-heart: var(--palette-red);
   --bg-bookmark: var(--palette-gray-300);
   --bg-logo: var(--palette-navy);
+  --bg-fnb: var(--palette-gray-200);
 
   /* Foreground — 텍스트와 아이콘이 같은 스케일을 공유한다 */
   --fg-main: var(--palette-gray-black);
@@ -55,8 +56,8 @@
   --modal-btn-hover-fg: var(--palette-gray-white);
 
   /* Tag */
-  --tag-blue: var(--palette-blue);
-  --tag-gray: var(--palette-token-200);
+  --tag-bg: var(--palette-token-200);
+  --tag-fg: var(--palette-gray-black);
 
   /* Button */
   --bt-gray: var(--palette-gray-200);
