@@ -781,7 +781,7 @@ export function ArtworkRegisterPage() {
         qaHandlerUserIds,
       },
       {
-        onSuccess: () => navigate(`/exhibition/${displayId}/artworks`),
+        onSuccess: () => navigate(`/artworks-manage?displayId=${displayId}`),
         onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
       },
     );

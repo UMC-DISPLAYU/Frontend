@@ -105,7 +105,7 @@ export function ArtworksManagePage() {
           display={display}
           onOpenSheet={setSheetWork}
           onEditOrder={() => setScreen('order')}
-          onAddArtwork={() => navigate(`/exhibition/${displayId}/artworks/add`)}
+          onAddArtwork={() => navigate(`/artworks-register?displayId=${displayId}`)}
           onBack={handleBack}
         />
       ) : (

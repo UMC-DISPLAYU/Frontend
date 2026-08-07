@@ -128,7 +128,7 @@ export function ArtistNameSetup() {
 
     createDisplay.mutate(requestBody, {
       onSuccess: (display) => {
-        navigate(`/exhibition/${display.displayId}/manage`, {
+        navigate('/exhibition/manage', {
           state: {
             ...registerState,
             artistName,
