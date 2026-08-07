@@ -37,7 +37,7 @@ import { MyPage } from './pages/MyPage';
 import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
 import { NotFound } from './pages/NotFound';
-import { OnboardingPage } from './pages/OnboardingPage';
+import { OnboardingPage } from './pages/onboarding';
 import { PersonalArtworkDetailPage } from './pages/PersonalArtworkDetailPage';
 import { PersonalArtworksRegister } from './pages/PersonalArtworksRegister';
 import { PolicyPage } from './pages/PolicyPage';
