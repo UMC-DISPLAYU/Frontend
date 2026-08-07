@@ -28,8 +28,8 @@ export function ExhibitionMeta({
             </div>
           </div>
           <div className="flex items-center gap-2 h-4">
-            <div className="flex items-end gap-2 h-4">
-              <p className="typo-body-xs-regular text-faint w-56">
+            <div className="flex items-end gap-2 h-4 flex-1 min-w-0">
+              <p className="typo-body-xs-regular text-faint truncate">
                 <span className="text-faint">{ex.org}ㅣ</span>
                 <span className={ex.status === '임시저장' ? 'underline text-faint' : 'text-faint'}>
                   {ex.status}

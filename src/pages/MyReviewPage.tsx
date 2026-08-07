@@ -4,6 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { MyArtworkFeelingDto, MyDisplayReviewDto } from '@/api/dto';
+import { ErrorView } from '@/components/common';
 import { useMyArtworkFeelings } from '@/hooks/queries/useMyArtworkFeelings';
 import { useMyDisplayReviews } from '@/hooks/queries/useMyDisplayReviews';
 
@@ -51,16 +52,31 @@ export function MyReviewPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('전시');
 
-  const { data: displayReviewsData, isLoading: isLoadingDisplayReviews } = useMyDisplayReviews({
+  const {
+    data: displayReviewsData,
+    isLoading: isLoadingDisplayReviews,
+    error: displayReviewsError,
+    refetch: refetchDisplayReviews,
+  } = useMyDisplayReviews({
     size: 50,
   });
-  const { data: artworkFeelingsData, isLoading: isLoadingArtworkFeelings } =
-    useMyArtworkFeelings({ size: 50 });
+  const {
+    data: artworkFeelingsData,
+    isLoading: isLoadingArtworkFeelings,
+    error: artworkFeelingsError,
+    refetch: refetchArtworkFeelings,
+  } = useMyArtworkFeelings({ size: 50 });
 
   const displayReviews = displayReviewsData?.reviews ?? [];
   const artworkFeelings = artworkFeelingsData?.feelings ?? [];
 
   const isLoading = isLoadingDisplayReviews || isLoadingArtworkFeelings;
+  const hasError = displayReviewsError || artworkFeelingsError;
+
+  const handleRetry = () => {
+    refetchDisplayReviews();
+    refetchArtworkFeelings();
+  };
 
   return (
     <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
@@ -103,7 +119,13 @@ export function MyReviewPage() {
       </nav>
 
       <section className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
-        {isLoading ? (
+        {hasError ? (
+          <ErrorView
+            fullScreen={false}
+            message="감상 목록을 불러오지 못했습니다."
+            onRetry={handleRetry}
+          />
+        ) : isLoading ? (
           <div className="flex items-center justify-center h-full">
             <p className="typo-body-sm-regular text-faint">로딩 중...</p>
           </div>

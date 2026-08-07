@@ -31,23 +31,27 @@ export function ExhibitionCard({ ex, onClick }: { ex: ExhibitionItem; onClick: (
   };
 
   return (
-    <div className="relative">
+    <div
+      className={cn(
+        'relative flex gap-3 w-full px-4 py-3.5 rounded-2xl items-start overflow-hidden',
+        'bg-card shadow-[8px_8px_18px_rgba(67,0,209,0.04)]',
+      )}
+    >
       <button
-        ref={buttonRef}
         onClick={onClick}
-        className={cn(
-          'flex gap-3 w-full text-left px-4 py-3.5 rounded-2xl border-none cursor-pointer items-start overflow-hidden',
-          'bg-card shadow-[8px_8px_18px_rgba(67,0,209,0.04)]',
-        )}
+        className="flex gap-3 flex-1 min-w-0 text-left border-none bg-transparent cursor-pointer p-0 items-start"
       >
         <Poster src={ex.thumbnail} w={80} h={80} />
         <ExhibitionMeta ex={ex} showBadge={false} />
-        <button
-          onClick={handleMenuClick}
-          className="shrink-0 mt-0.5 bg-transparent border-none p-0 cursor-pointer"
-        >
-          <Ellipsis size={16} className="text-hint" />
-        </button>
+      </button>
+
+      <button
+        ref={buttonRef}
+        onClick={handleMenuClick}
+        className="shrink-0 mt-0.5 bg-transparent border-none p-0 cursor-pointer"
+        aria-label="메뉴 열기"
+      >
+        <Ellipsis size={16} className="text-hint" />
       </button>
 
       {showMenu && (

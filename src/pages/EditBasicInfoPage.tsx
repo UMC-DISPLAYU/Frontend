@@ -24,6 +24,7 @@ function ProfilePhotoField({
     const file = e.target.files?.[0];
     if (!file) return;
     onChange(file);
+    e.currentTarget.value = '';
   };
 
   return (
@@ -46,7 +47,7 @@ function ProfilePhotoField({
           </div>
         )}
       </button>
-      <div className="absolute bottom-0 right-0 size-6 bg-sub600 rounded-full flex items-center justify-center">
+      <div className="absolute bottom-0 right-0 size-6 bg-sub600 rounded-full flex items-center justify-center pointer-events-none">
         <Plus className="size-6 text-card" strokeWidth={1.5} />
       </div>
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
@@ -151,7 +152,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>
       </header>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-20">
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-60">
         <div className="mt-[24px] flex justify-center">
           <ProfilePhotoField
             image={previewImage}
@@ -201,16 +202,16 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         </div>
 
         <div className="mt-12.5 flex flex-col gap-2">
-          <div className={cn('typo-body-xs-regular', validation.korEngNum ? 'text-faint' : 'text-faint')}>
+          <div className={cn('typo-body-xs-regular', validation.korEngNum ? 'text-sub600' : 'text-faint')}>
             한글 · 영문 · 숫자
           </div>
-          <div className={cn('typo-body-xs-regular', validation.length ? 'text-faint' : 'text-faint')}>
+          <div className={cn('typo-body-xs-regular', validation.length ? 'text-sub600' : 'text-faint')}>
             5 ~ 15자
           </div>
-          <div className={cn('typo-body-xs-regular', validation.noSpecialChars ? 'text-faint' : 'text-faint')}>
+          <div className={cn('typo-body-xs-regular', validation.noSpecialChars ? 'text-sub600' : 'text-faint')}>
             특수문자 불가
           </div>
-          <div className={cn('typo-body-xs-regular', validation.noSpaces ? 'text-faint' : 'text-faint')}>
+          <div className={cn('typo-body-xs-regular', validation.noSpaces ? 'text-sub600' : 'text-faint')}>
             공백 불가
           </div>
         </div>

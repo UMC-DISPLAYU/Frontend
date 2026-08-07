@@ -27,6 +27,7 @@ function ProfilePhotoField({
     const file = e.target.files?.[0];
     if (!file) return;
     onChange(file);
+    e.currentTarget.value = '';
   };
 
   return (
@@ -67,12 +68,15 @@ function ProfilePhotoField({
 
 export function EditArtistProfilePage() {
   const navigate = useNavigate();
-  const { data: artistProfile, isError } = useMyArtistProfile();
+  const { data: artistProfile, error, isError } = useMyArtistProfile();
   const [showVerificationModal, setShowVerificationModal] = useState(false);
 
-  // 작가 프로필이 없으면 (404 에러) 작가 인증 모달 표시
+  // 작가 프로필이 없으면 (404 에러만) 작가 인증 모달 표시
   if (isError && !showVerificationModal) {
-    setShowVerificationModal(true);
+    const is404 = (error as any)?.response?.status === 404;
+    if (is404) {
+      setShowVerificationModal(true);
+    }
   }
 
   if (showVerificationModal) {
