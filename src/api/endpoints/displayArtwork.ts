@@ -21,8 +21,9 @@ import type {
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
   GetDisplayArtworksResponseDataDto,
-  GetMyArtworkQuestionsRequestDto,
+  GetMyArtworkFeelingsResponseDataDto,
   GetMyArtworkQuestionsResponseDataDto,
+  GetReceivedArtworkQuestionsResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -68,10 +69,26 @@ export const getArtworkQuestions = async (
   artworkId: number,
 ): Promise<GetArtworkQuestionsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/questions`);
 
-// GET /v1/artworks/questions/received
-export const getMyArtworkQuestions = async (
-  params: GetMyArtworkQuestionsRequestDto,
-): Promise<GetMyArtworkQuestionsResponseDataDto> =>
+// GET /api/v1/artworks/feelings/me
+export const getMyArtworkFeelings = async (params: {
+  cursor?: string;
+  size?: number;
+} = {}): Promise<GetMyArtworkFeelingsResponseDataDto> =>
+  apiRequest('/v1/artworks/feelings/me', { query: params });
+
+// GET /api/v1/artworks/questions/me
+export const getMyArtworkQuestions = async (params: {
+  cursor?: string;
+  size?: number;
+} = {}): Promise<GetMyArtworkQuestionsResponseDataDto> =>
+  apiRequest('/v1/artworks/questions/me', { query: params });
+
+// GET /api/v1/artworks/questions/received
+export const getReceivedArtworkQuestions = async (params: {
+  cursor?: string;
+  size?: number;
+  answerStatus?: 'WAITING' | 'ANSWERED';
+} = {}): Promise<GetReceivedArtworkQuestionsResponseDataDto> =>
   apiRequest('/v1/artworks/questions/received', { query: params });
 
 // POST /v1/artworks/:artworkId/questions

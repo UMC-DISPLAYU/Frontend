@@ -6,13 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
-import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworkCard } from './ArtworkCard';
 import { Header, Screen, SectionTitle } from './Common';
 import { ContentRow } from './ContentRow';
-import { ExhibitionMeta } from './ExhibitionMeta';
 import { InteriorPhotos } from './InteriorPhotos';
 import { Poster } from './Poster';
 
@@ -25,6 +23,15 @@ interface WorkData {
   }>;
   artworks: Array<{ id: string; title: string; artist: string; image: string | null }>;
 }
+
+const formatShortPeriod = (period: string) => {
+  // "2026.06.10 – 2026.06.20" → "06.10 - 06.05"
+  const match = period.match(/\d+\.(\d+\.\d+)\s*[–-]\s*\d+\.(\d+\.\d+)/);
+  if (match) {
+    return `${match[1]} - ${match[2]}`;
+  }
+  return period;
+};
 
 export function WorkScreen({
   ex,
@@ -90,14 +97,22 @@ export function WorkScreen({
     <Screen>
       <Header title="전시 작업" onBack={onBack} />
       <div className="flex-1 overflow-y-auto px-5 pt-1.5 pb-9">
-        <div
-          className={cn(
-            'flex gap-3 h-32 px-4 py-3.5 rounded-2xl items-start overflow-hidden',
-            'bg-box100 shadow-[8px_8px_18px_rgba(6,3,45,0.04),inset_1px_1px_4px_rgba(1,8,21,0.20),inset_-2px_-2px_2px_rgba(252,252,252,0.90)]',
-          )}
-        >
-          <Poster src={ex.thumbnail} w={72} h={101} />
-          <ExhibitionMeta ex={ex} showBadge={false} />
+        <div className="w-full h-32 bg-box100 rounded-2xl shadow-[8px_8px_18px_rgba(67,0,209,0.04)] shadow-[inset_1px_1px_4px_rgba(1,8,21,0.20)] shadow-[inset_-2px_-2px_2px_rgba(255,255,255,0.90)] overflow-hidden">
+          <div className="h-full px-4 py-3.5 flex items-start gap-3">
+            <div className="w-16 h-24 shrink-0 bg-box200 rounded-xl shadow-[2px_4px_18px_rgba(67,0,209,0.04)] overflow-hidden">
+              <Poster src={ex.thumbnail} w={64} h={96} radius={12} />
+            </div>
+            <div className="flex-1 flex flex-col gap-2.5">
+              <h2 className="typo-body-md-bold text-main">{ex.title}</h2>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col">
+                  <p className="typo-body-xs-regular text-gray-800">{ex.org}</p>
+                  <p className="typo-body-xs-regular text-hint">{formatShortPeriod(ex.period)}</p>
+                </div>
+                <p className="typo-body-xxs-regular text-faint">{ex.place}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center justify-between mt-6 mb-1">
