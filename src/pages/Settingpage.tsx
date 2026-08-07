@@ -2,8 +2,8 @@ import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
-import { useLogout } from '@/hooks/queries/useAuth';
 import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
+import { useLogout } from '@/hooks/queries/useAuth';
 import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
