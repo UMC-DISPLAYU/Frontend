@@ -64,9 +64,9 @@ export const Homepage = () => {
 
     if (token) {
       setAccessToken(token);
-      navigate('/home', { replace: true });
+      window.location.href = '/home';
     }
-  }, [navigate, searchParams, setAccessToken]);
+  }, [searchParams, setAccessToken]);
 
   // OAuth 콜백 이후 refreshToken 쿠키만 있고 accessToken이 없는 상태(기존 회원)일 수 있어서,
   // 홈 진입 시 accessToken이 없으면 1회 재발급을 시도한다.
@@ -78,6 +78,7 @@ export const Homepage = () => {
     void refreshToken()
       .then(({ accessToken: newAccessToken }) => {
         setAccessToken(newAccessToken);
+        window.location.reload();
       })
       .catch(() => {
         // 비회원/게스트일 수 있으므로 조용히 무시 (refresh token 쿠키 자체가 없는 경우)

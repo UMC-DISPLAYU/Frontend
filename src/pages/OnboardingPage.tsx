@@ -916,7 +916,13 @@ export function OnboardingPage() {
           }}
         />
       ) : null}
-      {step === 'done' ? <DoneScreen onNext={() => navigate('/home')} /> : null}
+      {step === 'done' ? (
+        <DoneScreen
+          onNext={() => {
+            window.location.href = '/home';
+          }}
+        />
+      ) : null}
     </MobileShell>
   );
 }
