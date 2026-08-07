@@ -88,8 +88,8 @@ export const exhibitionBasicInfoSchema = z
     latitude: z.number({ message: '위도를 선택해주세요.' }),
     longitude: z.number({ message: '경도를 선택해주세요.' }),
 
-    // 문의 계정 (Q&A 계정) - 필수 검증 복원
-    contact: z.string().trim().min(1, { message: '문의처를 입력해주세요.' }),
+    // 문의 계정 (Q&A 계정) - 선택 사항으로 변경
+    contact: z.string().trim().optional(),
 
     // 유의 사항 (선택)
     notice: z.string().trim().optional(),

@@ -237,7 +237,7 @@ export function ExhibitionBasicInfo() {
         address: data.address.trim(),
         latitude: data.latitude,
         longitude: data.longitude,
-        contact: data.contact.trim(),
+        contact: data.contact?.trim() ?? '',
         notice: data.notice?.trim() || '',
       },
     });
@@ -365,7 +365,7 @@ export function ExhibitionBasicInfo() {
 
           {/* 문의 방법 */}
           <div className="flex flex-col gap-3">
-            <Label required>문의 방법</Label>
+            <Label>문의 방법</Label>
             <div className="flex flex-col gap-1.5">
               <Underline>
                 <input
