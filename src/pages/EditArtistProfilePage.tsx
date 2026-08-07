@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { isAxiosError } from 'axios';
-import { ChevronLeft, ImagePlus, Loader2 } from 'lucide-react';
+import { ChevronLeft, ImagePlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
+import { LoadingView } from '@/components/common';
 import { ConfirmModal } from '@/components/ui';
 import { ChipGroup } from '@/components/ui';
 import { EXHIBITION_FIELD_LABELS,EXHIBITION_FIELDS } from '@/constants/exhibition';
@@ -44,15 +45,15 @@ function ProfilePhotoField({
           <>
             <img src={image} alt="프로필 미리보기" className="size-full object-cover" />
             {isUploading && (
-              <div className="absolute inset-0 bg-dark/50 flex items-center justify-center">
-                <Loader2 className="size-6 text-white animate-spin" />
+              <div className="absolute inset-0 bg-dark/50">
+                <LoadingView fullScreen={false} message="" className="!bg-transparent" />
               </div>
             )}
           </>
         ) : (
           <div className="size-full flex items-center justify-center">
             {isUploading ? (
-              <Loader2 className="size-5 animate-spin text-faint" strokeWidth={1.5} />
+              <LoadingView fullScreen={false} message="" className="!bg-transparent !p-0" />
             ) : (
               <ImagePlus className="size-5 text-faint" strokeWidth={1.5} />
             )}
@@ -87,7 +88,7 @@ export function EditArtistProfilePage() {
   }
 
   if (!artistProfile) {
-    return null;
+    return <LoadingView message="프로필 정보를 불러오는 중..." />;
   }
 
   return (
