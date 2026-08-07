@@ -6,7 +6,6 @@ import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
 
-import { ExhibitionMenu } from './ExhibitionMenu';
 import { ExhibitionMeta } from './ExhibitionMeta';
 import { Poster } from './Poster';
 

@@ -306,7 +306,7 @@ export function MyPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
+    <div className="max-w-md mx-auto min-h-dvh bg-page flex flex-col">
       <MyPageHeader
         onVerifyArtist={() => {
           navigate('/artist-verification');

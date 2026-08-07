@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';

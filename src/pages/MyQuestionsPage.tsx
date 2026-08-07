@@ -2,7 +2,7 @@ import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { MyArtworkQuestionDto } from '@/api/dto';
-import { ErrorView } from '@/components/common';
+import { ErrorView, LoadingView } from '@/components/common';
 import { useMyArtworkQuestions } from '@/hooks/queries/useMyArtworkQuestions';
 
 interface QuestionCardProps {
@@ -59,9 +59,7 @@ export function MyQuestionsPage() {
 
       <section className="flex-1 min-h-0 overflow-y-auto px-5 py-5 flex flex-col">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="typo-body-sm-regular text-faint">로딩 중...</p>
-          </div>
+          <LoadingView fullScreen={false} />
         ) : isError ? (
           <ErrorView fullScreen={false} message="질문을 불러오는 데 실패했습니다." />
         ) : questions.length > 0 ? (

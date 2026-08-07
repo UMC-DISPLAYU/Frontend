@@ -4,7 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { MyArtworkFeelingDto, MyDisplayReviewDto } from '@/api/dto';
-import { ErrorView } from '@/components/common';
+import { ErrorView, LoadingView } from '@/components/common';
 import { useMyArtworkFeelings } from '@/hooks/queries/useMyArtworkFeelings';
 import { useMyDisplayReviews } from '@/hooks/queries/useMyDisplayReviews';
 
@@ -126,9 +126,7 @@ export function MyReviewPage() {
             onRetry={handleRetry}
           />
         ) : isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="typo-body-sm-regular text-faint">로딩 중...</p>
-          </div>
+          <LoadingView fullScreen={false} />
         ) : activeTab === '전시' && displayReviews.length > 0 ? (
           <div className="flex flex-col gap-4">
             {displayReviews.map((review: MyDisplayReviewDto) => (

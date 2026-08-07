@@ -73,12 +73,14 @@ export function EditArtistProfilePage() {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // 작가 프로필이 없으면 (404 에러만) 작가 인증 모달 표시
-  if (isError && !showVerificationModal) {
-    const is404 = isAxiosError(error) && error.response?.status === 404;
-    if (is404) {
-      setShowVerificationModal(true);
+  useEffect(() => {
+    if (isError) {
+      const is404 = isAxiosError(error) && error.response?.status === 404;
+      if (is404) {
+        setShowVerificationModal(true);
+      }
     }
-  }
+  }, [isError, error]);
 
   if (showVerificationModal) {
     return (
