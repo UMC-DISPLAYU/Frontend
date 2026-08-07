@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import type { DisplayDetailDto, DisplayReviewDto } from '@/api/dto/display.dto';
 import type { CommentData } from '@/components/common';
@@ -50,7 +50,7 @@ type Props = {
   activeReplyId?: number | null;
 };
 
-export function DisplayReviewCommentItem({
+export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
   display,
   displayId,
   review,
@@ -62,17 +62,16 @@ export function DisplayReviewCommentItem({
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const reviewPolicy = useDisplayReviewPolicy(display);
   const displayPolicy = useDisplayPolicy(display);
-  /* like/unlike/create는 로그인 여부만 확인하면 됩니다. */
   const isLoggedIn = hasPermission(reviewPolicy, 'like');
-  /* 삭제는 작성자 본인이거나, 이 전시를 관리하는 작가(모더레이터)면 가능합니다. */
   const isModerator = hasPermission(displayPolicy, 'edit');
 
   const isComposingReply = activeReplyId === review.displayReviewId;
-  const [prevIsComposingReply, setPrevIsComposingReply] = useState(isComposingReply);
-  if (isComposingReply !== prevIsComposingReply) {
-    setPrevIsComposingReply(isComposingReply);
-    if (isComposingReply) setRepliesOpen(true);
-  }
+
+  useEffect(() => {
+    if (isComposingReply) {
+      setRepliesOpen(true);
+    }
+  }, [isComposingReply]);
 
   const likeMutation = useToggleDisplayReviewLike(displayId);
   const deleteMutation = useDeleteDisplayReview(displayId);
@@ -167,4 +166,4 @@ export function DisplayReviewCommentItem({
       {loginModal}
     </>
   );
-}
+});
