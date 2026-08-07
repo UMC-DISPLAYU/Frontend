@@ -56,8 +56,8 @@
   --color-modal-btn-hover-fg: var(--modal-btn-hover-fg);
 
   /* Tag */
-  --color-tag-blue: var(--tag-blue);
-  --color-tag-gray: var(--tag-gray);
+  --color-tag-bg: var(--tag-bg);
+  --color-tag-fg: var(--tag-fg);
 
   /* Button */
   --color-bt-gray: var(--bt-gray);
