@@ -22,7 +22,14 @@ export const EXHIBITION_FIELDS = [
   'ETC',
 ] as const;
 
-export const EXHIBITION_TYPE_LABELS = EXHIBITION_TYPES.map((type) => type.label);
+export const EXHIBITION_TYPE_LABELS = [
+  '졸업 전시',
+  '과제 전시',
+  '학과·학회 전시',
+  '연합 전시',
+  '소모임·동아리 전시',
+  '기타 단체 전시',
+] as const;
 
 export type ExhibitionTypeGroup = 'institution' | 'organization';
 export type ExhibitionType = (typeof EXHIBITION_TYPES)[number]['label'];

@@ -30,12 +30,10 @@ export const exhibitionRegisterSchema = z
       .max(1500, { message: '전시소개는 1500자 이하로 입력해주세요.' })
       .optional(),
 
-    type: z
-      .enum(EXHIBITION_TYPE_LABELS as unknown as [string, ...string[]])
-      .nullable()
-      .refine((val) => val !== null, {
-        message: '전시 유형을 선택해주세요.',
-      }),
+    // nullable()을 빼고 유효한 enum 값으로만 엄격하게 검증하여 타입 내로잉 처리
+    type: z.enum(EXHIBITION_TYPE_LABELS, {
+      message: '전시 유형을 선택해주세요.',
+    }),
 
     field: z
       .array(z.enum(EXHIBITION_FIELDS))
@@ -90,14 +88,14 @@ export const exhibitionBasicInfoSchema = z
     latitude: z.number({ message: '위도를 선택해주세요.' }),
     longitude: z.number({ message: '경도를 선택해주세요.' }),
 
-    // 문의 계정 (Q&A 계정)
-    contact: z.string().trim().optional(),
+    // 문의 계정 (Q&A 계정) - 필수 검증 복원
+    contact: z.string().trim().min(1, { message: '문의처를 입력해주세요.' }),
 
     // 유의 사항 (선택)
     notice: z.string().trim().optional(),
   })
   .superRefine((data, ctx) => {
-    // 날짜 논리적 역전 검증
+    // 날짜 논리적 역전 검증 (종료일 < 시작일)
     if (data.startDate && data.endDate && data.startDate > data.endDate) {
       ctx.addIssue({
         code: 'custom',
@@ -106,15 +104,13 @@ export const exhibitionBasicInfoSchema = z
       });
     }
 
-    // 당일 전시일 때 운영시간 논리적 역전 검증 (시작일과 종료일이 같을 경우)
-    if (data.startDate === data.endDate && data.startTime && data.endTime) {
-      if (data.startTime > data.endTime) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['endTime'],
-          message: '운영 종료 시간은 시작 시간 이후여야 합니다.',
-        });
-      }
+    // 운영 시간 선후 관계 상시 검증 (종료 시간 <= 시작 시간 차단)
+    if (data.startTime && data.endTime && data.startTime >= data.endTime) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['endTime'],
+        message: '운영 종료 시간은 시작 시간 이후여야 합니다.',
+      });
     }
   });
 
