@@ -73,13 +73,11 @@ export function BottomCommentBar({
     if (!canSubmit) return;
 
     try {
-      const [imageUrls, dimensions] =
+      const dimensions =
         images.length > 0
-          ? await Promise.all([
-              uploadImages(),
-              Promise.all(images.map((image) => readImageDimensions(image.file))),
-            ])
-          : [[], []];
+          ? await Promise.all(images.map((image) => readImageDimensions(image.file)))
+          : [];
+      const imageUrls = images.length > 0 ? await uploadImages() : [];
       const submitImages: BottomCommentBarImage[] = imageUrls.map((imageUrl, index) => ({
         imageUrl,
         width: dimensions[index].width,

@@ -115,14 +115,14 @@ export function ReviewTab({ className, display, displayId }: Props) {
       )}
 
       {/* 빈 상태 */}
-      {!isPending && !isError && reviews.length === 0 && (
+      {!isPending && !isError && reviews.length === 0 && !hasNextPage && (
         <div className="py-10 text-center text-sub600 typo-body-sm-regular">
           등록된 후기가 없습니다.
         </div>
       )}
 
       {/* 후기 목록 */}
-      {reviews.length > 0 && (
+      {(reviews.length > 0 || hasNextPage) && (
         <div className="flex flex-col">
           {reviews.map((review) => (
             <DisplayReviewCommentItem
