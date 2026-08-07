@@ -3,8 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import type { GetDisplayMapRequestDto } from '@/api/dto';
 import { getDisplayMap } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
-import { formatDate } from '@/utils/date';
-import { calculateBounds } from '@/utils/geo';
 
 /**
  * 지도 중심 좌표 + 반경으로 주변 전시를 조회하는 훅.
@@ -26,9 +24,10 @@ export interface NearbyDisplay {
 }
 
 export interface NearbyParams {
-  lat: number;
-  lng: number;
-  radius: number; // meters - API의 bounds 계산에 사용
+  southLatitude: number;
+  westLongitude: number;
+  northLatitude: number;
+  eastLongitude: number;
   searchWord?: string | null;
 }
 
@@ -46,10 +45,11 @@ function getDisplayStatus(startDate: string, endDate: string): string {
 }
 
 async function fetchNearbyDisplays(params: NearbyParams): Promise<NearbyDisplay[]> {
-  const bounds = calculateBounds(params.lat, params.lng, params.radius);
-
   const requestDto: GetDisplayMapRequestDto = {
-    ...bounds,
+    southLatitude: params.southLatitude,
+    westLongitude: params.westLongitude,
+    northLatitude: params.northLatitude,
+    eastLongitude: params.eastLongitude,
     searchWord: params.searchWord || undefined,
   };
 

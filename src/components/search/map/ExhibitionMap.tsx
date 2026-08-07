@@ -5,7 +5,6 @@ import { LocateFixed } from 'lucide-react';
 import { CustomOverlayMap, Map, useKakaoLoader } from 'react-kakao-maps-sdk';
 
 import type { NearbyDisplay, NearbyParams } from '@/hooks/useNearbyDisplays';
-import { getDistanceMeters } from '@/utils/geo';
 import { getAccurateUserLocation, getGeolocationErrorMessage } from '@/utils/geolocation';
 
 import { ExhibitionMapMarker } from './ExhibitionMapMarker';
@@ -52,17 +51,17 @@ export function ExhibitionMap({
 
   const handleIdle = useCallback(
     (map: kakao.maps.Map) => {
-      const center = map.getCenter();
       const bounds = map.getBounds();
       const ne = bounds.getNorthEast();
-      const radius = getDistanceMeters(center.getLat(), center.getLng(), ne.getLat(), ne.getLng());
+      const sw = bounds.getSouthWest();
 
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         onBoundsChange({
-          lat: center.getLat(),
-          lng: center.getLng(),
-          radius,
+          southLatitude: sw.getLat(),
+          westLongitude: sw.getLng(),
+          northLatitude: ne.getLat(),
+          eastLongitude: ne.getLng(),
         });
       }, IDLE_DEBOUNCE_MS);
     },
