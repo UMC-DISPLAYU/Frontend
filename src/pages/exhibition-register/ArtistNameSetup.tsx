@@ -1,11 +1,13 @@
-import { useState } from 'react';
-
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronLeft, Info } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
+
+import { type ArtistNameSetupFormValues, artistNameSetupSchema } from './exhibitionRegister.schema';
 
 interface SummaryRowProps {
   label: string;
@@ -63,8 +65,6 @@ export function ArtistNameSetup() {
   const { state } = useLocation();
   const registerState = (state ?? {}) as ExhibitionRegisterState;
   const createDisplay = useCreateDisplay();
-  /* 뒤로 갔다 다시 들어와도 입력한 작가명이 남아 있도록 state로 초기화합니다. */
-  const [artistName, setArtistName] = useState(registerState.artistName ?? '');
 
   const info = {
     title: registerState.title ?? '',
@@ -73,12 +73,23 @@ export function ArtistNameSetup() {
     role: '대표자',
   };
 
-  const goCreate = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<ArtistNameSetupFormValues>({
+    resolver: zodResolver(artistNameSetupSchema),
+    mode: 'onChange',
+    defaultValues: {
+      artistName: registerState.artistName ?? '',
+    },
+  });
+
+  const goCreate = (data: ArtistNameSetupFormValues) => {
     const type = registerState.type ? DISPLAY_TYPE_MAP[registerState.type] : undefined;
     const posterImageUrl = registerState.imageUrls?.[0];
 
     if (
-      !artistName.trim() ||
       !type ||
       !posterImageUrl ||
       !registerState.title ||
@@ -111,8 +122,7 @@ export function ArtistNameSetup() {
       latitude: registerState.latitude,
       longitude: registerState.longitude,
       roadAddress: registerState.address.trim(),
-      /* 서버 필수 필드입니다. 작가명은 이 전시에서 쓸 표시명, 문의 방법은 Q&A 계정으로 들어갑니다. */
-      displayNickname: artistName.trim(),
+      displayNickname: data.artistName.trim(),
       qnaAccount: (registerState.contact ?? '').trim(),
       schoolOrOrganization: optionalText(registerState.school || registerState.organizer) ?? '',
       departmentOrClub: optionalText(registerState.department),
@@ -130,7 +140,7 @@ export function ArtistNameSetup() {
         navigate(`/exhibition/${display.displayId}/manage`, {
           state: {
             ...registerState,
-            artistName,
+            artistName: data.artistName.trim(),
             displayId: display.displayId,
             posterImageUrl,
           },
@@ -149,7 +159,11 @@ export function ArtistNameSetup() {
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3">
-        <div className="flex flex-col gap-5">
+        <form
+          id="artist-name-setup-form"
+          onSubmit={handleSubmit(goCreate)}
+          className="flex flex-col gap-5"
+        >
           {/* 안내 문구 */}
           <div className="flex flex-col gap-1">
             <h2 className="typo-body-md-bold text-main">
@@ -177,18 +191,22 @@ export function ArtistNameSetup() {
               </div>
               <div className="border-b border-input-border px-3 py-2.5">
                 <input
-                  value={artistName}
-                  onChange={(e) => setArtistName(e.target.value)}
                   placeholder="홍길동"
                   className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
+                  {...register('artistName')}
                 />
               </div>
             </div>
+            {errors.artistName && (
+              <span className="typo-body-xxs-regular text-error px-2">
+                {errors.artistName.message}
+              </span>
+            )}
             <p className="typo-body-xxs-regular text-faint">
               실명 또는 이 전시에서 사용할 작가명을 입력해주세요.
             </p>
           </div>
-        </div>
+        </form>
       </div>
 
       {/* 하단 고정 영역 */}
@@ -203,9 +221,9 @@ export function ArtistNameSetup() {
         </div>
 
         <button
-          type="button"
-          disabled={!artistName.trim() || createDisplay.isPending}
-          onClick={goCreate}
+          form="artist-name-setup-form"
+          type="submit"
+          disabled={!isValid || createDisplay.isPending}
           className="typo-body-sm-bold mt-4 h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
         >
           {createDisplay.isPending ? '전시 등록 중' : '전시 관리 페이지 만들기'}

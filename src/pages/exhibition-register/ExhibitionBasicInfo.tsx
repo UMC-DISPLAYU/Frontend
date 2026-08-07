@@ -1,7 +1,8 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from 'react';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Controller, useForm } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
@@ -11,6 +12,11 @@ import { CalenderSheet } from '@/components/ui/CalenderSheet';
 import { type TimeRangeValue, TimeSheet } from '@/components/ui/TimeSheet';
 import { useUpdateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+
+import {
+  type ExhibitionBasicInfoFormValues,
+  exhibitionBasicInfoSchema,
+} from './exhibitionRegister.schema';
 
 interface DateValue {
   start: Date;
@@ -25,7 +31,6 @@ const formatDate = (date: Date) =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 const formatTime = (hour: number, minute: number) => `${pad(hour)}:${pad(minute)}`;
 
-/* 밑줄형 입력 래퍼 */
 function Underline({
   children,
   className = '',
@@ -95,72 +100,88 @@ export function ExhibitionBasicInfo() {
   const [operatingHours, setOperatingHours] = useState<TimeRangeValue | null>(
     initialOperatingHours,
   );
-  const [placeName, setPlaceName] = useState(
-    (restored.placeName as string) ?? displayDetail?.location?.placeName ?? '',
-  );
-  const [address, setAddress] = useState(
-    (restored.address as string) ?? displayDetail?.location?.placeName ?? '',
-  );
-  const [latitude, setLatitude] = useState<number | null>(
-    (restored.latitude as number) ?? displayDetail?.location?.latitude ?? null,
-  );
-  const [longitude, setLongitude] = useState<number | null>(
-    (restored.longitude as number) ?? displayDetail?.location?.longitude ?? null,
-  );
-  const [contact, setContact] = useState(
-    (restored.contact as string) ?? displayDetail?.qnaAccount ?? '',
-  );
-  const [notice, setNotice] = useState((restored.notice as string) ?? displayDetail?.note ?? '');
-
   const [sheet, setSheet] = useState<SheetType>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<ExhibitionBasicInfoFormValues>({
+    resolver: zodResolver(exhibitionBasicInfoSchema),
+    mode: 'onChange',
+    defaultValues: {
+      startDate: initialPeriod ? formatDate(initialPeriod.start) : '',
+      endDate: initialPeriod ? formatDate(initialPeriod.end) : '',
+      startTime: initialOperatingHours
+        ? formatTime(initialOperatingHours.startHour, initialOperatingHours.startMinute)
+        : '',
+      endTime: initialOperatingHours
+        ? formatTime(initialOperatingHours.endHour, initialOperatingHours.endMinute)
+        : '',
+      placeName: (restored.placeName as string) ?? displayDetail?.location?.placeName ?? '',
+      address: (restored.address as string) ?? displayDetail?.location?.placeName ?? '',
+      latitude: (restored.latitude as number) ?? displayDetail?.location?.latitude ?? null,
+      longitude: (restored.longitude as number) ?? displayDetail?.location?.longitude ?? null,
+      contact: (restored.contact as string) ?? displayDetail?.qnaAccount ?? '',
+      notice: (restored.notice as string) ?? displayDetail?.note ?? '',
+    },
+  });
+
+  const notice = watch('notice') ?? '';
+  const latitude = watch('latitude');
+  const longitude = watch('longitude');
+
   useEffect(() => {
     if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
-      setPeriod(
-        (prev) =>
-          (restored.periodValue as DateValue) ??
-          (fetchedDetail.period
-            ? {
-                start: parseDate(fetchedDetail.period.startDate),
-                end: parseDate(fetchedDetail.period.endDate),
-                label: `${fetchedDetail.period.startDate.split('-').join('.')} - ${fetchedDetail.period.endDate.split('-').join('.')}`,
-              }
-            : prev),
-      );
-      setOperatingHours(
-        (prev) =>
-          (restored.operatingHoursValue as TimeRangeValue) ??
-          (fetchedDetail.period
-            ? {
-                startHour: parseInt(fetchedDetail.period.startTime.split(':')[0] || '0'),
-                startMinute: parseInt(fetchedDetail.period.startTime.split(':')[1] || '0'),
-                endHour: parseInt(fetchedDetail.period.endTime.split(':')[0] || '0'),
-                endMinute: parseInt(fetchedDetail.period.endTime.split(':')[1] || '0'),
-                label: `${fetchedDetail.period.startTime} - ${fetchedDetail.period.endTime}`,
-              }
-            : prev),
-      );
-      setPlaceName(
-        (prev) => (restored.placeName as string) ?? fetchedDetail.location?.placeName ?? prev,
-      );
-      setAddress(
-        (prev) => (restored.address as string) ?? fetchedDetail.location?.placeName ?? prev,
-      );
-      setLatitude(
-        (prev) => (restored.latitude as number) ?? fetchedDetail.location?.latitude ?? prev,
-      );
-      setLongitude(
-        (prev) => (restored.longitude as number) ?? fetchedDetail.location?.longitude ?? prev,
-      );
-      setContact((prev) => (restored.contact as string) ?? fetchedDetail.qnaAccount ?? prev);
-      setNotice((prev) => (restored.notice as string) ?? fetchedDetail.note ?? prev);
-    }
-  }, [displayId, state, fetchedDetail, restored]);
+      const restoredPeriod =
+        (restored.periodValue as DateValue) ??
+        (fetchedDetail.period
+          ? {
+              start: parseDate(fetchedDetail.period.startDate),
+              end: parseDate(fetchedDetail.period.endDate),
+              label: `${fetchedDetail.period.startDate.split('-').join('.')} - ${fetchedDetail.period.endDate.split('-').join('.')}`,
+            }
+          : null);
 
-  /* 문의 방법은 서버에서 qnaAccount로 받는 필수값입니다. */
-  /* 운영 시간은 서버에서 openTime·closeTime 필수값으로 받으므로 함께 확인합니다. */
-  const canNext = period && operatingHours && placeName.trim() && address.trim() && contact.trim();
+      const restoredHours =
+        (restored.operatingHoursValue as TimeRangeValue) ??
+        (fetchedDetail.period
+          ? {
+              startHour: parseInt(fetchedDetail.period.startTime.split(':')[0] || '0'),
+              startMinute: parseInt(fetchedDetail.period.startTime.split(':')[1] || '0'),
+              endHour: parseInt(fetchedDetail.period.endTime.split(':')[0] || '0'),
+              endMinute: parseInt(fetchedDetail.period.endTime.split(':')[1] || '0'),
+              label: `${fetchedDetail.period.startTime} - ${fetchedDetail.period.endTime}`,
+            }
+          : null);
+
+      const restoredAddress =
+        (restored.address as string) ?? fetchedDetail.location?.placeName ?? '';
+
+      setPeriod(restoredPeriod);
+      setOperatingHours(restoredHours);
+
+      reset({
+        startDate: restoredPeriod ? formatDate(restoredPeriod.start) : '',
+        endDate: restoredPeriod ? formatDate(restoredPeriod.end) : '',
+        startTime: restoredHours
+          ? formatTime(restoredHours.startHour, restoredHours.startMinute)
+          : '',
+        endTime: restoredHours ? formatTime(restoredHours.endHour, restoredHours.endMinute) : '',
+        placeName: (restored.placeName as string) ?? fetchedDetail.location?.placeName ?? '',
+        address: restoredAddress,
+        latitude: (restored.latitude as number) ?? fetchedDetail.location?.latitude ?? null,
+        longitude: (restored.longitude as number) ?? fetchedDetail.location?.longitude ?? null,
+        contact: (restored.contact as string) ?? fetchedDetail.qnaAccount ?? '',
+        notice: (restored.notice as string) ?? fetchedDetail.note ?? '',
+      });
+    }
+  }, [displayId, state, fetchedDetail, restored, reset]);
 
   const handleAddressConfirm = (
     fullAddress: string,
@@ -168,12 +189,12 @@ export function ExhibitionBasicInfo() {
     lat: number,
     lng: number,
   ) => {
-    setAddress(fullAddress);
-    setLatitude(lat);
-    setLongitude(lng);
+    setValue('address', fullAddress, { shouldValidate: true });
+    setValue('latitude', lat, { shouldValidate: true });
+    setValue('longitude', lng, { shouldValidate: true });
   };
 
-  const goNext = () => {
+  const onFormSubmit = (data: ExhibitionBasicInfoFormValues) => {
     if (displayId > 0) {
       updateDisplay.mutate(
         {
@@ -184,16 +205,12 @@ export function ExhibitionBasicInfo() {
           fields: state?.field ?? fetchedDetail?.displayFields ?? [],
           schoolOrOrganization: state?.school ?? fetchedDetail?.organization ?? '',
           departmentOrClub: state?.department ?? fetchedDetail?.department ?? null,
-          placeName,
-          precautions: notice || null,
-          startDate: period ? formatDate(period.start) : undefined,
-          endDate: period ? formatDate(period.end) : undefined,
-          openTime: operatingHours
-            ? formatTime(operatingHours.startHour, operatingHours.startMinute)
-            : undefined,
-          closeTime: operatingHours
-            ? formatTime(operatingHours.endHour, operatingHours.endMinute)
-            : undefined,
+          placeName: data.placeName.trim(),
+          precautions: data.notice?.trim() || null,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          openTime: data.startTime,
+          closeTime: data.endTime,
           posterImageUrl:
             state?.imageUrls?.[0] ?? fetchedDetail?.images?.[0]?.imageUrl ?? undefined,
         },
@@ -209,24 +226,19 @@ export function ExhibitionBasicInfo() {
       state: {
         ...state,
         period: period?.label ?? '',
-        /* 뒤로 왔을 때 달력·시간 선택 상태를 그대로 되살리기 위한 원본 값입니다. */
         periodValue: period,
         operatingHoursValue: operatingHours,
-        startDate: period ? formatDate(period.start) : null,
-        endDate: period ? formatDate(period.end) : null,
-        startTime: operatingHours
-          ? formatTime(operatingHours.startHour, operatingHours.startMinute)
-          : null,
-        endTime: operatingHours
-          ? formatTime(operatingHours.endHour, operatingHours.endMinute)
-          : null,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        startTime: data.startTime,
+        endTime: data.endTime,
         openHours: operatingHours?.label ?? '',
-        placeName,
-        address,
-        latitude,
-        longitude,
-        contact,
-        notice,
+        placeName: data.placeName.trim(),
+        address: data.address.trim(),
+        latitude: data.latitude,
+        longitude: data.longitude,
+        contact: data.contact.trim(),
+        notice: data.notice?.trim() || '',
       },
     });
   };
@@ -236,39 +248,65 @@ export function ExhibitionBasicInfo() {
       <PageHeader title="전시 기본 정보" onBack={() => navigate(-1)} />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3">
-        <div className="flex flex-col gap-6">
+        <form
+          id="exhibition-basic-info-form"
+          onSubmit={handleSubmit(onFormSubmit)}
+          className="flex flex-col gap-6"
+        >
           {/* 전시기간 · 운영시간 */}
           <div className="flex items-start gap-3">
             <div className="flex flex-1 flex-col gap-3">
               <Label required>전시기간</Label>
-              <button type="button" onClick={() => setSheet('date')} className="w-full">
-                <Underline>
-                  <Calendar className="size-4 shrink-0 text-main" strokeWidth={1} />
-                  <span
-                    className={`typo-body-xs-regular truncate ${
-                      period ? 'text-main' : 'text-input-placeholder'
-                    }`}
-                  >
-                    {period?.label ?? '날짜선택'}
-                  </span>
-                </Underline>
-              </button>
+              <Controller
+                control={control}
+                name="startDate"
+                render={() => (
+                  <button type="button" onClick={() => setSheet('date')} className="w-full">
+                    <Underline>
+                      <Calendar className="size-4 shrink-0 text-main" strokeWidth={1} />
+                      <span
+                        className={`typo-body-xs-regular truncate ${
+                          period ? 'text-main' : 'text-input-placeholder'
+                        }`}
+                      >
+                        {period?.label ?? '날짜선택'}
+                      </span>
+                    </Underline>
+                  </button>
+                )}
+              />
+              {errors.endDate && (
+                <span className="typo-body-xxs-regular text-error px-2">
+                  {errors.endDate.message}
+                </span>
+              )}
             </div>
 
             <div className="flex flex-1 flex-col gap-3">
               <Label required>운영시간</Label>
-              <button type="button" onClick={() => setSheet('time')} className="w-full">
-                <Underline>
-                  <Clock className="size-4 shrink-0 text-main" strokeWidth={1} />
-                  <span
-                    className={`typo-body-xs-regular truncate ${
-                      operatingHours ? 'text-main' : 'text-input-placeholder'
-                    }`}
-                  >
-                    {operatingHours?.label ?? '시간선택'}
-                  </span>
-                </Underline>
-              </button>
+              <Controller
+                control={control}
+                name="startTime"
+                render={() => (
+                  <button type="button" onClick={() => setSheet('time')} className="w-full">
+                    <Underline>
+                      <Clock className="size-4 shrink-0 text-main" strokeWidth={1} />
+                      <span
+                        className={`typo-body-xs-regular truncate ${
+                          operatingHours ? 'text-main' : 'text-input-placeholder'
+                        }`}
+                      >
+                        {operatingHours?.label ?? '시간선택'}
+                      </span>
+                    </Underline>
+                  </button>
+                )}
+              />
+              {errors.endTime && (
+                <span className="typo-body-xxs-regular text-error px-2">
+                  {errors.endTime.message}
+                </span>
+              )}
             </div>
           </div>
 
@@ -278,28 +316,38 @@ export function ExhibitionBasicInfo() {
             <Underline>
               <input
                 id="place-name"
-                value={placeName}
-                onChange={(e) => setPlaceName(e.target.value)}
                 placeholder="전시명을 입력해주세요"
                 className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
+                {...register('placeName')}
               />
             </Underline>
+            {errors.placeName && (
+              <span className="typo-body-xxs-regular text-error px-2">
+                {errors.placeName.message}
+              </span>
+            )}
           </div>
 
           {/* 주소 */}
           <div className="flex flex-col gap-3">
             <Label required>주소</Label>
             <div className="flex items-center gap-3">
-              <Underline className="flex-1">
-                <MapPin className="size-4 shrink-0 text-input-placeholder" strokeWidth={1} />
-                <input
-                  id="address"
-                  value={address}
-                  readOnly
-                  placeholder="주소를 검색해주세요"
-                  className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
-                />
-              </Underline>
+              <Controller
+                control={control}
+                name="address"
+                render={({ field: { value } }) => (
+                  <Underline className="flex-1">
+                    <MapPin className="size-4 shrink-0 text-input-placeholder" strokeWidth={1} />
+                    <input
+                      id="address"
+                      value={value}
+                      readOnly
+                      placeholder="주소를 검색해주세요"
+                      className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
+                    />
+                  </Underline>
+                )}
+              />
               <button
                 type="button"
                 onClick={() => setIsAddressModalOpen(true)}
@@ -308,6 +356,11 @@ export function ExhibitionBasicInfo() {
                 검색
               </button>
             </div>
+            {errors.address && (
+              <span className="typo-body-xxs-regular text-error px-2">
+                {errors.address.message}
+              </span>
+            )}
           </div>
 
           {/* 문의 방법 */}
@@ -317,13 +370,17 @@ export function ExhibitionBasicInfo() {
               <Underline>
                 <input
                   id="contact"
-                  value={contact}
-                  onChange={(e) => setContact(e.target.value)}
                   placeholder="문의 계정 또는 연락처를 입력해주세요"
                   className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
+                  {...register('contact')}
                 />
               </Underline>
               <p className="typo-body-xxs-regular text-faint">@displayu_oo / example@email.com</p>
+              {errors.contact && (
+                <span className="typo-body-xxs-regular text-error px-2">
+                  {errors.contact.message}
+                </span>
+              )}
             </div>
           </div>
 
@@ -335,10 +392,9 @@ export function ExhibitionBasicInfo() {
                 <div className="flex h-28 w-full flex-col justify-between">
                   <textarea
                     id="notice"
-                    value={notice}
-                    onChange={(e) => setNotice(e.target.value.slice(0, 500))}
                     placeholder="관람 전 알아두면 좋은 내용을 입력해주세요"
                     className="typo-body-xs-regular w-full flex-1 resize-none bg-transparent text-main outline-none placeholder:text-input-placeholder"
+                    {...register('notice')}
                   />
                   <span className="typo-body-xs-regular self-end text-faint">
                     {notice.length}/500
@@ -348,16 +404,21 @@ export function ExhibitionBasicInfo() {
               <p className="typo-body-xxs-regular text-faint">
                 날짜별 운영 시간이 다르거나 예약, 출입 안내가 있다면 이곳에 적어주세요.
               </p>
+              {errors.notice && (
+                <span className="typo-body-xxs-regular text-error px-2">
+                  {errors.notice.message}
+                </span>
+              )}
             </div>
           </div>
-        </div>
+        </form>
       </div>
 
       <BottomButtonBar>
         <button
-          type="button"
-          disabled={!canNext || updateDisplay.isPending || isFetchingDetail}
-          onClick={goNext}
+          form="exhibition-basic-info-form"
+          type="submit"
+          disabled={!isValid || updateDisplay.isPending || isFetchingDetail}
           className="typo-body-sm-bold inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-dark py-3 text-card disabled:opacity-40"
         >
           {updateDisplay.isPending || isFetchingDetail
@@ -372,13 +433,29 @@ export function ExhibitionBasicInfo() {
         open={sheet === 'date'}
         onClose={() => setSheet(null)}
         value={period}
-        onConfirm={setPeriod}
+        onConfirm={(nextVal) => {
+          setPeriod(nextVal);
+          if (nextVal) {
+            setValue('startDate', formatDate(nextVal.start), { shouldValidate: true });
+            setValue('endDate', formatDate(nextVal.end), { shouldValidate: true });
+          }
+        }}
       />
       <TimeSheet
         open={sheet === 'time'}
         onClose={() => setSheet(null)}
         value={operatingHours}
-        onConfirm={setOperatingHours}
+        onConfirm={(nextVal) => {
+          setOperatingHours(nextVal);
+          if (nextVal) {
+            setValue('startTime', formatTime(nextVal.startHour, nextVal.startMinute), {
+              shouldValidate: true,
+            });
+            setValue('endTime', formatTime(nextVal.endHour, nextVal.endMinute), {
+              shouldValidate: true,
+            });
+          }
+        }}
       />
       <AddressSearchModal
         open={isAddressModalOpen}
