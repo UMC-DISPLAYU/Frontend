@@ -69,10 +69,13 @@ export interface LoungeBoardDetail {
 
 // ─── Work Management Types ────────────────────────────────────────────────────
 
+export type InteriorPhotos = { id: number; url: string }[];
+
 export interface WorkContent {
   id: string;
   title: string;
   meta: string;
+  photos?: InteriorPhotos;
 }
 
 export interface ArtworkItemInWork {

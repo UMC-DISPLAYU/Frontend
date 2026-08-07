@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { LoadingView } from '@/components/common';
+import { ErrorView, LoadingView } from '@/components/common';
 import { WorkScreen } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
@@ -20,11 +20,15 @@ export function ExhibitionWorkPage() {
   const navigate = useNavigate();
 
   const exhibition = state?.initialExhibition;
-  const { data: displayDetail } = useDisplayDetail(Number(displayId));
+  const { data: displayDetail, isPending, isError } = useDisplayDetail(Number(displayId));
   const { data: displayArtworks } = useDisplayArtworks(Number(displayId));
 
-  if (!exhibition && !displayDetail) {
+  if (!exhibition && isPending) {
     return <LoadingView message="전시 정보를 불러오는 중..." />;
+  }
+
+  if (!exhibition && (isError || !displayDetail)) {
+    return <ErrorView message="전시 정보를 찾을 수 없습니다." onRetry={() => navigate(-1)} />;
   }
 
   const exItem: ExhibitionItem = exhibition ?? {
@@ -43,6 +47,10 @@ export function ExhibitionWorkPage() {
         id: String(cat.categoryId),
         title: cat.name,
         meta: cat.contents.length > 0 ? `${cat.contents.length}개 등록` : '0개',
+        photos: cat.contents.map((content) => ({
+          id: content.contentId,
+          url: content.imageUrl,
+        })),
       })) ?? [],
     artworks:
       displayArtworks?.artworks.map((artwork) => ({

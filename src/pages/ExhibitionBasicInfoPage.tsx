@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { AddressSearchModal } from '@/components/exhibition-basic-info';
 import { CalenderSheet } from '@/components/ui/CalenderSheet';
 import { type TimeRangeValue, TimeSheet } from '@/components/ui/TimeSheet';
 import { useUpdateDisplay } from '@/hooks/queries/useDisplayBrowse';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 
 interface DateValue {
   start: Date;
@@ -56,9 +57,12 @@ export function ExhibitionBasicInfo() {
   const displayId = Number(paramDisplayId ?? 0);
   const updateDisplay = useUpdateDisplay(displayId);
 
+  const { data: fetchedDetail, isPending: isDetailPending } = useDisplayDetail(displayId);
+  const isFetchingDetail = displayId > 0 && !state?.displayDetail && isDetailPending;
+  const displayDetail = (state?.displayDetail as DisplayDetailDto) || fetchedDetail || null;
+
   /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
   const restored = (state ?? {}) as Record<string, unknown>;
-  const displayDetail = (state?.displayDetail as DisplayDetailDto) || null;
 
   const parseDate = (d?: string) => (d ? new Date(d) : new Date());
 
@@ -108,6 +112,39 @@ export function ExhibitionBasicInfo() {
   const [sheet, setSheet] = useState<SheetType>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
+      setPeriod((prev) =>
+        (restored.periodValue as DateValue) ??
+        (fetchedDetail.period
+          ? {
+              start: parseDate(fetchedDetail.period.startDate),
+              end: parseDate(fetchedDetail.period.endDate),
+              label: `${fetchedDetail.period.startDate.split('-').join('.')} - ${fetchedDetail.period.endDate.split('-').join('.')}`,
+            }
+          : prev)
+      );
+      setOperatingHours((prev) =>
+        (restored.operatingHoursValue as TimeRangeValue) ??
+        (fetchedDetail.period
+          ? {
+              startHour: parseInt(fetchedDetail.period.startTime.split(':')[0] || '0'),
+              startMinute: parseInt(fetchedDetail.period.startTime.split(':')[1] || '0'),
+              endHour: parseInt(fetchedDetail.period.endTime.split(':')[0] || '0'),
+              endMinute: parseInt(fetchedDetail.period.endTime.split(':')[1] || '0'),
+              label: `${fetchedDetail.period.startTime} - ${fetchedDetail.period.endTime}`,
+            }
+          : prev)
+      );
+      setPlaceName((prev) => (restored.placeName as string) ?? fetchedDetail.location?.placeName ?? prev);
+      setAddress((prev) => (restored.address as string) ?? fetchedDetail.location?.placeName ?? prev);
+      setLatitude((prev) => (restored.latitude as number) ?? fetchedDetail.location?.latitude ?? prev);
+      setLongitude((prev) => (restored.longitude as number) ?? fetchedDetail.location?.longitude ?? prev);
+      setContact((prev) => (restored.contact as string) ?? fetchedDetail.qnaAccount ?? prev);
+      setNotice((prev) => (restored.notice as string) ?? fetchedDetail.note ?? prev);
+    }
+  }, [displayId, state, fetchedDetail, restored]);
+
   /* 문의 방법은 서버에서 qnaAccount로 받는 필수값입니다. */
   /* 운영 시간은 서버에서 openTime·closeTime 필수값으로 받으므로 함께 확인합니다. */
   const canNext = period && operatingHours && placeName.trim() && address.trim() && contact.trim();
@@ -127,13 +164,13 @@ export function ExhibitionBasicInfo() {
     if (displayId > 0) {
       updateDisplay.mutate(
         {
-          title: state.title,
-          subtitle: state.subtitle || null,
-          description: state.intro || null,
-          type: state.type,
-          fields: state.field,
-          schoolOrOrganization: state.school,
-          departmentOrClub: state.department || null,
+          title: state?.title ?? fetchedDetail?.title ?? '',
+          subtitle: state?.subtitle ?? fetchedDetail?.subtitle ?? null,
+          description: state?.intro ?? fetchedDetail?.content ?? null,
+          type: state?.type ?? fetchedDetail?.displayType ?? 'PERSONAL',
+          fields: state?.field ?? fetchedDetail?.displayFields ?? [],
+          schoolOrOrganization: state?.school ?? fetchedDetail?.organization ?? '',
+          departmentOrClub: state?.department ?? fetchedDetail?.department ?? null,
           placeName,
           precautions: notice || null,
           startDate: period ? formatDate(period.start) : undefined,
@@ -144,7 +181,7 @@ export function ExhibitionBasicInfo() {
           closeTime: operatingHours
             ? formatTime(operatingHours.endHour, operatingHours.endMinute)
             : undefined,
-          posterImageUrl: state.imageUrls?.[0] || undefined,
+          posterImageUrl: state?.imageUrls?.[0] ?? fetchedDetail?.images?.[0]?.imageUrl ?? undefined,
         },
         {
           onSuccess: () => navigate(`/exhibition/${displayId}/manage`, { replace: true }),
@@ -305,11 +342,11 @@ export function ExhibitionBasicInfo() {
       <BottomButtonBar>
         <button
           type="button"
-          disabled={!canNext || updateDisplay.isPending}
+          disabled={!canNext || updateDisplay.isPending || isFetchingDetail}
           onClick={goNext}
           className="typo-body-sm-bold inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-dark py-3 text-card disabled:opacity-40"
         >
-          {updateDisplay.isPending ? '저장 중...' : displayId > 0 ? '저장' : '다음'}
+          {updateDisplay.isPending || isFetchingDetail ? '로딩 중' : displayId > 0 ? '저장' : '다음'}
         </button>
       </BottomButtonBar>
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -14,6 +14,7 @@ import {
   type ExhibitionTypeGroup,
   MAX_POSTER_UPLOAD_IMAGES,
 } from '@/constants/exhibition';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
@@ -29,7 +30,8 @@ export function ExhibitionRegister() {
 
   /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
   const { state } = useLocation();
-  const displayDetail = (state?.displayDetail as DisplayDetailDto) || null;
+  const { data: fetchedDetail, isPending: isDetailPending } = useDisplayDetail(displayId);
+  const displayDetail = (state?.displayDetail as DisplayDetailDto) || fetchedDetail || null;
 
   // 수정 모드 진입 시 최우선순위로 displayDetail 데이터를 기반으로 채웁니다.
   // 단, 다음 단계에서 뒤로가기(state 복원)한 경우를 위해 restored에 합칩니다.
@@ -54,6 +56,25 @@ export function ExhibitionRegister() {
   const [department, setDepartment] = useState(initialDepartment);
   const [organizer, setOrganizer] = useState(initialOrganizer);
   const schoolValue = school || artistProfile?.schoolName || '';
+  const [initialImages, setInitialImages] = useState<string[]>(
+    displayDetail?.images?.map((img) => img.imageUrl) || [],
+  );
+
+  useEffect(() => {
+    if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
+      setTitle((prev) => (restored.title as string) ?? fetchedDetail.title ?? prev);
+      setSubtitle((prev) => (restored.subtitle as string) ?? fetchedDetail.subtitle ?? prev);
+      setIntro((prev) => (restored.intro as string) ?? fetchedDetail.content ?? prev);
+      setType((prev) => (restored.type as string) ?? fetchedDetail.displayType ?? prev);
+      setField((prev) => (restored.field as string[]) ?? fetchedDetail.displayFields ?? prev);
+      setSchool((prev) => (restored.school as string) ?? fetchedDetail.organization ?? prev);
+      setDepartment((prev) => (restored.department as string) ?? fetchedDetail.department ?? prev);
+      setOrganizer((prev) => (restored.organizer as string) ?? fetchedDetail.organization ?? prev);
+      setInitialImages((prev) => 
+        restored.imageUrls ? (restored.imageUrls as string[]) : fetchedDetail.images?.map(img => img.imageUrl) || prev
+      );
+    }
+  }, [displayId, state, fetchedDetail, restored]);
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
@@ -68,9 +89,7 @@ export function ExhibitionRegister() {
     return organizer.trim() !== '';
   };
 
-  const [initialImages, setInitialImages] = useState<string[]>(
-    displayDetail?.images?.map((img) => img.imageUrl) || [],
-  );
+
 
   const handleRemoveInitialImage = (url: string) => {
     setInitialImages((prev) => prev.filter((img) => img !== url));
