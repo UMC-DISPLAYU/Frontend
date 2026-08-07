@@ -6,12 +6,6 @@ interface ExhibitionMapMarkerProps {
   onClick: () => void;
 }
 
-/**
- * 지도 위 핀. Figma 기준:
- *  - 선택됨: 어두운 알약 + 흰 글자 + 큰 점
- *  - 기본:  흰 알약 + 위치 아이콘 + 회색 글자 + 작은 점
- * 알약 아래 점이 실제 좌표를 가리키므로 yAnchor=1.
- */
 export function ExhibitionMapMarker({ title, selected, onClick }: ExhibitionMapMarkerProps) {
   return (
     <button

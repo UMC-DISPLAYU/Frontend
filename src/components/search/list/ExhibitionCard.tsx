@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-import type { Exhibition } from './types';
+import type { Exhibition } from '../types';
 
 type ExhibitionCardProps = {
   exhibition: Exhibition;
@@ -27,22 +27,24 @@ export function ExhibitionCard({ exhibition }: ExhibitionCardProps) {
   return (
     <Link
       to={`/display/${exhibition.displayId}`}
-      className="flex flex-col overflow-hidden rounded-[10px] bg-neutral-50 no-underline"
+      className="flex flex-col overflow-hidden rounded-xl bg-neutral-50 no-underline"
     >
       <div className="flex flex-col items-start gap-2.5 px-2 py-3 shadow-[0px_4px_18px_0px_rgba(67,0,209,0.04)]">
         <img
           alt=""
-          className="h-56 w-full rounded-xl bg-neutral-200 object-cover shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)]"
+          className="h-55 w-full rounded-xl bg-neutral-200 object-cover shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)]"
           src={exhibition.posterImageUrl}
         />
 
         <div className="flex w-full flex-col gap-0.5">
-          <p className="text-sm font-semibold text-neutral-900">{exhibition.title}</p>
+          <p className="typo-body-sm-bold text-main">{exhibition.title}</p>
           <div className="flex flex-col">
-            {exhibition.dayLeft !== undefined ? (
-              <p className="text-xs text-neutral-800">D-{exhibition.dayLeft}</p>
+            {exhibition.schoolDepartmentName ? (
+              <p className="typo-body-xs-regular text-sub700 truncate">
+                {exhibition.schoolDepartmentName}
+              </p>
             ) : null}
-            <p className="text-xs text-neutral-500">
+            <p className="typo-body-xs-regular text-hint">
               {formatDateRange(exhibition.startedAt, exhibition.endedAt)}
             </p>
           </div>

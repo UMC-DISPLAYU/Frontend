@@ -65,6 +65,8 @@ export interface DisplayListItemDto {
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
+  isArchived: boolean;
+  schoolDepartmentName?: string;
 }
 
 export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {

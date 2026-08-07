@@ -12,6 +12,8 @@ import { ErrorView, LoadingView } from '@/components/common';
 import {
   DEFAULT_FILTER_STATE,
   ExhibitionCard,
+  ExhibitionMap,
+  ExhibitionMapCard,
   FIELD_OPTIONS,
   FILTER_CONFIG,
   FilterChip,
@@ -20,8 +22,6 @@ import {
   type FilterTab,
   getFilterOptionValue,
 } from '../components/search';
-import { ExhibitionMap } from '../components/search/ExhibitionMap';
-import { ExhibitionMapCard } from '../components/search/ExhibitionMapCard';
 import { useSearchDisplays } from '../hooks/queries/useDisplayBrowse';
 import { type NearbyParams, useNearbyDisplays } from '../hooks/useNearbyDisplays';
 
@@ -107,7 +107,7 @@ export function SearchPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full min-w-[320px] max-w-md flex-col bg-page">
       <div className="flex flex-col bg-page px-5 pt-5">
-        <div className="flex h-[62px] flex-col justify-start gap-1 self-stretch">
+        <div className="flex h-15.5 flex-col justify-start gap-1 self-stretch">
           <h1 className="text-slate-900 text-3xl font-['Aldrich'] leading-10">Explore</h1>
           <p className="text-xs text-neutral-500">저장한 전시와 작품, 작가를 다시 꺼내보세요.</p>
         </div>
@@ -151,7 +151,7 @@ export function SearchPage() {
 
       {activeTab === 'list' ? (
         <div className="flex flex-1 flex-col">
-          <div className="flex items-center gap-1.5 px-5 pt-[14px]">
+          <div className="flex items-center gap-1.5 px-5 pt-3.5">
             <button
               aria-label="필터"
               className="relative flex size-7 shrink-0 items-center justify-center rounded-sm outline outline-1 -outline-offset-1 outline-stone-300"
@@ -225,7 +225,7 @@ export function SearchPage() {
         </div>
       ) : (
         <div className="relative flex flex-1 flex-col">
-          <div className="h-[400px] w-full">
+          <div className="h-100 w-full">
             <ExhibitionMap
               exhibitions={nearbyExhibitions}
               onBoundsChange={setNearbyParams}

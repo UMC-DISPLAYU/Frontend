@@ -10,7 +10,6 @@ import { getAccurateUserLocation, getGeolocationErrorMessage } from '@/utils/geo
 
 import { ExhibitionMapMarker } from './ExhibitionMapMarker';
 
-// 서울시청. 실제로는 사용자 위치나 마지막 위치로 대체 가능.
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 const DEFAULT_LEVEL = 6;
 const IDLE_DEBOUNCE_MS = 250;
@@ -19,7 +18,6 @@ interface ExhibitionMapProps {
   exhibitions: NearbyDisplay[];
   selectedId: number | null;
   onSelect: (id: number) => void;
-  /** 지도가 멈출 때마다 중심 좌표 + 반경(m)을 상위로 올려보낸다. */
   onBoundsChange: (params: NearbyParams) => void;
 }
 
@@ -57,8 +55,6 @@ export function ExhibitionMap({
       const center = map.getCenter();
       const bounds = map.getBounds();
       const ne = bounds.getNorthEast();
-      // 화면에 보이는 영역 = 중심에서 북동쪽 모서리까지 거리를 반경으로.
-      // 줌 레벨에 따라 반경이 자동으로 커지고 작아진다.
       const radius = getDistanceMeters(center.getLat(), center.getLng(), ne.getLat(), ne.getLng());
 
       clearTimeout(debounceRef.current);
@@ -73,10 +69,8 @@ export function ExhibitionMap({
     [onBoundsChange],
   );
 
-  // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
-      // debounce 정리
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
@@ -126,7 +120,6 @@ export function ExhibitionMap({
         ))}
       </Map>
 
-      {/* 현재 위치로 이동 버튼 */}
       <button
         type="button"
         onClick={() => moveToMyLocation()}

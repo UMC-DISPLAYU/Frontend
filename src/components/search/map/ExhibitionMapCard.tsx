@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { Bookmark, Calendar, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import type { NearbyDisplay } from '../../hooks/useNearbyDisplays';
+import type { NearbyDisplay } from '@/hooks/useNearbyDisplays';
 
 interface ExhibitionMapCardProps {
   exhibition: NearbyDisplay;
@@ -14,7 +14,6 @@ interface ExhibitionMapCardProps {
 
 export function ExhibitionMapCard({
   exhibition,
-  selected = false,
   onClick,
   onToggleBookmark,
 }: ExhibitionMapCardProps) {
