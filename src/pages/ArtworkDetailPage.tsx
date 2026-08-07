@@ -210,7 +210,8 @@ export function ArtworkDetailPage() {
     exhibitionPeriod: detail.exhibitionInfo?.exhibitionPeriod ?? '',
     exhibitionThumbnail: displayPoster,
     bookmarkCount: detail.likeCount ?? 0,
-    isBookmarked: detail.isLiked ?? false,
+    isLiked: detail.isLiked ?? false,
+    isArchived: false,
   };
 
   /* 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */

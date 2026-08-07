@@ -219,7 +219,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               value={externalLink}
               onChange={(e) => setExternalLink(e.target.value)}
               placeholder="포트폴리오, 인스타그램, 개인 웹사이트 링크"
-              className="h-11 rounded-2xl bg-card px-3.5 typo-body-sm-regular text-tag-blue outline-none placeholder:text-faint"
+              className="h-11 rounded-2xl bg-card px-3.5 typo-body-sm-regular text-tag-fg outline-none placeholder:text-faint"
             />
           </div>
 

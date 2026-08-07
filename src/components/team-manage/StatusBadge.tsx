@@ -17,7 +17,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <span
       className={`typo-body-xs-regular shrink-0 rounded-sm px-2.5 py-1 text-center ${
-        accent ? 'bg-tag-gray text-link' : 'bg-box200 text-main'
+        accent ? 'bg-tag-bg text-link' : 'bg-box200 text-main'
       }`}
     >
       {STATUS_LABEL[status]}

@@ -14,6 +14,7 @@ export interface HomeExhibitionDto {
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
+  isArchived?: boolean;
 }
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
@@ -144,7 +145,7 @@ export interface DisplayDetailDto {
   displayFields: string[];
   region: string;
   likeCount: number;
-  isBookmarked?: boolean;
+  isArchived?: boolean;
   period: DisplayPeriodDto;
   artworkContentOpen: DisplayContentOpenType;
   exhibitionContentOpen: DisplayContentOpenType;

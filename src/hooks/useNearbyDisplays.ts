@@ -21,7 +21,7 @@ export interface NearbyDisplay {
   placeName: string;
   latitude: number;
   longitude: number;
-  isBookmarked: boolean; // 현재 API에 없음, 추후 추가 필요
+  isArchived: boolean; // 현재 API에 없음, 추후 추가 필요
 }
 
 export interface NearbyParams {
@@ -66,7 +66,7 @@ async function fetchNearbyDisplays(params: NearbyParams): Promise<NearbyDisplay[
     placeName: marker.locationName,
     latitude: marker.latitude,
     longitude: marker.longitude,
-    isBookmarked: false, // TODO: 북마크 API 연동 필요
+    isArchived: false, // TODO: 북마크 API 연동 필요
   }));
 }
 
