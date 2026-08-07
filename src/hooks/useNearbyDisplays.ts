@@ -3,8 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import type { GetDisplayMapRequestDto } from '@/api/dto';
 import { getDisplayMap } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
-import { formatDate } from '@/utils/date';
-import { calculateBounds } from '@/utils/geo';
 
 /**
  * 지도 중심 좌표 + 반경으로 주변 전시를 조회하는 훅.
@@ -16,18 +14,20 @@ export interface NearbyDisplay {
   title: string;
   posterImageUrl: string;
   status: string; // 예: '전시 중' - startDate/endDate로 계산
-  hostName: string; // locationName 사용
-  period: string; // startDate ~ endDate 포맷
-  placeName: string;
+  schoolDepartmentName?: string;
+  startDate: string;
+  endDate: string;
+  locationName: string;
   latitude: number;
   longitude: number;
-  isArchived: boolean; // 현재 API에 없음, 추후 추가 필요
+  isArchived: boolean;
 }
 
 export interface NearbyParams {
-  lat: number;
-  lng: number;
-  radius: number; // meters - API의 bounds 계산에 사용
+  southLatitude: number;
+  westLongitude: number;
+  northLatitude: number;
+  eastLongitude: number;
   searchWord?: string | null;
 }
 
@@ -45,12 +45,12 @@ function getDisplayStatus(startDate: string, endDate: string): string {
 }
 
 async function fetchNearbyDisplays(params: NearbyParams): Promise<NearbyDisplay[]> {
-  const bounds = calculateBounds(params.lat, params.lng, params.radius);
-
   const requestDto: GetDisplayMapRequestDto = {
-    ...bounds,
+    southLatitude: params.southLatitude,
+    westLongitude: params.westLongitude,
+    northLatitude: params.northLatitude,
+    eastLongitude: params.eastLongitude,
     searchWord: params.searchWord || undefined,
-    // cursor와 size는 optional이므로 제거해봄
   };
 
   const response = await getDisplayMap(requestDto);
@@ -61,12 +61,13 @@ async function fetchNearbyDisplays(params: NearbyParams): Promise<NearbyDisplay[
     title: marker.title,
     posterImageUrl: marker.posterImageUrl,
     status: getDisplayStatus(marker.startDate, marker.endDate),
-    hostName: marker.locationName, // API에 hostName이 없으므로 locationName 사용
-    period: `${formatDate(marker.startDate)} - ${formatDate(marker.endDate)}`,
-    placeName: marker.locationName,
+    schoolDepartmentName: marker.schoolDepartmentName,
+    startDate: marker.startDate,
+    endDate: marker.endDate,
+    locationName: marker.locationName,
     latitude: marker.latitude,
     longitude: marker.longitude,
-    isArchived: false, // TODO: 북마크 API 연동 필요
+    isArchived: marker.isArchived ?? false,
   }));
 }
 
