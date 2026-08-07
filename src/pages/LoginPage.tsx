@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
+import { logout } from '@/api/endpoints';
 import googleIcon from '@/assets/onboarding/googleIcon.svg';
 import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
 import loginLogo from '@/assets/onboarding/login-logo.svg';
 import onboardingSplash from '@/assets/onboarding/onboarding-splash.png';
 import { useGoogleAuthorizationUrl, useKakaoAuthorizationUrl } from '@/hooks/queries/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 
 const LOGIN_ASSETS = [loginLogo, kakaoIcon, googleIcon, onboardingSplash];
@@ -221,7 +223,16 @@ export function LoginPage() {
         isUIReady={isUIReady}
         isStartingOAuth={isStartingOAuth}
         error={authError}
-        onGuest={() => navigate('/home')}
+        onGuest={async () => {
+          try {
+            await logout({});
+          } catch {
+            // Ignore error if not logged in
+          } finally {
+            useAuthStore.getState().clearAuth();
+            navigate('/home');
+          }
+        }}
         onKakao={() => {
           void startOAuthLogin('kakao');
         }}
