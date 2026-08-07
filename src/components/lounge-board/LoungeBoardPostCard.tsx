@@ -21,8 +21,8 @@ export function LoungeBoardPostCard({ post, tagLabel }: Props) {
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && navigate(detailPath)}
     >
-      <span className="self-start h-5 px-2 py-0.5 bg-tag-gray rounded-sm inline-flex items-center">
-        <span className="typo-body-xxs-bold text-tag-blue whitespace-nowrap">
+      <span className="self-start h-5 px-2 py-0.5 bg-tag-bg rounded-sm inline-flex items-center">
+        <span className="typo-body-xxs-bold text-tag-fg whitespace-nowrap">
           {tagLabel ?? LOUNGE_CATEGORY_TAGS[post.category]}
         </span>
       </span>
