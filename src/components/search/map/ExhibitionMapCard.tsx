@@ -1,5 +1,3 @@
-import { useRef } from 'react';
-
 import { Bookmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,8 +25,6 @@ export function ExhibitionMapCard({
   onClick,
   onToggleBookmark,
 }: ExhibitionMapCardProps) {
-  const navigate = useNavigate();
-
   const archive = useArchiveExhibition();
   const unarchive = useUnarchiveExhibition();
   const { loginModal, openLoginModal } = useLoginRequiredModal();

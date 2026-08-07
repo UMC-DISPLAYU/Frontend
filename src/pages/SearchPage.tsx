@@ -286,9 +286,9 @@ export function SearchPage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 bg-gray-100 px-5 pt-4 pb-24">
+        <div className="flex-1 bg-page px-5 pt-4 pb-24">
           {nearbyExhibitions.length === 0 ? (
-            <p className="flex items-center justify-center py-8 text-center text-sm text-neutral-400">
+            <p className="flex items-center justify-center py-16 text-center typo-body-md-regular text-faint">
               이 지역에 전시가 없습니다
             </p>
           ) : (
