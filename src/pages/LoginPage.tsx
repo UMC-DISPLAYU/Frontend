@@ -54,7 +54,7 @@ function LoginContent({
   error?: string;
 }) {
   return (
-    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
+    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page">
       {/* Background Image - Wall-to-Wall */}
       <img
         src={onboardingSplash}
@@ -217,7 +217,7 @@ export function LoginPage() {
   }, []);
 
   return (
-    <div className="flex min-h-dvh w-full items-center justify-center bg-page font-[Pretendard,sans-serif]">
+    <div className="flex min-h-dvh w-full items-center justify-center bg-page">
       <LoginContent
         isLogoVisible={isLogoVisible}
         isUIReady={isUIReady}

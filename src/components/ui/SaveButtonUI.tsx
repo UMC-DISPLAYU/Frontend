@@ -24,7 +24,7 @@ export function SaveButtonUI({
       type="button"
       id={id}
       onClick={onClick}
-      className={`w-full py-3.5 rounded-xl text-[15px] font-bold font-[Pretendard,sans-serif] tracking-tight transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 ${
+      className={`w-full py-3.5 rounded-xl text-[15px] font-bold tracking-tight transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 ${
         isDark ? 'bg-[#111] text-white' : 'bg-white border border-[#e0e0e0] text-[#111]'
       } ${className}`}
     >
