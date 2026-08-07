@@ -7,6 +7,8 @@ import { cn } from '@/utils/cn';
 
 import type { CommentData } from './types';
 
+type IconSize = { width: number; height: number };
+
 type Props = {
   comment: CommentData;
   isReply?: boolean;
@@ -30,7 +32,13 @@ type Props = {
   tightSpacing?: boolean;
   /** tightSpacing일 때 각 줄 아래에 구분선을 그릴지 여부. */
   showDivider?: boolean;
+  /** 최상위 댓글의 좋아요 하트 아이콘 크기. */
+  likeIconSize?: IconSize;
+  /** 답글의 좋아요 하트 아이콘 크기. */
+  replyLikeIconSize?: IconSize;
 };
+
+const DEFAULT_LIKE_ICON_SIZE: IconSize = { width: 14, height: 14 };
 
 export const CommentItem = memo(function CommentItem({
   comment,
@@ -52,7 +60,10 @@ export const CommentItem = memo(function CommentItem({
   className,
   tightSpacing = false,
   showDivider = false,
+  likeIconSize = DEFAULT_LIKE_ICON_SIZE,
+  replyLikeIconSize = DEFAULT_LIKE_ICON_SIZE,
 }: Props) {
+  const iconSize = isReply ? replyLikeIconSize : likeIconSize;
   const commentId = comment.id;
   /*
    * 최상위 댓글/후기와 답글은 서로 다른 id 시퀀스(예: displayReviewId vs
@@ -178,7 +189,9 @@ export const CommentItem = memo(function CommentItem({
               className="flex items-center gap-1 disabled:opacity-50"
             >
               <Heart
-                className={`size-3.5 ${comment.isLiked ? 'fill-heart text-heart' : 'text-faint'}`}
+                width={iconSize.width}
+                height={iconSize.height}
+                className={comment.isLiked ? 'fill-heart text-heart' : 'text-faint'}
                 strokeWidth={1.5}
               />
               <span className="typo-body-xs-regular text-faint">{comment.likeCount}</span>
@@ -203,6 +216,8 @@ export const CommentItem = memo(function CommentItem({
               activeReplyId={activeReplyId}
               tightSpacing={tightSpacing}
               showDivider={showDivider}
+              likeIconSize={likeIconSize}
+              replyLikeIconSize={replyLikeIconSize}
             />
           ))}
           {hasMoreReplies && (

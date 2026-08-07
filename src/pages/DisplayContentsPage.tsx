@@ -45,29 +45,28 @@ export function DisplayContentsPage() {
     return (
       <div className="w-96 mx-auto min-h-dvh bg-page flex flex-col">
         {/* 헤더 */}
-        <header className="sticky top-0 z-20 bg-page h-14 px-5 flex items-center justify-between">
+        <header className="sticky top-0 z-20 bg-page relative flex items-center justify-center px-5 pt-3 pb-2">
           <button
             type="button"
             onClick={handleBack}
             aria-label="뒤로가기"
-            className="flex items-center justify-center p-1 cursor-pointer hover:opacity-70 transition-opacity"
+            className="absolute left-5 flex items-center justify-center cursor-pointer hover:opacity-70 transition-opacity"
           >
-            <ChevronLeft size={30} strokeWidth={1.5} className="text-logo" />
+            <ChevronLeft size={35.2} strokeWidth={1.36} className="text-logo" />
           </button>
-          <img src={DUfontlogo} alt="DU Logo" className="h-6 object-contain" />
-          <div className="w-6" />
+          <img src={DUfontlogo} alt="DU Logo" className="w-14 h-[34px]" />
         </header>
 
         {/* 선택된 카테고리 상단 타이틀 & 세로형 사진 목록 */}
-        <main className="flex flex-col flex-1 pb-10">
-          <div className="px-5 pt-6 pb-6 flex flex-col gap-1">
+        <main className="flex flex-col flex-1 pt-6 pb-10">
+          <div className="px-5 flex flex-col items-start gap-1">
             <h1 className="typo-body-2xl-bold text-main">{selectedCategory.name}</h1>
             {selectedCategory.description && (
               <p className="typo-body-sm-regular text-faint">{selectedCategory.description}</p>
             )}
           </div>
 
-          <div className="flex flex-col w-full gap-0">
+          <div className="mt-[17px] flex flex-col w-full gap-0">
             {selectedCategory.contents.map((item) => (
               <div key={item.contentId} className="w-full bg-box overflow-hidden">
                 <img
@@ -87,31 +86,30 @@ export function DisplayContentsPage() {
   return (
     <div className="w-96 mx-auto min-h-dvh bg-page flex flex-col">
       {/* 헤더 */}
-      <header className="sticky top-0 z-20 bg-page h-14 px-5 flex items-center justify-between">
+      <header className="sticky top-0 z-20 bg-page relative flex items-center justify-center px-5 pt-3 pb-2">
         <button
           type="button"
           onClick={handleBack}
           aria-label="뒤로가기"
-          className="flex items-center justify-center p-1 cursor-pointer hover:opacity-70 transition-opacity"
+          className="absolute left-5 flex items-center justify-center cursor-pointer hover:opacity-70 transition-opacity"
         >
-          <ChevronLeft size={30} strokeWidth={1.5} className="text-logo" />
+          <ChevronLeft size={35.2} strokeWidth={1.36} className="text-logo" />
         </button>
-        <img src={DUfontlogo} alt="DU Logo" className="h-6 object-contain" />
-        <div className="w-6" />
+        <img src={DUfontlogo} alt="DU Logo" className="w-14 h-[34px]" />
       </header>
 
       {/* 메인 컨텐츠 영역 */}
-      <main className="px-5 py-6 flex flex-col gap-6 flex-1">
+      <main className="pt-6 pb-6 flex flex-col gap-6 flex-1">
         {/* 헤더 타이틀 */}
-        <div className="flex flex-col gap-1">
-          <h1 className="typo-body-2xl-bold text-main">전시 콘텐츠</h1>
+        <div className="px-5 flex flex-col items-start gap-1">
+          <h1 className="typo-body-2xl-bold text-main">전시콘텐츠</h1>
           <p className="typo-body-sm-regular text-faint">
             전시의 분위기와 준비 과정을 사진으로 확인해보세요.
           </p>
         </div>
 
         {/* 카테고리 별 리스트 */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col items-start gap-3">
           {display.contentCategories.map((category) => {
             const firstImg = category.contents[0]?.imageUrl;
             const count = category.contents.length;
@@ -122,10 +120,10 @@ export function DisplayContentsPage() {
                 type="button"
                 onClick={() => setSelectedCategory(category)}
                 aria-label={`${category.name} 사진 보기`}
-                className="flex items-center justify-between cursor-pointer group w-full text-left"
+                className="flex items-center justify-between cursor-pointer group w-full px-5 text-left"
               >
                 {/* 좌측 카테고리 썸네일 카드 */}
-                <div className="w-72 h-36 relative rounded-xl overflow-hidden bg-box shadow-xs shrink-0">
+                <div className="w-[282px] h-[152px] relative rounded-xl overflow-hidden bg-box shadow-xs shrink-0">
                   {firstImg ? (
                     <img
                       src={firstImg}
@@ -136,10 +134,16 @@ export function DisplayContentsPage() {
                     <div className="w-full h-full bg-neutral-300" />
                   )}
                   {/* 오버레이 & 텍스트 */}
-                  <div className="absolute inset-0 bg-linear-to-b from-transparent via-black/20 to-black/80" />
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        'linear-gradient(180deg, rgba(102, 102, 102, 0.00) 47.49%, rgba(0, 0, 0, 0.85) 82.16%)',
+                    }}
+                  />
                   <div className="absolute bottom-3 left-3 flex flex-col gap-0.5 right-3">
                     <p className="typo-body-md-bold text-white leading-snug">{category.name}</p>
-                    <p className="typo-body-xxs-regular text-white/80 truncate">
+                    <p className="typo-body-xxs-regular text-[#d9d9d9] truncate">
                       {category.description ? `${category.description} · ` : ''}
                       {count}개
                     </p>
@@ -147,11 +151,11 @@ export function DisplayContentsPage() {
                 </div>
 
                 {/* 우측 아이콘 및 사진 수 표시 */}
-                <div className="w-12 h-36 flex flex-col justify-center items-center gap-1.5 text-center">
+                <div className="w-[50px] h-[152px] flex flex-col justify-center items-center gap-1.5 text-center">
                   <ChevronRight
-                    size={30}
-                    strokeWidth={1.5}
-                    className="text-main group-hover:translate-x-0.5 transition-transform"
+                    size={35.2}
+                    strokeWidth={1.36}
+                    className="text-[#010032] group-hover:translate-x-0.5 transition-transform"
                   />
                   <span className="typo-body-sm-regular text-faint">사진 {count}장</span>
                 </div>

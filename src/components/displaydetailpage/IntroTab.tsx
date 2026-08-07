@@ -88,7 +88,7 @@ export function IntroTab({ display: ex }: Props) {
       {/* 전시콘텐츠 */}
       {ex.contentCategories.length > 0 && (
         <section className="mt-6 py-5 bg-box200">
-          <div className="flex items-center justify-between px-5 mb-3">
+          <div className="flex items-end justify-between px-5 mb-3">
             <h2 className="typo-body-xl-bold text-main">전시콘텐츠</h2>
             <button
               type="button"
@@ -99,7 +99,7 @@ export function IntroTab({ display: ex }: Props) {
               <ChevronRight className="text-faint size-2.5" />
             </button>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 px-5" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex gap-2 overflow-x-auto px-5" style={{ scrollbarWidth: 'none' }}>
             {ex.contentCategories.map((category) => (
               <button
                 key={category.categoryId}
