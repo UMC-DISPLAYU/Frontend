@@ -94,7 +94,7 @@ export const Homepage = () => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5 pb-20 font-[Pretendard,sans-serif]">
+    <div className="w-full max-w-md mx-auto bg-page min-h-dvh overflow-x-hidden pt-2.5">
       {loginModal}
       {artistVerificationModal}
 

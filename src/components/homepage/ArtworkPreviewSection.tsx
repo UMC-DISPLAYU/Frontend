@@ -47,7 +47,7 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
 
             <div className="absolute left-3 right-3 bottom-3">
               <p className="typo-body-sm-bold text-white">{item.artworkName}</p>
-              <p className="typo-body-xxs-regular text-tag-gray">{item.artistName}</p>
+              <p className="typo-body-xxs-regular text-bt-gray">{item.artistName}</p>
             </div>
           </Link>
         ))}

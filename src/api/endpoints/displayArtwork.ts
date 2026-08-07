@@ -15,6 +15,7 @@ import type {
   DeleteArtworkQuestionResponseDataDto,
   DeleteArtworkResponseDataDto,
   GetArtworkDetailResponseDataDto,
+  GetArtworkFeelingsRequestDto,
   GetArtworkFeelingsResponseDataDto,
   GetArtworkPreviewRequestDto,
   GetArtworkPreviewResponseDataDto,
@@ -39,7 +40,9 @@ export const getArtworkDetail = async (
 // GET /v1/artworks/:artworkId/feelings
 export const getArtworkFeelings = async (
   artworkId: number,
-): Promise<GetArtworkFeelingsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/feelings`);
+  params: GetArtworkFeelingsRequestDto = {},
+): Promise<GetArtworkFeelingsResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings`, { query: params });
 
 // POST /v1/artworks/:artworkId/feelings
 export const createArtworkFeeling = async (

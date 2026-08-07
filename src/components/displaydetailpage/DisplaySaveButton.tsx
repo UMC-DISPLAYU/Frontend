@@ -10,7 +10,7 @@ interface DisplaySaveButtonProps {
   className?: string;
   id?: string;
   displayId: number;
-  /* 전시 상세의 isBookmarked. 저장 여부에 따라 버튼 문구가 바뀝니다. */
+  /* 전시 상세의 isArchived. 저장 여부에 따라 버튼 문구가 바뀝니다. */
   saved?: boolean;
 }
 

@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
+import { logout } from '@/api/endpoints';
 import googleIcon from '@/assets/onboarding/googleIcon.svg';
 import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
 import loginLogo from '@/assets/onboarding/login-logo.svg';
 import onboardingSplash from '@/assets/onboarding/onboarding-splash.png';
 import { useGoogleAuthorizationUrl, useKakaoAuthorizationUrl } from '@/hooks/queries/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 
 const LOGIN_ASSETS = [loginLogo, kakaoIcon, googleIcon, onboardingSplash];
@@ -52,7 +54,7 @@ function LoginContent({
   error?: string;
 }) {
   return (
-    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page font-[Pretendard,sans-serif]">
+    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-page">
       {/* Background Image - Wall-to-Wall */}
       <img
         src={onboardingSplash}
@@ -215,13 +217,39 @@ export function LoginPage() {
   }, []);
 
   return (
-    <div className="flex min-h-dvh w-full items-center justify-center bg-page font-[Pretendard,sans-serif]">
+    <div className="flex min-h-dvh w-full items-center justify-center bg-page">
       <LoginContent
         isLogoVisible={isLogoVisible}
         isUIReady={isUIReady}
         isStartingOAuth={isStartingOAuth}
         error={authError}
-        onGuest={() => navigate('/home')}
+        onGuest={async () => {
+          try {
+            await logout({});
+            useAuthStore.getState().clearAuth();
+            navigate('/home');
+          } catch (err: unknown) {
+            const status =
+              (err as { status?: number; response?: { status?: number } })?.status ??
+              (err as { response?: { status?: number } })?.response?.status;
+
+            const isServerErrorOrNetwork =
+              (status !== undefined && status >= 500) ||
+              (err as { code?: string })?.code === 'ERR_NETWORK' ||
+              (err as Error)?.message === 'Network Error' ||
+              (err as Error)?.message?.includes('Network');
+
+            if (isServerErrorOrNetwork) {
+              setAuthError(
+                (err as Error)?.message || '로그아웃 처리 중 네트워크/서버 오류가 발생했습니다.',
+              );
+              return;
+            }
+
+            useAuthStore.getState().clearAuth();
+            navigate('/home');
+          }
+        }}
         onKakao={() => {
           void startOAuthLogin('kakao');
         }}

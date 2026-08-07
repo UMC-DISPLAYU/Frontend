@@ -71,10 +71,7 @@ export function DisplayDetailPage() {
       {activeTab !== 'review' && (
         <BottomFixedBar
           button={
-            <DisplaySaveButton
-              displayId={display.displayId}
-              saved={display.isBookmarked ?? false}
-            />
+            <DisplaySaveButton displayId={display.displayId} saved={display.isArchived ?? false} />
           }
         />
       )}
