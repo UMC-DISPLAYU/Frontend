@@ -33,12 +33,9 @@ export function ExhibitionRegister() {
   const [type, setType] = useState<string | null>((restored.type as string) ?? null);
   const [field, setField] = useState<string[]>((restored.field as string[]) ?? []);
 
-  const [school, setSchool] = useState(
-    (restored.school as string) ?? artistProfile?.schoolName ?? '',
-  );
+  const [school, setSchool] = useState((restored.school as string) ?? '');
   const [department, setDepartment] = useState((restored.department as string) ?? '');
-  const [organizer, setOrganizer] = useState((restored.organizer as string) ?? '');
-  const schoolValue = school || artistProfile?.schoolName || '';
+  const schoolValue = school;
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
@@ -48,11 +45,24 @@ export function ExhibitionRegister() {
   const navigate = useNavigate();
 
   const isAffiliationValid = () => {
-    if (!selectedGroup) return true;
-    if (selectedGroup === 'institution') {
-      return department.trim() !== '';
+    if (!type) return false;
+
+    // 1. 졸업 전시(GRADUATION) & 과제 전시(TASK)
+    if (type === '졸업 전시' || type === '과제 전시') {
+      return schoolValue.trim() !== '' && department.trim() !== '';
     }
-    return organizer.trim() !== '';
+
+    // 2. 학과·학회 전시(CLUB - institution) & 연합 전시(JOINT)
+    if (type === '학과·학회 전시' || type === '연합 전시') {
+      return schoolValue.trim() !== '';
+    }
+
+    // 3. 소모임·동아리 전시(CLUB - organization) & 기타 단체 전시(ETC)
+    if (type === '소모임·동아리 전시' || type === '기타 단체 전시') {
+      return schoolValue.trim() !== '';
+    }
+
+    return true;
   };
 
   const isFormValid =
@@ -77,7 +87,6 @@ export function ExhibitionRegister() {
         field,
         school: schoolValue,
         department,
-        organizer,
       },
     });
   };
@@ -168,8 +177,6 @@ export function ExhibitionRegister() {
                 onSchoolChange={setSchool}
                 department={department}
                 onDepartmentChange={setDepartment}
-                organizer={organizer}
-                onOrganizerChange={setOrganizer}
               />
             </div>
           )}
