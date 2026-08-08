@@ -96,12 +96,7 @@ export const Homepage = () => {
   }, [accessToken, setAccessToken]);
 
   if (isArtworkPreviewOpen) {
-    return (
-      <ArtworkPreviewMoreView
-        items={artworkPreviewItems}
-        onClose={() => setIsArtworkPreviewOpen(false)}
-      />
-    );
+    return <ArtworkPreviewMoreView onClose={() => setIsArtworkPreviewOpen(false)} />;
   }
 
   return (
