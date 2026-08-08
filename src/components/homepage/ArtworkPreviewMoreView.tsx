@@ -3,68 +3,57 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import type { ArtworkPreviewItemDto } from '@/api/dto';
+import { useInfiniteArtworkPreview } from '@/hooks/queries/useHome';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { cn } from '@/utils/cn';
 
 import { FILTER_CONFIG } from '../search';
 
 // '전체' 옵션을 제외한 순수 카테고리 필터 목록
 const CATEGORY_OPTIONS = FILTER_CONFIG.전시분야.options.filter((opt) => opt.value !== null);
-const CATEGORY_LABELS = CATEGORY_OPTIONS.map((opt) => opt.label);
 
 type Props = {
-  items: ArtworkPreviewItemDto[];
   onClose?: () => void;
 };
 
-// 각 작품의 카테고리를 매핑하는 헬퍼 함수
-function getItemCategory(item: ArtworkPreviewItemDto, index: number): string {
-  for (const cat of CATEGORY_LABELS) {
-    if (
-      item.artworkName.includes(cat) ||
-      item.exhibitionInfo?.exhibitionTitle?.includes(cat) ||
-      ('field' in item && typeof item.field === 'string' && item.field.includes(cat))
-    ) {
-      return cat;
-    }
-  }
-  // 목 데이터에 분야명이 직접 포함되지 않은 경우 인덱스로 균등 분배
-  return CATEGORY_LABELS[index % CATEGORY_LABELS.length];
-}
+export function ArtworkPreviewMoreView({ onClose }: Props) {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-export function ArtworkPreviewMoreView({ items, onClose }: Props) {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  // 카테고리 칩 선택 값에 해당하는 API 파라미터 값 추출
+  const apiType = selectedCategory
+    ? CATEGORY_OPTIONS.find((opt) => opt.label === selectedCategory)?.value || undefined
+    : undefined;
+
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isPending, isError } =
+    useInfiniteArtworkPreview({ type: apiType });
+
+  const artworks = data?.pages.flatMap((page) => page.artworks) ?? [];
+
+  const triggerRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   // 마운트 시 최상단으로 자동 스크롤
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // 카테고리 다중 선택 토글 핸들러
+  // 카테고리 단일 선택 토글 핸들러
   const handleToggleCategory = (label: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(label) ? prev.filter((cat) => cat !== label) : [...prev, label],
-    );
+    setSelectedCategory((prev) => (prev === label ? null : label));
   };
 
   // 개별 카테고리 삭제
-  const handleRemoveCategory = (label: string) => {
-    setSelectedCategories((prev) => prev.filter((cat) => cat !== label));
+  const handleRemoveCategory = () => {
+    setSelectedCategory(null);
   };
 
   // 전체 선택 해제 (초기화)
   const handleResetCategories = () => {
-    setSelectedCategories([]);
+    setSelectedCategory(null);
   };
-
-  // 선택한 카테고리에 맞는 작품만 실시간 동적 필터링
-  const filteredItems =
-    selectedCategories.length > 0
-      ? items.filter((item, idx) => {
-          const itemCategory = getItemCategory(item, idx);
-          return selectedCategories.includes(itemCategory);
-        })
-      : items;
 
   return (
     <div className="w-full max-w-md mx-auto bg-page min-h-dvh overflow-x-hidden pt-4 pb-4">
@@ -91,7 +80,7 @@ export function ArtworkPreviewMoreView({ items, onClose }: Props) {
         {/* 칩 스크롤 영역 */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-none select-none">
           {CATEGORY_OPTIONS.map((opt) => {
-            const isSelected = selectedCategories.includes(opt.label);
+            const isSelected = selectedCategory === opt.label;
             return (
               <button
                 key={opt.label}
@@ -117,23 +106,20 @@ export function ArtworkPreviewMoreView({ items, onClose }: Props) {
           })}
         </div>
 
-        {/* 선택된 다중 필터 태그 & 초기화 버튼 */}
-        {selectedCategories.length > 0 && (
+        {/* 선택된 필터 태그 & 초기화 버튼 */}
+        {selectedCategory && (
           <div className="w-full flex justify-between items-center select-none">
             <div className="flex items-center gap-2.5 flex-wrap">
-              {selectedCategories.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => handleRemoveCategory(cat)}
-                  className="flex items-center gap-1 cursor-pointer group"
-                >
-                  <span className="typo-body-xs-regular text-sub700 group-hover:text-main">
-                    {cat}
-                  </span>
-                  <X className="size-3 text-sub700 group-hover:text-main" />
-                </button>
-              ))}
+              <button
+                type="button"
+                onClick={handleRemoveCategory}
+                className="flex items-center gap-1 cursor-pointer group"
+              >
+                <span className="typo-body-xs-regular text-sub700 group-hover:text-main">
+                  {selectedCategory}
+                </span>
+                <X className="size-3 text-sub700 group-hover:text-main" />
+              </button>
             </div>
 
             <button
@@ -149,38 +135,56 @@ export function ArtworkPreviewMoreView({ items, onClose }: Props) {
 
       {/* 작품 목록 */}
       <div className="grid grid-cols-2 gap-2.5 px-5">
-        {filteredItems.length > 0 ? (
-          filteredItems.map((item) => (
-            <Link
-              key={item.artworkId}
-              to={`/artwork/${item.artworkId}`}
-              className="relative h-64 overflow-hidden rounded-2xl bg-box200 cursor-pointer hover:opacity-95 active:scale-[0.98] transition-all group block focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
-            >
-              {item.artworkImageUrl ? (
-                <img
-                  src={item.artworkImageUrl}
-                  alt={item.artworkName}
-                  className="h-full w-full object-cover select-none group-hover:scale-105 transition-transform duration-300"
-                />
-              ) : (
-                <div className="w-full h-full bg-box200" />
-              )}
-              {/* 하단 어두운 그라데이션 */}
-              <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
+        {artworks.length > 0
+          ? artworks.map((item) => (
+              <Link
+                key={item.artworkId}
+                to={`/artwork/${item.artworkId}`}
+                className="relative h-64 overflow-hidden rounded-2xl bg-box200 cursor-pointer hover:opacity-95 active:scale-[0.98] transition-all group block focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
+              >
+                {item.artworkImageUrl ? (
+                  <img
+                    src={item.artworkImageUrl}
+                    alt={item.artworkName}
+                    className="h-full w-full object-cover select-none group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-box200" />
+                )}
+                {/* 하단 어두운 그라데이션 */}
+                <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
 
-              {/* 카드 텍스트 */}
-              <div className="absolute left-3.5 right-3.5 bottom-3.5 flex flex-col gap-0.5 pointer-events-none">
-                <p className="typo-body-md-bold text-white line-clamp-1">{item.artworkName}</p>
-                <p className="typo-body-xs-regular text-zinc-300 truncate">
-                  {item.artistName || item.exhibitionInfo?.exhibitionTitle}
-                </p>
+                {/* 카드 텍스트 */}
+                <div className="absolute left-3.5 right-3.5 bottom-3.5 flex flex-col gap-0.5 pointer-events-none">
+                  <p className="typo-body-md-bold text-white line-clamp-1">{item.artworkName}</p>
+                  <p className="typo-body-xs-regular text-zinc-300 truncate">
+                    {item.artistName || item.exhibitionInfo?.exhibitionTitle}
+                  </p>
+                </div>
+              </Link>
+            ))
+          : !isPending &&
+            !isError && (
+              <div className="col-span-2 py-16 text-center text-hint typo-body-sm-regular">
+                해당 카테고리의 작품이 없습니다.
               </div>
-            </Link>
-          ))
-        ) : (
+            )}
+        {isPending && (
           <div className="col-span-2 py-16 text-center text-hint typo-body-sm-regular">
-            해당 카테고리의 작품이 없습니다.
+            불러오는 중...
           </div>
+        )}
+        {isError && (
+          <div className="col-span-2 py-16 text-center text-error typo-body-sm-regular">
+            에러가 발생했습니다.
+          </div>
+        )}
+      </div>
+
+      {/* 스크롤 감지 및 추가 로딩 인디케이터 */}
+      <div ref={triggerRef} className="w-full flex justify-center py-4">
+        {isFetchingNextPage && (
+          <div className="text-center text-sub600 typo-body-sm-regular">더 불러오는 중...</div>
         )}
       </div>
     </div>

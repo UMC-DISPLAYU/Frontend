@@ -27,7 +27,7 @@ export function SettingPage() {
     logoutMutation.mutate(
       {},
       {
-        onSuccess: () => {
+        onSettled: () => {
           navigate('/login', { replace: true });
         },
       },

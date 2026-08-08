@@ -46,7 +46,7 @@ const getRegion = (address: string): CreateDisplayRequestDto['region'] => {
 const optionalText = (value?: string | null) => {
   const trimmed = value?.trim();
 
-  return trimmed ? trimmed : undefined;
+  return trimmed ? trimmed : '';
 };
 
 function SummaryRow({ label, value }: SummaryRowProps) {
@@ -116,7 +116,6 @@ export function ArtistNameSetup() {
       qnaAccount: (registerState.contact ?? '').trim(),
       schoolOrOrganization: optionalText(registerState.school),
       departmentOrClub: optionalText(registerState.department),
-      hostOrganizationName: optionalText(registerState.organizer),
       subtitle: optionalText(registerState.subtitle),
       description: optionalText(registerState.intro),
       precautions: optionalText(registerState.notice),
