@@ -2,7 +2,9 @@ import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
+import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
 import { useLogout } from '@/hooks/queries/useAuth';
+import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
@@ -14,6 +16,12 @@ export function SettingPage() {
   const artistPolicy = useArtistPolicy();
   const canViewArtist = hasPermission(artistPolicy, 'view');
   const logoutMutation = useLogout();
+
+  const { data: invitationsData } = useMyDisplayInvitations();
+  const { data: questionsData } = useMyArtworkQuestions({ answerStatus: 'WAITING' });
+
+  const invitationCount = invitationsData?.invitations?.length ?? 0;
+  const pendingQuestionCount = questionsData?.questions?.length ?? 0;
 
   const handleLogout = () => {
     logoutMutation.mutate(
@@ -39,7 +47,7 @@ export function SettingPage() {
   };
 
   return (
-    <div className="w-96 mx-auto min-h-screen bg-page">
+    <div className="max-w-md mx-auto min-h-screen bg-page">
       <SettingHeader onBack={handleBack} />
 
       <div className="flex flex-col gap-8 px-5 pb-10">
@@ -75,14 +83,14 @@ export function SettingPage() {
           <SettingRow
             title="초대 요청"
             desc="받은 전시 초대를 확인해요."
-            badge={1}
+            badge={invitationCount > 0 ? invitationCount : undefined}
             onClick={() => navigate('/invitation-request')}
           />
           {canViewArtist && (
             <SettingRow
               title="답변할 질문"
               desc="내가 담당한 작품 질문에 답변해요."
-              badge={2}
+              badge={pendingQuestionCount > 0 ? pendingQuestionCount : undefined}
               onClick={() => navigate('/answer-questions')}
             />
           )}

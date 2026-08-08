@@ -124,6 +124,23 @@ export type UpdateArtworkFeelingResponseDto = ApiResponseDto<UpdateArtworkFeelin
 
 export type DeleteArtworkFeelingResponseDto = ApiResponseDto<null>;
 
+export interface MyArtworkFeelingDto {
+  artworkId: number | null;
+  personalArtworkId: number | null;
+  artworkName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface GetMyArtworkFeelingsResponseDataDto {
+  feelings: MyArtworkFeelingDto[];
+  nextCursor: string | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export type GetMyArtworkFeelingsResponseDto = ApiResponseDto<GetMyArtworkFeelingsResponseDataDto>;
+
 export interface ArtworkQuestionDto {
   questionId: number;
   content: string;
@@ -149,10 +166,8 @@ export interface MyArtworkQuestionDto {
   personalArtworkId: number | null;
   artworkName: string;
   content: string;
-  answerStatus: 'WAITING' | 'ANSWERED';
   isPublic: boolean;
-  questionerId: number;
-  questionerNickname: string;
+  answerStatus: 'WAITING' | 'ANSWERED';
   createdAt: string;
 }
 
@@ -163,12 +178,30 @@ export interface GetMyArtworkQuestionsResponseDataDto {
   hasNext: boolean;
 }
 
-export interface GetMyArtworkQuestionsRequestDto extends Partial<OffsetPageRequestDto> {
+export type GetMyArtworkQuestionsResponseDto = ApiResponseDto<GetMyArtworkQuestionsResponseDataDto>;
+
+export interface ReceivedArtworkQuestionDto {
+  questionId: number;
+  personalQuestionId: number | null;
+  artworkId: number;
+  personalArtworkId: number | null;
+  artworkName: string;
+  content: string;
+  isPublic: boolean;
   answerStatus: 'WAITING' | 'ANSWERED';
-  cursor?: string;
+  questionerId: number;
+  questionerNickname: string;
+  createdAt: string;
 }
 
-export type GetMyArtworkQuestionsResponseDto = ApiResponseDto<GetMyArtworkQuestionsResponseDataDto>;
+export interface GetReceivedArtworkQuestionsResponseDataDto {
+  questions: ReceivedArtworkQuestionDto[];
+  nextCursor: string | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export type GetReceivedArtworkQuestionsResponseDto = ApiResponseDto<GetReceivedArtworkQuestionsResponseDataDto>;
 
 export interface CreateArtworkQuestionRequestDto {
   content: string;

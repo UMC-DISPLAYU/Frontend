@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { refreshToken } from '@/api/endpoints';
+import { queryKeys } from '@/api/queryKeys';
 import displayuLogo from '@/assets/brand/DUfontlogo.svg';
 import { ArtworkPreviewMoreView } from '@/components/homepage/ArtworkPreviewMoreView';
 import { ArtworkPreviewSection } from '@/components/homepage/ArtworkPreviewSection';
@@ -67,6 +69,15 @@ export const Homepage = () => {
       navigate('/home', { replace: true });
     }
   }, [navigate, searchParams, setAccessToken]);
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (accessToken) {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.archives.all });
+    }
+  }, [accessToken, queryClient]);
 
   // OAuth 콜백 이후 refreshToken 쿠키만 있고 accessToken이 없는 상태(기존 회원)일 수 있어서,
   // 홈 진입 시 accessToken이 없으면 1회 재발급을 시도한다.

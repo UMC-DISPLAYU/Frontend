@@ -93,7 +93,6 @@ export function ExhibitionSection({ title, items, linkTo }: Props) {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
   const { data: archivedData } = useArchivedExhibitions();
-
   const savedExhibitionIds = new Set(archivedData?.savedExhibitions?.map((s) => s.displayId) ?? []);
 
   const handleBookmarkClick = (displayId: number, saved: boolean, e: React.MouseEvent) => {

@@ -216,11 +216,11 @@ export const useUpdateArchivedExhibitionMemo = () => {
           previous
             ? {
                 ...previous,
-                savedExhibitions: previous.savedExhibitions.map((exhibition) =>
+                savedExhibitions: previous.savedExhibitions?.map((exhibition) =>
                   exhibition.savedExhibitionId === archiveDisplayId
                     ? { ...exhibition, memo: body.memo }
                     : exhibition,
-                ),
+                ) ?? [],
               }
             : previous,
       );
@@ -241,11 +241,11 @@ export const useDeleteArchivedExhibitionMemo = () => {
           previous
             ? {
                 ...previous,
-                savedExhibitions: previous.savedExhibitions.map((exhibition) =>
+                savedExhibitions: previous.savedExhibitions?.map((exhibition) =>
                   exhibition.savedExhibitionId === archiveDisplayId
                     ? { ...exhibition, memo: null }
                     : exhibition,
-                ),
+                ) ?? [],
               }
             : previous,
       );

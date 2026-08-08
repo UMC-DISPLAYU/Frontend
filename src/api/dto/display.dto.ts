@@ -65,6 +65,8 @@ export interface DisplayListItemDto {
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
+  isArchived: boolean;
+  schoolDepartmentName?: string;
 }
 
 export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {
@@ -115,6 +117,8 @@ export interface DisplayMapMarkerDto {
   posterImageUrl: string;
   latitude: number;
   longitude: number;
+  schoolDepartmentName?: string;
+  isArchived?: boolean;
 }
 
 export interface GetDisplayMapResponseDataDto {
@@ -339,6 +343,23 @@ export interface GetDisplayReviewRepliesResponseDataDto {
   size: number;
   hasNext: boolean;
 }
+
+export interface MyDisplayReviewDto {
+  displayReviewId: number;
+  displayId: number;
+  displayName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface GetMyDisplayReviewsResponseDataDto {
+  reviews: MyDisplayReviewDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export type GetMyDisplayReviewsResponseDto = ApiResponseDto<GetMyDisplayReviewsResponseDataDto>;
 
 export interface CreateDisplayRequestDto {
   title: string;

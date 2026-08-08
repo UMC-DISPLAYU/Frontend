@@ -145,7 +145,7 @@ export function VisibilitySettings() {
   };
 
   return (
-    <div className="mx-auto flex h-dvh w-96 flex-col bg-page">
+    <div className="mx-auto flex h-dvh max-w-md flex-col bg-page">
       <PageHeader title="공개 설정" onBack={() => navigate(-1)} />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3 pb-6">
