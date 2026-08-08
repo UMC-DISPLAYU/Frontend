@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto, DisplayDetailDto } from '@/api/dto/display.dto';
 import LocationMapPlaceholder from '@/assets/displaydetailpage/LocationMapPlaceholder.svg';
+import { cn } from '@/utils/cn';
 
 type Props = {
   display: DisplayDetailDto;
@@ -12,16 +13,20 @@ type Props = {
 
 type ContentCarouselProps = {
   category: DisplayContentCategoryDto;
+  fullWidth?: boolean;
 };
 
-function ContentCategoryCard({ category }: ContentCarouselProps) {
+function ContentCategoryCard({ category, fullWidth = false }: ContentCarouselProps) {
   const firstImage = category.contents[0];
   const count = category.contents.length;
 
   return (
     <div
-      className="shrink-0 rounded-xl overflow-hidden bg-box200 relative cursor-pointer text-left"
-      style={{ width: 362, height: 152 }}
+      className={cn(
+        'rounded-xl overflow-hidden bg-box200 relative cursor-pointer text-left',
+        fullWidth ? 'w-full' : 'shrink-0',
+      )}
+      style={{ width: fullWidth ? undefined : 362, height: 152 }}
     >
       {firstImage ? (
         <img src={firstImage.imageUrl} alt={category.name} className="w-full h-full object-cover" />
@@ -32,7 +37,8 @@ function ContentCategoryCard({ category }: ContentCarouselProps) {
       <div
         className="absolute inset-0 rounded-xl pointer-events-none"
         style={{
-          background: 'linear-gradient(180deg, rgba(102, 102, 102, 0.00) 47.49%, #000 82.16%)',
+          background:
+            'linear-gradient(180deg, rgba(102, 102, 102, 0.00) 47.49%, rgba(0, 0, 0, 0.5) 82.16%)',
         }}
       />
       <div className="absolute bottom-3 left-3 flex flex-col gap-0.5 text-left">
@@ -106,9 +112,15 @@ export function IntroTab({ display: ex }: Props) {
                 type="button"
                 onClick={handleGoToContents}
                 aria-label={`${category.name} 콘텐츠 보기`}
-                className="cursor-pointer shrink-0"
+                className={cn(
+                  'cursor-pointer',
+                  ex.contentCategories.length === 1 ? 'w-full' : 'shrink-0',
+                )}
               >
-                <ContentCategoryCard category={category} />
+                <ContentCategoryCard
+                  category={category}
+                  fullWidth={ex.contentCategories.length === 1}
+                />
               </button>
             ))}
           </div>

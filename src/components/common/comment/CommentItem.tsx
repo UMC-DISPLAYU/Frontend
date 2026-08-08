@@ -28,7 +28,7 @@ type Props = {
   onReplyClick?: (commentId: string, author: string, highlightId: string) => void;
   activeReplyId?: string | null;
   className?: string;
-  /** 줄마다 상하 12px 패딩으로 촘촘하게 쌓는 레이아웃. false면 gap 기반(간격 40px) 레이아웃. */
+  /* 줄마다 상하 12px 패딩으로 촘촘하게 쌓는 레이아웃. false면 gap 기반(간격 40px) 레이아웃. */
   tightSpacing?: boolean;
   /** tightSpacing일 때 각 줄 아래에 구분선을 그릴지 여부. */
   showDivider?: boolean;
