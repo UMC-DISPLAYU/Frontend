@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import loungeReviewThumbnail from '@/assets/lounge/LoungeReviewThumbnail.svg';
 import loungeVenueThumbnail from '@/assets/lounge/LoungeVenueThumbnail.svg';
 import type { LoungeCategoryKey } from '@/constants/loungeCategories';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useAuthStore } from '@/stores/authStore';
 
 import { LoungeCard } from './LoungeCard';
 
@@ -36,16 +38,27 @@ function MultilineText({ text }: { text: string }) {
 
 export function CommunitySection() {
   const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
+
+  const handleCardClick = (path: string) => {
+    if (!accessToken) {
+      openLoginModal();
+    } else {
+      navigate(path);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-2.5">
+      {loginModal}
       <div className="flex items-center justify-between gap-3.5">
         <LoungeCard
           className="min-w-0 h-[343px]"
           title="전시후기"
           description={<MultilineText text={'전시를 체험한\n이야기와 감상을 나눠요'} />}
           image={loungeReviewThumbnail}
-          onClick={() => navigate('/lounge/review')}
+          onClick={() => handleCardClick('/lounge/review')}
           bordered
         />
 
@@ -56,7 +69,7 @@ export function CommunitySection() {
               className="h-[165px]"
               title={title}
               description={<MultilineText text={description} />}
-              onClick={() => navigate(`/lounge/${category}`)}
+              onClick={() => handleCardClick(`/lounge/${category}`)}
             />
           ))}
         </div>
@@ -64,7 +77,7 @@ export function CommunitySection() {
 
       <LoungeCard
         className="flex justify-between h-[100px]"
-        onClick={() => navigate('/lounge/venue')}
+        onClick={() => handleCardClick('/lounge/venue')}
       >
         <div className="flex items-end min-w-0 flex-1">
           <div className="flex-1 min-w-0 h-12 flex flex-col justify-end gap-px">
