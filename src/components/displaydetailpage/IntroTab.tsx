@@ -143,33 +143,33 @@ export function IntroTab({ display: ex }: Props) {
       )}
 
       {/* 위치안내 */}
-      <section className="px-5 mt-6 flex flex-col items-start gap-3">
-        <h2 className="typo-body-xl-bold text-main">위치안내</h2>
-        <div className="w-full flex flex-col overflow-hidden rounded-[14px] border border-[#e5e7eb]">
-          <img
-            src={LocationMapPlaceholder}
-            alt="위치 지도"
-            className="h-[140px] w-full shrink-0 self-stretch bg-[#eceff2] object-cover"
-          />
-          <div className="flex items-center justify-between gap-3 shrink-0 bg-white px-4 py-3.5">
-            <div className="flex flex-col gap-0.5 min-w-0">
-              <p className="text-[#111] text-sm font-semibold leading-[21px] break-words">
-                {ex.location?.placeName}
-              </p>
-              {/* TODO: 도로명주소 API 필드 추가되면 교체 (현재 하드코딩) */}
-              <p className="text-[#9ca3af] text-xs font-normal leading-[18px]">
-                서울특별시 동작구 흑석로 84
-              </p>
+      {ex.location?.placeName && (
+        <section className="px-5 mt-6 flex flex-col items-start gap-3">
+          <h2 className="typo-body-xl-bold text-main">위치안내</h2>
+          <div className="w-full flex flex-col overflow-hidden rounded-[14px] border border-[#e5e7eb]">
+            <img
+              src={LocationMapPlaceholder}
+              alt="위치 지도"
+              className="h-[140px] w-full shrink-0 self-stretch bg-[#eceff2] object-cover"
+            />
+            <div className="flex items-center justify-between gap-3 shrink-0 bg-white px-4 py-3.5">
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <p className="text-[#111] text-sm font-semibold leading-[21px] break-words">
+                  {ex.location.placeName}
+                </p>
+              </div>
+              <a
+                href={`https://map.kakao.com/link/map/${encodeURIComponent(ex.location.placeName)},${ex.location.latitude},${ex.location.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 flex items-center justify-center rounded-[10px] border border-[#e5e7eb] pt-[6.5px] pr-[12.414px] pb-[7.5px] pl-[13px] text-[#374151] text-xs font-medium leading-[18px]"
+              >
+                지도보기
+              </a>
             </div>
-            <button
-              type="button"
-              className="shrink-0 flex items-center justify-center rounded-[10px] border border-[#e5e7eb] pt-[6.5px] pr-[12.414px] pb-[7.5px] pl-[13px] text-[#374151] text-xs font-medium leading-[18px]"
-            >
-              지도보기
-            </button>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 주최·문의 */}
       <section className="px-5 mt-6 pb-6">

@@ -87,6 +87,9 @@ export function DisplayDetailPage() {
           button={
             <DisplaySaveButton displayId={display.displayId} saved={display.isArchived ?? false} />
           }
+          shareTitle={display.title}
+          shareDescription={display.subtitle ?? undefined}
+          shareImageUrl={heroImages[0]}
         />
       )}
     </div>

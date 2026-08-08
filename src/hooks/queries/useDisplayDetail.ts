@@ -23,7 +23,6 @@ export const useToggleDisplayLike = () => {
       liked ? updateDisplayLike({ displayId }) : toggleDisplayLike(displayId),
     onSuccess: (data, { displayId, liked }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.lists() });
       queryClient.setQueryData(
         queryKeys.displays.detail(displayId),
         (current: DisplayDetailDto | undefined) =>
