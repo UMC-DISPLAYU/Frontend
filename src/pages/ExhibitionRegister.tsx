@@ -33,12 +33,10 @@ export function ExhibitionRegister() {
   const [type, setType] = useState<string | null>((restored.type as string) ?? null);
   const [field, setField] = useState<string[]>((restored.field as string[]) ?? []);
 
-  const [school, setSchool] = useState(
-    (restored.school as string) ?? artistProfile?.schoolName ?? '',
-  );
+  const [school, setSchool] = useState((restored.school as string) ?? '');
   const [department, setDepartment] = useState((restored.department as string) ?? '');
   const [organizer, setOrganizer] = useState((restored.organizer as string) ?? '');
-  const schoolValue = school || artistProfile?.schoolName || '';
+  const schoolValue = school;
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
