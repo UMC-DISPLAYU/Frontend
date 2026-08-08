@@ -34,6 +34,7 @@ import {
   useQuestionReplyPolicy,
 } from '@/hooks/usePolicy';
 import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
+import { parseServerDate } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 export function ArtworkDetailPage() {
@@ -130,7 +131,7 @@ export function ArtworkDetailPage() {
    */
   const questions: GuestbookQuestion[] = (questionsData?.questions ?? [])
     .slice()
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a, b) => parseServerDate(b.createdAt).getTime() - parseServerDate(a.createdAt).getTime())
     .map((question) => ({
       questionId: question.questionId,
       content: question.content,
@@ -283,7 +284,7 @@ export function ArtworkDetailPage() {
           isComposingQuestion={isComposingQuestion}
           onCloseComposeQuestion={() => setIsComposingQuestion(false)}
           onSubmitQuestion={handleSendQuestion}
-          isSubmittingQuestion={createQuestion.isPending}
+          isSubmittingQuestion={createQuestion.isPending || createQuestionReply.isPending}
         />
       )}
 

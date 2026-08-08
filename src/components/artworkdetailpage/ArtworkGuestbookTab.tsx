@@ -373,7 +373,7 @@ export function ArtworkGuestbookTab({
   };
 
   return (
-    <div className="pb-28 min-h-150">
+    <div className="pb-56 min-h-150">
       {/* ── 감상 탭 ── */}
       {activeTab === 'review' && (
         <div className="px-5 pt-4">
@@ -414,6 +414,7 @@ export function ArtworkGuestbookTab({
           <div className="flex items-center justify-between px-5 pb-3">
             <h2 className="typo-body-xl-bold text-main">질문하기</h2>
             <div className="flex items-center gap-2">
+              {/* 작가/일반인 시점 전환은 테스트용 — 실제 화면엔 없습니다. */}
               <button
                 type="button"
                 onClick={handleArtistViewToggle}
@@ -455,7 +456,7 @@ export function ArtworkGuestbookTab({
               />
             ))}
           </div>
-          {questions.length === 0 && (
+          {questions.length === 0 && !isComposingQuestion && (
             <p className="typo-body-sm-regular text-faint text-center px-5 py-10">
               아직 질문이 없습니다.
             </p>
