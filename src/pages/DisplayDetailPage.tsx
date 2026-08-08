@@ -55,7 +55,6 @@ export function DisplayDetailPage() {
       <HeroSlider images={heroImages} />
       <ExhibitionMeta display={display} />
       <DetailTabNav activeTab={activeTab} onTabChange={setActiveTab} />
-      {/* 하단 전시 저장 바에 콘텐츠 마지막 부분이 가려지지 않도록 여백을 확보합니다. */}
       {activeTab === 'intro' && (
         <div className="pb-28">
           <IntroTab display={display} />

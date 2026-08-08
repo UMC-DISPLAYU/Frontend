@@ -7,7 +7,7 @@ type Props = {
 
 export function BottomFixedBar({ button }: Props) {
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-line px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+43.2px)] flex items-center justify-between z-50">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-line px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+32px)] flex items-center justify-between z-50">
       <button
         type="button"
         className="w-12 h-12 flex items-center justify-center shrink-0 cursor-pointer"

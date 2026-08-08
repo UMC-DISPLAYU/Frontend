@@ -12,6 +12,7 @@ import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
+import { BackButton } from '@/components/ui/BackButton';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import {
   useArtworkFeelings,
@@ -225,8 +226,15 @@ export function ArtworkDetailPage() {
 
   return (
     <div className="w-full max-w-md mx-auto min-h-dvh bg-page relative">
+      <div className="fixed top-4 left-1/2 z-30 w-full max-w-md -translate-x-1/2 px-4 pointer-events-none">
+        <BackButton
+          id="artwork-back-btn"
+          onClick={() => navigate(-1)}
+          className="pointer-events-auto"
+        />
+      </div>
       {/* 히어로 이미지 */}
-      <HeroSlider images={orderedHeroImages} onBack={() => navigate(-1)} />
+      <HeroSlider images={orderedHeroImages} />
 
       {/* 작품 메타 (제목, 작가, 소속전시, 저장버튼) */}
       <ArtworkMeta artwork={artwork} />

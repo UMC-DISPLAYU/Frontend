@@ -370,11 +370,11 @@ export function ArtworkGuestbookTab({
   };
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 min-h-150">
       {/* ── 감상 탭 ── */}
       {activeTab === 'review' && (
-        <div className="px-5 pt-2">
-          <div className="py-4">
+        <div className="px-5 pt-4">
+          <div className="pb-4">
             <h2 className="typo-body-xl-bold text-main">감상 후기</h2>
           </div>
           <div className="flex flex-col">
@@ -407,8 +407,8 @@ export function ArtworkGuestbookTab({
 
       {/* ── 질문 탭 ── */}
       {activeTab === 'question' && (
-        <div className="px-5 pt-2">
-          <div className="flex items-center justify-between py-4">
+        <div className="px-5 pt-4">
+          <div className="flex items-center justify-between pb-4">
             <h2 className="typo-body-xl-bold text-main">질문하기</h2>
             {/* 작가/일반인 시점 전환은 테스트용 — 실제 화면엔 없습니다. */}
             <button

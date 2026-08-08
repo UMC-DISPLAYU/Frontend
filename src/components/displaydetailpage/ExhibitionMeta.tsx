@@ -97,15 +97,13 @@ export function ExhibitionMeta({ display: ex }: Props) {
         >
           <Heart
             size={24}
-            strokeWidth={1.75}
+            strokeWidth={1.5}
             className={cn(
               'transition-colors duration-200',
-              liked ? 'fill-heart text-heart' : 'fill-none text-sub700',
+              liked ? 'fill-heart text-heart' : 'fill-none text-main',
             )}
           />
-          <span className={cn('typo-body-xs-regular', liked ? 'text-heart' : 'text-sub700')}>
-            {displayedLikeCount}
-          </span>
+          <span className="typo-body-xs-regular text-main">{displayedLikeCount}</span>
         </button>
       </div>
 

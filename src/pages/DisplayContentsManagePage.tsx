@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MoreHorizontal, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { Header, Screen } from '@/components/display-manage/Common';
+import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
 import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
@@ -354,8 +354,6 @@ export function DisplayContentsManagePage() {
   const handlePhotoCountChange = (_categoryId: number, _count: number) => {
     void _categoryId;
     void _count;
-    // TODO: API 호출로 사진 개수 업데이트
-    // console.log('Photo count changed:', categoryId, count);
   };
 
   if (!isValidDisplayId) {
@@ -469,6 +467,7 @@ export function DisplayContentsManagePage() {
       </div>
 
       {canCreateCategory && (
+        <BottomBar>
           <button
             type="button"
             onClick={() => setCreating(true)}
@@ -476,6 +475,7 @@ export function DisplayContentsManagePage() {
           >
             {BOTTOM_CTA_LABEL}
           </button>
+        </BottomBar>
       )}
 
       {editing && (
