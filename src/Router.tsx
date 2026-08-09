@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { Layout } from './components/layout';
@@ -15,21 +15,22 @@ import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
 import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
-import { DisplayManagePage } from './pages/DisplayManagePage';
 import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
 import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
-import { ExhibitionEditPage } from './pages/ExhibitionEditPage';
 import { ExhibitionRegister } from './pages/ExhibitionRegister';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
+import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
 import { Homepage } from './pages/Homepage';
+import { InteriorPhotosPage } from './pages/InteriorPhotosPage';
 import { InvitationRequestPage } from './pages/InvitationRequestPage';
 import { LoginPage } from './pages/LoginPage';
 import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
 import { LoungeBoardPage } from './pages/LoungeBoardPage';
 import { LoungePage } from './pages/LoungePage';
 import { MyActivityPage } from './pages/MyActivityPage';
+import { MyExhibitionsPage } from './pages/MyExhibitionsPage';
 import { MyPage } from './pages/MyPage';
 import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
@@ -44,6 +45,16 @@ import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
 import { VisibilitySettings } from './pages/VisibilitysettingsPage';
 
+const validateNumericId =
+  (paramName: string) =>
+  ({ params }: LoaderFunctionArgs) => {
+    const idNum = Number(params[paramName]);
+    if (!Number.isFinite(idNum) || idNum <= 0) {
+      throw new Response('Not Found', { status: 404 });
+    }
+    return null;
+  };
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -55,15 +66,37 @@ export const router = createBrowserRouter([
       { path: 'search', element: <SearchPage /> },
       { path: 'auth', element: <AuthPage /> },
       { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
-      { path: 'display/:id', element: <DisplayDetailPage /> },
-      { path: 'artwork/:artworkId', element: <ArtworkDetailPage /> },
-      { path: 'display/:id/contents', element: <DisplayContentsPage /> },
+      {
+        path: 'display/:id',
+        loader: validateNumericId('id'),
+        errorElement: <NotFound />,
+        element: <DisplayDetailPage />,
+      },
+      {
+        path: 'artwork/:artworkId',
+        loader: validateNumericId('artworkId'),
+        errorElement: <NotFound />,
+        element: <ArtworkDetailPage />,
+      },
+      {
+        path: 'display/:id/contents',
+        loader: validateNumericId('id'),
+        errorElement: <NotFound />,
+        element: <DisplayContentsPage />,
+      },
       { path: 'lounge', element: <LoungePage /> },
       /* 개인 작품 상세는 비회원도 열람할 수 있습니다. */
-      { path: 'personal-artworks/:personalArtworkId', element: <PersonalArtworkDetailPage /> },
+      {
+        path: 'personal-artworks/:personalArtworkId',
+        loader: validateNumericId('personalArtworkId'),
+        errorElement: <NotFound />,
+        element: <PersonalArtworkDetailPage />,
+      },
       { path: 'lounge/:category', element: <LoungeBoardPage /> },
       {
         path: 'lounge/:category/:id',
+        loader: validateNumericId('id'),
+        errorElement: <NotFound />,
         element: <LoungeBoardDetailPage />,
         handle: { hideNavbar: true },
       },
@@ -75,18 +108,36 @@ export const router = createBrowserRouter([
         children: [
           { path: 'my', element: <MyPage /> },
           { path: 'artist-verification', element: <ArtistVerificationPage /> },
-          { path: 'display/manage', element: <DisplayManagePage /> },
-          { path: 'display/contents-manage', element: <DisplayContentsManagePage /> },
-          { path: 'artworks-manage', element: <ArtworksManagePage /> },
+
+          // 내 전시 관리 목록
+          { path: 'my/exhibitions', element: <MyExhibitionsPage /> },
           { path: 'artworks-register', element: <ArtworkRegisterPage /> },
-          { path: 'exhibition-register', element: <ExhibitionRegister /> },
-          { path: 'exhibition/register-complete', element: <ExhibitionRegisterComplete /> },
-          { path: 'exhibition/basic', element: <ExhibitionBasicInfo /> },
-          { path: 'exhibition/edit/:displayId', element: <ExhibitionEditPage /> },
-          { path: 'exhibition/artist', element: <ArtistNameSetup /> },
-          { path: 'exhibition/manage', element: <ExhibitionManage /> },
-          { path: 'exhibition/visibility', element: <VisibilitySettings /> },
-          { path: 'display/:displayId/team/manage', element: <TeamManage /> },
+
+          // 1. 전시 등록 플로우
+          { path: 'exhibition/register', element: <ExhibitionRegister /> },
+          { path: 'exhibition/register/basic', element: <ExhibitionBasicInfo /> },
+          { path: 'exhibition/register/artist', element: <ArtistNameSetup /> },
+
+          // 2. 특정 전시 관리 플로우 (ID 발급 후)
+          {
+            path: 'exhibition/:displayId',
+            loader: validateNumericId('displayId'),
+            errorElement: <NotFound />,
+            children: [
+              { path: 'manage', element: <ExhibitionManage /> },
+              { path: 'work', element: <ExhibitionWorkPage /> },
+              { path: 'edit', element: <ExhibitionRegister /> },
+              { path: 'edit/basic', element: <ExhibitionBasicInfo /> },
+              { path: 'team', element: <TeamManage /> },
+              { path: 'visibility', element: <VisibilitySettings /> },
+              { path: 'contents', element: <DisplayContentsManagePage /> },
+              { path: 'contents/:categoryId', element: <InteriorPhotosPage /> },
+              { path: 'artworks', element: <ArtworksManagePage /> },
+              { path: 'artworks/add', element: <ArtworkRegisterPage /> },
+              { path: 'complete', element: <ExhibitionRegisterComplete /> },
+            ],
+          },
+
           { path: 'setting', element: <SettingPage /> },
           { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
           { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },

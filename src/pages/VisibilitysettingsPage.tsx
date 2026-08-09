@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { BottomButtonBar, PageHeader } from '@/components/common';
 import { RadioOption } from '@/components/visibility-settings';
@@ -70,11 +70,13 @@ function VisibilitySection({
 export function VisibilitySettings() {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: VisibilityState | null };
+  const { displayId: paramDisplayId } = useParams();
+  const displayId = Number(paramDisplayId ?? state?.displayId ?? 0);
 
   const startDateLabel = formatStartDate(state?.startDate);
 
   /* 공개 시점은 전시 상세 응답에 포함되어 있어 별도 조회가 없습니다. */
-  const { data: display } = useDisplayDetail(state?.displayId ?? 0);
+  const { data: display } = useDisplayDetail(displayId);
   const displayPolicy = useDisplayPolicy(
     display ?? {
       ownerUserId: 0,
@@ -85,9 +87,8 @@ export function VisibilitySettings() {
    * 전시 등록 중에는 아직 displayId가 없어 권한을 판정할 대상이 없습니다.
    * 이때는 값을 다음 단계로 넘기기만 하므로 편집을 허용합니다.
    */
-  const canEditDisplay = state?.displayId
-    ? Boolean(display) && hasPermission(displayPolicy, 'edit')
-    : true;
+  const canEditDisplay =
+    displayId > 0 ? Boolean(display) && hasPermission(displayPolicy, 'edit') : true;
 
   // 사용자가 아직 고르지 않았으면 서버 값을, 서버 값도 없으면 기본값을 보여줍니다.
   const [picked, setPicked] = useState<{
@@ -115,12 +116,12 @@ export function VisibilitySettings() {
   const setContentVisibility = (next: VisibilityType) =>
     setPicked((prev) => ({ ...prev, contentVisibility: next }));
 
-  const updateMutation = useUpdateDisplayReservation(state?.displayId);
+  const updateMutation = useUpdateDisplayReservation(displayId);
 
   const save = () => {
-    if (!state?.displayId) {
+    if (!displayId) {
       // displayId가 없으면 router state로만 전달 (등록 플로우)
-      navigate('/exhibition/manage', {
+      navigate(`/exhibition/${displayId}/manage`, {
         replace: true,
         state: { ...state, artworkVisibility, contentVisibility },
       });
@@ -135,7 +136,7 @@ export function VisibilitySettings() {
       },
       {
         onSuccess: () => {
-          navigate('/exhibition/manage', {
+          navigate(`/exhibition/${displayId}/manage`, {
             replace: true,
             state: { ...state, artworkVisibility, contentVisibility },
           });

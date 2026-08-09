@@ -8,7 +8,7 @@ import type { ArtistProfileDto } from '@/api/dto';
 import { LoadingView } from '@/components/common';
 import { ConfirmModal } from '@/components/ui';
 import { ChipGroup } from '@/components/ui';
-import { EXHIBITION_FIELD_LABELS,EXHIBITION_FIELDS } from '@/constants/exhibition';
+import { EXHIBITION_FIELD_LABELS, EXHIBITION_FIELDS } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 

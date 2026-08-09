@@ -114,7 +114,7 @@ export function ArtistNameSetup() {
       /* 서버 필수 필드입니다. 작가명은 이 전시에서 쓸 표시명, 문의 방법은 Q&A 계정으로 들어갑니다. */
       displayNickname: artistName.trim(),
       qnaAccount: (registerState.contact ?? '').trim(),
-      schoolOrOrganization: optionalText(registerState.school),
+      schoolOrOrganization: optionalText(registerState.school || registerState.organizer) ?? '',
       departmentOrClub: optionalText(registerState.department),
       subtitle: optionalText(registerState.subtitle),
       description: optionalText(registerState.intro),
@@ -127,7 +127,7 @@ export function ArtistNameSetup() {
 
     createDisplay.mutate(requestBody, {
       onSuccess: (display) => {
-        navigate('/exhibition/manage', {
+        navigate(`/exhibition/${display.displayId}/manage`, {
           state: {
             ...registerState,
             artistName,

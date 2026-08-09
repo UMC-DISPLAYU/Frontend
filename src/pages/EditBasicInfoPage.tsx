@@ -67,7 +67,9 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const [profileImage, setProfileImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileName, setProfileName] = useState(userMe?.nickname || userMe?.name || '');
-  const [nicknameCheckResult, setNicknameCheckResult] = useState<'available' | 'unavailable' | null>(null);
+  const [nicknameCheckResult, setNicknameCheckResult] = useState<
+    'available' | 'unavailable' | null
+  >(null);
   const updateUserMe = useUpdateUserMe();
   const uploadImage = useUploadImage();
   const checkNickname = useCheckNickname();
@@ -88,7 +90,8 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   };
 
   const validation = validateProfileName(profileName);
-  const canSubmit = validation.isValid && nicknameCheckResult === 'available' && !uploadImage.isPending;
+  const canSubmit =
+    validation.isValid && nicknameCheckResult === 'available' && !uploadImage.isPending;
 
   const handleProfileNameChange = (value: string) => {
     setProfileName(value);
@@ -272,4 +275,3 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
     </div>
   );
 }
-

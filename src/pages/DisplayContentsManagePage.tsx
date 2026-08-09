@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { MoreHorizontal, X } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import { LoadingView } from '@/components/common';
 import { Header, Screen } from '@/components/display-manage/Common';
-import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
 import { useHideFooter } from '@/components/layout';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import {
@@ -14,6 +14,7 @@ import {
 } from '@/hooks/queries/useContentCategories';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
 
 type Content = {
@@ -65,9 +66,10 @@ function ContentCard({
   return (
     <div
       onClick={onClick}
-      className={`flex h-[110px] items-center gap-3 overflow-hidden rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] ${
-        dimmed ? 'opacity-40' : ''
-      } ${onClick ? 'cursor-pointer' : ''}`}
+      className={cn(
+        'flex h-[110px] items-center gap-3 overflow-hidden rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] cursor-pointer',
+        dimmed && 'opacity-40',
+      )}
     >
       <Thumbnail src={content.thumbnail} />
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
@@ -278,11 +280,16 @@ export function DisplayContentsManagePage() {
   useHideFooter();
 
   const navigate = useNavigate();
+  const { displayId: paramDisplayId } = useParams();
+  const [searchParams] = useSearchParams();
   const { state } = useLocation();
-  const displayId = state?.displayId ? Number(state.displayId) : Number.NaN;
+
+  const rawDisplayId =
+    paramDisplayId ?? searchParams.get('displayId') ?? state?.displayId ?? state?.id;
+  const displayId = rawDisplayId ? Number(rawDisplayId) : 0;
   const isValidDisplayId = Number.isFinite(displayId) && displayId > 0;
 
-  // API에서 전시 상세 정보 가져오기
+  // API에서 전시 상세 정보 가져오기 (0이면 enabled: false)
   const { data: displayDetail, isLoading, isError } = useDisplayDetail(displayId);
   const displayContentPolicy = useDisplayContentPolicy(displayDetail);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
@@ -302,7 +309,6 @@ export function DisplayContentsManagePage() {
   const [editing, setEditing] = useState<Content | null>(null);
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<Content | null>(null);
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   // API 데이터를 Content 형식으로 변환
@@ -362,22 +368,24 @@ export function DisplayContentsManagePage() {
     return (
       <Screen>
         <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
-        <div className="flex flex-1 items-center justify-center">
-          <div className="typo-body-sm-regular text-error">유효하지 않은 전시 ID입니다.</div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-3">
+          <div className="typo-body-sm-regular text-error">
+            유효하지 않은 전시 접근입니다. (전시 ID 없음)
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/my/exhibitions')}
+            className="typo-body-xs-medium rounded-lg bg-box200 px-4 py-2 text-main"
+          >
+            내 전시 목록으로 이동
+          </button>
         </div>
       </Screen>
     );
   }
 
   if (isLoading) {
-    return (
-      <Screen>
-        <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
-        <div className="flex flex-1 items-center justify-center">
-          <div className="typo-body-sm-regular text-faint">로딩 중...</div>
-        </div>
-      </Screen>
-    );
+    return <LoadingView message="전시 콘텐츠를 불러오는 중..." />;
   }
 
   if (isError || !displayDetail) {
@@ -391,31 +399,7 @@ export function DisplayContentsManagePage() {
     );
   }
 
-  // 상세 화면 표시 중이면 InteriorPhotos 렌더링
-  if (selectedContent) {
-    const category = displayDetail?.contentCategories?.find(
-      (cat) => cat.categoryId === selectedContent.id,
-    );
-    const initialPhotos =
-      category?.contents.map((content) => ({
-        id: content.contentId,
-        url: content.imageUrl,
-      })) ?? [];
-
-    return (
-      <InteriorPhotos
-        title={selectedContent.title}
-        displayId={displayId}
-        categoryId={selectedContent.id}
-        initialPhotos={initialPhotos}
-        canCreateContent={canCreateContent}
-        canDeleteContent={canDeleteContent}
-        canReorder={canReorder}
-        onBack={() => setSelectedContent(null)}
-        onPhotoCountChange={(count) => handlePhotoCountChange(selectedContent.id, count)}
-      />
-    );
-  }
+  // 상세 화면 표시 중이면 InteriorPhotos 렌더링 로직을 지우고 navigate로 변경했습니다.
 
   return (
     <Screen>
@@ -439,7 +423,7 @@ export function DisplayContentsManagePage() {
               content={content}
               dimmed={menuId !== null && menuId !== content.id}
               showMore={canShowCategoryMenu}
-              onClick={() => setSelectedContent(content)}
+              onClick={() => navigate(`/exhibition/${displayId}/contents/${content.id}`)}
               onMore={(e) => {
                 e.stopPropagation();
                 setMenuId((prev) => (prev === content.id ? null : content.id));
@@ -469,6 +453,7 @@ export function DisplayContentsManagePage() {
       </div>
 
       {canCreateCategory && (
+        <div className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
           <button
             type="button"
             onClick={() => setCreating(true)}
@@ -476,6 +461,7 @@ export function DisplayContentsManagePage() {
           >
             {BOTTOM_CTA_LABEL}
           </button>
+        </div>
       )}
 
       {editing && (

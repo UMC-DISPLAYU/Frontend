@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { Check, ChevronLeft, Info, Plus, UserRound, X } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
@@ -469,8 +469,9 @@ export function ArtworkRegisterPage() {
   useHideFooter();
 
   const navigate = useNavigate();
+  const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
-  const displayId = Number(searchParams.get('displayId') ?? 0);
+  const displayId = Number(paramDisplayId ?? searchParams.get('displayId') ?? 0);
 
   /* 작품 이미지와 작업과정 이미지를 각각 따로 모아 등록 시 순서대로 업로드합니다. */
   const artworkUpload = useImageUpload({ domain: 'artwork', maxImages: MAX_ARTWORK_UPLOAD_IMAGES });
@@ -781,7 +782,7 @@ export function ArtworkRegisterPage() {
         qaHandlerUserIds,
       },
       {
-        onSuccess: () => navigate(`/artworks-manage?displayId=${displayId}`),
+        onSuccess: () => navigate(`/exhibition/${displayId}/artworks`),
         onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
       },
     );

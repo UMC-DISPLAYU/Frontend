@@ -146,7 +146,9 @@ export function MyPage() {
         ? myArtistProfileQuery.data?.artistName || userData?.nickname || userData?.name || '사용자'
         : userData?.nickname || userData?.name || '사용자',
       avatar: isArtistView
-        ? myArtistProfileQuery.data?.profileImageUrl || userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE
+        ? myArtistProfileQuery.data?.profileImageUrl ||
+          userData?.profileImageUrl ||
+          FALLBACK_PROFILE_IMAGE
         : userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
       caption: '내가 저장한 작품 확인하기',
       isVerified: Boolean(userData?.isVerified),

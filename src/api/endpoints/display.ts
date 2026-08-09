@@ -233,8 +233,10 @@ export const toggleDisplayReviewReplyLike = async (
   );
 
 // GET /v1/display/reviews/me
-export const getMyDisplayReviews = async (params: {
-  cursorId?: number;
-  size?: number;
-} = {}): Promise<GetMyDisplayReviewsResponseDataDto> =>
+export const getMyDisplayReviews = async (
+  params: {
+    cursorId?: number;
+    size?: number;
+  } = {},
+): Promise<GetMyDisplayReviewsResponseDataDto> =>
   apiRequest('/v1/display/reviews/me', { query: params });
