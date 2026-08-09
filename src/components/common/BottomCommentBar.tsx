@@ -170,7 +170,7 @@ export function BottomCommentBar({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 bg-card px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+46px)] shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]',
+        'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 bg-card px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+32px)] shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]',
         className,
       )}
     >

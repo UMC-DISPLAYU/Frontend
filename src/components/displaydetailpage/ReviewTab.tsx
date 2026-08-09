@@ -99,7 +99,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className={cn('px-5 py-6 pb-28 overflow-x-hidden min-h-100', className)}>
+    <div className={cn('px-5 py-6 pb-56 overflow-x-hidden min-h-150', className)}>
       {/* 헤더 */}
       <h2 className="typo-body-xl-bold text-main mb-4">전시 후기</h2>
 

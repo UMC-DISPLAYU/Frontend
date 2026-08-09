@@ -25,3 +25,10 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
   return <div className="typo-body-sm-bold text-main">{children}</div>;
 }
 
+export function BottomBar({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="absolute inset-x-0 bottom-0 border-t border-line-soft bg-card px-5 pt-4 pb-7 shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      {children}
+    </div>
+  );
+}
