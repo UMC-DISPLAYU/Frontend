@@ -41,7 +41,7 @@ export function OrderScreen({ works, onReorder, onBack }: OrderScreenProps) {
             <li
               key={work.id}
               style={active ? { transform: `translateY(${offset}px) scale(1.02)` } : undefined}
-              className={`flex h-[110px] shrink-0 items-center justify-between gap-3 rounded-[18px] bg-card py-3.5 pr-2 pl-4 ${
+              className={`flex h-27.5 shrink-0 items-center justify-between gap-3 rounded-[18px] bg-card py-3.5 pr-2 pl-4 ${
                 active
                   ? 'relative z-10 shadow-[8px_8px_24px_0px_rgba(67,0,209,0.14)]'
                   : 'shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] transition-transform duration-150 motion-reduce:transition-none'

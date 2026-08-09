@@ -41,7 +41,7 @@ export function InviteLinkSection({
       {enabled && inviteLink && (
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1">
-            <span className="grid h-4 w-7 shrink-0 place-items-center rounded-sm bg-card outline outline-1 outline-offset-[-1px] outline-line-soft">
+            <span className="grid h-4 w-7 shrink-0 place-items-center rounded-sm bg-card outline -outline-offset-1 outline-line-soft">
               <img src={EntypoCycle} className="size-3" alt="cycle" />
             </span>
             <span className="typo-body-xs-regular truncate text-main">{inviteLink}</span>

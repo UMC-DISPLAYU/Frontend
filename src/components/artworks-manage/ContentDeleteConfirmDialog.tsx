@@ -1,23 +1,25 @@
-interface DeleteConfirmDialogProps {
+interface ContentDeleteConfirmDialogProps {
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export function DeleteConfirmDialog({ onCancel, onConfirm }: DeleteConfirmDialogProps) {
+export function ContentDeleteConfirmDialog({
+  onCancel,
+  onConfirm,
+}: ContentDeleteConfirmDialogProps) {
   return (
     <div
-      className="absolute inset-0 grid place-items-center bg-main/35 px-5"
+      className="absolute inset-0 z-30 grid place-items-center bg-main/35 px-5"
       role="dialog"
       aria-modal="true"
     >
       <div className="w-80 rounded-[20px] bg-card/50 p-6 backdrop-blur-[10px]">
-        <h2 className="typo-body-xl-bold text-center text-main">작품을 삭제할까요?</h2>
+        <h2 className="typo-body-xl-bold text-center text-main">콘텐츠를 삭제할까요?</h2>
         <p className="typo-body-md-regular mt-2 text-center text-sub600">
-          삭제한 작품은 전시에서 제거되며,
+          삭제한 콘텐츠는 전시에서 제거되며,
           <br />
           복구할 수 없어요.
         </p>
-
         <div className="mt-6 flex gap-2.5">
           <button
             type="button"

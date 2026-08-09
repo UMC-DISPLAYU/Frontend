@@ -28,7 +28,7 @@ export function Toggle({
       <span
         className={`size-4 rounded-full transition-all duration-200 ${
           checked
-            ? 'translate-x-5 bg-gradient-to-b from-gray-200/60 to-white/40'
+            ? 'translate-x-5 bg-linear-to-b from-gray-200/60 to-white/40'
             : 'translate-x-0 bg-dark'
         }`}
       />

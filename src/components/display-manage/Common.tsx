@@ -1,7 +1,7 @@
 import { ChevronLeft } from 'lucide-react';
 
 export function Screen({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-col h-full bg-page">{children}</div>;
+  return <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">{children}</div>;
 }
 
 export function Header({ title, onBack }: { title: string; onBack?: () => void }) {

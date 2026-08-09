@@ -121,7 +121,7 @@ export function ExhibitionManage() {
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <Header title="전시관리" onBack={() => navigate(-1)} />
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-24">
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 gap-5 pt-5 pb-24">
         <div className="flex flex-col gap-5">
           <ExhibitionCard {...exhibition} />
 

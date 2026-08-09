@@ -23,7 +23,11 @@ type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'pa
 type RegisterMode = 'own' | 'proxy';
 type ProxyAuthorSource = 'team' | 'direct';
 type RegisterSheet =
-  'proxyAuthorMethod' | 'collaboratorMethod' | 'collaboratorTeam' | 'collaboratorDirect' | null;
+  | 'proxyAuthorMethod'
+  | 'collaboratorMethod'
+  | 'collaboratorTeam'
+  | 'collaboratorDirect'
+  | null;
 
 const DEFAULT_EXHIBITION = {
   title: '형태의 침묵',
@@ -877,7 +881,7 @@ export function ArtworkRegisterPage() {
   const renderChoice = () => (
     <>
       <ArtworkRegisterHeader title="전시작 추가" onBack={handleBack} />
-      <main className="flex-1 overflow-y-auto px-5 pt-3 pb-6">
+      <main className="flex-1 overflow-y-auto px-5 pt-3 pb-24">
         <section className="mb-5">
           <h2 className="typo-body-md-bold text-main">이 작품은 누구의 작품인가요?</h2>
           <p className="typo-body-xs-regular mt-1 text-hint">
@@ -923,7 +927,7 @@ export function ArtworkRegisterPage() {
     return (
       <>
         <ArtworkRegisterHeader title="작가명 직접 입력" onBack={handleBack} />
-        <main className="flex-1 overflow-y-auto px-5 pt-3 pb-8">
+        <main className="flex-1 overflow-y-auto px-5 pt-3 pb-24">
           <section>
             <h2 className="typo-body-md-bold text-main">작품에 표시할 작가명을 입력해주세요</h2>
             <p className="typo-body-xs-regular mt-1 text-hint">
@@ -974,7 +978,7 @@ export function ArtworkRegisterPage() {
     return (
       <>
         <ArtworkRegisterHeader title="작가 선택" onBack={handleBack} />
-        <main className="flex-1 overflow-y-auto px-5 pt-3 pb-8">
+        <main className="flex-1 overflow-y-auto px-5 pt-3 pb-24">
           <section>
             <h2 className="typo-body-md-bold text-main">작품의 작가를 선택해주세요</h2>
             <p className="typo-body-xs-regular mt-1 text-hint">
@@ -1026,7 +1030,7 @@ export function ArtworkRegisterPage() {
   const renderBasic = () => (
     <>
       <ArtworkRegisterHeader title="전시작 등록" onBack={handleBack} />
-      <main className="flex-1 overflow-y-auto px-5 pt-3 pb-8">
+      <main className="flex-1 overflow-y-auto px-5 pt-3 pb-24">
         <div className="flex justify-center">
           <ImageUploader
             images={artworkUpload.images}
@@ -1115,7 +1119,7 @@ export function ArtworkRegisterPage() {
   const renderParticipants = () => (
     <>
       <ArtworkRegisterHeader title="전시작 등록" onBack={handleBack} />
-      <main className="flex-1 overflow-y-auto px-5 pt-3 pb-8">
+      <main className="flex-1 overflow-y-auto px-5 pt-3 pb-24">
         <ExhibitionSummaryCard />
 
         <section className="mt-5">
@@ -1276,7 +1280,7 @@ export function ArtworkRegisterPage() {
   );
 
   return (
-    <div className="mx-auto flex h-dvh w-96 flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       {step === 'choice' && renderChoice()}
       {step === 'proxyTeamAuthor' && renderProxyTeamAuthor()}
       {step === 'proxyAuthor' && renderProxyAuthor()}

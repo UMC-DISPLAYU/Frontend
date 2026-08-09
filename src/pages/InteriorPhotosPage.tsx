@@ -1,11 +1,31 @@
+import { useRef, useState } from 'react';
+
+import { X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { ErrorView, LoadingView } from '@/components/common';
-import { InteriorPhotos } from '@/components/display-manage/InteriorPhotos';
+import { BottomButtonBar, ErrorView, LoadingView } from '@/components/common';
+import { Header } from '@/components/display-manage/Common';
 import { useHideFooter } from '@/components/layout';
+import {
+  DEFAULT_CONTENT_IMAGE_HEIGHT,
+  DEFAULT_CONTENT_IMAGE_WIDTH,
+  MAX_CONTENT_IMAGES,
+} from '@/constants';
+import {
+  useCreateContentImage,
+  useDeleteContentImage,
+  useReorderContentImages,
+} from '@/hooks/queries/useContentImages';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
+
+type Photo = {
+  id: string | number;
+  url: string;
+  alt?: string;
+};
 
 export function InteriorPhotosPage() {
   useHideFooter();
@@ -45,7 +65,7 @@ export function InteriorPhotosPage() {
     })) ?? [];
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <InteriorPhotos
         title={category.name}
         displayId={displayId}
@@ -56,6 +76,253 @@ export function InteriorPhotosPage() {
         canReorder={canReorder}
         onBack={() => navigate(-1)}
       />
+    </div>
+  );
+}
+
+interface InteriorPhotosProps {
+  title: string;
+  displayId: number;
+  categoryId: number;
+  initialPhotos: Photo[];
+  canCreateContent: boolean;
+  canDeleteContent: boolean;
+  canReorder: boolean;
+  onBack: () => void;
+}
+
+function InteriorPhotos({
+  title,
+  displayId,
+  categoryId,
+  initialPhotos,
+  canCreateContent,
+  canDeleteContent,
+  canReorder,
+  onBack,
+}: InteriorPhotosProps) {
+  const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
+  const [isReorderMode, setIsReorderMode] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const scope = { displayId, categoryId };
+  const imageUpload = useImageUpload({ domain: 'display' });
+  const createImage = useCreateContentImage(scope);
+  const reorderImages = useReorderContentImages(scope);
+  const deleteImage = useDeleteContentImage(scope);
+
+  const isBusy = imageUpload.isUploading || createImage.isPending;
+  const canShowActions = canCreateContent || canReorder;
+
+  const handleAddPhotos = () => {
+    if (!canCreateContent) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canCreateContent) return;
+
+    const files = e.target.files;
+    if (!files) return;
+
+    const remainingSlots = MAX_CONTENT_IMAGES - photos.length;
+    const filesToAdd = Array.from(files).slice(0, remainingSlots);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
+    if (filesToAdd.length === 0) return;
+
+    const added = imageUpload.addImages(filesToAdd);
+
+    try {
+      const uploadedUrls = await Promise.all(
+        added.map((image) => imageUpload.uploadImage(image.file)),
+      );
+      const created = await Promise.all(
+        uploadedUrls.map((imageUrl) =>
+          createImage.mutateAsync({
+            imageUrl,
+            width: DEFAULT_CONTENT_IMAGE_WIDTH,
+            height: DEFAULT_CONTENT_IMAGE_HEIGHT,
+          }),
+        ),
+      );
+
+      const newPhotos: Photo[] = created.map((res, index) => ({
+        id: res.contentId,
+        url: uploadedUrls[index],
+        alt: added[index]?.file.name,
+      }));
+
+      setPhotos((prev) => [...prev, ...newPhotos]);
+    } finally {
+      imageUpload.clearImages();
+    }
+  };
+
+  const handleRemove = (id: string | number) => {
+    if (!canDeleteContent) return;
+
+    const previous = photos;
+    const updated = previous.filter((p) => p.id !== id);
+
+    setPhotos(updated);
+
+    deleteImage.mutate(Number(id), {
+      onError: () => {
+        setPhotos(previous);
+      },
+    });
+  };
+
+  const handleReorder = () => {
+    if (!canReorder) return;
+    setIsReorderMode(!isReorderMode);
+  };
+
+  const handleDragStart = (index: number) => {
+    if (!isReorderMode || !canReorder) return;
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    if (!isReorderMode || !canReorder) return;
+
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newPhotos = [...photos];
+    const draggedPhoto = newPhotos[draggedIndex];
+    newPhotos.splice(draggedIndex, 1);
+    newPhotos.splice(index, 0, draggedPhoto);
+
+    setPhotos(newPhotos);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    if (!isReorderMode || !canReorder) return;
+
+    setDraggedIndex(null);
+    reorderImages.mutate(photos.map((photo) => Number(photo.id)));
+  };
+
+  return (
+    <div className="flex flex-col flex-1 bg-page pb-11">
+      <Header title={title} onBack={onBack} />
+
+      <main className="flex flex-1 flex-col pt-3.5 pb-24">
+        {/* 안내 */}
+        <div className="px-5 flex flex-col gap-1">
+          <p className="typo-body-md-regular text-main">
+            전시 공간과 현장 분위기를 담는 공유 앨범이에요.
+          </p>
+          <p className="typo-body-md-regular text-faint">
+            사진 {photos.length} / {MAX_CONTENT_IMAGES}
+          </p>
+        </div>
+
+        {/* 액션 */}
+        {!isReorderMode && canShowActions && (
+          <div className="flex gap-2 px-5 pt-3.5">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {canCreateContent && (
+              <button
+                type="button"
+                onClick={handleAddPhotos}
+                disabled={photos.length >= MAX_CONTENT_IMAGES || isBusy}
+                className="typo-body-sm-bold flex h-11 flex-1 items-center justify-center rounded-xl bg-bt-black text-white disabled:opacity-40"
+              >
+                {isBusy ? '업로드 중' : '사진 추가'}
+              </button>
+            )}
+            {canReorder && (
+              <button
+                type="button"
+                onClick={handleReorder}
+                className={`typo-body-sm-bold h-11 shrink-0 rounded-xl px-4 ${
+                  isReorderMode ? 'bg-bt-black text-white' : 'bg-card text-sub700'
+                }`}
+              >
+                {isReorderMode ? '완료' : '순서 편집'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* 그리드 */}
+        {photos.length === 0 ? (
+          <p className="typo-body-sm-regular px-5 pt-10 text-hint">
+            아직 사진이 없어요. 사진 추가로 첫 장을 올려보세요.
+          </p>
+        ) : (
+          <ul className="grid grid-cols-3 gap-x-2.5 gap-y-3 px-5 pt-6">
+            {photos.map((photo, index) => (
+              <li
+                key={photo.id}
+                draggable={isReorderMode}
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`relative aspect-114/144 ${
+                  isReorderMode ? 'cursor-move' : ''
+                } ${draggedIndex === index ? 'opacity-50' : ''}`}
+              >
+                <img
+                  src={photo.url}
+                  alt={photo.alt ?? `내부사진 ${index + 1}`}
+                  className="size-full rounded-xl object-cover"
+                />
+
+                {index === 0 && (
+                  <span className="typo-body-xs-regular absolute left-1.5 top-1.5 rounded-sm bg-dark px-1 py-0.5 text-white">
+                    대표
+                  </span>
+                )}
+
+                {!isReorderMode && canDeleteContent && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(photo.id)}
+                    aria-label={`내부사진 ${index + 1} 삭제`}
+                    className="absolute right-1.5 top-1.5 flex size-5 items-center justify-center rounded-full bg-black/50 text-white"
+                  >
+                    <X className="size-2.5" strokeWidth={2.5} />
+                  </button>
+                )}
+
+                {isReorderMode && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl">
+                    <span className="typo-body-sm-bold text-white">{index + 1}</span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </main>
+
+      {isReorderMode && (
+        <BottomButtonBar>
+          <button
+            type="button"
+            onClick={handleReorder}
+            className="typo-body-sm-bold h-11 w-full rounded-xl bg-bt-black text-white"
+          >
+            편집 완료
+          </button>
+        </BottomButtonBar>
+      )}
     </div>
   );
 }

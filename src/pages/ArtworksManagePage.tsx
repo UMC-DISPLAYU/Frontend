@@ -99,7 +99,7 @@ export function ArtworksManagePage() {
   };
 
   return (
-    <div className="relative mx-auto flex h-dvh w-96 flex-col overflow-hidden bg-page">
+    <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
       {screen === 'manage' ? (
         <ManageScreen
           works={works}

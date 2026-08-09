@@ -143,7 +143,7 @@ export function ExhibitionWorkPage() {
                 <button
                   type="button"
                   onClick={() => navigate(`/exhibition/${exItem.id}/artworks/add`)}
-                  className="flex h-[158px] w-[118px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
+                  className="flex h-39.5 w-29.5 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
                 >
                   <Plus size={20} className="text-hint" />
                   <span className="typo-body-xs-regular text-sub600">전시작 추가</span>
