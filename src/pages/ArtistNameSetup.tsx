@@ -46,7 +46,7 @@ const getRegion = (address: string): CreateDisplayRequestDto['region'] => {
 const optionalText = (value?: string | null) => {
   const trimmed = value?.trim();
 
-  return trimmed ? trimmed : undefined;
+  return trimmed ? trimmed : '';
 };
 
 function SummaryRow({ label, value }: SummaryRowProps) {

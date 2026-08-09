@@ -14,6 +14,7 @@ export interface HomeExhibitionDto {
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
+  isArchived?: boolean;
 }
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
@@ -64,6 +65,8 @@ export interface DisplayListItemDto {
   startedAt: string;
   endedAt: string;
   dayLeft?: number;
+  isArchived: boolean;
+  schoolDepartmentName?: string;
 }
 
 export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {
@@ -114,6 +117,8 @@ export interface DisplayMapMarkerDto {
   posterImageUrl: string;
   latitude: number;
   longitude: number;
+  schoolDepartmentName?: string;
+  isArchived?: boolean;
 }
 
 export interface GetDisplayMapResponseDataDto {
@@ -144,7 +149,7 @@ export interface DisplayDetailDto {
   displayFields: string[];
   region: string;
   likeCount: number;
-  isBookmarked?: boolean;
+  isArchived?: boolean;
   period: DisplayPeriodDto;
   artworkContentOpen: DisplayContentOpenType;
   exhibitionContentOpen: DisplayContentOpenType;
@@ -239,9 +244,12 @@ export interface DisplayReviewDto {
   displayReviewId: number;
   content: string;
   createdAt: string;
+  isDeleted: boolean;
+  isMine: boolean;
   user: DisplayReviewUserDto;
   images: DisplayReviewImageDto[];
   likeCount: number;
+  isLiked: boolean;
   replyCount: number;
 }
 
@@ -288,6 +296,13 @@ export interface DisplayReviewReplyUserDto {
   profileImageUrl: string | null;
 }
 
+export interface DisplayReviewReplyImageDto {
+  imageUrl: string;
+  width?: number;
+  height?: number;
+  sortOrder?: number;
+}
+
 export interface DisplayReviewReplyDto {
   displayReviewReplyId: number;
   content: string;
@@ -295,6 +310,8 @@ export interface DisplayReviewReplyDto {
   user: DisplayReviewReplyUserDto;
   isTeamMember: boolean;
   likeCount: number;
+  isLiked: boolean;
+  images?: DisplayReviewReplyImageDto[];
 }
 
 export interface GetDisplayReviewRepliesRequestDto {
@@ -304,6 +321,7 @@ export interface GetDisplayReviewRepliesRequestDto {
 
 export interface CreateDisplayReviewReplyRequestDto {
   content: string;
+  images?: DisplayReviewImageRequestDto[];
 }
 
 export type CreateDisplayReviewReplyResponseDataDto = DisplayReviewReplyDto;
@@ -325,6 +343,23 @@ export interface GetDisplayReviewRepliesResponseDataDto {
   size: number;
   hasNext: boolean;
 }
+
+export interface MyDisplayReviewDto {
+  displayReviewId: number;
+  displayId: number;
+  displayName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface GetMyDisplayReviewsResponseDataDto {
+  reviews: MyDisplayReviewDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
+}
+
+export type GetMyDisplayReviewsResponseDto = ApiResponseDto<GetMyDisplayReviewsResponseDataDto>;
 
 export interface CreateDisplayRequestDto {
   title: string;

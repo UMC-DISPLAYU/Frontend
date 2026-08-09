@@ -22,8 +22,8 @@ export function ArtworkMeta({ artwork }: Props) {
   const archivePolicy = useArchivePolicy();
 
   /* 좋아요 상태와 개수는 작품 상세 응답을 그대로 씁니다. */
-  const liked = artwork.isBookmarked ?? false;
-  const likeCount = artwork.bookmarkCount ?? 0;
+  const liked = artwork.isLiked ?? false;
+  const likeCount = artwork.likeCount ?? artwork.bookmarkCount ?? 0;
   const toggleLike = useToggleArtworkLike(artwork.artworkId);
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export function ArtworkMeta({ artwork }: Props) {
       </button>
 
       {!isAtTop && (
-        <ArtworkSaveButton artworkId={artwork.artworkId} saved={artwork.isBookmarked ?? false} />
+        <ArtworkSaveButton artworkId={artwork.artworkId} saved={artwork.isArchived ?? false} />
       )}
       {loginModal}
     </div>
