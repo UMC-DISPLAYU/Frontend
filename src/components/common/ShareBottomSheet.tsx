@@ -72,44 +72,49 @@ export function ShareBottomSheet({
   imageUrl,
 }: ShareBottomSheetProps) {
   const [copied, setCopied] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const shareUrl = url ?? window.location.href;
 
   const handleKakaoShare = async () => {
+    setErrorMessage(null);
+
     try {
       await loadKakaoSdk();
-    } catch {
-      return;
-    }
 
-    const kakao = window.Kakao;
-    if (!kakao) return;
+      const kakao = window.Kakao;
+      if (!kakao) throw new Error('Kakao SDK unavailable');
 
-    if (!kakao.isInitialized()) {
-      kakao.init(import.meta.env.VITE_KAKAO_MAP_KEY);
-    }
+      if (!kakao.isInitialized()) {
+        kakao.init(import.meta.env.VITE_KAKAO_MAP_KEY);
+      }
 
-    kakao.Share.sendDefault({
-      objectType: 'feed',
-      content: {
-        title,
-        description,
-        imageUrl: imageUrl || FALLBACK_SHARE_IMAGE,
-        link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
-      },
-      buttons: [
-        {
-          title: '자세히 보기',
+      kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title,
+          description,
+          imageUrl: imageUrl || FALLBACK_SHARE_IMAGE,
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
-      ],
-    });
-    onClose();
+        buttons: [
+          {
+            title: '자세히 보기',
+            link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
+          },
+        ],
+      });
+      onClose();
+    } catch {
+      setErrorMessage('공유에 실패했어요');
+    }
   };
 
   const handleCopyUrl = async () => {
+    setErrorMessage(null);
+
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -117,7 +122,7 @@ export function ShareBottomSheet({
         setCopied(false);
       }, 1500);
     } catch {
-      /* 클립보드 권한이 없으면 조용히 무시합니다. */
+      setErrorMessage('복사에 실패했어요');
     }
   };
 
@@ -159,9 +164,10 @@ export function ShareBottomSheet({
           <span className="typo-body-md-bold text-main">URL 복사</span>
         </button>
 
-        {copied && (
-          <p className="mt-3 text-center typo-body-xs-regular text-faint">URL이 복사되었습니다</p>
-        )}
+        <div aria-live="polite" className="mt-3 text-center typo-body-xs-regular">
+          {errorMessage && <p className="text-error">{errorMessage}</p>}
+          {!errorMessage && copied && <p className="text-faint">URL이 복사되었습니다</p>}
+        </div>
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ function MetaRow({
 
 export function ExhibitionMeta({ display: ex }: Props) {
   const toggleLike = useToggleDisplayLike();
-  const { data: likeStatus } = useDisplayLikeStatus(ex.displayId);
+  const { data: likeStatus, isSuccess: isLikeStatusReady } = useDisplayLikeStatus(ex.displayId);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
   const liked = Boolean(likeStatus?.isLiked);
@@ -70,9 +70,11 @@ export function ExhibitionMeta({ display: ex }: Props) {
   const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
   const displayedLikeCount = ex.likeCount ?? 0;
   const canToggleArchive = hasPermission(archivePolicy, liked ? 'delete' : 'create');
+  /* 로그인한 사용자만 해당. 실제 좋아요 여부를 확인하기 전에는 토글을 막아 중복 요청을 방지합니다. */
+  const isLikeActionBlocked = canToggleArchive && !isLikeStatusReady;
 
   const handleLikeClick = () => {
-    if (toggleLike.isPending) return;
+    if (toggleLike.isPending || isLikeActionBlocked) return;
     if (!canToggleArchive) {
       openLoginModal();
       return;
@@ -92,7 +94,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
           type="button"
           id="meta-heart-btn"
           onClick={handleLikeClick}
-          disabled={toggleLike.isPending}
+          disabled={toggleLike.isPending || isLikeActionBlocked}
           className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-60"
         >
           <Heart

@@ -107,14 +107,16 @@ export const useArchiveExhibition = () => {
         queryClient.removeQueries({ queryKey: queryKeys.archives.displays.list() });
       }
     },
-    onSettled: (_, __, exhibitionId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+    onSuccess: (_, exhibitionId) => {
       /* 좋아요 상태 등 다른 필드를 건드리지 않도록, 전체 재조회 대신 isArchived만 직접 patch합니다. */
       queryClient.setQueryData(
         queryKeys.displays.detail(exhibitionId),
         (current: DisplayDetailDto | undefined) =>
           current ? { ...current, isArchived: true } : current,
       );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
     },
   });
@@ -150,14 +152,16 @@ export const useUnarchiveExhibition = () => {
         queryClient.removeQueries({ queryKey: queryKeys.archives.displays.list() });
       }
     },
-    onSettled: (_, __, exhibitionId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+    onSuccess: (_, exhibitionId) => {
       /* 좋아요 상태 등 다른 필드를 건드리지 않도록, 전체 재조회 대신 isArchived만 직접 patch합니다. */
       queryClient.setQueryData(
         queryKeys.displays.detail(exhibitionId),
         (current: DisplayDetailDto | undefined) =>
           current ? { ...current, isArchived: false } : current,
       );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
     },
   });
