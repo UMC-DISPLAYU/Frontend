@@ -21,17 +21,6 @@ import {
   useLoungeComments,
 } from '@/hooks/queries/useLoungeComments';
 import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
-import type { LoungeBoardComment, LoungeBoardDetail } from '@/types/exhibition';
-import { formatRelativeTime } from '@/utils/date';
-
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${day}`;
-};
 
 export const LoungeBoardDetailPage = () => {
   const navigate = useNavigate();
@@ -58,26 +47,36 @@ export const LoungeBoardDetailPage = () => {
   const createReplyMutation = useCreateLoungeReply();
   const deletePostMutation = useDeleteLoungePost();
 
-  const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
-    null,
-  );
-  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [replyState, setReplyState] = useState<{
+    commentId: number;
+    author: string;
+    highlightId: string;
+  } | null>(null);
   const [deletedCommentIds, setDeletedCommentIds] = useState<Set<string>>(new Set());
 
   const clearReplyTarget = () => {
-    setReplyTarget(null);
-    setActiveReplyId(null);
+    setReplyState(null);
   };
 
   const handleReplyClick = useCallback((commentId: number, author: string, highlightId: string) => {
-    setReplyTarget({ commentId, author });
-    setActiveReplyId(highlightId);
+    setReplyState((prev) => {
+      if (prev?.highlightId === highlightId) {
+        return null;
+      }
+      return { commentId, author, highlightId };
+    });
   }, []);
 
   const handleDeleteComment = useCallback(
     (commentId: string) => {
-      deleteCommentMutation.mutate({ postId, commentId: Number(commentId) });
-      setDeletedCommentIds((prev) => new Set(prev).add(commentId));
+      deleteCommentMutation.mutate(
+        { postId, commentId: Number(commentId) },
+        {
+          onSuccess: () => {
+            setDeletedCommentIds((prev) => new Set(prev).add(commentId));
+          },
+        },
+      );
     },
     [deleteCommentMutation, postId],
   );
@@ -108,39 +107,17 @@ export const LoungeBoardDetailPage = () => {
   const isValidPost = isValidCategory && !!post && postCategoryKey === category;
   const isLoading = isPostPending || isCommentsPending;
 
-  const review: LoungeBoardDetail | undefined =
-    isValidPost && commentsData
-      ? {
-          id: String(post.loungePostId),
-          category: postCategoryKey,
-          title: post.title,
-          author: post.writer.nickname,
-          date: formatDate(post.createdAt),
-          content: post.content.split('\n').filter((line) => line.length > 0),
-          likeCount: post.likeCount,
-          isLiked: post.isLiked,
-          isSaved: post.isScrapped,
-          isMyPost: post.isMyPost,
-          images: post.postImageUrls.length > 0 ? post.postImageUrls : undefined,
-          comments: commentsData.pages
-            .flatMap((page) => page.comments)
-            .map(
-              (comment): LoungeBoardComment => ({
-                id: String(comment.loungeCommentId),
-                author: comment.writer.nickname,
-                avatarUrl: comment.writer.profileImageUrl,
-                time: formatRelativeTime(comment.createdAt),
-                content: comment.content,
-                likeCount: comment.likeCount,
-                isLiked: comment.isLiked,
-                isMyComment: comment.isMyComment,
-                replyCount: comment.replyCount,
-                commentStatus: comment.commentStatus,
-                images: comment.imageUrls.length > 0 ? comment.imageUrls : undefined,
-              }),
-            ),
-        }
-      : undefined;
+  const visibleComments = commentsData
+    ? commentsData.pages
+        .flatMap((page) => page.comments)
+        .map((comment) => ({
+          comment,
+          isDeleted:
+            comment.commentStatus === 'DELETED' ||
+            deletedCommentIds.has(String(comment.loungeCommentId)),
+        }))
+        .filter(({ isDeleted, comment }) => !(isDeleted && (comment.replyCount ?? 0) === 0))
+    : [];
 
   return (
     <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
@@ -166,72 +143,64 @@ export const LoungeBoardDetailPage = () => {
           message="잠시 후 다시 시도해주세요."
           onRetry={() => refetchComments()}
         />
-      ) : review ? (
+      ) : isValidPost && post ? (
         <>
-          <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-28">
-            <div className="flex flex-col items-center gap-7.5">
+          <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-28 flex flex-col gap-7">
+            {/* 게시글 정보 섹션 */}
+            <article className="flex flex-col items-center gap-7.5">
               <LoungeBoardPostDetail
-                review={review}
+                post={post}
                 onEdit={() => navigate(`/lounge/${category}/${id}/edit`)}
                 onDelete={() =>
                   deletePostMutation.mutate(postId, { onSuccess: () => navigate(-1) })
                 }
               />
+              <LoungeBoardActionBar
+                postId={postId}
+                likeCount={post.likeCount}
+                isLiked={post.isLiked}
+                isSaved={post.isScrapped}
+                hasComments={visibleComments.length > 0}
+              />
+            </article>
 
-              <div className="w-full flex flex-col items-center gap-7">
-                <LoungeBoardActionBar
-                  postId={postId}
-                  likeCount={review.likeCount}
-                  isLiked={review.isLiked}
-                  isSaved={review.isSaved}
-                />
-
-                <div className="w-full flex flex-col">
-                  {review.comments
-                    .map((comment) => ({
-                      comment,
-                      isDeleted:
-                        comment.commentStatus === 'DELETED' || deletedCommentIds.has(comment.id),
-                    }))
-                    // 답글 없는 삭제된 부모 댓글은 목록에서 완전히 제외
-                    .filter(
-                      ({ isDeleted, comment }) => !(isDeleted && (comment.replyCount ?? 0) === 0),
-                    )
-                    .map(({ comment, isDeleted }) => (
-                      <LoungeBoardCommentItem
-                        key={comment.id}
-                        postId={postId}
-                        comment={comment}
-                        isDeleted={isDeleted}
-                        onDelete={handleDeleteComment}
-                        onReplyClick={handleReplyClick}
-                        activeReplyId={activeReplyId}
-                      />
-                    ))}
-                  <div ref={commentsTriggerRef} className="h-4" />
-                  {isFetchingMoreComments && (
-                    <div className="py-4 text-center text-sub600 typo-body-xs-regular animate-pulse">
-                      불러오는 중...
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            {/* 댓글 정보 섹션 */}
+            {visibleComments.length > 0 && (
+              <section className="w-full flex flex-col">
+                {visibleComments.map(({ comment, isDeleted }) => (
+                  <LoungeBoardCommentItem
+                    key={comment.loungeCommentId}
+                    postId={postId}
+                    comment={comment}
+                    isDeleted={isDeleted}
+                    onDelete={handleDeleteComment}
+                    onReplyClick={handleReplyClick}
+                    activeReplyId={replyState?.highlightId ?? null}
+                  />
+                ))}
+                <div ref={commentsTriggerRef} className="h-4" />
+                {isFetchingMoreComments && (
+                  <div className="py-4 text-center text-sub600 typo-body-xs-regular animate-pulse">
+                    불러오는 중...
+                  </div>
+                )}
+              </section>
+            )}
           </main>
 
           <BottomCommentBar
             placeholder="댓글을 입력하세요."
             imageDomain="lounge"
             isSubmitting={
-              replyTarget ? createReplyMutation.isPending : createCommentMutation.isPending
+              replyState ? createReplyMutation.isPending : createCommentMutation.isPending
             }
-            replyingTo={replyTarget?.author}
+            replyingTo={replyState?.author}
             onCancelReply={clearReplyTarget}
             onSubmit={({ content, images }) => {
               const imageUrls = images.map((image) => image.imageUrl);
-              if (replyTarget) {
+              if (replyState) {
                 createReplyMutation.mutate(
-                  { postId, commentId: replyTarget.commentId, body: { content, imageUrls } },
+                  { postId, commentId: replyState.commentId, body: { content, imageUrls } },
                   { onSuccess: clearReplyTarget },
                 );
                 return;

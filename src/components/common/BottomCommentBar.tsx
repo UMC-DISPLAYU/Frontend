@@ -170,23 +170,23 @@ export function BottomCommentBar({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 bg-card px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+46px)] shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]',
+        'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-line bg-card px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+46px)] shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]',
         className,
       )}
     >
       <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       {replyingTo && (
-        <div className="-mx-5 mb-3 flex items-center justify-between gap-2 border-b border-line-soft px-5 pb-3">
-          <span className="typo-body-xs-regular truncate text-hint">
-            {replyingTo}님에게 답글 남기는 중
+        <div className="-mx-5 mb-3 flex items-center gap-2 px-5 pb-2">
+          <span className="typo-body-xs-regular text-hint">
+            <span className="typo-body-xs-bold">{replyingTo}</span>에게 답글 작성 중
           </span>
           <button
             type="button"
             onClick={onCancelReply}
             aria-label="답글 취소"
-            className="shrink-0 cursor-pointer text-hint"
+            className="typo-body-xs-regular text-faint cursor-pointer"
           >
-            <X size={16} strokeWidth={1.5} />
+            취소
           </button>
         </div>
       )}

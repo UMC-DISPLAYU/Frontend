@@ -38,36 +38,6 @@ export interface LoungeBoardPost {
   images?: string[];
 }
 
-export interface LoungeBoardComment {
-  id: string;
-  author: string;
-  avatarUrl?: string | null;
-  time: string;
-  content: string;
-  likeCount: number;
-  isLiked: boolean;
-  isMyComment?: boolean;
-  replyCount?: number;
-  commentStatus?: string;
-  images?: string[];
-  replies?: LoungeBoardComment[];
-}
-
-export interface LoungeBoardDetail {
-  id: string;
-  category: LoungeCategoryKey;
-  title: string;
-  author: string;
-  date: string;
-  content: string[];
-  likeCount: number;
-  isLiked: boolean;
-  isSaved: boolean;
-  isMyPost?: boolean;
-  images?: string[];
-  comments: LoungeBoardComment[];
-}
-
 // ─── Detail Types ──────────────────────────────────────────────────────────
 
 export type DetailTabKey = 'intro' | 'artwork' | 'review';

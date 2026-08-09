@@ -130,11 +130,11 @@ export function ImageUploadPlaceholder({
   }, []);
 
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-2 overflow-x-auto scrollbar-none w-full pb-1">
       {items.map((item) => (
         <div
           key={item.id}
-          className="relative size-25 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
+          className="relative size-25 shrink-0 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
         >
           <img src={item.previewUrl} alt="업로드한 이미지" className="w-full h-full object-cover" />
           {item.status === 'uploading' && (
@@ -158,7 +158,7 @@ export function ImageUploadPlaceholder({
         <button
           type="button"
           onClick={handleUploadClick}
-          className="size-25 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
+          className="size-25 shrink-0 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
           aria-label="이미지 업로드"
         >
           <div className="size-10 bg-gray-100 rounded-full flex items-center justify-center">

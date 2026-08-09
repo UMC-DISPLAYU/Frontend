@@ -1,9 +1,11 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 
 import { Heart } from 'lucide-react';
 
 import defaultProfileIcon from '@/assets/common/DefaultProfileIcon.svg';
 import { cn } from '@/utils/cn';
+
+import { ImageModal } from '../ImageModal';
 
 import type { CommentData } from './types';
 
@@ -36,6 +38,8 @@ type Props = {
   likeIconSize?: IconSize;
   /** 답글의 좋아요 하트 아이콘 크기. */
   replyLikeIconSize?: IconSize;
+  /** 좋아요 버튼 위치 */
+  likePosition?: 'bottom' | 'top-right';
 };
 
 const DEFAULT_LIKE_ICON_SIZE: IconSize = { width: 14, height: 14 };
@@ -62,6 +66,7 @@ export const CommentItem = memo(function CommentItem({
   showDivider = false,
   likeIconSize = DEFAULT_LIKE_ICON_SIZE,
   replyLikeIconSize = DEFAULT_LIKE_ICON_SIZE,
+  likePosition = 'bottom',
 }: Props) {
   const iconSize = isReply ? replyLikeIconSize : likeIconSize;
   const commentId = comment.id;
@@ -74,6 +79,8 @@ export const CommentItem = memo(function CommentItem({
   const highlightKey = isReply ? `reply-${commentId}` : `comment-${commentId}`;
   const isComposingReply = activeReplyId === highlightKey;
   const replyCount = comment.replyCount ?? 0;
+
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleLikeClick = () => {
     if (isLikePending) return;
@@ -100,12 +107,17 @@ export const CommentItem = memo(function CommentItem({
   return (
     <div className={cn('w-full flex flex-col', tightSpacing ? 'gap-0' : 'gap-2', className)}>
       <div
-        className={`relative flex flex-col -mx-5 px-5 ${dividerClasses} ${bleedClasses} ${isComposingReply ? 'bg-box' : ''}`}
+        className={cn(
+          'relative flex flex-col -mx-5 px-5',
+          dividerClasses,
+          bleedClasses,
+          isComposingReply && 'bg-box',
+        )}
       >
         {isComposingReply && (
           <div className="absolute top-0 left-0 h-full w-[3px] rounded-r-full bg-[#8E8E93]" />
         )}
-        <div className={`flex items-center gap-1.5 ${isReply ? 'pl-9' : ''}`}>
+        <div className={cn('flex items-center gap-1.5', isReply && 'pl-9')}>
           <img
             alt=""
             className="size-7 rounded-full shrink-0 object-cover"
@@ -118,15 +130,36 @@ export const CommentItem = memo(function CommentItem({
             <span className="typo-body-sm-bold text-main">{comment.author}</span>
             <span className="typo-body-xs-regular text-hint">{comment.time}</span>
           </div>
+          {likePosition === 'top-right' && !isDeleted && (
+            <button
+              type="button"
+              onClick={handleLikeClick}
+              disabled={isLikePending}
+              aria-pressed={comment.isLiked}
+              aria-label={`좋아요 ${comment.likeCount}개`}
+              className="flex items-center gap-1 disabled:opacity-50"
+            >
+              <Heart
+                width={iconSize.width}
+                height={iconSize.height}
+                className={comment.isLiked ? 'fill-heart text-heart' : 'text-faint'}
+                strokeWidth={1.5}
+              />
+              <span className="typo-body-xs-regular text-faint">{comment.likeCount}</span>
+            </button>
+          )}
         </div>
 
         {!isDeleted && comment.images && comment.images.length > 0 && (
           <div className={`${contentIndent} mt-1 flex gap-1 overflow-x-auto scrollbar-none`}>
             {comment.images.map((url) => (
-              <div
+              <button
                 key={url}
-                className="w-[106px] h-[129px] shrink-0 rounded-sm bg-gray-300 bg-cover bg-center"
+                type="button"
+                className="w-[106px] h-[129px] shrink-0 rounded-sm bg-gray-300 bg-cover bg-center cursor-pointer"
                 style={{ backgroundImage: `url(${url})` }}
+                onClick={() => setSelectedImage(url)}
+                aria-label="이미지 크게 보기"
               />
             ))}
           </div>
@@ -138,7 +171,7 @@ export const CommentItem = memo(function CommentItem({
           {isDeleted ? '삭제된 글입니다.' : comment.content}
         </p>
 
-        <div className={`${contentIndent} mt-3 flex items-center justify-between gap-2`}>
+        <div className={cn(contentIndent, 'mt-3 flex items-center justify-between gap-2')}>
           <div className="flex items-center gap-2">
             {!isDeleted && (
               <button
@@ -152,8 +185,8 @@ export const CommentItem = memo(function CommentItem({
                 }
                 className={
                   isComposingReply
-                    ? 'text-[12px] font-bold text-[#3A3A3C]'
-                    : 'typo-body-xs-regular text-faint'
+                    ? 'typo-body-xs-bold text-[#3A3A3C]'
+                    : 'typo-body-xs-regular text-hint'
                 }
               >
                 답글달기
@@ -163,7 +196,7 @@ export const CommentItem = memo(function CommentItem({
               <button
                 type="button"
                 onClick={() => onToggleReplies?.()}
-                className="typo-body-xs-regular text-faint"
+                className="typo-body-xs-regular text-hint"
               >
                 댓글{replyCount}
               </button>
@@ -172,14 +205,14 @@ export const CommentItem = memo(function CommentItem({
               <button
                 type="button"
                 onClick={handleDeleteClick}
-                className="typo-body-xs-regular text-faint"
+                className="typo-body-xs-regular text-hint"
               >
                 삭제
               </button>
             )}
           </div>
 
-          {!isDeleted && (
+          {likePosition === 'bottom' && !isDeleted && (
             <button
               type="button"
               onClick={handleLikeClick}
@@ -218,6 +251,7 @@ export const CommentItem = memo(function CommentItem({
               showDivider={showDivider}
               likeIconSize={likeIconSize}
               replyLikeIconSize={replyLikeIconSize}
+              likePosition={likePosition}
             />
           ))}
           {hasMoreReplies && (
@@ -232,6 +266,12 @@ export const CommentItem = memo(function CommentItem({
           )}
         </div>
       )}
+
+      <ImageModal
+        imageUrl={selectedImage}
+        isOpen={selectedImage !== null}
+        onClose={() => setSelectedImage(null)}
+      />
     </div>
   );
 });

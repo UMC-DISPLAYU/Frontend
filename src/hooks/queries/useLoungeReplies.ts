@@ -37,6 +37,8 @@ export const useCreateLoungeReply = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
     },
   });
 };
