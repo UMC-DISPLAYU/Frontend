@@ -142,6 +142,7 @@ export interface DisplayDetailDto {
   content: string | null;
   location: DisplayLocationDto;
   qnaAccount: string;
+  contract: string | null;
   note: string | null;
   organization: string | null;
   department: string | null;
@@ -166,6 +167,7 @@ export interface DisplayLocationDto {
   placeName: string;
   latitude: number;
   longitude: number;
+  roadAddress: string;
 }
 
 export interface DisplayPeriodDto {
@@ -230,14 +232,11 @@ export interface DisplayReviewUserDto {
 }
 
 export interface DisplayReviewImageDto {
-  imageId: number;
+  personalFeelingImageId: number;
   imageUrl: string;
-  isThumbnail: boolean;
-  imageType: string;
-  sortOrder: number;
-  caption: string | null;
   width: number;
   height: number;
+  sortOrder: number;
 }
 
 export interface DisplayReviewDto {
@@ -279,8 +278,10 @@ export interface DeleteDisplayReviewResponseDataDto {
 
 export interface DisplayReviewLikeResponseDataDto {
   displayReviewId: number;
-  isLiked: boolean;
+  liked: boolean;
   likeCount: number;
+  createdAt?: string;
+  deletedAt?: string;
 }
 
 export interface GetDisplayReviewsResponseDataDto {
@@ -333,8 +334,10 @@ export interface DeleteDisplayReviewReplyResponseDataDto {
 
 export interface DisplayReviewReplyLikeResponseDataDto {
   displayReviewReplyId: number;
-  isLiked: boolean;
+  liked: boolean;
   likeCount: number;
+  createdAt?: string;
+  deletedAt?: string;
 }
 
 export interface GetDisplayReviewRepliesResponseDataDto {
@@ -444,6 +447,12 @@ export interface ToggleDisplayLikeResponseDataDto {
 }
 
 export type ToggleDisplayLikeResponseDto = ApiResponseDto<ToggleDisplayLikeResponseDataDto>;
+
+export interface DisplayLikeStatusResponseDataDto {
+  isLiked: boolean;
+}
+
+export type DisplayLikeStatusResponseDto = ApiResponseDto<DisplayLikeStatusResponseDataDto>;
 
 export interface MyDisplayDto {
   displayId: number;

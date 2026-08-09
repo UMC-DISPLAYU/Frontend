@@ -17,7 +17,6 @@ type Props = {
   replies?: CommentData[];
   repliesOpen?: boolean;
   onToggleReplies?: () => void;
-  /** 답글이 더 있어서 "댓글 더보기" 버튼을 보여줄지 여부. */
   hasMoreReplies?: boolean;
   onLoadMoreReplies?: () => void;
   isLoadingMoreReplies?: boolean;
@@ -30,15 +29,13 @@ type Props = {
   className?: string;
   /* 줄마다 상하 12px 패딩으로 촘촘하게 쌓는 레이아웃. false면 gap 기반(간격 40px) 레이아웃. */
   tightSpacing?: boolean;
-  /** tightSpacing일 때 각 줄 아래에 구분선을 그릴지 여부. */
+  /* tightSpacing일 때 각 줄 아래에 구분선을 그릴지 여부. */
   showDivider?: boolean;
-  /** 최상위 댓글의 좋아요 하트 아이콘 크기. */
   likeIconSize?: IconSize;
-  /** 답글의 좋아요 하트 아이콘 크기. */
   replyLikeIconSize?: IconSize;
 };
 
-const DEFAULT_LIKE_ICON_SIZE: IconSize = { width: 14, height: 14 };
+const DEFAULT_LIKE_ICON_SIZE: IconSize = { width: 12, height: 17 };
 
 export const CommentItem = memo(function CommentItem({
   comment,
@@ -105,7 +102,7 @@ export const CommentItem = memo(function CommentItem({
         {isComposingReply && (
           <div className="absolute top-0 left-0 h-full w-[3px] rounded-r-full bg-[#8E8E93]" />
         )}
-        <div className={`flex items-center gap-1.5 ${isReply ? 'pl-9' : ''}`}>
+        <div className={`flex items-start gap-1.5 ${isReply ? 'pl-9' : ''}`}>
           <img
             alt=""
             className="size-7 rounded-full shrink-0 object-cover"
@@ -186,15 +183,15 @@ export const CommentItem = memo(function CommentItem({
               disabled={isLikePending}
               aria-pressed={comment.isLiked}
               aria-label={`좋아요 ${comment.likeCount}개`}
-              className="flex items-center gap-1 disabled:opacity-50"
+              className="flex min-w-[28px] items-center gap-1 disabled:opacity-50"
             >
               <Heart
                 width={iconSize.width}
                 height={iconSize.height}
-                className={comment.isLiked ? 'fill-heart text-heart' : 'text-faint'}
-                strokeWidth={1.5}
+                className={cn('shrink-0', comment.isLiked ? 'fill-heart text-heart' : 'text-hint')}
+                strokeWidth={1}
               />
-              <span className="typo-body-xs-regular text-faint">{comment.likeCount}</span>
+              <span className="typo-body-xs-regular text-hint">{comment.likeCount}</span>
             </button>
           )}
         </div>

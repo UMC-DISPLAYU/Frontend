@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Calendar, Clock, Heart, MapPin } from 'lucide-react';
 
 import type { DisplayDetailDto } from '@/api/dto/display.dto';
-import { useToggleDisplayLike } from '@/hooks/queries/useDisplayDetail';
+import { useDisplayLikeStatus, useToggleDisplayLike } from '@/hooks/queries/useDisplayDetail';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArchivePolicy } from '@/hooks/usePolicy';
 import { cn } from '@/utils/cn';
@@ -52,10 +52,10 @@ function MetaRow({
 
 export function ExhibitionMeta({ display: ex }: Props) {
   const toggleLike = useToggleDisplayLike();
+  const { data: likeStatus } = useDisplayLikeStatus(ex.displayId);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
-  /* 좋아요 상태는 토글 응답이 전시 상세 캐시에 반영됩니다. */
-  const liked = Boolean((ex as DisplayDetailDto & { isLiked?: boolean }).isLiked);
+  const liked = Boolean(likeStatus?.isLiked);
   const [isAtTop, setIsAtTop] = useState(true);
 
   useEffect(() => {

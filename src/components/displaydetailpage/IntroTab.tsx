@@ -157,6 +157,9 @@ export function IntroTab({ display: ex }: Props) {
                 <p className="text-[#111] text-sm font-semibold leading-[21px] break-words">
                   {ex.location.placeName}
                 </p>
+                <p className="text-[#9ca3af] text-xs font-normal leading-[18px]">
+                  {ex.location.roadAddress}
+                </p>
               </div>
               <a
                 href={`https://map.kakao.com/link/map/${encodeURIComponent(ex.location.placeName)},${ex.location.latitude},${ex.location.longitude}`}
@@ -174,17 +177,20 @@ export function IntroTab({ display: ex }: Props) {
       {/* 주최·문의 */}
       <section className="px-5 mt-6 pb-6">
         <h2 className="typo-body-xl-bold text-main mb-3">주최 · 문의</h2>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-3">
           {ex.organization && (
-            <div className="flex items-start gap-2 typo-body-sm-regular text-main">
+            <div className="flex items-center gap-2 typo-body-sm-regular text-main">
               <span className="text-faint w-6 shrink-0">주최</span>
               <span>{ex.organization}</span>
             </div>
           )}
           {ex.qnaAccount && (
-            <div className="flex items-start gap-2 typo-body-sm-regular text-main">
+            <div className="flex items-center gap-2 typo-body-sm-regular text-main">
               <span className="text-faint w-6 shrink-0">문의</span>
-              <span>{ex.qnaAccount}</span>
+              <span>
+                {ex.qnaAccount}
+                {ex.contract && ` (${ex.contract})`}
+              </span>
             </div>
           )}
         </div>

@@ -1,8 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { DisplayDetailDto } from '@/api/dto';
-import { getDisplayDetail, toggleDisplayLike, updateDisplayLike } from '@/api/endpoints';
+import {
+  getDisplayDetail,
+  getDisplayLikeStatus,
+  toggleDisplayLike,
+  updateDisplayLike,
+} from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
 export const useDisplayDetail = (displayId: number) =>
   useQuery({
@@ -10,6 +15,20 @@ export const useDisplayDetail = (displayId: number) =>
     queryFn: () => getDisplayDetail(displayId),
     enabled: Number.isFinite(displayId) && displayId > 0,
   });
+
+/*
+ * 전시 상세 조회는 비회원도 호출 가능해 응답에 좋아요 여부가 담기지 않습니다.
+ * 좋아요 여부는 별도 인증 필요 API로 조회합니다.
+ */
+export const useDisplayLikeStatus = (displayId: number) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  return useQuery({
+    queryKey: queryKeys.displays.likeStatus(displayId),
+    queryFn: () => getDisplayLikeStatus(displayId),
+    enabled: !!accessToken && Number.isFinite(displayId) && displayId > 0,
+  });
+};
 
 /*
  * 스웨거 기준 POST는 좋아요 추가, PATCH는 좋아요 취소입니다.
@@ -23,10 +42,11 @@ export const useToggleDisplayLike = () => {
       liked ? updateDisplayLike({ displayId }) : toggleDisplayLike(displayId),
     onSuccess: (data, { displayId, liked }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+      queryClient.setQueryData(queryKeys.displays.likeStatus(displayId), { isLiked: !liked });
       queryClient.setQueryData(
         queryKeys.displays.detail(displayId),
-        (current: DisplayDetailDto | undefined) =>
-          current ? { ...current, isLiked: !liked, likeCount: data.likeCount } : current,
+        (current: { likeCount?: number } | undefined) =>
+          current ? { ...current, likeCount: data.likeCount } : current,
       );
     },
   });
