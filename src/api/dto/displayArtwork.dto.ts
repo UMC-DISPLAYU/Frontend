@@ -50,10 +50,19 @@ export interface GetArtworkDetailResponseDataDto {
   qaHandlers?: ArtworkQaHandlerDto[];
   // 공동 작업자. 서버가 아직 내려주지 않아 없으면 공동 작업자 없음으로 취급합니다.
   coAuthorUserIds?: number[];
-  exhibitionInfo: ArtworkPreviewExhibitionInfoDto;
+  exhibitionInfo: ArtworkDetailExhibitionInfoDto;
   likeCount: number;
   isLiked: boolean;
   isSaved: boolean;
+}
+
+export interface ArtworkDetailExhibitionInfoDto {
+  displayId: number;
+  exhibitionTitle: string;
+  exhibitionThumbnailUrl: string;
+  exhibitionOrganizer: string;
+  exhibitionPeriod: string;
+  exhibitionLocation: string;
 }
 
 export interface ArtworkQaHandlerDto {
@@ -201,7 +210,8 @@ export interface GetReceivedArtworkQuestionsResponseDataDto {
   hasNext: boolean;
 }
 
-export type GetReceivedArtworkQuestionsResponseDto = ApiResponseDto<GetReceivedArtworkQuestionsResponseDataDto>;
+export type GetReceivedArtworkQuestionsResponseDto =
+  ApiResponseDto<GetReceivedArtworkQuestionsResponseDataDto>;
 
 export interface CreateArtworkQuestionRequestDto {
   content: string;

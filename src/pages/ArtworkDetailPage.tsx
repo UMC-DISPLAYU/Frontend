@@ -55,10 +55,7 @@ export function ArtworkDetailPage() {
   } = useArtworkFeelings(artworkId);
   const { data: questionsData } = useArtworkQuestions(artworkId);
 
-  /*
-   * 스웨거 ExhibitionInfoResponse에는 전시 포스터가 없어
-   * displayId로 전시 상세를 조회해 썸네일을 가져옵니다.
-   */
+  /* 작가 전용 권한 판단(팀원 여부 등)에 필요해 전시 상세도 함께 조회합니다. */
   const { data: display } = useDisplayDetail(detail?.exhibitionInfo?.displayId ?? 0);
 
   const createFeeling = useCreateArtworkFeeling();
@@ -189,9 +186,6 @@ export function ArtworkDetailPage() {
     );
   }
 
-  const source = display as (typeof display & { posterImageUrl?: string }) | undefined;
-  const displayPoster = source?.posterImageUrl ?? source?.images?.[0]?.imageUrl ?? '';
-
   /* 화면이 쓰는 ArtworkDetail 형태로 변환합니다. */
   const artwork: ArtworkDetail = {
     artworkId: detail.artworkId,
@@ -206,9 +200,9 @@ export function ArtworkDetailPage() {
     artist: detail.artistName,
     exhibitionId: String(detail.exhibitionInfo?.displayId ?? ''),
     exhibitionTitle: detail.exhibitionInfo?.exhibitionTitle ?? '',
-    exhibitionOrganizer: detail.exhibitionInfo?.exhibitionLocation ?? '',
+    exhibitionOrganizer: detail.exhibitionInfo?.exhibitionOrganizer ?? '',
     exhibitionPeriod: detail.exhibitionInfo?.exhibitionPeriod ?? '',
-    exhibitionThumbnail: displayPoster,
+    exhibitionThumbnail: detail.exhibitionInfo?.exhibitionThumbnailUrl ?? '',
     bookmarkCount: detail.likeCount ?? 0,
     isLiked: detail.isLiked ?? false,
     isArchived: false,
