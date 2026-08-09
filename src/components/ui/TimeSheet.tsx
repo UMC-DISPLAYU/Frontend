@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
 
-const SIZE = 288;
-const C = SIZE / 2;
 const pad = (n: number) => String(n).padStart(2, '0');
 const clampHour = (n: number) => Math.min(23, Math.max(0, n));
 const clampMinute = (n: number) => Math.min(59, Math.max(0, n));
@@ -47,11 +45,22 @@ export function TimeSheet({
   });
   const [field, setField] = useState<Field>('startHour');
 
-  const clockRef = useRef<HTMLDivElement>(null);
-  const draggingRef = useRef(false);
   /** 직접 입력 중인 숫자 버퍼 ("1" -> "18") */
   const bufferRef = useRef('');
   const prevOpenRef = useRef(open);
+
+  const enforceTimeOrder = (t: typeof time, activeField: Field) => {
+    const s = t.startHour * 60 + t.startMinute;
+    const e = t.endHour * 60 + t.endMinute;
+    if (s > e) {
+      if (activeField.startsWith('start')) {
+        return { ...t, endHour: t.startHour, endMinute: t.startMinute };
+      } else {
+        return { ...t, startHour: t.endHour, startMinute: t.endMinute };
+      }
+    }
+    return t;
+  };
 
   // 열릴 때마다 외부 값과 동기화
   useEffect(() => {
@@ -70,68 +79,9 @@ export function TimeSheet({
   }, [open, value]);
 
   const isHourField = field === 'startHour' || field === 'endHour';
-  const activeHour = field.startsWith('start') ? time.startHour : time.endHour;
-  const activeMinute = field.startsWith('start') ? time.startMinute : time.endMinute;
 
   const hourKey: Field = field.startsWith('start') ? 'startHour' : 'endHour';
   const minuteKey: Field = field.startsWith('start') ? 'startMinute' : 'endMinute';
-
-  /* ---------------- 시계 드래그 ---------------- */
-
-  const applyAngle = useCallback(
-    (clientX: number, clientY: number) => {
-      const el = clockRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const ang = (Math.atan2(clientX - cx, -(clientY - cy)) * (180 / Math.PI) + 360) % 360;
-
-      bufferRef.current = '';
-
-      if (isHourField) {
-        const h12 = Math.round(ang / 30) % 12; // 0 ~ 11
-        // 현재 오전/오후 구간을 유지한 채 12시간 눈금만 반영
-        const isPm = activeHour >= 12;
-        setTime((t) => ({ ...t, [hourKey]: isPm ? h12 + 12 : h12 }));
-      } else {
-        setTime((t) => ({ ...t, [minuteKey]: Math.round(ang / 6) % 60 }));
-      }
-    },
-    [isHourField, activeHour, hourKey, minuteKey],
-  );
-
-  // window 에 붙여서 원 밖으로 나가도 드래그가 유지되게 한다
-  useEffect(() => {
-    if (!open) return;
-
-    const move = (e: PointerEvent) => {
-      if (!draggingRef.current) return;
-      e.preventDefault();
-      applyAngle(e.clientX, e.clientY);
-    };
-    const up = () => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-      // 시침을 놓으면 자연스럽게 분침 조작으로 넘어간다
-      setField((f) => (f === 'startHour' ? 'startMinute' : f === 'endHour' ? 'endMinute' : f));
-    };
-
-    window.addEventListener('pointermove', move, { passive: false });
-    window.addEventListener('pointerup', up);
-    window.addEventListener('pointercancel', up);
-    return () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
-      window.removeEventListener('pointercancel', up);
-    };
-  }, [open, applyAngle]);
-
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    draggingRef.current = true;
-    applyAngle(e.clientX, e.clientY);
-  };
 
   /* ---------------- 숫자 직접 입력 ---------------- */
 
@@ -149,7 +99,9 @@ export function TimeSheet({
     }
 
     const key = isHourField ? hourKey : minuteKey;
-    setTime((t) => ({ ...t, [key]: isHourField ? clampHour(n) : clampMinute(n) }));
+    setTime((t) =>
+      enforceTimeOrder({ ...t, [key]: isHourField ? clampHour(n) : clampMinute(n) }, field),
+    );
 
     // 두 자리를 채웠으면 다음 필드로 자동 이동
     if (bufferRef.current.length === 2) {
@@ -176,7 +128,7 @@ export function TimeSheet({
       e.preventDefault();
       bufferRef.current = '';
       const key = isHourField ? hourKey : minuteKey;
-      setTime((t) => ({ ...t, [key]: 0 }));
+      setTime((t) => enforceTimeOrder({ ...t, [key]: 0 }, field));
       return;
     }
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
@@ -185,14 +137,9 @@ export function TimeSheet({
       const delta = e.key === 'ArrowUp' ? 1 : -1;
       const key = isHourField ? hourKey : minuteKey;
       const mod = isHourField ? 24 : 60;
-      setTime((t) => ({ ...t, [key]: (t[key] + delta + mod) % mod }));
+      setTime((t) => enforceTimeOrder({ ...t, [key]: (t[key] + delta + mod) % mod }, field));
     }
   };
-
-  /* ---------------- 바늘 각도 ---------------- */
-
-  const hourAngle = (activeHour % 12) * 30 + activeMinute * 0.5;
-  const minuteAngle = activeMinute * 6;
 
   const label = `${pad(time.startHour)}:${pad(time.startMinute)} - ${pad(time.endHour)}:${pad(time.endMinute)}`;
 
@@ -203,30 +150,7 @@ export function TimeSheet({
 
   return (
     <BottomSheet open={open} onClose={onClose} title="시간 선택" subtitle={subtitle ?? label}>
-      <div className="flex flex-col items-center gap-10 px-5 pb-4 pt-6">
-        {/* 시계: 원 전체가 드래그 영역 */}
-        <div
-          ref={clockRef}
-          onPointerDown={onPointerDown}
-          className="bg-box200 relative cursor-pointer touch-none select-none rounded-full shadow-[-4px_-5px_14px_0px_rgba(255,255,255,0.5),5px_5px_14px_0px_rgba(67,0,209,0.05),inset_3px_5px_7px_-1px_rgba(166,166,166,0.25),inset_-4px_-1px_7px_1px_rgba(255,255,255,0.5)]"
-          style={{ width: SIZE, height: SIZE }}
-        >
-          {[0, 90, 180, 270].map((deg) => (
-            <div
-              key={deg}
-              className="border-faint absolute left-1/2 top-1/2 w-7 origin-left border-t"
-              style={{ transform: `rotate(${deg}deg) translateX(${C - 30}px)` }}
-            />
-          ))}
-
-          {/* 시침 */}
-          <Hand angle={hourAngle} length={C * 0.5} width={6} className="bg-main" />
-          {/* 분침 */}
-          <Hand angle={minuteAngle} length={C * 0.78} width={4} className="bg-link" />
-
-          <div className="bg-link outline-card absolute left-1/2 top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full outline outline-[3px]" />
-        </div>
-
+      <div className="flex flex-col items-center gap-10 px-5 py-13">
         {/* 디지털 표시 — 탭해서 대상 전환 + 숫자 직접 입력 */}
         <div className="flex flex-col items-center gap-3">
           <div
@@ -315,32 +239,5 @@ function Segment({
     >
       {pad(value)}
     </button>
-  );
-}
-
-/** 중심을 기준으로 회전하는 바늘 */
-function Hand({
-  angle,
-  length,
-  width,
-  className,
-}: {
-  angle: number;
-  length: number;
-  width: number;
-  className: string;
-}) {
-  return (
-    <div
-      className="pointer-events-none absolute left-1/2 top-1/2"
-      style={{
-        width,
-        height: length,
-        transform: `translate(-50%, -100%) rotate(${angle}deg)`,
-        transformOrigin: '50% 100%',
-      }}
-    >
-      <div className={`h-full w-full rounded-full ${className}`} />
-    </div>
   );
 }

@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { PageHeader } from '@/components/common';
 import { InviteLinkSection, type Member, MemberRow } from '@/components/team-manage';
+import { ExhibitionHeader } from '@/components/ui';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import {
   useCreateDisplayInvitationLink,
@@ -93,7 +93,7 @@ export function TeamManage() {
 
   return (
     <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
-      <PageHeader title="팀원 초대/관리" onBack={() => navigate(-1)} centered />
+      <ExhibitionHeader title="팀원 초대/관리" onBack={() => navigate(-1)} centered />
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3 pb-8">
         {canCreateInvitation && (

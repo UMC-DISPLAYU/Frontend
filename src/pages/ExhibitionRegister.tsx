@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { ImageUploader } from '@/components/common';
-import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
-import { ChipGroup, RequiredLabel } from '@/components/ui';
+import { BottomButtonBar, ImageUploader } from '@/components/common';
+import { AffiliationInput } from '@/components/exhibition-register';
+import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
   EXHIBITION_FIELD_LABELS,
   EXHIBITION_FIELDS,
@@ -87,6 +87,7 @@ export function ExhibitionRegister() {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
     return found?.group ?? null;
   }, [type]);
+  const affiliationValue = selectedGroup === 'organization' ? organizer : schoolValue;
 
   const isAffiliationValid = () => {
     if (!type) return false;
@@ -103,7 +104,7 @@ export function ExhibitionRegister() {
 
     // 3. 소모임·동아리 전시(CLUB - organization) & 기타 단체 전시(ETC)
     if (type === '소모임·동아리 전시' || type === '기타 단체 전시') {
-      return schoolValue.trim() !== '';
+      return organizer.trim() !== '';
     }
 
     return true;
@@ -140,17 +141,18 @@ export function ExhibitionRegister() {
         field,
         school: schoolValue,
         department,
+        organizer,
       },
     });
   };
 
   return (
-    <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
-      <ExhibitionHeader />
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+      <ExhibitionHeader title="전시 등록" />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-6 px-5 pt-2 pb-8">
-          <div className="flex justify-center">
+      <main className="flex-1 overflow-y-auto pb-24">
+        <div className="flex flex-col px-5">
+          <div className="flex justify-center pb-6">
             <ImageUploader
               images={imageUpload.images}
               initialImages={initialImages}
@@ -161,7 +163,7 @@ export function ExhibitionRegister() {
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-6">
             <RequiredLabel required>전시명</RequiredLabel>
             <input
               id="exhibition-title"
@@ -172,7 +174,7 @@ export function ExhibitionRegister() {
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-5">
             <RequiredLabel>전시 부제목</RequiredLabel>
             <input
               id="exhibition-subtitle"
@@ -183,7 +185,7 @@ export function ExhibitionRegister() {
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-5">
             <RequiredLabel>전시소개</RequiredLabel>
             <div className="px-3 py-2.5 border-b border-input-border flex flex-col gap-2">
               <textarea
@@ -200,7 +202,7 @@ export function ExhibitionRegister() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-5">
             <RequiredLabel required>전시유형</RequiredLabel>
             <ChipGroup
               options={EXHIBITION_TYPE_LABELS}
@@ -208,11 +210,11 @@ export function ExhibitionRegister() {
               onChange={(next) => setType(next[0] ?? null)}
               maxSelect={1}
               aria-label="전시유형"
-              className="flex flex-wrap items-center gap-1.5"
+              className="flex flex-wrap items-center gap-2"
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pb-5">
             <RequiredLabel required>전시분야</RequiredLabel>
             <ChipGroup
               options={EXHIBITION_FIELDS}
@@ -220,6 +222,7 @@ export function ExhibitionRegister() {
               selected={field}
               onChange={setField}
               aria-label="전시분야"
+              className="flex flex-wrap items-center gap-2"
             />
           </div>
 
@@ -228,17 +231,19 @@ export function ExhibitionRegister() {
               <RequiredLabel required>소속 정보</RequiredLabel>
               <AffiliationInput
                 group={selectedGroup}
-                school={schoolValue}
-                onSchoolChange={setSchool}
+                school={affiliationValue}
+                onSchoolChange={selectedGroup === 'organization' ? setOrganizer : setSchool}
                 department={department}
                 onDepartmentChange={setDepartment}
+                readonly={selectedGroup === 'institution'}
+                isDepartmentRequired={type === '졸업 전시' || type === '과제 전시'}
               />
             </div>
           )}
         </div>
       </main>
 
-      <footer className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <BottomButtonBar>
         <button
           type="button"
           disabled={!isFormValid || imageUpload.isUploading}
@@ -247,7 +252,7 @@ export function ExhibitionRegister() {
         >
           {imageUpload.isUploading ? '이미지 업로드 중' : '다음'}
         </button>
-      </footer>
+      </BottomButtonBar>
     </div>
   );
 }

@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ImageUploader } from '@/components/common';
-import { ExhibitionHeader } from '@/components/exhibition-register';
-import { ChipGroup, RequiredLabel } from '@/components/ui';
+import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
   ARTWORK_FIELD_MAP,
   DEFAULT_ARTWORK_IMAGE_HEIGHT,

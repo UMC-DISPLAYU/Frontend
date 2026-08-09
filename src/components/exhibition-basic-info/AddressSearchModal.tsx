@@ -1,8 +1,24 @@
 import { useState } from 'react';
 
-import { MapPin, Search, X } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
-import { InputBox } from './InputBox';
+import { ExhibitionHeader } from '@/components/ui';
+
+function Underline({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex items-center gap-2.5 border-b border-input-border px-3 py-2.5 ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
 
 interface KakaoAddressDocument {
   address_name: string;
@@ -134,129 +150,130 @@ export function AddressSearchModal({ open, onClose, onConfirm }: AddressSearchMo
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 mx-auto flex w-full max-w-md flex-col bg-page">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between border-b border-sub600 px-5 py-4">
-        <h2 className="typo-body-lg-bold text-main">주소 검색</h2>
-        <button type="button" aria-label="닫기" onClick={handleClose} className="p-1">
-          <X className="size-6 text-main" strokeWidth={1.5} />
-        </button>
-      </div>
+    <div className="fixed inset-0 z-50 mx-auto flex min-h-dvh w-full max-w-md  flex-col bg-page">
+      <ExhibitionHeader title="주소 검색" onBack={handleClose} />
 
-      {!selectedAddress ? (
-        <>
-          {/* 검색 영역 */}
-          <div className="px-5 py-4">
-            <div className="flex items-stretch gap-2">
-              <InputBox className="flex-1">
-                <Search className="size-4 shrink-0 text-faint" strokeWidth={1.5} />
-                <input
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="도로명, 건물명 또는 지번 검색"
-                  className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
-                  autoFocus
-                />
-              </InputBox>
-              <button
-                type="button"
-                onClick={searchAddress}
-                disabled={isSearching}
-                className="typo-body-xs-bold rounded-lg bg-dark px-4 py-2.5 text-white disabled:opacity-40"
-              >
-                {isSearching ? '검색중' : '검색'}
-              </button>
-            </div>
-            {error && <p className="typo-body-xs-regular mt-2 text-red-500">{error}</p>}
-          </div>
-
-          {/* 검색 결과 */}
-          <div className="flex-1 overflow-y-auto px-5">
-            {results.length > 0 && (
-              <div className="flex flex-col gap-2">
-                {results.map((result, index) => (
+      <div className={`min-h-0 flex-1 flex flex-col px-5 pt-3 ${selectedAddress ? 'pb-19' : ''}`}>
+        <div className="flex-1 flex flex-col min-h-0 pb-8">
+          {!selectedAddress ? (
+            <div className="flex-1 flex flex-col min-h-0 gap-6">
+              {/* 검색 영역 */}
+              <div className="flex flex-col gap-2 shrink-0">
+                <div className="flex items-center gap-3">
+                  <Underline className="flex-1">
+                    <input
+                      id="address-keyword"
+                      value={keyword}
+                      onChange={(e) => setKeyword(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="주소를 검색해주세요"
+                      className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
+                      autoFocus
+                    />
+                  </Underline>
                   <button
-                    key={index}
                     type="button"
-                    onClick={() => handleSelectAddress(result)}
-                    className="flex items-start gap-3 rounded-lg border border-sub600 bg-card p-4 text-left transition-colors hover:bg-box100"
+                    onClick={searchAddress}
+                    disabled={isSearching}
+                    className="typo-body-xs-bold shrink-0 rounded-lg bg-card px-4 py-2.5 text-main outline outline-1 outline-offset-[-1px] outline-sub600"
                   >
-                    <MapPin className="mt-0.5 size-4 shrink-0 text-main" strokeWidth={1.5} />
-                    <div className="flex flex-col gap-1">
-                      {result.roadAddress && (
-                        <p className="typo-body-sm-medium text-main">
-                          {result.roadAddress}
-                          {result.buildingName && (
-                            <span className="typo-body-xs-regular ml-1 text-faint">
+                    {isSearching ? '검색중' : '검색'}
+                  </button>
+                </div>
+                {error && <p className="typo-body-xs-regular mt-2 text-red-500">{error}</p>}
+              </div>
+
+              {/* 검색 결과 */}
+              {results.length > 0 && (
+                <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
+                  {results.map((result, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleSelectAddress(result)}
+                      className="flex flex-col rounded-2xl outline -outline-offset-1 outline-input-soft-border bg-card px-4 py-3.5 text-left transition-colors hover:bg-box100"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <p className="typo-body-md-regular text-main">
+                          {result.roadAddress || result.jibunAddress}
+                          {result.roadAddress && result.buildingName && (
+                            <span className="typo-body-xs-regular text-hint ml-1">
                               ({result.buildingName})
                             </span>
                           )}
                         </p>
+                        {result.roadAddress && result.jibunAddress && (
+                          <p className="typo-body-xs-regular text-hint">{result.jibunAddress}</p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {/* 상세주소 입력 */}
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-3">
+                  <label className="typo-body-sm-bold text-main">선택한 주소</label>
+                  <div className="flex flex-col rounded-2xl outline -outline-offset-1 outline-input-soft-border bg-card px-4 py-3.5 text-left">
+                    <div className="flex flex-col gap-1">
+                      <p className="typo-body-md-regular text-main">
+                        {selectedAddress.roadAddress || selectedAddress.jibunAddress}
+                        {selectedAddress.roadAddress && selectedAddress.buildingName && (
+                          <span className="typo-body-xs-regular text-hint ml-1">
+                            ({selectedAddress.buildingName})
+                          </span>
+                        )}
+                      </p>
+                      {selectedAddress.roadAddress && selectedAddress.jibunAddress && (
+                        <p className="typo-body-xs-regular text-hint">
+                          {selectedAddress.jibunAddress}
+                        </p>
                       )}
-                      <p className="typo-body-xs-regular text-faint">{result.jibunAddress}</p>
                     </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      ) : (
-        <>
-          {/* 상세주소 입력 */}
-          <div className="flex-1 px-5 py-6">
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="typo-body-sm-bold text-main">선택한 주소</label>
-                <div className="rounded-lg border border-sub600 bg-card p-4">
-                  <p className="typo-body-sm-medium text-main">
-                    {selectedAddress.roadAddress || selectedAddress.jibunAddress}
-                  </p>
-                  {selectedAddress.buildingName && (
-                    <p className="typo-body-xs-regular mt-1 text-faint">
-                      ({selectedAddress.buildingName})
-                    </p>
-                  )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <label htmlFor="detail-address" className="typo-body-sm-bold text-main">
+                    상세주소 (선택)
+                  </label>
+                  <Underline>
+                    <input
+                      id="detail-address"
+                      value={detailAddress}
+                      onChange={(e) => setDetailAddress(e.target.value)}
+                      placeholder="동, 호수 등 상세주소 입력"
+                      className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
+                      autoFocus
+                    />
+                  </Underline>
                 </div>
               </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="detail-address" className="typo-body-sm-bold text-main">
-                  상세주소 (선택)
-                </label>
-                <InputBox>
-                  <input
-                    id="detail-address"
-                    value={detailAddress}
-                    onChange={(e) => setDetailAddress(e.target.value)}
-                    placeholder="동, 호수 등 상세주소 입력"
-                    className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
-                    autoFocus
-                  />
-                </InputBox>
-              </div>
             </div>
-          </div>
+          )}
+        </div>
+      </div>
 
-          {/* 하단 버튼 */}
-          <div className="flex gap-3 border-t border-sub600 px-5 py-4">
-            <button
-              type="button"
-              onClick={() => setSelectedAddress(null)}
-              className="typo-body-sm-medium flex-1 rounded-xl border border-sub600 bg-card py-3 text-main"
-            >
-              다시 검색
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirm}
-              className="typo-body-sm-bold flex-1 rounded-xl bg-dark py-3 text-white"
-            >
-              완료
-            </button>
-          </div>
-        </>
+      {selectedAddress && (
+        <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-5 py-4 bg-card border-t border-line z-50 flex gap-3">
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="typo-body-sm-bold flex h-11 flex-1 items-center justify-center rounded-xl bg-bt-black text-white"
+          >
+            완료
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedAddress(null)}
+            className="typo-body-sm-bold h-11 shrink-0 rounded-xl bg-card px-4 text-sub700 outline outline-1 outline-offset-[-1px] outline-sub600"
+          >
+            다시 검색
+          </button>
+        </footer>
       )}
     </div>
   );

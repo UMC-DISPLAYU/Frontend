@@ -4,6 +4,8 @@ import { ChevronLeft, Info } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
+import { BottomButtonBar } from '@/components/common';
+import { ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
 
@@ -140,15 +142,10 @@ export function ArtistNameSetup() {
   };
 
   return (
-    <div className="mx-auto flex h-dvh w-96 flex-col bg-page">
-      <header className="flex shrink-0 items-center gap-3 px-5 pt-6 pb-3">
-        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
-          <ChevronLeft className="size-7 text-main" strokeWidth={2} />
-        </button>
-        <h1 className="typo-body-xl-bold text-main">전시 작가명 설정</h1>
-      </header>
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+      <ExhibitionHeader title="전시 작가명 설정" />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3">
+      <main className="flex flex-col flex-1 overflow-y-auto pb-24 px-5">
         <div className="flex flex-col gap-5">
           {/* 안내 문구 */}
           <div className="flex flex-col gap-1">
@@ -169,48 +166,48 @@ export function ArtistNameSetup() {
           </div>
 
           {/* 작가명 입력 */}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-1">
-                <span className="typo-body-sm-bold text-main">전시 작가명</span>
-                <span className="typo-body-xs-regular text-error">*</span>
-              </div>
-              <div className="border-b border-input-border px-3 py-2.5">
-                <input
-                  value={artistName}
-                  onChange={(e) => setArtistName(e.target.value)}
-                  placeholder="홍길동"
-                  className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
-                />
-              </div>
+              <RequiredLabel required htmlFor="artist-name">
+                전시 작가명
+              </RequiredLabel>
+              <input
+                id="artist-name"
+                value={artistName}
+                onChange={(e) => setArtistName(e.target.value)}
+                placeholder="홍길동"
+                className="w-full border-b border-input-border px-3 py-2.5 bg-transparent typo-body-xs-regular text-main outline-none placeholder:text-input-placeholder"
+              />
             </div>
             <p className="typo-body-xxs-regular text-faint">
               실명 또는 이 전시에서 사용할 작가명을 입력해주세요.
             </p>
           </div>
         </div>
-      </div>
+
+        <div className="mt-auto pt-12 pb-6">
+          <div className="flex items-start gap-2 rounded-2xl bg-card p-3.5">
+            <Info className="mt-0.5 size-4 shrink-0 text-faint" strokeWidth={1} />
+            <p className="typo-body-xs-regular text-faint">
+              입력한 작가명은 팀원 목록, 전시작 등록자 표시, Q&amp;A 담당자 지정에 사용돼요. 작품
+              등록 시 기본 작가명으로 자동 입력되며, 공동작업이나 팀명 표기가 필요한 경우 작품별로
+              수정할 수 있어요.
+            </p>
+          </div>
+        </div>
+      </main>
 
       {/* 하단 고정 영역 */}
-      <div className="shrink-0 px-5 pt-4 pb-6">
-        <div className="flex items-start gap-2 rounded-2xl bg-card p-3.5">
-          <Info className="mt-0.5 size-4 shrink-0 text-faint" strokeWidth={1} />
-          <p className="typo-body-xs-regular text-faint">
-            입력한 작가명은 팀원 목록, 전시작 등록자 표시, Q&amp;A 담당자 지정에 사용돼요. 작품 등록
-            시 기본 작가명으로 자동 입력되며, 공동작업이나 팀명 표기가 필요한 경우 작품별로 수정할
-            수 있어요.
-          </p>
-        </div>
-
+      <BottomButtonBar>
         <button
           type="button"
           disabled={!artistName.trim() || createDisplay.isPending}
           onClick={goCreate}
-          className="typo-body-sm-bold mt-4 h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
+          className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
         >
           {createDisplay.isPending ? '전시 등록 중' : '전시 관리 페이지 만들기'}
         </button>
-      </div>
+      </BottomButtonBar>
     </div>
   );
 }
