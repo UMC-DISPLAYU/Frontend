@@ -47,11 +47,11 @@ export function ImageUploader({
   );
 
   return (
-    <div className="mt-2 flex gap-2 flex-wrap">
+    <div className="mt-2 flex gap-2 overflow-x-auto scrollbar-none w-full pb-1">
       {images.map((image, index) => (
         <div
           key={image.id}
-          className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
+          className="relative size-24 shrink-0 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
         >
           <img
             src={image.previewUrl}
@@ -72,7 +72,7 @@ export function ImageUploader({
         <button
           type="button"
           onClick={handleImageClick}
-          className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
+          className="size-24 shrink-0 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
           aria-label={emptyLabel ?? '이미지 업로드'}
         >
           <div className="size-10 bg-page rounded-full flex items-center justify-center">
