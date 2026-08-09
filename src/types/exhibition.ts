@@ -181,11 +181,8 @@ export interface GuestbookReview {
 }
 
 export interface GuestbookQuestion extends ArtworkQuestionDto {
-  user: ArtworkQuestionDto['user'] & {
-    profileImageUrl?: string;
-  };
+  user: (NonNullable<ArtworkQuestionDto['user']> & { profileImageUrl?: string }) | null;
   commentCount?: number;
-  likeCount?: number;
   isLiked?: boolean;
   isMyQuestion?: boolean;
 }

@@ -179,7 +179,7 @@ const artworkToDetail = (artwork: any) => ({
   liked: false,
   /* 작품 상세 응답(ArtworkDetailResponse)이 내려주는 좋아요/저장 상태입니다. */
   isLiked: false,
-  isSaved: false,
+  isArchived: false,
   likeCount: 3,
   thumbnailUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
   images: artwork.images.map((image: any, index: number) => ({
@@ -303,6 +303,10 @@ export const mockDb: {
       questionId: 1,
       artworkId: 1001,
       content: '설치 위치는 어디인가요?',
+      isPublic: true,
+      accessible: true,
+      canReply: false,
+      likeCount: 0,
       writer: makeUser(6),
       author: makeUser(6),
       answer: null,

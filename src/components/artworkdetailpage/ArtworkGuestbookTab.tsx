@@ -7,11 +7,9 @@ import type {
   DisplayDetailDto,
   GetArtworkDetailResponseDataDto,
 } from '@/api/dto';
-import { useQuestionPolicy } from '@/hooks/usePolicy';
 import type { ArtworkGuestbookTab, GuestbookQuestion } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 import { formatRelativeTime } from '@/utils/date';
-import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworkFeelingCommentItem } from './ArtworkFeelingCommentItem';
 
@@ -35,6 +33,9 @@ type Props = {
   onLoadMoreFeelings?: () => void;
   isLoadingMoreFeelings?: boolean;
   questions: GuestbookQuestion[];
+  hasMoreQuestions?: boolean;
+  onLoadMoreQuestions?: () => void;
+  isLoadingMoreQuestions?: boolean;
   artworkId: number;
   myUserId?: number;
   artwork: GetArtworkDetailResponseDataDto;
@@ -61,19 +62,15 @@ type Props = {
 /* 방명록 질문 탭 카드 (일반인 시점 / 작가 시점 지원) */
 function QuestionCard({
   question,
-  display,
   artistName,
-  isArtistView = false,
   isReplyTarget = false,
   onReply,
   onSubmitReply,
   isSubmittingReply = false,
 }: {
   question: GuestbookQuestion;
-  display: DisplayDetailDto;
   /* 답변 작성 카드에 표시되는 전시 대표 작가 이름 */
   artistName?: string;
-  isArtistView?: boolean;
   isReplyTarget?: boolean;
   onReply?: () => void;
   onSubmitReply?: (content: string) => void;
@@ -82,8 +79,8 @@ function QuestionCard({
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const replyTextareaRef = useAutoResizeTextarea(replyContent);
-  const questionPolicy = useQuestionPolicy(question, display);
-  const canView = hasPermission(questionPolicy, 'view');
+  /* 비공개 질문 열람 가능 여부는 서버가 계산해서 accessible로 내려줍니다. */
+  const canView = question.accessible;
 
   /*
    * 답변할 질문이 없어졌으면(답변 등록 성공 등) 작성 중이던 입력값을 비웁니다.
@@ -95,11 +92,11 @@ function QuestionCard({
     if (!isReplyTarget) setReplyContent('');
   }
 
-  /* 이 질문에 답변을 작성 중인지 — 작가만 가능합니다. */
-  const isComposingReply = isArtistView && isReplyTarget && !question.reply;
+  /* 이 질문에 답변을 작성 중인지 — 서버가 계산한 canReply(진짜 담당 작가) 기준입니다. */
+  const isComposingReply = question.canReply && isReplyTarget && !question.reply;
 
   const handleFooterClick = () => {
-    if (isArtistView && !question.reply) {
+    if (question.canReply && !question.reply) {
       onReply?.();
       return;
     }
@@ -200,7 +197,7 @@ function QuestionCard({
             <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
             {showReplies && <ChevronUp size={13} className="shrink-0 text-sub600" />}
           </button>
-        ) : (
+        ) : question.canReply ? (
           <button
             type="button"
             onClick={handleFooterClick}
@@ -209,6 +206,10 @@ function QuestionCard({
             <span className="typo-body-xs-regular text-sub600 underline">답변대기</span>
             {showReplies && <ChevronDown size={13} className="shrink-0 text-sub600" />}
           </button>
+        ) : (
+          <div className="flex w-full items-center justify-end gap-0.5 border-t border-box200 p-4">
+            <span className="typo-body-xs-regular text-sub600">답변대기</span>
+          </div>
         )}
 
         {showReplies && !isComposingReply && (
@@ -322,6 +323,9 @@ export function ArtworkGuestbookTab({
   onLoadMoreFeelings,
   isLoadingMoreFeelings = false,
   questions,
+  hasMoreQuestions = false,
+  onLoadMoreQuestions,
+  isLoadingMoreQuestions = false,
   artworkId,
   myUserId,
   artwork,
@@ -365,6 +369,28 @@ export function ArtworkGuestbookTab({
       observer.disconnect();
     };
   }, [activeTab, hasMoreFeelings, isLoadingMoreFeelings, onLoadMoreFeelings]);
+
+  const questionsTriggerRef = useRef<HTMLDivElement | null>(null);
+
+  // 질문 목록 무한 스크롤 감지
+  useEffect(() => {
+    const el = questionsTriggerRef.current;
+    if (!el || activeTab !== 'question') return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreQuestions && !isLoadingMoreQuestions) {
+          onLoadMoreQuestions?.();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [activeTab, hasMoreQuestions, isLoadingMoreQuestions, onLoadMoreQuestions]);
 
   const handleArtistViewToggle = () => {
     const nextVal = !isArtistView;
@@ -444,9 +470,7 @@ export function ArtworkGuestbookTab({
               <QuestionCard
                 key={q.questionId}
                 question={q}
-                display={display}
                 artistName={artwork.artistName}
-                isArtistView={isArtistView}
                 isReplyTarget={replyTargetQuestionId === q.questionId}
                 onReply={() =>
                   onQuestionReplyTargetChange?.(replyTargetQuestionId === q.questionId ? null : q)
@@ -460,6 +484,13 @@ export function ArtworkGuestbookTab({
             <p className="typo-body-sm-regular text-faint text-center px-5 py-10">
               아직 질문이 없습니다.
             </p>
+          )}
+          {/* 무한 스크롤 감지 트리거 */}
+          <div ref={questionsTriggerRef} className="h-4" />
+          {isLoadingMoreQuestions && (
+            <div className="py-4 text-center text-sub600 typo-body-xs-regular animate-pulse">
+              불러오는 중...
+            </div>
           )}
         </div>
       )}

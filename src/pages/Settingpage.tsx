@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
-import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
+import { useReceivedArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
 import { useLogout } from '@/hooks/queries/useAuth';
 import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
@@ -18,7 +18,7 @@ export function SettingPage() {
   const logoutMutation = useLogout();
 
   const { data: invitationsData } = useMyDisplayInvitations();
-  const { data: questionsData } = useMyArtworkQuestions({ answerStatus: 'WAITING' });
+  const { data: questionsData } = useReceivedArtworkQuestions({ answerStatus: 'WAITING' });
 
   const invitationCount = invitationsData?.invitations?.length ?? 0;
   const pendingQuestionCount = questionsData?.questions?.length ?? 0;

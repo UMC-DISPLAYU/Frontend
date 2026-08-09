@@ -1,29 +1,29 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
   CreateArtworkQuestionReplyRequestDto,
   CreateArtworkQuestionRequestDto,
-  UpdateArtworkQuestionRequestDto,
 } from '@/api/dto';
 import {
   createArtworkQuestion,
   createArtworkQuestionReply,
-  deleteArtworkQuestion,
-  deleteArtworkQuestionReply,
   getArtworkQuestions,
   getReceivedArtworkQuestions,
-  updateArtworkQuestion,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
 export const useArtworkQuestions = (artworkId: number) =>
-  useQuery({
+  useInfiniteQuery({
     queryKey: queryKeys.artworkQuestions.list(artworkId),
-    queryFn: () => getArtworkQuestions(artworkId),
+    queryFn: ({ pageParam }) =>
+      getArtworkQuestions(artworkId, { cursorId: pageParam ?? undefined }),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled: Number.isFinite(artworkId),
   });
 
-export const useMyArtworkQuestions = (params?: {
+/* 내가 받은(답변할) 질문 목록. 내가 물어본 질문은 useMyArtworkQuestions(hooks/queries/useMyArtworkQuestions.ts)를 씁니다. */
+export const useReceivedArtworkQuestions = (params?: {
   cursor?: string;
   size?: number;
   answerStatus?: 'WAITING' | 'ANSWERED';
@@ -52,41 +52,6 @@ export const useCreateArtworkQuestion = () => {
   });
 };
 
-export const useUpdateArtworkQuestion = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      artworkId,
-      questionId,
-      body,
-    }: {
-      artworkId: number;
-      questionId: number;
-      body: UpdateArtworkQuestionRequestDto;
-    }) => updateArtworkQuestion(artworkId, questionId, body),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
-      });
-    },
-  });
-};
-
-export const useDeleteArtworkQuestion = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ artworkId, questionId }: { artworkId: number; questionId: number }) =>
-      deleteArtworkQuestion(artworkId, questionId),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
-      });
-    },
-  });
-};
-
 export const useCreateArtworkQuestionReply = () => {
   const queryClient = useQueryClient();
 
@@ -100,27 +65,6 @@ export const useCreateArtworkQuestionReply = () => {
       questionId: number;
       body: CreateArtworkQuestionReplyRequestDto;
     }) => createArtworkQuestionReply(artworkId, questionId, body),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
-      });
-    },
-  });
-};
-
-export const useDeleteArtworkQuestionReply = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      artworkId,
-      questionId,
-      questionReplyId,
-    }: {
-      artworkId: number;
-      questionId: number;
-      questionReplyId: number;
-    }) => deleteArtworkQuestionReply(artworkId, questionId, questionReplyId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkQuestions.list(variables.artworkId),

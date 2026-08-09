@@ -26,6 +26,8 @@ export interface ArtworkGuestbookReplyDto {
   user?: ArtworkGuestbookUserDto;
   likeCount?: number;
   isLiked?: boolean;
+  /* 감상 답글에만 내려온다. */
+  images?: ArtworkFeelingReplyImageDto[];
   /* 질문 답변(작가 답변)은 user 대신 이 필드들로 내려온다. */
   creatorId?: number;
   creatorName?: string;
@@ -33,6 +35,14 @@ export interface ArtworkGuestbookReplyDto {
   userId?: number;
   nickname?: string;
   isTeamMember?: boolean;
+}
+
+export interface ArtworkFeelingReplyImageDto {
+  feelingReplyImageId: number;
+  imageUrl: string;
+  width: number;
+  height: number;
+  sortOrder: number;
 }
 
 export interface GetArtworkDetailResponseDataDto {
@@ -53,7 +63,7 @@ export interface GetArtworkDetailResponseDataDto {
   exhibitionInfo: ArtworkDetailExhibitionInfoDto;
   likeCount: number;
   isLiked: boolean;
-  isSaved: boolean;
+  isArchived: boolean;
 }
 
 export interface ArtworkDetailExhibitionInfoDto {
@@ -72,6 +82,14 @@ export interface ArtworkQaHandlerDto {
 
 export type GetArtworkDetailResponseDto = ApiResponseDto<GetArtworkDetailResponseDataDto>;
 
+export interface ArtworkFeelingImageDto {
+  feelingImageId: number;
+  imageUrl: string;
+  width: number;
+  height: number;
+  sortOrder: number;
+}
+
 export interface ArtworkFeelingDto {
   feelingId: number;
   userId?: number;
@@ -80,7 +98,7 @@ export interface ArtworkFeelingDto {
   isDeleted?: boolean;
   isMine?: boolean;
   user: ArtworkGuestbookUserDto;
-  images?: ImageResponseDto[];
+  images?: ArtworkFeelingImageDto[];
   likeCount: number;
   isLiked?: boolean;
   replyCount: number;
@@ -109,6 +127,12 @@ export interface ArtworkFeelingImageRequestDto {
   width?: number;
   height?: number;
   sortOrder?: number;
+}
+
+export interface ArtworkFeelingReplyImageRequestDto {
+  imageUrl: string;
+  width?: number;
+  height?: number;
 }
 
 export interface CreateArtworkFeelingResponseDataDto {
@@ -152,18 +176,27 @@ export type GetMyArtworkFeelingsResponseDto = ApiResponseDto<GetMyArtworkFeeling
 
 export interface ArtworkQuestionDto {
   questionId: number;
-  content: string;
+  /* 비공개 질문을 볼 권한이 없으면 content/user/reply/likeCount가 모두 null로 마스킹됩니다. */
+  content: string | null;
   isPublic: boolean;
+  /* 질문/답변 원문을 조회할 권한이 있는지. 서버가 계산해서 내려줍니다. */
+  accessible: boolean;
+  /* 로그인 사용자가 이 질문에 답변을 등록할 수 있는지. 서버가 계산해서 내려줍니다. */
+  canReply: boolean;
+  likeCount: number | null;
   answerStatus?: 'WAITING' | 'ANSWERED';
   createdAt: string;
   displayArtworkId?: number;
   userId?: number;
-  user: ArtworkGuestbookUserDto;
+  user: ArtworkGuestbookUserDto | null;
   reply: ArtworkGuestbookReplyDto | null;
 }
 
 export interface GetArtworkQuestionsResponseDataDto {
   questions: ArtworkQuestionDto[];
+  nextCursorId: number | null;
+  size: number;
+  hasNext: boolean;
 }
 
 export type GetArtworkQuestionsResponseDto = ApiResponseDto<GetArtworkQuestionsResponseDataDto>;
@@ -232,20 +265,6 @@ export interface ArtworkQuestionRecordDto {
 
 export type CreateArtworkQuestionResponseDto = ApiResponseDto<ArtworkQuestionRecordDto>;
 
-export interface UpdateArtworkQuestionRequestDto {
-  content: string;
-  isPublic: boolean;
-}
-
-export type UpdateArtworkQuestionResponseDto = ApiResponseDto<ArtworkQuestionRecordDto>;
-
-export interface DeleteArtworkQuestionResponseDataDto {
-  questionId: number;
-  deletedAt: string;
-}
-
-export type DeleteArtworkQuestionResponseDto = ApiResponseDto<DeleteArtworkQuestionResponseDataDto>;
-
 export interface CreateArtworkQuestionReplyRequestDto {
   content: string;
 }
@@ -261,14 +280,6 @@ export interface CreateArtworkQuestionReplyResponseDataDto {
 
 export type CreateArtworkQuestionReplyResponseDto =
   ApiResponseDto<CreateArtworkQuestionReplyResponseDataDto>;
-
-export interface DeleteArtworkQuestionReplyResponseDataDto {
-  questionReplyId: number;
-  deletedAt: string;
-}
-
-export type DeleteArtworkQuestionReplyResponseDto =
-  ApiResponseDto<DeleteArtworkQuestionReplyResponseDataDto>;
 
 export interface ArtworkFeelingLikeDto {
   feelingId: number;

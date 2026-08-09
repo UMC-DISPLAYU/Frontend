@@ -47,20 +47,24 @@ const archivedArtworks = () => ({
 
 /* 저장한 작가는 mockDb.savedArtistIds를 기준으로 만듭니다. */
 const archivedArtists = () => ({
-  savedArtists: mockDb.savedArtistIds.map((artistId: number, index: number) => ({
-    savedArtistId: index + 1,
+  artists: mockDb.savedArtistIds.map((artistId: number, index: number) => ({
+    archiveArtistId: index + 1,
     artistId,
-    name:
+    userId: mockDb.me.userId,
+    artistName:
       artistId === mockDb.me.userId
         ? mockDb.me.nickname
         : (mockDb.artworks.find((artwork: any) => artwork.artistUserId === artistId)?.artistName ??
           ''),
-    field: '시각디자인',
+    fields: ['시각디자인'],
     profileImageUrl: '',
     artworkCount: mockDb.artworks.length,
     exhibitionCount: mockDb.displays.length,
     savedAt: '2026-08-02T00:00:00.000Z',
   })),
+  nextCursorId: null,
+  size: mockDb.savedArtistIds.length,
+  hasNext: false,
 });
 
 const updateDisplayMemo = (archiveDisplayId: number, memo: string | null) => {
@@ -103,8 +107,8 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/artists/{savedArtistId}').map((path) =>
     http.get(path, ({ params }) =>
       success('/api/v1/archives/artists/{savedArtistId}', {
-        ...archivedArtists().savedArtists[0],
-        savedArtistId: toNumber(params.savedArtistId),
+        ...archivedArtists().artists[0],
+        archiveArtistId: toNumber(params.savedArtistId),
         artistId: toNumber(params.savedArtistId),
       }),
     ),

@@ -15,17 +15,27 @@ import type { ArtworkDetail } from '@/types/exhibition';
 
 type Props = {
   artwork: ArtworkDetail;
-  /* 작가 저장에 필요한 계정 id. 직접 입력된 작가는 없을 수 있습니다. */
+  /* 대표 작가 저장에 필요한 계정 id. 직접 입력된 작가는 없을 수 있습니다. */
   artistUserId?: number;
+  /*
+   * 공동 작업자 계정 id 목록. 스웨거 응답에 이름은 없고 id만 내려오며,
+   * 현재는 백엔드가 이 필드 자체를 내려주지 않아 항상 비어있습니다.
+   */
+  coAuthorUserIds?: number[];
 };
 
-export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
+type ArtworkArtistRowProps = {
+  userId?: number;
+  /* 작품에 기록된 이름. 공동 작업자는 이 이름이 따로 없어 프로필명으로만 표시됩니다. */
+  displayName: string;
+};
+
+function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   /* 작가 닉네임과 프로필 이미지는 작가 프로필 조회로 채웁니다. */
-  const { data: artistProfile } = useUserArtistProfile(artistUserId ?? 0);
+  const { data: profile } = useUserArtistProfile(userId ?? 0);
   /* 저장 여부는 내가 저장한 작가 목록과 대조합니다. */
   const { data: archivedArtists } = useArchivedArtists();
 
@@ -33,20 +43,11 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
   const unarchiveArtist = useUnarchiveArtist();
   const isPending = archiveArtist.isPending || unarchiveArtist.isPending;
 
-  const isSaved = (archivedArtists?.savedArtists ?? []).some(
-    (artist) => artist.artistId === artistUserId,
-  );
+  const isSaved = (archivedArtists?.artists ?? []).some((artist) => artist.artistId === userId);
 
-  const artistList = artwork.artist
-    ? artwork.artist
-        .split(',')
-        .map((name) => name.trim())
-        .filter(Boolean)
-    : [];
-
-  const processImages = artwork.images
-    .filter((img) => !img.isThumbnail)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  /* 공동 작업자는 작품에 기록된 이름이 없어, 있으면 프로필명을 대표 이름으로 씁니다. */
+  const primaryName = displayName || profile?.artistName || '이름 미상';
+  const nicknameText = displayName ? (profile?.artistName ?? '') : '';
 
   /* 북마크를 누르면 내가 저장한 작가 목록에 추가/제거합니다. */
   const toggleArtistBookmark = () => {
@@ -54,15 +55,66 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
       setIsLoginModalOpen(true);
       return;
     }
-    if (!artistUserId || isPending) return;
+    if (!userId || isPending) return;
 
-    if (isSaved) unarchiveArtist.mutate(artistUserId);
-    else archiveArtist.mutate(artistUserId);
+    if (isSaved) unarchiveArtist.mutate(userId);
+    else archiveArtist.mutate(userId);
   };
 
   return (
-    <div className="pb-28">
+    <div className="flex h-[84px] w-full items-center justify-between px-5">
       <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <div className="flex min-w-0 items-center gap-2">
+        <img
+          src={profile?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
+          alt={primaryName}
+          className="size-[39px] shrink-0 rounded-full object-cover"
+          onError={(event) => {
+            event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
+          }}
+        />
+        <div className="flex min-w-0 flex-col items-start justify-center gap-0.5">
+          <p className="w-full truncate typo-body-md-bold text-main">{primaryName}</p>
+          <p className="w-full truncate typo-body-xs-regular text-faint">{nicknameText}</p>
+        </div>
+      </div>
+
+      {userId ? (
+        <button
+          type="button"
+          aria-label={`${primaryName} 작가 저장`}
+          aria-pressed={isSaved}
+          onClick={toggleArtistBookmark}
+          disabled={isPending}
+          className="flex h-11 w-5 shrink-0 items-center justify-center cursor-pointer disabled:opacity-60"
+        >
+          <Bookmark
+            className={`size-5 transition-colors ${isSaved ? 'fill-line text-line' : 'text-faint'}`}
+            strokeWidth={1}
+          />
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+export function ArtworkIntroTab({ artwork, artistUserId, coAuthorUserIds = [] }: Props) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  /* 대표 작가 + 공동 작업자를 한 줄씩 보여줍니다. */
+  const artistRows: ArtworkArtistRowProps[] = [
+    { userId: artistUserId, displayName: artwork.artist || '작가 미상' },
+    ...coAuthorUserIds
+      .filter((id) => id !== artistUserId)
+      .map((id) => ({ userId: id, displayName: '' })),
+  ];
+
+  const processImages = artwork.images
+    .filter((img) => !img.isThumbnail)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  return (
+    <div className="pb-28">
       {/* 작품소개 */}
       <section className="px-5 pt-6 pb-6">
         <div className="flex items-center justify-between mb-3">
@@ -115,55 +167,14 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
       </section>
 
       {/* 작가 정보 */}
-      <section className="pt-2 pb-4 flex flex-col">
-        {artistList.map((artistName, index) => {
-          /* 작품 응답은 대표 작가 한 명의 프로필만 담고 있습니다. */
-          const profile = index === 0 ? artistProfile : undefined;
-
-          return (
-            <div
-              key={artistName}
-              className="w-full h-20 px-5 py-4 flex justify-between items-center"
-            >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <img
-                  src={profile?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
-                  alt={artistName}
-                  className="size-10 rounded-full object-cover shrink-0"
-                  onError={(event) => {
-                    event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
-                  }}
-                />
-                <div className="flex flex-col justify-center items-start gap-0.5 min-w-0 flex-1">
-                  <p className="w-full typo-body-md-bold text-main truncate">
-                    {profile?.artistName || artistName}
-                  </p>
-                  <p className="w-full typo-body-xs-regular text-faint truncate">
-                    {profile?.schoolName ?? ''}
-                  </p>
-                </div>
-              </div>
-
-              {index === 0 && artistUserId ? (
-                <button
-                  type="button"
-                  aria-label={`${artistName} 작가 저장`}
-                  aria-pressed={isSaved}
-                  onClick={toggleArtistBookmark}
-                  disabled={isPending}
-                  className="w-5 h-11 flex justify-center items-center shrink-0 cursor-pointer disabled:opacity-60"
-                >
-                  <Bookmark
-                    className={`size-5 transition-colors ${
-                      isSaved ? 'fill-line text-line' : ' text-faint'
-                    }`}
-                    strokeWidth={1}
-                  />
-                </button>
-              ) : null}
-            </div>
-          );
-        })}
+      <section className="flex flex-col">
+        {artistRows.map((row, index) => (
+          <ArtworkArtistRow
+            key={row.userId ?? index}
+            userId={row.userId}
+            displayName={row.displayName}
+          />
+        ))}
       </section>
     </div>
   );

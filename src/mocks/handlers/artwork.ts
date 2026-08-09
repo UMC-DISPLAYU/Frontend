@@ -357,6 +357,9 @@ export const artworkHandlers = [
         questions: mockDb.artworkQuestions.filter(
           (question: any) => question.artworkId === toNumber(params.artworkId, 1001),
         ),
+        nextCursorId: null,
+        size: mockDb.artworkQuestions.length,
+        hasNext: false,
       }),
     ),
   ),
@@ -370,6 +373,9 @@ export const artworkHandlers = [
         artworkId: toNumber(params.artworkId, 1001),
         content: body.content ?? '',
         isPublic: body.isPublic ?? true,
+        accessible: true,
+        canReply: false,
+        likeCount: 0,
         user: mockDb.me,
         writer: mockDb.me,
         userId: mockDb.me.userId,
@@ -384,40 +390,6 @@ export const artworkHandlers = [
       mockDb.artworkQuestions.push(question);
 
       return created('/api/v1/artworks/{artworkId}/questions', question);
-    }),
-  ),
-  ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}').map((path) =>
-    http.patch(path, async ({ params, request }) => {
-      const body = await readJson<{ content?: string; isPublic?: boolean }>(request);
-      const questionId = toNumber(params.questionId);
-      const question = mockDb.artworkQuestions.find((item: any) => item.questionId === questionId);
-
-      if (question) {
-        if (body.content !== undefined) question.content = body.content;
-        if (body.isPublic !== undefined) question.isPublic = body.isPublic;
-        question.updatedAt = now();
-      }
-
-      return success('/api/v1/artworks/{artworkId}/questions/{questionId}', {
-        artQueId: questionId,
-        questionId,
-        ...body,
-        updatedAt: now(),
-      });
-    }),
-  ),
-  ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}').map((path) =>
-    http.delete(path, ({ params }) => {
-      const questionId = toNumber(params.questionId);
-
-      mockDb.artworkQuestions = mockDb.artworkQuestions.filter(
-        (item: any) => item.questionId !== questionId,
-      );
-
-      return success('/api/v1/artworks/{artworkId}/questions/{questionId}', {
-        artQueId: questionId,
-        deletedAt: now(),
-      });
     }),
   ),
   /* 질문 답변은 질문의 reply 필드에 담깁니다. */

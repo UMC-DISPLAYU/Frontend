@@ -25,7 +25,7 @@ export interface UserOwnedResource {
   userId?: number;
   user?: {
     userId: number;
-  };
+  } | null;
 }
 
 export interface MyResource {
