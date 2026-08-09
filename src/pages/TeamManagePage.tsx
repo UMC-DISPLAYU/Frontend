@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-import { Search } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import SearchIcon from '@/assets/exhibition-register/search.svg';
+import { Header } from '@/components/display-manage/Common';
 import { InviteLinkSection, type Member, MemberRow } from '@/components/team-manage';
-import { ExhibitionHeader } from '@/components/ui';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import {
   useCreateDisplayInvitationLink,
@@ -74,7 +74,7 @@ export function TeamManage() {
         ? 'owner'
         : member.accepted === false
           ? 'pending'
-          : 'member',
+          : 'unverified',
   }));
 
   /* 검색 결과의 초대 버튼 라벨을 정하기 위해 이미 팀원인 사람과 초대 대기 중인 사람을 구분합니다. */
@@ -92,19 +92,19 @@ export function TeamManage() {
   const isSearching = keyword.length > 0;
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
-      <ExhibitionHeader title="팀원 초대/관리" onBack={() => navigate(-1)} centered />
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+      <Header title="팀원 초대/관리" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3 pb-8">
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-24">
         {canCreateInvitation && (
-          <div className="flex h-10 items-center gap-2 rounded-xl bg-box px-5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.10),inset_-1px_-1px_1px_0px_rgba(255,255,255,1)]">
+          <div className="flex items-center gap-2 rounded-xl bg-box px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.10),inset_-1px_-1px_1px_0px_rgba(255,255,255,1)] mb-3">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="닉네임 검색"
-              className="typo-body-sm-semibold w-full bg-transparent text-main outline-none placeholder:text-faint"
+              className="typo-body-sm-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
             />
-            <Search className="size-5 shrink-0 text-hint" strokeWidth={1.5} />
+            <img src={SearchIcon} className="size-5 shrink-0" alt="search" />
           </div>
         )}
 
@@ -128,7 +128,7 @@ export function TeamManage() {
                     id: String(user.userId),
                     name: user.name,
                     nickname: user.nickname,
-                    status: 'member',
+                    status: 'unverified',
                   }}
                   onInvite={() => invite.mutate(user.userId)}
                   inviteDisabled={
@@ -140,7 +140,7 @@ export function TeamManage() {
                     memberUserIds.has(user.userId)
                       ? '팀원'
                       : pendingUserIds.has(user.userId)
-                        ? '초대대기'
+                        ? '초대 대기'
                         : '초대'
                   }
                 />
@@ -167,7 +167,7 @@ export function TeamManage() {
             )}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

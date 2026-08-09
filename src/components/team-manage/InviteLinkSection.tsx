@@ -1,6 +1,8 @@
 import { useState } from 'react';
 
-import { Copy, Link2 } from 'lucide-react';
+import { Copy } from 'lucide-react';
+
+import EntypoCycle from '@/assets/exhibition-register/entypo_cycle.svg';
 
 import { Toggle } from './Toggle';
 
@@ -40,12 +42,12 @@ export function InviteLinkSection({
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1">
             <span className="grid h-4 w-7 shrink-0 place-items-center rounded-sm bg-card outline outline-1 outline-offset-[-1px] outline-line-soft">
-              <Link2 className="size-3 text-main" strokeWidth={2} />
+              <img src={EntypoCycle} className="size-3" alt="cycle" />
             </span>
             <span className="typo-body-xs-regular truncate text-main">{inviteLink}</span>
           </div>
           <button type="button" onClick={copyLink} className="flex shrink-0 items-center gap-0.5">
-            <Copy className="size-3 text-main" strokeWidth={1} />
+            <Copy className="size-3 text-main" strokeWidth={2} />
             <span className="typo-body-xs-regular text-main">{copied ? '복사됨' : '복사'}</span>
           </button>
         </div>
