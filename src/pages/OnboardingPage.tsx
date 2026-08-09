@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Check, ChevronLeft, Info, X } from 'lucide-react';
+import { ArrowLeft, Check, ChevronLeft, Info, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,7 +13,7 @@ import { useAuthStore } from '@/stores/authStore';
 
 type Step = 'terms' | 'termsDetail' | 'nickname' | 'done';
 type TermKey = 'over14' | 'service' | 'privacy' | 'location';
-type PolicyCode = 'terms' | 'privacy' | 'location';
+type AgreementKey = Exclude<TermKey, 'over14'>;
 type TermState = Record<TermKey, boolean>;
 type NicknameStatus = 'idle' | 'available' | 'unavailable' | 'error';
 type ParsedPolicyBlock =
@@ -21,37 +21,41 @@ type ParsedPolicyBlock =
   | { type: 'heading'; text: string }
   | { type: 'bullet'; text: string };
 
-const AGREEMENT_CODES: Record<Exclude<TermKey, 'over14'>, string> = {
+const AGREEMENT_CODES: Record<AgreementKey, string> = {
   service: 'TERMS_OF_SERVICE',
   privacy: 'PRIVACY_COLLECTION_USE',
   location: 'LOCATION_BASED_SERVICE',
 };
 
-const POLICY_TERM_KEYS: Record<PolicyCode, Exclude<TermKey, 'over14'>> = {
-  terms: 'service',
-  privacy: 'privacy',
-  location: 'location',
-};
-
 function MobileShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-dvh w-full items-center justify-center bg-[#f0f0f0]">
-      <div className="relative flex h-dvh w-full max-w-md flex-col overflow-hidden bg-white">
+    <div className="flex min-h-dvh w-full items-center justify-center bg-page">
+      <div className="relative flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
         {children}
       </div>
     </div>
   );
 }
 
-function BackButton({ onBack }: { onBack: () => void }) {
+function BackButton({
+  onBack,
+  icon = 'chevron',
+}: {
+  onBack: () => void;
+  icon?: 'chevron' | 'arrow';
+}) {
   return (
     <button
       type="button"
       onClick={onBack}
       aria-label="뒤로가기"
-      className="flex size-8 shrink-0 items-center justify-center"
+      className="flex shrink-0 items-center justify-start"
     >
-      <ChevronLeft className="size-[22px] text-[#0d0d0d]" strokeWidth={2} />
+      {icon === 'arrow' ? (
+        <ArrowLeft className="size-5 text-main" strokeWidth={2} />
+      ) : (
+        <ChevronLeft size={35} className="text-main" strokeWidth={1.5} />
+      )}
     </button>
   );
 }
@@ -60,17 +64,19 @@ function PrimaryButton({
   children,
   disabled,
   onClick,
+  className = '',
 }: {
   children: ReactNode;
   disabled?: boolean;
   onClick?: () => void;
+  className?: string;
 }) {
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="flex h-11 w-full items-center justify-center rounded-lg bg-[#0d0d0d] text-[14px] font-semibold leading-5 text-white disabled:bg-[#d8dbe1] disabled:text-white"
+      className={`flex h-11 w-full items-center justify-center rounded-xl bg-main typo-body-sm-semibold text-white disabled:bg-bt-gray disabled:text-white ${className}`}
     >
       {children}
     </button>
@@ -80,8 +86,8 @@ function PrimaryButton({
 function AgreementCheck({ checked }: { checked: boolean }) {
   return (
     <span
-      className={`flex size-6 shrink-0 items-center justify-center rounded-full border ${
-        checked ? 'border-[#0d0d0d] bg-[#0d0d0d]' : 'border-[#d8dbe1] bg-white'
+      className={`flex size-6 shrink-0 items-center justify-center rounded-full ${
+        checked ? 'border-2 border-main bg-main' : 'border-2 border-line'
       }`}
     >
       {checked ? <Check className="size-4 text-white" strokeWidth={2.4} /> : null}
@@ -97,6 +103,17 @@ function CheckButton({ checked, onClick }: { checked: boolean; onClick: () => vo
   );
 }
 
+function InfoNotice({ children }: { children: ReactNode }) {
+  return (
+    <div className="shrink-0 rounded-xl bg-[#F9F9F9] p-3.5">
+      <div className="flex items-start gap-2">
+        <Info className="mt-0.5 shrink-0 text-faint" strokeWidth={1.5} size={12} />
+        <p className="min-w-0 flex-1 typo-body-xs-regular text-faint">{children}</p>
+      </div>
+    </div>
+  );
+}
+
 function TermsScreen({
   terms,
   onBack,
@@ -108,7 +125,7 @@ function TermsScreen({
   onBack: () => void;
   onChange: (terms: TermState) => void;
   onNext: () => void;
-  onOpenDetail: (code: PolicyCode) => void;
+  onOpenDetail: (key: AgreementKey) => void;
 }) {
   const allChecked = Object.values(terms).every(Boolean);
   const termsAndPrivacyChecked = terms.service && terms.privacy;
@@ -129,48 +146,44 @@ function TermsScreen({
   };
 
   return (
-    <main className="flex flex-1 flex-col px-5 pb-10 pt-[58px]">
+    <main className="flex flex-1 flex-col px-5 pb-10 pt-14.5">
       <BackButton onBack={onBack} />
       <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-10">
-        <h2 className="text-[24px] font-bold leading-8 text-[#0d0d0d]">
+        <h2 className="typo-body-3xl-bold text-main">
           서비스 이용을 위해
           <br />
-          동의가 필요해요
+          이용약관 동의가 필요합니다
         </h2>
 
         <section className="mt-9">
           <button
             type="button"
             onClick={() => toggle('all')}
-            className="flex h-[58px] w-full items-center border-b border-[#c4c4c4] text-left"
+            className="flex h-14.5 w-full items-center border-b border-line text-left"
           >
-            <span className="min-w-0 flex-1 text-[18px] font-bold leading-[25.2px] tracking-[-0.54px] text-[#111]">
-              전체 동의
-            </span>
+            <span className="min-w-0 flex-1 typo-body-lg-bold text-main">전체 동의</span>
             <AgreementCheck checked={allChecked} />
           </button>
 
           <div className="mt-5 flex flex-col gap-5">
             <div className="flex min-h-9 items-center gap-3">
-              <div className="min-w-0 flex-1 text-[16px] leading-[22.4px] tracking-[-0.48px]">
+              <div className="min-w-0 flex-1 typo-body-md-regular">
                 <button
                   type="button"
-                  onClick={() => onOpenDetail('terms')}
-                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                  onClick={() => onOpenDetail('service')}
+                  className="typo-body-md-semibold text-sub700 underline underline-offset-[3px]"
                 >
                   이용약관
                 </button>
-                <span className="text-[#767676]"> 및 </span>
+                <span className="text-sub600"> 및 </span>
                 <button
                   type="button"
                   onClick={() => onOpenDetail('privacy')}
-                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                  className="typo-body-md-semibold text-sub700 underline underline-offset-[3px]"
                 >
                   개인정보취급방침
                 </button>
-                <span className="ml-2 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
-                  (필수)
-                </span>
+                <span className="ml-2 typo-body-sm-regular text-hint">(필수)</span>
               </div>
               <CheckButton
                 checked={termsAndPrivacyChecked}
@@ -179,27 +192,23 @@ function TermsScreen({
             </div>
 
             <div className="flex min-h-9 items-center gap-3">
-              <span className="min-w-0 flex-1 text-[16px] font-normal leading-[22.4px] tracking-[-0.48px] text-[#767676]">
+              <span className="min-w-0 flex-1 typo-body-md-regular text-sub600">
                 만 14세 이상 확인
-                <span className="ml-1 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
-                  (필수)
-                </span>
+                <span className="ml-1 typo-body-sm-regular text-hint">(필수)</span>
               </span>
               <CheckButton checked={terms.over14} onClick={() => toggle('over14')} />
             </div>
 
             <div className="flex min-h-9 items-center gap-3">
-              <div className="min-w-0 flex-1 text-[16px] leading-[22.4px] tracking-[-0.48px]">
+              <div className="min-w-0 flex-1 typo-body-md-regular">
                 <button
                   type="button"
                   onClick={() => onOpenDetail('location')}
-                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                  className="typo-body-md-semibold text-sub700 underline underline-offset-[3px]"
                 >
                   위치기반서비스 이용약관
                 </button>
-                <span className="ml-2 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
-                  (선택)
-                </span>
+                <span className="ml-2 typo-body-sm-regular text-hint">(선택)</span>
               </div>
               <CheckButton checked={terms.location} onClick={() => toggle('location')} />
             </div>
@@ -240,10 +249,7 @@ function PolicyPlainContent({ content }: { content: string }) {
 
         if (block.type === 'heading') {
           return (
-            <h2
-              key={key}
-              className="pt-8 text-[17px] font-semibold leading-[25.5px] text-[#111827] first:pt-0"
-            >
+            <h2 key={key} className="pt-8 typo-body-lg-bold text-main first:pt-0">
               {block.text}
             </h2>
           );
@@ -251,9 +257,9 @@ function PolicyPlainContent({ content }: { content: string }) {
 
         if (block.type === 'bullet') {
           return (
-            <div key={key} className="flex items-start gap-[10px] pt-[6px]">
-              <span className="mt-[9px] size-[6px] shrink-0 rounded-full bg-[#d1d5db]" />
-              <p className="min-w-0 flex-1 whitespace-pre-wrap text-[15px] leading-[24.75px] text-[#374151]">
+            <div key={key} className="flex items-start gap-2.5 pt-1.5">
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-bt-gray" />
+              <p className="min-w-0 flex-1 whitespace-pre-wrap typo-body-md-regular text-sub700">
                 {block.text}
               </p>
             </div>
@@ -263,7 +269,7 @@ function PolicyPlainContent({ content }: { content: string }) {
         return (
           <p
             key={key}
-            className="whitespace-pre-wrap pt-3 text-[15px] leading-[24.75px] text-[#374151] first:pt-0"
+            className="whitespace-pre-wrap pt-3 typo-body-md-regular text-sub700 first:pt-0"
           >
             {block.text}
           </p>
@@ -284,28 +290,21 @@ function TermsDetailScreen({
 
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-[#e5e7eb] bg-white px-4 pb-px">
-        <div className="h-9 w-[30px]">
-          <button
-            type="button"
-            onClick={onBack}
-            aria-label="뒤로가기"
-            className="-ml-1 flex size-9 items-center justify-center"
-          >
-            <ChevronLeft className="size-5 text-[#111827]" strokeWidth={2} />
-          </button>
+      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line bg-page px-4 pb-px">
+        <div className="h-9 w-7.5 flex items-center">
+          <BackButton onBack={onBack} icon="arrow" />
         </div>
-        <h1 className="text-[16px] font-semibold leading-6 text-[#111827]">{title}</h1>
+        <h1 className="typo-body-md-semibold text-main">{title}</h1>
       </header>
 
       <main className="flex-1 overflow-y-auto px-6 pb-8 pt-5">
         {!agreement ? (
-          <div className="py-10 text-center text-[14px] text-[#8a94a6]">
+          <div className="py-10 text-center typo-body-md-regular text-hint">
             약관 정보를 불러오는 중이거나 문제가 발생했습니다.
           </div>
         ) : (
           <>
-            <p className="text-[11.5px] leading-[17.25px] text-[#8a94a6]">
+            <p className="typo-body-xs-regular text-hint">
               시행일 {agreement.effectiveDate} · 버전 {agreement.version}
             </p>
             <PolicyPlainContent content={agreement.content} />
@@ -331,7 +330,7 @@ function NicknameScreen({
   const [status, setStatus] = useState<NicknameStatus>('idle');
   const [checkedNickname, setCheckedNickname] = useState('');
   const checkNickname = useCheckNickname();
-  const isNicknameShapeValid = /^[가-힣a-zA-Z0-9]{5,15}$/.test(nickname);
+  const isNicknameShapeValid = /^[가-힣a-zA-Z0-9]{2,15}$/.test(nickname);
   const canSubmit =
     status === 'available' && checkedNickname === nickname && isNicknameShapeValid && !isSubmitting;
 
@@ -363,35 +362,25 @@ function NicknameScreen({
           : '';
 
   return (
-    <main className="flex h-full flex-1 flex-col bg-white px-5 pb-10 pt-[58px]">
-      <button
-        type="button"
-        onClick={onBack}
-        aria-label="뒤로가기"
-        className="flex size-8 shrink-0 items-center justify-center"
-      >
-        <ChevronLeft className="size-[22px] text-[#0d0d0d]" strokeWidth={2} />
-      </button>
+    <main className="flex h-full flex-1 flex-col bg-page px-5 pb-10 pt-14.5">
+      <BackButton onBack={onBack} />
 
       <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-10">
-        <h2 className="text-[24px] font-bold leading-[33.6px] tracking-[-0.72px] text-[#0d0d0d]">
+        <h2 className="typo-body-3xl-bold text-main">
           디유에서 사용할
           <br />
           닉네임을 정해주세요
         </h2>
-        <p className="mt-3 text-[14px] font-semibold leading-[19.6px] tracking-[-0.42px] text-[#656b75]">
+        <p className="mt-3 typo-body-xs-regular text-hint">
           방명록, 게시판, 프로필에서 표시되는 이름이에요.
         </p>
 
         <section className="mt-9 flex w-full flex-col gap-3">
-          <label
-            className="text-[14px] font-bold leading-[19.6px] tracking-[-0.42px] text-[#111]"
-            htmlFor="nickname"
-          >
+          <label className="typo-body-sm-bold text-main" htmlFor="nickname">
             닉네임
           </label>
-          <div className="flex w-full items-center border-b border-[#c4c4c4]">
-            <div className="flex h-[38px] min-w-0 flex-1 items-center px-3 py-[10px]">
+          <div className="flex w-full items-center border-b border-line">
+            <div className="flex h-9.5 min-w-0 flex-1 items-center px-3 py-2.5">
               <input
                 id="nickname"
                 value={nickname}
@@ -402,116 +391,91 @@ function NicknameScreen({
                   setStatus('idle');
                 }}
                 placeholder="닉네임"
-                className="min-w-0 flex-1 bg-transparent text-[12px] leading-[18px] tracking-[-0.36px] text-[#111] outline-none placeholder:text-[#9d9d9d]"
+                className="min-w-0 flex-1 bg-transparent typo-body-xs-regular text-main outline-none placeholder:text-input-placeholder"
               />
             </div>
-            <div className="flex h-[38px] shrink-0 items-center gap-[10px]">
-              {nickname ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNickname('');
-                    setCheckedNickname('');
-                    setStatus('idle');
-                  }}
-                  aria-label="닉네임 지우기"
-                  className="flex size-5 items-center justify-center rounded-[10px] bg-[#d7d7df]"
-                >
-                  <X className="size-[11px] text-white" strokeWidth={2.5} />
-                </button>
-              ) : null}
-              <div className="h-[18px] w-px bg-[#d7d7df]" />
+            <div className="flex h-9.5 shrink-0 items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setNickname('');
+                  setCheckedNickname('');
+                  setStatus('idle');
+                }}
+                aria-label="닉네임 지우기"
+                className="flex size-5 items-center justify-center rounded-full bg-bt-gray"
+              >
+                <X className="size-3 text-white" strokeWidth={2.5} />
+              </button>
+              <div className="h-4.5 w-px bg-line" />
               <button
                 type="button"
                 onClick={handleCheckNickname}
                 disabled={!isNicknameShapeValid || checkNickname.isPending}
-                className="flex h-8 w-[71.336px] items-center justify-center rounded-lg border border-[#767676] text-[12px] font-semibold leading-[18px] tracking-[-0.36px] text-[#111] disabled:border-[#d7d7df] disabled:text-[#9d9d9d]"
+                className="flex h-8 w-18 shrink-0 items-center justify-center rounded-lg border border-hint typo-body-xs-semibold text-main"
               >
                 {checkNickname.isPending ? '확인중' : '중복 확인'}
               </button>
             </div>
           </div>
+          <p
+            className={`min-h-4 typo-body-xxs-regular ${
+              status === 'available' ? 'text-link' : 'text-error'
+            }`}
+          >
+            {statusMessage}
+          </p>
         </section>
 
-        <div className="mt-6 flex flex-col gap-2 text-[12px] leading-[16.8px] tracking-[-0.36px] text-[#9d9d9d]">
+        <div className="mt-8 flex flex-col gap-2 typo-body-xs-regular text-faint">
           <p>한글 · 영문 · 숫자</p>
-          <p>5 ~ 15자</p>
+          <p>2 ~ 15자</p>
           <p>특수문자 불가</p>
           <p>공백 불가</p>
         </div>
-        <p
-          className={`mt-3 min-h-[17px] text-[12px] leading-[16.8px] tracking-[-0.36px] ${
-            status === 'available' ? 'text-[#22a06b]' : 'text-[#ef4444]'
-          }`}
-        >
-          {statusMessage}
-        </p>
       </div>
 
-      <div className="shrink-0 rounded-[14px] bg-[#f9f9f9] p-[14px]">
-        <div className="flex items-start gap-2">
-          <Info className="mt-[1px] size-4 shrink-0 text-[#9d9d9d]" strokeWidth={1.8} />
-          <p className="min-w-0 flex-1 text-[12px] leading-[16.8px] tracking-[-0.36px] text-[#9d9d9d]">
-            닉네임은 이후 마이페이지에서 변경할 수 있어요.
-          </p>
-        </div>
-      </div>
+      <InfoNotice>닉네임은 이후 마이페이지에서 변경할 수 있어요.</InfoNotice>
 
       {submitError ? (
-        <p className="mt-3 shrink-0 text-center text-[12px] font-medium leading-[16.8px] tracking-[-0.36px] text-[#ef4444]">
-          {submitError}
-        </p>
+        <p className="mt-3 shrink-0 text-center typo-body-xs-semibold text-error">{submitError}</p>
       ) : null}
 
-      <button
-        type="button"
+      <PrimaryButton
         disabled={!canSubmit}
         onClick={() => onSubmit(nickname)}
-        className="mt-5 flex h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold leading-5 tracking-[-0.42px] text-white disabled:bg-[#d7d7df]"
+        className="mt-5 shrink-0"
       >
-        {isSubmitting ? '가입 중' : '가입 완료하기'}
-      </button>
+        {isSubmitting ? '가입 중' : '완료'}
+      </PrimaryButton>
     </main>
   );
 }
 
 function DoneScreen({ onNext }: { onNext: () => void }) {
   return (
-    <main className="flex h-full flex-1 flex-col bg-[#f0f0f3] px-5 pb-10">
-      <section className="flex min-h-0 flex-1 flex-col items-center justify-center gap-[10px] text-center">
-        <div className="flex size-[76px] items-center justify-center rounded-full bg-[#e6e6ee]">
-          <div className="flex size-12 items-center justify-center rounded-full bg-[#111]">
+    <main className="flex h-full flex-1 flex-col bg-page px-5 pb-10">
+      <section className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 text-center">
+        <div className="flex size-19 items-center justify-center rounded-full bg-box">
+          <div className="flex size-12 items-center justify-center rounded-full bg-main">
             <Check className="size-6 text-white" strokeWidth={2.6} />
           </div>
         </div>
-        <h2 className="text-[20px] font-bold leading-7 tracking-[-0.6px] text-[#111]">
-          가입이 완료되었어요
-        </h2>
+        <h2 className="typo-body-xl-bold text-main">가입이 완료되었어요</h2>
       </section>
 
-      <div className="shrink-0 rounded-[14px] bg-[#f9f9f9] p-[14px]">
-        <div className="flex items-start gap-2">
-          <Info className="mt-[1px] size-4 shrink-0 text-[#9d9d9d]" strokeWidth={1.8} />
-          <p className="min-w-0 flex-1 text-[12px] leading-[16.8px] tracking-[-0.36px] text-[#9d9d9d]">
-            전시 등록과 작품 등록은 대학생 인증 후 이용할 수 있어요.
-          </p>
-        </div>
-      </div>
+      <InfoNotice>전시 등록과 작품 등록은 대학생 인증 후 이용할 수 있어요.</InfoNotice>
 
-      <button
-        type="button"
-        onClick={onNext}
-        className="mt-5 flex h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold leading-5 text-white"
-      >
+      <PrimaryButton onClick={onNext} className="mt-5 shrink-0">
         이용하기
-      </button>
+      </PrimaryButton>
     </main>
   );
 }
 
 export function OnboardingPage() {
   const [step, setStep] = useState<Step>('terms');
-  const [selectedPolicy, setSelectedPolicy] = useState<PolicyCode>('terms');
+  const [selectedAgreementKey, setSelectedAgreementKey] = useState<AgreementKey>('service');
   const [error, setError] = useState('');
   const [terms, setTerms] = useState<TermState>({
     over14: false,
@@ -524,7 +488,7 @@ export function OnboardingPage() {
   const signup = useSignup();
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
-  const findAgreement = (key: Exclude<TermKey, 'over14'>): AgreementDto | undefined =>
+  const findAgreement = (key: AgreementKey): AgreementDto | undefined =>
     agreementsQuery.data?.find((agreement) => agreement.code === AGREEMENT_CODES[key]);
 
   const completeSignup = async (nickname: string) => {
@@ -551,18 +515,6 @@ export function OnboardingPage() {
       .filter((agreement): agreement is AgreementDto => Boolean(agreement))
       .map((agreement) => ({ code: agreement.code, version: agreement.version }));
 
-    const requiredAgreementCodes = (['service', 'privacy'] as const).map(
-      (key) => AGREEMENT_CODES[key],
-    );
-    const hasRequiredAgreements = requiredAgreementCodes.every((code) =>
-      agreedTerms.some((agreement) => agreement.code === code),
-    );
-
-    if (!hasRequiredAgreements) {
-      setError('필수 약관 동의 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
-      return;
-    }
-
     try {
       const result = await signup.mutateAsync({
         nickname,
@@ -584,8 +536,8 @@ export function OnboardingPage() {
           terms={terms}
           onChange={setTerms}
           onBack={() => navigate('/login')}
-          onOpenDetail={(code) => {
-            setSelectedPolicy(code);
+          onOpenDetail={(key) => {
+            setSelectedAgreementKey(key);
             setStep('termsDetail');
           }}
           onNext={() => setStep('nickname')}
@@ -593,7 +545,7 @@ export function OnboardingPage() {
       ) : null}
       {step === 'termsDetail' ? (
         <TermsDetailScreen
-          agreement={findAgreement(POLICY_TERM_KEYS[selectedPolicy])}
+          agreement={findAgreement(selectedAgreementKey)}
           onBack={() => setStep('terms')}
         />
       ) : null}
@@ -607,7 +559,7 @@ export function OnboardingPage() {
           }}
         />
       ) : null}
-      {step === 'done' ? <DoneScreen onNext={() => navigate('/home')} /> : null}
+      {step === 'done' ? <DoneScreen onNext={() => navigate('/home', { replace: true })} /> : null}
     </MobileShell>
   );
 }
