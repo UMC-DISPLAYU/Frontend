@@ -163,6 +163,7 @@ export const LoungeBoardCommentItem = memo(function LoungeBoardCommentItem({
         onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
         tightSpacing
+        likePosition="top-right"
       />
       {loginModal}
     </>

@@ -64,8 +64,14 @@ export function ReviewTab({ className, display, displayId }: Props) {
   };
 
   const handleReplyClick = useCallback((commentId: number, author: string, highlightId: string) => {
-    setReplyTarget({ commentId, author });
-    setActiveReplyId(highlightId);
+    setActiveReplyId((prev) => {
+      if (prev === highlightId) {
+        setReplyTarget(null);
+        return null;
+      }
+      setReplyTarget({ commentId, author });
+      return highlightId;
+    });
   }, []);
 
   const createReview = useCreateDisplayReview(displayId);

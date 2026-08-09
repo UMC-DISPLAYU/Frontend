@@ -98,10 +98,15 @@ export const loungeHandlers = [
   ),
   ...paths('/api/v1/lounge/posts/{loungePostId}/comments').map((path) =>
     http.post(path, async ({ params, request }) => {
+      const postId = toNumber(params.loungePostId, 1);
+      const post = findPost(postId);
+      if (post) {
+        post.commentCount = (post.commentCount ?? 0) + 1;
+      }
       const comment = {
         loungeCommentId: Date.now(),
         commentId: Date.now(),
-        loungePostId: toNumber(params.loungePostId, 1),
+        loungePostId: postId,
         parentCommentId: null,
         ...(await readJson(request)),
         writer: mockDb.me,
@@ -115,12 +120,25 @@ export const loungeHandlers = [
     }),
   ),
   ...paths('/api/v1/lounge/comments/{loungeCommentId}').map((path) =>
-    http.delete(path, ({ params }) =>
-      success('/api/v1/lounge/comments/{loungeCommentId}', {
-        loungeCommentId: toNumber(params.loungeCommentId),
+    http.delete(path, ({ params }) => {
+      const commentId = toNumber(params.loungeCommentId);
+      const comment = mockDb.loungeComments.find(
+        (c: any) => c.loungeCommentId === commentId || c.commentId === commentId,
+      );
+      if (comment) {
+        const post = findPost(comment.loungePostId);
+        if (post && (post.commentCount ?? 0) > 0) {
+          post.commentCount = post.commentCount - 1;
+        }
+        mockDb.loungeComments = mockDb.loungeComments.filter(
+          (c: any) => c.loungeCommentId !== commentId && c.commentId !== commentId,
+        );
+      }
+      return success('/api/v1/lounge/comments/{loungeCommentId}', {
+        loungeCommentId: commentId,
         deletedAt: now(),
-      }),
-    ),
+      });
+    }),
   ),
   ...paths('/api/v1/lounge/comments/{loungeCommentId}/likes').map((path) =>
     http.post(path, ({ params }) =>
@@ -151,15 +169,25 @@ export const loungeHandlers = [
     ),
   ),
   ...paths('/api/v1/lounge/comments/{parentCommentId}/replies').map((path) =>
-    http.post(path, async ({ params, request }) =>
-      created('/api/v1/lounge/comments/{parentCommentId}/replies', {
+    http.post(path, async ({ params, request }) => {
+      const parentId = toNumber(params.parentCommentId);
+      const parentComment = mockDb.loungeComments.find(
+        (c: any) => c.loungeCommentId === parentId || c.commentId === parentId,
+      );
+      if (parentComment) {
+        const post = findPost(parentComment.loungePostId);
+        if (post) {
+          post.commentCount = (post.commentCount ?? 0) + 1;
+        }
+      }
+      return created('/api/v1/lounge/comments/{parentCommentId}/replies', {
         loungeCommentId: Date.now(),
-        parentCommentId: toNumber(params.parentCommentId),
+        parentCommentId: parentId,
         ...(await readJson(request)),
         writer: mockDb.me,
         author: mockDb.me,
         createdAt: now(),
-      }),
-    ),
+      });
+    }),
   ),
 ];

@@ -18,7 +18,6 @@ export function LoungeBoardPostMenu({ post, onEdit, onDelete }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const loungePostPolicy = useLoungePostPolicy(post);
-  // 메뉴바 자체에서도 권한 체크를 하지만, 더 방어적으로 만들기 위해 여기서도 권한 제어를 넣었습니다.
   const canEdit = hasPermission(loungePostPolicy, 'edit');
   const canDelete = hasPermission(loungePostPolicy, 'delete');
 
