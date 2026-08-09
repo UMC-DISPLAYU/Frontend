@@ -21,17 +21,6 @@ import {
   useLoungeComments,
 } from '@/hooks/queries/useLoungeComments';
 import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
-import type { LoungeBoardComment, LoungeBoardDetail } from '@/types/exhibition';
-import { formatRelativeTime } from '@/utils/date';
-
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${day}`;
-};
 
 export const LoungeBoardDetailPage = () => {
   const navigate = useNavigate();
@@ -114,45 +103,14 @@ export const LoungeBoardDetailPage = () => {
   const isValidPost = isValidCategory && !!post && postCategoryKey === category;
   const isLoading = isPostPending || isCommentsPending;
 
-  const review: LoungeBoardDetail | undefined =
-    isValidPost && commentsData
-      ? {
-          id: String(post.loungePostId),
-          category: postCategoryKey,
-          title: post.title,
-          author: post.writer.nickname,
-          date: formatDate(post.createdAt),
-          content: post.content.split('\n').filter((line) => line.length > 0),
-          likeCount: post.likeCount,
-          isLiked: post.isLiked,
-          isSaved: post.isScrapped,
-          isMyPost: post.isMyPost,
-          images: post.postImageUrls.length > 0 ? post.postImageUrls : undefined,
-          comments: commentsData.pages
-            .flatMap((page) => page.comments)
-            .map(
-              (comment): LoungeBoardComment => ({
-                id: String(comment.loungeCommentId),
-                author: comment.writer.nickname,
-                avatarUrl: comment.writer.profileImageUrl,
-                time: formatRelativeTime(comment.createdAt),
-                content: comment.content,
-                likeCount: comment.likeCount,
-                isLiked: comment.isLiked,
-                isMyComment: comment.isMyComment,
-                replyCount: comment.replyCount,
-                commentStatus: comment.commentStatus,
-                images: comment.imageUrls.length > 0 ? comment.imageUrls : undefined,
-              }),
-            ),
-        }
-      : undefined;
-
-  const visibleComments = review
-    ? review.comments
+  const visibleComments = commentsData
+    ? commentsData.pages
+        .flatMap((page) => page.comments)
         .map((comment) => ({
           comment,
-          isDeleted: comment.commentStatus === 'DELETED' || deletedCommentIds.has(comment.id),
+          isDeleted:
+            comment.commentStatus === 'DELETED' ||
+            deletedCommentIds.has(String(comment.loungeCommentId)),
         }))
         .filter(({ isDeleted, comment }) => !(isDeleted && (comment.replyCount ?? 0) === 0))
     : [];
@@ -181,13 +139,13 @@ export const LoungeBoardDetailPage = () => {
           message="잠시 후 다시 시도해주세요."
           onRetry={() => refetchComments()}
         />
-      ) : review ? (
+      ) : isValidPost && post ? (
         <>
           <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-28 flex flex-col gap-7">
             {/* 게시글 정보 섹션 */}
             <article className="flex flex-col items-center gap-7.5">
               <LoungeBoardPostDetail
-                review={review}
+                post={post}
                 onEdit={() => navigate(`/lounge/${category}/${id}/edit`)}
                 onDelete={() =>
                   deletePostMutation.mutate(postId, { onSuccess: () => navigate(-1) })
@@ -195,9 +153,9 @@ export const LoungeBoardDetailPage = () => {
               />
               <LoungeBoardActionBar
                 postId={postId}
-                likeCount={review.likeCount}
-                isLiked={review.isLiked}
-                isSaved={review.isSaved}
+                likeCount={post.likeCount}
+                isLiked={post.isLiked}
+                isSaved={post.isScrapped}
                 hasComments={visibleComments.length > 0}
               />
             </article>
@@ -207,7 +165,7 @@ export const LoungeBoardDetailPage = () => {
               <section className="w-full flex flex-col">
                 {visibleComments.map(({ comment, isDeleted }) => (
                   <LoungeBoardCommentItem
-                    key={comment.id}
+                    key={comment.loungeCommentId}
                     postId={postId}
                     comment={comment}
                     isDeleted={isDeleted}
