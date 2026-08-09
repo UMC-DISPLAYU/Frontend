@@ -182,14 +182,16 @@ export const loungeHandlers = [
       } else {
         return HttpResponse.json({ message: 'Parent comment not found' }, { status: 404 });
       }
-      return created('/api/v1/lounge/comments/{parentCommentId}/replies', {
+      const reply = {
         loungeCommentId: Date.now(),
         parentCommentId: parentId,
         ...(await readJson(request)),
         writer: mockDb.me,
         author: mockDb.me,
         createdAt: now(),
-      });
+      };
+      mockDb.loungeComments.unshift(reply);
+      return created('/api/v1/lounge/comments/{parentCommentId}/replies', reply);
     }),
   ),
 ];
