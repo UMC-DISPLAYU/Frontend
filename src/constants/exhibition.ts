@@ -4,8 +4,8 @@ export const EXHIBITION_TYPES = [
   { label: '졸업 전시', group: 'institution' },
   { label: '과제 전시', group: 'institution' },
   { label: '학과·학회 전시', group: 'institution' },
-  { label: '연합 전시', group: 'institution' },
-  { label: '소모임·동아리 전시', group: 'organization' },
+  { label: '연합 전시', group: 'organization' },
+  { label: '소모임·동아리 전시', group: 'institution' },
   { label: '기타 단체 전시', group: 'organization' },
 ] as const;
 

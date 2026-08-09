@@ -36,7 +36,7 @@ export function LoungeBoardHeader({
   };
 
   return (
-    <div className={`relative flex items-center pt-[11px] ${className}`}>
+    <div className={`relative flex items-center py-3 ${className}`}>
       <div className="h-9 flex items-center gap-3">
         <button type="button" aria-label="뒤로가기" onClick={() => navigate(-1)}>
           <ChevronLeft className="size-7 text-main" />
@@ -48,7 +48,7 @@ export function LoungeBoardHeader({
         <button
           type="button"
           onClick={handleWriteClick}
-          className="absolute top-[14px] right-[33px] flex flex-col items-center gap-1"
+          className="absolute top-3.5 right-8.25 flex flex-col items-center gap-1"
         >
           <SquarePen className="size-3.5 text-faint" />
           <span className="typo-body-xs-regular text-faint">글 작성</span>

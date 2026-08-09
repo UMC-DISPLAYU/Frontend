@@ -18,6 +18,7 @@
   --color-heart: var(--bg-heart);
   --color-bookmark: var(--bg-bookmark);
   --color-logo: var(--bg-logo);
+  --color-fnb: var(--bg-fnb);
 
   /* Foreground (text + icon) */
   --color-main: var(--fg-main);
@@ -28,6 +29,12 @@
   --color-white: var(--fg-white);
   --color-link: var(--fg-link);
   --color-error: var(--fg-error);
+
+  /* Filter */
+  --color-filter-border-off: var(--filter-border-off);
+  --color-filter-border-on: var(--filter-border-on);
+  --color-filter-text-off: var(--filter-text-off);
+  --color-filter-text-on: var(--filter-text-on);
 
   /* Navbar */
   --color-navbar-fg: var(--navbar-fg);
@@ -50,8 +57,8 @@
   --color-modal-btn-hover-fg: var(--modal-btn-hover-fg);
 
   /* Tag */
-  --color-tag-blue: var(--tag-blue);
-  --color-tag-gray: var(--tag-gray);
+  --color-tag-bg: var(--tag-bg);
+  --color-tag-fg: var(--tag-fg);
 
   /* Button */
   --color-bt-gray: var(--bt-gray);
@@ -62,6 +69,9 @@
   --color-line-soft: var(--line-soft);
   --color-line-active: var(--line-active);
 
-  /* Overlay */
-  --color-scrim: var(--scrim);
+  /* 디자인 토큰 수정하다가 발견했는데 --color-scrim 가 semantic에 정의가 되지 않아서 그냥 삭제했습니다 */
+
+  /* Calendar */
+  --color-cal-active: var(--cal-active);
+  --color-cal-edge: var(--cal-edge);
 }

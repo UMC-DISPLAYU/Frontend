@@ -23,7 +23,11 @@ type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'pa
 type RegisterMode = 'own' | 'proxy';
 type ProxyAuthorSource = 'team' | 'direct';
 type RegisterSheet =
-  'proxyAuthorMethod' | 'collaboratorMethod' | 'collaboratorTeam' | 'collaboratorDirect' | null;
+  | 'proxyAuthorMethod'
+  | 'collaboratorMethod'
+  | 'collaboratorTeam'
+  | 'collaboratorDirect'
+  | null;
 
 const DEFAULT_EXHIBITION = {
   title: '형태의 침묵',

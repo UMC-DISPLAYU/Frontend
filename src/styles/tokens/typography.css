@@ -30,6 +30,14 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
+@utility typo-body-3xl-bold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
 @utility typo-body-2xl-bold {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-2xl);
@@ -73,6 +81,30 @@
 @utility typo-body-xl-regular {
   font-family: var(--font-family-body);
   font-size: var(--font-size-body-xl);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+@utility typo-body-lg-bold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+@utility typo-body-lg-semibold {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+@utility typo-body-lg-regular {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-lg);
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-body);
   letter-spacing: var(--letter-spacing-tight);

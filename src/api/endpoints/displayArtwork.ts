@@ -15,13 +15,15 @@ import type {
   DeleteArtworkQuestionResponseDataDto,
   DeleteArtworkResponseDataDto,
   GetArtworkDetailResponseDataDto,
+  GetArtworkFeelingsRequestDto,
   GetArtworkFeelingsResponseDataDto,
   GetArtworkPreviewRequestDto,
   GetArtworkPreviewResponseDataDto,
   GetArtworkQuestionsResponseDataDto,
   GetDisplayArtworksResponseDataDto,
-  GetMyArtworkQuestionsRequestDto,
+  GetMyArtworkFeelingsResponseDataDto,
   GetMyArtworkQuestionsResponseDataDto,
+  GetReceivedArtworkQuestionsResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -39,7 +41,9 @@ export const getArtworkDetail = async (
 // GET /v1/artworks/:artworkId/feelings
 export const getArtworkFeelings = async (
   artworkId: number,
-): Promise<GetArtworkFeelingsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/feelings`);
+  params: GetArtworkFeelingsRequestDto = {},
+): Promise<GetArtworkFeelingsResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings`, { query: params });
 
 // POST /v1/artworks/:artworkId/feelings
 export const createArtworkFeeling = async (
@@ -65,10 +69,32 @@ export const getArtworkQuestions = async (
   artworkId: number,
 ): Promise<GetArtworkQuestionsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/questions`);
 
-// GET /v1/artworks/questions/received
+// GET /api/v1/artworks/feelings/me
+export const getMyArtworkFeelings = async (
+  params: {
+    cursor?: string;
+    size?: number;
+  } = {},
+): Promise<GetMyArtworkFeelingsResponseDataDto> =>
+  apiRequest('/v1/artworks/feelings/me', { query: params });
+
+// GET /api/v1/artworks/questions/me
 export const getMyArtworkQuestions = async (
-  params: GetMyArtworkQuestionsRequestDto,
+  params: {
+    cursor?: string;
+    size?: number;
+  } = {},
 ): Promise<GetMyArtworkQuestionsResponseDataDto> =>
+  apiRequest('/v1/artworks/questions/me', { query: params });
+
+// GET /api/v1/artworks/questions/received
+export const getReceivedArtworkQuestions = async (
+  params: {
+    cursor?: string;
+    size?: number;
+    answerStatus?: 'WAITING' | 'ANSWERED';
+  } = {},
+): Promise<GetReceivedArtworkQuestionsResponseDataDto> =>
   apiRequest('/v1/artworks/questions/received', { query: params });
 
 // POST /v1/artworks/:artworkId/questions

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type { CreateArtworkFeelingRequestDto, UpdateArtworkFeelingRequestDto } from '@/api/dto';
 import {
@@ -15,9 +15,11 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 
 export const useArtworkFeelings = (artworkId: number) =>
-  useQuery({
+  useInfiniteQuery({
     queryKey: queryKeys.artworkFeelings.list(artworkId),
-    queryFn: () => getArtworkFeelings(artworkId),
+    queryFn: ({ pageParam }) => getArtworkFeelings(artworkId, { cursorId: pageParam ?? undefined }),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled: Number.isFinite(artworkId),
   });
 
@@ -90,9 +92,12 @@ export const useToggleArtworkFeelingLike = () => {
 };
 
 export const useArtworkFeelingReplies = (artworkId: number, feelingId: number, enabled = true) =>
-  useQuery({
+  useInfiniteQuery({
     queryKey: queryKeys.artworkFeelings.replies(artworkId, feelingId),
-    queryFn: () => getArtworkFeelingReplies(artworkId, feelingId),
+    queryFn: ({ pageParam }) =>
+      getArtworkFeelingReplies(artworkId, feelingId, { cursorId: pageParam ?? undefined }),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled: enabled && Number.isFinite(artworkId) && Number.isFinite(feelingId),
   });
 

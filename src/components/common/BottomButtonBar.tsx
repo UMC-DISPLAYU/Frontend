@@ -1,16 +1,11 @@
 interface BottomButtonBarProps {
   children: React.ReactNode;
-  withBorder?: boolean;
 }
 
-export function BottomButtonBar({ children, withBorder = true }: BottomButtonBarProps) {
+export function BottomButtonBar({ children }: BottomButtonBarProps) {
   return (
-    <div
-      className={`sticky bottom-0 bg-card px-5 pt-4 pb-8 ${
-        withBorder ? 'border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]' : ''
-      }`}
-    >
+    <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-5 py-4 bg-card border-t border-line z-50">
       {children}
-    </div>
+    </footer>
   );
 }

@@ -25,6 +25,7 @@ import type {
   GetDisplayReviewsResponseDataDto,
   GetDuPicksRequestDto,
   GetDuPicksResponseDataDto,
+  GetMyDisplayReviewsResponseDataDto,
   GetMyDisplaysResponseDataDto,
   HomeExhibitionDto,
   InviteDisplayMemberRequestDto,
@@ -230,3 +231,12 @@ export const toggleDisplayReviewReplyLike = async (
     `/v1/display/${displayId}/reviews/${displayReviewId}/reply/${displayReviewReplyId}/like`,
     { method: 'POST' },
   );
+
+// GET /v1/display/reviews/me
+export const getMyDisplayReviews = async (
+  params: {
+    cursorId?: number;
+    size?: number;
+  } = {},
+): Promise<GetMyDisplayReviewsResponseDataDto> =>
+  apiRequest('/v1/display/reviews/me', { query: params });

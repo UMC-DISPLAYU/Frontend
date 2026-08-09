@@ -302,12 +302,16 @@ export function ExhibitionRegister() {
                         render={({ field: { value: orgVal, onChange: onOrgChange } }) => (
                           <AffiliationInput
                             group={selectedGroup}
-                            school={schoolVal || artistProfile?.schoolName || ''}
-                            onSchoolChange={onSchoolChange}
+                            school={
+                              selectedGroup === 'organization'
+                                ? orgVal || ''
+                                : schoolVal || artistProfile?.schoolName || ''
+                            }
+                            onSchoolChange={
+                              selectedGroup === 'organization' ? onOrgChange : onSchoolChange
+                            }
                             department={deptVal || ''}
                             onDepartmentChange={onDeptChange}
-                            organizer={orgVal || ''}
-                            onOrganizerChange={onOrgChange}
                           />
                         )}
                       />

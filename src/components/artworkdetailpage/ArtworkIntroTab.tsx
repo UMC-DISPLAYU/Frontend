@@ -57,7 +57,7 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
   };
 
   return (
-    <div className="pb-6">
+    <div className="pb-28">
       <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       {/* 작품소개 */}
       <section className="px-5 pt-7 pb-6">

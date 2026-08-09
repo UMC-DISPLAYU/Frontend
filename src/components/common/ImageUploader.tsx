@@ -33,8 +33,10 @@ export function ImageUploader({
   const totalImages = images.length + initialImages.length;
 
   const handleImageClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+    if (totalImages < maxImages) {
+      fileInputRef.current?.click();
+    }
+  }, [totalImages, maxImages]);
 
   const handleImageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,11 +53,11 @@ export function ImageUploader({
   );
 
   return (
-    <div className="mt-2 flex gap-2 flex-wrap">
+    <div className="mt-2 flex gap-2 overflow-x-auto scrollbar-none w-full pb-1">
       {initialImages.map((url, index) => (
         <div
           key={url}
-          className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
+          className="relative size-24 shrink-0 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
         >
           <img src={url} alt={`기존 이미지 ${index + 1}`} className="w-full h-full object-cover" />
           <button
@@ -71,7 +73,7 @@ export function ImageUploader({
       {images.map((image, index) => (
         <div
           key={image.id}
-          className="relative size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
+          className="relative size-24 shrink-0 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line overflow-hidden"
         >
           <img
             src={image.previewUrl}
@@ -88,21 +90,21 @@ export function ImageUploader({
           </button>
         </div>
       ))}
-      <button
-        type="button"
-        onClick={handleImageClick}
-        className="size-24 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
-        aria-label={emptyLabel ?? '이미지 업로드'}
-      >
-        <div className="size-10 bg-page rounded-full flex items-center justify-center">
-          <Image size={16} className="text-input-border" />
-        </div>
-        <span
-          className={`typo-body-xs-regular ${totalImages > maxImages ? 'text-error' : 'text-main'}`}
+      {totalImages < maxImages && (
+        <button
+          type="button"
+          onClick={handleImageClick}
+          className="size-24 shrink-0 bg-card rounded-xl outline outline-1 outline-offset-[-1px] outline-line flex flex-col items-center justify-center gap-3"
+          aria-label={emptyLabel ?? '이미지 업로드'}
         >
-          {emptyLabel ?? `${totalImages}/${maxImages}`}
-        </span>
-      </button>
+          <div className="size-10 bg-page rounded-full flex items-center justify-center">
+            <Image size={16} className="text-input-border" />
+          </div>
+          <span className="text-main typo-body-xs-regular">
+            {emptyLabel ?? `${totalImages}/${maxImages}`}
+          </span>
+        </button>
+      )}
       <input
         ref={fileInputRef}
         type="file"
