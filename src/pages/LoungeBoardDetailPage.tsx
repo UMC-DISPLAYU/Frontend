@@ -47,32 +47,36 @@ export const LoungeBoardDetailPage = () => {
   const createReplyMutation = useCreateLoungeReply();
   const deletePostMutation = useDeleteLoungePost();
 
-  const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
-    null,
-  );
-  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [replyState, setReplyState] = useState<{
+    commentId: number;
+    author: string;
+    highlightId: string;
+  } | null>(null);
   const [deletedCommentIds, setDeletedCommentIds] = useState<Set<string>>(new Set());
 
   const clearReplyTarget = () => {
-    setReplyTarget(null);
-    setActiveReplyId(null);
+    setReplyState(null);
   };
 
   const handleReplyClick = useCallback((commentId: number, author: string, highlightId: string) => {
-    setActiveReplyId((prev) => {
-      if (prev === highlightId) {
-        setReplyTarget(null);
+    setReplyState((prev) => {
+      if (prev?.highlightId === highlightId) {
         return null;
       }
-      setReplyTarget({ commentId, author });
-      return highlightId;
+      return { commentId, author, highlightId };
     });
   }, []);
 
   const handleDeleteComment = useCallback(
     (commentId: string) => {
-      deleteCommentMutation.mutate({ postId, commentId: Number(commentId) });
-      setDeletedCommentIds((prev) => new Set(prev).add(commentId));
+      deleteCommentMutation.mutate(
+        { postId, commentId: Number(commentId) },
+        {
+          onSuccess: () => {
+            setDeletedCommentIds((prev) => new Set(prev).add(commentId));
+          },
+        },
+      );
     },
     [deleteCommentMutation, postId],
   );
@@ -171,7 +175,7 @@ export const LoungeBoardDetailPage = () => {
                     isDeleted={isDeleted}
                     onDelete={handleDeleteComment}
                     onReplyClick={handleReplyClick}
-                    activeReplyId={activeReplyId}
+                    activeReplyId={replyState?.highlightId ?? null}
                   />
                 ))}
                 <div ref={commentsTriggerRef} className="h-4" />
@@ -188,15 +192,15 @@ export const LoungeBoardDetailPage = () => {
             placeholder="댓글을 입력하세요."
             imageDomain="lounge"
             isSubmitting={
-              replyTarget ? createReplyMutation.isPending : createCommentMutation.isPending
+              replyState ? createReplyMutation.isPending : createCommentMutation.isPending
             }
-            replyingTo={replyTarget?.author}
+            replyingTo={replyState?.author}
             onCancelReply={clearReplyTarget}
             onSubmit={({ content, images }) => {
               const imageUrls = images.map((image) => image.imageUrl);
-              if (replyTarget) {
+              if (replyState) {
                 createReplyMutation.mutate(
-                  { postId, commentId: replyTarget.commentId, body: { content, imageUrls } },
+                  { postId, commentId: replyState.commentId, body: { content, imageUrls } },
                   { onSuccess: clearReplyTarget },
                 );
                 return;

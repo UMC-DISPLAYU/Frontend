@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { http } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 import { listResponse, mockDb, okStatus } from '@/mocks/data/repository';
 import { created, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const now = () => new Date().toISOString();
 const findPost = (postId: number) =>
-  mockDb.loungePosts.find((post: any) => post.loungePostId === postId || post.postId === postId) ??
-  mockDb.loungePosts[0];
+  mockDb.loungePosts.find((post: any) => post.loungePostId === postId || post.postId === postId);
 
 export const loungeHandlers = [
   ...paths('/api/v1/lounge/posts').map((path) =>
@@ -17,7 +16,7 @@ export const loungeHandlers = [
     http.post(path, async ({ request }) => {
       const body = await readJson<Record<string, unknown>>(request);
       const post = {
-        ...findPost(1),
+        ...mockDb.loungePosts[0],
         ...body,
         loungePostId: Date.now(),
         postId: Date.now(),
@@ -32,13 +31,16 @@ export const loungeHandlers = [
     }),
   ),
   ...paths('/api/v1/lounge/posts/{loungePostId}').map((path) =>
-    http.get(path, ({ params }) =>
-      success('/api/v1/lounge/posts/{loungePostId}', findPost(toNumber(params.loungePostId, 1))),
-    ),
+    http.get(path, ({ params }) => {
+      const post = findPost(toNumber(params.loungePostId, 1));
+      if (!post) return HttpResponse.json({ message: 'Not Found' }, { status: 404 });
+      return success('/api/v1/lounge/posts/{loungePostId}', post);
+    }),
   ),
   ...paths('/api/v1/lounge/posts/{loungePostId}').map((path) =>
     http.patch(path, async ({ params, request }) => {
       const post = findPost(toNumber(params.loungePostId, 1));
+      if (!post) return HttpResponse.json({ message: 'Not Found' }, { status: 404 });
       Object.assign(post, await readJson(request), { updatedAt: now() });
 
       return success('/api/v1/lounge/posts/{loungePostId}', post);
@@ -100,9 +102,8 @@ export const loungeHandlers = [
     http.post(path, async ({ params, request }) => {
       const postId = toNumber(params.loungePostId, 1);
       const post = findPost(postId);
-      if (post) {
-        post.commentCount = (post.commentCount ?? 0) + 1;
-      }
+      if (!post) return HttpResponse.json({ message: 'Not Found' }, { status: 404 });
+      post.commentCount = (post.commentCount ?? 0) + 1;
       const comment = {
         loungeCommentId: Date.now(),
         commentId: Date.now(),
@@ -176,9 +177,10 @@ export const loungeHandlers = [
       );
       if (parentComment) {
         const post = findPost(parentComment.loungePostId);
-        if (post) {
-          post.commentCount = (post.commentCount ?? 0) + 1;
-        }
+        if (!post) return HttpResponse.json({ message: 'Not Found' }, { status: 404 });
+        post.commentCount = (post.commentCount ?? 0) + 1;
+      } else {
+        return HttpResponse.json({ message: 'Parent comment not found' }, { status: 404 });
       }
       return created('/api/v1/lounge/comments/{parentCommentId}/replies', {
         loungeCommentId: Date.now(),

@@ -51,7 +51,7 @@ export function CommunitySection() {
             title="모집·협업"
             description={
               <span className="whitespace-pre-wrap">
-                {'전시 준비 과정과\n작업 노하우를 공유해요'}
+                {'전시를 함께 만들\n팀원과 협업 파트너를 찾아요'}
               </span>
             }
             onClick={() => handleCardClick('/lounge/collab')}
