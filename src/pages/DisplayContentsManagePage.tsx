@@ -4,7 +4,7 @@ import { MoreHorizontal, X } from 'lucide-react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { LoadingView } from '@/components/common';
-import { BottomBar, Header, Screen } from '@/components/display-manage/Common';
+import { Header, Screen } from '@/components/display-manage/Common';
 import { useHideFooter } from '@/components/layout';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import {
@@ -453,7 +453,7 @@ export function DisplayContentsManagePage() {
       </div>
 
       {canCreateCategory && (
-        <BottomBar>
+        <div className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
           <button
             type="button"
             onClick={() => setCreating(true)}
@@ -461,7 +461,7 @@ export function DisplayContentsManagePage() {
           >
             {BOTTOM_CTA_LABEL}
           </button>
-        </BottomBar>
+        </div>
       )}
 
       {editing && (

@@ -1,20 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
+import { isAxiosError } from 'axios';
+import { ChevronLeft, ImagePlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
+import { LoadingView } from '@/components/common';
+import { ConfirmModal } from '@/components/ui';
 import { ChipGroup } from '@/components/ui';
-import {
-  ARTIST_FIELD_MAP,
-  type ArtistFieldCode,
-  EXHIBITION_FIELD_LABELS,
-  EXHIBITION_FIELDS,
-  type ExhibitionField,
-  MAX_ARTIST_FIELDS,
-} from '@/constants/exhibition';
+import { EXHIBITION_FIELD_LABELS, EXHIBITION_FIELDS } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
-import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 
 const INTRO_MAX = 100;
@@ -22,9 +17,11 @@ const INTRO_MAX = 100;
 function ProfilePhotoField({
   image,
   onChange,
+  isUploading,
 }: {
   image: string | null;
   onChange: (file: File) => void;
+  isUploading: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -32,34 +29,67 @@ function ProfilePhotoField({
     const file = e.target.files?.[0];
     if (!file) return;
     onChange(file);
+    e.currentTarget.value = '';
   };
 
   return (
-    <>
+    <div className="relative size-20">
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         aria-label="프로필 사진 등록"
-        className="flex size-24 flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border border-line bg-card"
+        disabled={isUploading}
+        className="size-20 overflow-hidden rounded-full border-[2.6px] border-line bg-card disabled:opacity-50 relative"
       >
         {image ? (
-          <img src={image} alt="프로필 미리보기" className="size-full object-cover" />
-        ) : (
           <>
-            <span className="flex size-10 items-center justify-center rounded-full bg-page text-faint">
-              <ImagePlus className="size-[18px]" strokeWidth={1.5} />
-            </span>
-            <span className="typo-body-xs-regular text-main">프로필 사진</span>
+            <img src={image} alt="프로필 미리보기" className="size-full object-cover" />
+            {isUploading && (
+              <div className="absolute inset-0 bg-dark/50">
+                <LoadingView fullScreen={false} message="" className="!bg-transparent" />
+              </div>
+            )}
           </>
+        ) : (
+          <div className="size-full flex items-center justify-center">
+            {isUploading ? (
+              <LoadingView fullScreen={false} message="" className="!bg-transparent !p-0" />
+            ) : (
+              <ImagePlus className="size-5 text-faint" strokeWidth={1.5} />
+            )}
+          </div>
         )}
       </button>
+      <div className="absolute bottom-0 right-0 size-6 bg-white rounded-full flex items-center justify-center overflow-hidden">
+        <div className="size-4 bg-sub600 rounded-sm" />
+      </div>
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-    </>
+    </div>
   );
 }
 
 export function EditArtistProfilePage() {
-  const { data: artistProfile } = useMyArtistProfile();
+  const navigate = useNavigate();
+  const { data: artistProfile, error, isError } = useMyArtistProfile();
+
+  // 작가 프로필이 없으면 (404 에러만) 작가 인증 모달 표시
+  const is404 = isError && isAxiosError(error) && error.response?.status === 404;
+
+  if (is404) {
+    return (
+      <ConfirmModal
+        message="작가 프로필을 설정하려면 먼저 작가 인증을 완료해주세요."
+        confirmLabel="작가 인증하기"
+        cancelLabel="취소"
+        onConfirm={() => navigate('/artist-verification')}
+        onCancel={() => navigate(-1)}
+      />
+    );
+  }
+
+  if (!artistProfile) {
+    return <LoadingView message="프로필 정보를 불러오는 중..." />;
+  }
 
   return (
     <EditArtistProfileForm
@@ -71,10 +101,11 @@ export function EditArtistProfilePage() {
 
 function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfileDto }) {
   const navigate = useNavigate();
-  const [profileImage, setProfileImage] = useState<string | null>(
+  const [previewImage, setPreviewImage] = useState<string | null>(
     artistProfile?.profileImageUrl ?? null,
   );
-  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [activityName, setActivityName] = useState(artistProfile?.artistName ?? '');
   const [intro, setIntro] = useState(artistProfile?.introduction ?? '');
   /* 서버 응답과 선택지가 모두 영어 코드라 그대로 사용합니다. */
@@ -82,71 +113,51 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [externalLink, setExternalLink] = useState(
     artistProfile?.externalLink ?? artistProfile?.portfolioUrl ?? '',
   );
-  const [school, setSchool] = useState(artistProfile?.schoolName ?? '');
-  const [schoolFocused, setSchoolFocused] = useState(false);
-  const schoolQuery = useSearchSchools(school);
+  const school = artistProfile?.schoolName ?? '';
   const updateMyArtistProfile = useUpdateMyArtistProfile();
   const uploadImage = useUploadImage();
 
-  const showSchoolDropdown = schoolFocused && school.trim().length > 0;
-
-  useEffect(() => {
-    return () => {
-      if (profileImage?.startsWith('blob:')) {
-        URL.revokeObjectURL(profileImage);
-      }
+  const handleImageChange = async (file: File) => {
+    // 미리보기용 data URL 생성
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPreviewImage(reader.result as string);
     };
-  }, [profileImage]);
+    reader.readAsDataURL(file);
 
-  const handleProfileImageChange = (file: File) => {
-    setProfileImage((prev) => {
-      if (prev?.startsWith('blob:')) {
-        URL.revokeObjectURL(prev);
-      }
-
-      return URL.createObjectURL(file);
-    });
-    setProfileImageFile(file);
+    // S3에 이미지 업로드
+    setIsImageUploading(true);
+    try {
+      const fileUrl = await uploadImage.mutateAsync({ file, domain: 'artist-profile' });
+      setUploadedImageUrl(fileUrl);
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+      setPreviewImage(artistProfile?.profileImageUrl ?? null);
+      setUploadedImageUrl(null);
+    } finally {
+      setIsImageUploading(false);
+    }
   };
 
-  const handleSubmit = async () => {
-    const uploadedProfileImageUrl = profileImageFile
-      ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
-      : profileImage;
-    const fields = selectedFields
-      .map((field) => ARTIST_FIELD_MAP[field as ExhibitionField])
-      .filter((field): field is ArtistFieldCode => Boolean(field));
+  const handleSubmit = () => {
+    const payload = {
+      artistName: activityName.trim(),
+      fields: selectedFields,
+      ...(uploadedImageUrl && { profileImageUrl: uploadedImageUrl }),
+      ...(intro.trim() && { introduction: intro.trim() }),
+      ...(externalLink.trim() && { externalLink: externalLink.trim() }),
+    };
 
-    /*
-     * profileImageUrl·externalLink는 서버에서 http(s) URL 형식을 강제하므로
-     * 빈 값은 필드를 아예 빼서 보냅니다. 빈 문자열을 보내면 검증에서 거절됩니다.
-     * 업로드 전 미리보기용 blob: URL도 서버로 넘어가면 안 됩니다.
-     */
-    const trimmedExternalLink = externalLink.trim();
-    const isSubmittableUrl = (url: string | null | undefined): url is string =>
-      Boolean(url) && /^https?:\/\//.test(url as string);
-
-    updateMyArtistProfile.mutate(
-      {
-        ...(isSubmittableUrl(uploadedProfileImageUrl)
-          ? { profileImageUrl: uploadedProfileImageUrl }
-          : {}),
-        artistName: activityName.trim(),
-        introduction: intro.trim(),
-        fields,
-        ...(isSubmittableUrl(trimmedExternalLink) ? { externalLink: trimmedExternalLink } : {}),
-        univName: school.trim(),
+    updateMyArtistProfile.mutate(payload, {
+      onSuccess: () => {
+        navigate(-1);
       },
-      {
-        onSuccess: () => {
-          navigate(-1);
-        },
-      },
-    );
+    });
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
+    <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
@@ -156,14 +167,18 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
 
       <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-32">
         <div className="mt-10 flex justify-center">
-          <ProfilePhotoField image={profileImage} onChange={handleProfileImageChange} />
+          <ProfilePhotoField
+            image={previewImage}
+            onChange={handleImageChange}
+            isUploading={isImageUploading}
+          />
         </div>
 
         <div className="mt-12 flex flex-col gap-5">
-          {/* 활동명 */}
+          {/* 프로필명 */}
           <div className="flex flex-col gap-3">
             <label htmlFor="activityName" className="typo-body-sm-bold text-main">
-              활동명
+              프로필명
             </label>
             <input
               id="activityName"
@@ -171,7 +186,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               onChange={(e) => setActivityName(e.target.value)}
               maxLength={30}
               placeholder="활동명 입력(최대 30자)"
-              className="h-9 rounded-lg border border-line bg-card px-3 typo-body-xs-regular text-main outline-none placeholder:text-faint focus:border-line-active"
+              className="h-9 px-3 py-2.5 border-b border-line bg-transparent typo-body-xs-regular text-main outline-none placeholder:text-faint"
             />
           </div>
 
@@ -180,7 +195,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
             <label htmlFor="intro" className="typo-body-sm-bold text-main">
               전시소개
             </label>
-            <div className="rounded-lg border border-line bg-card px-3 py-2.5">
+            <div className="px-3 py-2.5 border-b border-line flex flex-col gap-2">
               <textarea
                 id="intro"
                 value={intro}
@@ -203,8 +218,11 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               options={EXHIBITION_FIELDS}
               labels={EXHIBITION_FIELD_LABELS}
               selected={selectedFields}
-              onChange={setSelectedFields}
-              maxSelect={MAX_ARTIST_FIELDS}
+              onChange={(values) => {
+                if (values.length <= 2) {
+                  setSelectedFields(values);
+                }
+              }}
               aria-label="전시분야"
             />
           </div>
@@ -219,84 +237,42 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               value={externalLink}
               onChange={(e) => setExternalLink(e.target.value)}
               placeholder="포트폴리오, 인스타그램, 개인 웹사이트 링크"
-              className="h-11 rounded-2xl bg-card px-3.5 typo-body-sm-regular text-tag-blue outline-none placeholder:text-faint"
+              className="h-11 px-3.5 border-b border-faint bg-transparent typo-body-sm-regular text-main outline-none placeholder:text-faint"
             />
           </div>
 
           {/* 소속 정보 */}
           <div className="flex flex-col gap-3">
             <span className="typo-body-sm-bold text-main">소속 정보</span>
-            <div className="rounded-2xl bg-card px-4 py-3.5">
-              <label htmlFor="school" className="mb-2 block typo-body-xs-bold text-sub600">
+            <div className="rounded-2xl bg-card px-4 py-3.5 flex flex-col gap-2">
+              <label htmlFor="school" className="typo-body-xs-bold text-sub600/20">
                 학교 / 기관명
               </label>
 
               <div className="relative">
-                <div className="flex h-10 items-center gap-2 rounded-2xl bg-page border border-line px-3">
+                <div className="flex h-10 items-center gap-2 rounded-2xl bg-page border border-line-soft px-3">
                   <input
                     id="school"
                     value={school}
-                    onChange={(e) => setSchool(e.target.value)}
-                    onFocus={() => setSchoolFocused(true)}
-                    onBlur={() => setTimeout(() => setSchoolFocused(false), 120)}
-                    placeholder="학교명을 검색해주세요"
-                    className="min-w-0 flex-1 bg-transparent typo-body-sm-regular text-main outline-none placeholder:text-line"
+                    disabled
+                    className="min-w-0 flex-1 bg-transparent typo-body-sm-regular text-main outline-none"
                   />
-                  <Search className="size-4 shrink-0 text-faint" strokeWidth={1.5} />
                 </div>
-
-                {showSchoolDropdown && (
-                  <ul className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[208px] overflow-y-auto overscroll-contain rounded-2xl bg-card py-2 shadow-[0px_4px_16px_0px_rgba(0,0,0,0.08)]">
-                    {schoolQuery.isLoading ? (
-                      <li className="px-4 py-2.5 typo-body-sm-regular text-faint">검색 중...</li>
-                    ) : schoolQuery.data && schoolQuery.data.length > 0 ? (
-                      schoolQuery.data.map(({ name }) => (
-                        <li key={name}>
-                          <button
-                            type="button"
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={() => {
-                              setSchool(name);
-                              setSchoolFocused(false);
-                            }}
-                            className="w-full px-4 py-2.5 text-left typo-body-sm-regular text-main hover:bg-page"
-                          >
-                            {name}
-                          </button>
-                        </li>
-                      ))
-                    ) : (
-                      <li>
-                        <button
-                          type="button"
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => {
-                            setSchool(school);
-                            setSchoolFocused(false);
-                          }}
-                          className="w-full px-4 py-2.5 text-left typo-body-sm-regular text-main hover:bg-page"
-                        >
-                          {school}
-                        </button>
-                      </li>
-                    )}
-                  </ul>
-                )}
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      <footer className="sticky bottom-0 bg-gradient-to-b from-transparent via-page/80 to-page px-5 pb-8 pt-6">
+      <footer className="sticky bottom-0 bg-gradient-to-b from-transparent via-white/75 to-page px-5 pb-8 pt-6">
         <button
           type="button"
           onClick={handleSubmit}
           disabled={
             !activityName.trim() ||
             selectedFields.length === 0 ||
-            updateMyArtistProfile.isPending ||
-            uploadImage.isPending
+            isImageUploading ||
+            updateMyArtistProfile.isPending
           }
           className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white disabled:opacity-40"
         >

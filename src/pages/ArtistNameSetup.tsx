@@ -48,7 +48,7 @@ const getRegion = (address: string): CreateDisplayRequestDto['region'] => {
 const optionalText = (value?: string | null) => {
   const trimmed = value?.trim();
 
-  return trimmed ? trimmed : undefined;
+  return trimmed ? trimmed : '';
 };
 
 function SummaryRow({ label, value }: SummaryRowProps) {
@@ -116,10 +116,8 @@ export function ArtistNameSetup() {
       /* 서버 필수 필드입니다. 작가명은 이 전시에서 쓸 표시명, 문의 방법은 Q&A 계정으로 들어갑니다. */
       displayNickname: artistName.trim(),
       qnaAccount: (registerState.contact ?? '').trim(),
-      schoolOrOrganization: registerState.school ? registerState.school : null,
-      departmentOrClub: registerState.school
-        ? (optionalText(registerState.department) ?? null)
-        : null,
+      schoolOrOrganization: optionalText(registerState.school || registerState.organizer) ?? '',
+      departmentOrClub: optionalText(registerState.department),
       subtitle: optionalText(registerState.subtitle),
       description: optionalText(registerState.intro),
       precautions: optionalText(registerState.notice),

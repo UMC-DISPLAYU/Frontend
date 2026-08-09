@@ -4,7 +4,8 @@ import { cn } from '@/utils/cn';
 
 type Props = {
   images: string[];
-  onBack: () => void;
+  /* 페이지 자체에서 뒤로가기 버튼을 fixed로 따로 그릴 경우(전시상세 페이지) 생략합니다. */
+  onBack?: () => void;
 };
 
 export function HeroSlider({ images, onBack }: Props) {
@@ -37,7 +38,9 @@ export function HeroSlider({ images, onBack }: Props) {
         ))}
       </div>
 
-      <BackButton id="display-back-btn" onClick={onBack} className="absolute top-4 left-4 z-20" />
+      {onBack && (
+        <BackButton id="display-back-btn" onClick={onBack} className="absolute top-4 left-4 z-20" />
+      )}
 
       {images.length > 1 && (
         <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2">

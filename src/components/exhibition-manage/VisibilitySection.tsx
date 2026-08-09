@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 
-import { formatStartDate, VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
+import { VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
 
 interface VisibilitySectionProps {
   artworkVisibility: VisibilityType;
@@ -12,7 +12,6 @@ interface VisibilitySectionProps {
 export function VisibilitySection({
   artworkVisibility,
   contentVisibility,
-  startDate: _startDate,
   onSettingsClick,
 }: VisibilitySectionProps) {
   const getVisibilityLabel = (visibility: VisibilityType) => {

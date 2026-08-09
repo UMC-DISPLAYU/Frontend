@@ -12,7 +12,7 @@ export function LoungeSection({ posts }: Props) {
       <SectionHeader title="라운지" linkTo="/lounge" />
       <div>
         {posts.map((post) => (
-          <LoungePostCard key={post.loungePostId} post={post} className="mx-4 mb-3" />
+          <LoungePostCard key={post.loungePostId} post={post} className="mx-5 mb-3" />
         ))}
       </div>
     </section>

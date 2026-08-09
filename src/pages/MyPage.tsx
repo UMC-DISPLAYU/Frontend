@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import type { ArchivedArtistDto, ArchivedArtworkDto, ArchivedExhibitionDto } from '@/api/dto';
 import ExhibitionIcon from '@/assets/mypage/exhibit.svg';
-import SchoolIcon from '@/assets/mypage/image 3666.svg';
-import FieldIcon from '@/assets/mypage/image 3673.svg';
+import FieldIcon from '@/assets/mypage/field.svg';
+import SchoolIcon from '@/assets/mypage/school.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtistCard,
@@ -142,8 +142,14 @@ export function MyPage() {
 
   const profile = useMemo(
     () => ({
-      name: userData?.nickname || userData?.name || '사용자',
-      avatar: userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
+      name: isArtistView
+        ? myArtistProfileQuery.data?.artistName || userData?.nickname || userData?.name || '사용자'
+        : userData?.nickname || userData?.name || '사용자',
+      avatar: isArtistView
+        ? myArtistProfileQuery.data?.profileImageUrl ||
+          userData?.profileImageUrl ||
+          FALLBACK_PROFILE_IMAGE
+        : userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
       caption: '내가 저장한 작품 확인하기',
       isVerified: Boolean(userData?.isVerified),
       school: myArtistProfileQuery.data?.schoolName || userData?.schoolEmail?.split('@')[1] || '',
@@ -159,11 +165,12 @@ export function MyPage() {
       portfolioUrl:
         myArtistProfileQuery.data?.portfolioUrl || myArtistProfileQuery.data?.externalLink || '',
     }),
-    [myArtistProfileQuery.data, myDisplaysQuery.data?.length, userData],
+    [isArtistView, myArtistProfileQuery.data, myDisplaysQuery.data?.length, userData],
   );
 
   const exhibitions = useMemo<ExhibitionItem[]>(() => {
     const items = (archivedExhibitionsQuery.data?.savedExhibitions ??
+      archivedExhibitionsQuery.data?.displays ??
       []) as ArchivedExhibitionView[];
     return items.map((item) => ({
       id: String(item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId),
@@ -301,7 +308,7 @@ export function MyPage() {
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
+    <div className="max-w-md mx-auto min-h-dvh bg-page flex flex-col">
       <MyPageHeader
         onVerifyArtist={() => {
           navigate('/artist-verification');
