@@ -21,6 +21,7 @@ import {
   ExhibitionBasicInfo,
   ExhibitionRegister,
 } from './pages/exhibition-register';
+import { ExhibitionRegisterDraftRoute } from './pages/exhibition-register/ExhibitionRegisterDraftRoute';
 import { ExhibitionManage } from './pages/ExhibitionManagePage';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
@@ -116,15 +117,21 @@ export const router = createBrowserRouter([
           { path: 'artworks-register', element: <ArtworkRegisterPage /> },
 
           // 1. 전시 등록 플로우
-          { path: 'exhibition/register', element: <ExhibitionRegister /> },
-          { path: 'exhibition/register/basic', element: <ExhibitionBasicInfo /> },
-          { path: 'exhibition/register/artist', element: <ArtistNameSetup /> },
+          {
+            element: <ExhibitionRegisterDraftRoute />,
+            children: [
+              { path: 'exhibition/register', element: <ExhibitionRegister /> },
+              { path: 'exhibition/register/basic', element: <ExhibitionBasicInfo /> },
+              { path: 'exhibition/register/artist', element: <ArtistNameSetup /> },
+            ],
+          },
 
           // 2. 특정 전시 관리 플로우 (ID 발급 후)
           {
             path: 'exhibition/:displayId',
             loader: validateNumericId('displayId'),
             errorElement: <NotFound />,
+            element: <ExhibitionRegisterDraftRoute />,
             children: [
               { path: 'manage', element: <ExhibitionManage /> },
               { path: 'work', element: <ExhibitionWorkPage /> },

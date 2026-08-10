@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Info } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
@@ -8,6 +10,7 @@ import { BottomButtonBar } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
+import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 
 import { type ArtistNameSetupFormValues, artistNameSetupSchema } from './exhibitionRegister.schema';
 
@@ -53,6 +56,14 @@ const optionalText = (value?: string | null) => {
   return trimmed ? trimmed : '';
 };
 
+const formatPeriodLabel = (startDate?: string | null, endDate?: string | null) => {
+  if (!startDate || !endDate) {
+    return '';
+  }
+
+  return `${startDate.split('-').join('.')} - ${endDate.split('-').join('.')}`;
+};
+
 function SummaryRow({ label, value }: SummaryRowProps) {
   return (
     <div className="flex items-start gap-5">
@@ -65,19 +76,28 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 export function ArtistNameSetup() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const registerState = (state ?? {}) as ExhibitionRegisterState;
+  const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
+  const registerState = {
+    ...(state ?? {}),
+    ...(hasDraft ? draft : {}),
+  } as ExhibitionRegisterState;
   const createDisplay = useCreateDisplay();
 
   const info = {
     title: registerState.title ?? '',
     org: registerState.school || registerState.organizer || '',
-    period: registerState.period ?? '',
+    period:
+      hasDraft && draft.startDate && draft.endDate
+        ? formatPeriodLabel(draft.startDate, draft.endDate)
+        : (registerState.period ?? ''),
     role: '대표자',
   };
 
   const {
     register,
     handleSubmit,
+    control,
+    getValues,
     formState: { errors, isValid },
   } = useForm<ArtistNameSetupFormValues>({
     resolver: zodResolver(artistNameSetupSchema),
@@ -86,6 +106,15 @@ export function ArtistNameSetup() {
       artistName: registerState.artistName ?? '',
     },
   });
+  const artistName = useWatch({ control, name: 'artistName' }) ?? '';
+
+  const saveCurrentDraft = () => {
+    updateDraft({ artistName: getValues('artistName') });
+  };
+
+  useEffect(() => {
+    updateDraft({ artistName });
+  }, [artistName, updateDraft]);
 
   const goCreate = (data: ArtistNameSetupFormValues) => {
     const type = registerState.type ? DISPLAY_TYPE_MAP[registerState.type] : undefined;
@@ -139,6 +168,7 @@ export function ArtistNameSetup() {
 
     createDisplay.mutate(requestBody, {
       onSuccess: (display) => {
+        resetDraft();
         navigate(`/exhibition/${display.displayId}/manage`, {
           state: {
             ...registerState,
@@ -153,7 +183,13 @@ export function ArtistNameSetup() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <ExhibitionHeader title="전시 작가명 설정" />
+      <ExhibitionHeader
+        title="전시 작가명 설정"
+        onBack={() => {
+          saveCurrentDraft();
+          navigate(-1);
+        }}
+      />
 
       <div className="px-5 pb-24">
         <form

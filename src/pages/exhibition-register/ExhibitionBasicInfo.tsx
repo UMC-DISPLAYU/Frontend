@@ -13,6 +13,7 @@ import { CalenderSheet } from '@/components/ui/CalenderSheet';
 import { type TimeRangeValue, TimeSheet } from '@/components/ui/TimeSheet';
 import { useUpdateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 
 import {
   type ExhibitionBasicInfoFormValues,
@@ -31,6 +32,14 @@ const pad = (value: number) => String(value).padStart(2, '0');
 const formatDate = (date: Date) =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 const formatTime = (hour: number, minute: number) => `${pad(hour)}:${pad(minute)}`;
+const parseTime = (time: string) => {
+  const [hour, minute] = time.split(':').map(Number);
+
+  return {
+    hour: Number.isFinite(hour) ? hour : 0,
+    minute: Number.isFinite(minute) ? minute : 0,
+  };
+};
 
 function Underline({
   children,
@@ -60,8 +69,10 @@ function Label({ children, required }: { children: React.ReactNode; required?: b
 export function ExhibitionBasicInfo() {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { draft, hasDraft, updateDraft } = useExhibitionRegisterDraft();
   const { displayId: paramDisplayId } = useParams();
   const displayId = Number(paramDisplayId ?? 0);
+  const shouldUseDraft = displayId === 0 && hasDraft;
   const updateDisplay = useUpdateDisplay(displayId);
 
   const { data: fetchedDetail, isPending: isDetailPending } = useDisplayDetail(displayId);
@@ -76,26 +87,40 @@ export function ExhibitionBasicInfo() {
   const parseDate = (d?: string) => (d ? new Date(d) : new Date());
 
   const initialPeriod =
-    (restored.periodValue as DateValue) ??
-    (displayDetail?.period
+    shouldUseDraft && draft.startDate && draft.endDate
       ? {
-          start: parseDate(displayDetail.period.startDate),
-          end: parseDate(displayDetail.period.endDate),
-          label: `${displayDetail.period.startDate.split('-').join('.')} - ${displayDetail.period.endDate.split('-').join('.')}`,
+          start: parseDate(draft.startDate),
+          end: parseDate(draft.endDate),
+          label: `${draft.startDate.split('-').join('.')} - ${draft.endDate.split('-').join('.')}`,
         }
-      : null);
+      : ((restored.periodValue as DateValue) ??
+        (displayDetail?.period
+          ? {
+              start: parseDate(displayDetail.period.startDate),
+              end: parseDate(displayDetail.period.endDate),
+              label: `${displayDetail.period.startDate.split('-').join('.')} - ${displayDetail.period.endDate.split('-').join('.')}`,
+            }
+          : null));
 
   const initialOperatingHours =
-    (restored.operatingHoursValue as TimeRangeValue) ??
-    (displayDetail?.period
+    shouldUseDraft && draft.startTime && draft.endTime
       ? {
-          startHour: parseInt(displayDetail.period.startTime.split(':')[0] || '0'),
-          startMinute: parseInt(displayDetail.period.startTime.split(':')[1] || '0'),
-          endHour: parseInt(displayDetail.period.endTime.split(':')[0] || '0'),
-          endMinute: parseInt(displayDetail.period.endTime.split(':')[1] || '0'),
-          label: `${displayDetail.period.startTime} - ${displayDetail.period.endTime}`,
+          startHour: parseTime(draft.startTime).hour,
+          startMinute: parseTime(draft.startTime).minute,
+          endHour: parseTime(draft.endTime).hour,
+          endMinute: parseTime(draft.endTime).minute,
+          label: `${draft.startTime} - ${draft.endTime}`,
         }
-      : null);
+      : ((restored.operatingHoursValue as TimeRangeValue) ??
+        (displayDetail?.period
+          ? {
+              startHour: parseInt(displayDetail.period.startTime.split(':')[0] || '0'),
+              startMinute: parseInt(displayDetail.period.startTime.split(':')[1] || '0'),
+              endHour: parseInt(displayDetail.period.endTime.split(':')[0] || '0'),
+              endMinute: parseInt(displayDetail.period.endTime.split(':')[1] || '0'),
+              label: `${displayDetail.period.startTime} - ${displayDetail.period.endTime}`,
+            }
+          : null));
 
   const [selectedPeriod, setSelectedPeriod] = useState<DateValue | null>(null);
   const [selectedOperatingHours, setSelectedOperatingHours] = useState<TimeRangeValue | null>(null);
@@ -108,6 +133,7 @@ export function ExhibitionBasicInfo() {
     register,
     handleSubmit,
     control,
+    getValues,
     setValue,
     reset,
     formState: { errors, isValid },
@@ -123,18 +149,60 @@ export function ExhibitionBasicInfo() {
       endTime: initialOperatingHours
         ? formatTime(initialOperatingHours.endHour, initialOperatingHours.endMinute)
         : '',
-      placeName: (restored.placeName as string) ?? displayDetail?.location?.placeName ?? '',
-      address: (restored.address as string) ?? displayDetail?.location?.placeName ?? '',
-      latitude: (restored.latitude as number) ?? displayDetail?.location?.latitude ?? null,
-      longitude: (restored.longitude as number) ?? displayDetail?.location?.longitude ?? null,
-      contact: (restored.contact as string) ?? displayDetail?.qnaAccount ?? '',
-      notice: (restored.notice as string) ?? displayDetail?.note ?? '',
+      placeName: shouldUseDraft
+        ? draft.placeName
+        : ((restored.placeName as string) ?? displayDetail?.location?.placeName ?? ''),
+      address: shouldUseDraft
+        ? draft.address
+        : ((restored.address as string) ?? displayDetail?.location?.placeName ?? ''),
+      latitude: shouldUseDraft
+        ? (draft.latitude ?? undefined)
+        : ((restored.latitude as number) ?? displayDetail?.location?.latitude ?? undefined),
+      longitude: shouldUseDraft
+        ? (draft.longitude ?? undefined)
+        : ((restored.longitude as number) ?? displayDetail?.location?.longitude ?? undefined),
+      contact: shouldUseDraft
+        ? draft.contact
+        : ((restored.contact as string) ?? displayDetail?.qnaAccount ?? ''),
+      notice: shouldUseDraft
+        ? draft.notice
+        : ((restored.notice as string) ?? displayDetail?.note ?? ''),
     },
   });
 
   const notice = useWatch({ control, name: 'notice' }) ?? '';
+  const [
+    watchedStartDate,
+    watchedEndDate,
+    watchedStartTime,
+    watchedEndTime,
+    watchedPlaceName,
+    watchedAddress,
+    watchedLatitude,
+    watchedLongitude,
+    watchedContact,
+    watchedNotice,
+  ] = useWatch({
+    control,
+    name: [
+      'startDate',
+      'endDate',
+      'startTime',
+      'endTime',
+      'placeName',
+      'address',
+      'latitude',
+      'longitude',
+      'contact',
+      'notice',
+    ],
+  });
 
   useEffect(() => {
+    if (shouldUseDraft) {
+      return;
+    }
+
     if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
       const restoredPeriod =
         (restored.periodValue as DateValue) ??
@@ -176,7 +244,59 @@ export function ExhibitionBasicInfo() {
         notice: (restored.notice as string) ?? fetchedDetail.note ?? '',
       });
     }
-  }, [displayId, state, fetchedDetail, restored, reset]);
+  }, [displayId, state, fetchedDetail, restored, reset, shouldUseDraft]);
+
+  useEffect(() => {
+    if (displayId > 0) {
+      return;
+    }
+
+    updateDraft({
+      startDate: watchedStartDate ?? '',
+      endDate: watchedEndDate ?? '',
+      startTime: watchedStartTime ?? '',
+      endTime: watchedEndTime ?? '',
+      placeName: watchedPlaceName ?? '',
+      address: watchedAddress ?? '',
+      latitude: watchedLatitude ?? null,
+      longitude: watchedLongitude ?? null,
+      contact: watchedContact ?? '',
+      notice: watchedNotice ?? '',
+    });
+  }, [
+    watchedStartDate,
+    watchedEndDate,
+    watchedStartTime,
+    watchedEndTime,
+    watchedPlaceName,
+    watchedAddress,
+    watchedLatitude,
+    watchedLongitude,
+    watchedContact,
+    watchedNotice,
+    updateDraft,
+    displayId,
+  ]);
+
+  const saveCurrentDraft = () => {
+    if (displayId > 0) {
+      return;
+    }
+
+    const values = getValues();
+    updateDraft({
+      startDate: values.startDate,
+      endDate: values.endDate,
+      startTime: values.startTime,
+      endTime: values.endTime,
+      placeName: values.placeName,
+      address: values.address,
+      latitude: values.latitude,
+      longitude: values.longitude,
+      contact: values.contact ?? '',
+      notice: values.notice ?? '',
+    });
+  };
 
   const handleAddressConfirm = (
     fullAddress: string,
@@ -217,6 +337,19 @@ export function ExhibitionBasicInfo() {
       return;
     }
 
+    updateDraft({
+      startDate: data.startDate,
+      endDate: data.endDate,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      placeName: data.placeName.trim(),
+      address: data.address.trim(),
+      latitude: data.latitude,
+      longitude: data.longitude,
+      contact: data.contact?.trim() ?? '',
+      notice: data.notice?.trim() || '',
+    });
+
     navigate('/exhibition/register/artist', {
       state: {
         ...state,
@@ -240,7 +373,13 @@ export function ExhibitionBasicInfo() {
 
   return (
     <div className="mx-auto min-h-dvh w-96 bg-page">
-      <ExhibitionHeader title="전시 기본 정보" onBack={() => navigate(-1)} />
+      <ExhibitionHeader
+        title="전시 기본 정보"
+        onBack={() => {
+          saveCurrentDraft();
+          navigate(-1);
+        }}
+      />
 
       <div className="px-5 pb-24">
         <form
