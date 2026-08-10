@@ -6,7 +6,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { BottomButtonBar, ImageUploader } from '@/components/common';
+import { BottomFixedBar, ImageUploader } from '@/components/common';
 import { AffiliationInput } from '@/components/exhibition-register';
 import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
@@ -413,7 +413,7 @@ export function ExhibitionRegister() {
         </form>
       </main>
 
-      <BottomButtonBar>
+      <BottomFixedBar>
         <button
           form="exhibition-register-form"
           type="submit"
@@ -422,7 +422,7 @@ export function ExhibitionRegister() {
         >
           {imageUpload.isUploading ? '이미지 업로드 중' : '다음'}
         </button>
-      </BottomButtonBar>
+      </BottomFixedBar>
     </div>
   );
 }

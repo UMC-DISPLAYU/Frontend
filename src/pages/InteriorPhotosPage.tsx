@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar, ErrorView, LoadingView } from '@/components/common';
+import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
 import { AlertModal, ExhibitionHeader } from '@/components/ui';
 import {
@@ -344,7 +344,7 @@ function InteriorPhotos({
       </main>
 
       {isReorderMode && (
-        <BottomButtonBar>
+        <BottomFixedBar>
           <button
             type="button"
             onClick={handleReorder}
@@ -353,7 +353,7 @@ function InteriorPhotos({
           >
             {isSavingOrder ? '저장 중' : '편집 완료'}
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       )}
       {uploadError && <AlertModal message={uploadError} onConfirm={() => setUploadError(null)} />}
     </div>

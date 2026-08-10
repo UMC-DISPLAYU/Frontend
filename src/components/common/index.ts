@@ -1,6 +1,6 @@
 export { AsyncBoundary, ErrorBoundary } from './AsyncBoundary';
-export { BottomButtonBar } from './BottomButtonBar';
 export { BottomCommentBar } from './BottomCommentBar';
+export { BottomFixedBar } from './BottomFixedBar';
 export type { CommentData } from './comment';
 export { CommentItem } from './comment';
 export { ErrorView } from './ErrorView';

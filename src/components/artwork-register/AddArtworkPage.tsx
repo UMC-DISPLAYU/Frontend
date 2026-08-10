@@ -1,4 +1,4 @@
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { useUserStore } from '@/stores/useUserStore';
 
 import { ChoiceCard } from './ArtworkRegisterControls';
@@ -25,7 +25,7 @@ function AddArtworkPage({
       title="전시작 추가"
       onBack={onBack}
       bottomBar={
-        <BottomButtonBar>
+        <BottomFixedBar>
           <button
             type="button"
             onClick={onNext}
@@ -33,7 +33,7 @@ function AddArtworkPage({
           >
             다음
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       }
     >
       <section className="mb-5">

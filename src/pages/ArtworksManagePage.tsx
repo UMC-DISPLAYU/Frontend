@@ -8,7 +8,7 @@ import {
   OrderScreen,
   WorkActionSheet,
 } from '@/components/artworks-manage';
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';
 import {
   useDeleteArtwork,
@@ -114,7 +114,7 @@ export function ArtworksManagePage() {
 
       {screen === 'manage' ? (
         canCreateArtwork && (
-          <BottomButtonBar>
+          <BottomFixedBar>
             <button
               type="button"
               onClick={() => navigate(`/exhibition/${displayId}/artworks/add`)}
@@ -122,10 +122,10 @@ export function ArtworksManagePage() {
             >
               전시작 추가
             </button>
-          </BottomButtonBar>
+          </BottomFixedBar>
         )
       ) : (
-        <BottomButtonBar>
+        <BottomFixedBar>
           <button
             type="button"
             onClick={handleOrderBack}
@@ -133,7 +133,7 @@ export function ArtworksManagePage() {
           >
             순서 저장하기
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       )}
 
       {sheetWork && (canEditSheetArtwork || canDeleteSheetArtwork) && (

@@ -1,4 +1,4 @@
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { cn } from '@/utils/cn';
 
 import { AuthorOption, AuthorSelectCard } from './ArtworkRegisterControls';
@@ -27,7 +27,7 @@ function SelectArtistPage({
       title="작가 선택"
       onBack={onBack}
       bottomBar={
-        <BottomButtonBar>
+        <BottomFixedBar>
           <button
             type="button"
             onClick={onSubmit}
@@ -39,7 +39,7 @@ function SelectArtistPage({
           >
             다음
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       }
     >
       <section>

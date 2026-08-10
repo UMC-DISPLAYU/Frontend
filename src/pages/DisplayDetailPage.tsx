@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
+import { Share2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { ErrorView, LoadingView } from '@/components/common';
+import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import {
   ArtworkTab,
-  BottomFixedBar,
   DetailTabNav,
   DisplaySaveButton,
   ExhibitionMeta,
@@ -83,11 +83,22 @@ export function DisplayDetailPage() {
       {activeTab === 'review' && <ReviewTab display={display} displayId={display.displayId} />}
       {/* 후기 탭은 하단에 댓글 입력바가 자리하므로 전시 저장 바를 띄우지 않습니다. */}
       {activeTab !== 'review' && (
-        <BottomFixedBar
-          button={
-            <DisplaySaveButton displayId={display.displayId} saved={display.isArchived ?? false} />
-          }
-        />
+        <BottomFixedBar>
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              className="flex size-12 shrink-0 cursor-pointer items-center justify-center"
+            >
+              <Share2 size={24} className="text-sub700" />
+            </button>
+            <div className="ml-2 flex-1">
+              <DisplaySaveButton
+                displayId={display.displayId}
+                saved={display.isArchived ?? false}
+              />
+            </div>
+          </div>
+        </BottomFixedBar>
       )}
     </div>
   );

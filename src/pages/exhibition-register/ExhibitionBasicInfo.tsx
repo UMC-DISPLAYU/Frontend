@@ -6,7 +6,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { AddressSearchModal } from '@/components/exhibition-basic-info';
 import { ExhibitionHeader } from '@/components/ui';
 import { CalenderSheet } from '@/components/ui/CalenderSheet';
@@ -548,7 +548,7 @@ export function ExhibitionBasicInfo() {
         </form>
       </div>
 
-      <BottomButtonBar>
+      <BottomFixedBar>
         <button
           form="exhibition-basic-info-form"
           type="submit"
@@ -561,7 +561,7 @@ export function ExhibitionBasicInfo() {
               ? '저장'
               : '다음'}
         </button>
-      </BottomButtonBar>
+      </BottomFixedBar>
 
       <CalenderSheet
         open={sheet === 'date'}

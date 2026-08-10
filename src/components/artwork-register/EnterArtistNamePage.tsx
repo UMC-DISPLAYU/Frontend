@@ -1,5 +1,5 @@
 import infoIcon from '@/assets/common/InfoIcon.svg';
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { RequiredLabel } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
@@ -25,7 +25,7 @@ function EnterArtistNamePage({
       title="작가명 직접 입력"
       onBack={onBack}
       bottomBar={
-        <BottomButtonBar>
+        <BottomFixedBar>
           <button
             type="button"
             onClick={onSubmit}
@@ -37,7 +37,7 @@ function EnterArtistNamePage({
           >
             다음
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       }
     >
       <section>

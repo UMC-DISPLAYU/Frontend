@@ -1,7 +1,7 @@
 import { ChevronRight, Info } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import {
   ExhibitionCard,
   OutlineButton,
@@ -185,7 +185,7 @@ export function ExhibitionManage() {
         </div>
       </main>
 
-      <BottomButtonBar>
+      <BottomFixedBar>
         <div className="flex gap-2.5">
           <button
             type="button"
@@ -213,7 +213,7 @@ export function ExhibitionManage() {
             등록하기
           </button>
         </div>
-      </BottomButtonBar>
+      </BottomFixedBar>
     </div>
   );
 }

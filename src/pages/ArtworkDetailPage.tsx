@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 
+import { Share2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto, GetArtworkDetailResponseDataDto } from '@/api/dto';
@@ -9,8 +10,7 @@ import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import type { ArtworkDetailTabKey } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
-import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
-import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
+import { BottomCommentBar, BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import {
@@ -260,15 +260,23 @@ export function ArtworkDetailPage() {
       )}
 
       {activeTab === 'intro' ? (
-        <BottomFixedBar
-          button={
-            <ArtworkSaveButton
-              className="w-full"
-              artworkId={artworkId}
-              saved={detail.isSaved ?? false}
-            />
-          }
-        />
+        <BottomFixedBar>
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              className="flex size-12 shrink-0 cursor-pointer items-center justify-center"
+            >
+              <Share2 size={24} className="text-sub700" />
+            </button>
+            <div className="ml-2 flex-1">
+              <ArtworkSaveButton
+                className="w-full"
+                artworkId={artworkId}
+                saved={detail.isSaved ?? false}
+              />
+            </div>
+          </div>
+        </BottomFixedBar>
       ) : activeTab === 'review' ? (
         <BottomCommentBar
           placeholder="글을 입력하세요."

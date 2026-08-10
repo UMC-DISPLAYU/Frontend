@@ -6,7 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
@@ -253,16 +253,16 @@ export function ArtistNameSetup() {
       </div>
 
       {/* 하단 고정 영역 */}
-      <BottomButtonBar>
+      <BottomFixedBar>
         <button
           form="artist-name-setup-form"
           type="submit"
           disabled={!isValid || createDisplay.isPending}
-          className="typo-body-sm-bold mt-4 h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
+          className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
         >
           {createDisplay.isPending ? '전시 등록 중' : '전시 관리 페이지 만들기'}
         </button>
-      </BottomButtonBar>
+      </BottomFixedBar>
     </div>
   );
 }

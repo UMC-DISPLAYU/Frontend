@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';
 import { RadioOption } from '@/components/visibility-settings';
 import {
@@ -179,7 +179,7 @@ export function VisibilitySettings() {
       </main>
 
       {canEditDisplay && (
-        <BottomButtonBar>
+        <BottomFixedBar>
           <button
             type="button"
             onClick={save}
@@ -187,7 +187,7 @@ export function VisibilitySettings() {
           >
             저장하기
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       )}
     </div>
   );

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { BottomButtonBar, ImageUploader } from '@/components/common';
+import { BottomFixedBar, ImageUploader } from '@/components/common';
 import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
   ARTWORK_FIELD_MAP,
@@ -247,7 +247,7 @@ export function PersonalArtworksRegister() {
         </div>
       </main>
 
-      <BottomButtonBar>
+      <BottomFixedBar>
         {submitError && (
           <p className="typo-body-xs-regular mb-2 text-center text-error">{submitError}</p>
         )}
@@ -259,7 +259,7 @@ export function PersonalArtworksRegister() {
         >
           {isSubmitting ? '등록 중' : '완료'}
         </button>
-      </BottomButtonBar>
+      </BottomFixedBar>
     </div>
   );
 }
