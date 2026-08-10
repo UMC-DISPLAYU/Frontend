@@ -145,7 +145,7 @@ export const LoungeBoardDetailPage = () => {
         />
       ) : isValidPost && post ? (
         <>
-          <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-28 flex flex-col gap-7">
+          <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-bottom-bar-offset flex flex-col gap-7">
             {/* 게시글 정보 섹션 */}
             <article className="flex flex-col items-center gap-7.5">
               <LoungeBoardPostDetail

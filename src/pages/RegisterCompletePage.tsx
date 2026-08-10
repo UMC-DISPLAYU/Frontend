@@ -1,6 +1,7 @@
 import { Check, Info } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
+import { BottomButton } from '@/components/common';
 import { VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
 
 interface ExhibitionCompleteState {
@@ -85,15 +86,9 @@ function CompleteInfo({ message }: { message: string }) {
 
 function CompleteButton({ onClick }: { onClick: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="fixed bottom-11 left-1/2 inline-flex h-11 w-full max-w-md -translate-x-1/2 items-center justify-center gap-1.5 px-5"
-    >
-      <span className="inline-flex h-full w-full items-center justify-center rounded-xl bg-dark py-3 typo-body-sm-bold text-card">
-        완료
-      </span>
-    </button>
+    <BottomButton type="button" onClick={onClick}>
+      완료
+    </BottomButton>
   );
 }
 
@@ -122,7 +117,7 @@ export function ExhibitionRegisterComplete() {
   if (isArtworkComplete || isPersonalArtworkComplete) {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-        <main className="flex flex-1 flex-col overflow-y-auto px-5 pb-24">
+        <main className="flex flex-1 flex-col overflow-y-auto px-5 pb-8">
           <CompleteHeader
             title="작품등록이 완료되었어요"
             description={
@@ -167,7 +162,7 @@ export function ExhibitionRegisterComplete() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <main className="flex flex-1 flex-col px-5 overflow-y-auto pb-24">
+      <main className="flex flex-1 flex-col overflow-y-auto px-5 pb-8">
         <CompleteHeader
           title="전시 등록이 완료되었어요"
           description={

@@ -124,7 +124,7 @@ export function PersonalArtworksRegister() {
       <ExhibitionHeader title="작품 등록" />
 
       <main>
-        <div className="flex flex-col gap-6 px-5 pb-24">
+        <div className="flex flex-col gap-6 px-5 pb-bottom-bar-offset">
           <div className="self-stretch flex justify-center">
             <ImageUploader
               images={images}

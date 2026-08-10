@@ -253,7 +253,7 @@ export function ExhibitionRegister() {
         <form
           id="exhibition-register-form"
           onSubmit={handleSubmit(onFormSubmit)}
-          className="flex flex-col gap-6 px-5 pb-24"
+          className="flex flex-col gap-6 px-5 pb-bottom-bar-offset"
         >
           <div className="flex flex-col items-center gap-1">
             <ImageUploader

@@ -21,7 +21,7 @@ export function ArtworkRegisterLayout({
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
       <ExhibitionHeader title={title} onBack={onBack} />
-      <main className={cn('px-5', bottomBar && 'pb-24', className)}>
+      <main className={cn('px-5', bottomBar && 'pb-bottom-bar-offset', className)}>
         <div className="flex flex-col">{children}</div>
       </main>
       {bottomBar}

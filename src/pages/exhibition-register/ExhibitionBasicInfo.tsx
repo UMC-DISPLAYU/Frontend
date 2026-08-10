@@ -381,7 +381,7 @@ export function ExhibitionBasicInfo() {
         }}
       />
 
-      <div className="px-5 pb-24">
+      <div className="px-5 pb-bottom-bar-offset">
         <form
           id="exhibition-basic-info-form"
           onSubmit={handleSubmit(onFormSubmit)}

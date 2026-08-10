@@ -99,7 +99,7 @@ export function ArtworksManagePage() {
         onBack={screen === 'manage' ? handleBack : handleOrderBack}
       />
 
-      <main className="pb-24">
+      <main className="pb-bottom-bar-offset">
         {screen === 'manage' ? (
           <ManageScreen
             works={works}

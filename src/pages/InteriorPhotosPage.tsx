@@ -247,7 +247,7 @@ function InteriorPhotos({
     <div className="bg-page pb-11">
       <ExhibitionHeader title={title} onBack={onBack} />
 
-      <main className="pb-24">
+      <main className="pb-bottom-bar-offset">
         {/* 안내 */}
         <div className="px-5 flex flex-col gap-1">
           <p className="typo-body-md-regular text-main">

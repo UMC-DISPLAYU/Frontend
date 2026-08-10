@@ -370,7 +370,7 @@ export function ArtworkGuestbookTab({
   };
 
   return (
-    <div className="pb-28">
+    <div className="pb-bottom-bar-offset">
       {/* ── 감상 탭 ── */}
       {activeTab === 'review' && (
         <div className="px-5 pt-2">

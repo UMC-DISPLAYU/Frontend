@@ -150,7 +150,7 @@ export function VisibilitySettings() {
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
       <ExhibitionHeader title="공개 설정" onBack={() => navigate(-1)} />
 
-      <main className="px-5 pb-24">
+      <main className="px-5 pb-bottom-bar-offset">
         <div className="flex flex-col gap-1">
           <h2 className="typo-body-md-bold text-main">공개 시점 설정</h2>
           <p className="typo-body-xs-regular text-hint">

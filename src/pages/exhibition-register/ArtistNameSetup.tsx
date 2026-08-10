@@ -191,7 +191,7 @@ export function ArtistNameSetup() {
         }}
       />
 
-      <div className="px-5 pb-24">
+      <div className="px-5 pb-bottom-bar-offset">
         <form
           id="artist-name-setup-form"
           onSubmit={handleSubmit(goCreate)}
