@@ -5,21 +5,21 @@ import { AuthorOption, AuthorSelectCard } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
 
 interface SelectArtistPageProps {
-  selectedProxyAuthorId: string | null;
+  selectedOtherAuthorId: string | null;
   teamAuthorOptions: AuthorOption[];
   onBack: () => void;
-  onChangeSelectedProxyAuthorId: (id: string) => void;
+  onChangeSelectedOtherAuthorId: (id: string) => void;
   onSubmit: () => void;
 }
 
 function SelectArtistPage({
-  selectedProxyAuthorId,
+  selectedOtherAuthorId,
   teamAuthorOptions,
   onBack,
-  onChangeSelectedProxyAuthorId,
+  onChangeSelectedOtherAuthorId,
   onSubmit,
 }: SelectArtistPageProps) {
-  const selectedAuthor = teamAuthorOptions.find((author) => author.id === selectedProxyAuthorId);
+  const selectedAuthor = teamAuthorOptions.find((author) => author.id === selectedOtherAuthorId);
   const canSubmit = Boolean(selectedAuthor?.verified);
 
   return (
@@ -62,8 +62,8 @@ function SelectArtistPage({
             account={author.account}
             verified={author.verified}
             isMember={author.isMember}
-            selected={selectedProxyAuthorId === author.id}
-            onClick={() => onChangeSelectedProxyAuthorId(author.id)}
+            selected={selectedOtherAuthorId === author.id}
+            onClick={() => onChangeSelectedOtherAuthorId(author.id)}
           />
         ))}
         {teamAuthorOptions.length === 0 && (

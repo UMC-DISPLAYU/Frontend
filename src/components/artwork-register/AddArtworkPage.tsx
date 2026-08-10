@@ -5,9 +5,9 @@ import { ChoiceCard } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
 
 interface AddArtworkPageProps {
-  registerMode: 'self' | 'other';
+  registerMode: 'own' | 'other';
   onBack: () => void;
-  onChangeRegisterMode: (mode: 'self' | 'other') => void;
+  onChangeRegisterMode: (mode: 'own' | 'other') => void;
   onNext: () => void;
 }
 
@@ -51,8 +51,8 @@ function AddArtworkPage({
               {displayArtistName}({accountId})
             </span>
           }
-          selected={registerMode === 'self'}
-          onClick={() => onChangeRegisterMode('self')}
+          selected={registerMode === 'own'}
+          onClick={() => onChangeRegisterMode('own')}
         />
         <ChoiceCard
           title="다른 사람 작품 대신 등록하기"

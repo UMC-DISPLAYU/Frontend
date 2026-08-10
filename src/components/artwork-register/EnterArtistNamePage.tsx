@@ -6,19 +6,19 @@ import { cn } from '@/utils/cn';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
 
 interface EnterArtistNamePageProps {
-  proxyAuthorName: string;
+  otherAuthorName: string;
   onBack: () => void;
-  onChangeProxyAuthorName: (value: string) => void;
+  onChangeOtherAuthorName: (value: string) => void;
   onSubmit: () => void;
 }
 
 function EnterArtistNamePage({
-  proxyAuthorName,
+  otherAuthorName,
   onBack,
-  onChangeProxyAuthorName,
+  onChangeOtherAuthorName,
   onSubmit,
 }: EnterArtistNamePageProps) {
-  const isValid = proxyAuthorName.trim().length > 0;
+  const isValid = otherAuthorName.trim().length > 0;
 
   return (
     <ArtworkRegisterLayout
@@ -48,14 +48,14 @@ function EnterArtistNamePage({
       </section>
 
       <section className="mt-7 flex flex-col gap-3">
-        <RequiredLabel required htmlFor="proxy-author-name">
+        <RequiredLabel required htmlFor="other-author-name">
           작가명
         </RequiredLabel>
         <div className="flex flex-col gap-1">
           <input
-            id="proxy-author-name"
-            value={proxyAuthorName}
-            onChange={(e) => onChangeProxyAuthorName(e.target.value)}
+            id="other-author-name"
+            value={otherAuthorName}
+            onChange={(e) => onChangeOtherAuthorName(e.target.value)}
             placeholder="작가명을 입력해주세요"
             className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
           />

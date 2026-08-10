@@ -8,7 +8,7 @@ import {
 } from './ArtworkRegisterControls';
 
 type RegisterSheet =
-  | 'proxyAuthorMethod'
+  | 'otherAuthorMethod'
   | 'collaboratorMethod'
   | 'collaboratorTeam'
   | 'collaboratorDirect'
@@ -19,8 +19,8 @@ interface ArtworkRegisterSheetsProps {
   collaboratorOptions: AuthorOption[];
   directCollaboratorName: string;
   onClose: () => void;
-  onOpenProxyTeamAuthor: () => void;
-  onOpenProxyDirectAuthor: () => void;
+  onOpenOtherTeamAuthor: () => void;
+  onOpenOtherDirectAuthor: () => void;
   onOpenTeamCollaboratorSheet: () => void;
   onOpenDirectCollaboratorSheet: () => void;
   onAddTeamCollaborator: (person: AuthorOption) => void;
@@ -33,8 +33,8 @@ function ArtworkRegisterSheets({
   collaboratorOptions,
   directCollaboratorName,
   onClose,
-  onOpenProxyTeamAuthor,
-  onOpenProxyDirectAuthor,
+  onOpenOtherTeamAuthor,
+  onOpenOtherDirectAuthor,
   onOpenTeamCollaboratorSheet,
   onOpenDirectCollaboratorSheet,
   onAddTeamCollaborator,
@@ -44,7 +44,7 @@ function ArtworkRegisterSheets({
   return (
     <>
       <BottomSheet
-        open={activeSheet === 'proxyAuthorMethod'}
+        open={activeSheet === 'otherAuthorMethod'}
         onClose={onClose}
         title="작가 정보를 어떻게 입력할까요?"
         subtitle="대신 등록할 작품의 작가 정보를 선택해주세요."
@@ -54,13 +54,13 @@ function ArtworkRegisterSheets({
             title="전시 팀원에서 선택"
             description="디유 계정이 있는 팀원의 작가명과 프로필을 불러와요."
             helper="작가 인증 완료 팀원만 선택할 수 있어요."
-            onClick={onOpenProxyTeamAuthor}
+            onClick={onOpenOtherTeamAuthor}
           />
           <SheetOption
             title="직접 이름 입력"
             description="디유 계정이 없거나 전시 팀원이 아닌 작가의 이름을 직접 입력해요."
             helper="직접 입력한 작가는 프로필 연결과 Q&A 담당자 지정이 불가능해요."
-            onClick={onOpenProxyDirectAuthor}
+            onClick={onOpenOtherDirectAuthor}
           />
         </div>
       </BottomSheet>

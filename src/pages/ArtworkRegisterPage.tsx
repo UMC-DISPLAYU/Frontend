@@ -24,7 +24,7 @@ import {
 import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
 import { ArtworkRegisterDraftProvider } from '@/contexts/artworkRegisterDraftContext';
 import {
-  type ArtworkProxyAuthorSource,
+  type ArtworkOtherAuthorSource,
   type ArtworkRegisterMode,
 } from '@/contexts/artworkRegisterDraftState';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
@@ -36,9 +36,9 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { useUserStore } from '@/stores/useUserStore';
 import { toProductionYear } from '@/utils/date';
 
-type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'participants';
+type RegisterStep = 'choice' | 'otherTeamAuthor' | 'otherAuthor' | 'basic' | 'participants';
 const DIRECT_INPUT_ACCOUNT = '직접입력';
-const REGISTER_STEPS = ['choice', 'proxyTeamAuthor', 'proxyAuthor', 'basic', 'participants'];
+const REGISTER_STEPS = ['choice', 'otherTeamAuthor', 'otherAuthor', 'basic', 'participants'];
 
 const isRegisterStep = (value: string | null): value is RegisterStep =>
   value !== null && REGISTER_STEPS.includes(value);
@@ -87,12 +87,12 @@ function ArtworkRegisterPageContent() {
   );
   const [registerMode, setRegisterModeState] = useState<ArtworkRegisterMode>(draft.registerMode);
   const [activeSheet, setActiveSheet] = useState<RegisterSheet>(null);
-  const [selectedProxyAuthorId, setSelectedProxyAuthorIdState] = useState<string | null>(
-    draft.selectedProxyAuthorId,
+  const [selectedOtherAuthorId, setSelectedOtherAuthorIdState] = useState<string | null>(
+    draft.selectedOtherAuthorId,
   );
-  const [proxyAuthorName, setProxyAuthorNameState] = useState(draft.proxyAuthorName);
-  const [proxyAuthorSource, setProxyAuthorSourceState] = useState<ArtworkProxyAuthorSource>(
-    draft.proxyAuthorSource,
+  const [otherAuthorName, setOtherAuthorNameState] = useState(draft.otherAuthorName);
+  const [otherAuthorSource, setOtherAuthorSourceState] = useState<ArtworkOtherAuthorSource>(
+    draft.otherAuthorSource,
   );
   const [directCollaboratorName, setDirectCollaboratorName] = useState('');
   const [title, setTitleState] = useState(draft.title);
@@ -141,26 +141,26 @@ function ArtworkRegisterPageContent() {
     [updateDraft],
   );
 
-  const setSelectedProxyAuthorId = useCallback(
+  const setSelectedOtherAuthorId = useCallback(
     (id: string | null) => {
-      setSelectedProxyAuthorIdState(id);
-      updateDraft({ selectedProxyAuthorId: id });
+      setSelectedOtherAuthorIdState(id);
+      updateDraft({ selectedOtherAuthorId: id });
     },
     [updateDraft],
   );
 
-  const setProxyAuthorName = useCallback(
+  const setOtherAuthorName = useCallback(
     (name: string) => {
-      setProxyAuthorNameState(name);
-      updateDraft({ proxyAuthorName: name });
+      setOtherAuthorNameState(name);
+      updateDraft({ otherAuthorName: name });
     },
     [updateDraft],
   );
 
-  const setProxyAuthorSource = useCallback(
-    (source: ArtworkProxyAuthorSource) => {
-      setProxyAuthorSourceState(source);
-      updateDraft({ proxyAuthorSource: source });
+  const setOtherAuthorSource = useCallback(
+    (source: ArtworkOtherAuthorSource) => {
+      setOtherAuthorSourceState(source);
+      updateDraft({ otherAuthorSource: source });
     },
     [updateDraft],
   );
@@ -352,14 +352,14 @@ function ArtworkRegisterPageContent() {
     return [...members, ...directAuthors];
   }, [memberList, artworkList]);
 
-  const proxyAuthorOptions = useMemo(
+  const otherAuthorOptions = useMemo(
     () =>
       teamAuthorOptions.filter((author) => author.userId === undefined || author.userId !== userId),
     [teamAuthorOptions, userId],
   );
 
-  const selectedProxyAuthor = proxyAuthorOptions.find(
-    (author) => author.id === selectedProxyAuthorId,
+  const selectedOtherAuthor = otherAuthorOptions.find(
+    (author) => author.id === selectedOtherAuthorId,
   );
 
   /*
@@ -394,29 +394,29 @@ function ArtworkRegisterPageContent() {
 
   const displayAuthor = useMemo(() => {
     /* 본인 등록은 로그인 사용자를, 팀원 선택은 해당 팀원의 계정을 작가로 연결합니다. */
-    if (registerMode === 'self') {
+    if (registerMode === 'own') {
       return {
-        id: userId ? `self-${userId}` : 'self-author',
+        id: userId ? `own-${userId}` : 'own-author',
         name: myDisplayNickname || accountId || '작가',
         account: accountId || myDisplayNickname || '계정 정보 없음',
         userId: userId ?? undefined,
         tag: '작가인증',
       };
     }
-    if (proxyAuthorSource === 'team' && selectedProxyAuthor) {
+    if (otherAuthorSource === 'team' && selectedOtherAuthor) {
       return {
-        id: selectedProxyAuthor.id,
-        name: selectedProxyAuthor.name,
-        account: selectedProxyAuthor.account,
-        userId: selectedProxyAuthor.userId,
+        id: selectedOtherAuthor.id,
+        name: selectedOtherAuthor.name,
+        account: selectedOtherAuthor.account,
+        userId: selectedOtherAuthor.userId,
         tag: '작가인증',
       };
     }
 
     /* 직접 입력한 작가는 계정이 없어 이름만 전송합니다. */
     return {
-      id: 'proxy-author-direct',
-      name: proxyAuthorName,
+      id: 'other-author-direct',
+      name: otherAuthorName,
       account: DIRECT_INPUT_ACCOUNT,
       userId: undefined as number | undefined,
       tag: '대리 등록',
@@ -424,10 +424,10 @@ function ArtworkRegisterPageContent() {
   }, [
     myDisplayNickname,
     accountId,
-    proxyAuthorName,
-    proxyAuthorSource,
+    otherAuthorName,
+    otherAuthorSource,
     registerMode,
-    selectedProxyAuthor,
+    selectedOtherAuthor,
     userId,
   ]);
 
@@ -526,19 +526,19 @@ function ArtworkRegisterPageContent() {
     if (step === 'basic') {
       setStep(
         registerMode === 'other'
-          ? proxyAuthorSource === 'team'
-            ? 'proxyTeamAuthor'
-            : 'proxyAuthor'
+          ? otherAuthorSource === 'team'
+            ? 'otherTeamAuthor'
+            : 'otherAuthor'
           : 'choice',
         { replace: true },
       );
       return;
     }
-    if (step === 'proxyTeamAuthor') {
+    if (step === 'otherTeamAuthor') {
       setStep('choice', { replace: true });
       return;
     }
-    if (step === 'proxyAuthor') {
+    if (step === 'otherAuthor') {
       setStep('choice', { replace: true });
       return;
     }
@@ -670,40 +670,40 @@ function ArtworkRegisterPageContent() {
 
   const handleChoiceNext = () => {
     if (registerMode === 'other') {
-      setProxyAuthorSource('team');
-      setActiveSheet('proxyAuthorMethod');
+      setOtherAuthorSource('team');
+      setActiveSheet('otherAuthorMethod');
       return;
     }
 
     setStep('basic');
   };
 
-  const selectTeamProxyAuthor = () => {
-    setProxyAuthorSource('team');
+  const selectTeamOtherAuthor = () => {
+    setOtherAuthorSource('team');
     setActiveSheet(null);
-    setStep('proxyTeamAuthor');
+    setStep('otherTeamAuthor');
   };
 
-  const selectDirectProxyAuthor = () => {
-    setProxyAuthorSource('direct');
+  const selectDirectOtherAuthor = () => {
+    setOtherAuthorSource('direct');
     setActiveSheet(null);
-    setStep('proxyAuthor');
+    setStep('otherAuthor');
   };
 
-  const submitTeamProxyAuthor = () => {
-    if (!selectedProxyAuthor?.verified) return;
+  const submitTeamOtherAuthor = () => {
+    if (!selectedOtherAuthor?.verified) return;
 
-    setProxyAuthorName(selectedProxyAuthor.name);
-    setProxyAuthorSource('team');
+    setOtherAuthorName(selectedOtherAuthor.name);
+    setOtherAuthorSource('team');
     setStep('basic');
   };
 
-  const submitProxyAuthorName = () => {
-    const trimmedAuthorName = proxyAuthorName.trim();
+  const submitOtherAuthorName = () => {
+    const trimmedAuthorName = otherAuthorName.trim();
     if (!trimmedAuthorName) return;
 
-    setProxyAuthorName(trimmedAuthorName);
-    setProxyAuthorSource('direct');
+    setOtherAuthorName(trimmedAuthorName);
+    setOtherAuthorSource('direct');
     setStep('basic');
   };
 
@@ -769,21 +769,21 @@ function ArtworkRegisterPageContent() {
           onNext={handleChoiceNext}
         />
       )}
-      {step === 'proxyTeamAuthor' && (
+      {step === 'otherTeamAuthor' && (
         <SelectArtistPage
-          selectedProxyAuthorId={selectedProxyAuthorId}
-          teamAuthorOptions={proxyAuthorOptions}
+          selectedOtherAuthorId={selectedOtherAuthorId}
+          teamAuthorOptions={otherAuthorOptions}
           onBack={handleBack}
-          onChangeSelectedProxyAuthorId={setSelectedProxyAuthorId}
-          onSubmit={submitTeamProxyAuthor}
+          onChangeSelectedOtherAuthorId={setSelectedOtherAuthorId}
+          onSubmit={submitTeamOtherAuthor}
         />
       )}
-      {step === 'proxyAuthor' && (
+      {step === 'otherAuthor' && (
         <EnterArtistNamePage
-          proxyAuthorName={proxyAuthorName}
+          otherAuthorName={otherAuthorName}
           onBack={handleBack}
-          onChangeProxyAuthorName={setProxyAuthorName}
-          onSubmit={submitProxyAuthorName}
+          onChangeOtherAuthorName={setOtherAuthorName}
+          onSubmit={submitOtherAuthorName}
         />
       )}
       {step === 'basic' && (
@@ -839,8 +839,8 @@ function ArtworkRegisterPageContent() {
         collaboratorOptions={collaboratorOptions}
         directCollaboratorName={directCollaboratorName}
         onClose={() => setActiveSheet(null)}
-        onOpenProxyTeamAuthor={selectTeamProxyAuthor}
-        onOpenProxyDirectAuthor={selectDirectProxyAuthor}
+        onOpenOtherTeamAuthor={selectTeamOtherAuthor}
+        onOpenOtherDirectAuthor={selectDirectOtherAuthor}
         onOpenTeamCollaboratorSheet={openTeamCollaboratorSheet}
         onOpenDirectCollaboratorSheet={openDirectCollaboratorSheet}
         onAddTeamCollaborator={addTeamCollaborator}

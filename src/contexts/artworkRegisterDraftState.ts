@@ -1,14 +1,14 @@
 import { createContext } from 'react';
 
-export type ArtworkRegisterMode = 'self' | 'other';
-export type ArtworkProxyAuthorSource = 'team' | 'direct';
+export type ArtworkRegisterMode = 'own' | 'other';
+export type ArtworkOtherAuthorSource = 'team' | 'direct';
 
 export type ArtworkRegisterDraft = {
-  step: 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'participants';
+  step: 'choice' | 'otherTeamAuthor' | 'otherAuthor' | 'basic' | 'participants';
   registerMode: ArtworkRegisterMode;
-  proxyAuthorSource: ArtworkProxyAuthorSource;
-  selectedProxyAuthorId: string | null;
-  proxyAuthorName: string;
+  otherAuthorSource: ArtworkOtherAuthorSource;
+  selectedOtherAuthorId: string | null;
+  otherAuthorName: string;
   title: string;
   description: string;
   field: string;
@@ -29,10 +29,10 @@ export type ArtworkRegisterDraft = {
 
 export const INITIAL_ARTWORK_REGISTER_DRAFT: ArtworkRegisterDraft = {
   step: 'choice',
-  registerMode: 'self',
-  proxyAuthorSource: 'direct',
-  selectedProxyAuthorId: null,
-  proxyAuthorName: '',
+  registerMode: 'own',
+  otherAuthorSource: 'direct',
+  selectedOtherAuthorId: null,
+  otherAuthorName: '',
   title: '',
   description: '',
   field: '',
