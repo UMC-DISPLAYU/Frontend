@@ -1,2 +1,3 @@
 export const DEFAULT_CONTENT_IMAGE_WIDTH = 800;
 export const DEFAULT_CONTENT_IMAGE_HEIGHT = 600;
+export const MAX_CONTENT_IMAGES = 20;

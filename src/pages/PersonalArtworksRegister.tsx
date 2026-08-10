@@ -70,10 +70,10 @@ export function PersonalArtworksRegister() {
     setIsUploading(true);
     try {
       artworkImageUrls = await Promise.all(
-        images.map((image) => artworkUpload.uploadImage(image.file)),
+        artworkUpload.files.map((file) => artworkUpload.uploadImage(file)),
       );
       processImageUrls = await Promise.all(
-        processImages.map((image) => processUpload.uploadImage(image.file)),
+        processUpload.files.map((file) => processUpload.uploadImage(file)),
       );
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
@@ -110,8 +110,10 @@ export function PersonalArtworksRegister() {
         ],
       },
       {
-        /* 등록 응답의 id로 바로 방금 만든 작품 상세를 엽니다. */
-        onSuccess: (created) => navigate(`/personal-artworks/${created.personalArtworkId}`),
+        onSuccess: () =>
+          navigate('/personal-artworks/complete', {
+            state: { type: 'personalArtwork' },
+          }),
         onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
       },
     );

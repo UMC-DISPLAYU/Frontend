@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
 
+import { useMyArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
 import { useRedirectAfterLogin } from '@/hooks/usePendingRedirect';
+import { useUserStore } from '@/stores/useUserStore';
 import { cn } from '@/utils/cn';
 
 import { FNB } from './FNB';
@@ -16,6 +18,20 @@ export function Layout() {
   const location = useLocation();
   const matches = useMatches();
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
+
+  /* 로그인 상태일 때 계정 정보와 작가 프로필을 userStore에 sync합니다. */
+  const { data: userMe } = useUserMe();
+  const { data: artistProfile } = useMyArtistProfile({ enabled: !!userMe });
+  const setUserMe = useUserStore((s) => s.setUserMe);
+  const setArtistProfile = useUserStore((s) => s.setArtistProfile);
+
+  useEffect(() => {
+    if (userMe) setUserMe(userMe);
+  }, [userMe, setUserMe]);
+
+  useEffect(() => {
+    if (artistProfile) setArtistProfile(artistProfile);
+  }, [artistProfile, setArtistProfile]);
 
   // 로그인 후 복귀 경로가 있는 경우 이동 처리
   useRedirectAfterLogin();

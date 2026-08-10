@@ -5,4 +5,3 @@ export { ExhibitionCard } from './ExhibitionCard';
 export { ExhibitionMeta } from './ExhibitionMeta';
 export { ManageScreen } from './ManageScreen';
 export { Poster } from './Poster';
-export { WorkScreen } from './WorkScreen';
