@@ -1,4 +1,5 @@
 export { AsyncBoundary, ErrorBoundary } from './AsyncBoundary';
+export { BottomButton } from './BottomButton';
 export { BottomCommentBar } from './BottomCommentBar';
 export { BottomFixedBar } from './BottomFixedBar';
 export type { CommentData } from './comment';
