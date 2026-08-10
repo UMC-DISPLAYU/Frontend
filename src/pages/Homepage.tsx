@@ -49,7 +49,7 @@ export const Homepage = () => {
 
   const handlePlusClick = () => {
     if (canCreateDisplay) {
-      navigate('/exhibition-register');
+      navigate('/exhibition/register');
       return;
     }
 
