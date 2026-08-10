@@ -187,6 +187,7 @@ export function PersonCard({
   tag,
   selected = false,
   removable = false,
+  disabled = false,
   onClick,
   onRemove,
 }: {
@@ -195,6 +196,7 @@ export function PersonCard({
   tag?: string;
   selected?: boolean;
   removable?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
   onRemove?: () => void;
 }) {
@@ -228,11 +230,18 @@ export function PersonCard({
   const className = cn(
     'flex h-[88px] w-full items-center gap-3 rounded-[20px] bg-card px-3 py-5',
     selected && 'border border-line-active',
+    disabled && 'cursor-not-allowed opacity-60',
   );
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={cn(className, 'text-left')}>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-pressed={selected}
+        className={cn(className, 'text-left')}
+      >
         {content}
       </button>
     );
@@ -285,6 +294,7 @@ export function DirectCollaboratorSheet({
   onSubmit: () => void;
 }) {
   const isValid = value.trim().length > 0;
+  const inputId = 'direct-collaborator-name';
 
   return (
     <BottomSheet
@@ -295,10 +305,11 @@ export function DirectCollaboratorSheet({
     >
       <div className="flex min-h-[304px] flex-col px-5 pb-11">
         <section className="mt-4 flex flex-col gap-1">
-          <RequiredLabel required>
+          <RequiredLabel required htmlFor={inputId}>
             <span className="typo-body-sm-regular">공동 작업자 이름</span>
           </RequiredLabel>
           <input
+            id={inputId}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             className="typo-body-xs-regular mt-3 h-9 rounded-lg border border-input-border bg-card px-3 text-main outline-none focus:border-line-active"

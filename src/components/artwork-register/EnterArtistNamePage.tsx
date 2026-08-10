@@ -1,7 +1,6 @@
 import infoIcon from '@/assets/common/InfoIcon.svg';
 import { BottomButtonBar } from '@/components/common';
 import { RequiredLabel } from '@/components/ui';
-import { useUserStore } from '@/stores/useUserStore';
 import { cn } from '@/utils/cn';
 
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
@@ -20,7 +19,6 @@ function EnterArtistNamePage({
   onSubmit,
 }: EnterArtistNamePageProps) {
   const isValid = proxyAuthorName.trim().length > 0;
-  const artistProfileName = useUserStore((s) => s.artistName);
 
   return (
     <ArtworkRegisterLayout
@@ -38,7 +36,7 @@ function EnterArtistNamePage({
               isValid ? 'bg-dark text-white' : 'bg-bt-gray text-faint',
             )}
           >
-            참여 완료하기
+            다음
           </button>
         </BottomButtonBar>
       }
@@ -51,12 +49,15 @@ function EnterArtistNamePage({
       </section>
 
       <section className="mt-7 flex flex-col gap-3">
-        <RequiredLabel required>작가명</RequiredLabel>
+        <RequiredLabel required htmlFor="proxy-author-name">
+          작가명
+        </RequiredLabel>
         <div className="flex flex-col gap-1">
           <input
+            id="proxy-author-name"
             value={proxyAuthorName}
             onChange={(e) => onChangeProxyAuthorName(e.target.value)}
-            placeholder={artistProfileName || '고상준'}
+            placeholder="작가명을 입력해주세요"
             className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
           />
           <p className="typo-body-xs-regular text-hint">

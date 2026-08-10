@@ -2,8 +2,9 @@ import { useCallback, useRef } from 'react';
 
 import { Image, X } from 'lucide-react';
 
-import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
+
+const DEFAULT_MAX_IMAGES = 4;
 
 interface ImageUploaderProps {
   images: ImageUploadItem[];
@@ -18,7 +19,7 @@ interface ImageUploaderProps {
 
 export function ImageUploader({
   images,
-  maxImages = MAX_POSTER_UPLOAD_IMAGES,
+  maxImages = DEFAULT_MAX_IMAGES,
   emptyLabel,
   multiple = true,
   onAddImages,
@@ -56,14 +57,14 @@ export function ImageUploader({
           >
             <img
               src={image.previewUrl}
-              alt={`새로운 이미지 ${index + 1}`}
+              alt={`이미지 ${index + 1}`}
               className="w-full h-full object-cover"
             />
             <button
               type="button"
               onClick={() => onRemoveImage(image.id)}
               className="absolute top-1 right-1 size-6 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
-              aria-label={`새로운 이미지 ${index + 1} 삭제`}
+              aria-label={`이미지 ${index + 1} 삭제`}
             >
               <X size={12} className="text-white" />
             </button>

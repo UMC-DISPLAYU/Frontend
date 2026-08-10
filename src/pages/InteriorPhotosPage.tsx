@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BottomButtonBar, ErrorView, LoadingView } from '@/components/common';
 import { Header } from '@/components/display-manage/Common';
 import { useHideFooter } from '@/components/layout';
+import { AlertModal } from '@/components/ui';
 import {
   DEFAULT_CONTENT_IMAGE_HEIGHT,
   DEFAULT_CONTENT_IMAGE_WIDTH,
@@ -67,6 +68,7 @@ export function InteriorPhotosPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <InteriorPhotos
+        key={categoryId}
         title={category.name}
         displayId={displayId}
         categoryId={categoryId}
@@ -104,6 +106,7 @@ function InteriorPhotos({
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scope = { displayId, categoryId };
@@ -126,7 +129,7 @@ function InteriorPhotos({
     const files = e.target.files;
     if (!files) return;
 
-    const remainingSlots = MAX_CONTENT_IMAGES - photos.length;
+    const remainingSlots = Math.max(MAX_CONTENT_IMAGES - photos.length, 0);
     const filesToAdd = Array.from(files).slice(0, remainingSlots);
 
     if (fileInputRef.current) {
@@ -158,6 +161,8 @@ function InteriorPhotos({
       }));
 
       setPhotos((prev) => [...prev, ...newPhotos]);
+    } catch {
+      setUploadError('사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
     } finally {
       imageUpload.clearImages();
     }
@@ -205,6 +210,7 @@ function InteriorPhotos({
 
   const handleDragEnd = () => {
     if (!isReorderMode || !canReorder) return;
+    if (draggedIndex === null) return;
 
     setDraggedIndex(null);
     reorderImages.mutate(photos.map((photo) => Number(photo.id)));
@@ -250,11 +256,9 @@ function InteriorPhotos({
               <button
                 type="button"
                 onClick={handleReorder}
-                className={`typo-body-sm-bold h-11 shrink-0 rounded-xl px-4 ${
-                  isReorderMode ? 'bg-bt-black text-white' : 'bg-card text-sub700'
-                }`}
+                className="typo-body-sm-bold h-11 shrink-0 rounded-xl bg-card px-4 text-sub700"
               >
-                {isReorderMode ? '완료' : '순서 편집'}
+                순서 편집
               </button>
             )}
           </div>
@@ -323,6 +327,7 @@ function InteriorPhotos({
           </button>
         </BottomButtonBar>
       )}
+      {uploadError && <AlertModal message={uploadError} onConfirm={() => setUploadError(null)} />}
     </div>
   );
 }

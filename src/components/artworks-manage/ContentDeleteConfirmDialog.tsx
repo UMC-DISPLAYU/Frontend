@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 interface ContentDeleteConfirmDialogProps {
   onCancel: () => void;
   onConfirm: () => void;
@@ -7,14 +9,34 @@ export function ContentDeleteConfirmDialog({
   onCancel,
   onConfirm,
 }: ContentDeleteConfirmDialogProps) {
+  const titleId = 'content-delete-confirm-title';
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onCancel]);
+
   return (
     <div
-      className="absolute inset-0 z-30 grid place-items-center bg-main/35 px-5"
+      className="fixed inset-0 z-30 grid place-items-center bg-main/35 px-5"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
+      onClick={onCancel}
     >
-      <div className="w-80 rounded-[20px] bg-card/50 p-6 backdrop-blur-[10px]">
-        <h2 className="typo-body-xl-bold text-center text-main">콘텐츠를 삭제할까요?</h2>
+      <div
+        className="w-80 rounded-[20px] bg-card/50 p-6 backdrop-blur-[10px]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h2 id={titleId} className="typo-body-xl-bold text-center text-main">
+          콘텐츠를 삭제할까요?
+        </h2>
         <p className="typo-body-md-regular mt-2 text-center text-sub600">
           삭제한 콘텐츠는 전시에서 제거되며,
           <br />

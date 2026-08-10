@@ -37,11 +37,22 @@ export function ContentCard({
   showMore = true,
   moreRef,
 }: ContentCardProps) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!onClick || (event.key !== 'Enter' && event.key !== ' ')) return;
+
+    event.preventDefault();
+    onClick();
+  };
+
   return (
     <div
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       className={cn(
-        'flex h-27.5 items-center gap-3 overflow-hidden rounded-[18px] bg-card px-4 py-3.5 cursor-pointer',
+        'flex h-27.5 items-center gap-3 overflow-hidden rounded-[18px] bg-card px-4 py-3.5',
+        onClick && 'cursor-pointer',
         dimmed && 'opacity-40',
       )}
     >

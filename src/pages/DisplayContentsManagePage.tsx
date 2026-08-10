@@ -154,36 +154,40 @@ export function DisplayContentsManagePage() {
 
         {/* 목록 */}
         <div className="flex flex-col gap-3 px-5">
-          {contents.map((content) => (
-            <div key={content.id} className="relative pt-4">
-              <ContentCard
-                content={content}
-                dimmed={menuId !== null && menuId !== content.id}
-                showMore={canShowCategoryMenu}
-                onClick={() => navigate(`/exhibition/${displayId}/contents/${content.id}`)}
-                onMore={(e) => {
-                  e.stopPropagation();
-                  setMenuId((prev) => (prev === content.id ? null : content.id));
-                }}
-              />
-              {menuId === content.id && (
-                <div className="absolute right-3 top-15 z-20">
-                  <CardPopover
-                    canEdit={canEditCategory}
-                    canDelete={canDeleteCategory}
-                    onEdit={() => {
-                      setEditing(content);
-                      setMenuId(null);
-                    }}
-                    onDelete={() => {
-                      setDeleting(content);
-                      setMenuId(null);
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+          {contents.length === 0 ? (
+            <p className="typo-body-sm-regular pt-10 text-hint">아직 추가된 콘텐츠가 없어요.</p>
+          ) : (
+            contents.map((content) => (
+              <div key={content.id} className="relative pt-4">
+                <ContentCard
+                  content={content}
+                  dimmed={menuId !== null && menuId !== content.id}
+                  showMore={canShowCategoryMenu}
+                  onClick={() => navigate(`/exhibition/${displayId}/contents/${content.id}`)}
+                  onMore={(e) => {
+                    e.stopPropagation();
+                    setMenuId((prev) => (prev === content.id ? null : content.id));
+                  }}
+                />
+                {menuId === content.id && (
+                  <div className="absolute right-3 top-15 z-20">
+                    <CardPopover
+                      canEdit={canEditCategory}
+                      canDelete={canDeleteCategory}
+                      onEdit={() => {
+                        setEditing(content);
+                        setMenuId(null);
+                      }}
+                      onDelete={() => {
+                        setDeleting(content);
+                        setMenuId(null);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </main>
 

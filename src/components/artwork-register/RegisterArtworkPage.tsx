@@ -4,6 +4,7 @@ import { ChipGroup, RequiredLabel } from '@/components/ui';
 import { ARTWORK_FIELD_MAP } from '@/constants';
 import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
+import { cn } from '@/utils/cn';
 
 import { UnderlineTextarea } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
@@ -59,6 +60,12 @@ function RegisterArtworkPage({
   onRemoveProcessImage,
   onNext,
 }: RegisterArtworkPageProps) {
+  const isNextEnabled =
+    title.trim().length > 0 &&
+    field.trim().length > 0 &&
+    year.trim().length > 0 &&
+    medium.trim().length > 0;
+
   return (
     <ArtworkRegisterLayout
       title={isEditMode ? '작품 정보 수정' : '전시작 등록'}
@@ -68,7 +75,11 @@ function RegisterArtworkPage({
           <button
             type="button"
             onClick={onNext}
-            className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white"
+            disabled={!isNextEnabled}
+            className={cn(
+              'typo-body-sm-bold h-11 w-full rounded-xl',
+              isNextEnabled ? 'bg-dark text-white' : 'bg-bt-gray text-faint',
+            )}
           >
             다음
           </button>
@@ -87,8 +98,11 @@ function RegisterArtworkPage({
 
       <div className="mt-6 flex flex-col gap-6">
         <section className="flex flex-col gap-3">
-          <RequiredLabel required>작품명</RequiredLabel>
+          <RequiredLabel required htmlFor="artwork-title">
+            작품명
+          </RequiredLabel>
           <input
+            id="artwork-title"
             value={title}
             onChange={(e) => onChangeTitle(e.target.value)}
             placeholder="작품명을 입력해주세요"
@@ -119,8 +133,11 @@ function RegisterArtworkPage({
 
         <div className="grid grid-cols-2 gap-6">
           <section className="min-w-0 flex flex-col gap-3">
-            <RequiredLabel required>제작 연도</RequiredLabel>
+            <RequiredLabel required htmlFor="artwork-year">
+              제작 연도
+            </RequiredLabel>
             <input
+              id="artwork-year"
               value={year}
               onChange={(e) => onChangeYear(e.target.value)}
               placeholder="2026.09.22"
@@ -129,8 +146,11 @@ function RegisterArtworkPage({
           </section>
 
           <section className="min-w-0 flex flex-col gap-3">
-            <RequiredLabel required>재료 / 매체</RequiredLabel>
+            <RequiredLabel required htmlFor="artwork-medium">
+              재료 / 매체
+            </RequiredLabel>
             <input
+              id="artwork-medium"
               value={medium}
               onChange={(e) => onChangeMedium(e.target.value)}
               placeholder="아크릴, 캔버스"
@@ -140,8 +160,9 @@ function RegisterArtworkPage({
         </div>
 
         <section className="flex flex-col gap-3">
-          <RequiredLabel>규격</RequiredLabel>
+          <RequiredLabel htmlFor="artwork-size">규격</RequiredLabel>
           <input
+            id="artwork-size"
             value={size}
             onChange={(e) => onChangeSize(e.target.value)}
             placeholder="90 × 120 cm"

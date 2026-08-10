@@ -33,7 +33,6 @@ import { toProductionYear } from '@/utils/date';
 type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'participants';
 type RegisterMode = 'self' | 'other';
 type ProxyAuthorSource = 'team' | 'direct';
-const REPRESENTATIVE = { id: 'owner', name: '최유성', account: 'quietroom' };
 const DIRECT_INPUT_ACCOUNT = '직접입력';
 
 const formatMonthDay = (date: string | undefined) => {
@@ -82,7 +81,7 @@ export function ArtworkRegisterPage() {
   const [collaborators, setCollaborators] = useState<
     { id: string; name: string; account: string; userId?: number }[]
   >([]);
-  const [qnaAssigneeIds, setQnaAssigneeIds] = useState<string[]>([REPRESENTATIVE.id]);
+  const [qnaAssigneeIds, setQnaAssigneeIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isEditMode || !artworkDetail) return;
@@ -105,10 +104,6 @@ export function ArtworkRegisterPage() {
     setSize(artworkDetail.size || '');
 
     setPoint(artworkDetail.point || '');
-
-    if (artworkDetail.qaHandlers) {
-      setQnaAssigneeIds(artworkDetail.qaHandlers.map((h) => String(h.userId)));
-    }
   }, [isEditMode, artworkDetail]);
 
   /*
@@ -215,9 +210,9 @@ export function ArtworkRegisterPage() {
     /* 본인 등록은 로그인 사용자를, 팀원 선택은 해당 팀원의 계정을 작가로 연결합니다. */
     if (registerMode === 'self') {
       return {
-        ...REPRESENTATIVE,
-        name: myDisplayNickname || accountId || REPRESENTATIVE.name,
-        account: accountId || REPRESENTATIVE.account,
+        id: userId ? `self-${userId}` : 'self-author',
+        name: myDisplayNickname || accountId || '작가',
+        account: accountId || myDisplayNickname || '계정 정보 없음',
         userId: userId ?? undefined,
         tag: '작가인증',
       };
@@ -251,16 +246,23 @@ export function ArtworkRegisterPage() {
   ]);
 
   /* 공동 작업자에서는 작품 작가와 실제 등록자인 나를 뺍니다. */
-  const collaboratorOptions = useMemo(
-    () =>
-      teamAuthorOptions.filter(
-        (author) =>
-          author.userId !== userId &&
-          author.id !== displayAuthor.id &&
-          (author.userId === undefined || author.userId !== displayAuthor.userId),
-      ),
-    [teamAuthorOptions, displayAuthor, userId],
-  );
+  const collaboratorOptions = useMemo(() => {
+    const collaboratorUserIds = new Set(
+      collaborators
+        .map((person) => person.userId)
+        .filter((personUserId): personUserId is number => typeof personUserId === 'number'),
+    );
+    const collaboratorIds = new Set(collaborators.map((person) => person.id));
+
+    return teamAuthorOptions.filter(
+      (author) =>
+        author.userId !== userId &&
+        author.id !== displayAuthor.id &&
+        !collaboratorIds.has(author.id) &&
+        (author.userId === undefined || author.userId !== displayAuthor.userId) &&
+        (author.userId === undefined || !collaboratorUserIds.has(author.userId)),
+    );
+  }, [teamAuthorOptions, collaborators, displayAuthor, userId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -307,6 +309,17 @@ export function ArtworkRegisterPage() {
   const effectiveQnaAssigneeIds = ownerQnaAssigneeId
     ? [ownerQnaAssigneeId, ...selectedQnaAssigneeIds.filter((id) => id !== ownerQnaAssigneeId)]
     : selectedQnaAssigneeIds;
+
+  useEffect(() => {
+    if (!isEditMode || !artworkDetail?.qaHandlers || qnaAssigneeOptions.length === 0) return;
+
+    const handlerIds = artworkDetail.qaHandlers
+      .map((handler) => qnaAssigneeOptions.find((person) => person.userId === handler.userId)?.id)
+      .filter((id): id is string => Boolean(id));
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setQnaAssigneeIds(handlerIds);
+  }, [isEditMode, artworkDetail?.qaHandlers, qnaAssigneeOptions]);
 
   const handleBack = () => {
     if (activeSheet) {
@@ -562,7 +575,7 @@ export function ArtworkRegisterPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+    <>
       {step === 'choice' && (
         <AddArtworkPage
           registerMode={registerMode}
@@ -623,6 +636,7 @@ export function ArtworkRegisterPage() {
           collaborators={collaborators}
           qnaAssigneeOptions={qnaAssigneeOptions}
           selectedQnaAssigneeIds={effectiveQnaAssigneeIds}
+          ownerQnaAssigneeId={ownerQnaAssigneeId}
           submitError={submitError}
           isSubmitting={isSubmitting}
           onBack={handleBack}
@@ -648,6 +662,6 @@ export function ArtworkRegisterPage() {
         onChangeDirectCollaboratorName={setDirectCollaboratorName}
         onSubmitDirectCollaborator={submitDirectCollaborator}
       />
-    </div>
+    </>
   );
 }

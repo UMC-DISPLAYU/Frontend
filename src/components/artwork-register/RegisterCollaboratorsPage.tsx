@@ -23,6 +23,7 @@ interface RegisterCollaboratorsPageProps {
   collaborators: RegisterPerson[];
   qnaAssigneeOptions: RegisterPerson[];
   selectedQnaAssigneeIds: string[];
+  ownerQnaAssigneeId?: string;
   submitError: string | null;
   isSubmitting: boolean;
   onBack: () => void;
@@ -39,6 +40,7 @@ function RegisterCollaboratorsPage({
   collaborators,
   qnaAssigneeOptions,
   selectedQnaAssigneeIds,
+  ownerQnaAssigneeId,
   submitError,
   isSubmitting,
   onBack,
@@ -129,6 +131,7 @@ function RegisterCollaboratorsPage({
               account={person.account}
               tag={person.tag}
               selected={selectedQnaAssigneeIds.includes(person.id)}
+              disabled={person.id === ownerQnaAssigneeId}
               onClick={() => onToggleQnaAssignee(person.id)}
             />
           ))}
