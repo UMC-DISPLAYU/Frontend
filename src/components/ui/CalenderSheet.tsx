@@ -99,7 +99,7 @@ export function CalenderSheet({ open, onClose, value, onConfirm }: CalenderSheet
       title="날짜 선택"
       subtitle={formatRange(start, end) || '날짜를 선택하세요'}
     >
-      <div className="flex flex-col gap-4.25 px-5 pb-4">
+      <div className="flex flex-col gap-4.25 px-5">
         {months.map(({ year, month }) => (
           <MonthBox
             key={`${year}-${month}`}

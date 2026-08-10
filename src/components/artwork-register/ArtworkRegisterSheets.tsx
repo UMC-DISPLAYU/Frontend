@@ -49,7 +49,7 @@ function ArtworkRegisterSheets({
         title="작가 정보를 어떻게 입력할까요?"
         subtitle="대신 등록할 작품의 작가 정보를 선택해주세요."
       >
-        <div className="flex flex-col gap-3 px-5 pb-23.5 pt-6">
+        <div className="flex flex-col gap-3 px-5 pb-12.5 pt-6">
           <SheetOption
             title="전시 팀원에서 선택"
             description="디유 계정이 있는 팀원의 작가명과 프로필을 불러와요."
@@ -71,7 +71,7 @@ function ArtworkRegisterSheets({
         title="공동 작업자 추가"
         subtitle="함께 작업한 작가 정보를 추가해주세요."
       >
-        <div className="flex flex-col gap-3 px-5 pb-23.5 pt-6">
+        <div className="flex flex-col gap-3 px-5 pb-12.5 pt-6">
           <SheetOption
             title="전시 팀원에서 선택"
             description="디유 계정이 있는 팀원의 작가명과 프로필을 불러와요."
@@ -93,7 +93,7 @@ function ArtworkRegisterSheets({
         title="전시 팀원에서 선택"
         subtitle="작가 인증이 완료된 팀원만 공동 작업자로 추가할 수 있어요."
       >
-        <div className="flex flex-col gap-2 px-5 pb-11 pt-6">
+        <div className="flex flex-col gap-2 px-5 pt-6">
           {collaboratorOptions.length === 0 && (
             <p className="typo-body-xs-regular py-8 text-center text-faint">
               아직 전시 팀원이 없어요.

@@ -30,7 +30,7 @@ export function BottomSheet({ open, onClose, title, subtitle, children }: Bottom
       onClick={onClose}
     >
       <div
-        className="flex max-h-[85dvh] w-full flex-col rounded-t-2xl bg-page"
+        className="flex max-h-[85dvh] w-full flex-col rounded-t-2xl bg-page pb-safe-bottom"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between px-5 pb-2 pt-6">

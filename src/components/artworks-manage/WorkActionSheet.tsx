@@ -24,7 +24,7 @@ export function WorkActionSheet({
 }: WorkActionSheetProps) {
   return (
     <BottomSheet open={!!work} onClose={onClose} title="작품 관리">
-      <div className="px-5 pb-7">
+      <div className="px-5">
         <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5">
           <Thumbnail src={work.thumbnail} className="w-18 h-25" />
           <div className="flex min-w-0 h-25 flex-col justify-between py-0.5">

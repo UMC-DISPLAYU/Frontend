@@ -202,7 +202,7 @@ export function TimeSheet({
         </div>
       </div>
 
-      <div className="bg-page sticky bottom-0 px-5 py-4">
+      <div className="bg-page sticky bottom-0 px-5 pt-4">
         <button
           type="button"
           onClick={confirm}

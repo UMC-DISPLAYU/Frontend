@@ -30,7 +30,7 @@ export function ContentEditSheet({
       subtitle={mode === 'create' ? '전시 콘텐츠에서 사용할 콘텐츠를 만들어주세요.' : undefined}
       onClose={onClose}
     >
-      <div className="flex flex-col px-5 pb-7 pt-4">
+      <div className="flex flex-col px-5 pt-4">
         <div className="flex flex-col gap-2">
           <RequiredLabel htmlFor="content-title" required>
             콘텐츠명
