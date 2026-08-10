@@ -371,6 +371,7 @@ export function MyPage() {
               <ArtistCard
                 key={item.id}
                 item={item}
+                onOpen={(artist) => navigate(`/auth/${artist.artistId ?? artist.id}`)}
                 onUnarchive={(artist) => {
                   if (window.confirm('저장한 작가에서 삭제할까요?')) {
                     unarchiveArtist.mutate(artist.artistId ?? Number(artist.id));

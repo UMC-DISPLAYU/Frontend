@@ -6,12 +6,30 @@ import type { ArtistItem } from '@/types/mypage';
 interface ArtistCardProps {
   item: ArtistItem;
   onUnarchive?: (item: ArtistItem) => void;
+  onOpen?: (item: ArtistItem) => void;
 }
 
-export function ArtistCard({ item, onUnarchive }: ArtistCardProps) {
+export function ArtistCard({ item, onUnarchive, onOpen }: ArtistCardProps) {
+  const openHandlers = onOpen
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        onClick: () => onOpen(item),
+        onKeyDown: (event: React.KeyboardEvent) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+
+          event.preventDefault();
+          onOpen(item);
+        },
+      }
+    : {};
+
   return (
     <article className="w-full bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] overflow-hidden">
-      <div className="flex items-center gap-3.5 px-3 py-3.5">
+      <div
+        {...openHandlers}
+        className={`flex items-center gap-3.5 px-3 py-3.5 ${onOpen ? 'cursor-pointer' : ''}`}
+      >
         <div className="size-12 rounded-full bg-box200 overflow-hidden shrink-0">
           <img
             className="w-full h-full object-cover"
@@ -31,7 +49,14 @@ export function ArtistCard({ item, onUnarchive }: ArtistCardProps) {
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <button type="button" aria-label="북마크 해제" onClick={() => onUnarchive?.(item)}>
+          <button
+            type="button"
+            aria-label="북마크 해제"
+            onClick={(event) => {
+              event.stopPropagation();
+              onUnarchive?.(item);
+            }}
+          >
             <Bookmark fill="currentColor" className="size-4 text-bookmark" />
           </button>
           <ChevronRight className="size-4 text-hint" />

@@ -44,7 +44,7 @@ export function MyPageHeader({
           <h1 className="typo-heading-3xl text-main">My Page</h1>
           {isArtistVerified && isArtistView && (
             <span className="inline-flex items-center px-2.5 py-1 bg-sky-100 rounded-sm">
-              <span className="text-tag-fg typo-body-xs-regular">작가인증</span>
+              <span className="text-line-active typo-body-xs-regular">작가인증</span>
             </span>
           )}
         </div>
