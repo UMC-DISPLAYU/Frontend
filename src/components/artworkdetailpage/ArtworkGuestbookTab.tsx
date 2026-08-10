@@ -40,11 +40,8 @@ type Props = {
   myUserId?: number;
   artwork: GetArtworkDetailResponseDataDto;
   display: DisplayDetailDto;
-  isArtist?: boolean;
   /* 상위 탭바(소개/방명록/질문)가 결정한 현재 섹션 */
   activeTab: ArtworkGuestbookTab;
-  isArtistView?: boolean;
-  onArtistViewChange?: (isArtist: boolean) => void;
   /* 하단 입력바가 답글 대상으로 잡고 있는 감상 id (댓글 하이라이트용) */
   activeReplyId?: string | null;
   onFeelingReplyClick?: (commentId: number, author: string, highlightId: string) => void;
@@ -57,6 +54,7 @@ type Props = {
   onCloseComposeQuestion?: () => void;
   onSubmitQuestion?: (payload: { content: string; isPrivate: boolean }) => void;
   isSubmittingQuestion?: boolean;
+  onDeleteQuestion?: (questionId: number) => void;
 };
 
 /* 방명록 질문 탭 카드 (일반인 시점 / 작가 시점 지원) */
@@ -67,6 +65,7 @@ function QuestionCard({
   onReply,
   onSubmitReply,
   isSubmittingReply = false,
+  onDelete,
 }: {
   question: GuestbookQuestion;
   /* 답변 작성 카드에 표시되는 전시 대표 작가 이름 */
@@ -75,6 +74,7 @@ function QuestionCard({
   onReply?: () => void;
   onSubmitReply?: (content: string) => void;
   isSubmittingReply?: boolean;
+  onDelete?: () => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState('');
@@ -94,6 +94,8 @@ function QuestionCard({
 
   /* 이 질문에 답변을 작성 중인지 — 서버가 계산한 canReply(진짜 담당 작가) 기준입니다. */
   const isComposingReply = question.canReply && isReplyTarget && !question.reply;
+  /* 본인이 쓴 질문은 답변이 달리기 전까지만 삭제할 수 있습니다. */
+  const canDelete = question.isMyQuestion && !question.reply;
 
   const handleFooterClick = () => {
     if (question.canReply && !question.reply) {
@@ -186,29 +188,51 @@ function QuestionCard({
             </div>
           </div>
         ) : question.reply ? (
-          <button
-            type="button"
-            onClick={handleFooterClick}
-            className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2 cursor-pointer"
-          >
-            <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
-              {artistName}
-            </span>
-            <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
-            {showReplies && <ChevronUp size={13} className="shrink-0 text-sub600" />}
-          </button>
-        ) : question.canReply ? (
-          <button
-            type="button"
-            onClick={handleFooterClick}
-            className="flex w-full items-center justify-end gap-0.5 border-t border-box200 p-4 cursor-pointer"
-          >
-            <span className="typo-body-xs-regular text-sub600 underline">답변대기</span>
-            {showReplies && <ChevronDown size={13} className="shrink-0 text-sub600" />}
-          </button>
+          canView ? (
+            <button
+              type="button"
+              onClick={handleFooterClick}
+              className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2 cursor-pointer"
+            >
+              <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
+                {artistName}
+              </span>
+              <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
+              {showReplies && <ChevronUp size={13} className="shrink-0 text-sub600" />}
+            </button>
+          ) : (
+            <div className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2">
+              <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
+                {artistName}
+              </span>
+              <span className="typo-body-xs-regular text-sub600">답변완료</span>
+            </div>
+          )
         ) : (
-          <div className="flex w-full items-center justify-end gap-0.5 border-t border-box200 p-4">
-            <span className="typo-body-xs-regular text-sub600">답변대기</span>
+          <div className="flex w-full items-center justify-between border-t border-box200 p-4">
+            {canDelete ? (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="typo-body-xs-regular text-error cursor-pointer"
+              >
+                삭제
+              </button>
+            ) : (
+              <span />
+            )}
+            {question.canReply ? (
+              <button
+                type="button"
+                onClick={handleFooterClick}
+                className="flex items-center gap-0.5 cursor-pointer"
+              >
+                <span className="typo-body-xs-regular text-sub600 underline">답변대기</span>
+                {showReplies && <ChevronDown size={13} className="shrink-0 text-sub600" />}
+              </button>
+            ) : (
+              <span className="typo-body-xs-regular text-sub600">답변대기</span>
+            )}
           </div>
         )}
 
@@ -330,10 +354,7 @@ export function ArtworkGuestbookTab({
   myUserId,
   artwork,
   display,
-  isArtist = false,
   activeTab,
-  isArtistView: controlledArtistView,
-  onArtistViewChange,
   activeReplyId,
   onFeelingReplyClick,
   replyTargetQuestionId,
@@ -343,11 +364,8 @@ export function ArtworkGuestbookTab({
   onCloseComposeQuestion,
   onSubmitQuestion,
   isSubmittingQuestion = false,
+  onDeleteQuestion,
 }: Props) {
-  const [localArtistView, setLocalArtistView] = useState(isArtist);
-
-  const isArtistView = controlledArtistView ?? localArtistView;
-
   const feelingsTriggerRef = useRef<HTMLDivElement | null>(null);
 
   // 감상 목록 무한 스크롤 감지
@@ -392,12 +410,6 @@ export function ArtworkGuestbookTab({
     };
   }, [activeTab, hasMoreQuestions, isLoadingMoreQuestions, onLoadMoreQuestions]);
 
-  const handleArtistViewToggle = () => {
-    const nextVal = !isArtistView;
-    setLocalArtistView(nextVal);
-    onArtistViewChange?.(nextVal);
-  };
-
   return (
     <div className="pb-56 min-h-150">
       {/* ── 감상 탭 ── */}
@@ -440,14 +452,6 @@ export function ArtworkGuestbookTab({
           <div className="flex items-center justify-between px-5 pb-3">
             <h2 className="typo-body-xl-bold text-main">질문하기</h2>
             <div className="flex items-center gap-2">
-              {/* 작가/일반인 시점 전환은 테스트용 — 실제 화면엔 없습니다. */}
-              <button
-                type="button"
-                onClick={handleArtistViewToggle}
-                className="px-2.5 py-1 text-xs rounded-full border border-line text-sub600 hover:text-main cursor-pointer"
-              >
-                {isArtistView ? '작가 시점' : '일반인 시점'}
-              </button>
               <button
                 type="button"
                 aria-label="질문 작성"
@@ -477,6 +481,7 @@ export function ArtworkGuestbookTab({
                 }
                 onSubmitReply={(content) => onSubmitQuestion?.({ content, isPrivate: false })}
                 isSubmittingReply={isSubmittingQuestion}
+                onDelete={() => onDeleteQuestion?.(q.questionId)}
               />
             ))}
           </div>

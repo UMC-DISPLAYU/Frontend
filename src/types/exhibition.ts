@@ -116,6 +116,7 @@ export type ArtworkGuestbookTab = 'review' | 'question';
 export interface ArtworkImage {
   imageUrl: string;
   isThumbnail: boolean;
+  imageType: string;
   sortOrder: number;
 }
 

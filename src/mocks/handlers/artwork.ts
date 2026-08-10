@@ -392,6 +392,20 @@ export const artworkHandlers = [
       return created('/api/v1/artworks/{artworkId}/questions', question);
     }),
   ),
+  ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}').map((path) =>
+    http.delete(path, ({ params }) => {
+      const questionId = toNumber(params.questionId);
+
+      mockDb.artworkQuestions = mockDb.artworkQuestions.filter(
+        (item: any) => item.questionId !== questionId,
+      );
+
+      return success('/api/v1/artworks/{artworkId}/questions/{questionId}', {
+        questionId,
+        deletedAt: now(),
+      });
+    }),
+  ),
   /* 질문 답변은 질문의 reply 필드에 담깁니다. */
   ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}/reply').map((path) =>
     http.post(path, async ({ params, request }) => {

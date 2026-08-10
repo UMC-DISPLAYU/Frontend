@@ -12,6 +12,7 @@ import type {
   CreateExhibitionArtworkRequestDto,
   CreateExhibitionArtworkResponseDataDto,
   DeleteArtworkFeelingReplyResponseDataDto,
+  DeleteArtworkQuestionResponseDataDto,
   DeleteArtworkResponseDataDto,
   GetArtworkDetailResponseDataDto,
   GetArtworkFeelingsRequestDto,
@@ -103,6 +104,13 @@ export const createArtworkQuestion = async (
   body: CreateArtworkQuestionRequestDto,
 ): Promise<ArtworkQuestionRecordDto> =>
   apiRequest(`/v1/artworks/${artworkId}/questions`, { method: 'POST', body });
+
+// DELETE /v1/artworks/:artworkId/questions/:questionId
+export const deleteArtworkQuestion = async (
+  artworkId: number,
+  questionId: number,
+): Promise<DeleteArtworkQuestionResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/questions/${questionId}`, { method: 'DELETE' });
 
 // POST /v1/artworks/:artworkId/questions/:questionId/reply
 export const createArtworkQuestionReply = async (

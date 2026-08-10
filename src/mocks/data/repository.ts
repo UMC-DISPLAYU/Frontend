@@ -182,22 +182,29 @@ const artworkToDetail = (artwork: any) => ({
   isArchived: false,
   likeCount: 3,
   thumbnailUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
-  images: artwork.images.map((image: any, index: number) => ({
-    imageId: artwork.artworkId * 100 + index + 1,
-    artworkImageId: artwork.artworkId * 100 + index + 1,
-    imageUrl: image.imageUrl,
-    width: 1600,
-    height: 1600,
-    sortOrder: index + 1,
-  })),
-  processImages: (artwork.processImages ?? []).map((image: any, index: number) => ({
-    imageId: artwork.artworkId * 1000 + index + 1,
-    artworkImageId: artwork.artworkId * 1000 + index + 1,
-    imageUrl: image.imageUrl,
-    width: 1600,
-    height: 1600,
-    sortOrder: index + 1,
-  })),
+  /* 실제 API처럼 대표 이미지(ARTWORK, 첫 장이 썸네일)와 작업과정 이미지(WORK_PROCESS)를 한 배열에 담습니다. */
+  images: [
+    ...artwork.images.map((image: any, index: number) => ({
+      imageId: artwork.artworkId * 100 + index + 1,
+      artworkImageId: artwork.artworkId * 100 + index + 1,
+      imageUrl: image.imageUrl,
+      isThumbnail: index === 0,
+      imageType: 'ARTWORK',
+      width: 1600,
+      height: 1600,
+      sortOrder: index,
+    })),
+    ...(artwork.processImages ?? []).map((image: any, index: number) => ({
+      imageId: artwork.artworkId * 1000 + index + 1,
+      artworkImageId: artwork.artworkId * 1000 + index + 1,
+      imageUrl: image.imageUrl,
+      isThumbnail: false,
+      imageType: 'WORK_PROCESS',
+      width: 1600,
+      height: 1600,
+      sortOrder: index,
+    })),
+  ],
 });
 
 /*

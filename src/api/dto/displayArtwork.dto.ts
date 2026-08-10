@@ -265,6 +265,13 @@ export interface ArtworkQuestionRecordDto {
 
 export type CreateArtworkQuestionResponseDto = ApiResponseDto<ArtworkQuestionRecordDto>;
 
+export interface DeleteArtworkQuestionResponseDataDto {
+  questionId: number;
+  deletedAt: string;
+}
+
+export type DeleteArtworkQuestionResponseDto = ApiResponseDto<DeleteArtworkQuestionResponseDataDto>;
+
 export interface CreateArtworkQuestionReplyRequestDto {
   content: string;
 }

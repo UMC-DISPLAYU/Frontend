@@ -7,6 +7,7 @@ import type {
 import {
   createArtworkQuestion,
   createArtworkQuestionReply,
+  deleteArtworkQuestion,
   getArtworkQuestions,
   getReceivedArtworkQuestions,
 } from '@/api/endpoints';
@@ -44,6 +45,20 @@ export const useCreateArtworkQuestion = () => {
       artworkId: number;
       body: CreateArtworkQuestionRequestDto;
     }) => createArtworkQuestion(artworkId, body),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
+      });
+    },
+  });
+};
+
+export const useDeleteArtworkQuestion = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ artworkId, questionId }: { artworkId: number; questionId: number }) =>
+      deleteArtworkQuestion(artworkId, questionId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkQuestions.list(variables.artworkId),

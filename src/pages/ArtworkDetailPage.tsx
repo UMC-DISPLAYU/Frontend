@@ -23,6 +23,7 @@ import {
   useArtworkQuestions,
   useCreateArtworkQuestion,
   useCreateArtworkQuestionReply,
+  useDeleteArtworkQuestion,
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
@@ -38,7 +39,6 @@ export function ArtworkDetailPage() {
   const artworkId = Number(artworkIdParam ?? 0);
 
   const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>('intro');
-  const [isArtistView, setIsArtistView] = useState(false);
 
   const { data: userMe } = useUserMe();
   const myUserId = userMe?.id;
@@ -62,6 +62,7 @@ export function ArtworkDetailPage() {
 
   const createFeeling = useCreateArtworkFeeling();
   const createQuestion = useCreateArtworkQuestion();
+  const deleteQuestion = useDeleteArtworkQuestion();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
 
   /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 BottomCommentBar가 씀) */
@@ -275,8 +276,6 @@ export function ArtworkDetailPage() {
           artwork={detail}
           display={policyDisplay}
           activeTab={activeTab}
-          isArtistView={isArtistView}
-          onArtistViewChange={setIsArtistView}
           activeReplyId={activeReplyId}
           onFeelingReplyClick={handleFeelingReplyClick}
           replyTargetQuestionId={questionReplyTarget?.questionId ?? null}
@@ -292,6 +291,7 @@ export function ArtworkDetailPage() {
           onCloseComposeQuestion={() => setIsComposingQuestion(false)}
           onSubmitQuestion={handleSendQuestion}
           isSubmittingQuestion={createQuestion.isPending || createQuestionReply.isPending}
+          onDeleteQuestion={(questionId) => deleteQuestion.mutate({ artworkId, questionId })}
         />
       )}
 

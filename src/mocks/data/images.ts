@@ -50,6 +50,7 @@ type MockArtwork = {
   size: string | null;
   point: string | null;
   images: MockImageAsset[];
+  processImages?: MockImageAsset[];
 };
 
 export const MOCK_DISPLAY: MockDisplay[] = [
