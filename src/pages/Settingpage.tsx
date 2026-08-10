@@ -1,6 +1,9 @@
+import { useState } from 'react';
+
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { LogoutConfirmModal } from '@/components/common';
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
 import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
 import { useLogout } from '@/hooks/queries/useAuth';
@@ -16,6 +19,7 @@ export function SettingPage() {
   const artistPolicy = useArtistPolicy();
   const canViewArtist = hasPermission(artistPolicy, 'view');
   const logoutMutation = useLogout();
+  const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
 
   const { data: invitationsData } = useMyDisplayInvitations();
   const { data: questionsData } = useMyArtworkQuestions({ answerStatus: 'WAITING' });
@@ -24,6 +28,7 @@ export function SettingPage() {
   const pendingQuestionCount = questionsData?.questions?.length ?? 0;
 
   const handleLogout = () => {
+    setIsConfirmingLogout(false);
     logoutMutation.mutate(
       {},
       {
@@ -136,7 +141,7 @@ export function SettingPage() {
           <button
             type="button"
             className="typo-body-md-semibold h-14 w-full rounded-2xl bg-card text-main"
-            onClick={handleLogout}
+            onClick={() => setIsConfirmingLogout(true)}
             disabled={logoutMutation.isPending}
           >
             {logoutMutation.isPending ? '로그아웃 중...' : '로그아웃'}
@@ -145,6 +150,10 @@ export function SettingPage() {
       </div>
 
       {artistVerificationModal}
+
+      {isConfirmingLogout && (
+        <LogoutConfirmModal onCancel={() => setIsConfirmingLogout(false)} onConfirm={handleLogout} />
+      )}
     </div>
   );
 }
