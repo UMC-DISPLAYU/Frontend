@@ -69,6 +69,7 @@ export const useUpdateUserMe = () => {
     mutationFn: (body: UpdateMyProfileRequestDto) => updateUserMe(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.all });
     },
   });
 };
@@ -80,6 +81,7 @@ export const useUpdateMyArtistProfile = () => {
     mutationFn: (body: UpdateArtistProfileRequestDto) => updateMyArtistProfile(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.all });
     },
   });
 };

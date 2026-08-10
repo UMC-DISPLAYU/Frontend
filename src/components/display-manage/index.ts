@@ -1,5 +1,5 @@
 export { ArtworkCard } from './ArtworkCard';
-export { BottomBar, Header, Screen, SectionTitle } from './Common';
+export { Header, Screen, SectionTitle } from './Common';
 export { ContentRow } from './ContentRow';
 export { ExhibitionCard } from './ExhibitionCard';
 export { ExhibitionMeta } from './ExhibitionMeta';

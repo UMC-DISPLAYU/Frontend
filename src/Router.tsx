@@ -3,8 +3,8 @@ import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
-import { ArtistNameSetup } from './pages/ArtistNameSetup';
-import { ArtistVerificationPage } from './pages/ArtistVerificationPage';
+import { ArtistVerificationPage } from './pages/artist-verification';
+import { EditArtistProfilePage } from './pages/artist-verification';
 import { ArtworkDetailPage } from './pages/ArtworkDetailPage';
 import { ArtworkRegisterPage } from './pages/ArtworkRegisterPage';
 import { ArtworksManagePage } from './pages/ArtworksManagePage';
@@ -15,11 +15,13 @@ import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
 import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
-import { EditArtistProfilePage } from './pages/EditArtistProfilePage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
 import { ExhibitionManage } from './pages/ExhibitioionManagePage';
-import { ExhibitionBasicInfo } from './pages/ExhibitionBasicInfoPage';
-import { ExhibitionRegister } from './pages/ExhibitionRegister';
+import {
+  ArtistNameSetup,
+  ExhibitionBasicInfo,
+  ExhibitionRegister,
+} from './pages/exhibition-register';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
 import { Homepage } from './pages/Homepage';
@@ -35,7 +37,7 @@ import { MyPage } from './pages/MyPage';
 import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
 import { NotFound } from './pages/NotFound';
-import { OnboardingPage } from './pages/OnboardingPage';
+import { OnboardingPage } from './pages/onboarding';
 import { PersonalArtworkDetailPage } from './pages/PersonalArtworkDetailPage';
 import { PersonalArtworksRegister } from './pages/PersonalArtworksRegister';
 import { PolicyPage } from './pages/PolicyPage';
@@ -111,11 +113,13 @@ export const router = createBrowserRouter([
 
           // 내 전시 관리 목록
           { path: 'my/exhibitions', element: <MyExhibitionsPage /> },
+          { path: 'artworks-register', element: <ArtworkRegisterPage /> },
 
-          // 전시 등록 플로우
+          // 1. 전시 등록 플로우
           { path: 'exhibition/register', element: <ExhibitionRegister /> },
           { path: 'exhibition/register/basic', element: <ExhibitionBasicInfo /> },
           { path: 'exhibition/register/artist', element: <ArtistNameSetup /> },
+
           // 2. 특정 전시 관리 플로우 (ID 발급 후)
           {
             path: 'exhibition/:displayId',

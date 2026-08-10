@@ -96,7 +96,8 @@ export function ExhibitionMeta({ display: ex }: Props) {
           className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-60"
         >
           <Heart
-            size={17}
+            size={24}
+            strokeWidth={1.75}
             className={cn(
               'transition-colors duration-200',
               liked ? 'fill-heart text-heart' : 'fill-none text-sub700',
@@ -124,7 +125,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
 
       {!isAtTop && (
         <div className="px-1 pt-10">
-          <DisplaySaveButton displayId={ex.displayId} saved={ex.isBookmarked ?? false} />
+          <DisplaySaveButton displayId={ex.displayId} saved={ex.isArchived ?? false} />
         </div>
       )}
       {loginModal}

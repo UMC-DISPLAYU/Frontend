@@ -4,8 +4,7 @@ import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
-import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
-import { cn } from '@/utils/cn';
+import { useReceivedArtworkQuestions } from '@/hooks/queries/useReceivedArtworkQuestions';
 
 type TabKey = 'pending' | 'done';
 
@@ -102,12 +101,11 @@ function Tabs({ value, onChange }: TabsProps) {
             role="tab"
             aria-selected={active}
             onClick={() => onChange(tab.key)}
-            className={cn(
-              '-mb-0.5 flex h-11 flex-1 items-center justify-center border-b-2 transition-colors',
+            className={`-mb-[2px] flex h-11 flex-1 items-center justify-center border-b-2 transition-colors ${
               active
                 ? 'border-main typo-body-sm-bold text-main'
-                : 'border-transparent typo-body-sm-regular text-faint',
-            )}
+                : 'border-transparent typo-body-sm-regular text-faint'
+            }`}
           >
             {tab.label}
           </button>
@@ -120,28 +118,27 @@ function Tabs({ value, onChange }: TabsProps) {
 export function AnswerPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabKey>('done');
-  const answerStatus = tab === 'pending' ? 'WAITING' : 'ANSWERED';
-  const { data, isError, isLoading } = useMyArtworkQuestions({ answerStatus });
-  const questions = data?.questions;
+  const { data, isError, isLoading } = useReceivedArtworkQuestions({
+    answerStatus: tab === 'pending' ? 'WAITING' : 'ANSWERED',
+  });
+  const questions = data?.questions ?? [];
 
-  const items = questions
-    ? questions.map<Question>((question) => ({
-        id: String(question.questionId ?? question.personalQuestionId),
-        exhibition: question.artworkName,
-        desc: question.content,
-        user: question.questionerNickname,
-        time: getRelativeTime(question.createdAt),
-        status: formatAnswerStatus(question.answerStatus),
-        isOpen: question.isPublic,
-      }))
-    : [];
+  const items = questions.map<Question>((question) => ({
+    id: String(question.questionId),
+    exhibition: question.artworkName,
+    desc: question.content,
+    user: question.questionerNickname,
+    time: getRelativeTime(question.createdAt),
+    status: formatAnswerStatus(question.answerStatus),
+    isOpen: question.isPublic,
+  }));
 
   const handleDone = () => {
     navigate(-1);
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col overflow-hidden">
+    <div className="max-w-md mx-auto h-dvh bg-page flex flex-col overflow-hidden">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
@@ -161,7 +158,7 @@ export function AnswerPage() {
         ) : items.length === 0 ? (
           <ErrorView fullScreen={false} message="답변할 질문 항목이 없어요." />
         ) : (
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-[10px]">
             {items.map((item) => (
               <QuestionCard key={item.id} item={item} />
             ))}
@@ -169,7 +166,7 @@ export function AnswerPage() {
         )}
       </section>
 
-      <div className="bg-linear-to-b from-transparent via-page/75 to-page px-5 pb-2 pt-3">
+      <div className="bg-gradient-to-b from-transparent via-page/75 to-page px-5 pb-2 pt-3">
         <button
           type="button"
           onClick={handleDone}

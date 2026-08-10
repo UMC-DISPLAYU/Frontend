@@ -48,9 +48,10 @@ export function SchoolSearchInput({ value, onChange, readonly = false }: SchoolS
             value={inputValue}
             onChange={(e) => {
               if (!readonly) {
-                setSchoolQuery(e.target.value);
+                const val = e.target.value;
+                setSchoolQuery(val);
                 setSchoolOpen(true);
-                onChange('');
+                onChange(val);
               }
             }}
             onFocus={handleSchoolFocus}

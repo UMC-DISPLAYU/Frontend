@@ -1,25 +1,34 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useMutation } from '@tanstack/react-query';
 import { LocateFixed } from 'lucide-react';
 import { CustomOverlayMap, Map, useKakaoLoader } from 'react-kakao-maps-sdk';
 
 import type { NearbyDisplay, NearbyParams } from '@/hooks/useNearbyDisplays';
-import { getDistanceMeters } from '@/utils/geo';
 import { getAccurateUserLocation, getGeolocationErrorMessage } from '@/utils/geolocation';
 
-import { ExhibitionMapMarker } from './ExhibitionMapMarker';
+import { ExhibitionMapMarker, ExhibitionMapSelectedOverlay } from './ExhibitionMapMarker';
 
-// 서울시청. 실제로는 사용자 위치나 마지막 위치로 대체 가능.
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 const DEFAULT_LEVEL = 6;
 const IDLE_DEBOUNCE_MS = 250;
 
+const MAP_STATE_KEY = 'SEARCH_MAP_VIEW_STATE';
+
+const getSavedMapState = (): { center: { lat: number; lng: number }; level: number } | null => {
+  try {
+    const saved = sessionStorage.getItem(MAP_STATE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {
+    // Ignore storage parse errors
+  }
+  return null;
+};
+
 interface ExhibitionMapProps {
   exhibitions: NearbyDisplay[];
   selectedId: number | null;
-  onSelect: (id: number) => void;
-  /** 지도가 멈출 때마다 중심 좌표 + 반경(m)을 상위로 올려보낸다. */
+  onSelect: (id: number | null) => void;
   onBoundsChange: (params: NearbyParams) => void;
 }
 
@@ -30,6 +39,7 @@ export function ExhibitionMap({
   onBoundsChange,
 }: ExhibitionMapProps) {
   const appkey = import.meta.env.VITE_KAKAO_MAP_KEY;
+  const [initialMapState] = useState(getSavedMapState);
 
   const [loading, error] = useKakaoLoader({
     appkey,
@@ -54,34 +64,59 @@ export function ExhibitionMap({
 
   const handleIdle = useCallback(
     (map: kakao.maps.Map) => {
-      const center = map.getCenter();
       const bounds = map.getBounds();
       const ne = bounds.getNorthEast();
-      // 화면에 보이는 영역 = 중심에서 북동쪽 모서리까지 거리를 반경으로.
-      // 줌 레벨에 따라 반경이 자동으로 커지고 작아진다.
-      const radius = getDistanceMeters(center.getLat(), center.getLng(), ne.getLat(), ne.getLng());
+      const sw = bounds.getSouthWest();
+      const center = { lat: map.getCenter().getLat(), lng: map.getCenter().getLng() };
+      const level = map.getLevel();
+
+      try {
+        sessionStorage.setItem(MAP_STATE_KEY, JSON.stringify({ center, level }));
+      } catch {
+        // Ignore storage errors
+      }
 
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         onBoundsChange({
-          lat: center.getLat(),
-          lng: center.getLng(),
-          radius,
+          southLatitude: sw.getLat(),
+          westLongitude: sw.getLng(),
+          northLatitude: ne.getLat(),
+          eastLongitude: ne.getLng(),
         });
       }, IDLE_DEBOUNCE_MS);
     },
     [onBoundsChange],
   );
 
-  // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
-      // debounce 정리
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
     };
   }, []);
+
+  const lastPannedIdRef = useRef<number | null>(null);
+
+  // 마커/카드가 클릭되어 selectedId가 '새롭게' 변경된 시점에 딱 1회만 이동
+  // 이동 후 사용자가 지도를 자유롭게 드래그하거나 탐색할 때는 위치가 강제로 고정/재이동되지 않음
+  useEffect(() => {
+    if (!mapRef.current || !selectedId) {
+      lastPannedIdRef.current = selectedId;
+      return;
+    }
+
+    if (lastPannedIdRef.current !== selectedId) {
+      lastPannedIdRef.current = selectedId;
+      const target = exhibitions.find((ex) => ex.displayId === selectedId);
+      if (target) {
+        const latLng = new kakao.maps.LatLng(target.latitude, target.longitude);
+        mapRef.current.setCenter(latLng);
+        mapRef.current.panBy(0, -45);
+      }
+    }
+  }, [selectedId, exhibitions]);
 
   if (error) {
     return (
@@ -101,32 +136,36 @@ export function ExhibitionMap({
   return (
     <div className="relative size-full">
       <Map
-        center={DEFAULT_CENTER}
-        level={DEFAULT_LEVEL}
+        center={initialMapState?.center ?? DEFAULT_CENTER}
+        level={initialMapState?.level ?? DEFAULT_LEVEL}
         style={{ width: '100%', height: '100%' }}
+        onClick={() => onSelect(null)}
         onIdle={handleIdle}
         onCreate={(map) => {
           mapRef.current = map;
           handleIdle(map);
         }}
       >
-        {exhibitions.map((ex) => (
-          <CustomOverlayMap
-            key={ex.displayId}
-            position={{ lat: ex.latitude, lng: ex.longitude }}
-            yAnchor={1}
-            zIndex={ex.displayId === selectedId ? 10 : 1}
-          >
-            <ExhibitionMapMarker
-              title={ex.title}
-              selected={ex.displayId === selectedId}
-              onClick={() => onSelect(ex.displayId)}
-            />
-          </CustomOverlayMap>
-        ))}
+        {exhibitions.map((ex) => {
+          const isSelected = ex.displayId === selectedId;
+          return (
+            <CustomOverlayMap
+              key={ex.displayId}
+              position={{ lat: ex.latitude, lng: ex.longitude }}
+              yAnchor={isSelected ? 1.05 : 1}
+              zIndex={isSelected ? 20 : 1}
+              clickable={true}
+            >
+              {isSelected ? (
+                <ExhibitionMapSelectedOverlay exhibition={ex} onClose={() => onSelect(null)} />
+              ) : (
+                <ExhibitionMapMarker title={ex.title} onClick={() => onSelect(ex.displayId)} />
+              )}
+            </CustomOverlayMap>
+          );
+        })}
       </Map>
 
-      {/* 현재 위치로 이동 버튼 */}
       <button
         type="button"
         onClick={() => moveToMyLocation()}
@@ -134,7 +173,7 @@ export function ExhibitionMap({
         aria-label="내 위치로 이동"
         className="absolute bottom-4 right-4 z-10 flex size-12 items-center justify-center rounded-full bg-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
       >
-        <LocateFixed className={`size-6 text-neutral-700 ${isLocating ? 'animate-pulse' : ''}`} />
+        <LocateFixed className={`size-6 text-sub700 ${isLocating ? 'animate-pulse' : ''}`} />
       </button>
     </div>
   );

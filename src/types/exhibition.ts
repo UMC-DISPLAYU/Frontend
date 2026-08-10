@@ -103,7 +103,7 @@ export interface ExhibitionDetail {
   hours: string;
   location: string;
   bookmarkCount: number;
-  isBookmarked: boolean;
+  isArchived: boolean;
   heroImages: string[];
   description: string;
   contentImages: string[];
@@ -160,7 +160,9 @@ export interface ArtworkDetail {
   exhibitionPeriod: string;
   exhibitionThumbnail: string;
   bookmarkCount: number;
-  isBookmarked: boolean;
+  isArchived: boolean;
+  isLiked?: boolean;
+  likeCount?: number;
 }
 
 export interface GuestbookReviewReply {

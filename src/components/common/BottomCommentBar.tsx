@@ -1,16 +1,25 @@
 import { type ChangeEvent, type KeyboardEvent, useRef, useState } from 'react';
 
-import { Check, ImageIcon, SendHorizontal, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
+import galleryIcon from '@/assets/common/GalleryIcon.svg';
+import sendIcon from '@/assets/common/SendIcon.svg';
 import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
+import { readImageDimensions } from '@/utils/image';
+
+export type BottomCommentBarImage = { imageUrl: string; width: number; height: number };
 
 type Props = {
   placeholder?: string;
-  /* 업로드가 끝난 이미지 URL과 함께 입력한 내용을 전달합니다. */
-  onSubmit: (payload: { content: string; imageUrls: string[]; isPrivate: boolean }) => void;
+  /* 업로드가 끝난 이미지와 함께 입력한 내용을 전달합니다. */
+  onSubmit: (payload: {
+    content: string;
+    images: BottomCommentBarImage[];
+    isPrivate: boolean;
+  }) => void;
   isSubmitting?: boolean;
   /* 이미지 업로드 도메인. 지정하지 않으면 이미지 첨부 없이 텍스트만 입력받습니다. */
   imageDomain?: string;
@@ -64,9 +73,17 @@ export function BottomCommentBar({
     if (!canSubmit) return;
 
     try {
+      const files = images.map((image) => image.file).filter((file): file is File => Boolean(file));
+      const dimensions =
+        files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
       const imageUrls = images.length > 0 ? await uploadImages() : [];
+      const submitImages: BottomCommentBarImage[] = imageUrls.map((imageUrl, index) => ({
+        imageUrl,
+        width: dimensions[index].width,
+        height: dimensions[index].height,
+      }));
 
-      onSubmit({ content: content.trim(), imageUrls, isPrivate });
+      onSubmit({ content: content.trim(), images: submitImages, isPrivate });
       setContent('');
       setIsPrivate(false);
       clearImages();
@@ -81,117 +98,120 @@ export function BottomCommentBar({
     submit();
   };
 
+  const inputRow = (
+    <>
+      {showPrivateOption && (
+        <button
+          type="button"
+          onClick={() => setIsPrivate((prev) => !prev)}
+          aria-pressed={isPrivate}
+          className="flex shrink-0 cursor-pointer items-center gap-1.5 text-hint hover:text-main"
+        >
+          <span
+            className={cn(
+              'flex size-4 items-center justify-center rounded border border-hint transition-colors',
+              isPrivate && 'border-main bg-main text-white',
+            )}
+          >
+            {isPrivate && <Check size={12} strokeWidth={3} />}
+          </span>
+          <span className="typo-body-xs-regular text-hint">비공개</span>
+        </button>
+      )}
+
+      <input
+        value={content}
+        onFocus={(e) => {
+          if (!accessToken) {
+            e.target.blur();
+            setIsLoginModalOpen(true);
+          }
+        }}
+        onChange={(e) => setContent(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        className="typo-body-sm-regular min-w-0 flex-1 bg-transparent text-main outline-none placeholder:text-faint"
+      />
+
+      {imageDomain && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={pickImages}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={images.length >= maxImages || isBusy}
+            aria-label="이미지 첨부"
+            className="shrink-0 cursor-pointer"
+          >
+            <img src={galleryIcon} alt="" className="size-[22px] shrink-0" />
+          </button>
+        </>
+      )}
+      <button
+        type="button"
+        onClick={submit}
+        disabled={!canSubmit}
+        aria-label="등록"
+        className="shrink-0 cursor-pointer"
+      >
+        <img src={sendIcon} alt="" className="size-[22px] shrink-0" />
+      </button>
+    </>
+  );
+
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 bg-card px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]',
+        'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-line bg-card px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+46px)] shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]',
         className,
       )}
     >
       <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       {replyingTo && (
-        <div className="-mx-5 mb-3 flex items-center justify-between gap-2 border-b border-line-soft px-5 pb-3">
-          <span className="typo-body-xs-regular truncate text-hint">
-            {replyingTo}님에게 답글 남기는 중
+        <div className="-mx-5 mb-3 flex items-center gap-2 px-5 pb-2">
+          <span className="typo-body-xs-regular text-hint">
+            <span className="typo-body-xs-bold">{replyingTo}</span>에게 답글 작성 중
           </span>
           <button
             type="button"
             onClick={onCancelReply}
             aria-label="답글 취소"
-            className="shrink-0 cursor-pointer text-hint"
+            className="typo-body-xs-regular text-faint cursor-pointer"
           >
-            <X size={16} strokeWidth={1.5} />
+            취소
           </button>
         </div>
       )}
 
-      {images.length > 0 && (
-        <ul className="mb-2 flex gap-2">
-          {images.map((image) => (
-            <li key={image.id} className="relative">
-              <img
-                src={image.previewUrl}
-                alt=""
-                className="size-14 rounded-lg object-cover outline -outline-offset-1 outline-line-soft"
-              />
-              <button
-                type="button"
-                onClick={() => removeImage(image.id)}
-                aria-label="이미지 삭제"
-                className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
-              >
-                <X size={12} className="text-white" strokeWidth={2.5} />
-              </button>
-            </li>
-          ))}
-        </ul>
+      {images.length > 0 ? (
+        <div className="flex flex-col items-start gap-2.5 rounded-xl bg-[#D7D7DF] p-3">
+          <div className="flex w-full items-center gap-2">
+            {images.map((image) => (
+              <div key={image.id} className="relative size-16 shrink-0">
+                <img src={image.previewUrl} alt="" className="size-16 rounded-lg object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(image.id)}
+                  aria-label="이미지 삭제"
+                  className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
+                >
+                  <X size={12} className="text-white" strokeWidth={2.5} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="flex w-full items-center gap-2">{inputRow}</div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 rounded-xl bg-box200 p-3">{inputRow}</div>
       )}
-
-      <div className="flex h-12 items-center gap-2 rounded-xl bg-box200 pr-4 pl-5">
-        {showPrivateOption && (
-          <button
-            type="button"
-            onClick={() => setIsPrivate((prev) => !prev)}
-            aria-pressed={isPrivate}
-            className="flex shrink-0 cursor-pointer items-center gap-1.5 text-hint hover:text-main"
-          >
-            <span
-              className={cn(
-                'flex size-4 items-center justify-center rounded border border-hint transition-colors',
-                isPrivate && 'border-main bg-main text-white',
-              )}
-            >
-              {isPrivate && <Check size={12} strokeWidth={3} />}
-            </span>
-            <span className="typo-body-xs-regular text-hint">비공개</span>
-          </button>
-        )}
-
-        <input
-          value={content}
-          onFocus={(e) => {
-            if (!accessToken) {
-              e.target.blur();
-              setIsLoginModalOpen(true);
-            }
-          }}
-          onChange={(e) => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="typo-body-sm-regular min-w-0 flex-1 bg-transparent text-main outline-none placeholder:text-faint"
-        />
-
-        {imageDomain && (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={pickImages}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={images.length >= maxImages || isBusy}
-              aria-label="이미지 첨부"
-              className="shrink-0 cursor-pointer text-main disabled:text-faint"
-            >
-              <ImageIcon size={20} strokeWidth={1.5} />
-            </button>
-          </>
-        )}
-        <button
-          type="button"
-          onClick={submit}
-          disabled={!canSubmit}
-          aria-label="등록"
-          className="shrink-0 cursor-pointer text-main disabled:text-faint"
-        >
-          <SendHorizontal size={20} strokeWidth={1.5} />
-        </button>
-      </div>
     </div>
   );
 }

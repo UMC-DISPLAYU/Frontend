@@ -44,14 +44,11 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
   const addImages = useCallback(
     (fileList: FileList | File[]) => {
       const files = Array.from(fileList);
-      const remainingSlots = maxImages - imagesRef.current.length;
-      const filesToAdd = files.slice(0, Math.max(remainingSlots, 0));
-
-      if (filesToAdd.length === 0) {
+      if (files.length === 0) {
         return [];
       }
 
-      const nextImages = filesToAdd.map((file) => ({
+      const nextImages = files.map((file) => ({
         id: createImageId(),
         file,
         previewUrl: URL.createObjectURL(file),

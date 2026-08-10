@@ -1,6 +1,6 @@
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 
-import type { GetClosingSoonDisplaysRequestDto } from '@/api/dto';
+import type { GetArtworkPreviewRequestDto, GetClosingSoonDisplaysRequestDto } from '@/api/dto';
 import {
   getArtworkPreview,
   getClosingSoonDisplays,
@@ -49,6 +49,19 @@ export const useClosingSoonDisplays = (params: GetClosingSoonDisplaysRequestDto 
 export const useDuPicks = () => useQuery(duPicksQuery());
 
 export const useHomeArtworkPreview = () => useQuery(homeArtworkPreviewQuery());
+
+export const useInfiniteArtworkPreview = (params: GetArtworkPreviewRequestDto = {}) =>
+  useInfiniteQuery({
+    queryKey: queryKeys.displayArtworks.preview(params),
+    queryFn: ({ pageParam = 0 }) =>
+      getArtworkPreview({
+        ...params,
+        page: pageParam,
+        size: params.size ?? 10,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => (lastPage.isLast ? null : lastPage.page + 1),
+  });
 
 export const useHomeLoungePosts = () => useQuery(homeLoungePostsQuery());
 
