@@ -1,12 +1,20 @@
+import { ChevronRight, Info, Plus } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { ErrorView, LoadingView } from '@/components/common';
-import { WorkScreen } from '@/components/display-manage';
+import { ArtworkCard } from '@/components/display-manage/ArtworkCard';
+import { Header, SectionTitle } from '@/components/display-manage/Common';
+import { ContentRow } from '@/components/display-manage/ContentRow';
+import { ExhibitionMeta } from '@/components/display-manage/ExhibitionMeta';
+import { Poster } from '@/components/display-manage/Poster';
 import { useHideFooter } from '@/components/layout';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import type { WorkData } from '@/types/exhibition';
 import type { ExhibitionItem } from '@/types/mypage';
+import { cn } from '@/utils/cn';
+import { hasPermission } from '@/utils/hasPermission';
 
 type LocationState = {
   initialExhibition?: ExhibitionItem;
@@ -22,6 +30,23 @@ export function ExhibitionWorkPage() {
   const exhibition = state?.initialExhibition;
   const { data: displayDetail, isPending, isError } = useDisplayDetail(Number(displayId));
   const { data: displayArtworks } = useDisplayArtworks(Number(displayId));
+
+  const displayContentPolicy = useDisplayContentPolicy(displayDetail);
+  const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
+  const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
+  const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
+  const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
+  const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
+  const canReorder = hasPermission(displayContentPolicy, 'reorder');
+  const canManageDisplayContent =
+    canCreateCategory ||
+    canEditCategory ||
+    canDeleteCategory ||
+    canCreateContent ||
+    canDeleteContent ||
+    canReorder;
+  const artworkPolicy = useArtworkPolicy(displayDetail);
+  const canCreateArtwork = hasPermission(artworkPolicy, 'create');
 
   if (!exhibition && isPending) {
     return <LoadingView message="전시 정보를 불러오는 중..." />;
@@ -62,13 +87,80 @@ export function ExhibitionWorkPage() {
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
-      <WorkScreen
-        ex={exItem}
-        work={workData}
-        onBack={() => navigate(-1)}
-        onManageArtworks={() => navigate(`/exhibition/${displayId}/artworks`)}
-      />
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+      <Header title="전시 작업" onBack={() => navigate(-1)} />
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-24">
+        <div className="flex flex-col gap-5">
+          <div
+            className={cn(
+              'flex gap-3 h-32 px-4 py-3.5 rounded-2xl items-start overflow-hidden',
+              'bg-box100 shadow-[8px_8px_18px_rgba(6,3,45,0.04),inset_1px_1px_4px_rgba(1,8,21,0.20),inset_-2px_-2px_2px_rgba(252,252,252,0.90)]',
+            )}
+          >
+            <Poster src={exItem.thumbnail} w={72} h={101} />
+            <ExhibitionMeta ex={exItem} showBadge={false} />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <SectionTitle>전시콘텐츠</SectionTitle>
+              {canManageDisplayContent && (
+                <button
+                  onClick={() => navigate(`/exhibition/${exItem.id}/contents`)}
+                  className="typo-body-xs-regular flex items-center gap-0.5 border-none bg-transparent text-hint cursor-pointer"
+                >
+                  관리하기 <ChevronRight size={13} />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              {workData.contents.map((r) => (
+                <ContentRow
+                  key={r.id}
+                  row={r}
+                  onClick={() => navigate(`/exhibition/${exItem.id}/contents/${r.id}`)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between">
+              <div className="typo-body-sm-bold text-main">전시작</div>
+              <button
+                onClick={() => navigate(`/exhibition/${displayId}/artworks`)}
+                className="typo-body-xs-regular flex items-center gap-0.5 border-none bg-transparent text-hint cursor-pointer"
+              >
+                관리하기 <ChevronRight size={13} />
+              </button>
+            </div>
+            <div className="typo-body-xs-regular text-hint mt-1 mb-3">
+              전시에 참여한 작품을 등록하고 작가 정보를 연결할 수 있어요.
+            </div>
+
+            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+              {canCreateArtwork && (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/exhibition/${exItem.id}/artworks/add`)}
+                  className="flex h-39.5 w-29.5 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
+                >
+                  <Plus size={20} className="text-hint" />
+                  <span className="typo-body-xs-regular text-sub600">전시작 추가</span>
+                </button>
+              )}
+              {workData.artworks.map((art) => (
+                <ArtworkCard key={art.id} art={art} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-20 flex items-center gap-1.5 rounded-[10px] bg-card px-3 py-2.5">
+          <Info size={13} className="text-hint" />
+          <span className="typo-body-xs-regular text-hint">작품은 일부만 등록해도 괜찮아요.</span>
+        </div>
+      </main>
     </div>
   );
 }

@@ -7,8 +7,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { ImageUploader } from '@/components/common';
-import { AffiliationInput, ExhibitionHeader } from '@/components/exhibition-register';
-import { ChipGroup, RequiredLabel } from '@/components/ui';
+import { AffiliationInput } from '@/components/exhibition-register';
+import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
   EXHIBITION_FIELD_LABELS,
   EXHIBITION_FIELDS,
@@ -170,7 +170,7 @@ export function ExhibitionRegister() {
 
   return (
     <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
-      <ExhibitionHeader />
+      <ExhibitionHeader title="전시 등록" />
 
       <main className="flex-1 overflow-y-auto">
         <form

@@ -1,5 +1,6 @@
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 
+import { InviteButton } from './InviteButton';
 import { type MemberStatus, StatusBadge } from './StatusBadge';
 
 export interface Member {
@@ -15,12 +16,12 @@ interface MemberRowProps {
   /* 검색 결과처럼 초대할 수 있는 행에서만 넘깁니다. 없으면 상태 뱃지를 보여줍니다. */
   onInvite?: () => void;
   inviteDisabled?: boolean;
-  inviteLabel?: string;
+  inviteLabel?: '초대' | '초대 대기' | '팀원';
 }
 
 export function MemberRow({ member, onInvite, inviteDisabled, inviteLabel }: MemberRowProps) {
   return (
-    <li className="flex items-center gap-3 rounded-[20px] bg-card px-3 py-5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+    <li className="flex items-center gap-3 rounded-[20px] bg-card px-3 py-5">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <img
           className="size-12 shrink-0 rounded-full object-cover"
@@ -35,15 +36,8 @@ export function MemberRow({ member, onInvite, inviteDisabled, inviteLabel }: Mem
           <span className="typo-body-xs-regular truncate text-hint">{member.nickname}</span>
         </div>
       </div>
-      {onInvite ? (
-        <button
-          type="button"
-          onClick={onInvite}
-          disabled={inviteDisabled}
-          className="typo-body-xs-regular shrink-0 rounded-sm bg-dark px-2.5 py-1 text-white disabled:bg-box200 disabled:text-hint"
-        >
-          {inviteLabel ?? '초대'}
-        </button>
+      {onInvite && inviteLabel ? (
+        <InviteButton label={inviteLabel} onClick={onInvite} disabled={inviteDisabled} />
       ) : (
         <StatusBadge status={member.status} />
       )}
