@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useEffect, useMemo, useState } from 'react';
 
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -13,6 +14,7 @@ import {
   type ExhibitionTypeGroup,
   MAX_POSTER_UPLOAD_IMAGES,
 } from '@/constants/exhibition';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
@@ -24,22 +26,36 @@ export function ExhibitionRegister() {
   const displayId = Number(paramDisplayId ?? 0);
   const { data: artistProfile } = useMyArtistProfile();
   const imageUpload = useImageUpload({ domain: 'display' });
+  const { setUploadedImages } = imageUpload;
+  const { data: fetchedDetail, isPending: isDetailPending } = useDisplayDetail(displayId);
 
   /* 다음 단계에서 뒤로 왔을 때 앞서 입력한 값이 남아 있도록 state로 초기화합니다. */
   const { state } = useLocation();
   const restored = (state ?? {}) as Record<string, unknown>;
+  const restoredImageUrls = restored.imageUrls as string[] | undefined;
+  const shouldRestoreFromDetail = displayId > 0 && !state;
 
-  const [title, setTitle] = useState((restored.title as string) ?? '');
-  const [subtitle, setSubtitle] = useState((restored.subtitle as string) ?? '');
-  const [intro, setIntro] = useState((restored.intro as string) ?? '');
-  const [type, setType] = useState<string | null>((restored.type as string) ?? null);
-  const [field, setField] = useState<string[]>((restored.field as string[]) ?? []);
+  const [title, setTitle] = useState((restored.title as string) ?? fetchedDetail?.title ?? '');
+  const [subtitle, setSubtitle] = useState(
+    (restored.subtitle as string) ?? fetchedDetail?.subtitle ?? '',
+  );
+  const [intro, setIntro] = useState((restored.intro as string) ?? fetchedDetail?.content ?? '');
+  const [type, setType] = useState<string | null>(
+    (restored.type as string) ?? fetchedDetail?.displayType ?? null,
+  );
+  const [field, setField] = useState<string[]>(
+    (restored.field as string[]) ?? fetchedDetail?.displayFields ?? [],
+  );
 
   const [school, setSchool] = useState(
-    (restored.school as string) ?? artistProfile?.schoolName ?? '',
+    (restored.school as string) ?? fetchedDetail?.organization ?? artistProfile?.schoolName ?? '',
   );
-  const [department, setDepartment] = useState((restored.department as string) ?? '');
-  const [organizer, setOrganizer] = useState((restored.organizer as string) ?? '');
+  const [department, setDepartment] = useState(
+    (restored.department as string) ?? fetchedDetail?.department ?? '',
+  );
+  const [organizer, setOrganizer] = useState(
+    (restored.organizer as string) ?? fetchedDetail?.department ?? '',
+  );
   const schoolValue = school || artistProfile?.schoolName || '';
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
@@ -48,6 +64,26 @@ export function ExhibitionRegister() {
   }, [type]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (restoredImageUrls?.length) {
+      setUploadedImages(restoredImageUrls);
+    }
+  }, [restoredImageUrls, setUploadedImages]);
+
+  useEffect(() => {
+    if (!shouldRestoreFromDetail || !fetchedDetail) return;
+
+    setTitle(fetchedDetail.title);
+    setSubtitle(fetchedDetail.subtitle ?? '');
+    setIntro(fetchedDetail.content ?? '');
+    setType(fetchedDetail.displayType);
+    setField(fetchedDetail.displayFields);
+    setSchool(fetchedDetail.organization ?? artistProfile?.schoolName ?? '');
+    setDepartment(fetchedDetail.department ?? '');
+    setOrganizer(fetchedDetail.department ?? '');
+    setUploadedImages(fetchedDetail.images.map((image) => image.imageUrl).filter(Boolean));
+  }, [artistProfile?.schoolName, fetchedDetail, setUploadedImages, shouldRestoreFromDetail]);
 
   const isAffiliationValid = () => {
     if (!selectedGroup) return true;
@@ -64,8 +100,10 @@ export function ExhibitionRegister() {
     field.length > 0 &&
     isAffiliationValid();
 
+  const isLoadingEditDetail = shouldRestoreFromDetail && isDetailPending;
+
   const goNext = async () => {
-    if (!isFormValid || imageUpload.isUploading) return;
+    if (!isFormValid || imageUpload.isUploading || isLoadingEditDetail) return;
 
     const imageUrls = await imageUpload.uploadImages();
 
@@ -186,7 +224,7 @@ export function ExhibitionRegister() {
       <BottomButtonBar>
         <button
           type="button"
-          disabled={!isFormValid || imageUpload.isUploading}
+          disabled={!isFormValid || imageUpload.isUploading || isLoadingEditDetail}
           onClick={goNext}
           className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5 disabled:opacity-40"
         >

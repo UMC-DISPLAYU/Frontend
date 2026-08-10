@@ -70,10 +70,10 @@ export function PersonalArtworksRegister() {
     setIsUploading(true);
     try {
       artworkImageUrls = await Promise.all(
-        images.map((image) => artworkUpload.uploadImage(image.file)),
+        artworkUpload.files.map((file) => artworkUpload.uploadImage(file)),
       );
       processImageUrls = await Promise.all(
-        processImages.map((image) => processUpload.uploadImage(image.file)),
+        processUpload.files.map((file) => processUpload.uploadImage(file)),
       );
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
