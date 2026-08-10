@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useState } from 'react';
+import { createElement, type ReactNode, useCallback, useState } from 'react';
 
 import {
   type ExhibitionRegisterDraft,
@@ -20,9 +20,9 @@ export function ExhibitionRegisterDraftProvider({ children }: { children: ReactN
     setHasDraft(false);
   }, []);
 
-  return (
-    <ExhibitionRegisterDraftContext.Provider value={{ draft, hasDraft, updateDraft, resetDraft }}>
-      {children}
-    </ExhibitionRegisterDraftContext.Provider>
+  return createElement(
+    ExhibitionRegisterDraftContext.Provider,
+    { value: { draft, hasDraft, updateDraft, resetDraft } },
+    children,
   );
 }
