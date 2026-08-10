@@ -16,12 +16,12 @@ import { DisplayContentsPage } from './pages/DisplayContentsPage';
 import { DisplayDetailPage } from './pages/DisplayDetailPage';
 import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
 import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
-import { ExhibitionManage } from './pages/ExhibitioionManagePage';
 import {
   ArtistNameSetup,
   ExhibitionBasicInfo,
   ExhibitionRegister,
 } from './pages/exhibition-register';
+import { ExhibitionManage } from './pages/ExhibitionManagePage';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
 import { Homepage } from './pages/Homepage';
@@ -45,7 +45,7 @@ import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
 import { SearchPage } from './pages/SearchPage';
 import { SettingPage } from './pages/Settingpage';
 import { TeamManage } from './pages/TeamManagePage';
-import { VisibilitySettings } from './pages/VisibilitysettingsPage';
+import { VisibilitySettings } from './pages/VisibilitySettingsPage';
 
 const validateNumericId =
   (paramName: string) =>
