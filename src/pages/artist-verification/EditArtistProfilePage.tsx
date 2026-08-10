@@ -6,6 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
+import { BottomButton } from '@/components/common';
 import { ChipGroup } from '@/components/ui';
 import {
   ARTIST_FIELD_MAP,
@@ -178,7 +179,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
         <h1 className="typo-body-xl-bold text-main">작가 프로필 설정</h1>
       </header>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-32">
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-8">
         <div className="mt-10 flex justify-center">
           <ProfilePhotoField image={profileImage} onChange={handleProfileImageChange} />
         </div>
@@ -346,16 +347,9 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
         </form>
       </main>
 
-      <footer className="sticky bottom-0 bg-gradient-to-b from-transparent via-page/80 to-page px-5 pb-8 pt-6">
-        <button
-          form="edit-artist-profile-form"
-          type="submit"
-          disabled={!canSubmit}
-          className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-white disabled:opacity-40"
-        >
-          {updateMyArtistProfile.isPending || uploadImage.isPending ? '저장 중' : '완료'}
-        </button>
-      </footer>
+      <BottomButton form="edit-artist-profile-form" type="submit" disabled={!canSubmit}>
+        {updateMyArtistProfile.isPending || uploadImage.isPending ? '저장 중' : '완료'}
+      </BottomButton>
     </div>
   );
 }

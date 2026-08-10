@@ -12,7 +12,7 @@ export function BottomButton({
 }: BottomButtonProps) {
   return (
     <div className="shrink-0 bg-page">
-      <div className="pt-4 pb-safe-bottom">
+      <div className="px-5 pb-safe-bottom">
         <button
           type={type}
           className={cn(
