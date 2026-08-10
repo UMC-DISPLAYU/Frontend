@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronLeft, Info, Plus, UserRound, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import type { DisplayDetailDto } from '@/api/dto';
 import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
 import { ChipGroup } from '@/components/ui';
@@ -13,11 +14,14 @@ import {
 } from '@/constants';
 import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
 import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { cn } from '@/utils/cn';
-import { toProductionYear } from '@/utils/date';
+import { formatDate, toProductionYear } from '@/utils/date';
+import { hasPermission } from '@/utils/hasPermission';
 
 type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'participants';
 type RegisterMode = 'own' | 'proxy';
@@ -29,15 +33,8 @@ type RegisterSheet =
   | 'collaboratorDirect'
   | null;
 
-const DEFAULT_EXHIBITION = {
-  title: '형태의 침묵',
-  org: '중앙대학교 디자인학부',
-  period: '05.28 - 06.05',
-  place: '중앙대학교 310관 갤러리',
-  thumbnail: 'https://placehold.co/130x162',
-};
-
-const REPRESENTATIVE = { id: 'owner', name: '최유성', account: 'quietroom' };
+/* 문의 담당자 기본값(본인)을 가리키는 sentinel id입니다. */
+const SELF_ASSIGNEE_ID = 'owner';
 const DIRECT_INPUT_ACCOUNT = '직접입력';
 
 function ArtworkRegisterHeader({ title, onBack }: { title: string; onBack: () => void }) {
@@ -434,23 +431,29 @@ function PersonCard({
   return <div className={className}>{content}</div>;
 }
 
-function ExhibitionSummaryCard() {
+function ExhibitionSummaryCard({ display }: { display: DisplayDetailDto | undefined }) {
+  const thumbnailUrl =
+    display?.images.find((image) => image.isThumbnail)?.imageUrl ?? display?.images[0]?.imageUrl;
+  const period = display
+    ? `${formatDate(display.period.startDate)} - ${formatDate(display.period.endDate)}`
+    : '';
+
   return (
     <div className="flex h-32 gap-3 overflow-hidden rounded-[18px] bg-box100 px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04),inset_1px_1px_4px_0px_rgba(1,8,21,0.2),inset_-2px_-2px_2px_0px_rgba(255,255,255,0.9)]">
       <div className="h-[101px] w-[72px] shrink-0 overflow-hidden rounded-xl bg-box">
-        <img
-          src={DEFAULT_EXHIBITION.thumbnail}
-          alt="전시 포스터"
-          className="size-full object-cover"
-        />
+        {thumbnailUrl && (
+          <img src={thumbnailUrl} alt="전시 포스터" className="size-full object-cover" />
+        )}
       </div>
       <div className="min-w-0 flex-1">
-        <h2 className="typo-body-md-bold truncate text-main">{DEFAULT_EXHIBITION.title}</h2>
+        <h2 className="typo-body-md-bold truncate text-main">{display?.title}</h2>
         <div className="mt-2.5 flex flex-col">
-          <span className="typo-body-xs-regular text-sub700">{DEFAULT_EXHIBITION.org}</span>
-          <span className="typo-body-xs-regular text-hint">{DEFAULT_EXHIBITION.period}</span>
+          <span className="typo-body-xs-regular text-sub700">{display?.organization}</span>
+          <span className="typo-body-xs-regular text-hint">{period}</span>
         </div>
-        <p className="typo-body-xxs-regular mt-4 truncate text-faint">{DEFAULT_EXHIBITION.place}</p>
+        <p className="typo-body-xxs-regular mt-4 truncate text-faint">
+          {display?.location.placeName}
+        </p>
       </div>
     </div>
   );
@@ -482,6 +485,11 @@ export function ArtworkRegisterPage() {
   const isSubmitting =
     artworkUpload.isUploading || processUpload.isUploading || createArtwork.isPending;
 
+  /* 작가 인증 + 전시 소속인만 전시작을 등록할 수 있습니다. */
+  const { data: display } = useDisplayDetail(displayId);
+  const artworkPolicy = useArtworkPolicy(display);
+  const canCreateArtwork = hasPermission(artworkPolicy, 'create');
+
   const [step, setStep] = useState<RegisterStep>('choice');
   const [registerMode, setRegisterMode] = useState<RegisterMode>('own');
   const [activeSheet, setActiveSheet] = useState<RegisterSheet>(null);
@@ -500,7 +508,7 @@ export function ArtworkRegisterPage() {
   const [collaborators, setCollaborators] = useState<
     { id: string; name: string; account: string; userId?: number }[]
   >([]);
-  const [qnaAssigneeIds, setQnaAssigneeIds] = useState<string[]>([REPRESENTATIVE.id]);
+  const [qnaAssigneeIds, setQnaAssigneeIds] = useState<string[]>([SELF_ASSIGNEE_ID]);
 
   /*
    * 전시 팀원 목록. 초대를 수락한 팀원만 작가로 지정할 수 있습니다.
@@ -564,9 +572,9 @@ export function ArtworkRegisterPage() {
     /* 본인 등록은 로그인 사용자를, 팀원 선택은 해당 팀원의 계정을 작가로 연결합니다. */
     if (registerMode === 'own') {
       return {
-        ...REPRESENTATIVE,
-        name: myDisplayNickname || userMe?.nickname || userMe?.name || REPRESENTATIVE.name,
-        account: userMe?.nickname || REPRESENTATIVE.account,
+        id: SELF_ASSIGNEE_ID,
+        name: myDisplayNickname || userMe?.nickname || userMe?.name || '',
+        account: userMe?.nickname || '',
         userId: userMe?.id,
         tag: '작가인증',
       };
@@ -699,6 +707,11 @@ export function ArtworkRegisterPage() {
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
     if (isSubmitting) return;
+
+    if (!canCreateArtwork) {
+      setSubmitError('작품을 등록할 권한이 없어요.');
+      return;
+    }
 
     setSubmitError(null);
 
@@ -1119,7 +1132,7 @@ export function ArtworkRegisterPage() {
     <>
       <ArtworkRegisterHeader title="전시작 등록" onBack={handleBack} />
       <main className="flex-1 overflow-y-auto px-5 pt-3 pb-8">
-        <ExhibitionSummaryCard />
+        <ExhibitionSummaryCard display={display} />
 
         <section className="mt-5">
           <h2 className="typo-body-sm-bold text-main">작가정보</h2>
@@ -1194,7 +1207,7 @@ export function ArtworkRegisterPage() {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !canCreateArtwork}
           className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
         >
           {isSubmitting ? '등록 중' : '완료'}
