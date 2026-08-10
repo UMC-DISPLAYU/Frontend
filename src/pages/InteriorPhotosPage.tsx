@@ -108,6 +108,7 @@ function InteriorPhotos({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const savedOrderRef = useRef<Photo[]>(initialPhotos);
 
   const scope = { displayId, categoryId };
   const imageUpload = useImageUpload({ domain: 'display' });
@@ -116,6 +117,7 @@ function InteriorPhotos({
   const deleteImage = useDeleteContentImage(scope);
 
   const isBusy = imageUpload.isUploading || createImage.isPending;
+  const isSavingOrder = reorderImages.isPending;
   const canShowActions = canCreateContent || canReorder;
 
   const handleAddPhotos = () => {
@@ -142,7 +144,13 @@ function InteriorPhotos({
 
     try {
       const uploadedUrls = await Promise.all(
-        added.map((image) => imageUpload.uploadImage(image.file)),
+        added.map((image) => {
+          if (!image.file) {
+            throw new Error('업로드할 이미지 파일이 없습니다.');
+          }
+
+          return imageUpload.uploadImage(image.file);
+        }),
       );
       const created = await Promise.all(
         uploadedUrls.map((imageUrl) =>
@@ -184,8 +192,29 @@ function InteriorPhotos({
   };
 
   const handleReorder = () => {
-    if (!canReorder) return;
-    setIsReorderMode(!isReorderMode);
+    if (!canReorder || isSavingOrder) return;
+
+    if (!isReorderMode) {
+      savedOrderRef.current = photos;
+      setIsReorderMode(true);
+      return;
+    }
+
+    setDraggedIndex(null);
+    reorderImages.mutate(
+      photos.map((photo) => Number(photo.id)),
+      {
+        onSuccess: () => {
+          savedOrderRef.current = photos;
+          setIsReorderMode(false);
+        },
+        onError: () => {
+          setPhotos(savedOrderRef.current);
+          setIsReorderMode(false);
+          setUploadError('사진 순서 저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+        },
+      },
+    );
   };
 
   const handleDragStart = (index: number) => {
@@ -213,7 +242,6 @@ function InteriorPhotos({
     if (draggedIndex === null) return;
 
     setDraggedIndex(null);
-    reorderImages.mutate(photos.map((photo) => Number(photo.id)));
   };
 
   return (
@@ -321,9 +349,10 @@ function InteriorPhotos({
           <button
             type="button"
             onClick={handleReorder}
-            className="typo-body-sm-bold h-11 w-full rounded-xl bg-bt-black text-white"
+            disabled={isSavingOrder}
+            className="typo-body-sm-bold h-11 w-full rounded-xl bg-bt-black text-white disabled:opacity-40"
           >
-            편집 완료
+            {isSavingOrder ? '저장 중' : '편집 완료'}
           </button>
         </BottomButtonBar>
       )}

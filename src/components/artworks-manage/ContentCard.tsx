@@ -44,6 +44,15 @@ export function ContentCard({
     onClick();
   };
 
+  const handleMoreClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onMore(event);
+  };
+
+  const handleMoreKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+  };
+
   return (
     <div
       role={onClick ? 'button' : undefined}
@@ -72,9 +81,9 @@ export function ContentCard({
         <button
           ref={moreRef}
           type="button"
-          onClick={onMore}
+          onClick={handleMoreClick}
+          onKeyDown={handleMoreKeyDown}
           aria-label={`${content.title} 더보기`}
-          aria-haspopup="menu"
           className="self-start p-1"
         >
           <MoreHorizontal className="size-5 text-hint" />
