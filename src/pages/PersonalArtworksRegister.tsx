@@ -129,7 +129,8 @@ export function PersonalArtworksRegister() {
             <ImageUploader
               images={images}
               maxImages={MAX_PERSONAL_ARTWORK_IMAGES}
-              className="justify-center"
+              padded
+              className="[justify-content:safe_center]"
               onAddImages={addImages}
               onRemoveImage={removeImage}
               emptyLabel="이미지 업로드"

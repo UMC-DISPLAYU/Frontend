@@ -260,7 +260,8 @@ export function ExhibitionRegister() {
               images={imageUpload.images}
               initialImages={initialImages}
               maxImages={MAX_POSTER_UPLOAD_IMAGES}
-              className="justify-center"
+              padded
+              className="[justify-content:safe_center]"
               onAddImages={imageUpload.addImages}
               onRemoveImage={imageUpload.removeImage}
               onRemoveInitialImage={handleRemoveInitialImage}

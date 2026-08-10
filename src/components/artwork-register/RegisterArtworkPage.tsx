@@ -91,6 +91,8 @@ function RegisterArtworkPage({
           images={artworkImages}
           maxImages={MAX_ARTWORK_UPLOAD_IMAGES}
           emptyLabel="작품 업로드"
+          padded
+          className="[justify-content:safe_center]"
           onAddImages={onAddArtworkImages}
           onRemoveImage={onRemoveArtworkImage}
         />
