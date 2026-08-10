@@ -1,26 +1,8 @@
-import { ChevronLeft } from 'lucide-react';
-
 export function Thumbnail({ src, className = 'size-20' }: { src?: string; className?: string }) {
   return (
     <div className={`${className} shrink-0 overflow-hidden rounded-xl bg-box200`}>
       {src && <img src={src} alt="" className="size-full object-cover" />}
     </div>
-  );
-}
-
-export function Header({ title, onBack }: { title: string; onBack?: () => void }) {
-  return (
-    <header className="flex items-center gap-3 px-5 pt-14.5 pb-3">
-      <button
-        type="button"
-        onClick={onBack}
-        aria-label="뒤로 가기"
-        className="-ml-1 grid size-7 place-items-center"
-      >
-        <ChevronLeft className="size-7 text-main" strokeWidth={2} />
-      </button>
-      <h1 className="typo-body-xl-bold text-main">{title}</h1>
-    </header>
   );
 }
 

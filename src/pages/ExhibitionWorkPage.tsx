@@ -3,11 +3,12 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { ErrorView, LoadingView } from '@/components/common';
 import { ArtworkCard } from '@/components/display-manage/ArtworkCard';
-import { Header, SectionTitle } from '@/components/display-manage/Common';
+import { SectionTitle } from '@/components/display-manage/Common';
 import { ContentRow } from '@/components/display-manage/ContentRow';
 import { ExhibitionMeta } from '@/components/display-manage/ExhibitionMeta';
 import { Poster } from '@/components/display-manage/Poster';
 import { useHideFooter } from '@/components/layout';
+import { ExhibitionHeader } from '@/components/ui';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
@@ -87,9 +88,9 @@ export function ExhibitionWorkPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <Header title="전시 작업" onBack={() => navigate(-1)} />
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-24">
+    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
+      <ExhibitionHeader title="전시 작업" onBack={() => navigate(-1)} />
+      <main className="px-5 pb-24">
         <div className="flex flex-col gap-5">
           <div
             className={cn(

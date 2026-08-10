@@ -26,7 +26,6 @@ function SelectArtistPage({
     <ArtworkRegisterLayout
       title="작가 선택"
       onBack={onBack}
-      className="pt-3.5"
       bottomBar={
         <BottomButtonBar>
           <button

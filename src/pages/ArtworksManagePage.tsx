@@ -8,8 +8,8 @@ import {
   OrderScreen,
   WorkActionSheet,
 } from '@/components/artworks-manage';
-import { Header } from '@/components/artworks-manage/Common';
 import { BottomButtonBar } from '@/components/common';
+import { ExhibitionHeader } from '@/components/ui';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
@@ -93,13 +93,13 @@ export function ArtworksManagePage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <Header
+    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
+      <ExhibitionHeader
         title={screen === 'manage' ? '전시작 관리' : '순서 편집'}
         onBack={screen === 'manage' ? handleBack : handleOrderBack}
       />
 
-      <main className="flex-1 overflow-y-auto pb-24">
+      <main className="pb-24">
         {screen === 'manage' ? (
           <ManageScreen
             works={works}

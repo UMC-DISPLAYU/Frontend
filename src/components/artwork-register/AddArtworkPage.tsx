@@ -23,7 +23,6 @@ function AddArtworkPage({
   return (
     <ArtworkRegisterLayout
       title="전시작 추가"
-      className="pt-3.5"
       onBack={onBack}
       bottomBar={
         <BottomButtonBar>

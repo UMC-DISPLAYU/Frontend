@@ -69,7 +69,7 @@ function RegisterCollaboratorsPage({
         </BottomButtonBar>
       }
     >
-      <div className="pt-6">
+      <div>
         <ExhibitionCard {...exhibition} />
       </div>
 

@@ -152,10 +152,10 @@ export function ArtistNameSetup() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
       <ExhibitionHeader title="전시 작가명 설정" />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3">
+      <div className="px-5 pb-24">
         <form
           id="artist-name-setup-form"
           onSubmit={handleSubmit(goCreate)}

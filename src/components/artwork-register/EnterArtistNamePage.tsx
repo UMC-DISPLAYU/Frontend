@@ -23,7 +23,6 @@ function EnterArtistNamePage({
   return (
     <ArtworkRegisterLayout
       title="작가명 직접 입력"
-      className="pt-3.5"
       onBack={onBack}
       bottomBar={
         <BottomButtonBar>

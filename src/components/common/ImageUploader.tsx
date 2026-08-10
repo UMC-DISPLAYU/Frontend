@@ -3,6 +3,7 @@ import { useCallback, useRef } from 'react';
 import { Image, X } from 'lucide-react';
 
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
+import { cn } from '@/utils/cn';
 
 const DEFAULT_MAX_IMAGES = 4;
 
@@ -14,6 +15,7 @@ interface ImageUploaderProps {
   emptyLabel?: string;
   /* 한 번에 여러 장을 고를 수 있게 할지 여부입니다. */
   multiple?: boolean;
+  className?: string;
   onAddImages: (files: FileList | File[]) => void;
   onRemoveImage: (id: string) => void;
   onRemoveInitialImage?: (url: string) => void;
@@ -25,6 +27,7 @@ export function ImageUploader({
   maxImages = DEFAULT_MAX_IMAGES,
   emptyLabel,
   multiple = true,
+  className,
   onAddImages,
   onRemoveImage,
   onRemoveInitialImage,
@@ -53,7 +56,7 @@ export function ImageUploader({
   );
 
   return (
-    <div className="mt-2 flex w-full gap-2 overflow-x-auto pb-1 scrollbar-none">
+    <div className={cn('mt-2 flex w-full gap-2 overflow-x-auto pb-1 scrollbar-none', className)}>
       {initialImages.map((url, index) => (
         <div
           key={url}

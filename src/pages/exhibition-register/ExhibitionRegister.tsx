@@ -6,7 +6,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { ImageUploader } from '@/components/common';
+import { BottomButtonBar, ImageUploader } from '@/components/common';
 import { AffiliationInput } from '@/components/exhibition-register';
 import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
@@ -169,20 +169,21 @@ export function ExhibitionRegister() {
   };
 
   return (
-    <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
+    <div className="mx-auto min-h-dvh w-96 bg-page">
       <ExhibitionHeader title="전시 등록" />
 
-      <main className="flex-1 overflow-y-auto">
+      <main>
         <form
           id="exhibition-register-form"
           onSubmit={handleSubmit(onFormSubmit)}
-          className="flex flex-col gap-6 px-5 pt-2 pb-8"
+          className="flex flex-col gap-6 px-5 pb-24"
         >
           <div className="flex flex-col items-center gap-1">
             <ImageUploader
               images={imageUpload.images}
               initialImages={initialImages}
               maxImages={MAX_POSTER_UPLOAD_IMAGES}
+              className="justify-center"
               onAddImages={imageUpload.addImages}
               onRemoveImage={imageUpload.removeImage}
               onRemoveInitialImage={handleRemoveInitialImage}
@@ -334,7 +335,7 @@ export function ExhibitionRegister() {
         </form>
       </main>
 
-      <footer className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <BottomButtonBar>
         <button
           form="exhibition-register-form"
           type="submit"
@@ -343,7 +344,7 @@ export function ExhibitionRegister() {
         >
           {imageUpload.isUploading ? '이미지 업로드 중' : '다음'}
         </button>
-      </footer>
+      </BottomButtonBar>
     </div>
   );
 }
