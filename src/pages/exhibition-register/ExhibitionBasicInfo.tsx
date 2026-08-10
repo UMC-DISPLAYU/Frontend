@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Calendar, Clock, MapPin } from 'lucide-react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
@@ -97,10 +97,10 @@ export function ExhibitionBasicInfo() {
         }
       : null);
 
-  const [period, setPeriod] = useState<DateValue | null>(initialPeriod);
-  const [operatingHours, setOperatingHours] = useState<TimeRangeValue | null>(
-    initialOperatingHours,
-  );
+  const [selectedPeriod, setSelectedPeriod] = useState<DateValue | null>(null);
+  const [selectedOperatingHours, setSelectedOperatingHours] = useState<TimeRangeValue | null>(null);
+  const period = selectedPeriod ?? initialPeriod;
+  const operatingHours = selectedOperatingHours ?? initialOperatingHours;
   const [sheet, setSheet] = useState<SheetType>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
@@ -109,7 +109,6 @@ export function ExhibitionBasicInfo() {
     handleSubmit,
     control,
     setValue,
-    watch,
     reset,
     formState: { errors, isValid },
   } = useForm<ExhibitionBasicInfoFormValues>({
@@ -133,9 +132,7 @@ export function ExhibitionBasicInfo() {
     },
   });
 
-  const notice = watch('notice') ?? '';
-  const latitude = watch('latitude');
-  const longitude = watch('longitude');
+  const notice = useWatch({ control, name: 'notice' }) ?? '';
 
   useEffect(() => {
     if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
@@ -163,9 +160,6 @@ export function ExhibitionBasicInfo() {
 
       const restoredAddress =
         (restored.address as string) ?? fetchedDetail.location?.placeName ?? '';
-
-      setPeriod(restoredPeriod);
-      setOperatingHours(restoredHours);
 
       reset({
         startDate: restoredPeriod ? formatDate(restoredPeriod.start) : '',
@@ -435,7 +429,7 @@ export function ExhibitionBasicInfo() {
         onClose={() => setSheet(null)}
         value={period}
         onConfirm={(nextVal) => {
-          setPeriod(nextVal);
+          setSelectedPeriod(nextVal);
           if (nextVal) {
             setValue('startDate', formatDate(nextVal.start), { shouldValidate: true });
             setValue('endDate', formatDate(nextVal.end), { shouldValidate: true });
@@ -447,7 +441,7 @@ export function ExhibitionBasicInfo() {
         onClose={() => setSheet(null)}
         value={operatingHours}
         onConfirm={(nextVal) => {
-          setOperatingHours(nextVal);
+          setSelectedOperatingHours(nextVal);
           if (nextVal) {
             setValue('startTime', formatTime(nextVal.startHour, nextVal.startMinute), {
               shouldValidate: true,

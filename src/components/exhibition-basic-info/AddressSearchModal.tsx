@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import { MapPin } from 'lucide-react';
-
 import { ExhibitionHeader } from '@/components/ui';
 
 function Underline({

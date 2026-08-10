@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronLeft, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
 import { BottomButtonBar } from '@/components/common';
-import { ExhibitionHeader, RequiredLabel } from '@/components/ui';
+import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
 

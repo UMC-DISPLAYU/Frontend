@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronLeft, ImagePlus, Info, Search } from 'lucide-react';
+import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,7 +13,6 @@ import {
   EXHIBITION_FIELD_LABELS,
   EXHIBITION_FIELDS,
   type ExhibitionField,
-  MAX_ARTIST_FIELDS,
 } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
@@ -107,9 +106,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
     },
   });
 
-  const artistName = useWatch({ control, name: 'artistName' }) ?? '';
   const introduction = useWatch({ control, name: 'introduction' }) ?? '';
-  const externalLink = useWatch({ control, name: 'externalLink' }) ?? '';
   const selectedFields = useWatch({ control, name: 'fields' }) ?? [];
   const school = useWatch({ control, name: 'univName' }) ?? '';
 
