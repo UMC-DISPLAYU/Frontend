@@ -4,8 +4,9 @@ import { useUploadImage } from '@/hooks/queries/useFile';
 
 export type ImageUploadItem = {
   id: string;
-  file: File;
+  file?: File;
   previewUrl: string;
+  uploadedUrl?: string;
 };
 
 type UseImageUploadOptions = {
@@ -43,14 +44,11 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
   const addImages = useCallback(
     (fileList: FileList | File[]) => {
       const files = Array.from(fileList);
-      const remainingSlots = maxImages - imagesRef.current.length;
-      const filesToAdd = files.slice(0, Math.max(remainingSlots, 0));
-
-      if (filesToAdd.length === 0) {
+      if (files.length === 0) {
         return [];
       }
 
-      const nextImages = filesToAdd.map((file) => ({
+      const nextImages = files.map((file) => ({
         id: createImageId(),
         file,
         previewUrl: URL.createObjectURL(file),
@@ -62,6 +60,22 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
     },
     [maxImages],
   );
+
+  const setUploadedImages = useCallback((imageUrls: string[]) => {
+    setImages((prev) => {
+      prev.forEach((image) => {
+        if (image.file) {
+          URL.revokeObjectURL(image.previewUrl);
+        }
+      });
+
+      return imageUrls.map((imageUrl) => ({
+        id: imageUrl,
+        previewUrl: imageUrl,
+        uploadedUrl: imageUrl,
+      }));
+    });
+  }, []);
 
   const removeImage = useCallback((id: string) => {
     setImages((prev) => {
@@ -92,9 +106,17 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
       }
 
       return Promise.all(
-        imagesRef.current.map((image) =>
-          uploadImage.mutateAsync({ file: image.file, domain: uploadDomain }),
-        ),
+        imagesRef.current.map((image) => {
+          if (image.uploadedUrl && !image.file) {
+            return image.uploadedUrl;
+          }
+
+          if (!image.file) {
+            throw new Error('업로드할 이미지 파일이 없습니다.');
+          }
+
+          return uploadImage.mutateAsync({ file: image.file, domain: uploadDomain });
+        }),
       );
     },
     [domain, uploadImage],
@@ -120,11 +142,12 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
 
   return {
     images,
-    files: images.map((image) => image.file),
+    files: images.map((image) => image.file).filter((file): file is File => Boolean(file)),
     previewUrls: images.map((image) => image.previewUrl),
     canAddMore: images.length < maxImages,
     isUploading: uploadImage.isPending,
     addImages,
+    setUploadedImages,
     removeImage,
     clearImages,
     uploadImages,

@@ -41,7 +41,6 @@ export interface LoungeBoardPost {
 export interface LoungeBoardComment {
   id: string;
   author: string;
-  avatarUrl?: string | null;
   time: string;
   content: string;
   likeCount: number;
@@ -66,6 +65,29 @@ export interface LoungeBoardDetail {
   isMyPost?: boolean;
   images?: string[];
   comments: LoungeBoardComment[];
+}
+
+// ─── Work Management Types ────────────────────────────────────────────────────
+
+export type InteriorPhotos = { id: number; url: string }[];
+
+export interface WorkContent {
+  id: string;
+  title: string;
+  meta: string;
+  photos?: InteriorPhotos;
+}
+
+export interface ArtworkItemInWork {
+  id: string;
+  title: string;
+  artist: string;
+  image: string | null;
+}
+
+export interface WorkData {
+  contents: WorkContent[];
+  artworks: ArtworkItemInWork[];
 }
 
 // ─── Detail Types ──────────────────────────────────────────────────────────

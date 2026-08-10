@@ -4,8 +4,8 @@ export const EXHIBITION_TYPES = [
   { label: '졸업 전시', group: 'institution' },
   { label: '과제 전시', group: 'institution' },
   { label: '학과·학회 전시', group: 'institution' },
-  { label: '연합 전시', group: 'institution' },
-  { label: '소모임·동아리 전시', group: 'organization' },
+  { label: '연합 전시', group: 'organization' },
+  { label: '소모임·동아리 전시', group: 'institution' },
   { label: '기타 단체 전시', group: 'organization' },
 ] as const;
 
@@ -22,7 +22,14 @@ export const EXHIBITION_FIELDS = [
   'ETC',
 ] as const;
 
-export const EXHIBITION_TYPE_LABELS = EXHIBITION_TYPES.map((type) => type.label);
+export const EXHIBITION_TYPE_LABELS = [
+  '졸업 전시',
+  '과제 전시',
+  '학과·학회 전시',
+  '연합 전시',
+  '소모임·동아리 전시',
+  '기타 단체 전시',
+] as const;
 
 export type ExhibitionTypeGroup = 'institution' | 'organization';
 export type ExhibitionType = (typeof EXHIBITION_TYPES)[number]['label'];
@@ -109,6 +116,6 @@ export const ARTIST_FIELD_REVERSE_MAP: Record<ArtistFieldCode, ExhibitionField> 
 /* 작가 인증에서 주요 활동 분야로 고를 수 있는 최대 개수입니다. */
 export const MAX_ARTIST_FIELDS = 2;
 
-export const MAX_POSTER_UPLOAD_IMAGES = 4;
+export const MAX_POSTER_UPLOAD_IMAGES = 5;
 export const MAX_ARTWORK_UPLOAD_IMAGES = 20;
 export const MAX_ARTWORK_PROGRESS_IMAGES = 20;

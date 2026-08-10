@@ -1,9 +1,10 @@
-type MemberStatus = 'owner' | 'member' | 'pending';
+type MemberStatus = 'owner' | 'member' | 'pending' | 'unverified';
 
 const STATUS_LABEL: Record<MemberStatus, string> = {
   owner: '대표자',
   member: '팀원',
   pending: '초대대기',
+  unverified: '작가미인증',
 };
 
 const isAccent = (status: MemberStatus) => status === 'owner' || status === 'member';

@@ -34,6 +34,7 @@ export const useCreateLoungeComment = () => {
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
     },
   });
 };
@@ -50,7 +51,16 @@ export const useDeleteLoungeComment = () => {
   return useMutation({
     mutationFn: ({ commentId }: CommentMutationVariables) => deleteLoungeComment(commentId),
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
+      });
+      if (variables.parentCommentId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.loungeComments.replyLists(variables.parentCommentId),
+        });
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
     },
   });
 };

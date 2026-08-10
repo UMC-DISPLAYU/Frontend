@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import {
   DeleteConfirmDialog,
@@ -8,32 +8,25 @@ import {
   OrderScreen,
   WorkActionSheet,
 } from '@/components/artworks-manage';
+import { Header } from '@/components/artworks-manage/Common';
+import { BottomButtonBar } from '@/components/common';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
   useUpdateArtworkOrder,
 } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
-import { useArtworkPolicy } from '@/hooks/usePolicy';
-import type { ArtworkPolicyResource } from '@/policies/util';
+// import { useArtworkPolicy } from '@/hooks/usePolicy';
+// import type { ArtworkPolicyResource } from '@/policies/util';
 import type { Work } from '@/types/artworkManage';
-import { hasPermission } from '@/utils/hasPermission';
-
-function getArtworkPolicyResource(work: Work | null): ArtworkPolicyResource | undefined {
-  if (!work || work.artistUserId === undefined) return undefined;
-
-  return {
-    artistUserId: work.artistUserId,
-    coAuthorUserIds: work.coAuthorUserIds,
-  };
-}
 
 export function ArtworksManagePage() {
   const navigate = useNavigate();
+  const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
 
-  // 새로고침이나 링크 진입에서도 유지되도록 쿼리 스트링으로 받습니다.
-  const displayId = Number(searchParams.get('displayId') ?? 0);
+  // 중첩 라우트의 displayId를 최우선으로 사용하고 없으면 쿼리 스트링에서 가져옵니다.
+  const displayId = Number(paramDisplayId ?? searchParams.get('displayId') ?? 0);
 
   const [screen, setScreen] = useState<'manage' | 'order'>('manage');
   const [sheetWork, setSheetWork] = useState<Work | null>(null);
@@ -64,9 +57,11 @@ export function ArtworksManagePage() {
   );
 
   const works = orderedWorks ?? fetchedWorks;
-  const sheetArtworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(sheetWork));
-  const canEditSheetArtwork = hasPermission(sheetArtworkPolicy, 'edit');
-  const canDeleteSheetArtwork = hasPermission(sheetArtworkPolicy, 'delete');
+  // const sheetArtworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(sheetWork));
+  const canEditSheetArtwork = true;
+  const canDeleteSheetArtwork = true;
+
+  const canCreateArtwork = true;
 
   const handleDelete = () => {
     if (sheetWork) {
@@ -98,18 +93,47 @@ export function ArtworksManagePage() {
   };
 
   return (
-    <div className="relative mx-auto flex h-dvh w-96 flex-col overflow-hidden bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+      <Header
+        title={screen === 'manage' ? '전시작 관리' : '순서 편집'}
+        onBack={screen === 'manage' ? handleBack : handleOrderBack}
+      />
+
+      <main className="flex-1 overflow-y-auto pb-24">
+        {screen === 'manage' ? (
+          <ManageScreen
+            works={works}
+            display={display}
+            onOpenSheet={setSheetWork}
+            onEditOrder={() => setScreen('order')}
+          />
+        ) : (
+          <OrderScreen works={works} onReorder={handleReorder} />
+        )}
+      </main>
+
       {screen === 'manage' ? (
-        <ManageScreen
-          works={works}
-          display={display}
-          onOpenSheet={setSheetWork}
-          onEditOrder={() => setScreen('order')}
-          onAddArtwork={() => navigate(`/artworks-register?displayId=${displayId}`)}
-          onBack={handleBack}
-        />
+        canCreateArtwork && (
+          <BottomButtonBar>
+            <button
+              type="button"
+              onClick={() => navigate(`/exhibition/${displayId}/artworks/add`)}
+              className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
+            >
+              전시작 추가
+            </button>
+          </BottomButtonBar>
+        )
       ) : (
-        <OrderScreen works={works} onReorder={handleReorder} onBack={handleOrderBack} />
+        <BottomButtonBar>
+          <button
+            type="button"
+            onClick={handleOrderBack}
+            className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
+          >
+            순서 저장하기
+          </button>
+        </BottomButtonBar>
       )}
 
       {sheetWork && (canEditSheetArtwork || canDeleteSheetArtwork) && (
@@ -118,7 +142,7 @@ export function ArtworksManagePage() {
           canEdit={canEditSheetArtwork}
           canDelete={canDeleteSheetArtwork}
           onClose={() => setSheetWork(null)}
-          onEdit={() => {}}
+          onEdit={() => navigate(`/exhibition/${displayId}/artworks/${sheetWork.id}/edit`)}
           onDelete={() => setConfirming(true)}
         />
       )}
