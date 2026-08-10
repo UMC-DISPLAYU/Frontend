@@ -38,6 +38,58 @@ export interface LoungeBoardPost {
   images?: string[];
 }
 
+export interface LoungeBoardComment {
+  id: string;
+  author: string;
+  time: string;
+  content: string;
+  likeCount: number;
+  isLiked: boolean;
+  isMyComment?: boolean;
+  replyCount?: number;
+  commentStatus?: string;
+  images?: string[];
+  replies?: LoungeBoardComment[];
+}
+
+export interface LoungeBoardDetail {
+  id: string;
+  category: LoungeCategoryKey;
+  title: string;
+  author: string;
+  date: string;
+  content: string[];
+  likeCount: number;
+  isLiked: boolean;
+  isSaved: boolean;
+  isMyPost?: boolean;
+  images?: string[];
+  comments: LoungeBoardComment[];
+}
+
+// ─── Work Management Types ────────────────────────────────────────────────────
+
+export type InteriorPhotos = { id: number; url: string }[];
+
+export interface WorkContent {
+  id: string;
+  title: string;
+  meta: string;
+  photos?: InteriorPhotos;
+}
+
+export interface ArtworkItemInWork {
+  id: string;
+  title: string;
+  artist: string;
+  image: string | null;
+}
+
+export interface WorkData {
+  contents: WorkContent[];
+  artworks: ArtworkItemInWork[];
+}
+
 // ─── Detail Types ──────────────────────────────────────────────────────────
 
 export type DetailTabKey = 'intro' | 'artwork' | 'review';

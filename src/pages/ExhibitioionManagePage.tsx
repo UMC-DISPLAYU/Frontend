@@ -1,7 +1,7 @@
 import { ChevronRight, Info } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar, PageHeader } from '@/components/common';
+import { BottomButtonBar } from '@/components/common';
 import {
   ExhibitionCard,
   OutlineButton,
@@ -10,6 +10,7 @@ import {
   VisibilitySection,
 } from '@/components/exhibition-manage';
 import { useHideFooter } from '@/components/layout';
+import { ExhibitionHeader } from '@/components/ui';
 import { type VisibilityType } from '@/constants/visibility';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
@@ -42,10 +43,11 @@ export function ExhibitionManage() {
   useHideFooter();
 
   const navigate = useNavigate();
+  const { displayId: paramDisplayId } = useParams();
   const { state } = useLocation();
 
-  // 등록된 전시 데이터를 서버에서 불러옵니다. state는 등록 직후 화면 전환용으로만 사용합니다.
-  const displayId = Number(state?.displayId ?? state?.id ?? 0);
+  // 등록된 전시 데이터를 서버에서 불러옵니다. URL 파라미터나 state에서 displayId를 가져옵니다.
+  const displayId = Number(paramDisplayId ?? state?.displayId ?? state?.id ?? 0);
   const { data: display } = useDisplayDetail(displayId);
   const { data: memberList } = useDisplayMembers(displayId);
   const displayPolicy = useDisplayPolicy(
@@ -88,7 +90,7 @@ export function ExhibitionManage() {
   const workExhibition: ExhibitionItem = exhibition;
 
   const goVisibility = () => {
-    navigate('/exhibition/visibility', {
+    navigate(`/exhibition/${displayId}/visibility`, {
       state: {
         ...state,
         displayId: displayId || undefined,
@@ -100,14 +102,14 @@ export function ExhibitionManage() {
   };
 
   const goDisplayWork = () => {
-    navigate('/display/manage', {
+    navigate(`/exhibition/${displayId}/work`, {
       state: { initialExhibition: workExhibition },
     });
   };
 
   return (
     <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
-      <PageHeader title="전시관리" onBack={() => navigate(-1)} />
+      <ExhibitionHeader title="전시관리" onBack={() => navigate(-1)} />
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3">
         <div className="flex flex-col gap-5">
@@ -131,7 +133,7 @@ export function ExhibitionManage() {
             </div>
             <OutlineButton
               weight="semibold"
-              onClick={() => navigate(`/display/${displayId}/team/manage`)}
+              onClick={() => navigate(`/exhibition/${displayId}/team`)}
             >
               팀원 초대/관리
             </OutlineButton>
@@ -147,7 +149,11 @@ export function ExhibitionManage() {
           {canEditDisplay && (
             <button
               type="button"
-              onClick={() => navigate(`/exhibition/edit/${exhibition.id}`, { state })}
+              onClick={() =>
+                navigate(`/exhibition/${exhibition.id}/edit`, {
+                  state: { ...state, displayDetail: source },
+                })
+              }
               className="flex items-center gap-3 rounded-xl bg-card px-4 py-3"
             >
               <div className="flex flex-1 flex-col gap-1 text-left">
@@ -181,7 +187,7 @@ export function ExhibitionManage() {
             type="button"
             className="typo-body-sm-bold h-11 flex-1 rounded-xl bg-dark text-white"
             onClick={() =>
-              navigate('/exhibition/register-complete', {
+              navigate(`/exhibition/${displayId}/complete`, {
                 state: {
                   title: exhibition.title,
                   school: source?.organization ?? state?.school,

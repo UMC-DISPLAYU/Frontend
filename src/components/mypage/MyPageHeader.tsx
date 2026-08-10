@@ -125,7 +125,7 @@ export function MyPageHeader({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => navigate('/exhibition-register')}
+              onClick={() => navigate('/exhibition/register')}
               className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
             >
               <span className="typo-body-sm-regular text-main">전시등록</span>
@@ -141,7 +141,7 @@ export function MyPageHeader({
             )}
             <button
               type="button"
-              onClick={() => navigate('/exhibition/manage')}
+              onClick={() => navigate('/my/exhibitions')}
               className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
             >
               <span className="typo-body-sm-regular text-main">전시관리</span>

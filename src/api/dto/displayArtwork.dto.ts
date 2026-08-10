@@ -201,7 +201,8 @@ export interface GetReceivedArtworkQuestionsResponseDataDto {
   hasNext: boolean;
 }
 
-export type GetReceivedArtworkQuestionsResponseDto = ApiResponseDto<GetReceivedArtworkQuestionsResponseDataDto>;
+export type GetReceivedArtworkQuestionsResponseDto =
+  ApiResponseDto<GetReceivedArtworkQuestionsResponseDataDto>;
 
 export interface CreateArtworkQuestionRequestDto {
   content: string;

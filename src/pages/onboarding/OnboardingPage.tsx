@@ -1,0 +1,995 @@
+import { useState } from 'react';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Check, ChevronLeft, Info, X } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+
+import { ApiError } from '@/api/axios';
+import type { AgreementDto } from '@/api/dto';
+import { useAgreements } from '@/hooks/queries/useAgreements';
+import { useSignup } from '@/hooks/queries/useAuth';
+import { useCheckNickname } from '@/hooks/queries/useUserProfile';
+import { useAuthStore } from '@/stores/authStore';
+import { cn } from '@/utils/cn';
+
+import {
+  alphaNumericKoSchema,
+  nicknameLengthSchema,
+  noSpaceSchema,
+  noSpecialCharSchema,
+  type OnboardingNicknameFormValues,
+  onboardingNicknameSchema,
+} from './onboarding.schema';
+
+type Step = 'terms' | 'termsDetail' | 'nickname' | 'done';
+type TermKey = 'over14' | 'service' | 'privacy' | 'location';
+type PolicyCode = 'terms' | 'privacy' | 'location';
+type TermState = Record<TermKey, boolean>;
+type NicknameStatus = 'idle' | 'available' | 'unavailable' | 'error';
+type ParsedPolicyBlock =
+  | { type: 'paragraph'; text: string }
+  | { type: 'heading'; text: string }
+  | { type: 'bullet'; text: string };
+
+const AGREEMENT_CODES: Record<Exclude<TermKey, 'over14'>, string> = {
+  service: 'TERMS_OF_SERVICE',
+  privacy: 'PRIVACY_COLLECTION_USE',
+  location: 'LOCATION_BASED_SERVICE',
+};
+
+const POLICY_TERM_KEYS: Record<PolicyCode, Exclude<TermKey, 'over14'>> = {
+  terms: 'service',
+  privacy: 'privacy',
+  location: 'location',
+};
+
+const POLICY_DOCUMENTS: Record<
+  PolicyCode,
+  {
+    title: string;
+    intro: string;
+    sections: Array<{
+      title: string;
+      paragraphs?: string[];
+      bullets?: string[];
+      definitions?: Array<{ label: string; description: string }>;
+      note?: string;
+    }>;
+    footer?: Array<{ label: string; description: string }>;
+  }
+> = {
+  terms: {
+    title: '서비스 이용약관',
+    intro: '디유 서비스를 이용하기 전에 서비스 이용 조건과 회원의 권리 및 의무를 확인해 주세요.',
+    sections: [
+      {
+        title: '제1조 목적',
+        paragraphs: [
+          '이 약관은 디유가 제공하는 대학생 전시 및 작품 관련 서비스의 이용 조건과 운영자와 회원 간의 권리·의무를 정하는 것을 목적으로 합니다.',
+        ],
+      },
+      {
+        title: '제2조 용어의 정의',
+        definitions: [
+          {
+            label: '서비스',
+            description: '디유가 제공하는 대학생 전시 탐색, 작품 감상, 전시 등록 및 소통 기능 일체',
+          },
+          { label: '회원', description: '소셜로그인을 통해 가입하고 이 약관에 동의한 이용자' },
+          {
+            label: '작가 인증 회원',
+            description: '학교 이메일 인증을 완료하고 작가 프로필을 보유한 회원',
+          },
+          { label: '전시 대표자', description: '전시를 최초 등록하고 관리 권한을 보유한 회원' },
+          {
+            label: '전시 팀원',
+            description: '대표자의 초대를 수락하고 전시 콘텐츠 관리에 참여하는 회원',
+          },
+          {
+            label: '전시·작품 콘텐츠',
+            description: '회원이 등록한 전시 정보, 작품 이미지, 설명, 방명록, Q&A 등 일체',
+          },
+        ],
+      },
+      {
+        title: '제3조 회원가입 및 계정 관리',
+        bullets: [
+          '카카오, 구글 소셜로그인을 통해 가입할 수 있습니다.',
+          '계정 정보는 정확하게 유지하고 관리해야 합니다.',
+          '계정을 타인에게 양도하거나 공유할 수 없습니다.',
+          '만 14세 이상인 이용자만 가입할 수 있습니다.',
+        ],
+      },
+      {
+        title: '제4조 서비스의 제공',
+        bullets: [
+          '전시 탐색 및 상세 정보 열람',
+          '전시와 작품 등록',
+          '전시 팀원 초대 및 공동 관리',
+          '방명록, Q&A, 라운지 등 소통 기능',
+          '전시와 작품 저장 및 개인 메모 기능',
+        ],
+      },
+      {
+        title: '제5조 전시 대표자와 팀원의 권한',
+        bullets: [
+          '전시 대표자는 전시 정보 관리, 팀원 초대, 공개 및 삭제 권한을 가집니다.',
+          '팀원은 부여된 범위 안에서 전시 콘텐츠를 등록하고 관리할 수 있습니다.',
+          '전시 등록과 공개에 대한 최종 책임은 전시 대표자에게 있습니다.',
+        ],
+      },
+      {
+        title: '제6조 회원의 의무',
+        bullets: [
+          '타인의 개인정보 또는 작품을 무단으로 등록해서는 안 됩니다.',
+          '저작권을 침해하거나 불법적인 콘텐츠를 게시해서는 안 됩니다.',
+          '서비스 운영을 방해하는 행동을 할 수 없습니다.',
+        ],
+      },
+      {
+        title: '제7조 게시물과 저작권',
+        bullets: [
+          '회원이 직접 제작한 게시물의 권리는 원칙적으로 회원에게 있습니다.',
+          '회원은 서비스 운영, 전시 및 공유에 필요한 범위에서 디유가 콘텐츠를 노출할 수 있도록 허락합니다.',
+          '권리 침해 신고가 접수되면 콘텐츠가 임시 제한될 수 있습니다.',
+        ],
+      },
+      {
+        title: '제8조 서비스 변경 및 중단',
+        bullets: [
+          '점검, 장애, 운영상 필요에 따라 일부 서비스가 변경되거나 일시 중단될 수 있습니다.',
+          '중요한 변경 사항은 서비스 내에서 사전에 안내합니다.',
+        ],
+      },
+      {
+        title: '제9조 이용 제한',
+        paragraphs: [
+          '타인 사칭, 권리 침해, 불법 콘텐츠 게시, 반복적인 운영 방해 등이 확인될 경우 사전 통지 없이 서비스 이용이 제한될 수 있습니다.',
+        ],
+      },
+      {
+        title: '제10조 회원 탈퇴',
+        bullets: [
+          '회원은 설정 메뉴에서 언제든지 탈퇴할 수 있습니다.',
+          '탈퇴 완료 후 개인정보는 지체 없이 파기합니다.',
+          '회원이 작성한 게시글, 댓글, 방명록, Q&A는 자동 삭제되지 않을 수 있습니다.',
+          "탈퇴 이후 작성자는 '탈퇴한 사용자'로 표시됩니다.",
+          '삭제가 필요한 콘텐츠는 탈퇴 전에 직접 삭제해 주세요.',
+        ],
+      },
+    ],
+    footer: [
+      { label: '서비스명', description: '디유(displayU)' },
+      { label: '운영자', description: '고상준' },
+      { label: '문의 이메일', description: 'displayu.official@gmail.com' },
+    ],
+  },
+  privacy: {
+    title: '개인정보 처리방침',
+    intro: '디유는 서비스 제공에 필요한 최소한의 개인정보를 수집하고 안전하게 관리합니다.',
+    sections: [
+      {
+        title: '1. 수집하는 개인정보',
+        bullets: [
+          '소셜로그인 식별자, 이메일, 닉네임',
+          '작가 인증을 위한 학교 이메일, 학교명, 인증 여부',
+          '서비스 이용 과정에서 생성되는 감상, 질문, 방명록 등 작성 콘텐츠',
+        ],
+      },
+      {
+        title: '2. 개인정보 이용 목적',
+        bullets: [
+          '회원 가입 및 계정 관리',
+          '작가 인증 및 전시 등록 권한 확인',
+          '전시 저장, 감상 작성, Q&A 등 서비스 기능 제공',
+          '고객 문의 응대 및 서비스 안정성 확보',
+        ],
+      },
+      {
+        title: '3. 보유 및 이용기간',
+        paragraphs: [
+          '개인정보는 회원 탈퇴 또는 처리 목적 달성 시 지체 없이 파기합니다. 다만 관련 법령에 따라 보관이 필요한 정보는 정해진 기간 동안 분리 보관합니다.',
+        ],
+      },
+      {
+        title: '4. 제3자 제공',
+        paragraphs: ['디유는 이용자의 개인정보를 동의 없이 외부에 제공하지 않습니다.'],
+      },
+      {
+        title: '5. 이용자의 권리',
+        paragraphs: ['이용자는 다음 권리를 행사할 수 있습니다.'],
+        bullets: ['개인정보 열람', '수정', '삭제', '처리 정지'],
+      },
+      {
+        title: '6. 작성 콘텐츠 처리',
+        note: '회원이 작성한 게시물, 댓글, 방명록 및 Q&A는 탈퇴 시 자동 삭제되지 않습니다. 탈퇴 전에 필요한 콘텐츠를 직접 삭제해 주세요.',
+      },
+      {
+        title: '7. 개인정보 보호 담당자',
+        paragraphs: [
+          '개인정보 보호책임자 고상준',
+          '담당 부서 디유 운영팀',
+          '이메일 displayu.official@gmail.com',
+        ],
+      },
+    ],
+  },
+  location: {
+    title: '위치기반서비스 이용약관',
+    intro: '현재 위치를 활용하여 가까운 전시를 표시합니다',
+    sections: [
+      {
+        title: '1. 위치기반서비스의 목적',
+        bullets: [
+          '이용자의 현재 위치를 기준으로 가까운 전시를 추천합니다.',
+          '현재 위치와 전시장 사이의 거리를 표시합니다.',
+        ],
+      },
+      {
+        title: '2. 이용하는 위치정보',
+        bullets: [
+          '이용자가 위치 권한을 허용한 시점의 현재 위치',
+          '위도 및 경도 기반의 위치값',
+          '지속적인 위치 추적이나 이동 경로 수집은 하지 않습니다.',
+        ],
+      },
+      {
+        title: '3. 위치정보 이용 방식',
+        bullets: [
+          "'내 주변 전시' 또는 거리 표시 기능을 이용할 때만 위치 권한을 요청합니다.",
+          '거리 계산과 가까운 전시 정렬에만 사용합니다.',
+          '위치정보를 이용자의 프로필에 공개하지 않습니다.',
+        ],
+      },
+      {
+        title: '4. 위치정보 보유기간',
+        bullets: [
+          'MVP에서는 현재 위치정보를 서버에 별도로 저장하지 않습니다.',
+          '추천 및 거리 계산이 완료된 후 위치값을 파기합니다.',
+          '실제 개발 방식이 변경되면 약관 내용도 함께 수정됩니다.',
+        ],
+      },
+      {
+        title: '5. 제3자 제공',
+        paragraphs: ['이용자의 개인위치정보를 제3자에게 제공하지 않습니다.'],
+      },
+      {
+        title: '6. 이용자의 권리',
+        bullets: [
+          '이용자는 위치정보 이용 동의를 거부할 수 있습니다.',
+          '브라우저 또는 기기 설정에서 위치 권한을 언제든지 철회할 수 있습니다.',
+          '동의하지 않아도 전시 검색과 일반 서비스는 이용 가능합니다.',
+          '근처 전시 추천 및 거리 표시 기능만 제한됩니다.',
+        ],
+      },
+      {
+        title: '7. 서비스 이용 중단',
+        bullets: [
+          '위치정보를 확인할 수 없거나 위치 권한이 차단된 경우 일반 전시 목록을 제공합니다.',
+          '기기 또는 네트워크 환경에 따라 실제 위치와 오차가 발생할 수 있습니다.',
+        ],
+      },
+      {
+        title: '8. 서비스 제공자 정보',
+        paragraphs: [
+          '서비스명 디유(displayU)',
+          '운영자 고상준',
+          '문의 이메일 displayu.official@gmail.com',
+        ],
+      },
+    ],
+  },
+};
+
+function MobileShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex min-h-dvh w-full items-center justify-center bg-[#f0f0f0] font-[Pretendard,sans-serif]">
+      <div className="relative flex h-dvh w-full max-w-md flex-col overflow-hidden bg-white">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function BackButton({ onBack }: { onBack: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onBack}
+      aria-label="뒤로가기"
+      className="flex size-8 shrink-0 items-center justify-center"
+    >
+      <ChevronLeft className="size-[22px] text-[#0d0d0d]" strokeWidth={2} />
+    </button>
+  );
+}
+
+function PrimaryButton({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: ReactNode;
+  disabled?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-11 w-full items-center justify-center rounded-lg bg-[#0d0d0d] text-[14px] font-semibold leading-5 text-white disabled:bg-[#d8dbe1] disabled:text-white"
+    >
+      {children}
+    </button>
+  );
+}
+
+function AgreementCheck({ checked }: { checked: boolean }) {
+  return (
+    <span
+      className={`flex size-6 shrink-0 items-center justify-center rounded-full border ${
+        checked ? 'border-[#0d0d0d] bg-[#0d0d0d]' : 'border-[#d8dbe1] bg-white'
+      }`}
+    >
+      {checked ? <Check className="size-4 text-white" strokeWidth={2.4} /> : null}
+    </span>
+  );
+}
+
+function CheckButton({ checked, onClick }: { checked: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="shrink-0">
+      <AgreementCheck checked={checked} />
+    </button>
+  );
+}
+
+function TermsScreen({
+  terms,
+  onBack,
+  onChange,
+  onNext,
+  onOpenDetail,
+}: {
+  terms: TermState;
+  onBack: () => void;
+  onChange: (terms: TermState) => void;
+  onNext: () => void;
+  onOpenDetail: (code: PolicyCode) => void;
+}) {
+  const allChecked = Object.values(terms).every(Boolean);
+  const termsAndPrivacyChecked = terms.service && terms.privacy;
+  const canProceed = terms.over14 && terms.service && terms.privacy;
+
+  const toggle = (key: TermKey | 'all' | 'termsAndPrivacy') => {
+    if (key === 'all') {
+      const next = !allChecked;
+      onChange({ over14: next, service: next, privacy: next, location: next });
+      return;
+    }
+    if (key === 'termsAndPrivacy') {
+      const next = !termsAndPrivacyChecked;
+      onChange({ ...terms, service: next, privacy: next });
+      return;
+    }
+    onChange({ ...terms, [key]: !terms[key] });
+  };
+
+  return (
+    <main className="flex flex-1 flex-col px-5 pb-10 pt-[58px]">
+      <BackButton onBack={onBack} />
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-10">
+        <h2 className="text-[24px] font-bold leading-8 text-[#0d0d0d]">
+          서비스 이용을 위해
+          <br />
+          동의가 필요해요
+        </h2>
+
+        <section className="mt-9">
+          <button
+            type="button"
+            onClick={() => toggle('all')}
+            className="flex h-[58px] w-full items-center border-b border-[#c4c4c4] text-left"
+          >
+            <span className="min-w-0 flex-1 text-[18px] font-bold leading-[25.2px] tracking-[-0.54px] text-[#111]">
+              전체 동의
+            </span>
+            <AgreementCheck checked={allChecked} />
+          </button>
+
+          <div className="mt-5 flex flex-col gap-5">
+            <div className="flex min-h-9 items-center gap-3">
+              <div className="min-w-0 flex-1 text-[16px] leading-[22.4px] tracking-[-0.48px]">
+                <button
+                  type="button"
+                  onClick={() => onOpenDetail('terms')}
+                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                >
+                  이용약관
+                </button>
+                <span className="text-[#767676]"> 및 </span>
+                <button
+                  type="button"
+                  onClick={() => onOpenDetail('privacy')}
+                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                >
+                  개인정보취급방침
+                </button>
+                <span className="ml-2 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
+                  (필수)
+                </span>
+              </div>
+              <CheckButton
+                checked={termsAndPrivacyChecked}
+                onClick={() => toggle('termsAndPrivacy')}
+              />
+            </div>
+
+            <div className="flex min-h-9 items-center gap-3">
+              <span className="min-w-0 flex-1 text-[16px] font-normal leading-[22.4px] tracking-[-0.48px] text-[#767676]">
+                만 14세 이상 확인
+                <span className="ml-1 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
+                  (필수)
+                </span>
+              </span>
+              <CheckButton checked={terms.over14} onClick={() => toggle('over14')} />
+            </div>
+
+            <div className="flex min-h-9 items-center gap-3">
+              <div className="min-w-0 flex-1 text-[16px] leading-[22.4px] tracking-[-0.48px]">
+                <button
+                  type="button"
+                  onClick={() => onOpenDetail('location')}
+                  className="font-medium text-[#555] underline underline-offset-[3px]"
+                >
+                  위치기반서비스 이용약관
+                </button>
+                <span className="ml-2 text-[14px] leading-[19.6px] tracking-[-0.42px] text-[#9ca3af]">
+                  (선택)
+                </span>
+              </div>
+              <CheckButton checked={terms.location} onClick={() => toggle('location')} />
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <PrimaryButton disabled={!canProceed} onClick={onNext}>
+        다음
+      </PrimaryButton>
+    </main>
+  );
+}
+
+function PolicyBulletList({ items }: { items: string[] }) {
+  return (
+    <ul className="flex flex-col gap-[6px] pt-3">
+      {items.map((item) => (
+        <li key={item} className="flex items-start gap-[10px]">
+          <span className="mt-[9px] size-[6px] shrink-0 rounded-full bg-[#d1d5db]" />
+          <span className="min-w-0 flex-1 text-[15px] leading-[24.75px] text-[#374151]">
+            {item}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function parsePolicyContent(content: string): ParsedPolicyBlock[] {
+  return content
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      if (/^(제\d+조|[0-9]+\.)\s/.test(line)) {
+        return { type: 'heading', text: line };
+      }
+      if (/^[-•]\s+/.test(line)) {
+        return { type: 'bullet', text: line.replace(/^[-•]\s+/, '') };
+      }
+      return { type: 'paragraph', text: line };
+    });
+}
+
+function PolicyPlainContent({ content }: { content: string }) {
+  const blocks = parsePolicyContent(content);
+
+  return (
+    <div className="pt-6">
+      {blocks.map((block, index) => {
+        const key = `${block.type}-${index}-${block.text}`;
+
+        if (block.type === 'heading') {
+          return (
+            <h2
+              key={key}
+              className="pt-8 text-[17px] font-semibold leading-[25.5px] text-[#111827] first:pt-0"
+            >
+              {block.text}
+            </h2>
+          );
+        }
+
+        if (block.type === 'bullet') {
+          return (
+            <div key={key} className="flex items-start gap-[10px] pt-[6px]">
+              <span className="mt-[9px] size-[6px] shrink-0 rounded-full bg-[#d1d5db]" />
+              <p className="min-w-0 flex-1 whitespace-pre-wrap text-[15px] leading-[24.75px] text-[#374151]">
+                {block.text}
+              </p>
+            </div>
+          );
+        }
+
+        return (
+          <p
+            key={key}
+            className="whitespace-pre-wrap pt-3 text-[15px] leading-[24.75px] text-[#374151] first:pt-0"
+          >
+            {block.text}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+function TermsDetailScreen({
+  agreement,
+  code,
+  onBack,
+}: {
+  agreement?: AgreementDto;
+  code: PolicyCode;
+  onBack: () => void;
+}) {
+  const document = POLICY_DOCUMENTS[code];
+  const title = agreement?.title ?? document.title;
+
+  return (
+    <>
+      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-[#e5e7eb] bg-white px-4 pb-px">
+        <div className="h-9 w-[30px]">
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="뒤로가기"
+            className="-ml-1 flex size-9 items-center justify-center"
+          >
+            <ChevronLeft className="size-5 text-[#111827]" strokeWidth={2} />
+          </button>
+        </div>
+        <h1 className="text-[16px] font-semibold leading-6 text-[#111827]">{title}</h1>
+      </header>
+
+      <main className="flex-1 overflow-y-auto px-6 pb-8 pt-5">
+        <p className="text-[11.5px] leading-[17.25px] text-[#8a94a6]">
+          시행일 {agreement?.effectiveDate ?? '2026. 08. 01'} · 버전 {agreement?.version ?? '1.0'}
+        </p>
+
+        {agreement ? (
+          <PolicyPlainContent content={agreement.content} />
+        ) : (
+          <>
+            <p className="pt-6 text-[15px] leading-[24.75px] text-[#8a94a6]">{document.intro}</p>
+
+            {document.sections.map((section) => (
+              <section key={section.title} className="w-full pt-8">
+                <h2 className="text-[17px] font-semibold leading-[25.5px] text-[#111827]">
+                  {section.title}
+                </h2>
+
+                {section.paragraphs ? (
+                  <div className="flex flex-col gap-[6px] pt-3">
+                    {section.paragraphs.map((paragraph) => (
+                      <p key={paragraph} className="text-[15px] leading-[24.75px] text-[#374151]">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+
+                {section.definitions ? (
+                  <div className="flex flex-col gap-3 pt-3">
+                    {section.definitions.map((definition) => (
+                      <p
+                        key={definition.label}
+                        className="text-[15px] leading-[24.75px] text-[#111827]"
+                      >
+                        <span className="font-medium">{definition.label}</span>
+                        <span className="text-[#374151]">: {definition.description}</span>
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+
+                {section.bullets ? <PolicyBulletList items={section.bullets} /> : null}
+
+                {section.note ? (
+                  <div className="mt-3 rounded-lg bg-[#f9fafb] p-4">
+                    <p className="text-[15px] leading-6 text-[#374151]">{section.note}</p>
+                  </div>
+                ) : null}
+              </section>
+            ))}
+
+            {document.footer ? (
+              <footer className="mt-8 border-t border-[#e5e7eb] pt-[25px]">
+                <div className="flex flex-col gap-[6px]">
+                  {document.footer.map((row) => (
+                    <p key={row.label} className="text-[13px] leading-[19.5px]">
+                      <span className="font-medium text-[#374151]">{row.label}</span>
+                      <span className="text-[#8a94a6]"> {row.description}</span>
+                    </p>
+                  ))}
+                </div>
+              </footer>
+            ) : null}
+          </>
+        )}
+      </main>
+    </>
+  );
+}
+
+function NicknameScreen({
+  isSubmitting,
+  onBack,
+  onSubmit,
+  submitError,
+}: {
+  isSubmitting: boolean;
+  onBack: () => void;
+  onSubmit: (nickname: string) => void;
+  submitError?: string;
+}) {
+  const [status, setStatus] = useState<NicknameStatus>('idle');
+  const [checkedNickname, setCheckedNickname] = useState('');
+  const checkNickname = useCheckNickname();
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors },
+  } = useForm<OnboardingNicknameFormValues>({
+    resolver: zodResolver(onboardingNicknameSchema),
+    mode: 'onChange',
+    defaultValues: {
+      nickname: '',
+    },
+  });
+
+  const nickname = useWatch({ control, name: 'nickname' }) ?? '';
+  const isNicknameShapeValid = onboardingNicknameSchema.safeParse({ nickname }).success;
+
+  const canSubmit =
+    status === 'available' && checkedNickname === nickname && isNicknameShapeValid && !isSubmitting;
+
+  const handleCheckNickname = async () => {
+    if (!isNicknameShapeValid || checkNickname.isPending) return;
+
+    const targetNickname = nickname;
+
+    try {
+      const result = await checkNickname.mutateAsync({ nickname: targetNickname });
+      if (targetNickname !== nickname) return;
+
+      setCheckedNickname(targetNickname);
+      setStatus(result.isAvailable ? 'available' : 'unavailable');
+    } catch {
+      if (targetNickname !== nickname) return;
+
+      setStatus('error');
+    }
+  };
+
+  const statusMessage =
+    status === 'available'
+      ? '사용 가능한 닉네임이에요.'
+      : status === 'unavailable'
+        ? '이미 사용 중인 닉네임이에요.'
+        : status === 'error'
+          ? '중복 확인에 실패했어요.'
+          : '';
+
+  const onFormSubmit = (data: OnboardingNicknameFormValues) => {
+    onSubmit(data.nickname);
+  };
+
+  return (
+    <main className="flex h-full flex-1 flex-col bg-white px-5 pb-10 pt-[58px]">
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="뒤로가기"
+        className="flex size-8 shrink-0 items-center justify-center"
+      >
+        <ChevronLeft className="size-[22px] text-[#0d0d0d]" strokeWidth={2} />
+      </button>
+
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-10">
+        <h2 className="text-[24px] font-bold leading-[33.6px] tracking-[-0.72px] text-[#0d0d0d]">
+          디유에서 사용할
+          <br />
+          닉네임을 정해주세요
+        </h2>
+        <p className="mt-3 text-[14px] font-semibold leading-[19.6px] tracking-[-0.42px] text-[#656b75]">
+          방명록, 게시판, 프로필에서 표시되는 이름이에요.
+        </p>
+
+        <form
+          id="onboarding-nickname-form"
+          onSubmit={handleSubmit(onFormSubmit)}
+          className="mt-9 flex w-full flex-col gap-3"
+        >
+          <label
+            className="text-[14px] font-bold leading-[19.6px] tracking-[-0.42px] text-[#111]"
+            htmlFor="nickname"
+          >
+            닉네임
+          </label>
+          <div className="flex w-full items-center border-b border-[#c4c4c4]">
+            <div className="flex h-[38px] min-w-0 flex-1 items-center px-3 py-[10px]">
+              <input
+                id="nickname"
+                maxLength={15}
+                placeholder="닉네임"
+                className="min-w-0 flex-1 bg-transparent text-[12px] leading-[18px] tracking-[-0.36px] text-[#111] outline-none placeholder:text-[#9d9d9d]"
+                {...register('nickname', {
+                  onChange: () => {
+                    setCheckedNickname('');
+                    setStatus('idle');
+                  },
+                })}
+              />
+            </div>
+            <div className="flex h-[38px] shrink-0 items-center gap-[10px]">
+              {nickname ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('nickname', '', { shouldValidate: true });
+                    setCheckedNickname('');
+                    setStatus('idle');
+                  }}
+                  aria-label="닉네임 지우기"
+                  className="flex size-5 items-center justify-center rounded-[10px] bg-[#d7d7df]"
+                >
+                  <X className="size-[11px] text-white" strokeWidth={2.5} />
+                </button>
+              ) : null}
+              <div className="h-[18px] w-px bg-[#d7d7df]" />
+              <button
+                type="button"
+                onClick={handleCheckNickname}
+                disabled={!isNicknameShapeValid || checkNickname.isPending}
+                className="flex h-8 w-[71.336px] items-center justify-center rounded-lg border border-[#767676] text-[12px] font-semibold leading-[18px] tracking-[-0.36px] text-[#111] disabled:border-[#d7d7df] disabled:text-[#9d9d9d]"
+              >
+                {checkNickname.isPending ? '확인중' : '중복 확인'}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        {/* 실시간 개별 조건 피드백 */}
+        <div className="mt-[20px] flex flex-col gap-2">
+          <p
+            className={cn(
+              'typo-body-xs-regular',
+              nickname.length > 0 && alphaNumericKoSchema.safeParse(nickname).success
+                ? 'text-sub600'
+                : 'text-faint',
+            )}
+          >
+            한글 · 영문 · 숫자
+          </p>
+          <p
+            className={cn(
+              'typo-body-xs-regular',
+              nickname.length > 0 && nicknameLengthSchema.safeParse(nickname).success
+                ? 'text-sub600'
+                : 'text-faint',
+            )}
+          >
+            2 ~ 15자
+          </p>
+          <p
+            className={cn(
+              'typo-body-xs-regular',
+              nickname.length > 0 && noSpecialCharSchema.safeParse(nickname).success
+                ? 'text-sub600'
+                : 'text-faint',
+            )}
+          >
+            특수문자 불가
+          </p>
+          <p
+            className={cn(
+              'typo-body-xs-regular',
+              nickname.length > 0 && noSpaceSchema.safeParse(nickname).success
+                ? 'text-sub600'
+                : 'text-faint',
+            )}
+          >
+            공백 불가
+          </p>
+        </div>
+        <p
+          className={`mt-3 min-h-[17px] text-[12px] leading-[16.8px] tracking-[-0.36px] ${
+            status === 'available' ? 'text-sub600' : 'text-error'
+          }`}
+        >
+          {statusMessage}
+        </p>
+      </div>
+
+      <div className="shrink-0 rounded-[14px] bg-[#f9f9f9] p-[14px]">
+        <div className="flex items-start gap-2">
+          <Info className="mt-[1px] size-4 shrink-0 text-[#9d9d9d]" strokeWidth={1.8} />
+          <p className="min-w-0 flex-1 text-[12px] leading-[16.8px] tracking-[-0.36px] text-[#9d9d9d]">
+            닉네임은 이후 마이페이지에서 변경할 수 있어요.
+          </p>
+        </div>
+      </div>
+
+      {submitError ? (
+        <p className="mt-3 shrink-0 text-center text-[12px] font-medium leading-[16.8px] tracking-[-0.36px] text-[#ef4444]">
+          {submitError}
+        </p>
+      ) : null}
+
+      <button
+        form="onboarding-nickname-form"
+        type="submit"
+        disabled={!canSubmit}
+        className="mt-5 flex h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold leading-5 tracking-[-0.42px] text-white disabled:bg-[#d7d7df]"
+      >
+        {isSubmitting ? '가입 중' : '가입 완료하기'}
+      </button>
+    </main>
+  );
+}
+
+function DoneScreen({ onNext }: { onNext: () => void }) {
+  return (
+    <main className="flex h-full flex-1 flex-col bg-[#f0f0f3] px-5 pb-10">
+      <section className="flex min-h-0 flex-1 flex-col items-center justify-center gap-[10px] text-center">
+        <div className="flex size-[76px] items-center justify-center rounded-full bg-[#e6e6ee]">
+          <div className="flex size-12 items-center justify-center rounded-full bg-[#111]">
+            <Check className="size-6 text-white" strokeWidth={2.6} />
+          </div>
+        </div>
+        <h2 className="text-[20px] font-bold leading-7 tracking-[-0.6px] text-[#111]">
+          가입이 완료되었어요
+        </h2>
+      </section>
+
+      <div className="shrink-0 rounded-[14px] bg-[#f9f9f9] p-[14px]">
+        <div className="flex items-start gap-2">
+          <Info className="mt-[1px] size-4 shrink-0 text-[#9d9d9d]" strokeWidth={1.8} />
+          <p className="min-w-0 flex-1 text-[12px] leading-[16.8px] tracking-[-0.36px] text-[#9d9d9d]">
+            전시 등록과 작품 등록은 대학생 인증 후 이용할 수 있어요.
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onNext}
+        className="mt-5 flex h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold leading-5 text-white"
+      >
+        이용하기
+      </button>
+    </main>
+  );
+}
+
+export function OnboardingPage() {
+  const [step, setStep] = useState<Step>('terms');
+  const [selectedPolicy, setSelectedPolicy] = useState<PolicyCode>('terms');
+  const [error, setError] = useState('');
+  const [terms, setTerms] = useState<TermState>({
+    over14: false,
+    service: false,
+    privacy: false,
+    location: false,
+  });
+  const navigate = useNavigate();
+  const agreementsQuery = useAgreements();
+  const signup = useSignup();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+
+  const findAgreement = (key: Exclude<TermKey, 'over14'>): AgreementDto | undefined =>
+    agreementsQuery.data?.find((agreement) => agreement.code === AGREEMENT_CODES[key]);
+
+  const completeSignup = async (nickname: string) => {
+    setError('');
+
+    if (!terms.over14 || !terms.service || !terms.privacy) {
+      setError('필수 약관에 모두 동의해주세요.');
+      return;
+    }
+
+    if (agreementsQuery.isLoading) {
+      setError('약관 정보를 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    if (agreementsQuery.isError) {
+      setError('약관 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    const agreedTerms = (['service', 'privacy', 'location'] as const)
+      .filter((key) => terms[key])
+      .map((key) => findAgreement(key))
+      .filter((agreement): agreement is AgreementDto => Boolean(agreement))
+      .map((agreement) => ({ code: agreement.code, version: agreement.version }));
+
+    const requiredAgreementCodes = (['service', 'privacy'] as const).map(
+      (key) => AGREEMENT_CODES[key],
+    );
+    const hasRequiredAgreements = requiredAgreementCodes.every((code) =>
+      agreedTerms.some((agreement) => agreement.code === code),
+    );
+
+    if (!hasRequiredAgreements) {
+      setError('필수 약관 동의 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    try {
+      const result = await signup.mutateAsync({
+        nickname,
+        agreements: agreedTerms,
+        isOver14: terms.over14,
+      });
+
+      setAccessToken(result.accessToken);
+      setStep('done');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : '가입 완료에 실패했어요.');
+    }
+  };
+
+  return (
+    <MobileShell>
+      {step === 'terms' ? (
+        <TermsScreen
+          terms={terms}
+          onChange={setTerms}
+          onBack={() => navigate('/login')}
+          onOpenDetail={(code) => {
+            setSelectedPolicy(code);
+            setStep('termsDetail');
+          }}
+          onNext={() => setStep('nickname')}
+        />
+      ) : null}
+      {step === 'termsDetail' ? (
+        <TermsDetailScreen
+          agreement={findAgreement(POLICY_TERM_KEYS[selectedPolicy])}
+          code={selectedPolicy}
+          onBack={() => setStep('terms')}
+        />
+      ) : null}
+      {step === 'nickname' ? (
+        <NicknameScreen
+          isSubmitting={signup.isPending}
+          onBack={() => setStep('terms')}
+          submitError={error}
+          onSubmit={(nickname) => {
+            void completeSignup(nickname);
+          }}
+        />
+      ) : null}
+      {step === 'done' ? <DoneScreen onNext={() => navigate('/home')} /> : null}
+    </MobileShell>
+  );
+}

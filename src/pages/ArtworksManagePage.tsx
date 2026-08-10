@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import {
   DeleteConfirmDialog,
@@ -30,10 +30,11 @@ function getArtworkPolicyResource(work: Work | null): ArtworkPolicyResource | un
 
 export function ArtworksManagePage() {
   const navigate = useNavigate();
+  const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
 
-  // 새로고침이나 링크 진입에서도 유지되도록 쿼리 스트링으로 받습니다.
-  const displayId = Number(searchParams.get('displayId') ?? 0);
+  // 중첩 라우트의 displayId를 최우선으로 사용하고 없으면 쿼리 스트링에서 가져옵니다.
+  const displayId = Number(paramDisplayId ?? searchParams.get('displayId') ?? 0);
 
   const [screen, setScreen] = useState<'manage' | 'order'>('manage');
   const [sheetWork, setSheetWork] = useState<Work | null>(null);
@@ -105,7 +106,7 @@ export function ArtworksManagePage() {
           display={display}
           onOpenSheet={setSheetWork}
           onEditOrder={() => setScreen('order')}
-          onAddArtwork={() => navigate(`/artworks-register?displayId=${displayId}`)}
+          onAddArtwork={() => navigate(`/exhibition/${displayId}/artworks/add`)}
           onBack={handleBack}
         />
       ) : (

@@ -11,7 +11,6 @@ import { hasPermission } from '@/utils/hasPermission';
 import { ArtworkCard } from './ArtworkCard';
 import { Header, Screen, SectionTitle } from './Common';
 import { ContentRow } from './ContentRow';
-import { InteriorPhotos } from './InteriorPhotos';
 import { Poster } from './Poster';
 
 interface WorkData {
@@ -45,9 +44,6 @@ export function WorkScreen({
   onManageArtworks: () => void;
 }) {
   const navigate = useNavigate();
-  const [selectedContent, setSelectedContent] = useState<{ id: string; title: string } | null>(
-    null,
-  );
   const { data: display } = useDisplayDetail(Number(ex.id));
   const displayContentPolicy = useDisplayContentPolicy(display);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
@@ -65,33 +61,6 @@ export function WorkScreen({
     canReorder;
   const artworkPolicy = useArtworkPolicy(display);
   const canCreateArtwork = hasPermission(artworkPolicy, 'create');
-
-  const handlePhotoCountChange = (_categoryId: number, _count: number) => {
-    void _categoryId;
-    void _count;
-    // TODO: 사진 개수 업데이트 로직
-    // console.log('Photo count changed:', categoryId, count);
-  };
-
-  // 콘텐츠 상세 화면 표시 중이면 InteriorPhotos 렌더링
-  if (selectedContent) {
-    const contentData = work.contents.find((c) => c.id === selectedContent.id);
-    const initialPhotos = contentData?.photos ?? [];
-
-    return (
-      <InteriorPhotos
-        title={selectedContent.title}
-        displayId={Number(ex.id)}
-        categoryId={Number(selectedContent.id)}
-        initialPhotos={initialPhotos}
-        canCreateContent={canCreateContent}
-        canDeleteContent={canDeleteContent}
-        canReorder={canReorder}
-        onBack={() => setSelectedContent(null)}
-        onPhotoCountChange={(count) => handlePhotoCountChange(Number(selectedContent.id), count)}
-      />
-    );
-  }
 
   return (
     <Screen>
@@ -119,7 +88,7 @@ export function WorkScreen({
           <SectionTitle>전시콘텐츠</SectionTitle>
           {canManageDisplayContent && (
             <button
-              onClick={() => navigate('/display/contents-manage', { state: { displayId: ex.id } })}
+              onClick={() => navigate(`/exhibition/${ex.id}/contents`)}
               className="typo-body-xs-regular flex items-center gap-0.5 border-none bg-transparent text-hint cursor-pointer"
             >
               관리하기 <ChevronRight size={13} />
@@ -131,7 +100,7 @@ export function WorkScreen({
             <ContentRow
               key={r.id}
               row={r}
-              onClick={() => setSelectedContent({ id: r.id, title: r.title })}
+              onClick={() => navigate(`/exhibition/${ex.id}/contents/${r.id}`)}
             />
           ))}
         </div>
@@ -153,7 +122,7 @@ export function WorkScreen({
           {canCreateArtwork && (
             <button
               type="button"
-              onClick={() => navigate(`/artworks-register?displayId=${ex.id}`)}
+              onClick={() => navigate(`/exhibition/${ex.id}/artworks/add`)}
               className="flex h-[158px] w-[118px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
             >
               <Plus size={20} className="text-hint" />

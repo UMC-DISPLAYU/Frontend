@@ -24,4 +24,3 @@ export function Header({ title, onBack }: { title: string; onBack?: () => void }
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   return <div className="typo-body-sm-bold text-main">{children}</div>;
 }
-
