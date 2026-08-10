@@ -8,25 +8,17 @@ import {
   OrderScreen,
   WorkActionSheet,
 } from '@/components/artworks-manage';
+import { Header } from '@/components/artworks-manage/Common';
+import { BottomButtonBar } from '@/components/common';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
   useUpdateArtworkOrder,
 } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
-import { useArtworkPolicy } from '@/hooks/usePolicy';
-import type { ArtworkPolicyResource } from '@/policies/util';
+// import { useArtworkPolicy } from '@/hooks/usePolicy';
+// import type { ArtworkPolicyResource } from '@/policies/util';
 import type { Work } from '@/types/artworkManage';
-import { hasPermission } from '@/utils/hasPermission';
-
-function getArtworkPolicyResource(work: Work | null): ArtworkPolicyResource | undefined {
-  if (!work || work.artistUserId === undefined) return undefined;
-
-  return {
-    artistUserId: work.artistUserId,
-    coAuthorUserIds: work.coAuthorUserIds,
-  };
-}
 
 export function ArtworksManagePage() {
   const navigate = useNavigate();
@@ -65,9 +57,11 @@ export function ArtworksManagePage() {
   );
 
   const works = orderedWorks ?? fetchedWorks;
-  const sheetArtworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(sheetWork));
-  const canEditSheetArtwork = hasPermission(sheetArtworkPolicy, 'edit');
-  const canDeleteSheetArtwork = hasPermission(sheetArtworkPolicy, 'delete');
+  // const sheetArtworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(sheetWork));
+  const canEditSheetArtwork = true;
+  const canDeleteSheetArtwork = true;
+
+  const canCreateArtwork = true;
 
   const handleDelete = () => {
     if (sheetWork) {
@@ -99,18 +93,47 @@ export function ArtworksManagePage() {
   };
 
   return (
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+      <Header
+        title={screen === 'manage' ? '전시작 관리' : '순서 편집'}
+        onBack={screen === 'manage' ? handleBack : handleOrderBack}
+      />
+
+      <main className="flex-1 overflow-y-auto pb-24">
+        {screen === 'manage' ? (
+          <ManageScreen
+            works={works}
+            display={display}
+            onOpenSheet={setSheetWork}
+            onEditOrder={() => setScreen('order')}
+          />
+        ) : (
+          <OrderScreen works={works} onReorder={handleReorder} />
+        )}
+      </main>
+
       {screen === 'manage' ? (
-        <ManageScreen
-          works={works}
-          display={display}
-          onOpenSheet={setSheetWork}
-          onEditOrder={() => setScreen('order')}
-          onAddArtwork={() => navigate(`/exhibition/${displayId}/artworks/add`)}
-          onBack={handleBack}
-        />
+        canCreateArtwork && (
+          <BottomButtonBar>
+            <button
+              type="button"
+              onClick={() => navigate(`/exhibition/${displayId}/artworks/add`)}
+              className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
+            >
+              전시작 추가
+            </button>
+          </BottomButtonBar>
+        )
       ) : (
-        <OrderScreen works={works} onReorder={handleReorder} onBack={handleOrderBack} />
+        <BottomButtonBar>
+          <button
+            type="button"
+            onClick={handleOrderBack}
+            className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
+          >
+            순서 저장하기
+          </button>
+        </BottomButtonBar>
       )}
 
       {sheetWork && (canEditSheetArtwork || canDeleteSheetArtwork) && (
@@ -119,7 +142,7 @@ export function ArtworksManagePage() {
           canEdit={canEditSheetArtwork}
           canDelete={canDeleteSheetArtwork}
           onClose={() => setSheetWork(null)}
-          onEdit={() => {}}
+          onEdit={() => navigate(`/exhibition/${displayId}/artworks/${sheetWork.id}/edit`)}
           onDelete={() => setConfirming(true)}
         />
       )}

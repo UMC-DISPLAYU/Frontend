@@ -6,15 +6,13 @@ import type { ArtworkPolicyResource } from '@/policies/util';
 import type { Work } from '@/types/artworkManage';
 import { hasPermission } from '@/utils/hasPermission';
 
-import { BottomBar, Header, PrimaryButton, Thumbnail } from './Common';
+import { Thumbnail } from './Common';
 
 interface ManageScreenProps {
   works: Work[];
   display?: DisplayDetailDto;
   onOpenSheet: (work: Work) => void;
   onEditOrder: () => void;
-  onAddArtwork: () => void;
-  onBack: () => void;
 }
 
 function getArtworkPolicyResource(work: Work): ArtworkPolicyResource | undefined {
@@ -36,17 +34,15 @@ function WorkRow({
   onOpenSheet: (work: Work) => void;
 }) {
   const artworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(work));
-  const canEdit = hasPermission(artworkPolicy, 'edit');
-  const canDelete = hasPermission(artworkPolicy, 'delete');
-  const canShowMenu = canEdit || canDelete;
+  const canShowMenu = true;
 
   return (
-    <li className="flex h-[110px] items-center justify-between gap-3 rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+    <li className="flex h-32 items-start justify-between gap-3 rounded-[18px] bg-card px-4 py-3.5">
       <div className="flex min-w-0 items-center gap-3">
-        <Thumbnail src={work.thumbnail} />
-        <div className="flex min-w-0 flex-col gap-2.5">
-          <p className="typo-body-md-bold truncate text-main">{work.title}</p>
-          <div>
+        <Thumbnail src={work.thumbnail} className="w-18 h-25" />
+        <div className="flex min-w-0 h-25 flex-col justify-between py-0.5">
+          <div className="flex flex-col gap-1">
+            <p className="typo-body-md-bold truncate text-main">{work.title}</p>
             <p className="typo-body-xs-regular text-sub700">{work.artist}</p>
           </div>
           <p className="typo-body-xxs-regular text-faint">등록자 {work.owner}</p>
@@ -67,23 +63,13 @@ function WorkRow({
   );
 }
 
-export function ManageScreen({
-  works,
-  display,
-  onOpenSheet,
-  onEditOrder,
-  onAddArtwork,
-  onBack,
-}: ManageScreenProps) {
+export function ManageScreen({ works, display, onOpenSheet, onEditOrder }: ManageScreenProps) {
   const artworkPolicy = useArtworkPolicy(display);
-  const canCreateArtwork = hasPermission(artworkPolicy, 'create');
   const canReorderArtwork = hasPermission(artworkPolicy, 'reorder');
 
   return (
-    <>
-      <Header title="전시작 관리" onBack={onBack} />
-
-      <div className="flex items-end justify-between px-5 pt-3 pb-2">
+    <div className="flex flex-col flex-1">
+      <div className="flex items-end justify-between px-5 pt-5">
         <p className="typo-body-md-bold text-main">전체 작품 {works.length}개</p>
         {canReorderArtwork && (
           <button
@@ -96,17 +82,11 @@ export function ManageScreen({
         )}
       </div>
 
-      <ul className="flex flex-1 flex-col gap-3 overflow-y-auto px-5 pt-2 pb-28">
+      <ul className="flex flex-col gap-3 overflow-y-auto px-5 pt-5">
         {works.map((work) => (
           <WorkRow key={work.id} work={work} display={display} onOpenSheet={onOpenSheet} />
         ))}
       </ul>
-
-      {canCreateArtwork && (
-        <BottomBar>
-          <PrimaryButton onClick={onAddArtwork}>전시작 추가</PrimaryButton>
-        </BottomBar>
-      )}
-    </>
+    </div>
   );
 }

@@ -1,10 +1,10 @@
 import { Check, Info } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar } from '@/components/common/BottomButtonBar';
 import { VISIBILITY_LABEL, type VisibilityType } from '@/constants/visibility';
 
 interface ExhibitionCompleteState {
+  type?: 'exhibition';
   title?: string;
   school?: string;
   department?: string;
@@ -15,11 +15,20 @@ interface ExhibitionCompleteState {
 }
 
 interface ArtworkCompleteState {
-  artworkName?: string;
+  type: 'artwork';
+  title?: string;
   artistName?: string;
-  registrarName?: string;
-  managerName?: string;
+  registrantName?: string;
+  registrantAccount?: string;
+  qnaAssigneeName?: string;
+  qnaAssigneeAccount?: string;
 }
+
+interface PersonalArtworkCompleteState {
+  type: 'personalArtwork';
+}
+
+type CompleteState = ExhibitionCompleteState | ArtworkCompleteState | PersonalArtworkCompleteState;
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
@@ -28,6 +37,19 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
       <span className="typo-body-xs-regular text-main">{value}</span>
     </div>
   );
+}
+
+function ArtworkSummaryItem({ label, value }: { label: string; value: string }) {
+  return (
+    <li className="flex items-start gap-3">
+      <span className="typo-body-xs-regular shrink-0 text-faint">{label}</span>
+      <span className="typo-body-xs-regular text-main">{value}</span>
+    </li>
+  );
+}
+
+function formatPerson(name?: string, account?: string) {
+  return [name, account].filter(Boolean).join(' · ') || '-';
 }
 
 // ----------------------------------------------------------------------
@@ -61,17 +83,87 @@ function CompleteInfo({ message }: { message: string }) {
   );
 }
 
+function CompleteButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="fixed bottom-11 left-1/2 inline-flex h-11 w-full max-w-md -translate-x-1/2 items-center justify-center gap-1.5 px-5"
+    >
+      <span className="inline-flex h-full w-full items-center justify-center rounded-xl bg-dark py-3 typo-body-sm-bold text-card">
+        완료
+      </span>
+    </button>
+  );
+}
+
 // ----------------------------------------------------------------------
 // Page Components
 // ----------------------------------------------------------------------
 
 export function ExhibitionRegisterComplete() {
   const navigate = useNavigate();
-  const { state } = useLocation() as { state: ExhibitionCompleteState | null };
+  const { displayId } = useParams();
+  const { state } = useLocation() as { state: CompleteState | null };
+  const isArtworkComplete = state?.type === 'artwork';
+  const isPersonalArtworkComplete = state?.type === 'personalArtwork';
+  const exhibitionState =
+    !isArtworkComplete && !isPersonalArtworkComplete
+      ? (state as ExhibitionCompleteState | null)
+      : null;
 
-  const affiliation = [state?.school, state?.organizer ?? state?.department]
+  const affiliation = [
+    exhibitionState?.school,
+    exhibitionState?.organizer ?? exhibitionState?.department,
+  ]
     .filter(Boolean)
     .join(' ');
+
+  if (isArtworkComplete || isPersonalArtworkComplete) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+        <main className="flex flex-1 flex-col overflow-y-auto px-5 pb-24">
+          <CompleteHeader
+            title="작품등록이 완료되었어요"
+            description={
+              isPersonalArtworkComplete
+                ? '등록된 작품은 마이페이지에서 확인할 수 있어요'
+                : '등록된 작품은 전시 작업 페이지에서 확인할 수 있어요'
+            }
+          />
+
+          {isArtworkComplete && (
+            <section className="mt-14 rounded-2xl px-4 py-3.5" aria-label="등록된 작품 정보">
+              <div className="flex items-start gap-1.5">
+                <ul className="flex flex-1 flex-col gap-1.5">
+                  <ArtworkSummaryItem label="작품명" value={state.title || '-'} />
+                  <ArtworkSummaryItem label="작가명" value={state.artistName || '-'} />
+                </ul>
+                <ul className="flex flex-1 flex-col gap-1.5">
+                  <ArtworkSummaryItem
+                    label="등록자"
+                    value={formatPerson(state.registrantName, state.registrantAccount)}
+                  />
+                  <ArtworkSummaryItem
+                    label="담당자"
+                    value={formatPerson(state.qnaAssigneeName, state.qnaAssigneeAccount)}
+                  />
+                </ul>
+              </div>
+            </section>
+          )}
+        </main>
+
+        <CompleteButton
+          onClick={() =>
+            navigate(isPersonalArtworkComplete ? '/my' : `/exhibition/${displayId}/artworks`, {
+              replace: true,
+            })
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
@@ -108,55 +200,7 @@ export function ExhibitionRegisterComplete() {
         <CompleteInfo message="등록 후에도 전시 관리에서 수정할 수 있어요." />
       </main>
 
-      <BottomButtonBar>
-        <button
-          type="button"
-          onClick={() => navigate('/my', { replace: true })}
-          className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
-        >
-          완료
-        </button>
-      </BottomButtonBar>
-    </div>
-  );
-}
-
-export function ArtworkRegisterComplete() {
-  const navigate = useNavigate();
-  const { state } = useLocation() as { state: ArtworkCompleteState | null };
-
-  return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <main className="flex flex-1 flex-col px-5 overflow-y-auto pb-24">
-        <CompleteHeader
-          title="작품등록이 완료되었어요"
-          description="등록된 작품은 전시 작업 페이지에서 확인할 수 있어요"
-        />
-
-        <div className="mt-14 flex items-start gap-1.5">
-          <div className="flex flex-1 flex-col gap-1.5">
-            <SummaryRow label="작품명" value={state?.artworkName ?? '-'} />
-            <SummaryRow label="작가명" value={state?.artistName ?? '-'} />
-          </div>
-          <div className="flex flex-1 flex-col gap-1.5">
-            <SummaryRow label="등록자" value={state?.registrarName ?? '-'} />
-            <SummaryRow label="담당자" value={state?.managerName ?? '-'} />
-          </div>
-        </div>
-
-        {/* Info 컴포넌트가 없어도 하단 버튼을 밀어내기 위한 여백용 요소 */}
-        <div className="mt-auto pt-12 pb-6" />
-      </main>
-
-      <BottomButtonBar>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
-        >
-          완료
-        </button>
-      </BottomButtonBar>
+      <CompleteButton onClick={() => navigate('/my', { replace: true })} />
     </div>
   );
 }

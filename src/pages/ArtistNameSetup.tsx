@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { ChevronLeft, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';

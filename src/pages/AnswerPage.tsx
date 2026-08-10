@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
+import { cn } from '@/utils/cn';
 
 type TabKey = 'pending' | 'done';
 
@@ -101,11 +102,12 @@ function Tabs({ value, onChange }: TabsProps) {
             role="tab"
             aria-selected={active}
             onClick={() => onChange(tab.key)}
-            className={`-mb-[2px] flex h-11 flex-1 items-center justify-center border-b-2 transition-colors ${
+            className={cn(
+              '-mb-0.5 flex h-11 flex-1 items-center justify-center border-b-2 transition-colors',
               active
                 ? 'border-main typo-body-sm-bold text-main'
-                : 'border-transparent typo-body-sm-regular text-faint'
-            }`}
+                : 'border-transparent typo-body-sm-regular text-faint',
+            )}
           >
             {tab.label}
           </button>
@@ -159,7 +161,7 @@ export function AnswerPage() {
         ) : items.length === 0 ? (
           <ErrorView fullScreen={false} message="답변할 질문 항목이 없어요." />
         ) : (
-          <div className="flex flex-col gap-[10px]">
+          <div className="flex flex-col gap-2.5">
             {items.map((item) => (
               <QuestionCard key={item.id} item={item} />
             ))}
@@ -167,7 +169,7 @@ export function AnswerPage() {
         )}
       </section>
 
-      <div className="bg-gradient-to-b from-transparent via-page/75 to-page px-5 pb-2 pt-3">
+      <div className="bg-linear-to-b from-transparent via-page/75 to-page px-5 pb-2 pt-3">
         <button
           type="button"
           onClick={handleDone}

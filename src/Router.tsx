@@ -111,13 +111,11 @@ export const router = createBrowserRouter([
 
           // 내 전시 관리 목록
           { path: 'my/exhibitions', element: <MyExhibitionsPage /> },
-          { path: 'artworks-register', element: <ArtworkRegisterPage /> },
 
-          // 1. 전시 등록 플로우
+          // 전시 등록 플로우
           { path: 'exhibition/register', element: <ExhibitionRegister /> },
           { path: 'exhibition/register/basic', element: <ExhibitionBasicInfo /> },
           { path: 'exhibition/register/artist', element: <ArtistNameSetup /> },
-
           // 2. 특정 전시 관리 플로우 (ID 발급 후)
           {
             path: 'exhibition/:displayId',
@@ -134,6 +132,7 @@ export const router = createBrowserRouter([
               { path: 'contents/:categoryId', element: <InteriorPhotosPage /> },
               { path: 'artworks', element: <ArtworksManagePage /> },
               { path: 'artworks/add', element: <ArtworkRegisterPage /> },
+              { path: 'artworks/:artworkId/edit', element: <ArtworkRegisterPage /> },
               { path: 'complete', element: <ExhibitionRegisterComplete /> },
             ],
           },
@@ -142,6 +141,7 @@ export const router = createBrowserRouter([
           { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
           { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
           { path: 'personal-artworks/register', element: <PersonalArtworksRegister /> },
+          { path: 'personal-artworks/complete', element: <ExhibitionRegisterComplete /> },
           { path: 'answer-questions', element: <AnswerPage /> },
           { path: 'invitation-request', element: <InvitationRequestPage /> },
           { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
