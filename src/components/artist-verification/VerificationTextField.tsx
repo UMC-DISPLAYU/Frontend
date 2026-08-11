@@ -49,11 +49,8 @@ export function VerificationTextField({
         inputMode={inputMode}
         onBlur={onBlur}
         onChange={(event) => {
-          if (registerOnChange) {
-            registerOnChange(event);
-          } else {
-            onChange?.(event.target.value);
-          }
+          registerOnChange?.(event);
+          onChange?.(event.target.value);
         }}
         placeholder={placeholder}
         className="min-w-0 flex-1 bg-transparent typo-body-sm-regular text-main outline-none placeholder:text-line"
