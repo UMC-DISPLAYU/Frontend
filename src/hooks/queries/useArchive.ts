@@ -282,7 +282,7 @@ export const useUpdateArchivedExhibitionMemo = () => {
                 savedExhibitions:
                   previous.savedExhibitions?.map((exhibition) =>
                     exhibition.savedExhibitionId === archiveDisplayId
-                      ? { ...exhibition, memo: body.memo }
+                      ? { ...exhibition, memo: body.content }
                       : exhibition,
                   ) ?? [],
               }
@@ -334,7 +334,7 @@ export const useUpdateArchivedArtworkMemo = () => {
                 ...previous,
                 works: previous.works.map((artwork) =>
                   artwork.archiveWorkId === archiveWorkId
-                    ? { ...artwork, memo: body.memo }
+                    ? { ...artwork, memo: body.content }
                     : artwork,
                 ),
               }
