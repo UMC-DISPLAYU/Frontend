@@ -55,6 +55,7 @@ export const useInfiniteArtworkPreview = (params: GetArtworkPreviewRequestDto = 
     queryKey: queryKeys.displayArtworks.preview(params),
     queryFn: ({ pageParam = 0 }) =>
       getArtworkPreview({
+        type: 'RECOMMEND',
         ...params,
         page: pageParam,
         size: params.size ?? 10,

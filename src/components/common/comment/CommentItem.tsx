@@ -93,8 +93,6 @@ export const CommentItem = memo(function CommentItem({
     onDelete?.(commentId, isReply ? parentCommentId : undefined);
   };
 
-  const contentIndent = isReply ? 'pl-[72px]' : 'pl-9';
-
   // gap 기반 레이아웃(tightSpacing=false)은 기본 패딩이 없어서, 답글 작성 중 하이라이트일 때만
   // 음수 margin으로 상쇄하는 bleed 트릭으로 여백을 만든다. tightSpacing일 땐 각 줄에 항상
   // py-3가 있으므로 트릭 없이 배경색만 얹으면 된다.
@@ -114,7 +112,7 @@ export const CommentItem = memo(function CommentItem({
         {isComposingReply && (
           <div className="absolute top-0 left-0 h-full w-[3px] rounded-r-full bg-[#8E8E93]" />
         )}
-        <div className={cn('flex items-center gap-1.5', isReply && 'pl-9')}>
+        <div className={cn('flex items-start gap-1.5', isReply && 'pl-9')}>
           <img
             alt=""
             className="size-7 rounded-full shrink-0 object-cover"
@@ -123,110 +121,118 @@ export const CommentItem = memo(function CommentItem({
               (e.currentTarget as HTMLImageElement).src = defaultProfileIcon;
             }}
           />
-          <div className="flex-1 flex items-center gap-2">
-            <span className="typo-body-sm-bold text-main">{comment.author}</span>
-            <span className="typo-body-xs-regular text-hint">{comment.time}</span>
+
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <span className="typo-body-sm-bold text-main truncate">{comment.author}</span>
+                <span className="typo-body-xs-regular text-hint shrink-0">{comment.time}</span>
+              </div>
+              {likePosition === 'top-right' && !isDeleted && (
+                <button
+                  type="button"
+                  onClick={handleLikeClick}
+                  disabled={isLikePending}
+                  aria-pressed={comment.isLiked}
+                  aria-label={`좋아요 ${comment.likeCount}개`}
+                  className="flex items-center gap-1 disabled:opacity-50 shrink-0"
+                >
+                  <Heart
+                    width={iconSize.width}
+                    height={iconSize.height}
+                    className={comment.isLiked ? 'fill-heart text-heart' : 'text-faint'}
+                    strokeWidth={1.5}
+                  />
+                  <span className="typo-body-xs-regular text-faint">{comment.likeCount}</span>
+                </button>
+              )}
+            </div>
+
+            <div className="mt-1 flex flex-col gap-1">
+              {!isDeleted && comment.images && comment.images.length > 0 && (
+                <div className="flex gap-1 overflow-x-auto scrollbar-none">
+                  {comment.images.map((url) => (
+                    <button
+                      key={url}
+                      type="button"
+                      className="w-[106px] h-[129px] shrink-0 rounded-sm bg-gray-300 bg-cover bg-center cursor-pointer"
+                      style={{ backgroundImage: `url(${url})` }}
+                      onClick={() => setSelectedImage(url)}
+                      aria-label="이미지 크게 보기"
+                    />
+                  ))}
+                </div>
+              )}
+
+              <p className="typo-body-sm-regular text-sub600">
+                {isDeleted ? '삭제된 글입니다.' : comment.content}
+              </p>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                {!isDeleted && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onReplyClick?.(
+                        isReply ? (parentCommentId ?? commentId) : commentId,
+                        comment.author,
+                        highlightKey,
+                      )
+                    }
+                    className={
+                      isComposingReply
+                        ? 'typo-body-xs-bold text-[#3A3A3C]'
+                        : 'typo-body-xs-regular text-hint'
+                    }
+                  >
+                    답글달기
+                  </button>
+                )}
+                {!isReply && replyCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleReplies?.()}
+                    className="typo-body-xs-regular text-hint"
+                  >
+                    댓글{replyCount}
+                  </button>
+                )}
+                {!isDeleted && (comment.canDelete ?? comment.isMyComment) && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteClick}
+                    className="typo-body-xs-regular text-hint"
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
+
+              {likePosition === 'bottom' && !isDeleted && (
+                <button
+                  type="button"
+                  onClick={handleLikeClick}
+                  disabled={isLikePending}
+                  aria-pressed={comment.isLiked}
+                  aria-label={`좋아요 ${comment.likeCount}개`}
+                  className="flex min-w-[28px] items-center gap-1 disabled:opacity-50"
+                >
+                  <Heart
+                    width={iconSize.width}
+                    height={iconSize.height}
+                    className={cn(
+                      'shrink-0',
+                      comment.isLiked ? 'fill-heart text-heart' : 'text-hint',
+                    )}
+                    strokeWidth={1}
+                  />
+                  <span className="typo-body-xs-regular text-hint">{comment.likeCount}</span>
+                </button>
+              )}
+            </div>
           </div>
-          {likePosition === 'top-right' && !isDeleted && (
-            <button
-              type="button"
-              onClick={handleLikeClick}
-              disabled={isLikePending}
-              aria-pressed={comment.isLiked}
-              aria-label={`좋아요 ${comment.likeCount}개`}
-              className="flex items-center gap-1 disabled:opacity-50"
-            >
-              <Heart
-                width={iconSize.width}
-                height={iconSize.height}
-                className={comment.isLiked ? 'fill-heart text-heart' : 'text-faint'}
-                strokeWidth={1.5}
-              />
-              <span className="typo-body-xs-regular text-faint">{comment.likeCount}</span>
-            </button>
-          )}
-        </div>
-
-        {!isDeleted && comment.images && comment.images.length > 0 && (
-          <div className={`${contentIndent} mt-1 flex gap-1 overflow-x-auto scrollbar-none`}>
-            {comment.images.map((url) => (
-              <button
-                key={url}
-                type="button"
-                className="w-[106px] h-[129px] shrink-0 rounded-sm bg-gray-300 bg-cover bg-center cursor-pointer"
-                style={{ backgroundImage: `url(${url})` }}
-                onClick={() => setSelectedImage(url)}
-                aria-label="이미지 크게 보기"
-              />
-            ))}
-          </div>
-        )}
-
-        <p
-          className={`${contentIndent} ${!isDeleted && comment.images && comment.images.length > 0 ? 'mt-3' : 'mt-1'} typo-body-sm-regular text-sub600`}
-        >
-          {isDeleted ? '삭제된 글입니다.' : comment.content}
-        </p>
-
-        <div className={cn(contentIndent, 'mt-3 flex items-center justify-between gap-2')}>
-          <div className="flex items-center gap-2">
-            {!isDeleted && (
-              <button
-                type="button"
-                onClick={() =>
-                  onReplyClick?.(
-                    isReply ? (parentCommentId ?? commentId) : commentId,
-                    comment.author,
-                    highlightKey,
-                  )
-                }
-                className={
-                  isComposingReply
-                    ? 'typo-body-xs-bold text-[#3A3A3C]'
-                    : 'typo-body-xs-regular text-hint'
-                }
-              >
-                답글달기
-              </button>
-            )}
-            {!isReply && replyCount > 0 && (
-              <button
-                type="button"
-                onClick={() => onToggleReplies?.()}
-                className="typo-body-xs-regular text-hint"
-              >
-                댓글{replyCount}
-              </button>
-            )}
-            {!isDeleted && (comment.canDelete ?? comment.isMyComment) && (
-              <button
-                type="button"
-                onClick={handleDeleteClick}
-                className="typo-body-xs-regular text-hint"
-              >
-                삭제
-              </button>
-            )}
-          </div>
-
-          {likePosition === 'bottom' && !isDeleted && (
-            <button
-              type="button"
-              onClick={handleLikeClick}
-              disabled={isLikePending}
-              aria-pressed={comment.isLiked}
-              aria-label={`좋아요 ${comment.likeCount}개`}
-              className="flex min-w-[28px] items-center gap-1 disabled:opacity-50"
-            >
-              <Heart
-                width={iconSize.width}
-                height={iconSize.height}
-                className={cn('shrink-0', comment.isLiked ? 'fill-heart text-heart' : 'text-hint')}
-                strokeWidth={1}
-              />
-              <span className="typo-body-xs-regular text-hint">{comment.likeCount}</span>
-            </button>
-          )}
         </div>
       </div>
 
