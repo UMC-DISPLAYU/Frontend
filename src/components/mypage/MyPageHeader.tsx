@@ -63,7 +63,7 @@ export function MyPageHeader({
       <div className="px-5 pt-5 pb-5 flex flex-col gap-3.5">
         <div className="flex gap-6 items-start">
           <img
-            className="size-20 rounded-full border-[2.67px] border-line object-cover shrink-0"
+            className="size-20 rounded-full object-cover shrink-0"
             src={profile.avatar || FALLBACK_PROFILE_IMAGE}
             alt={profile.name}
             onError={(event) => {

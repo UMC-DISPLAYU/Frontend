@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronLeft, ImagePlus, Info, Plus, X } from 'lucide-react';
+import { ChevronLeft, Info, Plus, X } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
 
 import type { UserProfileDto } from '@/api/dto';
 import { LoadingView } from '@/components/common/LoadingView';
@@ -37,35 +38,34 @@ function ProfilePhotoField({
   };
 
   return (
-    <div className="relative size-24">
+    <>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         aria-label="프로필 사진 등록"
-        className="flex size-full flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border border-line bg-card relative"
+        className="relative size-20"
         disabled={isUploading}
       >
         {image ? (
-          <img src={image} alt="프로필 미리보기" className="size-full object-cover" />
+          <img
+            src={image}
+            alt="프로필 미리보기"
+            className="size-20 rounded-full object-cover"
+          />
         ) : (
-          <>
-            <span className="flex size-10 items-center justify-center rounded-full bg-page text-faint">
-              <ImagePlus className="size-[18px]" strokeWidth={1.5} />
-            </span>
-            <span className="typo-body-xs-regular text-main">프로필 사진</span>
-          </>
+          <img src={defaultProfile} alt="프로필" className="size-20 rounded-full object-cover" />
         )}
         {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
             <LoadingView fullScreen={false} message="" className="!bg-transparent" />
           </div>
         )}
+        <span className="absolute bottom-0 right-0 flex size-6 items-center justify-center overflow-hidden rounded-full bg-sub600">
+          <Plus className="text-white" strokeWidth={2} />
+        </span>
       </button>
-      <div className="absolute bottom-0 right-0 size-6 bg-sub600 rounded-full flex items-center justify-center pointer-events-none">
-        <Plus className="size-6 text-card" strokeWidth={1.5} />
-      </div>
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-    </div>
+    </>
   );
 }
 
