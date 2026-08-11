@@ -58,8 +58,8 @@ export interface GetArtworkDetailResponseDataDto {
   artistName: string;
   artistUserId: number;
   qaHandlers?: ArtworkQaHandlerDto[];
-  // 공동 작업자. 서버가 아직 내려주지 않아 없으면 공동 작업자 없음으로 취급합니다.
-  coAuthorUserIds?: number[];
+  /* 공동 작업자. 계정이 연결되지 않은 공동 작업자는 userId가 null입니다. */
+  coAuthors?: ArtworkCoAuthorDto[];
   exhibitionInfo: ArtworkDetailExhibitionInfoDto;
   likeCount: number;
   isLiked: boolean;
@@ -77,6 +77,11 @@ export interface ArtworkDetailExhibitionInfoDto {
 
 export interface ArtworkQaHandlerDto {
   userId: number;
+  name: string;
+}
+
+export interface ArtworkCoAuthorDto {
+  userId: number | null;
   name: string;
 }
 

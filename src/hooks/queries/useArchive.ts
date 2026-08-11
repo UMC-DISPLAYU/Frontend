@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
   ArchivedExhibitionDto,
@@ -48,9 +48,11 @@ export const useArchivedArtworks = () => {
 
 export const useArchivedArtists = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.archives.artists.list(),
-    queryFn: getArchivedArtists,
+    queryFn: ({ pageParam }) => getArchivedArtists({ cursorId: pageParam ?? undefined }),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled: !!accessToken,
   });
 };

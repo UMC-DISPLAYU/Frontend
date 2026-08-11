@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Bookmark, ChevronRight, ChevronUp } from 'lucide-react';
 
+import type { ArtworkCoAuthorDto } from '@/api/dto';
 import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
@@ -17,11 +18,8 @@ type Props = {
   artwork: ArtworkDetail;
   /* 대표 작가 저장에 필요한 계정 id. 직접 입력된 작가는 없을 수 있습니다. */
   artistUserId?: number;
-  /*
-   * 공동 작업자 계정 id 목록. 스웨거 응답에 이름은 없고 id만 내려오며,
-   * 현재는 백엔드가 이 필드 자체를 내려주지 않아 항상 비어있습니다.
-   */
-  coAuthorUserIds?: number[];
+  /* 공동 작업자 목록. 계정이 연결되지 않은 공동 작업자는 userId가 null입니다. */
+  coAuthors?: ArtworkCoAuthorDto[];
 };
 
 type ArtworkArtistRowProps = {
@@ -36,14 +34,25 @@ function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
 
   /* 작가 닉네임과 프로필 이미지는 작가 프로필 조회로 채웁니다. */
   const { data: profile } = useUserArtistProfile(userId ?? 0);
-  /* 저장 여부는 내가 저장한 작가 목록과 대조합니다. */
-  const { data: archivedArtists } = useArchivedArtists();
+  /* 저장 여부는 내가 저장한 작가 목록과 대조합니다. 페이지가 남아있으면 계속 불러와 전체 목록을 확보합니다. */
+  const {
+    data: archivedArtists,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useArchivedArtists();
+
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const archiveArtist = useArchiveArtist();
   const unarchiveArtist = useUnarchiveArtist();
   const isPending = archiveArtist.isPending || unarchiveArtist.isPending;
 
-  const isSaved = (archivedArtists?.artists ?? []).some((artist) => artist.artistId === userId);
+  const isSaved = (archivedArtists?.pages.flatMap((page) => page.artists) ?? []).some(
+    (artist) => artist.artistId === userId,
+  );
 
   /* 공동 작업자는 작품에 기록된 이름이 없어, 있으면 프로필명을 대표 이름으로 씁니다. */
   const primaryName = displayName || profile?.artistName || '이름 미상';
@@ -98,15 +107,15 @@ function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
   );
 }
 
-export function ArtworkIntroTab({ artwork, artistUserId, coAuthorUserIds = [] }: Props) {
+export function ArtworkIntroTab({ artwork, artistUserId, coAuthors = [] }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   /* 대표 작가 + 공동 작업자를 한 줄씩 보여줍니다. */
   const artistRows: ArtworkArtistRowProps[] = [
     { userId: artistUserId, displayName: artwork.artist || '작가 미상' },
-    ...coAuthorUserIds
-      .filter((id) => id !== artistUserId)
-      .map((id) => ({ userId: id, displayName: '' })),
+    ...coAuthors
+      .filter((coAuthor) => coAuthor.userId !== artistUserId)
+      .map((coAuthor) => ({ userId: coAuthor.userId ?? undefined, displayName: coAuthor.name })),
   ];
 
   const processImages = useMemo(

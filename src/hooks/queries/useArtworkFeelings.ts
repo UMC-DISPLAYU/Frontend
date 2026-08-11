@@ -24,7 +24,7 @@ export const useArtworkFeelings = (artworkId: number) =>
     queryFn: ({ pageParam }) => getArtworkFeelings(artworkId, { cursorId: pageParam ?? undefined }),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
-    enabled: Number.isFinite(artworkId),
+    enabled: Number.isFinite(artworkId) && artworkId > 0,
   });
 
 export const useCreateArtworkFeeling = () => {

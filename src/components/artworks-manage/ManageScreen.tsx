@@ -20,7 +20,7 @@ function getArtworkPolicyResource(work: Work): ArtworkPolicyResource | undefined
 
   return {
     artistUserId: work.artistUserId,
-    coAuthorUserIds: work.coAuthorUserIds,
+    coAuthors: work.coAuthorUserIds?.map((userId) => ({ userId, name: '' })),
   };
 }
 

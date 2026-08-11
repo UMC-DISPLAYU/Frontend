@@ -258,7 +258,7 @@ export function ArtworkDetailPage() {
         <ArtworkIntroTab
           artwork={artwork}
           artistUserId={detail.artistUserId}
-          coAuthorUserIds={detail.coAuthorUserIds}
+          coAuthors={detail.coAuthors}
         />
       )}
       {(activeTab === 'review' || activeTab === 'question') && (

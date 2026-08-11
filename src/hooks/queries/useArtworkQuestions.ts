@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type {
   CreateArtworkQuestionReplyRequestDto,
@@ -9,7 +9,6 @@ import {
   createArtworkQuestionReply,
   deleteArtworkQuestion,
   getArtworkQuestions,
-  getReceivedArtworkQuestions,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
@@ -20,18 +19,7 @@ export const useArtworkQuestions = (artworkId: number) =>
       getArtworkQuestions(artworkId, { cursorId: pageParam ?? undefined }),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
-    enabled: Number.isFinite(artworkId),
-  });
-
-/* 내가 받은(답변할) 질문 목록. 내가 물어본 질문은 useMyArtworkQuestions(hooks/queries/useMyArtworkQuestions.ts)를 씁니다. */
-export const useReceivedArtworkQuestions = (params?: {
-  cursor?: string;
-  size?: number;
-  answerStatus?: 'WAITING' | 'ANSWERED';
-}) =>
-  useQuery({
-    queryKey: [...queryKeys.artworkQuestions.me(), params] as const,
-    queryFn: () => getReceivedArtworkQuestions(params),
+    enabled: Number.isFinite(artworkId) && artworkId > 0,
   });
 
 export const useCreateArtworkQuestion = () => {

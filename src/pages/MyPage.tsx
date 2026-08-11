@@ -215,7 +215,8 @@ export function MyPage() {
   }, [myArtworksQuery.data, userData]);
 
   const artists = useMemo<ArtistItem[]>(() => {
-    const items = (archivedArtistsQuery.data?.artists ?? []) as ArchivedArtistView[];
+    const items = (archivedArtistsQuery.data?.pages.flatMap((page) => page.artists) ??
+      []) as ArchivedArtistView[];
     return items.map((item) => ({
       id: String(item.archiveArtistId ?? item.artistId),
       artistId: item.artistId,

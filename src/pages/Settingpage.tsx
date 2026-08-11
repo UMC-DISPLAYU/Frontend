@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { LogoutConfirmModal } from '@/components/common';
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
-import { useReceivedArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
 import { useLogout } from '@/hooks/queries/useAuth';
 import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
+import { useReceivedArtworkQuestions } from '@/hooks/queries/useReceivedArtworkQuestions';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';

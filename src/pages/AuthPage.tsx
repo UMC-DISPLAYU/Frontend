@@ -37,7 +37,9 @@ export function AuthPage() {
   const archiveArtist = useArchiveArtist();
   const unarchiveArtist = useUnarchiveArtist();
 
-  const isSaved = (archivedArtists?.artists ?? []).some((artist) => artist.artistId === userId);
+  const isSaved = (archivedArtists?.pages.flatMap((page) => page.artists) ?? []).some(
+    (artist) => artist.artistId === userId,
+  );
   const isSavePending = archiveArtist.isPending || unarchiveArtist.isPending;
 
   const profile = useMemo<ArtistProfile>(() => {
