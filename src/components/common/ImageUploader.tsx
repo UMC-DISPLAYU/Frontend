@@ -53,11 +53,7 @@ export function ImageUploader({
   );
 
   return (
-    <div
-      className={`mt-2 flex gap-2 overflow-x-auto scrollbar-none w-full pb-1 ${
-        totalImages === 0 ? 'justify-center' : ''
-      }`}
-    >
+    <div className="mt-2 flex w-full gap-2 overflow-x-auto pb-1 scrollbar-none">
       {initialImages.map((url, index) => (
         <div
           key={url}
