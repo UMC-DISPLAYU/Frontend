@@ -9,7 +9,9 @@ import type {
   PersonalArtworkQuestionReplyResponseDataDto,
   PersonalArtworkQuestionResponseDataDto,
 } from '@/api/dto';
+import { PersonalArtworkSaveButton } from '@/components/artworkdetailpage/PersonalArtworkSaveButton';
 import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
+import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
 import { FALLBACK_POSTER_IMAGE, FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
@@ -733,6 +735,19 @@ export function PersonalArtworkDetailPage() {
             createQuestionReply.isPending
           }
           onSubmit={handleSend}
+        />
+      )}
+      {activeTab === 'intro' && (
+        <BottomFixedBar
+          button={
+            <PersonalArtworkSaveButton
+              personalArtworkId={artwork.personalArtworkId}
+              saved={artwork.isArchived ?? false}
+            />
+          }
+          shareTitle={artwork.artworkName}
+          shareDescription={artwork.content}
+          shareImageUrl={displayHeroImages[0]}
         />
       )}
       {loginModal}

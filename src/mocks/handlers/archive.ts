@@ -169,8 +169,12 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/personal-artworks/{personalArtworkId}').map((path) =>
     http.post(path, ({ params }) => {
       const personalArtworkId = toNumber(params.personalArtworkId);
+      const artwork = mockDb.personalArtworks.find(
+        (item: any) => item.personalArtworkId === personalArtworkId,
+      );
 
       mockDb.archivedPersonalArtworkIds.add(personalArtworkId);
+      if (artwork) artwork.isArchived = true;
 
       return success('/api/v1/archives/personal-artworks/{personalArtworkId}', {
         personalArtworkId,
@@ -181,8 +185,12 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/personal-artworks/{personalArtworkId}').map((path) =>
     http.delete(path, ({ params }) => {
       const personalArtworkId = toNumber(params.personalArtworkId);
+      const artwork = mockDb.personalArtworks.find(
+        (item: any) => item.personalArtworkId === personalArtworkId,
+      );
 
       mockDb.archivedPersonalArtworkIds.delete(personalArtworkId);
+      if (artwork) artwork.isArchived = false;
 
       return success('/api/v1/archives/personal-artworks/{personalArtworkId}', {
         personalArtworkId,
