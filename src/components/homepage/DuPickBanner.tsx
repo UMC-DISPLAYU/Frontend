@@ -3,7 +3,7 @@ import { useSwipeSlider } from '@/hooks/useSwipeSlider';
 import type { DuPickItem } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 
-// ─── 상수 정의 ─────────────────────────────────────────────────────────────
+// ─── 상수 정의
 
 const CARD_HEIGHT_ACTIVE = 260; // h-65 (260px)
 const CARD_HEIGHT_INACTIVE = 224; // h-56 (224px)
@@ -11,7 +11,7 @@ const CARD_HEIGHT_DIFF = CARD_HEIGHT_ACTIVE - CARD_HEIGHT_INACTIVE; // 36px
 const MAX_DRAG_OFFSET = 180; // 스와이프 완료 판단 거리(px)
 const CARD_GAP_PX = 6; // 카드 사이 간격 (6px = gap-1.5)
 
-// ─── 타입 정의 ─────────────────────────────────────────────────────────────
+// ─── 타입 정의
 
 type BannerItem = DuPickItem | DuPickDto;
 
@@ -25,7 +25,7 @@ interface Props {
   className?: string;
 }
 
-// ─── 헬퍼 ──────────────────────────────────────────────────────────────────
+// ─── 헬퍼
 
 function getItemFields(item: BannerItem): { title: string; description: string } {
   // DTO 필수 속성인 duPickId를 기반으로 DTO와 DuPickItem 구분
@@ -41,7 +41,7 @@ function getItemFields(item: BannerItem): { title: string; description: string }
   };
 }
 
-// ─── CardItem (단일 배너 카드) ───────────────────────────────────────────────
+// ─── CardItem (단일 배너 카드)
 
 function CardItem({ item, isActive }: CardProps) {
   const { title, description } = getItemFields(item);
@@ -51,8 +51,8 @@ function CardItem({ item, isActive }: CardProps) {
       className={cn(
         'relative w-full h-full rounded-xl overflow-hidden bg-box200 select-none transition-all duration-300 ease-out',
         isActive
-          ? 'shadow-[3px_3px_18px_0px_rgba(67,0,209,0.08),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]'
-          : 'shadow-[2px_4px_18px_0px_rgba(67,0,209,0.08),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]',
+          ? 'shadow-[inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]'
+          : 'shadow-[inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]',
       )}
     >
       {/* 배경 이미지 */}
@@ -61,17 +61,24 @@ function CardItem({ item, isActive }: CardProps) {
           src={item.bannerImageUrl}
           alt={title}
           draggable={false}
-          className="absolute inset-0 h-full w-full object-cover select-none"
+          className="absolute inset-0 h-full w-full object-cover object-center select-none"
         />
       ) : (
         <div className="absolute inset-0 bg-box200" />
       )}
 
-      {/* 어두운 그라데이션 오버레이 */}
+      {/* 비활성 카드 전체 어둡게 처리 */}
+      {!isActive && (
+        <div className="absolute inset-0 bg-black/40 pointer-events-none transition-opacity duration-300" />
+      )}
+
+      {/* 하단 텍스트 영역 자연스러운 그라데이션 및 블러 오버레이 */}
       <div
         className={cn(
           'absolute inset-0 pointer-events-none transition-opacity duration-300',
-          isActive ? 'bg-linear-to-t from-black/75 via-black/10 to-transparent' : 'bg-black/30',
+          'bg-linear-to-t from-black/50 via-black/20 to-transparent',
+          'backdrop-blur-[1px] [mask-image:linear-gradient(to_top,black_0%,black_15%,transparent_45%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,black_15%,transparent_45%)]',
+          isActive ? 'opacity-100' : 'opacity-60',
         )}
       />
 
@@ -118,7 +125,6 @@ export function DuPickBanner({ items, className }: Props) {
 
   const absRatio = Math.min(Math.abs(dragOffset) / MAX_DRAG_OFFSET, 1);
 
-  // 키보드 사용자 접근성 지원 (ArrowLeft / ArrowRight 키로 슬라이드 전환)
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
