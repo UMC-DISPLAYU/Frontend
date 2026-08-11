@@ -15,3 +15,8 @@ export const ARTWORK_FIELD_MAP: Record<string, string> = {
   공예: 'CRAFT',
   기타: 'ETC',
 };
+
+/* ARTWORK_FIELD_MAP의 역방향(영문 enum → 한글 라벨) 조회용입니다. */
+export const ARTWORK_TYPE_LABEL_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(ARTWORK_FIELD_MAP).map(([label, value]) => [value, label]),
+);
