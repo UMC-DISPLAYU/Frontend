@@ -6,6 +6,7 @@ interface CodeVerificationFieldProps {
   onConfirm: () => void;
   onResend: () => void;
   confirmed: boolean;
+  disabled?: boolean;
   error?: string;
   isConfirming?: boolean;
   isResending?: boolean;
@@ -17,6 +18,7 @@ export function CodeVerificationField({
   onConfirm,
   onResend,
   confirmed,
+  disabled = false,
   error,
   isConfirming = false,
   isResending = false,
@@ -36,7 +38,10 @@ export function CodeVerificationField({
             inputMode="numeric"
             onChange={(event) => onChange(event.target.value.replace(/\D/g, ''))}
             placeholder="인증번호 6자리"
-            className="min-w-0 flex-1 bg-transparent typo-body-sm-regular text-main outline-none placeholder:text-line"
+            disabled={disabled}
+            className={`min-w-0 flex-1 bg-transparent typo-body-sm-regular outline-none placeholder:text-line ${
+              disabled ? 'text-line cursor-not-allowed' : 'text-main'
+            }`}
           />
           <span className="ml-3 shrink-0 typo-body-sm-regular text-slate-700">04:59</span>
         </div>

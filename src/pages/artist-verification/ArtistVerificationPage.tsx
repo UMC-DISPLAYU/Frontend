@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useReducer, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
@@ -26,26 +26,109 @@ import {
   useSendVerificationEmail,
 } from '@/hooks/queries/useSchoolEmailVerification';
 import { useCreateMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { getErrorMessage } from '@/utils/error';
 
 import {
   type ArtistVerificationFormValues,
   artistVerificationSchema,
 } from './artistVerification.schema';
 
-type EmailState = 'idle' | 'sent' | 'error';
-type CodeState = 'idle' | 'confirmed' | 'mismatch';
+type VerificationStep = 'school' | 'email' | 'code' | 'profile';
+
+interface VerificationState {
+  school: string;
+  email: string;
+  code: string;
+  completedSteps: Set<VerificationStep>;
+  failedStep: VerificationStep | null;
+  emailError: string | null;
+}
+
+type VerificationAction =
+  | { type: 'SET_SCHOOL'; payload: string }
+  | { type: 'SET_EMAIL'; payload: string }
+  | { type: 'SET_CODE'; payload: string }
+  | { type: 'COMPLETE_STEP'; payload: VerificationStep }
+  | { type: 'FAIL_STEP'; payload: { step: VerificationStep; error?: string } }
+  | { type: 'RESET_FROM_STEP'; payload: VerificationStep };
+
+const initialState: VerificationState = {
+  school: '',
+  email: '',
+  code: '',
+  completedSteps: new Set(),
+  failedStep: null,
+  emailError: null,
+};
+
+function verificationReducer(
+  state: VerificationState,
+  action: VerificationAction,
+): VerificationState {
+  switch (action.type) {
+    case 'SET_SCHOOL': {
+      const newState = { ...state, school: action.payload };
+      newState.completedSteps = new Set();
+      newState.failedStep = null;
+      newState.emailError = null;
+      newState.email = '';
+      newState.code = '';
+      return newState;
+    }
+
+    case 'SET_EMAIL': {
+      const newState = { ...state, email: action.payload };
+      newState.completedSteps = new Set();
+      newState.failedStep = null;
+      newState.emailError = null;
+      newState.code = '';
+      return newState;
+    }
+
+    case 'SET_CODE':
+      return { ...state, code: action.payload };
+
+    case 'COMPLETE_STEP': {
+      const newCompletedSteps = new Set(state.completedSteps);
+      newCompletedSteps.add(action.payload);
+      return {
+        ...state,
+        completedSteps: newCompletedSteps,
+        failedStep: null,
+        emailError: null,
+      };
+    }
+
+    case 'FAIL_STEP':
+      return {
+        ...state,
+        failedStep: action.payload.step,
+        emailError: action.payload.error ?? null,
+      };
+
+    case 'RESET_FROM_STEP': {
+      const newCompletedSteps = new Set(state.completedSteps);
+      const stepOrder: VerificationStep[] = ['school', 'email', 'code', 'profile'];
+      const stepIndex = stepOrder.indexOf(action.payload);
+      for (let i = stepIndex; i < stepOrder.length; i++) {
+        newCompletedSteps.delete(stepOrder[i]);
+      }
+      return { ...state, completedSteps: newCompletedSteps };
+    }
+
+    default:
+      return state;
+  }
+}
 
 export function ArtistVerificationPage() {
   const navigate = useNavigate();
-  const [school, setSchool] = useState('');
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [state, dispatch] = useReducer(verificationReducer, initialState);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
-  const [emailState, setEmailState] = useState<EmailState>('idle');
-  const [codeState, setCodeState] = useState<CodeState>('idle');
   const [complete, setComplete] = useState(false);
-  const schoolQuery = useSearchSchools(school);
+
+  const schoolQuery = useSearchSchools(state.school);
   const sendVerificationEmail = useSendVerificationEmail();
   const resendVerificationEmail = useResendVerificationEmail();
   const confirmVerificationEmail = useConfirmVerificationEmail();
@@ -66,103 +149,119 @@ export function ArtistVerificationPage() {
 
   const artistName = useWatch({ control, name: 'artistName' }) ?? '';
 
-  const isMailSent = emailState === 'sent';
-  const isCodeConfirmed = codeState === 'confirmed';
-  const shouldShowProfileFields = isMailSent && isCodeConfirmed;
+  const isEmailStepCompleted = state.completedSteps.has('email');
+  const isCodeStepCompleted = state.completedSteps.has('code');
   const isArtistNameValid = artistVerificationSchema.safeParse({ artistName }).success;
 
   const canSubmit =
-    school.trim() &&
-    email.trim() &&
-    isCodeConfirmed &&
+    state.school.trim() &&
+    state.email.trim() &&
+    isCodeStepCompleted &&
     isArtistNameValid &&
     selectedFields.length > 0;
 
-  const handleSendMail = () => {
-    if (!school.trim() || !email.trim()) {
-      setEmailState('error');
+  const handleSendMail = useCallback(() => {
+    if (!state.school.trim() || !state.email.trim()) {
+      dispatch({
+        type: 'FAIL_STEP',
+        payload: { step: 'email', error: '학교와 이메일을 확인해주세요.' },
+      });
       return;
     }
 
     sendVerificationEmail.mutate(
-      { schoolEmail: email.trim(), univName: school.trim() },
+      { schoolEmail: state.email.trim(), univName: state.school.trim() },
       {
         onSuccess: () => {
-          setEmailState('sent');
-          setCodeState('idle');
+          dispatch({ type: 'COMPLETE_STEP', payload: 'email' });
         },
-        onError: () => {
-          setEmailState('error');
+        onError: (error) => {
+          dispatch({
+            type: 'FAIL_STEP',
+            payload: {
+              step: 'email',
+              error: getErrorMessage(error, '학교와 이메일을 확인해주세요.'),
+            },
+          });
         },
       },
     );
-  };
+  }, [state.school, state.email, sendVerificationEmail]);
 
-  const handleResendMail = () => {
-    if (!school.trim() || !email.trim()) {
-      setEmailState('error');
+  const handleResendMail = useCallback(() => {
+    if (!state.school.trim() || !state.email.trim()) {
+      dispatch({
+        type: 'FAIL_STEP',
+        payload: { step: 'email', error: '학교와 이메일을 확인해주세요.' },
+      });
       return;
     }
 
     resendVerificationEmail.mutate(
-      { schoolEmail: email.trim(), univName: school.trim() },
+      { schoolEmail: state.email.trim(), univName: state.school.trim() },
       {
         onSuccess: () => {
-          setEmailState('sent');
-          setCodeState('idle');
+          dispatch({ type: 'COMPLETE_STEP', payload: 'email' });
         },
-        onError: () => {
-          setEmailState('error');
+        onError: (error) => {
+          dispatch({
+            type: 'FAIL_STEP',
+            payload: {
+              step: 'email',
+              error: getErrorMessage(error, '인증번호 재발송에 실패했어요.'),
+            },
+          });
         },
       },
     );
-  };
+  }, [state.school, state.email, resendVerificationEmail]);
 
-  const handleConfirmCode = () => {
-    if (!email.trim() || code.trim().length !== 6) {
-      setCodeState('mismatch');
+  const handleConfirmCode = useCallback(() => {
+    if (!state.email.trim() || state.code.trim().length !== 6) {
+      dispatch({ type: 'FAIL_STEP', payload: { step: 'code' } });
       return;
     }
 
     confirmVerificationEmail.mutate(
-      { schoolEmail: email.trim(), verificationCode: code.trim() },
+      { schoolEmail: state.email.trim(), verificationCode: state.code.trim() },
       {
         onSuccess: () => {
-          setCodeState('confirmed');
+          dispatch({ type: 'COMPLETE_STEP', payload: 'code' });
         },
         onError: () => {
-          setCodeState('mismatch');
+          dispatch({ type: 'FAIL_STEP', payload: { step: 'code' } });
         },
       },
     );
-  };
+  }, [state.email, state.code, confirmVerificationEmail]);
 
-  const handleComplete = (data: ArtistVerificationFormValues) => {
-    const activityFields = selectedFields
-      .map((field) => ARTIST_FIELD_MAP[field as ExhibitionField])
-      .filter((field): field is ArtistFieldCode => Boolean(field));
+  const handleComplete = useCallback(
+    (data: ArtistVerificationFormValues) => {
+      const activityFields = selectedFields
+        .map((field) => ARTIST_FIELD_MAP[field as ExhibitionField])
+        .filter((field): field is ArtistFieldCode => Boolean(field));
 
-    if (activityFields.length === 0) return;
+      if (activityFields.length === 0) return;
 
-    createMyArtistProfile.mutate(
-      {
-        artistName: data.artistName.trim(),
-        activityFields,
-      },
-      {
-        onSuccess: () => {
-          setComplete(true);
+      createMyArtistProfile.mutate(
+        {
+          artistName: data.artistName.trim(),
+          activityFields,
         },
-      },
-    );
-  };
+        {
+          onSuccess: () => {
+            setComplete(true);
+          },
+        },
+      );
+    },
+    [selectedFields, createMyArtistProfile],
+  );
 
-  const handleSelectSchool = (value: string) => {
-    setSchool(value);
+  const handleSelectSchool = useCallback((value: string) => {
     setShowSchoolSuggestions(false);
-    setEmailState('idle');
-    setCodeState('idle');
-  };
+    dispatch({ type: 'SET_SCHOOL', payload: value });
+  }, []);
 
   if (complete) {
     return <ArtistVerificationComplete onDone={() => navigate('/my')} />;
@@ -182,13 +281,8 @@ export function ArtistVerificationPage() {
 
           <div className="mt-5">
             <SchoolSearchField
-              value={school}
-              onChange={(value) => {
-                setSchool(value);
-                setShowSchoolSuggestions(true);
-                setEmailState('idle');
-                setCodeState('idle');
-              }}
+              value={state.school}
+              onChange={(value) => dispatch({ type: 'SET_SCHOOL', payload: value })}
               suggestions={schoolQuery.data ?? []}
               showSuggestions={showSchoolSuggestions}
               onFocus={() => setShowSchoolSuggestions(true)}
@@ -201,35 +295,31 @@ export function ArtistVerificationPage() {
           </div>
 
           <EmailVerificationField
-            value={email}
-            onChange={(value) => {
-              setEmail(value);
-              setEmailState('idle');
-              setCodeState('idle');
-            }}
+            value={state.email}
+            onChange={(value) => dispatch({ type: 'SET_EMAIL', payload: value })}
             onSend={handleSendMail}
-            sent={isMailSent}
-            error={emailState === 'error' ? '학교와 이메일을 확인해주세요.' : undefined}
+            sent={isEmailStepCompleted}
+            error={state.failedStep === 'email' ? (state.emailError ?? undefined) : undefined}
             isSending={sendVerificationEmail.isPending}
           />
 
-          {isMailSent ? (
-            <CodeVerificationField
-              value={code}
-              onChange={(value) => {
-                setCode(value);
-                setCodeState('idle');
-              }}
-              onConfirm={handleConfirmCode}
-              onResend={handleResendMail}
-              confirmed={isCodeConfirmed}
-              error={codeState === 'mismatch' ? '인증번호가 일치하지 않아요.' : undefined}
-              isConfirming={confirmVerificationEmail.isPending}
-              isResending={resendVerificationEmail.isPending}
-            />
-          ) : null}
+          {isEmailStepCompleted && (
+            <>
+              <CodeVerificationField
+                value={state.code}
+                onChange={(value) => dispatch({ type: 'SET_CODE', payload: value })}
+                onConfirm={handleConfirmCode}
+                onResend={handleResendMail}
+                confirmed={isCodeStepCompleted}
+                disabled={isCodeStepCompleted}
+                error={state.failedStep === 'code' ? '인증번호가 일치하지 않아요.' : undefined}
+                isConfirming={confirmVerificationEmail.isPending}
+                isResending={resendVerificationEmail.isPending}
+              />
+            </>
+          )}
 
-          {shouldShowProfileFields ? (
+          {isCodeStepCompleted && (
             <>
               {(() => {
                 const { onChange: regOnChange, onBlur, ref, name } = register('artistName');
@@ -251,7 +341,7 @@ export function ArtistVerificationPage() {
               )}
               <ArtistFieldSelector selectedFields={selectedFields} onChange={setSelectedFields} />
             </>
-          ) : null}
+          )}
         </form>
 
         <ArtistVerificationBottomButton
