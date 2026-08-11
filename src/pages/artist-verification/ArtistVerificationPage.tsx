@@ -235,6 +235,7 @@ export function ArtistVerificationPage() {
                 const { onChange: regOnChange, onBlur, ref, name } = register('artistName');
                 return (
                   <ArtistProfileSection
+                    value={artistName}
                     error={Boolean(errors.artistName)}
                     name={name}
                     onBlur={onBlur}
