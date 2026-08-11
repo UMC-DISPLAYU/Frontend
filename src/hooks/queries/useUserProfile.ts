@@ -91,9 +91,18 @@ export const useCreateMyArtistProfile = () => {
 
   return useMutation({
     mutationFn: (body: CreateArtistProfileRequestDto) => createMyArtistProfile(body),
-    onSuccess: () => {
+    onSuccess: (artistProfile) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
+
+      const storedUser = useAuthStore.getState().user;
+
+      if (!storedUser) return;
+
+      useAuthStore.getState().setUser({
+        ...storedUser,
+        isArtistVerified: artistProfile.isVerified,
+      });
     },
   });
 };
