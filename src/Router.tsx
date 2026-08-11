@@ -67,7 +67,7 @@ export const router = createBrowserRouter([
       { path: 'home', element: <Homepage /> },
       { path: 'search', element: <SearchPage /> },
       {
-        path: 'auth/:userId',
+        path: 'artist/:userId',
         loader: validateNumericId('userId'),
         errorElement: <NotFound />,
         element: <AuthPage />,

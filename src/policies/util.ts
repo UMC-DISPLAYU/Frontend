@@ -1,3 +1,4 @@
+import { LOUNGE_CATEGORY_API_VALUES } from '@/constants/loungeCategories';
 import type { User } from '@/types/policy';
 
 export interface DisplayPolicyResource {
@@ -32,6 +33,10 @@ export interface MyResource {
   isMine?: boolean;
   isMyPost?: boolean;
   isMyComment?: boolean;
+}
+
+export interface LoungePostPolicyResource {
+  category: string;
 }
 
 export function isLoggedIn(user: User): boolean {
@@ -114,4 +119,17 @@ export function canModeratePersonalPost(
   personalArtwork: UserOwnedResource,
 ): boolean {
   return isOwner(user, resource) || (isArtistVerified(user) && isOwner(user, personalArtwork));
+}
+
+// 작가 인증이 있어야 열람 가능한 라운지 게시판 (전시 준비·작업 팁 / 모집·협업)
+const ARTIST_ONLY_LOUNGE_CATEGORIES: readonly string[] = [
+  LOUNGE_CATEGORY_API_VALUES.tips,
+  LOUNGE_CATEGORY_API_VALUES.collab,
+];
+
+// 전시 후기·전시 장소 대여 게시판은 비회원도 열람 가능, 나머지는 작가 인증 필요
+export function canViewLoungePost(user: User, post: LoungePostPolicyResource): boolean {
+  if (!ARTIST_ONLY_LOUNGE_CATEGORIES.includes(post.category)) return true;
+
+  return isArtistVerified(user);
 }

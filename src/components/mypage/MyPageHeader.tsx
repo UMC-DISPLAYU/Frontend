@@ -158,7 +158,7 @@ export function MyPageHeader({
         )}
       </div>
 
-      <nav className="border-b-2 border-line flex shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
+      <nav className="border-b-2 border-line flex">
         {TABS.map((tab) => {
           if (isArtistView && tab.key === 'artist') return null;
 
