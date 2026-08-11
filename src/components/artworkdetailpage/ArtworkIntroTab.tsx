@@ -13,6 +13,7 @@ import {
 import { useUserArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useAuthStore } from '@/stores/authStore';
 import type { ArtworkDetail } from '@/types/exhibition';
+import { cn } from '@/utils/cn';
 
 type Props = {
   artwork: ArtworkDetail;
@@ -98,7 +99,10 @@ function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
           className="flex h-11 w-5 shrink-0 items-center justify-center cursor-pointer disabled:opacity-60"
         >
           <Bookmark
-            className={`size-5 transition-colors ${isSaved ? 'fill-line text-line' : 'text-faint'}`}
+            className={cn(
+              'size-5 transition-colors',
+              isSaved ? 'fill-line text-line' : 'text-faint',
+            )}
             strokeWidth={1}
           />
         </button>
@@ -134,7 +138,10 @@ export function ArtworkIntroTab({ artwork, artistUserId, coAuthors = [] }: Props
           <h2 className="typo-body-xl-bold text-main">작품소개</h2>
         </div>
         <p
-          className={`typo-body-sm-regular text-main leading-relaxed ${isExpanded ? '' : 'line-clamp-3'}`}
+          className={cn(
+            'typo-body-sm-regular text-main leading-relaxed',
+            !isExpanded && 'line-clamp-3',
+          )}
         >
           {artwork.content}
         </p>
