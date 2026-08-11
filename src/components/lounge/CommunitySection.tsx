@@ -3,27 +3,47 @@ import { useNavigate } from 'react-router-dom';
 
 import loungeReviewThumbnail from '@/assets/lounge/LoungeReviewThumbnail.svg?inline';
 import loungeVenueThumbnail from '@/assets/lounge/LoungeVenueThumbnail.svg?inline';
-import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import {
+  useArtistVerificationRequiredModal,
+  useLoginRequiredModal,
+} from '@/hooks/usePermissionRequiredModal';
+import { useArtistPolicy } from '@/hooks/usePolicy';
 import { useAuthStore } from '@/stores/authStore';
+import { hasPermission } from '@/utils/hasPermission';
 
 import { LoungeCard } from './LoungeCard';
+
+/* 전시후기, 전시 장소 대여는 비회원도 열람할 수 있어 로그인 없이 바로 이동합니다. */
+const GUEST_ACCESSIBLE_PATHS = ['/lounge/review', '/lounge/venue'];
+
+/* 전시 준비·작업 팁, 모집·협업은 작가 인증한 회원만 열람할 수 있어요. */
+const ARTIST_ONLY_PATHS = ['/lounge/tips', '/lounge/collab'];
 
 export function CommunitySection() {
   const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const { artistVerificationModal, openArtistVerificationModal } =
+    useArtistVerificationRequiredModal();
+  const artistPolicy = useArtistPolicy();
+  const canViewArtist = hasPermission(artistPolicy, 'view');
 
   const handleCardClick = (path: string) => {
-    if (!accessToken) {
+    if (!accessToken && !GUEST_ACCESSIBLE_PATHS.includes(path)) {
       openLoginModal();
-    } else {
-      navigate(path);
+      return;
     }
+    if (accessToken && ARTIST_ONLY_PATHS.includes(path) && !canViewArtist) {
+      openArtistVerificationModal();
+      return;
+    }
+    navigate(path);
   };
 
   return (
     <div className="flex flex-col gap-2.5">
       {loginModal}
+      {artistVerificationModal}
       <div className="grid grid-cols-2 gap-3.5">
         <LoungeCard
           className="h-85.75"

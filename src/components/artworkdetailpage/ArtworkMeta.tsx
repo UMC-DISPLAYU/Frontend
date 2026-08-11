@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 import { Calendar, ChevronRight, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
+import { ARTWORK_TYPE_LABEL_MAP } from '@/constants/artwork';
 import { useToggleArtworkLike } from '@/hooks/queries/useArtworkDetail';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArchivePolicy } from '@/hooks/usePolicy';
@@ -45,6 +46,14 @@ export function ArtworkMeta({ artwork }: Props) {
     toggleLike.mutate(liked);
   };
 
+  /* 분류·연도·크기·재료 순으로, 값이 있는 항목만 가운뎃점(·)으로 이어 보여줍니다. */
+  const infoParts = [
+    ARTWORK_TYPE_LABEL_MAP[artwork.type] ?? artwork.type,
+    artwork.productionYear ? `${artwork.productionYear}` : null,
+    artwork.size,
+    artwork.materialMedia,
+  ].filter((part): part is string => Boolean(part));
+
   return (
     <div className="bg-page px-5 pt-5 pb-6">
       {/* 제목/하트 */}
@@ -58,32 +67,41 @@ export function ArtworkMeta({ artwork }: Props) {
             className="cursor-pointer active:scale-95 transition-transform"
           >
             <Heart
-              strokeWidth={1.2}
+              size={24}
+              strokeWidth={1.5}
               className={cn(
-                'size-6 transition-colors duration-200',
+                'transition-colors duration-200',
                 liked ? 'fill-heart text-heart' : 'fill-none text-main',
               )}
             />
           </button>
-          <span
-            className={cn('typo-body-xs-regular mt-1 transition-colors duration-200', 'text-main')}
-          >
-            {likeCount}
-          </span>
+          <span className="typo-body-xs-regular mt-1 text-main">{likeCount}</span>
         </div>
       </div>
 
-      {/* 작가명 */}
-      <p className="typo-body-sm-regular text-main mb-4 -mt-1.5">{artwork.artist}</p>
+      {/* 작가명 + 작품 정보(분류·연도·크기·재료) */}
+      <div className="flex flex-col items-start gap-2 mb-2.5">
+        <p className="typo-body-sm-regular text-main -mt-1.5">{artwork.artist}</p>
+        {infoParts.length > 0 && (
+          <div className="flex items-center gap-1 self-stretch">
+            {infoParts.map((part, idx) => (
+              <Fragment key={idx}>
+                {idx > 0 && <span className="typo-body-xs-regular text-hint">·</span>}
+                <span className="typo-body-xs-regular text-hint">{part}</span>
+              </Fragment>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* 소속 전시 카드 */}
       <button
         type="button"
         onClick={() => navigate(`/display/${artwork.exhibitionId}`)}
-        className="w-full flex items-center gap-3 pl-3.5 pr-1.5 py-3.5 bg-page rounded-xl mb-4 cursor-pointer text-left"
+        className="w-full flex items-center gap-2 p-3 bg-box100 rounded-xl mb-4 cursor-pointer text-left"
         style={{
           boxShadow:
-            '8px 8px 18px 0px rgba(67, 0, 209, 0.04), inset 2.5px 2.5px 4px 0px rgba(0, 0, 0, 0.15), inset -2.5px -2.5px 4px 0px rgba(255, 255, 255, 1.00)',
+            '8px 8px 18px 0px rgba(67, 0, 209, 0.04), inset 2px 2px 3px 0px rgba(0, 0, 0, 0.20), inset -2px -2px 3px 0px rgba(255, 255, 255, 1.00)',
         }}
       >
         {/* 썸네일 이미지 */}
@@ -99,6 +117,9 @@ export function ArtworkMeta({ artwork }: Props) {
         <div className="flex flex-col justify-between h-24 min-w-0 flex-1 py-0.5">
           {/* 제목, 설명 */}
           <div className="flex flex-col justify-start items-start gap-1 min-w-0">
+            <span className="inline-flex items-start rounded px-2 py-0.5 bg-box200">
+              <span className="typo-body-xxs-regular text-logo">소속전시</span>
+            </span>
             <h2 className="w-full typo-body-sm-bold text-main truncate">
               {artwork.exhibitionTitle}
             </h2>
@@ -108,15 +129,15 @@ export function ArtworkMeta({ artwork }: Props) {
           </div>
 
           {/* 날짜 */}
-          <div className="flex items-center gap-1.5 text-faint">
-            <Calendar size={12} className="shrink-0 text-faint" strokeWidth={1.5} />
+          <div className="flex items-center gap-[5px] text-faint">
+            <Calendar size={12} className="shrink-0 text-faint ml-0.5" strokeWidth={1.5} />
             <span className="typo-body-xxs-regular text-faint">{artwork.exhibitionPeriod}</span>
           </div>
         </div>
 
         {/* 오른쪽 화살표 */}
-        <div className="shrink-0 -mr-0.5">
-          <ChevronRight size={28} className="text-faint" strokeWidth={1.8} />
+        <div className="shrink-0 -mr-2.5">
+          <ChevronRight size={32} className="text-faint" strokeWidth={1.5} />
         </div>
       </button>
 

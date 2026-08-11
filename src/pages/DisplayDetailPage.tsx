@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-import { Share2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
+import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtworkTab,
+  BottomFixedBar,
   DetailTabNav,
   DisplaySaveButton,
   ExhibitionMeta,
@@ -16,7 +16,6 @@ import {
 import { BackButton } from '@/components/ui/BackButton';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
-import { useShare } from '@/hooks/useShare';
 import { useAuthStore } from '@/stores/authStore';
 import type { DetailTabKey } from '@/types/exhibition';
 import { parseDisplayId } from '@/utils/parseDisplayId';
@@ -29,7 +28,6 @@ export function DisplayDetailPage() {
   const [activeTab, setActiveTab] = useState<DetailTabKey>('intro');
   const accessToken = useAuthStore((state) => state.accessToken);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
-  const { handleShare } = useShare();
 
   const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
 
@@ -85,24 +83,14 @@ export function DisplayDetailPage() {
       {activeTab === 'review' && <ReviewTab display={display} displayId={display.displayId} />}
       {/* 후기 탭은 하단에 댓글 입력바가 자리하므로 전시 저장 바를 띄우지 않습니다. */}
       {activeTab !== 'review' && (
-        <BottomFixedBar>
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => handleShare(window.location.href, display.title)}
-              aria-label="전시 공유"
-              className="flex size-12 shrink-0 cursor-pointer items-center justify-center"
-            >
-              <Share2 size={24} className="text-sub700" />
-            </button>
-            <div className="ml-2 flex-1">
-              <DisplaySaveButton
-                displayId={display.displayId}
-                saved={display.isArchived ?? false}
-              />
-            </div>
-          </div>
-        </BottomFixedBar>
+        <BottomFixedBar
+          button={
+            <DisplaySaveButton displayId={display.displayId} saved={display.isArchived ?? false} />
+          }
+          shareTitle={display.title}
+          shareDescription={display.subtitle ?? undefined}
+          shareImageUrl={heroImages[0]}
+        />
       )}
     </div>
   );

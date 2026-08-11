@@ -33,8 +33,10 @@ import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
 import { toProductionYear } from '@/utils/date';
+import { hasPermission } from '@/utils/hasPermission';
 
 type RegisterStep = 'choice' | 'otherTeamAuthor' | 'otherAuthor' | 'basic' | 'participants';
 const DIRECT_INPUT_ACCOUNT = '직접입력';
@@ -319,6 +321,10 @@ function ArtworkRegisterPageContent() {
   const { data: artworkList } = useDisplayArtworks(displayId);
   const { data: display } = useDisplayDetail(displayId);
 
+  /* 작가 인증 + 전시 소속인만 전시작을 등록할 수 있습니다. */
+  const artworkPolicy = useArtworkPolicy(display);
+  const canCreateArtwork = hasPermission(artworkPolicy, 'create');
+
   const exhibition = useMemo(
     () => ({
       title: display?.title ?? '',
@@ -582,6 +588,11 @@ function ArtworkRegisterPageContent() {
 
     if (isEditMode) {
       navigate(`/exhibition/${displayId}/artworks`, { replace: true });
+      return;
+    }
+
+    if (!canCreateArtwork) {
+      setSubmitError('작품을 등록할 권한이 없어요.');
       return;
     }
 

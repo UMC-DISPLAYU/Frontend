@@ -67,7 +67,12 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/login" replace /> },
       { path: 'home', element: <Homepage /> },
       { path: 'search', element: <SearchPage /> },
-      { path: 'auth', element: <AuthPage /> },
+      {
+        path: 'auth/:userId',
+        loader: validateNumericId('userId'),
+        errorElement: <NotFound />,
+        element: <AuthPage />,
+      },
       { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
       {
         path: 'display/:id',

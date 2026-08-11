@@ -6,17 +6,17 @@ const accessToken = 'mock-access-token';
 const refreshToken = 'mock-refresh-token';
 
 export const authHandlers = [
-  ...paths('/api/auth/google/login-url').map((path) =>
+  ...paths('/api/v1/auth/google/login-url').map((path) =>
     http.get(path, () =>
-      success('/api/auth/google/login-url', {
+      success('/api/v1/auth/google/login-url', {
         authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth?mock=true',
         loginUrl: 'https://accounts.google.com/o/oauth2/v2/auth?mock=true',
       }),
     ),
   ),
-  ...paths('/api/auth/kakao/login-url').map((path) =>
+  ...paths('/api/v1/auth/kakao/login-url').map((path) =>
     http.get(path, () =>
-      success('/api/auth/kakao/login-url', {
+      success('/api/v1/auth/kakao/login-url', {
         authorizationUrl: 'https://kauth.kakao.com/oauth/authorize?mock=true',
         loginUrl: 'https://kauth.kakao.com/oauth/authorize?mock=true',
       }),

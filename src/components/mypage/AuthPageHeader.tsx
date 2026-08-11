@@ -13,8 +13,6 @@ const TABS: { key: TabKey; label: string }[] = [
 interface AuthPageHeaderProps {
   activeTab: TabKey;
   onTabChange: (key: TabKey) => void;
-  onOpenMenu: () => void;
-  onRefresh: () => void;
   onRegister: () => void;
   onShare: () => void;
   profile: ArtistProfile;

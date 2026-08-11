@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronLeft, ImagePlus, Search } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
+import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
 import { BottomButton } from '@/components/common';
 import { ChipGroup } from '@/components/ui';
 import {
@@ -16,9 +17,7 @@ import {
   type ExhibitionField,
 } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
-import { useSearchSchools } from '@/hooks/queries/useSchoolEmailVerification';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
-import { cn } from '@/utils/cn';
 
 import {
   type EditArtistProfileFormValues,
@@ -48,18 +47,16 @@ function ProfilePhotoField({
         type="button"
         onClick={() => inputRef.current?.click()}
         aria-label="프로필 사진 등록"
-        className="flex size-24 flex-col items-center justify-center gap-3 overflow-hidden rounded-xl border border-line bg-card"
+        className="relative size-20"
       >
         {image ? (
-          <img src={image} alt="프로필 미리보기" className="size-full object-cover" />
+          <img src={image} alt="프로필 미리보기" className="size-20 rounded-full object-cover" />
         ) : (
-          <>
-            <span className="flex size-10 items-center justify-center rounded-full bg-page text-faint">
-              <ImagePlus className="size-[18px]" strokeWidth={1.5} />
-            </span>
-            <span className="typo-body-xs-regular text-main">프로필 사진</span>
-          </>
+          <img src={defaultProfile} alt="프로필" className="size-20 rounded-full object-cover" />
         )}
+        <span className="absolute bottom-0 right-0 flex size-6 items-center justify-center overflow-hidden rounded-full bg-sub600">
+          <Plus className="text-white" strokeWidth={2} />
+        </span>
       </button>
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </>
@@ -86,9 +83,6 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const updateMyArtistProfile = useUpdateMyArtistProfile();
   const uploadImage = useUploadImage();
 
-  // 작가인증 여부 확인 (학교명이 있으면 고정)
-  const isSchoolFixed = Boolean(artistProfile?.schoolName);
-
   const {
     register,
     handleSubmit,
@@ -110,10 +104,6 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const introduction = useWatch({ control, name: 'introduction' }) ?? '';
   const selectedFields = useWatch({ control, name: 'fields' }) ?? [];
   const school = useWatch({ control, name: 'univName' }) ?? '';
-
-  const [schoolFocused, setSchoolFocused] = useState(false);
-  const schoolQuery = useSearchSchools(school);
-  const showSchoolDropdown = !isSchoolFixed && schoolFocused && school.trim().length > 0;
 
   const canSubmit = isValid && !updateMyArtistProfile.isPending && !uploadImage.isPending;
 
@@ -192,13 +182,13 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           {/* 활동명 */}
           <div className="flex flex-col gap-3">
             <label htmlFor="artistName" className="typo-body-sm-bold text-main">
-              활동명
+              프로필명
             </label>
             <input
               id="artistName"
               maxLength={15}
               placeholder="활동명 입력(최대 15자)"
-              className="h-9 rounded-lg border border-line bg-card px-3 typo-body-xs-regular text-main outline-none placeholder:text-faint focus:border-line-active"
+              className="h-9 bg-page border-b border-line px-3 typo-body-xs-regular text-main outline-none placeholder:text-faint"
               {...register('artistName')}
             />
             {errors.artistName?.message && (
@@ -213,13 +203,13 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
             <label htmlFor="introduction" className="typo-body-sm-bold text-main">
               전시소개
             </label>
-            <div className="rounded-lg border border-line bg-card px-3 py-2.5">
+            <div className="border-b border-line bg-page px-3 py-2.5">
               <textarea
                 id="introduction"
                 maxLength={INTRO_MAX}
                 placeholder="전시에 대해 소개해주세요"
                 rows={4}
-                className="w-full resize-none bg-transparent typo-body-xs-regular text-main outline-none placeholder:text-faint"
+                className="w-full resize-none  typo-body-xs-regular text-main outline-none placeholder:text-faint"
                 {...register('introduction', {
                   onChange: (e) => {
                     setValue('introduction', e.target.value.slice(0, INTRO_MAX));
@@ -262,7 +252,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
             <input
               id="externalLink"
               placeholder="포트폴리오, 인스타그램, 개인 웹사이트 링크"
-              className="h-11 rounded-2xl bg-card px-3.5 typo-body-sm-regular text-tag-blue outline-none placeholder:text-faint"
+              className="h-11 border-b border-faint bg-transparent px-3.5 typo-body-sm-regular text-link outline-none placeholder:text-line"
               {...register('externalLink')}
             />
             {errors.externalLink?.message && (
@@ -276,71 +266,17 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           <div className="flex flex-col gap-3">
             <span className="typo-body-sm-bold text-main">소속 정보</span>
             <div className="rounded-2xl bg-card px-4 py-3.5">
-              <label htmlFor="school" className="mb-2 block typo-body-xs-bold text-sub600">
+              <label htmlFor="school" className="mb-2 block typo-body-xs-bold text-sub700">
                 학교 / 기관명
               </label>
 
-              <div className="relative">
-                <div
-                  className={cn(
-                    'flex h-10 items-center gap-2 rounded-2xl bg-page border border-line px-3',
-                    isSchoolFixed && 'opacity-60 bg-gray-100',
-                  )}
-                >
-                  <input
-                    id="school"
-                    value={school}
-                    onChange={(e) => {
-                      setValue('univName', e.target.value, { shouldValidate: true });
-                    }}
-                    onFocus={() => setSchoolFocused(true)}
-                    onBlur={() => setTimeout(() => setSchoolFocused(false), 120)}
-                    placeholder={isSchoolFixed ? school : '학교명을 검색해주세요'}
-                    disabled={isSchoolFixed}
-                    className="min-w-0 flex-1 bg-transparent typo-body-sm-regular text-main outline-none placeholder:text-line"
-                  />
-                  {!isSchoolFixed && (
-                    <Search className="size-4 shrink-0 text-faint" strokeWidth={1.5} />
-                  )}
-                </div>
-
-                {showSchoolDropdown && (
-                  <ul className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[208px] overflow-y-auto overscroll-contain rounded-2xl bg-card py-2 shadow-[0px_4px_16px_0px_rgba(0,0,0,0.08)]">
-                    {schoolQuery.isLoading ? (
-                      <li className="px-4 py-2.5 typo-body-sm-regular text-faint">검색 중...</li>
-                    ) : schoolQuery.data && schoolQuery.data.length > 0 ? (
-                      schoolQuery.data.map(({ name }) => (
-                        <li key={name}>
-                          <button
-                            type="button"
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={() => {
-                              setValue('univName', name, { shouldValidate: true });
-                              setSchoolFocused(false);
-                            }}
-                            className="w-full px-4 py-2.5 text-left typo-body-sm-regular text-main hover:bg-page"
-                          >
-                            {name}
-                          </button>
-                        </li>
-                      ))
-                    ) : (
-                      <li>
-                        <button
-                          type="button"
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => {
-                            setValue('univName', school, { shouldValidate: true });
-                            setSchoolFocused(false);
-                          }}
-                          className="w-full px-4 py-2.5 text-left typo-body-sm-regular text-main hover:bg-page"
-                        >
-                          {school}
-                        </button>
-                      </li>
-                    )}
-                  </ul>
-                )}
+              <div className="flex h-10 items-center gap-2 rounded-2xl bg-page border border-line-soft px-3 opacity-60">
+                <input
+                  id="school"
+                  value={school}
+                  readOnly
+                  className="min-w-0 flex-1 bg-transparent typo-body-sm-regular text-main outline-none placeholder:text-line"
+                />
               </div>
             </div>
           </div>

@@ -1,26 +1,33 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Heart, Lock } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Lock, Plus, X } from 'lucide-react';
 
 import type {
   ArtworkFeelingDto,
   DisplayDetailDto,
   GetArtworkDetailResponseDataDto,
 } from '@/api/dto';
-import { FALLBACK_PROFILE_IMAGE } from '@/constants';
-import {
-  useDeleteArtworkQuestion,
-  useDeleteArtworkQuestionReply,
-  useUpdateArtworkQuestion,
-} from '@/hooks/queries/useArtworkQuestions';
-import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
-import { useQuestionPolicy, useQuestionReplyPolicy } from '@/hooks/usePolicy';
+import { useQuestionPolicy } from '@/hooks/usePolicy';
 import type { ArtworkGuestbookTab, GuestbookQuestion } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
 import { formatRelativeTime } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworkFeelingCommentItem } from './ArtworkFeelingCommentItem';
+
+/* 스크롤 대신 박스 자체가 늘어나도록 내용에 맞춰 textarea 높이를 맞춥니다. */
+function useAutoResizeTextarea(value: string) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
+  return ref;
+}
 
 type Props = {
   feelings: ArtworkFeelingDto[];
@@ -43,276 +50,267 @@ type Props = {
   /* 작가가 답변할 질문 id */
   replyTargetQuestionId?: number | null;
   onQuestionReplyTargetChange?: (question: GuestbookQuestion | null) => void;
+  onAddQuestionClick?: () => void;
+  /* 새 질문 작성 카드가 열려 있는지 여부 */
+  isComposingQuestion?: boolean;
+  onCloseComposeQuestion?: () => void;
+  onSubmitQuestion?: (payload: { content: string; isPrivate: boolean }) => void;
+  isSubmittingQuestion?: boolean;
 };
 
 /* 방명록 질문 탭 카드 (일반인 시점 / 작가 시점 지원) */
 function QuestionCard({
   question,
-  artworkId,
-  artwork,
   display,
+  artistName,
   isArtistView = false,
   isReplyTarget = false,
   onReply,
+  onSubmitReply,
+  isSubmittingReply = false,
 }: {
   question: GuestbookQuestion;
-  artworkId: number;
-  artwork: GetArtworkDetailResponseDataDto;
   display: DisplayDetailDto;
+  /* 답변 작성 카드에 표시되는 전시 대표 작가 이름 */
+  artistName?: string;
   isArtistView?: boolean;
   isReplyTarget?: boolean;
   onReply?: () => void;
+  onSubmitReply?: (content: string) => void;
+  isSubmittingReply?: boolean;
 }) {
   const [showReplies, setShowReplies] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [editContent, setEditContent] = useState(question.content);
-
-  /* 질문에는 좋아요 API가 없어 화면 표시용 값만 사용합니다. */
-  const liked = question.isLiked ?? false;
-  const likeCount = question.likeCount ?? 0;
-
-  const deleteQuestion = useDeleteArtworkQuestion();
-  const deleteQuestionReply = useDeleteArtworkQuestionReply();
-  const updateQuestion = useUpdateArtworkQuestion();
-  const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const [replyContent, setReplyContent] = useState('');
+  const replyTextareaRef = useAutoResizeTextarea(replyContent);
   const questionPolicy = useQuestionPolicy(question, display);
-  const questionReplyPolicy = useQuestionReplyPolicy(question, display, artwork, question.reply);
   const canView = hasPermission(questionPolicy, 'view');
-  const canLike = hasPermission(questionPolicy, liked ? 'unlike' : 'like');
-  const canDelete = hasPermission(questionPolicy, 'delete');
-  const canViewReply = hasPermission(questionReplyPolicy, 'reply.view');
-  const canCreateReply = hasPermission(questionReplyPolicy, 'reply.create');
-  const canDeleteReply = hasPermission(questionReplyPolicy, 'reply.delete');
 
-  const submitEdit = () => {
-    const content = editContent.trim();
-    if (!content || updateQuestion.isPending) return;
-
-    updateQuestion.mutate(
-      {
-        artworkId,
-        questionId: question.questionId,
-        body: { content, isPublic: question.isPublic },
-      },
-      { onSuccess: () => setEditing(false) },
-    );
-  };
-
-  const handleReply = () => {
-    if (!canCreateReply) {
-      openLoginModal();
-      return;
-    }
-
-    onReply?.();
-  };
-
-  const handleDelete = () => {
-    if (!canDelete) return;
-
-    deleteQuestion.mutate({ artworkId, questionId: question.questionId });
-  };
-
-  const handleLike = () => {
-    if (!canLike) {
-      openLoginModal();
-    }
-  };
-
-  const handleDeleteReply = () => {
-    const questionReplyId = question.reply?.questionReplyId ?? question.reply?.queReplyId;
-    if (!canDeleteReply || !questionReplyId) return;
-
-    deleteQuestionReply.mutate({
-      artworkId,
-      questionId: question.questionId,
-      questionReplyId,
-    });
-  };
-
-  // 1) 일반인 시점 비공개 질문 카드
-  if (!canView) {
-    return (
-      <article className="w-full">
-        <div className="-mx-5 px-5 py-4 border-b border-line flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
-            <span className="typo-body-sm-bold text-main">비공개 질문입니다.</span>
-          </div>
-          <div className="flex items-center gap-2 typo-body-xs-regular text-faint pl-6">
-            <span>{formatRelativeTime(question.createdAt)}</span>
-          </div>
-        </div>
-      </article>
-    );
+  /*
+   * 답변할 질문이 없어졌으면(답변 등록 성공 등) 작성 중이던 입력값을 비웁니다.
+   * effect 대신 렌더링 중 상태를 조정하는 방식(React 공식 권장 패턴)을 씁니다.
+   */
+  const [prevIsReplyTarget, setPrevIsReplyTarget] = useState(isReplyTarget);
+  if (isReplyTarget !== prevIsReplyTarget) {
+    setPrevIsReplyTarget(isReplyTarget);
+    if (!isReplyTarget) setReplyContent('');
   }
 
-  // 2) 공개 질문 카드 및 작가 시점 질문 카드
+  /* 이 질문에 답변을 작성 중인지 — 작가만 가능합니다. */
+  const isComposingReply = isArtistView && isReplyTarget && !question.reply;
+
+  const handleFooterClick = () => {
+    if (isArtistView && !question.reply) {
+      onReply?.();
+      return;
+    }
+    setShowReplies((prev) => !prev);
+  };
+
+  const handleSubmitReply = () => {
+    const trimmed = replyContent.trim();
+    if (!trimmed || isSubmittingReply) return;
+    onSubmitReply?.(trimmed);
+  };
+
   return (
-    <article
-      className={cn(
-        'w-full transition-colors',
-        isReplyTarget && '-mx-5 w-[calc(100%+2.5rem)] bg-box100 px-5',
-      )}
-    >
-      <div className="-mx-5 px-5 py-3 border-b border-line">
-        <div className="w-full inline-flex justify-start items-start gap-1.5">
-          {/* 프로필 아바타 */}
-          <div className="size-7 relative bg-box rounded-full border border-line overflow-hidden shrink-0">
-            <img
-              src={question.user?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
-              alt={question.user?.nickname || '사용자'}
-              className="w-full h-full object-cover"
-            />
+    <article className="w-full px-5 pb-3.5">
+      <div className="w-full overflow-hidden rounded-[18px] bg-card shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+        {!canView ? (
+          <div className="flex flex-col items-start gap-1 px-4 py-3.5">
+            <div className="flex h-[50px] items-center gap-3 self-stretch">
+              <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
+              <div className="flex w-[280px] shrink-0 flex-col items-start gap-1">
+                <span className="typo-body-md-bold text-main">비공개 질문입니다.</span>
+                <span className="typo-body-xs-regular text-sub600">
+                  {formatRelativeTime(question.createdAt)}
+                </span>
+              </div>
+            </div>
           </div>
+        ) : (
+          <div className="flex flex-col items-start gap-1 px-4 py-3.5">
+            <p className="w-full typo-body-md-regular text-main wrap-break-word whitespace-pre-line">
+              {question.content}
+            </p>
+            <div className="flex items-start gap-2">
+              <span className="typo-body-xs-regular text-sub600">{question.user?.nickname}</span>
+              <span className="typo-body-xs-regular text-sub600">
+                {formatRelativeTime(question.createdAt)}
+              </span>
+            </div>
+          </div>
+        )}
 
-          {/* 우측 전체 컨텐츠 Column */}
-          <div className="flex-1 inline-flex flex-col justify-start items-start gap-3 min-w-0">
-            <div className="w-full flex flex-col justify-start items-start gap-2">
-              {/* 이름 & 날짜 & (비공개인 경우 자물쇠 아이콘 우측 표시) */}
-              <div className="w-full flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <span className="typo-body-sm-bold text-main">{question.user?.nickname}</span>
+        {isComposingReply ? (
+          <div className="border-t border-box200">
+            <button
+              type="button"
+              onClick={() => onReply?.()}
+              className="flex h-[52px] w-full items-center justify-between gap-0.5 px-4 pt-4 pb-2 cursor-pointer"
+            >
+              <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
+                {artistName}
+              </span>
+              <span className="flex shrink-0 items-center gap-0.5">
+                <span className="typo-body-xs-regular text-sub600 underline">답변대기</span>
+                <ChevronDown size={13} className="shrink-0 text-sub600" />
+              </span>
+            </button>
+
+            <div className="flex flex-col items-center gap-2 self-stretch px-4 pb-4">
+              <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
+                <textarea
+                  ref={replyTextareaRef}
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
+                  placeholder="답변을 작성해주세요"
+                  rows={1}
+                  className="typo-body-xs-regular min-h-[80px] w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint"
+                />
+                <div className="flex w-full items-center justify-between">
+                  <button type="button" className="typo-body-sm-regular text-faint underline">
+                    사진추가
+                  </button>
                   <span className="typo-body-xs-regular text-faint">
-                    {formatRelativeTime(question.createdAt)}
+                    {replyContent.length}/{QUESTION_MAX_LENGTH}
                   </span>
                 </div>
-                {!question.isPublic && (
-                  <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
-                )}
               </div>
+              <button
+                type="button"
+                onClick={handleSubmitReply}
+                disabled={!replyContent.trim() || isSubmittingReply}
+                className="flex h-11 w-full items-center justify-center gap-2.5 rounded-[52px] bg-box100 disabled:opacity-50"
+              >
+                <span className="text-[18px] leading-[140%] tracking-[-0.45px] text-main">
+                  확인
+                </span>
+              </button>
+            </div>
+          </div>
+        ) : question.reply ? (
+          <button
+            type="button"
+            onClick={handleFooterClick}
+            className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2 cursor-pointer"
+          >
+            <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
+              {artistName}
+            </span>
+            <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
+            {showReplies && <ChevronUp size={13} className="shrink-0 text-sub600" />}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleFooterClick}
+            className="flex w-full items-center justify-end gap-0.5 border-t border-box200 p-4 cursor-pointer"
+          >
+            <span className="typo-body-xs-regular text-sub600 underline">답변대기</span>
+            {showReplies && <ChevronDown size={13} className="shrink-0 text-sub600" />}
+          </button>
+        )}
 
-              {/* 질문 내용 */}
-              {editing ? (
-                <div className="flex w-full items-center gap-2">
-                  <input
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') setEditing(false);
-                      if (e.key === 'Enter' && !e.nativeEvent.isComposing) submitEdit();
-                    }}
-                    className="typo-body-xs-regular min-w-0 flex-1 rounded-lg bg-box200 px-3 py-2 text-main outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={submitEdit}
-                    className="typo-body-xs-regular shrink-0 text-link"
-                  >
-                    저장
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditing(false)}
-                    className="typo-body-xs-regular shrink-0 text-faint"
-                  >
-                    취소
-                  </button>
-                </div>
-              ) : (
-                <p className="w-full typo-body-xs-regular text-sub600 wrap-break-word whitespace-pre-line">
-                  {question.content}
+        {showReplies && !isComposingReply && (
+          <div className="flex flex-col px-4 pb-3.5">
+            {question.reply ? (
+              <>
+                <p className="typo-body-md-regular text-main wrap-break-word whitespace-pre-line">
+                  {question.reply.content}
                 </p>
-              )}
-            </div>
-
-            {/* 하단 액션: 답글달기 / 수정 / 삭제 + 좋아요 */}
-            <div className="w-full inline-flex justify-between items-center typo-body-xs-regular text-faint">
-              <div className="flex justify-start items-center gap-2">
-                {/* 질문 답변은 작가만 남길 수 있습니다. */}
-                {isArtistView && !question.reply && (
-                  <button
-                    type="button"
-                    onClick={handleReply}
-                    className="hover:text-main cursor-pointer"
-                  >
-                    답글달기
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setShowReplies((prev) => !prev)}
-                  className="hover:text-main cursor-pointer"
-                >
-                  {question.reply ? '답변완료' : '답변대기'}
-                </button>
-                {question.isMyQuestion && !editing && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditContent(question.content);
-                      setEditing(true);
-                    }}
-                    className="hover:text-main cursor-pointer"
-                  >
-                    수정
-                  </button>
-                )}
-                {canDelete && (
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    className="hover:text-main cursor-pointer"
-                  >
-                    삭제
-                  </button>
-                )}
-              </div>
-
-              <div className="flex justify-start items-center gap-1">
-                {/* 질문 좋아요 API가 없어 표시만 합니다. */}
-                <button
-                  type="button"
-                  onClick={handleLike}
-                  className="flex items-center gap-1 text-hint"
-                >
-                  <Heart
-                    size={14}
-                    className={cn(
-                      'transition-colors',
-                      liked ? 'fill-main text-main' : 'fill-none text-hint',
-                    )}
-                  />
-                  <span>{likeCount}</span>
-                </button>
-              </div>
-            </div>
+                <span className="typo-body-xs-regular mt-1 text-sub600">
+                  {formatRelativeTime(question.reply.createdAt)}
+                </span>
+              </>
+            ) : (
+              <p className="typo-body-xs-regular text-faint">등록된 답변이 없습니다.</p>
+            )}
           </div>
-        </div>
+        )}
       </div>
+    </article>
+  );
+}
 
-      {/* 답변 펼치기 내용 */}
-      {showReplies && (
-        <div className="-mx-5 pl-14 pr-5 py-3 border-b border-line bg-box100/40 flex flex-col gap-2">
-          {question.reply && canViewReply ? (
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="typo-body-sm-bold text-main">작가 답변</span>
-                  <span className="typo-body-xs-regular text-faint">
-                    {formatRelativeTime(question.reply.createdAt)}
-                  </span>
-                </div>
-                {canDeleteReply && (
-                  <button
-                    type="button"
-                    onClick={handleDeleteReply}
-                    className="typo-body-xs-regular text-faint hover:text-main"
-                  >
-                    삭제
-                  </button>
-                )}
-              </div>
-              <p className="typo-body-xs-regular text-sub600 leading-relaxed">
-                {question.reply.content}
-              </p>
-            </div>
-          ) : (
-            <p className="typo-body-xs-regular text-faint">등록된 답변이 없습니다.</p>
-          )}
+const QUESTION_MAX_LENGTH = 300;
+
+function QuestionComposerCard({
+  onClose,
+  onSubmit,
+  isSubmitting = false,
+}: {
+  onClose: () => void;
+  onSubmit: (payload: { content: string; isPrivate: boolean }) => void;
+  isSubmitting?: boolean;
+}) {
+  const [content, setContent] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
+  const textareaRef = useAutoResizeTextarea(content);
+
+  const handleSubmit = () => {
+    const trimmed = content.trim();
+    if (!trimmed || isSubmitting) return;
+    onSubmit({ content: trimmed, isPrivate });
+  };
+
+  return (
+    <article className="w-full px-5 pt-1 pb-3.5">
+      <div className="flex w-full flex-col items-start gap-2 self-stretch rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+        {/* 질문작성 / 닫기 */}
+        <div className="flex items-center justify-between self-stretch">
+          <span className="typo-body-sm-bold text-main">질문작성</span>
+          <button type="button" onClick={onClose} aria-label="닫기" className="cursor-pointer">
+            <X size={20} strokeWidth={1.5} className="text-main" />
+          </button>
         </div>
-      )}
-      {loginModal}
+
+        <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
+            placeholder="질문을 작성해주세요"
+            rows={1}
+            className="typo-body-xs-regular min-h-[80px] w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint"
+          />
+          <span className="typo-body-xs-regular w-full text-right text-faint">
+            {content.length}/{QUESTION_MAX_LENGTH}
+          </span>
+        </div>
+
+        <div className="flex items-start justify-between self-stretch">
+          <button
+            type="button"
+            onClick={() => setIsPrivate((prev) => !prev)}
+            aria-pressed={isPrivate}
+            className="flex cursor-pointer items-center gap-1.5"
+          >
+            <span
+              className={cn(
+                'flex size-3 items-center justify-center rounded-[1px] border transition-colors',
+                isPrivate ? 'border-main' : 'border-faint',
+              )}
+            >
+              {isPrivate && <Check size={10} strokeWidth={3} className="text-main" />}
+            </span>
+            <span className={cn('typo-body-sm-regular', isPrivate ? 'text-main' : 'text-faint')}>
+              비공개
+            </span>
+          </button>
+          <button type="button" className="typo-body-sm-regular text-faint underline">
+            사진추가
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!content.trim() || isSubmitting}
+          className="flex h-11 w-full items-center justify-center gap-2.5 rounded-[52px] bg-box100 disabled:opacity-50"
+        >
+          <span className="text-[18px] leading-[140%] tracking-[-0.45px] text-main">확인</span>
+        </button>
+      </div>
     </article>
   );
 }
@@ -336,6 +334,11 @@ export function ArtworkGuestbookTab({
   onFeelingReplyClick,
   replyTargetQuestionId,
   onQuestionReplyTargetChange,
+  onAddQuestionClick,
+  isComposingQuestion = false,
+  onCloseComposeQuestion,
+  onSubmitQuestion,
+  isSubmittingQuestion = false,
 }: Props) {
   const [localArtistView, setLocalArtistView] = useState(isArtist);
 
@@ -370,11 +373,11 @@ export function ArtworkGuestbookTab({
   };
 
   return (
-    <div className="pb-bottom-bar-offset">
+    <div className="min-h-150 pb-comment-bar-offset">
       {/* ── 감상 탭 ── */}
       {activeTab === 'review' && (
-        <div className="px-5 pt-2">
-          <div className="py-4">
+        <div className="px-5 pt-4">
+          <div className="pb-4">
             <h2 className="typo-body-xl-bold text-main">감상 후기</h2>
           </div>
           <div className="flex flex-col">
@@ -407,36 +410,54 @@ export function ArtworkGuestbookTab({
 
       {/* ── 질문 탭 ── */}
       {activeTab === 'question' && (
-        <div className="px-5 pt-2">
-          <div className="flex items-center justify-between py-4">
+        <div className="pt-4">
+          <div className="flex items-center justify-between px-5 pb-3">
             <h2 className="typo-body-xl-bold text-main">질문하기</h2>
-            {/* 작가/일반인 시점 전환은 테스트용 — 실제 화면엔 없습니다. */}
-            <button
-              type="button"
-              onClick={handleArtistViewToggle}
-              className="px-2.5 py-1 text-xs rounded-full border border-line text-sub600 hover:text-main cursor-pointer"
-            >
-              {isArtistView ? '작가 시점' : '일반인 시점'}
-            </button>
+            <div className="flex items-center gap-2">
+              {/* 작가/일반인 시점 전환은 테스트용 — 실제 화면엔 없습니다. */}
+              <button
+                type="button"
+                onClick={handleArtistViewToggle}
+                className="px-2.5 py-1 text-xs rounded-full border border-line text-sub600 hover:text-main cursor-pointer"
+              >
+                {isArtistView ? '작가 시점' : '일반인 시점'}
+              </button>
+              <button
+                type="button"
+                aria-label="질문 작성"
+                onClick={onAddQuestionClick}
+                className="mr-[15px] cursor-pointer"
+              >
+                <Plus size={17} strokeWidth={2} className="text-main" />
+              </button>
+            </div>
           </div>
           <div className="flex flex-col">
+            {isComposingQuestion && (
+              <QuestionComposerCard
+                onClose={() => onCloseComposeQuestion?.()}
+                onSubmit={(payload) => onSubmitQuestion?.(payload)}
+                isSubmitting={isSubmittingQuestion}
+              />
+            )}
             {questions.map((q) => (
               <QuestionCard
                 key={q.questionId}
                 question={q}
-                artworkId={artworkId}
-                artwork={artwork}
                 display={display}
+                artistName={artwork.artistName}
                 isArtistView={isArtistView}
                 isReplyTarget={replyTargetQuestionId === q.questionId}
                 onReply={() =>
                   onQuestionReplyTargetChange?.(replyTargetQuestionId === q.questionId ? null : q)
                 }
+                onSubmitReply={(content) => onSubmitQuestion?.({ content, isPrivate: false })}
+                isSubmittingReply={isSubmittingQuestion}
               />
             ))}
           </div>
-          {questions.length === 0 && (
-            <p className="typo-body-sm-regular text-faint text-center py-10">
+          {questions.length === 0 && !isComposingQuestion && (
+            <p className="typo-body-sm-regular text-faint text-center px-5 py-10">
               아직 질문이 없습니다.
             </p>
           )}

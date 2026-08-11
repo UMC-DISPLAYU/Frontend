@@ -391,6 +391,7 @@ export function ExhibitionRegister() {
                             }
                             department={deptVal || ''}
                             onDepartmentChange={onDeptChange}
+                            readonly={selectedGroup === 'institution'}
                           />
                         )}
                       />
