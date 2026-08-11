@@ -6,7 +6,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { ImageUploader } from '@/components/common';
+import { BottomFixedBar, ImageUploader } from '@/components/common';
 import { AffiliationInput } from '@/components/exhibition-register';
 import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
@@ -19,6 +19,7 @@ import {
 } from '@/constants/exhibition';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
 import {
@@ -31,10 +32,12 @@ const INPUT_CLASS =
 
 export function ExhibitionRegister() {
   const { data: artistProfile } = useMyArtistProfile();
+  const { draft, hasDraft, updateDraft } = useExhibitionRegisterDraft();
   const imageUpload = useImageUpload({ domain: 'display' });
   const navigate = useNavigate();
   const { displayId: paramDisplayId } = useParams();
   const displayId = Number(paramDisplayId ?? 0);
+  const shouldUseDraft = displayId === 0 && hasDraft;
 
   const { state } = useLocation();
   const { data: fetchedDetail } = useDisplayDetail(displayId);
@@ -46,21 +49,38 @@ export function ExhibitionRegister() {
   const displayDetail = (state?.displayDetail as DisplayDetailDto) || fetchedDetail || null;
 
   const [initialImages, setInitialImages] = useState<string[]>(
-    displayDetail?.images?.map((img) => img.imageUrl) || [],
+    shouldUseDraft ? draft.imageUrls : displayDetail?.images?.map((img) => img.imageUrl) || [],
   );
 
-  const initialTitle = (restored.title as string) ?? displayDetail?.title ?? '';
-  const initialSubtitle = (restored.subtitle as string) ?? displayDetail?.subtitle ?? '';
-  const initialIntro = (restored.intro as string) ?? displayDetail?.content ?? '';
-  const initialType = (restored.type as string) ?? displayDetail?.displayType ?? '';
-  const initialField =
-    (restored.field as ExhibitionRegisterFormValues['field']) ??
-    (displayDetail?.displayFields as ExhibitionRegisterFormValues['field']) ??
-    [];
-  const initialSchool =
-    (restored.school as string) ?? displayDetail?.organization ?? artistProfile?.schoolName ?? '';
-  const initialDepartment = (restored.department as string) ?? displayDetail?.department ?? '';
-  const initialOrganizer = (restored.organizer as string) ?? displayDetail?.organization ?? '';
+  const initialTitle = shouldUseDraft
+    ? draft.title
+    : ((restored.title as string) ?? displayDetail?.title ?? '');
+  const initialSubtitle = shouldUseDraft
+    ? draft.subtitle
+    : ((restored.subtitle as string) ?? displayDetail?.subtitle ?? '');
+  const initialIntro = shouldUseDraft
+    ? draft.intro
+    : ((restored.intro as string) ?? displayDetail?.content ?? '');
+  const initialType = shouldUseDraft
+    ? draft.type
+    : ((restored.type as string) ?? displayDetail?.displayType ?? '');
+  const initialField = shouldUseDraft
+    ? (draft.field as ExhibitionRegisterFormValues['field'])
+    : ((restored.field as ExhibitionRegisterFormValues['field']) ??
+      (displayDetail?.displayFields as ExhibitionRegisterFormValues['field']) ??
+      []);
+  const initialSchool = shouldUseDraft
+    ? draft.school
+    : ((restored.school as string) ??
+      displayDetail?.organization ??
+      artistProfile?.schoolName ??
+      '');
+  const initialDepartment = shouldUseDraft
+    ? draft.department
+    : ((restored.department as string) ?? displayDetail?.department ?? '');
+  const initialOrganizer = shouldUseDraft
+    ? draft.organizer
+    : ((restored.organizer as string) ?? displayDetail?.organization ?? '');
 
   const {
     register,
@@ -87,8 +107,25 @@ export function ExhibitionRegister() {
 
   const type = useWatch({ control, name: 'type' });
   const intro = useWatch({ control, name: 'intro' }) ?? '';
+  const [
+    watchedTitle,
+    watchedSubtitle,
+    watchedIntro,
+    watchedType,
+    watchedField,
+    watchedSchool,
+    watchedDepartment,
+    watchedOrganizer,
+  ] = useWatch({
+    control,
+    name: ['title', 'subtitle', 'intro', 'type', 'field', 'school', 'department', 'organizer'],
+  });
 
   useEffect(() => {
+    if (shouldUseDraft) {
+      return;
+    }
+
     if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
       const restoredTitle = (restored.title as string) ?? fetchedDetail.title ?? '';
       const restoredSubtitle = (restored.subtitle as string) ?? fetchedDetail.subtitle ?? '';
@@ -123,7 +160,35 @@ export function ExhibitionRegister() {
         organizer: restoredOrganizer,
       });
     }
-  }, [displayId, state, fetchedDetail, restored, artistProfile, reset]);
+  }, [displayId, state, fetchedDetail, restored, artistProfile, reset, shouldUseDraft]);
+
+  useEffect(() => {
+    if (displayId > 0) {
+      return;
+    }
+
+    updateDraft({
+      title: watchedTitle ?? '',
+      subtitle: watchedSubtitle ?? '',
+      intro: watchedIntro ?? '',
+      type: watchedType ?? '',
+      field: watchedField ?? [],
+      school: watchedSchool ?? '',
+      department: watchedDepartment ?? '',
+      organizer: watchedOrganizer ?? '',
+    });
+  }, [
+    watchedTitle,
+    watchedSubtitle,
+    watchedIntro,
+    watchedType,
+    watchedField,
+    watchedSchool,
+    watchedDepartment,
+    watchedOrganizer,
+    updateDraft,
+    displayId,
+  ]);
 
   const selectedGroup = useMemo<ExhibitionTypeGroup | null>(() => {
     const found = EXHIBITION_TYPES.find((t) => t.label === type);
@@ -133,6 +198,7 @@ export function ExhibitionRegister() {
   const handleRemoveInitialImage = (url: string) => {
     const nextImages = initialImages.filter((img) => img !== url);
     setInitialImages(nextImages);
+    updateDraft({ imageUrls: nextImages });
     setValue('imageUrls', [...nextImages, ...imageUpload.images.map((img) => img.previewUrl)], {
       shouldValidate: true,
     });
@@ -148,6 +214,17 @@ export function ExhibitionRegister() {
 
     const newImageUrls = imageUpload.images.length > 0 ? await imageUpload.uploadImages() : [];
     const finalImageUrls = [...initialImages, ...newImageUrls];
+    updateDraft({
+      imageUrls: finalImageUrls,
+      title: data.title,
+      subtitle: data.subtitle,
+      intro: data.intro,
+      type: data.type,
+      field: data.field,
+      school: data.school || artistProfile?.schoolName || '',
+      department: data.department,
+      organizer: data.organizer,
+    });
 
     const nextPath =
       displayId > 0 ? `/exhibition/${displayId}/edit/basic` : '/exhibition/register/basic';
@@ -169,20 +246,22 @@ export function ExhibitionRegister() {
   };
 
   return (
-    <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
+    <div className="mx-auto min-h-dvh w-96 bg-page">
       <ExhibitionHeader title="전시 등록" />
 
-      <main className="flex-1 overflow-y-auto">
+      <main>
         <form
           id="exhibition-register-form"
           onSubmit={handleSubmit(onFormSubmit)}
-          className="flex flex-col gap-6 px-5 pt-2 pb-8"
+          className="flex flex-col gap-6 px-5 pb-bottom-bar-offset"
         >
           <div className="flex flex-col items-center gap-1">
             <ImageUploader
               images={imageUpload.images}
               initialImages={initialImages}
               maxImages={MAX_POSTER_UPLOAD_IMAGES}
+              padded
+              className="[justify-content:safe_center]"
               onAddImages={imageUpload.addImages}
               onRemoveImage={imageUpload.removeImage}
               onRemoveInitialImage={handleRemoveInitialImage}
@@ -335,7 +414,7 @@ export function ExhibitionRegister() {
         </form>
       </main>
 
-      <footer className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <BottomFixedBar>
         <button
           form="exhibition-register-form"
           type="submit"
@@ -344,7 +423,7 @@ export function ExhibitionRegister() {
         >
           {imageUpload.isUploading ? '이미지 업로드 중' : '다음'}
         </button>
-      </footer>
+      </BottomFixedBar>
     </div>
   );
 }

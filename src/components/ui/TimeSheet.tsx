@@ -150,14 +150,14 @@ export function TimeSheet({
 
   return (
     <BottomSheet open={open} onClose={onClose} title="시간 선택" subtitle={subtitle ?? label}>
-      <div className="flex flex-col items-center gap-10 px-5 py-13">
+      <div className="flex min-w-0 flex-col items-center gap-10 px-5 py-13">
         {/* 디지털 표시 — 탭해서 대상 전환 + 숫자 직접 입력 */}
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex w-full min-w-0 flex-col items-center gap-3">
           <div
             role="group"
             tabIndex={0}
             onKeyDown={handleKeyDown}
-            className="flex items-center justify-center gap-2 outline-none"
+            className="flex w-full min-w-0 items-center justify-center gap-[clamp(0.125rem,1.7vw,0.5rem)] outline-none"
           >
             <Segment
               value={time.startHour}
@@ -177,7 +177,7 @@ export function TimeSheet({
               }}
             />
 
-            <span className="text-main px-1 text-5xl leading-none">-</span>
+            <span className="px-0.5 text-[clamp(2rem,11vw,3rem)] leading-none text-main">-</span>
 
             <Segment
               value={time.endHour}
@@ -202,7 +202,7 @@ export function TimeSheet({
         </div>
       </div>
 
-      <div className="bg-page sticky bottom-0 px-5 py-4">
+      <div className="bg-page sticky bottom-0 px-5 pt-4">
         <button
           type="button"
           onClick={confirm}
@@ -216,7 +216,7 @@ export function TimeSheet({
 }
 
 function Colon() {
-  return <span className="text-main text-6xl leading-none">:</span>;
+  return <span className="text-[clamp(2.5rem,14vw,3.75rem)] leading-none text-main">:</span>;
 }
 
 /** 두 자리 숫자 한 칸 */
@@ -233,7 +233,7 @@ function Segment({
     <button
       type="button"
       onClick={onSelect}
-      className={`rounded-lg px-0.5 text-6xl leading-none transition-colors ${
+      className={`min-w-0 rounded-lg px-0.5 text-[clamp(2.5rem,14vw,3.75rem)] leading-none transition-colors ${
         active ? 'text-main bg-box200' : 'text-main'
       }`}
     >

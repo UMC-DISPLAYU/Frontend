@@ -1,5 +1,5 @@
 import { ImageUploader } from '@/components/common';
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { ChipGroup, RequiredLabel } from '@/components/ui';
 import { ARTWORK_FIELD_MAP } from '@/constants';
 import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
@@ -71,7 +71,7 @@ function RegisterArtworkPage({
       title={isEditMode ? '작품 정보 수정' : '전시작 등록'}
       onBack={onBack}
       bottomBar={
-        <BottomButtonBar>
+        <BottomFixedBar>
           <button
             type="button"
             onClick={onNext}
@@ -83,7 +83,7 @@ function RegisterArtworkPage({
           >
             다음
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       }
     >
       <div className="flex justify-center">
@@ -91,6 +91,8 @@ function RegisterArtworkPage({
           images={artworkImages}
           maxImages={MAX_ARTWORK_UPLOAD_IMAGES}
           emptyLabel="작품 업로드"
+          padded
+          className="[justify-content:safe_center]"
           onAddImages={onAddArtworkImages}
           onRemoveImage={onRemoveArtworkImage}
         />

@@ -10,7 +10,7 @@ import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveBut
 import type { ArtworkDetailTabKey } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
-import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
+import { BottomFixedBar } from '@/components/displaydetailpage';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
 import { BackButton } from '@/components/ui/BackButton';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';

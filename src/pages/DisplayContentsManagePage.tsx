@@ -10,8 +10,8 @@ import {
   ContentEditSheet,
 } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
-import { Header } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
+import { ExhibitionHeader } from '@/components/ui';
 import {
   useCreateContentCategory,
   useDeleteContentCategory,
@@ -125,13 +125,13 @@ export function DisplayContentsManagePage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <Header title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
+    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
+      <ExhibitionHeader title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
 
       {/* 메인 스크롤 영역 */}
-      <main ref={listRef} className="flex flex-1 flex-col overflow-y-auto pb-24">
+      <main ref={listRef}>
         {/* 제목 + 설명 */}
-        <div className="flex items-end justify-between gap-6 px-5 pt-3.5 pb-3">
+        <div className="flex items-end justify-between gap-6 px-5 pb-3">
           <div className="flex flex-col gap-1">
             <p className="typo-body-md-bold text-main">전시 콘텐츠 관리</p>
             <p className="typo-body-xs-regular text-sub600">

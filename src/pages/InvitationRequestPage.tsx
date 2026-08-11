@@ -5,7 +5,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import type { DisplayInvitationDto } from '@/api/dto';
 import {
-  useAcceptDisplayInvitation,
   useMyDisplayInvitations,
   useRejectDisplayInvitation,
 } from '@/hooks/queries/useDisplayInvitations';

@@ -34,7 +34,8 @@ function WorkRow({
   onOpenSheet: (work: Work) => void;
 }) {
   const artworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(work));
-  const canShowMenu = true;
+  const canShowMenu =
+    hasPermission(artworkPolicy, 'edit') || hasPermission(artworkPolicy, 'delete');
 
   return (
     <li className="flex h-32 items-start justify-between gap-3 rounded-[18px] bg-card px-4 py-3.5">

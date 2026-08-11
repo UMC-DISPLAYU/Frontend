@@ -9,7 +9,11 @@ import { ErrorView, LoadingView, LoginConfirmModal } from '@/components/common';
 import { ArtworkCard, AuthPageHeader } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
-import { useArchiveArtist, useArchivedArtists, useUnarchiveArtist } from '@/hooks/queries/useArchive';
+import {
+  useArchiveArtist,
+  useArchivedArtists,
+  useUnarchiveArtist,
+} from '@/hooks/queries/useArchive';
 import { useUserArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useUserArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useShare } from '@/hooks/useShare';
@@ -129,7 +133,9 @@ export function AuthPage() {
                 key={item.id}
                 item={item}
                 isArtistView
-                onOpen={(artwork) => navigate(`/personal-artworks/${artwork.artworkId ?? artwork.id}`)}
+                onOpen={(artwork) =>
+                  navigate(`/personal-artworks/${artwork.artworkId ?? artwork.id}`)
+                }
               />
             ))}
           </div>

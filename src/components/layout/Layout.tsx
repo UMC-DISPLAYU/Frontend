@@ -80,7 +80,7 @@ export function Layout() {
         setFooterHidden: setManualFooterHidden,
       }}
     >
-      <div className="flex min-h-screen flex-col justify-between">
+      <div className="flex min-h-dvh flex-col justify-between">
         <main className={cn('flex-1', shouldShowNavbar && 'pb-3')}>
           <Outlet />
         </main>

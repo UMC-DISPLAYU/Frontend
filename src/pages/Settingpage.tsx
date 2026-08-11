@@ -152,7 +152,10 @@ export function SettingPage() {
       {artistVerificationModal}
 
       {isConfirmingLogout && (
-        <LogoutConfirmModal onCancel={() => setIsConfirmingLogout(false)} onConfirm={handleLogout} />
+        <LogoutConfirmModal
+          onCancel={() => setIsConfirmingLogout(false)}
+          onConfirm={handleLogout}
+        />
       )}
     </div>
   );

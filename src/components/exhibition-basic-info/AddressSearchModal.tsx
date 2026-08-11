@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
-import { MapPin } from 'lucide-react';
-
+import { BottomFixedBar } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';
 
 function Underline({
@@ -153,7 +152,9 @@ export function AddressSearchModal({ open, onClose, onConfirm }: AddressSearchMo
     <div className="fixed inset-0 z-50 mx-auto flex min-h-dvh w-full max-w-md  flex-col bg-page">
       <ExhibitionHeader title="주소 검색" onBack={handleClose} />
 
-      <div className={`min-h-0 flex-1 flex flex-col px-5 pt-3 ${selectedAddress ? 'pb-19' : ''}`}>
+      <div
+        className={`min-h-0 flex-1 flex flex-col px-5 pt-3 ${selectedAddress ? 'pb-bottom-bar-offset' : ''}`}
+      >
         <div className="flex-1 flex flex-col min-h-0 pb-8">
           {!selectedAddress ? (
             <div className="flex-1 flex flex-col min-h-0 gap-6">
@@ -258,22 +259,24 @@ export function AddressSearchModal({ open, onClose, onConfirm }: AddressSearchMo
       </div>
 
       {selectedAddress && (
-        <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-5 py-4 bg-card border-t border-line z-50 flex gap-3">
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="typo-body-sm-bold flex h-11 flex-1 items-center justify-center rounded-xl bg-bt-black text-white"
-          >
-            완료
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedAddress(null)}
-            className="typo-body-sm-bold h-11 shrink-0 rounded-xl bg-card px-4 text-sub700 outline outline-1 outline-offset-[-1px] outline-sub600"
-          >
-            다시 검색
-          </button>
-        </footer>
+        <BottomFixedBar>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleConfirm}
+              className="typo-body-sm-bold flex h-11 flex-1 items-center justify-center rounded-xl bg-bt-black text-white"
+            >
+              완료
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedAddress(null)}
+              className="typo-body-sm-bold h-11 shrink-0 rounded-xl bg-card px-4 text-sub700 outline outline-1 outline-offset-[-1px] outline-sub600"
+            >
+              다시 검색
+            </button>
+          </div>
+        </BottomFixedBar>
       )}
     </div>
   );

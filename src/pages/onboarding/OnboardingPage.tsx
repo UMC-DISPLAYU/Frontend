@@ -651,13 +651,7 @@ function NicknameScreen({
   const [checkedNickname, setCheckedNickname] = useState('');
   const checkNickname = useCheckNickname();
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    formState: { errors },
-  } = useForm<OnboardingNicknameFormValues>({
+  const { register, handleSubmit, control, setValue } = useForm<OnboardingNicknameFormValues>({
     resolver: zodResolver(onboardingNicknameSchema),
     mode: 'onChange',
     defaultValues: {

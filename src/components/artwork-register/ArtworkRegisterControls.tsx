@@ -303,7 +303,7 @@ export function DirectCollaboratorSheet({
       title="공동 작업자 이름 입력"
       subtitle="팀원이 아니거나 비회원인 공동 작업자는 이름만 표시돼요."
     >
-      <div className="flex min-h-[304px] flex-col px-5 pb-11">
+      <div className="flex min-h-[304px] flex-col px-5">
         <section className="mt-4 flex flex-col gap-1">
           <RequiredLabel required htmlFor={inputId}>
             <span className="typo-body-sm-regular">공동 작업자 이름</span>

@@ -26,5 +26,4 @@ export const updateMyArtistProfile = async (
 // GET /v1/artists/:userId/artist-profile
 export const getUserArtistProfile = async (
   userId: number,
-): Promise<Omit<ArtistProfileDto, 'status'>> =>
-  apiRequest(`/v1/artists/${userId}/artist-profile`);
+): Promise<Omit<ArtistProfileDto, 'status'>> => apiRequest(`/v1/artists/${userId}/artist-profile`);

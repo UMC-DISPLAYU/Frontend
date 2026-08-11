@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { UserProfileDto } from '@/api/dto';
 import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
+import { BottomButton } from '@/components/common';
 import { LoadingView } from '@/components/common/LoadingView';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
@@ -47,11 +48,7 @@ function ProfilePhotoField({
         disabled={isUploading}
       >
         {image ? (
-          <img
-            src={image}
-            alt="프로필 미리보기"
-            className="size-20 rounded-full object-cover"
-          />
+          <img src={image} alt="프로필 미리보기" className="size-20 rounded-full object-cover" />
         ) : (
           <img src={defaultProfile} alt="프로필" className="size-20 rounded-full object-cover" />
         )}
@@ -87,13 +84,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const uploadImage = useUploadImage();
   const checkNickname = useCheckNickname();
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    formState: { errors },
-  } = useForm<OnboardingNicknameFormValues>({
+  const { register, handleSubmit, control, setValue } = useForm<OnboardingNicknameFormValues>({
     resolver: zodResolver(onboardingNicknameSchema),
     mode: 'onChange',
     defaultValues: {
@@ -181,7 +172,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>
       </header>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-60">
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-8">
         <div className="mt-[24px] flex justify-center">
           <ProfilePhotoField
             image={profileImage}
@@ -293,24 +284,18 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
             </div>
           </div>
         </form>
-      </main>
 
-      <footer className="absolute bottom-0 left-0 right-0 bg-gradient-to-b from-white/0 via-white/75 to-page px-5 pt-6 pb-[21px]">
-        <div className="mb-8 flex items-start gap-1 rounded-2xl bg-card p-3.5">
+        <div className="mt-8 flex items-start gap-1 rounded-2xl bg-card p-3.5">
           <Info className="size-3 shrink-0 text-faint" strokeWidth={1.5} />
           <p className="typo-body-xs-regular text-hint">
             활동명은 댓글, 질문, 라운지 등 서비스 활동에서 사용돼요.
           </p>
         </div>
-        <button
-          form="edit-basic-info-form"
-          type="submit"
-          disabled={!canSubmit}
-          className="h-11 w-full rounded-xl bg-bt-black typo-body-sm-bold text-card transition-opacity disabled:opacity-40"
-        >
-          {updateUserMe.isPending ? '저장 중' : '완료'}
-        </button>
-      </footer>
+      </main>
+
+      <BottomButton form="edit-basic-info-form" type="submit" disabled={!canSubmit}>
+        {updateUserMe.isPending ? '저장 중' : '완료'}
+      </BottomButton>
     </div>
   );
 }
