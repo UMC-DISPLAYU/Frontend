@@ -149,12 +149,13 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/artworks/{archiveWorkId}/memo').map((path) =>
     http.put(path, async ({ params, request }) => {
       const archiveWorkId = toNumber(params.archiveWorkId);
-      const body = await readJson<{ memo?: string }>(request);
-      const memo = body.memo ?? '';
+      const body = await readJson<{ content?: string }>(request);
+      const memo = body.content ?? '';
       updateArtworkMemo(archiveWorkId, memo);
 
       return success('/api/v1/archives/artworks/{archiveWorkId}/memo', {
         archiveWorkId,
+        memo,
         ...body,
       });
     }),
@@ -221,12 +222,13 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/exhibitions/{archiveDisplayId}/memo').map((path) =>
     http.put(path, async ({ params, request }) => {
       const archiveDisplayId = toNumber(params.archiveDisplayId);
-      const body = await readJson<{ memo?: string }>(request);
-      const memo = body.memo ?? '';
+      const body = await readJson<{ content?: string }>(request);
+      const memo = body.content ?? '';
       updateDisplayMemo(archiveDisplayId, memo);
 
       return success('/api/v1/archives/exhibitions/{archiveDisplayId}/memo', {
         archiveDisplayId,
+        memo,
         ...body,
       });
     }),

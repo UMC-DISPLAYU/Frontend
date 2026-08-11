@@ -262,7 +262,7 @@ export function MyPage() {
     if (memo) {
       updateExhibitionMemo.mutate({
         archiveDisplayId: item.archiveDisplayId ?? Number(item.id),
-        body: { memo },
+        body: { content: memo },
       });
       return;
     }
@@ -273,7 +273,7 @@ export function MyPage() {
     if (memo) {
       updateArtworkMemo.mutate({
         archiveWorkId: item.archiveWorkId ?? Number(item.id),
-        body: { memo },
+        body: { content: memo },
       });
       return;
     }
