@@ -44,11 +44,9 @@ export interface ArtistProfile {
   isVerified: boolean;
   avatar: string;
   school: string;
-  schoolIcon: string;
-  field: string;
-  fieldIcon: string;
-  exhibit: string;
-  exhibitionIcon: string;
+  fields: string[];
+  exhibitionCount: string;
+  artworkCount: string;
   bio: string;
   portfolioUrl: string;
 }

@@ -55,10 +55,15 @@ const myArtworkQuestions = [
 export const artworkHandlers = [
   ...paths('/api/v1/artworks').map((path) =>
     http.get(path, ({ request }) => {
-      const displayId = Number(new URL(request.url).searchParams.get('displayId'));
-      const artworks = Number.isFinite(displayId)
-        ? mockDb.artworks.filter((artwork: any) => artwork.displayId === displayId)
-        : mockDb.artworks;
+      const searchParams = new URL(request.url).searchParams;
+      const displayIdParam = searchParams.get('displayId');
+      const userIdParam = searchParams.get('userId');
+
+      const artworks = displayIdParam
+        ? mockDb.artworks.filter((artwork: any) => artwork.displayId === Number(displayIdParam))
+        : userIdParam
+          ? mockDb.artworks.filter((artwork: any) => artwork.artistUserId === Number(userIdParam))
+          : mockDb.artworks;
 
       return success('/api/v1/artworks', listResponse(artworks));
     }),

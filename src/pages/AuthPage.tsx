@@ -2,9 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import ExhibitionIcon from '@/assets/mypage/exhibit.svg';
-import FieldIcon from '@/assets/mypage/field.svg';
-import SchoolIcon from '@/assets/mypage/school.svg';
 import { ErrorView, LoadingView, LoginConfirmModal } from '@/components/common';
 import { ArtworkCard, AuthPageHeader } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
@@ -14,11 +11,13 @@ import {
   useArchivedArtists,
   useUnarchiveArtist,
 } from '@/hooks/queries/useArchive';
-import { useUserArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useArtistExhibitionArtworks, useUserArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useUserArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useShare } from '@/hooks/useShare';
 import { useAuthStore } from '@/stores/authStore';
 import type { ArtistProfile, SavedArtworkItem, TabKey } from '@/types/mypage';
+
+const formatCount = (count: number | undefined) => String(count ?? 0).padStart(2, '0');
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -32,7 +31,9 @@ export function AuthPage() {
   const { handleShare } = useShare();
 
   const artistProfileQuery = useUserArtistProfile(userId);
-  const artworksQuery = useUserArtworks(userId, { enabled: activeTab === 'artwork' });
+  /* 작품 탭 진입 전에도 헤더의 작품 수를 보여줘야 해서 탭과 무관하게 항상 불러옵니다. */
+  const personalArtworksQuery = useUserArtworks(userId);
+  const exhibitionArtworksQuery = useArtistExhibitionArtworks(userId);
   const {
     data: archivedArtists,
     hasNextPage,
@@ -47,10 +48,19 @@ export function AuthPage() {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const isSaved = (archivedArtists?.pages.flatMap((page) => page.artists) ?? []).some(
+  /*
+   * 전시 수는 작가 프로필 API에 아직 없어, 내가 저장한 작가 목록에 이 작가가 있으면
+   * 거기 딸려오는 집계값을 재사용합니다. (ArtistCard와 동일한 방식)
+   * 저장하지 않은 작가라면 알 방법이 없어 00으로 표시합니다.
+   */
+  const archivedArtistMatch = (archivedArtists?.pages.flatMap((page) => page.artists) ?? []).find(
     (artist) => artist.artistId === userId,
   );
+  const isSaved = Boolean(archivedArtistMatch);
   const isSavePending = archiveArtist.isPending || unarchiveArtist.isPending;
+
+  const personalArtworks = personalArtworksQuery.data ?? [];
+  const exhibitionArtworks = exhibitionArtworksQuery.data?.artworks ?? [];
 
   const profile = useMemo<ArtistProfile>(() => {
     const data = artistProfileQuery.data;
@@ -59,29 +69,37 @@ export function AuthPage() {
       isVerified: true,
       avatar: data?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
       school: data?.schoolName || '',
-      schoolIcon: SchoolIcon,
-      field:
-        data?.fields
-          ?.map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code)
-          .join(' · ') ?? '',
-      fieldIcon: FieldIcon,
-      exhibit: '-',
-      exhibitionIcon: ExhibitionIcon,
+      fields: data?.fields?.map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code) ?? [],
+      exhibitionCount: formatCount(archivedArtistMatch?.exhibitionCount),
+      /* 개인 작품 + 전시 내 작품을 실제로 합산한 값입니다. */
+      artworkCount: formatCount(personalArtworks.length + exhibitionArtworks.length),
       bio: data?.introduction ?? '',
       portfolioUrl: data?.portfolioUrl || data?.externalLink || '',
     };
-  }, [artistProfileQuery.data]);
+  }, [
+    artistProfileQuery.data,
+    archivedArtistMatch,
+    personalArtworks.length,
+    exhibitionArtworks.length,
+  ]);
 
   const artworks = useMemo<SavedArtworkItem[]>(() => {
-    const items = artworksQuery.data ?? [];
-    return items.map((item) => ({
-      id: String(item.personalArtworkId),
-      artworkId: item.personalArtworkId,
+    const personalItems: SavedArtworkItem[] = personalArtworks.map((item) => ({
+      id: `personal-${item.personalArtworkId}`,
+      personalArtworkId: item.personalArtworkId,
       title: item.artworkName,
       artist: profile.name,
       thumbnail: item.thumbnailUrl ?? '',
     }));
-  }, [artworksQuery.data, profile.name]);
+    const exhibitionItems: SavedArtworkItem[] = exhibitionArtworks.map((item) => ({
+      id: `exhibit-${item.artworkId}`,
+      artworkId: item.artworkId,
+      title: item.artworkName,
+      artist: item.artistName || profile.name,
+      thumbnail: item.artworkImageUrl ?? '',
+    }));
+    return [...personalItems, ...exhibitionItems];
+  }, [personalArtworks, exhibitionArtworks, profile.name]);
 
   const handleToggleSave = () => {
     if (!accessToken) {
@@ -132,9 +150,9 @@ export function AuthPage() {
         {activeTab === 'exhibition' ? (
           // 다른 작가의 전시 목록을 조회하는 API가 아직 없어 준비 중 안내만 표시합니다.
           <ErrorView fullScreen={false} message="전시 정보를 준비 중입니다." />
-        ) : artworksQuery.isLoading ? (
+        ) : personalArtworksQuery.isLoading || exhibitionArtworksQuery.isLoading ? (
           <LoadingView fullScreen={false} message="작품 로딩 중..." />
-        ) : artworksQuery.error ? (
+        ) : personalArtworksQuery.error || exhibitionArtworksQuery.error ? (
           <ErrorView fullScreen={false} message="작품 정보를 불러오지 못했습니다." />
         ) : artworks.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
@@ -144,7 +162,11 @@ export function AuthPage() {
                 item={item}
                 isArtistView
                 onOpen={(artwork) =>
-                  navigate(`/personal-artworks/${artwork.artworkId ?? artwork.id}`)
+                  navigate(
+                    artwork.personalArtworkId
+                      ? `/personal-artworks/${artwork.personalArtworkId}`
+                      : `/artwork/${artwork.artworkId}`,
+                  )
                 }
               />
             ))}

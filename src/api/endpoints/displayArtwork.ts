@@ -204,4 +204,10 @@ export const getDisplayArtworks = async (
 ): Promise<GetDisplayArtworksResponseDataDto> =>
   apiRequest('/v1/artworks', { query: { displayId } });
 
+// GET /v1/artworks?userId=:userId - 작가 프로필의 작품 탭 (전시에 등록한 작품 전체)
+export const getArtistArtworks = async (
+  userId: number,
+): Promise<GetDisplayArtworksResponseDataDto> =>
+  apiRequest('/v1/artworks', { query: { userId } });
+
 // 삭제됨: 개인 작품 API(GET /v1/personal-artworks)로 대체되었습니다.
