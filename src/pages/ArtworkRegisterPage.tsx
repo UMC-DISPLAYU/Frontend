@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { AddArtworkPage } from '@/components/artwork-register/AddArtworkPage';
 import type {
@@ -40,10 +40,6 @@ import { hasPermission } from '@/utils/hasPermission';
 
 type RegisterStep = 'choice' | 'otherTeamAuthor' | 'otherAuthor' | 'basic' | 'participants';
 const DIRECT_INPUT_ACCOUNT = '직접입력';
-const REGISTER_STEPS = ['choice', 'otherTeamAuthor', 'otherAuthor', 'basic', 'participants'];
-
-const isRegisterStep = (value: string | null): value is RegisterStep =>
-  value !== null && REGISTER_STEPS.includes(value);
 
 const formatMonthDay = (date: string | undefined) => {
   if (!date) return '';
@@ -64,13 +60,24 @@ function ArtworkRegisterPageContent() {
 
   const { draft, updateDraft, resetDraft } = useArtworkRegisterDraft();
   const navigate = useNavigate();
+  const location = useLocation();
   const { displayId: paramDisplayId, artworkId: paramArtworkId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const displayId = Number(paramDisplayId ?? searchParams.get('displayId') ?? 0);
   const artworkId = Number(paramArtworkId ?? 0);
   const isEditMode = artworkId > 0;
-  const stepParam = searchParams.get('step');
-  const routeStep = isRegisterStep(stepParam) ? stepParam : null;
+  const routeStep = useMemo<RegisterStep | null>(() => {
+    const pathname = location.pathname;
+
+    if (pathname.includes('/artworks/add/choice')) return 'choice';
+    if (pathname.includes('/artworks/add/artist')) {
+      return draft.step === 'otherAuthor' ? 'otherAuthor' : 'otherTeamAuthor';
+    }
+    if (pathname.includes('/artworks/add/basic')) return 'basic';
+    if (pathname.includes('/artworks/add/participants')) return 'participants';
+
+    return null;
+  }, [draft.step, location.pathname]);
 
   const { data: artworkDetail } = useArtworkDetail(artworkId);
 
@@ -121,22 +128,17 @@ function ArtworkRegisterPageContent() {
 
       if (isEditMode) return;
 
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
+      const stepPathMap: Record<RegisterStep, string> = {
+        choice: `/exhibition/${displayId}/artworks/add/choice`,
+        otherTeamAuthor: `/exhibition/${displayId}/artworks/add/artist`,
+        otherAuthor: `/exhibition/${displayId}/artworks/add/artist`,
+        basic: `/exhibition/${displayId}/artworks/add/basic`,
+        participants: `/exhibition/${displayId}/artworks/add/participants`,
+      };
 
-          if (nextStep === 'choice') {
-            next.delete('step');
-          } else {
-            next.set('step', nextStep);
-          }
-
-          return next;
-        },
-        { replace: options.replace ?? true },
-      );
+      navigate(stepPathMap[nextStep], { replace: options.replace ?? true });
     },
-    [isEditMode, setSearchParams, updateDraft],
+    [displayId, isEditMode, navigate, updateDraft],
   );
 
   const setRegisterMode = useCallback(

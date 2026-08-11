@@ -119,7 +119,6 @@ export const router = createBrowserRouter([
 
           // 내 전시 관리 목록
           { path: 'my/exhibitions', element: <MyExhibitionsPage /> },
-          { path: 'artworks-register', element: <ArtworkRegisterPage /> },
 
           // 1. 전시 등록 플로우
           {
@@ -146,9 +145,18 @@ export const router = createBrowserRouter([
               { path: 'visibility', element: <VisibilitySettings /> },
               { path: 'contents', element: <DisplayContentsManagePage /> },
               { path: 'contents/:categoryId', element: <InteriorPhotosPage /> },
-              { path: 'artworks', element: <ArtworksManagePage /> },
-              { path: 'artworks/add', element: <ArtworkRegisterPage /> },
-              { path: 'artworks/:artworkId/edit', element: <ArtworkRegisterPage /> },
+              {
+                path: 'artworks',
+                children: [
+                  { index: true, element: <ArtworksManagePage /> },
+                  { path: 'add', element: <ArtworkRegisterPage /> },
+                  { path: 'add/choice', element: <ArtworkRegisterPage /> },
+                  { path: 'add/artist', element: <ArtworkRegisterPage /> },
+                  { path: 'add/basic', element: <ArtworkRegisterPage /> },
+                  { path: 'add/participants', element: <ArtworkRegisterPage /> },
+                  { path: ':artworkId/edit', element: <ArtworkRegisterPage /> },
+                ],
+              },
               { path: 'complete', element: <ExhibitionRegisterComplete /> },
             ],
           },
