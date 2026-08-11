@@ -7,6 +7,7 @@ import type {
   GetArchivedArtistResponseDto,
   GetArchivedArtistsResponseDataDto,
   GetArchivedArtworkResponseDto,
+  GetArchivedArtworksRequestDto,
   GetArchivedArtworksResponseDataDto,
   GetArchivedExhibitionResponseDto,
   GetArchivedExhibitionsResponseDataDto,
@@ -53,8 +54,10 @@ export const unarchivePersonalArtwork = async (
   apiRequest(`/v1/archives/personal-artworks/${personalArtworkId}`, { method: 'DELETE' });
 
 // GET /v1/archives/artworks
-export const getArchivedArtworks = async (): Promise<GetArchivedArtworksResponseDataDto> =>
-  apiRequest('/v1/archives/artworks');
+export const getArchivedArtworks = async (
+  params: GetArchivedArtworksRequestDto = {},
+): Promise<GetArchivedArtworksResponseDataDto> =>
+  apiRequest('/v1/archives/artworks', { query: params });
 
 // POST /v1/archives/artists/:artistId
 export const archiveArtist = async (artistId: number): Promise<ArchivedArtistStatusDto> =>

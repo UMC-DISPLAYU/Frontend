@@ -1,9 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
+  ArchiveArtworkCursorDto,
   ArchivedExhibitionDto,
   ArchiveMemoRequestDto,
   DisplayDetailDto,
+  GetArchivedArtworksRequestDto,
   GetArchivedArtworksResponseDataDto,
   GetArchivedExhibitionsResponseDataDto,
 } from '@/api/dto';
@@ -30,6 +32,8 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
+const DEFAULT_ARCHIVED_ARTWORKS_SIZE = 20;
+
 export const useArchivedExhibitions = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
   return useQuery({
@@ -39,11 +43,31 @@ export const useArchivedExhibitions = () => {
   });
 };
 
-export const useArchivedArtworks = () => {
+export const useArchivedArtworks = (params: GetArchivedArtworksRequestDto = {}) => {
   const accessToken = useAuthStore((state) => state.accessToken);
   return useQuery({
-    queryKey: queryKeys.archives.works.list(),
-    queryFn: getArchivedArtworks,
+    queryKey: queryKeys.archives.works.list({ ...params }),
+    queryFn: () => getArchivedArtworks(params),
+    enabled: !!accessToken,
+  });
+};
+
+export const useInfiniteArchivedArtworks = (
+  params: Omit<GetArchivedArtworksRequestDto, 'cursorId'> = {},
+) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  return useInfiniteQuery({
+    queryKey: queryKeys.archives.works.list({ ...params }),
+    queryFn: ({ pageParam }) =>
+      getArchivedArtworks({
+        ...params,
+        cursorId: pageParam,
+        size: params.size ?? DEFAULT_ARCHIVED_ARTWORKS_SIZE,
+      }),
+    initialPageParam: null as ArchiveArtworkCursorDto | null,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? (lastPage.nextCursorId ?? lastPage.nextCursor ?? null) : null,
     enabled: !!accessToken,
   });
 };

@@ -1,4 +1,4 @@
-import type { ApiResponseDto, CursorPageInfoDto } from './common.dto';
+import type { ApiResponseDto } from './common.dto';
 
 export interface ArchivedExhibitionStatusDto {
   exhibitionId: number;
@@ -60,8 +60,19 @@ export interface ArchivedArtworkDto {
   savedAt: string;
 }
 
-export interface GetArchivedArtworksResponseDataDto extends CursorPageInfoDto {
+export type ArchiveArtworkCursorDto = number | string;
+
+export interface GetArchivedArtworksRequestDto {
+  cursorId?: ArchiveArtworkCursorDto | null;
+  size?: number;
+}
+
+export interface GetArchivedArtworksResponseDataDto {
   works: ArchivedArtworkDto[];
+  nextCursorId: ArchiveArtworkCursorDto | null;
+  nextCursor?: ArchiveArtworkCursorDto | null;
+  size: number;
+  hasNext: boolean;
 }
 
 export type GetArchivedArtworksResponseDto = ApiResponseDto<GetArchivedArtworksResponseDataDto>;
