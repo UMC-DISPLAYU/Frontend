@@ -18,10 +18,10 @@ import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
 import {
   useArchivedArtists,
-  useArchivedArtworks,
   useArchivedExhibitions,
   useDeleteArchivedArtworkMemo,
   useDeleteArchivedExhibitionMemo,
+  useInfiniteArchivedArtworks,
   useUnarchiveArtist,
   useUnarchiveArtwork,
   useUnarchiveExhibition,
@@ -122,7 +122,7 @@ export function MyPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData?.isVerified]); // isArtistView, toggleArtistView는 의존성에서 제외 (무한 루프 방지)
   const archivedExhibitionsQuery = useArchivedExhibitions();
-  const archivedArtworksQuery = useArchivedArtworks();
+  const archivedArtworksQuery = useInfiniteArchivedArtworks({ size: 20 });
   const archivedArtistsQuery = useArchivedArtists();
   const myArtistProfileQuery = useMyArtistProfile({
     enabled: isArtistView,
@@ -192,7 +192,8 @@ export function MyPage() {
   const myExhibitions = myDisplaysQuery.data ?? [];
 
   const artworks = useMemo<SavedArtworkItem[]>(() => {
-    const items = (archivedArtworksQuery.data?.works ?? []) as ArchivedArtworkView[];
+    const items = (archivedArtworksQuery.data?.pages.flatMap((page) => page.works) ??
+      []) as ArchivedArtworkView[];
     return items.map((item) => ({
       id: String(item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId),
       archiveWorkId: item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId,
