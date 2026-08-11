@@ -41,15 +41,6 @@ export const useArchivedExhibitions = () => {
   });
 };
 
-export const useArchivedArtworks = (params: GetArchivedArtworksRequestDto = {}) => {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  return useQuery({
-    queryKey: queryKeys.archives.works.list({ ...params }),
-    queryFn: () => getArchivedArtworks(params),
-    enabled: !!accessToken,
-  });
-};
-
 export const useInfiniteArchivedArtworks = (
   params: Omit<GetArchivedArtworksRequestDto, 'cursorId'> & { size: number },
 ) => {
