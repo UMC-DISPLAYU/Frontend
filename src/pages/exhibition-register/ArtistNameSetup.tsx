@@ -107,6 +107,7 @@ export function ArtistNameSetup() {
       registerState.longitude === null ||
       registerState.longitude === undefined
     ) {
+      alert('이전 단계 정보가 유실됐어요. 전시 등록을 처음부터 다시 진행해주세요.');
       return;
     }
 

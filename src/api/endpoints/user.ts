@@ -1,5 +1,4 @@
 import type {
-  ArtistProfileDto,
   CheckNicknameRequestDto,
   CheckNicknameResponseDataDto,
   ConfirmVerificationEmailRequestDto,
@@ -10,8 +9,6 @@ import type {
   SearchUsersRequestDto,
   SearchUsersResponseDataDto,
   SendVerificationEmailRequestDto,
-  UpdateArtistProfileRequestDto,
-  UpdateArtistProfileResponseDataDto,
   UpdateMyProfileRequestDto,
   UpdateMyProfileResponseDataDto,
   UpdateNicknameRequestDto,
@@ -64,21 +61,6 @@ export const updateNickname = async (
   body: UpdateNicknameRequestDto,
 ): Promise<UpdateNicknameResponseDataDto> =>
   apiRequest('/v1/users/me/nickname', { method: 'PATCH', body });
-
-// GET /v1/users/me/artist-profile
-export const getMyArtistProfile = async (): Promise<ArtistProfileDto> =>
-  apiRequest('/v1/users/me/artist-profile');
-
-// PATCH /v1/users/me/artist-profile
-export const updateMyArtistProfile = async (
-  body: UpdateArtistProfileRequestDto,
-): Promise<UpdateArtistProfileResponseDataDto> =>
-  apiRequest('/v1/users/me/artist-profile', { method: 'PATCH', body });
-
-// GET /v1/users/:userId/artist-profile
-export const getUserArtistProfile = async (
-  userId: number,
-): Promise<Omit<ArtistProfileDto, 'status'>> => apiRequest(`/v1/users/${userId}/artist-profile`);
 
 // GET /v1/schools
 export const searchSchools = async (

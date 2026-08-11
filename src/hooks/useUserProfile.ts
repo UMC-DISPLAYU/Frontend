@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { getMyArtistProfile, getUserMe } from '@/api/endpoints/user';
+import { getMyArtistProfile } from '@/api/endpoints/artist';
+import { getUserMe } from '@/api/endpoints/user';
 import AvatarImage from '@/assets/mypage/Icon (1).svg';
 import SchoolIcon from '@/assets/mypage/image 3666.svg';
 import FieldIcon from '@/assets/mypage/image 3673.svg';

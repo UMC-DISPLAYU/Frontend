@@ -8,13 +8,13 @@ import type {
 
 import { apiRequest } from '../client';
 
-// GET /auth/kakao/login-url
+// GET /v1/auth/kakao/login-url
 export const getKakaoAuthorizationUrl = async (): Promise<OAuthAuthorizationUrlResponseDto> =>
-  apiRequest('/auth/kakao/login-url');
+  apiRequest('/v1/auth/kakao/login-url');
 
-// GET /auth/google/login-url
+// GET /v1/auth/google/login-url
 export const getGoogleAuthorizationUrl = async (): Promise<OAuthAuthorizationUrlResponseDto> =>
-  apiRequest('/auth/google/login-url');
+  apiRequest('/v1/auth/google/login-url');
 
 // POST /v1/auth/signup
 // signupToken은 HttpOnly Cookie로 자동 전송되므로(withCredentials: true) 별도 처리 불필요

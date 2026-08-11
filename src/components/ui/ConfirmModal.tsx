@@ -36,19 +36,19 @@ export function ConfirmModal({
         </p>
         <div className="flex gap-2.5">
           <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 h-11 bg-dark rounded-full flex items-center justify-center text-card typo-body-md-regular"
+          >
+            {confirmLabel}
+          </button>
+          <button
             ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
             className="flex-1 h-11 bg-bt-gray rounded-full flex items-center justify-center text-main typo-body-md-regular"
           >
             {cancelLabel}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="flex-1 h-11 bg-dark rounded-full flex items-center justify-center text-card typo-body-md-regular"
-          >
-            {confirmLabel}
           </button>
         </div>
       </div>
