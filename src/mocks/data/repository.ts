@@ -316,6 +316,7 @@ export const mockDb: {
   personalArtworkQuestionReplies: [...MOCK_PERSONAL_ARTWORK_QUESTION_REPLIES],
   archivedExhibitionIds: new Set<number>(),
   archivedArtworkIds: new Set<number>(),
+  archivedPersonalArtworkIds: new Set<number>(),
   archivedArtistIds: new Set<number>(),
 };
 

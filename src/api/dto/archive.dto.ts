@@ -38,13 +38,23 @@ export interface ArchivedArtworkStatusDto {
   isArchived: boolean;
 }
 
+export interface ArchivedPersonalArtworkStatusDto {
+  personalArtworkId: number;
+  isArchived: boolean;
+}
+
 export type ArchiveArtworkResponseDto = ApiResponseDto<ArchivedArtworkStatusDto>;
 
 export type UnarchiveArtworkResponseDto = ApiResponseDto<ArchivedArtworkStatusDto>;
 
+export type ArchivePersonalArtworkResponseDto = ApiResponseDto<ArchivedPersonalArtworkStatusDto>;
+
+export type UnarchivePersonalArtworkResponseDto = ApiResponseDto<ArchivedPersonalArtworkStatusDto>;
+
 export interface ArchivedArtworkDto {
   archiveWorkId: number;
-  artworkId: number;
+  artworkId: number | null;
+  personalArtworkId?: number | null;
   userId: number;
   memo: string | null;
   savedAt: string;

@@ -2,6 +2,7 @@ import type {
   ArchivedArtistStatusDto,
   ArchivedArtworkStatusDto,
   ArchivedExhibitionStatusDto,
+  ArchivedPersonalArtworkStatusDto,
   ArchiveMemoRequestDto,
   GetArchivedArtistResponseDto,
   GetArchivedArtistsResponseDataDto,
@@ -38,6 +39,18 @@ export const archiveArtwork = async (artworkId: number): Promise<ArchivedArtwork
 // DELETE /v1/archives/artworks/:artworkId
 export const unarchiveArtwork = async (artworkId: number): Promise<ArchivedArtworkStatusDto> =>
   apiRequest(`/v1/archives/artworks/${artworkId}`, { method: 'DELETE' });
+
+// POST /v1/archives/personal-artworks/:personalArtworkId
+export const archivePersonalArtwork = async (
+  personalArtworkId: number,
+): Promise<ArchivedPersonalArtworkStatusDto> =>
+  apiRequest(`/v1/archives/personal-artworks/${personalArtworkId}`, { method: 'POST' });
+
+// DELETE /v1/archives/personal-artworks/:personalArtworkId
+export const unarchivePersonalArtwork = async (
+  personalArtworkId: number,
+): Promise<ArchivedPersonalArtworkStatusDto> =>
+  apiRequest(`/v1/archives/personal-artworks/${personalArtworkId}`, { method: 'DELETE' });
 
 // GET /v1/archives/artworks
 export const getArchivedArtworks = async (): Promise<GetArchivedArtworksResponseDataDto> =>

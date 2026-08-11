@@ -25,6 +25,7 @@ import {
   useUnarchiveArtist,
   useUnarchiveArtwork,
   useUnarchiveExhibition,
+  useUnarchivePersonalArtwork,
   useUpdateArchivedArtworkMemo,
   useUpdateArchivedExhibitionMemo,
 } from '@/hooks/queries/useArchive';
@@ -134,6 +135,7 @@ export function MyPage() {
   });
   const unarchiveExhibition = useUnarchiveExhibition();
   const unarchiveArtwork = useUnarchiveArtwork();
+  const unarchivePersonalArtwork = useUnarchivePersonalArtwork();
   const unarchiveArtist = useUnarchiveArtist();
   const updateExhibitionMemo = useUpdateArchivedExhibitionMemo();
   const deleteExhibitionMemo = useDeleteArchivedExhibitionMemo();
@@ -195,6 +197,7 @@ export function MyPage() {
       id: String(item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId),
       archiveWorkId: item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId,
       artworkId: item.artworkId,
+      personalArtworkId: item.personalArtworkId,
       userId: item.userId ?? userData?.id,
       title: item.title ?? item.artworkTitle ?? '작품',
       artist: item.artist ?? item.artistName ?? '',
@@ -208,6 +211,7 @@ export function MyPage() {
     return items.map((item) => ({
       id: String(item.personalArtworkId),
       artworkId: item.personalArtworkId,
+      personalArtworkId: item.personalArtworkId,
       title: item.artworkName,
       artist: userData?.nickname || userData?.name || '',
       thumbnail: item.thumbnailUrl ?? '',
@@ -352,14 +356,21 @@ export function MyPage() {
                 isArtistView={isArtistView}
                 onUnarchive={(artwork) => {
                   if (window.confirm('저장한 작품에서 삭제할까요?')) {
-                    unarchiveArtwork.mutate(artwork.artworkId ?? Number(artwork.id));
+                    if (artwork.personalArtworkId) {
+                      unarchivePersonalArtwork.mutate(artwork.personalArtworkId);
+                    } else {
+                      unarchiveArtwork.mutate(artwork.artworkId ?? Number(artwork.id));
+                    }
                   }
                 }}
                 onSaveMemo={handleSaveArtworkMemo}
                 onDeleteMemo={handleDeleteArtworkMemo}
                 onOpen={
                   isArtistView
-                    ? (artwork) => navigate(`/personal-artworks/${artwork.artworkId ?? artwork.id}`)
+                    ? (artwork) =>
+                        navigate(
+                          `/personal-artworks/${artwork.personalArtworkId ?? artwork.artworkId ?? artwork.id}`,
+                        )
                     : undefined
                 }
               />

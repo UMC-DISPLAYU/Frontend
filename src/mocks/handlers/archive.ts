@@ -31,18 +31,33 @@ const archivedExhibitions = () => ({
 });
 
 const archivedArtworks = () => ({
-  works: mockDb.artworks.map((artwork: any) => ({
-    archiveWorkId: artwork.artworkId,
-    artworkId: artwork.artworkId,
-    userId: 1,
-    title: artwork.title,
-    artist: artwork.artist ?? artwork.artistName,
-    thumbnailUrl: getFirstImageUrl(artwork),
-    memo: artwork.memo ?? null,
-    savedAt: '2026-08-02T00:00:00.000Z',
-  })),
-  nextCursor: null,
+  works: [
+    ...mockDb.artworks.map((artwork: any) => ({
+      archiveWorkId: artwork.artworkId,
+      artworkId: artwork.artworkId,
+      personalArtworkId: null,
+      userId: 1,
+      title: artwork.title,
+      artist: artwork.artist ?? artwork.artistName,
+      thumbnailUrl: getFirstImageUrl(artwork),
+      memo: artwork.memo ?? null,
+      savedAt: '2026-08-02T00:00:00.000Z',
+    })),
+    ...mockDb.personalArtworks.map((artwork: any, index: number) => ({
+      archiveWorkId: -(index + 1),
+      artworkId: null,
+      personalArtworkId: artwork.personalArtworkId,
+      userId: artwork.userId,
+      title: artwork.artworkName,
+      artist: artwork.nickname ?? '',
+      thumbnailUrl: getFirstImageUrl(artwork),
+      memo: artwork.memo ?? null,
+      savedAt: '2026-08-03T00:00:00.000Z',
+    })),
+  ],
+  nextCursorId: null,
   hasNext: false,
+  size: mockDb.artworks.length + mockDb.personalArtworks.length,
 });
 
 /* 저장한 작가는 mockDb.savedArtistIds를 기준으로 만듭니다. */
@@ -149,6 +164,30 @@ export const archiveHandlers = [
       updateArtworkMemo(toNumber(params.archiveWorkId), null);
 
       return noContent('/api/v1/archives/artworks/{archiveWorkId}/memo');
+    }),
+  ),
+  ...paths('/api/v1/archives/personal-artworks/{personalArtworkId}').map((path) =>
+    http.post(path, ({ params }) => {
+      const personalArtworkId = toNumber(params.personalArtworkId);
+
+      mockDb.archivedPersonalArtworkIds.add(personalArtworkId);
+
+      return success('/api/v1/archives/personal-artworks/{personalArtworkId}', {
+        personalArtworkId,
+        isArchived: true,
+      });
+    }),
+  ),
+  ...paths('/api/v1/archives/personal-artworks/{personalArtworkId}').map((path) =>
+    http.delete(path, ({ params }) => {
+      const personalArtworkId = toNumber(params.personalArtworkId);
+
+      mockDb.archivedPersonalArtworkIds.delete(personalArtworkId);
+
+      return success('/api/v1/archives/personal-artworks/{personalArtworkId}', {
+        personalArtworkId,
+        isArchived: false,
+      });
     }),
   ),
   ...paths('/api/v1/archives/exhibitions').map((path) =>

@@ -11,6 +11,7 @@ import {
   archiveArtist,
   archiveArtwork,
   archiveExhibition,
+  archivePersonalArtwork,
   deleteArchivedArtworkMemo,
   deleteArchivedExhibitionMemo,
   getArchivedArtist,
@@ -22,6 +23,7 @@ import {
   unarchiveArtist,
   unarchiveArtwork,
   unarchiveExhibition,
+  unarchivePersonalArtwork,
   updateArchivedArtworkMemo,
   updateArchivedExhibitionMemo,
 } from '@/api/endpoints';
@@ -191,6 +193,38 @@ export const useUnarchiveArtwork = () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.detail(artworkId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() }),
+      ]),
+  });
+};
+
+export const useArchivePersonalArtwork = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: archivePersonalArtwork,
+    onSuccess: (_, personalArtworkId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
+        }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() }),
+      ]),
+  });
+};
+
+export const useUnarchivePersonalArtwork = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: unarchivePersonalArtwork,
+    onSuccess: (_, personalArtworkId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
+        }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() }),
       ]),
   });
 };
