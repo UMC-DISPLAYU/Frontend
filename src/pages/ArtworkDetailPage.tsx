@@ -12,6 +12,7 @@ import { ArtworkTabNav } from '@/components/artworkdetailpage/ArtworkTabNav';
 import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage/BottomFixedBar';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
+import { BackButton } from '@/components/ui/BackButton';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import {
   useArtworkFeelings,
@@ -33,6 +34,7 @@ import {
   useQuestionReplyPolicy,
 } from '@/hooks/usePolicy';
 import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
+import { parseServerDate } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 export function ArtworkDetailPage() {
@@ -89,6 +91,8 @@ export function ArtworkDetailPage() {
 
   /* 질문 답변(작가 전용) 대상 — 기존 그대로 유지 */
   const [questionReplyTarget, setQuestionReplyTarget] = useState<GuestbookQuestion | null>(null);
+  /* 질문 탭 진입 시 입력창을 바로 띄우지 않고, "+" 클릭 시에만 새 질문 작성 모드로 엽니다. */
+  const [isComposingQuestion, setIsComposingQuestion] = useState(false);
   const createQuestionReply = useCreateArtworkQuestionReply();
   const policyDisplay = (display ?? {
     ownerUserId: 0,
@@ -123,32 +127,36 @@ export function ArtworkDetailPage() {
   /*
    * 질문 응답을 방명록 화면이 쓰는 형태로 맞춥니다.
    * 스웨거 응답에는 프로필 이미지와 좋아요 정보가 없어 화면 기본값을 사용합니다.
+   * 새로 등록한 질문이 "+" 버튼과 같은 위치(맨 위)에 보이도록 최신순으로 정렬합니다.
    */
-  const questions: GuestbookQuestion[] = (questionsData?.questions ?? []).map((question) => ({
-    questionId: question.questionId,
-    content: question.content,
-    isPublic: question.isPublic ?? true,
-    createdAt: question.createdAt,
-    user: {
-      userId: question.user?.userId ?? 0,
-      nickname: question.user?.nickname ?? '',
-    },
-    reply: question.reply
-      ? {
-          questionReplyId: question.reply.questionReplyId,
-          queReplyId: question.reply.queReplyId,
-          questionId: question.reply.questionId,
-          content: question.reply.content,
-          createdAt: question.reply.createdAt,
-          userId: question.reply.userId ?? question.reply.creatorId,
-          nickname: question.reply.nickname ?? question.reply.creatorName,
-          creatorId: question.reply.creatorId,
-          creatorName: question.reply.creatorName,
-        }
-      : null,
-    /* 본인 질문이면 시점과 무관하게 수정·삭제할 수 있습니다. */
-    isMyQuestion: Boolean(myUserId) && question.user?.userId === myUserId,
-  }));
+  const questions: GuestbookQuestion[] = (questionsData?.questions ?? [])
+    .slice()
+    .sort((a, b) => parseServerDate(b.createdAt).getTime() - parseServerDate(a.createdAt).getTime())
+    .map((question) => ({
+      questionId: question.questionId,
+      content: question.content,
+      isPublic: question.isPublic ?? true,
+      createdAt: question.createdAt,
+      user: {
+        userId: question.user?.userId ?? 0,
+        nickname: question.user?.nickname ?? '',
+      },
+      reply: question.reply
+        ? {
+            questionReplyId: question.reply.questionReplyId,
+            queReplyId: question.reply.queReplyId,
+            questionId: question.reply.questionId,
+            content: question.reply.content,
+            createdAt: question.reply.createdAt,
+            userId: question.reply.userId ?? question.reply.creatorId,
+            nickname: question.reply.nickname ?? question.reply.creatorName,
+            creatorId: question.reply.creatorId,
+            creatorName: question.reply.creatorName,
+          }
+        : null,
+      /* 본인 질문이면 시점과 무관하게 수정·삭제할 수 있습니다. */
+      isMyQuestion: Boolean(myUserId) && question.user?.userId === myUserId,
+    }));
 
   /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
   const handleSendQuestion = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
@@ -172,7 +180,10 @@ export function ArtworkDetailPage() {
       return;
     }
 
-    createQuestion.mutate({ artworkId, body: { content, isPublic: !isPrivate } });
+    createQuestion.mutate(
+      { artworkId, body: { content, isPublic: !isPrivate } },
+      { onSuccess: () => setIsComposingQuestion(false) },
+    );
   };
 
   if (isPending) {
@@ -225,8 +236,15 @@ export function ArtworkDetailPage() {
 
   return (
     <div className="w-full max-w-md mx-auto min-h-dvh bg-page relative">
+      <div className="fixed top-4 left-1/2 z-30 w-full max-w-md -translate-x-1/2 px-4 pointer-events-none">
+        <BackButton
+          id="artwork-back-btn"
+          onClick={() => navigate(-1)}
+          className="pointer-events-auto"
+        />
+      </div>
       {/* 히어로 이미지 */}
-      <HeroSlider images={orderedHeroImages} onBack={() => navigate(-1)} />
+      <HeroSlider images={orderedHeroImages} />
 
       {/* 작품 메타 (제목, 작가, 소속전시, 저장버튼) */}
       <ArtworkMeta artwork={artwork} />
@@ -255,7 +273,18 @@ export function ArtworkDetailPage() {
           activeReplyId={activeReplyId}
           onFeelingReplyClick={handleFeelingReplyClick}
           replyTargetQuestionId={questionReplyTarget?.questionId ?? null}
-          onQuestionReplyTargetChange={setQuestionReplyTarget}
+          onQuestionReplyTargetChange={(question) => {
+            setQuestionReplyTarget(question);
+            if (question) setIsComposingQuestion(false);
+          }}
+          onAddQuestionClick={() => {
+            setQuestionReplyTarget(null);
+            setIsComposingQuestion(true);
+          }}
+          isComposingQuestion={isComposingQuestion}
+          onCloseComposeQuestion={() => setIsComposingQuestion(false)}
+          onSubmitQuestion={handleSendQuestion}
+          isSubmittingQuestion={createQuestion.isPending || createQuestionReply.isPending}
         />
       )}
 
@@ -268,6 +297,8 @@ export function ArtworkDetailPage() {
               saved={detail.isSaved ?? false}
             />
           }
+          shareTitle={artwork.artworkName}
+          shareImageUrl={orderedHeroImages[0]}
         />
       ) : activeTab === 'review' ? (
         <BottomCommentBar
@@ -295,16 +326,7 @@ export function ArtworkDetailPage() {
             createFeeling.mutate({ artworkId, body: { content, images } });
           }}
         />
-      ) : (
-        <BottomCommentBar
-          /* 일반인 시점에서만 비공개로 남길 수 있습니다. */
-          showPrivateOption={!questionReplyTarget && !isArtistView}
-          replyingTo={questionReplyTarget?.user?.nickname}
-          onCancelReply={() => setQuestionReplyTarget(null)}
-          isSubmitting={createQuestionReply.isPending || createQuestion.isPending}
-          onSubmit={handleSendQuestion}
-        />
-      )}
+      ) : null}
       {loginModal}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Bookmark, ChevronRight, ChevronUp } from 'lucide-react';
 
@@ -44,6 +44,12 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
         .filter(Boolean)
     : [];
 
+  const processImages = useMemo(
+    () =>
+      artwork.images.filter((img) => !img.isThumbnail).sort((a, b) => a.sortOrder - b.sortOrder),
+    [artwork.images],
+  );
+
   /* 북마크를 누르면 내가 저장한 작가 목록에 추가/제거합니다. */
   const toggleArtistBookmark = () => {
     if (!accessToken) {
@@ -60,7 +66,7 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
     <div className="pb-28">
       <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       {/* 작품소개 */}
-      <section className="px-5 pt-7 pb-6">
+      <section className="px-5 pt-6 pb-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="typo-body-xl-bold text-main">작품소개</h2>
         </div>
@@ -86,15 +92,13 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
       </section>
 
       {/* 작업과정 */}
-      <section className="px-5 pt-5 pb-5 bg-box200">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="typo-body-xl-bold text-main">작업과정</h2>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {artwork.images
-            .filter((img) => !img.isThumbnail)
-            .sort((a, b) => a.sortOrder - b.sortOrder)
-            .map((img, idx) => (
+      {processImages.length > 0 && (
+        <section className="px-5 pt-5 pb-5 bg-box200">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="typo-body-xl-bold text-main">작업과정</h2>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {processImages.map((img, idx) => (
               <img
                 key={idx}
                 src={img.imageUrl}
@@ -102,8 +106,9 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
                 className="w-full h-40 object-cover rounded-2xl"
               />
             ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/* 감상 포인트 */}
       <section className="px-5 pt-5 pb-5">
