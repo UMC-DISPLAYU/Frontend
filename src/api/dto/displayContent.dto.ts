@@ -28,8 +28,8 @@ export type CreateContentCategoryResponseDto = {
 };
 
 export type UpdateContentCategoryRequestDto = {
-  name?: string;
-  description?: string;
+  name: string;
+  description: string;
 };
 
 /*

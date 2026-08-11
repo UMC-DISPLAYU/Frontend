@@ -56,6 +56,8 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'du-picks', params ?? {}] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
+    likeStatus: (displayId: number) =>
+      [...queryKeys.displays.all, 'like-status', displayId] as const,
     reviews: (displayId: number) => [...queryKeys.displays.all, 'reviews', displayId] as const,
     reviewReplies: (displayId: number, displayReviewId: number) =>
       [...queryKeys.displays.all, 'reviews', displayId, 'replies', displayReviewId] as const,

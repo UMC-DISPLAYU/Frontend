@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Bookmark, ChevronRight, ChevronUp } from 'lucide-react';
 
@@ -44,9 +44,11 @@ export function ArtworkIntroTab({ artwork, artistUserId }: Props) {
         .filter(Boolean)
     : [];
 
-  const processImages = artwork.images
-    .filter((img) => !img.isThumbnail)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const processImages = useMemo(
+    () =>
+      artwork.images.filter((img) => !img.isThumbnail).sort((a, b) => a.sortOrder - b.sortOrder),
+    [artwork.images],
+  );
 
   /* 북마크를 누르면 내가 저장한 작가 목록에 추가/제거합니다. */
   const toggleArtistBookmark = () => {

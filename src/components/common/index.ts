@@ -8,3 +8,4 @@ export { ImageModal } from './ImageModal';
 export { ImageUploader } from './ImageUploader';
 export { LoadingView } from './LoadingView';
 export { LoginConfirmModal } from './LoginConfirmModal';
+export { ShareBottomSheet } from './ShareBottomSheet';

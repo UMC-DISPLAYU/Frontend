@@ -297,6 +297,8 @@ export function ArtworkDetailPage() {
               saved={detail.isSaved ?? false}
             />
           }
+          shareTitle={artwork.artworkName}
+          shareImageUrl={orderedHeroImages[0]}
         />
       ) : activeTab === 'review' ? (
         <BottomCommentBar
