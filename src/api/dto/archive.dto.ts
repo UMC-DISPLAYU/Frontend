@@ -87,16 +87,19 @@ export type ArchiveArtistResponseDto = ApiResponseDto<ArchivedArtistStatusDto>;
 export type UnarchiveArtistResponseDto = ApiResponseDto<ArchivedArtistStatusDto>;
 
 export interface ArchivedArtistDto {
-  savedArtistId: number;
+  archiveArtistId: number;
   artistId: number;
-  name: string;
-  field: string;
+  userId: number;
+  artistName: string;
+  fields: string[];
   profileImageUrl: string;
+  artworkCount: number;
+  exhibitionCount: number;
   savedAt: string;
 }
 
-export interface GetArchivedArtistsResponseDataDto {
-  savedArtists: ArchivedArtistDto[];
+export interface GetArchivedArtistsResponseDataDto extends CursorPageInfoDto {
+  artists: ArchivedArtistDto[];
 }
 
 export type GetArchivedArtistsResponseDto = ApiResponseDto<GetArchivedArtistsResponseDataDto>;

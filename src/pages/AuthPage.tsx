@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -33,11 +33,21 @@ export function AuthPage() {
 
   const artistProfileQuery = useUserArtistProfile(userId);
   const artworksQuery = useUserArtworks(userId, { enabled: activeTab === 'artwork' });
-  const { data: archivedArtists } = useArchivedArtists();
+  const {
+    data: archivedArtists,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useArchivedArtists();
   const archiveArtist = useArchiveArtist();
   const unarchiveArtist = useUnarchiveArtist();
 
-  const isSaved = (archivedArtists?.savedArtists ?? []).some(
+  /* 저장 여부를 정확히 판단하기 위해 페이지가 남아있으면 계속 불러옵니다. */
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const isSaved = (archivedArtists?.pages.flatMap((page) => page.artists) ?? []).some(
     (artist) => artist.artistId === userId,
   );
   const isSavePending = archiveArtist.isPending || unarchiveArtist.isPending;
