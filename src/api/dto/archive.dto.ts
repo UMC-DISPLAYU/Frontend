@@ -1,4 +1,4 @@
-import type { ApiResponseDto } from './common.dto';
+import type { ApiResponseDto, CursorPageInfoDto } from './common.dto';
 
 export interface ArchivedExhibitionStatusDto {
   exhibitionId: number;
