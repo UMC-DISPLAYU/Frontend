@@ -56,6 +56,8 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'du-picks', params ?? {}] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
+    likeStatus: (displayId: number) =>
+      [...queryKeys.displays.all, 'like-status', displayId] as const,
     reviews: (displayId: number) => [...queryKeys.displays.all, 'reviews', displayId] as const,
     reviewReplies: (displayId: number, displayReviewId: number) =>
       [...queryKeys.displays.all, 'reviews', displayId, 'replies', displayReviewId] as const,
@@ -83,6 +85,7 @@ export const queryKeys = {
     preview: (params?: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params ?? {}] as const,
     me: () => [...queryKeys.displayArtworks.lists(), 'me'] as const,
+    byUserId: (userId: number) => [...queryKeys.displayArtworks.lists(), 'user', userId] as const,
     details: () => [...queryKeys.displayArtworks.all, 'detail'] as const,
     detail: (artworkId: number) => [...queryKeys.displayArtworks.details(), artworkId] as const,
   },

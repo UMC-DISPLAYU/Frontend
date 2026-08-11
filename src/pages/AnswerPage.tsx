@@ -123,16 +123,15 @@ export function AnswerPage() {
   });
   const questions = data?.questions ?? [];
 
-  const items = questions
-    .map<Question>((question) => ({
-          id: String(question.questionId),
-          exhibition: question.artworkName,
-          desc: question.content,
-          user: question.questionerNickname,
-          time: getRelativeTime(question.createdAt),
-          status: formatAnswerStatus(question.answerStatus),
-          isOpen: question.isPublic,
-        }));
+  const items = questions.map<Question>((question) => ({
+    id: String(question.questionId),
+    exhibition: question.artworkName,
+    desc: question.content,
+    user: question.questionerNickname,
+    time: getRelativeTime(question.createdAt),
+    status: formatAnswerStatus(question.answerStatus),
+    isOpen: question.isPublic,
+  }));
 
   const handleDone = () => {
     navigate(-1);

@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
+import type { LoungeCommentDto } from '@/api/dto/lounge.dto';
 import type { CommentData } from '@/components/common';
 import { CommentItem } from '@/components/common';
 import {
@@ -10,13 +11,12 @@ import {
 import { useLoungeReplies } from '@/hooks/queries/useLoungeReplies';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useLoungeCommentPolicy } from '@/hooks/usePolicy';
-import type { LoungeBoardComment } from '@/types/exhibition';
 import { formatRelativeTime } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 type Props = {
   postId: number;
-  comment: LoungeBoardComment;
+  comment: LoungeCommentDto;
   isDeleted?: boolean;
   onDelete?: (commentId: string) => void;
   onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
@@ -40,7 +40,7 @@ export const LoungeBoardCommentItem = memo(function LoungeBoardCommentItem({
   /* like/unlike/delete는 로그인 여부만 확인하면 됩니다 — 삭제 버튼 자체는
    * CommentItem이 isMyComment일 때만 노출하므로 소유권 재검증은 불필요합니다. */
   const isLoggedIn = hasPermission(loungeCommentPolicy, 'like');
-  const commentId = Number(comment.id);
+  const commentId = Number(comment.loungeCommentId);
   const isComposingReply = activeReplyId === `comment-${commentId}`;
 
   useEffect(() => {
@@ -79,6 +79,22 @@ export const LoungeBoardCommentItem = memo(function LoungeBoardCommentItem({
           })) ?? []
       ).filter((reply) => !removedReplyIds.has(reply.id)),
     [repliesData, removedReplyIds],
+  );
+
+  const commentData: CommentData = useMemo(
+    () => ({
+      id: String(comment.loungeCommentId),
+      author: comment.writer.nickname,
+      avatarUrl: comment.writer.profileImageUrl,
+      time: formatRelativeTime(comment.createdAt),
+      content: comment.content,
+      likeCount: comment.likeCount,
+      isLiked: comment.isLiked,
+      isMyComment: comment.isMyComment,
+      replyCount: comment.replyCount,
+      images: comment.imageUrls.length > 0 ? comment.imageUrls : undefined,
+    }),
+    [comment],
   );
 
   const handleLike = useCallback(
@@ -148,7 +164,7 @@ export const LoungeBoardCommentItem = memo(function LoungeBoardCommentItem({
   return (
     <>
       <CommentItem
-        comment={comment}
+        comment={commentData}
         isDeleted={isDeleted}
         replies={replies}
         repliesOpen={repliesOpen}
@@ -163,6 +179,7 @@ export const LoungeBoardCommentItem = memo(function LoungeBoardCommentItem({
         onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
         tightSpacing
+        likePosition="top-right"
       />
       {loginModal}
     </>

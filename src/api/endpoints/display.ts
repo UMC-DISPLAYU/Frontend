@@ -10,6 +10,7 @@ import type {
   DeleteDisplayReviewResponseDataDto,
   DisableDisplayInvitationLinkResponseDataDto,
   DisplayDetailDto,
+  DisplayLikeStatusResponseDataDto,
   DisplayListResponseDataDto,
   DisplayMemberInvitationResponseDataDto,
   DisplayMemberListResponseDataDto,
@@ -110,6 +111,11 @@ export const updateDisplayLike = async (body: {
   userId?: number;
 }): Promise<ToggleDisplayLikeResponseDataDto> =>
   apiRequest('/v1/display/like', { method: 'PATCH', body });
+
+// GET /v1/display/{displayId}/isliked
+export const getDisplayLikeStatus = async (
+  displayId: number,
+): Promise<DisplayLikeStatusResponseDataDto> => apiRequest(`/v1/display/${displayId}/isliked`);
 
 // GET /v1/display/me
 export const getMyDisplays = async (): Promise<GetMyDisplaysResponseDataDto> =>
@@ -233,8 +239,10 @@ export const toggleDisplayReviewReplyLike = async (
   );
 
 // GET /v1/display/reviews/me
-export const getMyDisplayReviews = async (params: {
-  cursorId?: number;
-  size?: number;
-} = {}): Promise<GetMyDisplayReviewsResponseDataDto> =>
+export const getMyDisplayReviews = async (
+  params: {
+    cursorId?: number;
+    size?: number;
+  } = {},
+): Promise<GetMyDisplayReviewsResponseDataDto> =>
   apiRequest('/v1/display/reviews/me', { query: params });

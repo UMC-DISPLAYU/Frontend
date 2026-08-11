@@ -411,7 +411,7 @@ export function ArtworkGuestbookTab({
   }, [activeTab, hasMoreQuestions, isLoadingMoreQuestions, onLoadMoreQuestions]);
 
   return (
-    <div className="pb-56 min-h-150">
+    <div className="min-h-150 pb-comment-bar-offset">
       {/* ── 감상 탭 ── */}
       {activeTab === 'review' && (
         <div className="px-5 pt-4">

@@ -71,12 +71,12 @@ export function DisplayDetailPage() {
       />
       {/* 하단 전시 저장 바에 콘텐츠 마지막 부분이 가려지지 않도록 여백을 확보합니다. */}
       {activeTab === 'intro' && (
-        <div className="pb-28">
+        <div className="pb-bottom-bar-offset">
           <IntroTab display={display} />
         </div>
       )}
       {activeTab === 'artwork' && (
-        <div className="pb-28">
+        <div className="pb-bottom-bar-offset">
           <ArtworkTab displayId={display.displayId} />
         </div>
       )}
@@ -87,6 +87,9 @@ export function DisplayDetailPage() {
           button={
             <DisplaySaveButton displayId={display.displayId} saved={display.isArchived ?? false} />
           }
+          shareTitle={display.title}
+          shareDescription={display.subtitle ?? undefined}
+          shareImageUrl={heroImages[0]}
         />
       )}
     </div>

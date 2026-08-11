@@ -1,8 +1,9 @@
 import { useState } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar, PageHeader } from '@/components/common';
+import { BottomButton } from '@/components/common';
+import { ExhibitionHeader } from '@/components/ui';
 import { RadioOption } from '@/components/visibility-settings';
 import {
   CONTENT_OPEN_TO_VISIBILITY,
@@ -70,11 +71,13 @@ function VisibilitySection({
 export function VisibilitySettings() {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: VisibilityState | null };
+  const { displayId: paramDisplayId } = useParams();
+  const displayId = Number(paramDisplayId ?? state?.displayId ?? 0);
 
   const startDateLabel = formatStartDate(state?.startDate);
 
   /* 공개 시점은 전시 상세 응답에 포함되어 있어 별도 조회가 없습니다. */
-  const { data: display } = useDisplayDetail(state?.displayId ?? 0);
+  const { data: display } = useDisplayDetail(displayId);
   const displayPolicy = useDisplayPolicy(
     display ?? {
       ownerUserId: 0,
@@ -85,9 +88,8 @@ export function VisibilitySettings() {
    * 전시 등록 중에는 아직 displayId가 없어 권한을 판정할 대상이 없습니다.
    * 이때는 값을 다음 단계로 넘기기만 하므로 편집을 허용합니다.
    */
-  const canEditDisplay = state?.displayId
-    ? Boolean(display) && hasPermission(displayPolicy, 'edit')
-    : true;
+  const canEditDisplay =
+    displayId > 0 ? Boolean(display) && hasPermission(displayPolicy, 'edit') : true;
 
   // 사용자가 아직 고르지 않았으면 서버 값을, 서버 값도 없으면 기본값을 보여줍니다.
   const [picked, setPicked] = useState<{
@@ -115,12 +117,12 @@ export function VisibilitySettings() {
   const setContentVisibility = (next: VisibilityType) =>
     setPicked((prev) => ({ ...prev, contentVisibility: next }));
 
-  const updateMutation = useUpdateDisplayReservation(state?.displayId);
+  const updateMutation = useUpdateDisplayReservation(displayId);
 
   const save = () => {
-    if (!state?.displayId) {
+    if (!displayId) {
       // displayId가 없으면 router state로만 전달 (등록 플로우)
-      navigate('/exhibition/manage', {
+      navigate(`/exhibition/${displayId}/manage`, {
         replace: true,
         state: { ...state, artworkVisibility, contentVisibility },
       });
@@ -135,7 +137,7 @@ export function VisibilitySettings() {
       },
       {
         onSuccess: () => {
-          navigate('/exhibition/manage', {
+          navigate(`/exhibition/${displayId}/manage`, {
             replace: true,
             state: { ...state, artworkVisibility, contentVisibility },
           });
@@ -145,10 +147,10 @@ export function VisibilitySettings() {
   };
 
   return (
-    <div className="mx-auto flex h-dvh max-w-md flex-col bg-page">
-      <PageHeader title="공개 설정" onBack={() => navigate(-1)} />
+    <div className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
+      <ExhibitionHeader title="공개 설정" onBack={() => navigate(-1)} />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-3 pb-6">
+      <main className="min-h-0 flex-1 overflow-hidden px-5">
         <div className="flex flex-col gap-1">
           <h2 className="typo-body-md-bold text-main">공개 시점 설정</h2>
           <p className="typo-body-xs-regular text-hint">
@@ -158,7 +160,7 @@ export function VisibilitySettings() {
           </p>
         </div>
 
-        <div className="mt-8 flex flex-col gap-8">
+        <div className="mt-6 flex flex-col gap-3.5">
           <VisibilitySection
             disabled={!canEditDisplay}
             title="전시작 공개 시점"
@@ -174,19 +176,11 @@ export function VisibilitySettings() {
             startDateLabel={startDateLabel}
           />
         </div>
-      </div>
+      </main>
 
-      {canEditDisplay && (
-        <BottomButtonBar withBorder={false}>
-          <button
-            type="button"
-            onClick={save}
-            className="typo-body-sm-bold h-11 w-full rounded-lg bg-dark text-white"
-          >
-            저장하기
-          </button>
-        </BottomButtonBar>
-      )}
+      <BottomButton type="button" onClick={save} disabled={!canEditDisplay}>
+        저장하기
+      </BottomButton>
     </div>
   );
 }

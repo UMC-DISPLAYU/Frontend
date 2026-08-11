@@ -1,5 +1,6 @@
 import { Pencil, Trash2 } from 'lucide-react';
 
+import { BottomSheet } from '@/components/ui/BottomSheet';
 import type { Work } from '@/types/artworkManage';
 
 import { Thumbnail } from './Common';
@@ -22,20 +23,15 @@ export function WorkActionSheet({
   onDelete,
 }: WorkActionSheetProps) {
   return (
-    <>
-      <div className="absolute inset-0 bg-main/35" onClick={onClose} />
-      <div
-        role="dialog"
-        aria-label="작품 관리"
-        className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-page px-5 pt-6 pb-7 shadow-[0px_-8px_30px_0px_rgba(4,0,250,0.10)]"
-      >
-        <h2 className="typo-body-xl-bold mb-4 text-main">작품 관리</h2>
-
-        <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
-          <Thumbnail src={work.thumbnail} />
-          <div className="flex min-w-0 flex-col gap-2.5">
-            <p className="typo-body-md-bold truncate text-main">{work.title}</p>
-            <p className="typo-body-xs-regular text-sub700">{work.artist}</p>
+    <BottomSheet open={!!work} onClose={onClose} title="작품 관리">
+      <div className="px-5">
+        <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5">
+          <Thumbnail src={work.thumbnail} className="w-18 h-25" />
+          <div className="flex min-w-0 h-25 flex-col justify-between py-0.5">
+            <div className="flex flex-col gap-1">
+              <p className="typo-body-md-bold truncate text-main">{work.title}</p>
+              <p className="typo-body-xs-regular text-sub700">{work.artist}</p>
+            </div>
             <p className="typo-body-xxs-regular text-faint">등록자 {work.owner}</p>
           </div>
         </div>
@@ -76,6 +72,6 @@ export function WorkActionSheet({
           )}
         </div>
       </div>
-    </>
+    </BottomSheet>
   );
 }

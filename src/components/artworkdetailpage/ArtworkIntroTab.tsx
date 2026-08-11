@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Bookmark, ChevronRight, ChevronUp } from 'lucide-react';
 
@@ -109,9 +109,13 @@ export function ArtworkIntroTab({ artwork, artistUserId, coAuthorUserIds = [] }:
       .map((id) => ({ userId: id, displayName: '' })),
   ];
 
-  const processImages = artwork.images
-    .filter((img) => img.imageType === 'WORK_PROCESS')
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const processImages = useMemo(
+    () =>
+      artwork.images
+        .filter((img) => img.imageType === 'WORK_PROCESS')
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [artwork.images],
+  );
 
   return (
     <div className="pb-28">

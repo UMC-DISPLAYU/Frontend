@@ -44,7 +44,7 @@ export function MyPageHeader({
           <h1 className="typo-heading-3xl text-main">My Page</h1>
           {isArtistVerified && isArtistView && (
             <span className="inline-flex items-center px-2.5 py-1 bg-sky-100 rounded-sm">
-              <span className="text-tag-fg typo-body-xs-regular">작가인증</span>
+              <span className="text-line-active typo-body-xs-regular">작가인증</span>
             </span>
           )}
         </div>
@@ -63,7 +63,7 @@ export function MyPageHeader({
       <div className="px-5 pt-5 pb-5 flex flex-col gap-3.5">
         <div className="flex gap-6 items-start">
           <img
-            className="size-20 rounded-full border-[2.67px] border-line object-cover shrink-0"
+            className="size-20 rounded-full object-cover shrink-0"
             src={profile.avatar || FALLBACK_PROFILE_IMAGE}
             alt={profile.name}
             onError={(event) => {
@@ -125,7 +125,7 @@ export function MyPageHeader({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => navigate('/exhibition-register')}
+              onClick={() => navigate('/exhibition/register')}
               className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
             >
               <span className="typo-body-sm-regular text-main">전시등록</span>
@@ -141,7 +141,7 @@ export function MyPageHeader({
             )}
             <button
               type="button"
-              onClick={() => navigate('/exhibition/manage')}
+              onClick={() => navigate('/my/exhibitions')}
               className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
             >
               <span className="typo-body-sm-regular text-main">전시관리</span>

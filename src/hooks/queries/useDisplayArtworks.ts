@@ -76,3 +76,11 @@ export const useMyArtworks = ({ enabled = true }: { enabled?: boolean } = {}) =>
     enabled: enabled && Boolean(userId),
   });
 };
+
+// GET /v1/personal-artworks?userId= - 특정 작가의 개인 작품 목록 조회
+export const useUserArtworks = (userId: number, { enabled = true }: { enabled?: boolean } = {}) =>
+  useQuery({
+    queryKey: queryKeys.displayArtworks.byUserId(userId),
+    queryFn: () => getPersonalArtworks(userId),
+    enabled: enabled && Number.isFinite(userId) && userId > 0,
+  });

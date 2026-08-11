@@ -1,9 +1,11 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 
 import { Heart } from 'lucide-react';
 
 import defaultProfileIcon from '@/assets/common/DefaultProfileIcon.svg';
 import { cn } from '@/utils/cn';
+
+import { ImageModal } from '../ImageModal';
 
 import type { CommentData } from './types';
 
@@ -17,7 +19,6 @@ type Props = {
   replies?: CommentData[];
   repliesOpen?: boolean;
   onToggleReplies?: () => void;
-  /** 답글이 더 있어서 "댓글 더보기" 버튼을 보여줄지 여부. */
   hasMoreReplies?: boolean;
   onLoadMoreReplies?: () => void;
   isLoadingMoreReplies?: boolean;
@@ -30,15 +31,15 @@ type Props = {
   className?: string;
   /* 줄마다 상하 12px 패딩으로 촘촘하게 쌓는 레이아웃. false면 gap 기반(간격 40px) 레이아웃. */
   tightSpacing?: boolean;
-  /** tightSpacing일 때 각 줄 아래에 구분선을 그릴지 여부. */
+  /* tightSpacing일 때 각 줄 아래에 구분선을 그릴지 여부. */
   showDivider?: boolean;
-  /** 최상위 댓글의 좋아요 하트 아이콘 크기. */
   likeIconSize?: IconSize;
-  /** 답글의 좋아요 하트 아이콘 크기. */
   replyLikeIconSize?: IconSize;
+  /** 좋아요 버튼 위치 */
+  likePosition?: 'bottom' | 'top-right';
 };
 
-const DEFAULT_LIKE_ICON_SIZE: IconSize = { width: 14, height: 14 };
+const DEFAULT_LIKE_ICON_SIZE: IconSize = { width: 12, height: 17 };
 
 export const CommentItem = memo(function CommentItem({
   comment,
@@ -62,6 +63,7 @@ export const CommentItem = memo(function CommentItem({
   showDivider = false,
   likeIconSize = DEFAULT_LIKE_ICON_SIZE,
   replyLikeIconSize = DEFAULT_LIKE_ICON_SIZE,
+  likePosition = 'bottom',
 }: Props) {
   const iconSize = isReply ? replyLikeIconSize : likeIconSize;
   const commentId = comment.id;
@@ -74,6 +76,8 @@ export const CommentItem = memo(function CommentItem({
   const highlightKey = isReply ? `reply-${commentId}` : `comment-${commentId}`;
   const isComposingReply = activeReplyId === highlightKey;
   const replyCount = comment.replyCount ?? 0;
+
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleLikeClick = () => {
     if (isLikePending) return;
@@ -100,12 +104,17 @@ export const CommentItem = memo(function CommentItem({
   return (
     <div className={cn('w-full flex flex-col', tightSpacing ? 'gap-0' : 'gap-2', className)}>
       <div
-        className={`relative flex flex-col -mx-5 px-5 ${dividerClasses} ${bleedClasses} ${isComposingReply ? 'bg-box' : ''}`}
+        className={cn(
+          'relative flex flex-col -mx-5 px-5',
+          dividerClasses,
+          bleedClasses,
+          isComposingReply && 'bg-box',
+        )}
       >
         {isComposingReply && (
           <div className="absolute top-0 left-0 h-full w-[3px] rounded-r-full bg-[#8E8E93]" />
         )}
-        <div className={`flex items-center gap-1.5 ${isReply ? 'pl-9' : ''}`}>
+        <div className={cn('flex items-center gap-1.5', isReply && 'pl-9')}>
           <img
             alt=""
             className="size-7 rounded-full shrink-0 object-cover"
@@ -118,68 +127,7 @@ export const CommentItem = memo(function CommentItem({
             <span className="typo-body-sm-bold text-main">{comment.author}</span>
             <span className="typo-body-xs-regular text-hint">{comment.time}</span>
           </div>
-        </div>
-
-        {!isDeleted && comment.images && comment.images.length > 0 && (
-          <div className={`${contentIndent} mt-1 flex gap-1 overflow-x-auto scrollbar-none`}>
-            {comment.images.map((url) => (
-              <div
-                key={url}
-                className="w-[106px] h-[129px] shrink-0 rounded-sm bg-gray-300 bg-cover bg-center"
-                style={{ backgroundImage: `url(${url})` }}
-              />
-            ))}
-          </div>
-        )}
-
-        <p
-          className={`${contentIndent} ${!isDeleted && comment.images && comment.images.length > 0 ? 'mt-3' : 'mt-1'} typo-body-sm-regular text-sub600`}
-        >
-          {isDeleted ? '삭제된 글입니다.' : comment.content}
-        </p>
-
-        <div className={`${contentIndent} mt-3 flex items-center justify-between gap-2`}>
-          <div className="flex items-center gap-2">
-            {!isDeleted && (
-              <button
-                type="button"
-                onClick={() =>
-                  onReplyClick?.(
-                    isReply ? (parentCommentId ?? commentId) : commentId,
-                    comment.author,
-                    highlightKey,
-                  )
-                }
-                className={
-                  isComposingReply
-                    ? 'text-[12px] font-bold text-[#3A3A3C]'
-                    : 'typo-body-xs-regular text-faint'
-                }
-              >
-                답글달기
-              </button>
-            )}
-            {!isReply && replyCount > 0 && (
-              <button
-                type="button"
-                onClick={() => onToggleReplies?.()}
-                className="typo-body-xs-regular text-faint"
-              >
-                댓글{replyCount}
-              </button>
-            )}
-            {!isDeleted && (comment.canDelete ?? comment.isMyComment) && (
-              <button
-                type="button"
-                onClick={handleDeleteClick}
-                className="typo-body-xs-regular text-faint"
-              >
-                삭제
-              </button>
-            )}
-          </div>
-
-          {!isDeleted && (
+          {likePosition === 'top-right' && !isDeleted && (
             <button
               type="button"
               onClick={handleLikeClick}
@@ -195,6 +143,88 @@ export const CommentItem = memo(function CommentItem({
                 strokeWidth={1.5}
               />
               <span className="typo-body-xs-regular text-faint">{comment.likeCount}</span>
+            </button>
+          )}
+        </div>
+
+        {!isDeleted && comment.images && comment.images.length > 0 && (
+          <div className={`${contentIndent} mt-1 flex gap-1 overflow-x-auto scrollbar-none`}>
+            {comment.images.map((url) => (
+              <button
+                key={url}
+                type="button"
+                className="w-[106px] h-[129px] shrink-0 rounded-sm bg-gray-300 bg-cover bg-center cursor-pointer"
+                style={{ backgroundImage: `url(${url})` }}
+                onClick={() => setSelectedImage(url)}
+                aria-label="이미지 크게 보기"
+              />
+            ))}
+          </div>
+        )}
+
+        <p
+          className={`${contentIndent} ${!isDeleted && comment.images && comment.images.length > 0 ? 'mt-3' : 'mt-1'} typo-body-sm-regular text-sub600`}
+        >
+          {isDeleted ? '삭제된 글입니다.' : comment.content}
+        </p>
+
+        <div className={cn(contentIndent, 'mt-3 flex items-center justify-between gap-2')}>
+          <div className="flex items-center gap-2">
+            {!isDeleted && (
+              <button
+                type="button"
+                onClick={() =>
+                  onReplyClick?.(
+                    isReply ? (parentCommentId ?? commentId) : commentId,
+                    comment.author,
+                    highlightKey,
+                  )
+                }
+                className={
+                  isComposingReply
+                    ? 'typo-body-xs-bold text-[#3A3A3C]'
+                    : 'typo-body-xs-regular text-hint'
+                }
+              >
+                답글달기
+              </button>
+            )}
+            {!isReply && replyCount > 0 && (
+              <button
+                type="button"
+                onClick={() => onToggleReplies?.()}
+                className="typo-body-xs-regular text-hint"
+              >
+                댓글{replyCount}
+              </button>
+            )}
+            {!isDeleted && (comment.canDelete ?? comment.isMyComment) && (
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                className="typo-body-xs-regular text-hint"
+              >
+                삭제
+              </button>
+            )}
+          </div>
+
+          {likePosition === 'bottom' && !isDeleted && (
+            <button
+              type="button"
+              onClick={handleLikeClick}
+              disabled={isLikePending}
+              aria-pressed={comment.isLiked}
+              aria-label={`좋아요 ${comment.likeCount}개`}
+              className="flex min-w-[28px] items-center gap-1 disabled:opacity-50"
+            >
+              <Heart
+                width={iconSize.width}
+                height={iconSize.height}
+                className={cn('shrink-0', comment.isLiked ? 'fill-heart text-heart' : 'text-hint')}
+                strokeWidth={1}
+              />
+              <span className="typo-body-xs-regular text-hint">{comment.likeCount}</span>
             </button>
           )}
         </div>
@@ -218,6 +248,7 @@ export const CommentItem = memo(function CommentItem({
               showDivider={showDivider}
               likeIconSize={likeIconSize}
               replyLikeIconSize={replyLikeIconSize}
+              likePosition={likePosition}
             />
           ))}
           {hasMoreReplies && (
@@ -232,6 +263,12 @@ export const CommentItem = memo(function CommentItem({
           )}
         </div>
       )}
+
+      <ImageModal
+        imageUrl={selectedImage}
+        isOpen={selectedImage !== null}
+        onClose={() => setSelectedImage(null)}
+      />
     </div>
   );
 });

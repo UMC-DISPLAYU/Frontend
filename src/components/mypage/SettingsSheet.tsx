@@ -14,7 +14,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           type="button"
           aria-label="닫기"
           onClick={onClose}
-          className="absolute inset-0 bg-scrim"
+          className="absolute inset-0 bg-black/40"
         />
       </div>
     </div>

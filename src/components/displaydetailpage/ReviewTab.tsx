@@ -54,22 +54,27 @@ export function ReviewTab({ className, display, displayId }: Props) {
   const reviewPolicy = useDisplayReviewPolicy(display);
   const replyPolicy = useDisplayReviewReplyPolicy(display);
 
-  const [replyTarget, setReplyTarget] = useState<{ commentId: number; author: string } | null>(
-    null,
-  );
-  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [replyState, setReplyState] = useState<{
+    commentId: number;
+    author: string;
+    highlightId: string;
+  } | null>(null);
+
   const clearReplyTarget = () => {
-    setReplyTarget(null);
-    setActiveReplyId(null);
+    setReplyState(null);
   };
 
   const handleReplyClick = useCallback((commentId: number, author: string, highlightId: string) => {
-    setReplyTarget({ commentId, author });
-    setActiveReplyId(highlightId);
+    setReplyState((prev) => {
+      if (prev?.highlightId === highlightId) {
+        return null;
+      }
+      return { commentId, author, highlightId };
+    });
   }, []);
 
   const createReview = useCreateDisplayReview(displayId);
-  const createReply = useCreateDisplayReviewReply(displayId, replyTarget?.commentId ?? 0);
+  const createReply = useCreateDisplayReviewReply(displayId, replyState?.commentId ?? 0);
 
   const reviews = (data?.pages.flatMap((page) => page.reviews) ?? []).filter(
     // 답글 없는 삭제된 후기는 목록에서 완전히 제외 (답글이 있으면 "삭제된 글입니다"로 표시)
@@ -99,7 +104,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className={cn('px-5 py-6 pb-56 overflow-x-hidden min-h-150', className)}>
+    <div className={cn('px-5 py-6 pb-comment-bar-offset overflow-x-hidden min-h-150', className)}>
       {/* 헤더 */}
       <h2 className="typo-body-xl-bold text-main mb-4">전시 후기</h2>
 
@@ -136,7 +141,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
               displayId={displayId}
               review={review}
               myUserId={myUserId}
-              activeReplyId={activeReplyId}
+              activeReplyId={replyState?.highlightId ?? null}
               onReplyClick={handleReplyClick}
             />
           ))}
@@ -155,11 +160,11 @@ export function ReviewTab({ className, display, displayId }: Props) {
       <BottomCommentBar
         placeholder="글을 입력하세요."
         imageDomain="display-review"
-        isSubmitting={replyTarget ? createReply.isPending : createReview.isPending}
-        replyingTo={replyTarget?.author}
+        isSubmitting={replyState ? createReply.isPending : createReview.isPending}
+        replyingTo={replyState?.author}
         onCancelReply={clearReplyTarget}
         onSubmit={({ content, images }) => {
-          if (replyTarget) {
+          if (replyState) {
             if (!hasPermission(replyPolicy, 'reply.create')) {
               openLoginModal();
               return;

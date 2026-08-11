@@ -589,7 +589,7 @@ export function PersonalArtworkDetailPage() {
       </nav>
 
       {activeTab === 'intro' ? (
-        <div className="pb-28">
+        <div className="pb-bottom-bar-offset">
           {artwork.content && (
             <section className="px-5 pt-7 pb-6">
               <h2 className="typo-body-xl-bold mb-3 text-main">작품소개</h2>
@@ -623,7 +623,7 @@ export function PersonalArtworkDetailPage() {
           )}
         </div>
       ) : (
-        <div className="pb-28">
+        <div className="pb-bottom-bar-offset">
           {/* 서브탭: 감상 / 질문 */}
           <div className="flex bg-bt-gray">
             {(
