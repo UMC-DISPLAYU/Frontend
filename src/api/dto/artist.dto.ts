@@ -1,9 +1,17 @@
 import type { ApiResponseDto } from './common.dto';
-import type { ArtistProfileDto } from './user.dto';
 
 export interface CreateArtistProfileRequestDto {
   artistName: string;
   activityFields: string[];
 }
 
-export type CreateArtistProfileResponseDto = ApiResponseDto<ArtistProfileDto>;
+export interface CreateArtistProfileResponseDataDto {
+  artistProfileId: number;
+  artistName: string;
+  schoolEmail: string;
+  univName: string;
+  activityFields: string[];
+  isVerified: boolean;
+}
+
+export type CreateArtistProfileResponseDto = ApiResponseDto<CreateArtistProfileResponseDataDto>;
