@@ -319,11 +319,19 @@ export function MyPage() {
         isArtistVerified={isArtistVerified}
       />
 
-      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
+      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6 bg-box">
         {activeQuery.isLoading ? (
-          <LoadingView fullScreen={false} message="저장 목록 로딩 중..." />
+          <LoadingView
+            fullScreen={false}
+            message="저장 목록 로딩 중..."
+            className="bg-transparent"
+          />
         ) : activeQuery.error ? (
-          <ErrorView fullScreen={false} message="저장 목록을 불러오지 못했습니다." />
+          <ErrorView
+            fullScreen={false}
+            message="저장 목록을 불러오지 못했습니다."
+            className="bg-transparent"
+          />
         ) : activeTab === 'exhibition' &&
           (isArtistView ? myExhibitions : exhibitions).length > 0 ? (
           <div className="flex flex-col gap-4">
@@ -381,7 +389,7 @@ export function MyPage() {
             ))}
           </div>
         ) : (
-          <ErrorView fullScreen={false} message={emptyMessage} />
+          <ErrorView fullScreen={false} message={emptyMessage} className="bg-transparent" />
         )}
       </section>
 
