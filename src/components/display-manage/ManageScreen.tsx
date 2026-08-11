@@ -87,14 +87,13 @@ export function ManageScreen({
           </button>
         )}
       </div>
-        <button
-          type="button"
-          onClick={onDone}
-          className="typo-body-md-bold w-full py-4.5 rounded-[14px] border-none bg-bt-black text-white cursor-pointer"
-        >
-          완료
-        </button>
-
+      <button
+        type="button"
+        onClick={onDone}
+        className="typo-body-md-bold w-full py-4.5 rounded-[14px] border-none bg-bt-black text-white cursor-pointer"
+      >
+        완료
+      </button>
     </Screen>
   );
 }

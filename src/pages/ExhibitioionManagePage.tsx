@@ -1,7 +1,8 @@
 import { ChevronRight, Info } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar, PageHeader } from '@/components/common';
+import { BottomButtonBar } from '@/components/common';
+import { Header } from '@/components/display-manage/Common';
 import {
   ExhibitionCard,
   OutlineButton,
@@ -11,6 +12,7 @@ import {
 } from '@/components/exhibition-manage';
 import { useHideFooter } from '@/components/layout';
 import { type VisibilityType } from '@/constants/visibility';
+import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useDisplayPolicy } from '@/hooks/usePolicy';
@@ -42,12 +44,14 @@ export function ExhibitionManage() {
   useHideFooter();
 
   const navigate = useNavigate();
+  const { displayId: paramDisplayId } = useParams();
   const { state } = useLocation();
 
-  // 등록된 전시 데이터를 서버에서 불러옵니다. state는 등록 직후 화면 전환용으로만 사용합니다.
-  const displayId = Number(state?.displayId ?? state?.id ?? 0);
+  // 등록된 전시 데이터를 서버에서 불러옵니다. URL 파라미터나 state에서 displayId를 가져옵니다.
+  const displayId = Number(paramDisplayId ?? state?.displayId ?? state?.id ?? 0);
   const { data: display } = useDisplayDetail(displayId);
   const { data: memberList } = useDisplayMembers(displayId);
+  const { data: artworkList } = useDisplayArtworks(displayId);
   const displayPolicy = useDisplayPolicy(
     display ?? {
       ownerUserId: 0,
@@ -60,6 +64,14 @@ export function ExhibitionManage() {
   const teamMembers = memberList?.members ?? [];
   const acceptedCount = teamMembers.filter((member) => member.accepted !== false).length;
   const pendingCount = teamMembers.filter((member) => member.accepted === false).length;
+
+  // 전시 콘텐츠(사진) 총 개수 계산
+  const contentCount =
+    display?.contentCategories?.reduce(
+      (acc, category) => acc + (category.contents?.length ?? 0),
+      0,
+    ) ?? 0;
+  const artworkCount = artworkList?.artworks?.length ?? 0;
 
   const source = display as DisplaySource | undefined;
   const startDate = source?.period?.startDate ?? source?.startDate;
@@ -88,7 +100,7 @@ export function ExhibitionManage() {
   const workExhibition: ExhibitionItem = exhibition;
 
   const goVisibility = () => {
-    navigate('/exhibition/visibility', {
+    navigate(`/exhibition/${displayId}/visibility`, {
       state: {
         ...state,
         displayId: displayId || undefined,
@@ -100,16 +112,16 @@ export function ExhibitionManage() {
   };
 
   const goDisplayWork = () => {
-    navigate('/display/manage', {
+    navigate(`/exhibition/${displayId}/work`, {
       state: { initialExhibition: workExhibition },
     });
   };
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
-      <PageHeader title="전시관리" onBack={() => navigate(-1)} />
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+      <Header title="전시관리" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-3">
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 gap-5 pt-5 pb-24">
         <div className="flex flex-col gap-5">
           <ExhibitionCard {...exhibition} />
 
@@ -118,8 +130,8 @@ export function ExhibitionManage() {
             description="팀원과 함께 전시와 작품을 함께 준비해보세요."
           >
             <div className="flex gap-3">
-              <StatPill label="전시 콘텐츠" value="3" />
-              <StatPill label="작품" value="2" />
+              <StatPill label="전시 콘텐츠" value={String(contentCount)} />
+              <StatPill label="작품" value={String(artworkCount)} />
             </div>
             <OutlineButton onClick={goDisplayWork}>전시 작업으로 이동</OutlineButton>
           </Section>
@@ -131,7 +143,7 @@ export function ExhibitionManage() {
             </div>
             <OutlineButton
               weight="semibold"
-              onClick={() => navigate(`/display/${displayId}/team/manage`)}
+              onClick={() => navigate(`/exhibition/${displayId}/team`)}
             >
               팀원 초대/관리
             </OutlineButton>
@@ -147,7 +159,11 @@ export function ExhibitionManage() {
           {canEditDisplay && (
             <button
               type="button"
-              onClick={() => navigate(`/exhibition/edit/${exhibition.id}`, { state })}
+              onClick={() =>
+                navigate(`/exhibition/${exhibition.id}/edit`, {
+                  state: { ...state, displayDetail: source },
+                })
+              }
               className="flex items-center gap-3 rounded-xl bg-card px-4 py-3"
             >
               <div className="flex flex-1 flex-col gap-1 text-left">
@@ -160,14 +176,14 @@ export function ExhibitionManage() {
             </button>
           )}
 
-          <div className="flex items-start gap-2 rounded-2xl bg-card p-3.5 mb-11.75">
+          <div className="flex items-start gap-2 rounded-2xl bg-card p-3.5">
             <Info className="size-4 shrink-0 text-faint" strokeWidth={1} />
             <p className="typo-body-xs-regular text-faint">
               전시 등록, 공개 시점 설정, 팀원 초대는 대표자만 할 수 있어요.
             </p>
           </div>
         </div>
-      </div>
+      </main>
 
       <BottomButtonBar>
         <div className="flex gap-2.5">
@@ -181,7 +197,7 @@ export function ExhibitionManage() {
             type="button"
             className="typo-body-sm-bold h-11 flex-1 rounded-xl bg-dark text-white"
             onClick={() =>
-              navigate('/exhibition/register-complete', {
+              navigate(`/exhibition/${displayId}/complete`, {
                 state: {
                   title: exhibition.title,
                   school: source?.organization ?? state?.school,

@@ -1,37 +1,83 @@
+import { useEffect, useRef } from 'react';
+
 interface DeleteConfirmDialogProps {
   onCancel: () => void;
   onConfirm: () => void;
 }
 
 export function DeleteConfirmDialog({ onCancel, onConfirm }: DeleteConfirmDialogProps) {
+  const titleId = 'delete-confirm-title';
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    cancelButtonRef.current?.focus();
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [onCancel]);
+
   return (
     <div
-      className="absolute inset-0 grid place-items-center bg-main/35 px-5"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
+      onClick={onCancel}
+      className="fixed inset-0 flex items-center justify-center bg-black/50"
     >
-      <div className="w-80 rounded-[20px] bg-card/50 p-6 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px]">
-        <h2 className="typo-body-xl-bold text-center text-main">작품을 삭제할까요?</h2>
-        <p className="typo-body-md-regular mt-2 text-center text-sub600">
-          삭제한 작품은 전시에서 제거되며,
-          <br />
-          복구할 수 없어요.
-        </p>
-
-        <div className="mt-6 flex gap-2.5">
+      <div
+        ref={dialogRef}
+        className="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h2 id={titleId} className="typo-title-sm mb-4">
+          삭제 확인
+        </h2>
+        <p className="typo-body-sm mb-6">정말 삭제하시겠습니까?</p>
+        <div className="flex justify-end gap-2">
           <button
+            ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
-            className="typo-body-xl-regular h-11 flex-1 rounded-full bg-bt-gray text-main"
+            className="rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
           >
             취소
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="typo-body-xl-regular h-11 flex-1 rounded-full bg-faint text-main"
+            className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
           >
-            확인
+            삭제
           </button>
         </div>
       </div>

@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 
 import type { User } from '@/types/policy';
 
+import { useUserStore } from './useUserStore';
+
 interface AuthState {
   accessToken: string | null;
   user: User | null;
@@ -19,8 +21,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       setAccessToken: (token) => set({ accessToken: token }),
       setUser: (user) => set({ user }),
-      clearAccessToken: () => set({ accessToken: null, user: null }),
-      clearAuth: () => set({ accessToken: null, user: null }),
+      clearAccessToken: () => {
+        useUserStore.getState().clearUser();
+        set({ accessToken: null, user: null });
+      },
+      clearAuth: () => {
+        useUserStore.getState().clearUser();
+        set({ accessToken: null, user: null });
+      },
     }),
     {
       name: 'auth-storage',

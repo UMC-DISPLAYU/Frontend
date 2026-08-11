@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -25,6 +27,11 @@ import {
 } from '@/hooks/queries/useSchoolEmailVerification';
 import { useCreateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 
+import {
+  type ArtistVerificationFormValues,
+  artistVerificationSchema,
+} from './artistVerification.schema';
+
 type EmailState = 'idle' | 'sent' | 'error';
 type CodeState = 'idle' | 'confirmed' | 'mismatch';
 
@@ -33,7 +40,6 @@ export function ArtistVerificationPage() {
   const [school, setSchool] = useState('');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [profileName, setProfileName] = useState('');
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
   const [emailState, setEmailState] = useState<EmailState>('idle');
@@ -45,14 +51,31 @@ export function ArtistVerificationPage() {
   const confirmVerificationEmail = useConfirmVerificationEmail();
   const createMyArtistProfile = useCreateMyArtistProfile();
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<ArtistVerificationFormValues>({
+    resolver: zodResolver(artistVerificationSchema),
+    mode: 'onChange',
+    defaultValues: {
+      artistName: '',
+    },
+  });
+
+  const artistName = useWatch({ control, name: 'artistName' }) ?? '';
+
   const isMailSent = emailState === 'sent';
   const isCodeConfirmed = codeState === 'confirmed';
   const shouldShowProfileFields = isMailSent && isCodeConfirmed;
+  const isArtistNameValid = artistVerificationSchema.safeParse({ artistName }).success;
+
   const canSubmit =
     school.trim() &&
     email.trim() &&
     isCodeConfirmed &&
-    profileName.trim() &&
+    isArtistNameValid &&
     selectedFields.length > 0;
 
   const handleSendMail = () => {
@@ -114,7 +137,7 @@ export function ArtistVerificationPage() {
     );
   };
 
-  const handleComplete = () => {
+  const handleComplete = (data: ArtistVerificationFormValues) => {
     const activityFields = selectedFields
       .map((field) => ARTIST_FIELD_MAP[field as ExhibitionField])
       .filter((field): field is ArtistFieldCode => Boolean(field));
@@ -123,7 +146,7 @@ export function ArtistVerificationPage() {
 
     createMyArtistProfile.mutate(
       {
-        artistName: profileName.trim(),
+        artistName: data.artistName.trim(),
         activityFields,
       },
       {
@@ -150,7 +173,11 @@ export function ArtistVerificationPage() {
       <main className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page px-5 pt-[58px]">
         <ArtistVerificationHeader onBack={() => navigate(-1)} />
 
-        <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-5">
+        <form
+          id="artist-verification-form"
+          onSubmit={handleSubmit(handleComplete)}
+          className="min-h-0 flex-1 overflow-y-auto pb-6 pt-5"
+        >
           <h2 className="typo-body-xl-bold text-main">작가 인증 정보를 입력해주세요</h2>
 
           <div className="mt-5">
@@ -204,15 +231,32 @@ export function ArtistVerificationPage() {
 
           {shouldShowProfileFields ? (
             <>
-              <ArtistProfileSection value={profileName} onChange={setProfileName} />
+              {(() => {
+                const { onChange: regOnChange, onBlur, ref, name } = register('artistName');
+                return (
+                  <ArtistProfileSection
+                    error={Boolean(errors.artistName)}
+                    name={name}
+                    onBlur={onBlur}
+                    ref={ref}
+                    registerOnChange={regOnChange}
+                  />
+                );
+              })()}
+              {errors.artistName?.message && (
+                <p className="mt-1 typo-body-xxs-regular text-error px-3">
+                  {errors.artistName.message}
+                </p>
+              )}
               <ArtistFieldSelector selectedFields={selectedFields} onChange={setSelectedFields} />
             </>
           ) : null}
-        </div>
+        </form>
 
         <ArtistVerificationBottomButton
+          form="artist-verification-form"
+          type="submit"
           disabled={!canSubmit || createMyArtistProfile.isPending}
-          onClick={handleComplete}
         >
           인증확인
         </ArtistVerificationBottomButton>

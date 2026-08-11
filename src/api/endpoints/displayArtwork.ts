@@ -70,25 +70,31 @@ export const getArtworkQuestions = async (
 ): Promise<GetArtworkQuestionsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/questions`);
 
 // GET /api/v1/artworks/feelings/me
-export const getMyArtworkFeelings = async (params: {
-  cursor?: string;
-  size?: number;
-} = {}): Promise<GetMyArtworkFeelingsResponseDataDto> =>
+export const getMyArtworkFeelings = async (
+  params: {
+    cursor?: string;
+    size?: number;
+  } = {},
+): Promise<GetMyArtworkFeelingsResponseDataDto> =>
   apiRequest('/v1/artworks/feelings/me', { query: params });
 
 // GET /api/v1/artworks/questions/me
-export const getMyArtworkQuestions = async (params: {
-  cursor?: string;
-  size?: number;
-} = {}): Promise<GetMyArtworkQuestionsResponseDataDto> =>
+export const getMyArtworkQuestions = async (
+  params: {
+    cursor?: string;
+    size?: number;
+  } = {},
+): Promise<GetMyArtworkQuestionsResponseDataDto> =>
   apiRequest('/v1/artworks/questions/me', { query: params });
 
 // GET /api/v1/artworks/questions/received
-export const getReceivedArtworkQuestions = async (params: {
-  cursor?: string;
-  size?: number;
-  answerStatus?: 'WAITING' | 'ANSWERED';
-} = {}): Promise<GetReceivedArtworkQuestionsResponseDataDto> =>
+export const getReceivedArtworkQuestions = async (
+  params: {
+    cursor?: string;
+    size?: number;
+    answerStatus?: 'WAITING' | 'ANSWERED';
+  } = {},
+): Promise<GetReceivedArtworkQuestionsResponseDataDto> =>
   apiRequest('/v1/artworks/questions/received', { query: params });
 
 // POST /v1/artworks/:artworkId/questions
