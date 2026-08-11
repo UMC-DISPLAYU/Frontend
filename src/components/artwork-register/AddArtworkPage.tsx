@@ -1,13 +1,13 @@
-import { BottomButtonBar } from '@/components/common';
+import { BottomButton } from '@/components/common';
 import { useUserStore } from '@/stores/useUserStore';
 
 import { ChoiceCard } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
 
 interface AddArtworkPageProps {
-  registerMode: 'self' | 'other';
+  registerMode: 'own' | 'other';
   onBack: () => void;
-  onChangeRegisterMode: (mode: 'self' | 'other') => void;
+  onChangeRegisterMode: (mode: 'own' | 'other') => void;
   onNext: () => void;
 }
 
@@ -23,18 +23,12 @@ function AddArtworkPage({
   return (
     <ArtworkRegisterLayout
       title="전시작 추가"
-      className="pt-3.5"
       onBack={onBack}
+      hasFixedBottomBar={false}
       bottomBar={
-        <BottomButtonBar>
-          <button
-            type="button"
-            onClick={onNext}
-            className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white"
-          >
-            다음
-          </button>
-        </BottomButtonBar>
+        <BottomButton type="button" onClick={onNext}>
+          다음
+        </BottomButton>
       }
     >
       <section className="mb-5">
@@ -52,8 +46,8 @@ function AddArtworkPage({
               {displayArtistName}({accountId})
             </span>
           }
-          selected={registerMode === 'self'}
-          onClick={() => onChangeRegisterMode('self')}
+          selected={registerMode === 'own'}
+          onClick={() => onChangeRegisterMode('own')}
         />
         <ChoiceCard
           title="다른 사람 작품 대신 등록하기"

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -22,20 +22,28 @@ import {
   DEFAULT_ARTWORK_IMAGE_WIDTH,
 } from '@/constants';
 import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
+import { ArtworkRegisterDraftProvider } from '@/contexts/artworkRegisterDraftContext';
+import {
+  type ArtworkOtherAuthorSource,
+  type ArtworkRegisterMode,
+} from '@/contexts/artworkRegisterDraftState';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
 import { toProductionYear } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
-type RegisterStep = 'choice' | 'proxyTeamAuthor' | 'proxyAuthor' | 'basic' | 'participants';
-type RegisterMode = 'self' | 'other';
-type ProxyAuthorSource = 'team' | 'direct';
+type RegisterStep = 'choice' | 'otherTeamAuthor' | 'otherAuthor' | 'basic' | 'participants';
 const DIRECT_INPUT_ACCOUNT = '직접입력';
+const REGISTER_STEPS = ['choice', 'otherTeamAuthor', 'otherAuthor', 'basic', 'participants'];
+
+const isRegisterStep = (value: string | null): value is RegisterStep =>
+  value !== null && REGISTER_STEPS.includes(value);
 
 const formatMonthDay = (date: string | undefined) => {
   if (!date) return '';
@@ -44,14 +52,25 @@ const formatMonthDay = (date: string | undefined) => {
 };
 
 export function ArtworkRegisterPage() {
+  return (
+    <ArtworkRegisterDraftProvider>
+      <ArtworkRegisterPageContent />
+    </ArtworkRegisterDraftProvider>
+  );
+}
+
+function ArtworkRegisterPageContent() {
   useHideFooter();
 
+  const { draft, updateDraft, resetDraft } = useArtworkRegisterDraft();
   const navigate = useNavigate();
   const { displayId: paramDisplayId, artworkId: paramArtworkId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const displayId = Number(paramDisplayId ?? searchParams.get('displayId') ?? 0);
   const artworkId = Number(paramArtworkId ?? 0);
   const isEditMode = artworkId > 0;
+  const stepParam = searchParams.get('step');
+  const routeStep = isRegisterStep(stepParam) ? stepParam : null;
 
   const { data: artworkDetail } = useArtworkDetail(artworkId);
 
@@ -64,26 +83,199 @@ export function ArtworkRegisterPage() {
   const createArtwork = useCreateDisplayArtwork(displayId);
   const isSubmitting =
     artworkUpload.isUploading || processUpload.isUploading || createArtwork.isPending;
+  const artworkImages = artworkUpload.images;
+  const processImages = processUpload.images;
+  const setUploadedArtworkImages = artworkUpload.setUploadedImages;
+  const setUploadedProcessImages = processUpload.setUploadedImages;
 
-  const [step, setStep] = useState<RegisterStep>(isEditMode ? 'basic' : 'choice');
-  const [registerMode, setRegisterMode] = useState<RegisterMode>('self');
+  const [step, setStepState] = useState<RegisterStep>(
+    isEditMode ? 'basic' : (routeStep ?? draft.step),
+  );
+  const [registerMode, setRegisterModeState] = useState<ArtworkRegisterMode>(draft.registerMode);
   const [activeSheet, setActiveSheet] = useState<RegisterSheet>(null);
-  const [selectedProxyAuthorId, setSelectedProxyAuthorId] = useState<string | null>(null);
-  const [proxyAuthorName, setProxyAuthorName] = useState('');
-  const [proxyAuthorSource, setProxyAuthorSource] = useState<ProxyAuthorSource>('direct');
+  const [selectedOtherAuthorId, setSelectedOtherAuthorIdState] = useState<string | null>(
+    draft.selectedOtherAuthorId,
+  );
+  const [otherAuthorName, setOtherAuthorNameState] = useState(draft.otherAuthorName);
+  const [otherAuthorSource, setOtherAuthorSourceState] = useState<ArtworkOtherAuthorSource>(
+    draft.otherAuthorSource,
+  );
   const [directCollaboratorName, setDirectCollaboratorName] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [field, setField] = useState<string>('');
-  const [year, setYear] = useState('');
-  const [medium, setMedium] = useState('');
-  const [size, setSize] = useState('');
-  const [point, setPoint] = useState('');
+  const [title, setTitleState] = useState(draft.title);
+  const [description, setDescriptionState] = useState(draft.description);
+  const [field, setFieldState] = useState<string>(draft.field);
+  const [year, setYearState] = useState(draft.year);
+  const [medium, setMediumState] = useState(draft.medium);
+  const [size, setSizeState] = useState(draft.size);
+  const [point, setPointState] = useState(draft.point);
   /* userId가 있으면 디유 계정이 연결된 팀원, 없으면 직접 이름을 입력한 작가입니다. */
-  const [collaborators, setCollaborators] = useState<
+  const [collaborators, setCollaboratorsState] = useState<
     { id: string; name: string; account: string; userId?: number }[]
-  >([]);
-  const [qnaAssigneeIds, setQnaAssigneeIds] = useState<string[]>([]);
+  >(draft.collaborators);
+  const [qnaAssigneeIds, setQnaAssigneeIdsState] = useState<string[]>(draft.qnaAssigneeIds);
+
+  const setStep = useCallback(
+    (nextStep: RegisterStep, options: { replace?: boolean } = {}) => {
+      setStepState(nextStep);
+      updateDraft({ step: nextStep });
+
+      if (isEditMode) return;
+
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+
+          if (nextStep === 'choice') {
+            next.delete('step');
+          } else {
+            next.set('step', nextStep);
+          }
+
+          return next;
+        },
+        { replace: options.replace ?? true },
+      );
+    },
+    [isEditMode, setSearchParams, updateDraft],
+  );
+
+  const setRegisterMode = useCallback(
+    (mode: ArtworkRegisterMode) => {
+      setRegisterModeState(mode);
+      updateDraft({ registerMode: mode });
+    },
+    [updateDraft],
+  );
+
+  const setSelectedOtherAuthorId = useCallback(
+    (id: string | null) => {
+      setSelectedOtherAuthorIdState(id);
+      updateDraft({ selectedOtherAuthorId: id });
+    },
+    [updateDraft],
+  );
+
+  const setOtherAuthorName = useCallback(
+    (name: string) => {
+      setOtherAuthorNameState(name);
+      updateDraft({ otherAuthorName: name });
+    },
+    [updateDraft],
+  );
+
+  const setOtherAuthorSource = useCallback(
+    (source: ArtworkOtherAuthorSource) => {
+      setOtherAuthorSourceState(source);
+      updateDraft({ otherAuthorSource: source });
+    },
+    [updateDraft],
+  );
+
+  const setTitle = useCallback(
+    (value: string) => {
+      setTitleState(value);
+      updateDraft({ title: value });
+    },
+    [updateDraft],
+  );
+
+  const setDescription = useCallback(
+    (value: string) => {
+      setDescriptionState(value);
+      updateDraft({ description: value });
+    },
+    [updateDraft],
+  );
+
+  const setField = useCallback(
+    (value: string) => {
+      setFieldState(value);
+      updateDraft({ field: value });
+    },
+    [updateDraft],
+  );
+
+  const setYear = useCallback(
+    (value: string) => {
+      setYearState(value);
+      updateDraft({ year: value });
+    },
+    [updateDraft],
+  );
+
+  const setMedium = useCallback(
+    (value: string) => {
+      setMediumState(value);
+      updateDraft({ medium: value });
+    },
+    [updateDraft],
+  );
+
+  const setSize = useCallback(
+    (value: string) => {
+      setSizeState(value);
+      updateDraft({ size: value });
+    },
+    [updateDraft],
+  );
+
+  const setPoint = useCallback(
+    (value: string) => {
+      setPointState(value);
+      updateDraft({ point: value });
+    },
+    [updateDraft],
+  );
+
+  const setCollaborators = useCallback(
+    (
+      updater: (
+        prev: { id: string; name: string; account: string; userId?: number }[],
+      ) => { id: string; name: string; account: string; userId?: number }[],
+    ) => {
+      setCollaboratorsState((prev) => {
+        const next = updater(prev);
+        updateDraft({ collaborators: next });
+        return next;
+      });
+    },
+    [updateDraft],
+  );
+
+  const setQnaAssigneeIds = useCallback(
+    (nextValue: string[] | ((prev: string[]) => string[])) => {
+      setQnaAssigneeIdsState((prev) => {
+        const next = typeof nextValue === 'function' ? nextValue(prev) : nextValue;
+        updateDraft({ qnaAssigneeIds: next });
+        return next;
+      });
+    },
+    [updateDraft],
+  );
+
+  useEffect(() => {
+    if (artworkImages.length === 0 && draft.artworkImageUrls.length > 0) {
+      setUploadedArtworkImages(draft.artworkImageUrls);
+    }
+  }, [artworkImages.length, setUploadedArtworkImages, draft.artworkImageUrls]);
+
+  useEffect(() => {
+    if (processImages.length === 0 && draft.processImageUrls.length > 0) {
+      setUploadedProcessImages(draft.processImageUrls);
+    }
+  }, [processImages.length, setUploadedProcessImages, draft.processImageUrls]);
+
+  useEffect(() => {
+    if (isEditMode) return;
+
+    const nextStep = routeStep ?? 'choice';
+
+    if (nextStep === step) return;
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStepState(nextStep);
+    updateDraft({ step: nextStep });
+  }, [isEditMode, routeStep, step, updateDraft]);
 
   useEffect(() => {
     if (!isEditMode || !artworkDetail) return;
@@ -106,7 +298,17 @@ export function ArtworkRegisterPage() {
     setSize(artworkDetail.size || '');
 
     setPoint(artworkDetail.point || '');
-  }, [isEditMode, artworkDetail]);
+  }, [
+    isEditMode,
+    artworkDetail,
+    setDescription,
+    setField,
+    setMedium,
+    setPoint,
+    setSize,
+    setTitle,
+    setYear,
+  ]);
 
   /*
    * 전시 팀원 목록. 초대를 수락한 팀원만 작가로 지정할 수 있습니다.
@@ -172,14 +374,14 @@ export function ArtworkRegisterPage() {
     return [...members, ...directAuthors];
   }, [memberList, artworkList]);
 
-  const proxyAuthorOptions = useMemo(
+  const otherAuthorOptions = useMemo(
     () =>
       teamAuthorOptions.filter((author) => author.userId === undefined || author.userId !== userId),
     [teamAuthorOptions, userId],
   );
 
-  const selectedProxyAuthor = proxyAuthorOptions.find(
-    (author) => author.id === selectedProxyAuthorId,
+  const selectedOtherAuthor = otherAuthorOptions.find(
+    (author) => author.id === selectedOtherAuthorId,
   );
 
   /*
@@ -214,29 +416,29 @@ export function ArtworkRegisterPage() {
 
   const displayAuthor = useMemo(() => {
     /* 본인 등록은 로그인 사용자를, 팀원 선택은 해당 팀원의 계정을 작가로 연결합니다. */
-    if (registerMode === 'self') {
+    if (registerMode === 'own') {
       return {
-        id: userId ? `self-${userId}` : 'self-author',
+        id: userId ? `own-${userId}` : 'own-author',
         name: myDisplayNickname || accountId || '작가',
         account: accountId || myDisplayNickname || '계정 정보 없음',
         userId: userId ?? undefined,
         tag: '작가인증',
       };
     }
-    if (proxyAuthorSource === 'team' && selectedProxyAuthor) {
+    if (otherAuthorSource === 'team' && selectedOtherAuthor) {
       return {
-        id: selectedProxyAuthor.id,
-        name: selectedProxyAuthor.name,
-        account: selectedProxyAuthor.account,
-        userId: selectedProxyAuthor.userId,
+        id: selectedOtherAuthor.id,
+        name: selectedOtherAuthor.name,
+        account: selectedOtherAuthor.account,
+        userId: selectedOtherAuthor.userId,
         tag: '작가인증',
       };
     }
 
     /* 직접 입력한 작가는 계정이 없어 이름만 전송합니다. */
     return {
-      id: 'proxy-author-direct',
-      name: proxyAuthorName,
+      id: 'other-author-direct',
+      name: otherAuthorName,
       account: DIRECT_INPUT_ACCOUNT,
       userId: undefined as number | undefined,
       tag: '대리 등록',
@@ -244,10 +446,10 @@ export function ArtworkRegisterPage() {
   }, [
     myDisplayNickname,
     accountId,
-    proxyAuthorName,
-    proxyAuthorSource,
+    otherAuthorName,
+    otherAuthorSource,
     registerMode,
-    selectedProxyAuthor,
+    selectedOtherAuthor,
     userId,
   ]);
 
@@ -273,7 +475,7 @@ export function ArtworkRegisterPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCollaborators((prev) => prev.filter((person) => person.userId !== userId));
-  }, [userId]);
+  }, [setCollaborators, userId]);
 
   const qnaAssigneeOptions = useMemo(() => {
     /* 직접 입력한 작가는 연결할 계정이 없어 Q&A 담당자로 지정할 수 없습니다. */
@@ -325,7 +527,7 @@ export function ArtworkRegisterPage() {
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setQnaAssigneeIds(handlerIds);
-  }, [isEditMode, artworkDetail?.qaHandlers, qnaAssigneeOptions]);
+  }, [isEditMode, artworkDetail?.qaHandlers, qnaAssigneeOptions, setQnaAssigneeIds]);
 
   const handleBack = () => {
     if (activeSheet) {
@@ -334,7 +536,7 @@ export function ArtworkRegisterPage() {
     }
     // If we are on the participants step, go back to basic (artwork info) step regardless of edit mode
     if (step === 'participants') {
-      setStep('basic');
+      setStep('basic', { replace: true });
       return;
     }
     // When editing an existing artwork and we are on the basic step, navigate back to the artworks list (replace history)
@@ -346,25 +548,39 @@ export function ArtworkRegisterPage() {
     if (step === 'basic') {
       setStep(
         registerMode === 'other'
-          ? proxyAuthorSource === 'team'
-            ? 'proxyTeamAuthor'
-            : 'proxyAuthor'
+          ? otherAuthorSource === 'team'
+            ? 'otherTeamAuthor'
+            : 'otherAuthor'
           : 'choice',
+        { replace: true },
       );
       return;
     }
-    if (step === 'proxyTeamAuthor') {
-      setStep('choice');
+    if (step === 'otherTeamAuthor') {
+      setStep('choice', { replace: true });
       return;
     }
-    if (step === 'proxyAuthor') {
-      setStep('choice');
+    if (step === 'otherAuthor') {
+      setStep('choice', { replace: true });
       return;
     }
     navigate(-1);
   };
 
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const syncImageDraft = async () => {
+    const [artworkImageUrls, processImageUrls] = await Promise.all([
+      artworkUpload.images.length > 0 ? artworkUpload.uploadImages() : Promise.resolve([]),
+      processUpload.images.length > 0 ? processUpload.uploadImages() : Promise.resolve([]),
+    ]);
+
+    updateDraft({ artworkImageUrls, processImageUrls });
+    artworkUpload.setUploadedImages(artworkImageUrls);
+    processUpload.setUploadedImages(processImageUrls);
+
+    return { artworkImageUrls, processImageUrls };
+  };
 
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
@@ -385,12 +601,7 @@ export function ArtworkRegisterPage() {
     let artworkImageUrls: string[] = [];
     let processImageUrls: string[] = [];
     try {
-      artworkImageUrls = await Promise.all(
-        artworkUpload.files.map((file) => artworkUpload.uploadImage(file)),
-      );
-      processImageUrls = await Promise.all(
-        processUpload.files.map((file) => processUpload.uploadImage(file)),
-      );
+      ({ artworkImageUrls, processImageUrls } = await syncImageDraft());
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
       return;
@@ -474,6 +685,7 @@ export function ArtworkRegisterPage() {
             qnaAssigneeOptions.find((person) => person.id === effectiveQnaAssigneeIds[0]) ??
             qnaAssigneeOptions[0];
 
+          resetDraft();
           navigate(`/exhibition/${displayId}/complete`, {
             state: {
               type: 'artwork',
@@ -493,44 +705,54 @@ export function ArtworkRegisterPage() {
 
   const handleChoiceNext = () => {
     if (registerMode === 'other') {
-      setProxyAuthorSource('team');
-      setSelectedProxyAuthorId(null);
-      setActiveSheet('proxyAuthorMethod');
+      setOtherAuthorSource('team');
+      setActiveSheet('otherAuthorMethod');
       return;
     }
 
     setStep('basic');
   };
 
-  const selectTeamProxyAuthor = () => {
-    setProxyAuthorSource('team');
-    setSelectedProxyAuthorId(null);
+  const selectTeamOtherAuthor = () => {
+    setOtherAuthorSource('team');
     setActiveSheet(null);
-    setStep('proxyTeamAuthor');
+    setStep('otherTeamAuthor');
   };
 
-  const selectDirectProxyAuthor = () => {
-    setProxyAuthorSource('direct');
-    setProxyAuthorName('');
+  const selectDirectOtherAuthor = () => {
+    setOtherAuthorSource('direct');
     setActiveSheet(null);
-    setStep('proxyAuthor');
+    setStep('otherAuthor');
   };
 
-  const submitTeamProxyAuthor = () => {
-    if (!selectedProxyAuthor?.verified) return;
+  const submitTeamOtherAuthor = () => {
+    if (!selectedOtherAuthor?.verified) return;
 
-    setProxyAuthorName(selectedProxyAuthor.name);
-    setProxyAuthorSource('team');
+    setOtherAuthorName(selectedOtherAuthor.name);
+    setOtherAuthorSource('team');
     setStep('basic');
   };
 
-  const submitProxyAuthorName = () => {
-    const trimmedAuthorName = proxyAuthorName.trim();
+  const submitOtherAuthorName = () => {
+    const trimmedAuthorName = otherAuthorName.trim();
     if (!trimmedAuthorName) return;
 
-    setProxyAuthorName(trimmedAuthorName);
-    setProxyAuthorSource('direct');
+    setOtherAuthorName(trimmedAuthorName);
+    setOtherAuthorSource('direct');
     setStep('basic');
+  };
+
+  const handleBasicNext = async () => {
+    if (isSubmitting) return;
+
+    setSubmitError(null);
+
+    try {
+      await syncImageDraft();
+      setStep('participants');
+    } catch {
+      setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }
   };
 
   const openTeamCollaboratorSheet = () => {
@@ -595,21 +817,21 @@ export function ArtworkRegisterPage() {
           onNext={handleChoiceNext}
         />
       )}
-      {step === 'proxyTeamAuthor' && (
+      {step === 'otherTeamAuthor' && (
         <SelectArtistPage
-          selectedProxyAuthorId={selectedProxyAuthorId}
-          teamAuthorOptions={proxyAuthorOptions}
+          selectedOtherAuthorId={selectedOtherAuthorId}
+          teamAuthorOptions={otherAuthorOptions}
           onBack={handleBack}
-          onChangeSelectedProxyAuthorId={setSelectedProxyAuthorId}
-          onSubmit={submitTeamProxyAuthor}
+          onChangeSelectedOtherAuthorId={setSelectedOtherAuthorId}
+          onSubmit={submitTeamOtherAuthor}
         />
       )}
-      {step === 'proxyAuthor' && (
+      {step === 'otherAuthor' && (
         <EnterArtistNamePage
-          proxyAuthorName={proxyAuthorName}
+          otherAuthorName={otherAuthorName}
           onBack={handleBack}
-          onChangeProxyAuthorName={setProxyAuthorName}
-          onSubmit={submitProxyAuthorName}
+          onChangeOtherAuthorName={setOtherAuthorName}
+          onSubmit={submitOtherAuthorName}
         />
       )}
       {step === 'basic' && (
@@ -622,8 +844,8 @@ export function ArtworkRegisterPage() {
           medium={medium}
           size={size}
           point={point}
-          artworkImages={artworkUpload.images}
-          processImages={processUpload.images}
+          artworkImages={artworkImages}
+          processImages={processImages}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}
@@ -636,7 +858,7 @@ export function ArtworkRegisterPage() {
           onRemoveArtworkImage={artworkUpload.removeImage}
           onAddProcessImages={processUpload.addImages}
           onRemoveProcessImage={processUpload.removeImage}
-          onNext={() => setStep('participants')}
+          onNext={handleBasicNext}
         />
       )}
       {step === 'participants' && (
@@ -665,8 +887,8 @@ export function ArtworkRegisterPage() {
         collaboratorOptions={collaboratorOptions}
         directCollaboratorName={directCollaboratorName}
         onClose={() => setActiveSheet(null)}
-        onOpenProxyTeamAuthor={selectTeamProxyAuthor}
-        onOpenProxyDirectAuthor={selectDirectProxyAuthor}
+        onOpenOtherTeamAuthor={selectTeamOtherAuthor}
+        onOpenOtherDirectAuthor={selectDirectOtherAuthor}
         onOpenTeamCollaboratorSheet={openTeamCollaboratorSheet}
         onOpenDirectCollaboratorSheet={openDirectCollaboratorSheet}
         onAddTeamCollaborator={addTeamCollaborator}

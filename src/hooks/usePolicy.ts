@@ -7,7 +7,6 @@ import type {
   DisplayDetailDto,
   DisplayReviewDto,
   DisplayReviewReplyDto,
-  GetArtworkDetailResponseDataDto,
   LoungeCommentDto,
   LoungePostDetailDto,
   LoungeReplyDto,
@@ -156,39 +155,19 @@ export function useArtworkPolicy(
 export function useQuestionPolicy(
   question: ArtworkQuestionDto,
   display: DisplayDetailDto,
+  artwork?: ArtworkPolicyResource,
 ): PermissionMap<Exclude<PolicyAction<'question'>, `reply.${string}`>> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
     () => ({
       view: () => policies.question.view(user, question, display),
-      create: () => policies.question.create(user),
+      create: () => (artwork ? policies.question.create(user, artwork) : false),
       delete: () => policies.question.delete(user, question, display),
       like: () => policies.question.like(user),
       unlike: () => policies.question.unlike(user),
     }),
-    [user, question, display],
-  );
-}
-
-export function useQuestionReplyPolicy(
-  question: ArtworkQuestionDto,
-  display: DisplayDetailDto,
-  artwork?: GetArtworkDetailResponseDataDto,
-  reply?: ArtworkGuestbookReplyDto | null,
-): PermissionMap<Extract<PolicyAction<'question'>, `reply.${string}`>> {
-  const user = useCurrentPolicyUser();
-
-  return useMemo(
-    () => ({
-      'reply.view': () => policies.question.reply.view(user, question, display),
-      'reply.create': () =>
-        artwork ? policies.question.reply.create(user, artwork, display) : false,
-      'reply.like': () => policies.question.reply.like(user),
-      'reply.unlike': () => policies.question.reply.unlike(user),
-      'reply.delete': () => (reply ? policies.question.reply.delete(user, reply, display) : false),
-    }),
-    [user, question, display, artwork, reply],
+    [user, question, display, artwork],
   );
 }
 

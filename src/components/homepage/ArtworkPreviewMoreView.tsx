@@ -22,7 +22,7 @@ export function ArtworkPreviewMoreView({ onClose }: Props) {
   // 카테고리 칩 선택 값에 해당하는 API 파라미터 값 추출
   const apiType = selectedCategory
     ? CATEGORY_OPTIONS.find((opt) => opt.label === selectedCategory)?.value || undefined
-    : undefined;
+    : 'RECOMMEND';
 
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isPending, isError } =
     useInfiniteArtworkPreview({ type: apiType });

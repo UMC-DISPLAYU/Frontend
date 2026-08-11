@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { ExhibitionCard } from '@/components/exhibition-manage';
 
 import { PersonCard, RegisterPerson } from './ArtworkRegisterControls';
@@ -54,7 +54,7 @@ function RegisterCollaboratorsPage({
       title={isEditMode ? '작품 정보 수정' : '전시작 등록'}
       onBack={onBack}
       bottomBar={
-        <BottomButtonBar>
+        <BottomFixedBar>
           {submitError && (
             <p className="typo-body-xs-regular mb-2 text-center text-error">{submitError}</p>
           )}
@@ -66,10 +66,10 @@ function RegisterCollaboratorsPage({
           >
             {isSubmitting ? '등록 중' : '완료'}
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       }
     >
-      <div className="pt-6">
+      <div>
         <ExhibitionCard {...exhibition} />
       </div>
 

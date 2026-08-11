@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { ImageUploader } from '@/components/common';
+import { BottomFixedBar, ImageUploader } from '@/components/common';
 import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
   ARTWORK_FIELD_MAP,
@@ -120,15 +120,17 @@ export function PersonalArtworksRegister() {
   };
 
   return (
-    <div className="w-96 h-screen mx-auto flex flex-col bg-page overflow-hidden">
+    <div className="mx-auto min-h-dvh w-96 bg-page">
       <ExhibitionHeader title="작품 등록" />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-6 px-5 pt-2 pb-8">
+      <main>
+        <div className="flex flex-col gap-6 px-5 pb-bottom-bar-offset">
           <div className="self-stretch flex justify-center">
             <ImageUploader
               images={images}
               maxImages={MAX_PERSONAL_ARTWORK_IMAGES}
+              padded
+              className="[justify-content:safe_center]"
               onAddImages={addImages}
               onRemoveImage={removeImage}
               emptyLabel="이미지 업로드"
@@ -245,7 +247,7 @@ export function PersonalArtworksRegister() {
         </div>
       </main>
 
-      <footer className="shrink-0 px-5 py-4 bg-card border-t border-line shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]">
+      <BottomFixedBar>
         {submitError && (
           <p className="typo-body-xs-regular mb-2 text-center text-error">{submitError}</p>
         )}
@@ -257,7 +259,7 @@ export function PersonalArtworksRegister() {
         >
           {isSubmitting ? '등록 중' : '완료'}
         </button>
-      </footer>
+      </BottomFixedBar>
     </div>
   );
 }

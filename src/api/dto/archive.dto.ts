@@ -38,20 +38,41 @@ export interface ArchivedArtworkStatusDto {
   isArchived: boolean;
 }
 
+export interface ArchivedPersonalArtworkStatusDto {
+  personalArtworkId: number;
+  isArchived: boolean;
+}
+
 export type ArchiveArtworkResponseDto = ApiResponseDto<ArchivedArtworkStatusDto>;
 
 export type UnarchiveArtworkResponseDto = ApiResponseDto<ArchivedArtworkStatusDto>;
 
+export type ArchivePersonalArtworkResponseDto = ApiResponseDto<ArchivedPersonalArtworkStatusDto>;
+
+export type UnarchivePersonalArtworkResponseDto = ApiResponseDto<ArchivedPersonalArtworkStatusDto>;
+
 export interface ArchivedArtworkDto {
   archiveWorkId: number;
-  artworkId: number;
+  artworkId: number | null;
+  personalArtworkId?: number | null;
   userId: number;
   memo: string | null;
   savedAt: string;
 }
 
-export interface GetArchivedArtworksResponseDataDto extends CursorPageInfoDto {
+export type ArchiveArtworkCursorDto = number | string;
+
+export interface GetArchivedArtworksRequestDto {
+  cursorId?: ArchiveArtworkCursorDto | null;
+  size?: number;
+}
+
+export interface GetArchivedArtworksResponseDataDto {
   works: ArchivedArtworkDto[];
+  nextCursorId: ArchiveArtworkCursorDto | null;
+  nextCursor?: ArchiveArtworkCursorDto | null;
+  size: number;
+  hasNext: boolean;
 }
 
 export type GetArchivedArtworksResponseDto = ApiResponseDto<GetArchivedArtworksResponseDataDto>;
@@ -66,22 +87,25 @@ export type ArchiveArtistResponseDto = ApiResponseDto<ArchivedArtistStatusDto>;
 export type UnarchiveArtistResponseDto = ApiResponseDto<ArchivedArtistStatusDto>;
 
 export interface ArchivedArtistDto {
-  savedArtistId: number;
+  archiveArtistId: number;
   artistId: number;
-  name: string;
-  field: string;
+  userId: number;
+  artistName: string;
+  fields: string[];
   profileImageUrl: string;
+  artworkCount: number;
+  exhibitionCount: number;
   savedAt: string;
 }
 
-export interface GetArchivedArtistsResponseDataDto {
-  savedArtists: ArchivedArtistDto[];
+export interface GetArchivedArtistsResponseDataDto extends CursorPageInfoDto {
+  artists: ArchivedArtistDto[];
 }
 
 export type GetArchivedArtistsResponseDto = ApiResponseDto<GetArchivedArtistsResponseDataDto>;
 
 export interface ArchiveMemoRequestDto {
-  memo: string;
+  content: string;
 }
 
 export type GetArchivedExhibitionResponseDto = ApiResponseDto<ArchivedExhibitionDto>;

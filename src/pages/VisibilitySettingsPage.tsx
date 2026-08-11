@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar } from '@/components/common';
-import { Header } from '@/components/display-manage/Common';
+import { BottomButton } from '@/components/common';
+import { ExhibitionHeader } from '@/components/ui';
 import { RadioOption } from '@/components/visibility-settings';
 import {
   CONTENT_OPEN_TO_VISIBILITY,
@@ -147,10 +147,10 @@ export function VisibilitySettings() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <Header title="공개 설정" onBack={() => navigate(-1)} />
+    <div className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
+      <ExhibitionHeader title="공개 설정" onBack={() => navigate(-1)} />
 
-      <main className="min-h-0 flex-1 overflow-y-auto px-5 pt-3 pb-24">
+      <main className="min-h-0 flex-1 overflow-hidden px-5">
         <div className="flex flex-col gap-1">
           <h2 className="typo-body-md-bold text-main">공개 시점 설정</h2>
           <p className="typo-body-xs-regular text-hint">
@@ -178,17 +178,9 @@ export function VisibilitySettings() {
         </div>
       </main>
 
-      {canEditDisplay && (
-        <BottomButtonBar>
-          <button
-            type="button"
-            onClick={save}
-            className="typo-body-sm-bold h-11 w-full rounded-lg bg-dark text-white"
-          >
-            저장하기
-          </button>
-        </BottomButtonBar>
-      )}
+      <BottomButton type="button" onClick={save} disabled={!canEditDisplay}>
+        저장하기
+      </BottomButton>
     </div>
   );
 }

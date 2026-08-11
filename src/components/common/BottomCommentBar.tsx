@@ -169,49 +169,51 @@ export function BottomCommentBar({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-line bg-card px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+46px)] shadow-[0px_-4px_18px_0px_rgba(4,0,250,0.06)]',
+        'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-line bg-card shadow-[0px_-2px_8px_0px_rgba(4,0,250,0.03)]',
         className,
       )}
     >
       <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
-      {replyingTo && (
-        <div className="-mx-5 mb-3 flex items-center gap-2 px-5 pb-2">
-          <span className="typo-body-xs-regular text-hint">
-            <span className="typo-body-xs-bold">{replyingTo}</span>에게 답글 작성 중
-          </span>
-          <button
-            type="button"
-            onClick={onCancelReply}
-            aria-label="답글 취소"
-            className="typo-body-xs-regular text-faint cursor-pointer"
-          >
-            취소
-          </button>
-        </div>
-      )}
-
-      {images.length > 0 ? (
-        <div className="flex flex-col items-start gap-2.5 rounded-xl bg-[#D7D7DF] p-3">
-          <div className="flex w-full items-center gap-2">
-            {images.map((image) => (
-              <div key={image.id} className="relative size-16 shrink-0">
-                <img src={image.previewUrl} alt="" className="size-16 rounded-lg object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removeImage(image.id)}
-                  aria-label="이미지 삭제"
-                  className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
-                >
-                  <X size={12} className="text-white" strokeWidth={2.5} />
-                </button>
-              </div>
-            ))}
+      <div className="px-5 pt-4 pb-safe-bottom">
+        {replyingTo && (
+          <div className="-mx-5 mb-3 flex items-center gap-2 px-5 pb-2">
+            <span className="typo-body-xs-regular text-hint">
+              <span className="typo-body-xs-bold">{replyingTo}</span>에게 답글 작성 중
+            </span>
+            <button
+              type="button"
+              onClick={onCancelReply}
+              aria-label="답글 취소"
+              className="typo-body-xs-regular text-faint cursor-pointer"
+            >
+              취소
+            </button>
           </div>
-          <div className="flex w-full items-center gap-2">{inputRow}</div>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 rounded-xl bg-box200 p-3">{inputRow}</div>
-      )}
+        )}
+
+        {images.length > 0 ? (
+          <div className="flex flex-col items-start gap-2.5 rounded-xl bg-[#D7D7DF] p-3">
+            <div className="flex w-full items-center gap-2">
+              {images.map((image) => (
+                <div key={image.id} className="relative size-16 shrink-0">
+                  <img src={image.previewUrl} alt="" className="size-16 rounded-lg object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(image.id)}
+                    aria-label="이미지 삭제"
+                    className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
+                  >
+                    <X size={12} className="text-white" strokeWidth={2.5} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex w-full items-center gap-2">{inputRow}</div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 rounded-xl bg-box200 p-3">{inputRow}</div>
+        )}
+      </div>
     </div>
   );
 }

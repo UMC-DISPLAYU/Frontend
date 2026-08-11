@@ -2,10 +2,12 @@ import type {
   ArchivedArtistStatusDto,
   ArchivedArtworkStatusDto,
   ArchivedExhibitionStatusDto,
+  ArchivedPersonalArtworkStatusDto,
   ArchiveMemoRequestDto,
   GetArchivedArtistResponseDto,
   GetArchivedArtistsResponseDataDto,
   GetArchivedArtworkResponseDto,
+  GetArchivedArtworksRequestDto,
   GetArchivedArtworksResponseDataDto,
   GetArchivedExhibitionResponseDto,
   GetArchivedExhibitionsResponseDataDto,
@@ -39,9 +41,23 @@ export const archiveArtwork = async (artworkId: number): Promise<ArchivedArtwork
 export const unarchiveArtwork = async (artworkId: number): Promise<ArchivedArtworkStatusDto> =>
   apiRequest(`/v1/archives/artworks/${artworkId}`, { method: 'DELETE' });
 
+// POST /v1/archives/personal-artworks/:personalArtworkId
+export const archivePersonalArtwork = async (
+  personalArtworkId: number,
+): Promise<ArchivedPersonalArtworkStatusDto> =>
+  apiRequest(`/v1/archives/personal-artworks/${personalArtworkId}`, { method: 'POST' });
+
+// DELETE /v1/archives/personal-artworks/:personalArtworkId
+export const unarchivePersonalArtwork = async (
+  personalArtworkId: number,
+): Promise<ArchivedPersonalArtworkStatusDto> =>
+  apiRequest(`/v1/archives/personal-artworks/${personalArtworkId}`, { method: 'DELETE' });
+
 // GET /v1/archives/artworks
-export const getArchivedArtworks = async (): Promise<GetArchivedArtworksResponseDataDto> =>
-  apiRequest('/v1/archives/artworks');
+export const getArchivedArtworks = async (
+  params: GetArchivedArtworksRequestDto = {},
+): Promise<GetArchivedArtworksResponseDataDto> =>
+  apiRequest('/v1/archives/artworks', { query: params });
 
 // POST /v1/archives/artists/:artistId
 export const archiveArtist = async (artistId: number): Promise<ArchivedArtistStatusDto> =>
@@ -52,8 +68,10 @@ export const unarchiveArtist = async (artistId: number): Promise<ArchivedArtistS
   apiRequest(`/v1/archives/artists/${artistId}`, { method: 'DELETE' });
 
 // GET /v1/archives/artists
-export const getArchivedArtists = async (): Promise<GetArchivedArtistsResponseDataDto> =>
-  apiRequest('/v1/archives/artists');
+export const getArchivedArtists = async (
+  params: { cursorId?: number } = {},
+): Promise<GetArchivedArtistsResponseDataDto> =>
+  apiRequest('/v1/archives/artists', { query: params });
 
 // GET /v1/archives/exhibitions/:savedExhibitionId
 export const getArchivedExhibition = async (

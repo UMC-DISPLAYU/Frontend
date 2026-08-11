@@ -3,10 +3,9 @@ import { useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar, ErrorView, LoadingView } from '@/components/common';
-import { Header } from '@/components/display-manage/Common';
+import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
-import { AlertModal } from '@/components/ui';
+import { AlertModal, ExhibitionHeader } from '@/components/ui';
 import {
   DEFAULT_CONTENT_IMAGE_HEIGHT,
   DEFAULT_CONTENT_IMAGE_WIDTH,
@@ -66,7 +65,7 @@ export function InteriorPhotosPage() {
     })) ?? [];
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
+    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
       <InteriorPhotos
         key={categoryId}
         title={category.name}
@@ -119,6 +118,7 @@ function InteriorPhotos({
   const isBusy = imageUpload.isUploading || createImage.isPending;
   const isSavingOrder = reorderImages.isPending;
   const canShowActions = canCreateContent || canReorder;
+  const shouldShowBottomBar = isReorderMode;
 
   const handleAddPhotos = () => {
     if (!canCreateContent) return;
@@ -245,10 +245,10 @@ function InteriorPhotos({
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-page pb-11">
-      <Header title={title} onBack={onBack} />
+    <div className="bg-page">
+      <ExhibitionHeader title={title} onBack={onBack} />
 
-      <main className="flex flex-1 flex-col pt-3.5 pb-24">
+      <main className={shouldShowBottomBar ? 'pb-bottom-bar-offset' : undefined}>
         {/* 안내 */}
         <div className="px-5 flex flex-col gap-1">
           <p className="typo-body-md-regular text-main">
@@ -261,7 +261,7 @@ function InteriorPhotos({
 
         {/* 액션 */}
         {!isReorderMode && canShowActions && (
-          <div className="flex gap-2 px-5 pt-3.5">
+          <div className="flex gap-2 px-5">
             <input
               ref={fileInputRef}
               type="file"
@@ -294,11 +294,11 @@ function InteriorPhotos({
 
         {/* 그리드 */}
         {photos.length === 0 ? (
-          <p className="typo-body-sm-regular px-5 pt-10 text-hint">
+          <p className="typo-body-sm-regular px-5 text-hint">
             아직 사진이 없어요. 사진 추가로 첫 장을 올려보세요.
           </p>
         ) : (
-          <ul className="grid grid-cols-3 gap-x-2.5 gap-y-3 px-5 pt-6">
+          <ul className="grid grid-cols-3 gap-x-2.5 gap-y-3 px-5">
             {photos.map((photo, index) => (
               <li
                 key={photo.id}
@@ -344,8 +344,8 @@ function InteriorPhotos({
         )}
       </main>
 
-      {isReorderMode && (
-        <BottomButtonBar>
+      {shouldShowBottomBar && (
+        <BottomFixedBar>
           <button
             type="button"
             onClick={handleReorder}
@@ -354,7 +354,7 @@ function InteriorPhotos({
           >
             {isSavingOrder ? '저장 중' : '편집 완료'}
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       )}
       {uploadError && <AlertModal message={uploadError} onConfirm={() => setUploadError(null)} />}
     </div>

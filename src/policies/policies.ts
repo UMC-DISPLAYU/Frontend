@@ -13,6 +13,7 @@ import {
   canModeratePersonalPost,
   canViewLoungePost,
   isArtistVerified,
+  isArtworkAuthor,
   isDisplayMember,
   isDisplayOwner,
   isLoggedIn,
@@ -91,7 +92,9 @@ export const policies = {
       question: UserOwnedResource & PrivatableResource,
       display: DisplayPolicyResource,
     ) => canViewDisplayQuestion(user, question, display),
-    create: (user: User) => isLoggedIn(user),
+    // 해당 작품의 작가(공동 작업자 포함) 본인은 자기 작품에 질문을 남길 수 없습니다.
+    create: (user: User, artwork: ArtworkPolicyResource) =>
+      isLoggedIn(user) && !isArtworkAuthor(user, artwork),
     delete: (user: User, question: UserOwnedResource, display: DisplayPolicyResource) =>
       canModerateDisplayPost(user, question, display),
     like: (user: User) => isLoggedIn(user),

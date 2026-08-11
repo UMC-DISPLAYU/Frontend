@@ -1,34 +1,33 @@
-import { BottomButtonBar } from '@/components/common';
+import { BottomFixedBar } from '@/components/common';
 import { cn } from '@/utils/cn';
 
 import { AuthorOption, AuthorSelectCard } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
 
 interface SelectArtistPageProps {
-  selectedProxyAuthorId: string | null;
+  selectedOtherAuthorId: string | null;
   teamAuthorOptions: AuthorOption[];
   onBack: () => void;
-  onChangeSelectedProxyAuthorId: (id: string) => void;
+  onChangeSelectedOtherAuthorId: (id: string) => void;
   onSubmit: () => void;
 }
 
 function SelectArtistPage({
-  selectedProxyAuthorId,
+  selectedOtherAuthorId,
   teamAuthorOptions,
   onBack,
-  onChangeSelectedProxyAuthorId,
+  onChangeSelectedOtherAuthorId,
   onSubmit,
 }: SelectArtistPageProps) {
-  const selectedAuthor = teamAuthorOptions.find((author) => author.id === selectedProxyAuthorId);
+  const selectedAuthor = teamAuthorOptions.find((author) => author.id === selectedOtherAuthorId);
   const canSubmit = Boolean(selectedAuthor?.verified);
 
   return (
     <ArtworkRegisterLayout
       title="작가 선택"
       onBack={onBack}
-      className="pt-3.5"
       bottomBar={
-        <BottomButtonBar>
+        <BottomFixedBar>
           <button
             type="button"
             onClick={onSubmit}
@@ -40,7 +39,7 @@ function SelectArtistPage({
           >
             다음
           </button>
-        </BottomButtonBar>
+        </BottomFixedBar>
       }
     >
       <section>
@@ -63,8 +62,8 @@ function SelectArtistPage({
             account={author.account}
             verified={author.verified}
             isMember={author.isMember}
-            selected={selectedProxyAuthorId === author.id}
-            onClick={() => onChangeSelectedProxyAuthorId(author.id)}
+            selected={selectedOtherAuthorId === author.id}
+            onClick={() => onChangeSelectedOtherAuthorId(author.id)}
           />
         ))}
         {teamAuthorOptions.length === 0 && (

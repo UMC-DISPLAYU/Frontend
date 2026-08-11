@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import SearchIcon from '@/assets/exhibition-register/search.svg';
-import { Header } from '@/components/display-manage/Common';
 import { InviteLinkSection, type Member, MemberRow } from '@/components/team-manage';
+import { ExhibitionHeader } from '@/components/ui';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import {
   useCreateDisplayInvitationLink,
@@ -92,10 +92,10 @@ export function TeamManage() {
   const isSearching = keyword.length > 0;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <Header title="팀원 초대/관리" onBack={() => navigate(-1)} />
+    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
+      <ExhibitionHeader title="팀원 초대/관리" onBack={() => navigate(-1)} />
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-24">
+      <main className="px-5">
         {canCreateInvitation && (
           <div className="flex items-center gap-2 rounded-xl bg-box px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.10),inset_-1px_-1px_1px_0px_rgba(255,255,255,1)] mb-3">
             <input

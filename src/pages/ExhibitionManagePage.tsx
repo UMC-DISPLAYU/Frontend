@@ -1,8 +1,7 @@
 import { ChevronRight, Info } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomButtonBar } from '@/components/common';
-import { Header } from '@/components/display-manage/Common';
+import { BottomFixedBar } from '@/components/common';
 import {
   ExhibitionCard,
   OutlineButton,
@@ -11,6 +10,7 @@ import {
   VisibilitySection,
 } from '@/components/exhibition-manage';
 import { useHideFooter } from '@/components/layout';
+import { ExhibitionHeader } from '@/components/ui';
 import { type VisibilityType } from '@/constants/visibility';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
@@ -118,10 +118,10 @@ export function ExhibitionManage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <Header title="전시관리" onBack={() => navigate(-1)} />
+    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
+      <ExhibitionHeader title="전시관리" onBack={() => navigate(-1)} />
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 gap-5 pt-5 pb-24">
+      <main className="px-5 pb-bottom-bar-offset">
         <div className="flex flex-col gap-5">
           <ExhibitionCard {...exhibition} />
 
@@ -185,7 +185,7 @@ export function ExhibitionManage() {
         </div>
       </main>
 
-      <BottomButtonBar>
+      <BottomFixedBar>
         <div className="flex gap-2.5">
           <button
             type="button"
@@ -213,7 +213,7 @@ export function ExhibitionManage() {
             등록하기
           </button>
         </div>
-      </BottomButtonBar>
+      </BottomFixedBar>
     </div>
   );
 }

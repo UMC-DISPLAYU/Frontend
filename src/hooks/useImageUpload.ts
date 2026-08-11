@@ -43,7 +43,9 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
 
   const addImages = useCallback(
     (fileList: FileList | File[]) => {
-      const files = Array.from(fileList);
+      const remainingSlots = Math.max(maxImages - imagesRef.current.length, 0);
+      const files = Array.from(fileList).slice(0, remainingSlots);
+
       if (files.length === 0) {
         return [];
       }
