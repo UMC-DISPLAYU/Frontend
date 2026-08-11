@@ -2,10 +2,24 @@
  * 날짜 문자열을 'MM.DD' 형식으로 변환
  */
 export function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = parseServerDate(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${month}.${day}`;
+}
+
+/**
+ * 날짜 문자열을 'YYYY.MM.DD' 형식으로 변환
+ */
+export function formatFullDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const date = parseServerDate(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}.${month}.${day}`;
 }
 
 /**
@@ -46,8 +60,5 @@ export function formatRelativeTime(createdAt: string): string {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   if (diffHours < 24) return `${diffHours}시간 전`;
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}.${month}.${day}`;
+  return formatFullDate(createdAt);
 }

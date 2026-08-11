@@ -4,7 +4,7 @@ import type { LoungePostDetailDto } from '@/api/dto/lounge.dto';
 import { ImageModal } from '@/components/common/ImageModal';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { useLoungePostPolicy } from '@/hooks/usePolicy';
-import { formatDate } from '@/utils/date';
+import { formatFullDate } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { LoungeBoardPostMenu } from './LoungeBoardPostMenu';
@@ -37,7 +37,7 @@ export function LoungeBoardPostDetail({ post, onEdit, onDelete }: Props) {
           />
           <div className="flex flex-col items-start gap-1">
             <p className="typo-body-sm-bold text-main">{post.writer.nickname}</p>
-            <p className="typo-body-xs-regular text-faint">{formatDate(post.createdAt)}</p>
+            <p className="typo-body-xs-regular text-faint">{formatFullDate(post.createdAt)}</p>
           </div>
         </div>
 
