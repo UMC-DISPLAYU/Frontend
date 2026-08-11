@@ -93,6 +93,7 @@ export const useCreateMyArtistProfile = () => {
     mutationFn: (body: CreateArtistProfileRequestDto) => createMyArtistProfile(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
     },
   });
 };

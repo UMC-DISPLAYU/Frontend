@@ -85,7 +85,6 @@ export const userHandlers = [
     http.post(path, async ({ request }) => {
       const body = await readJson<{ schoolEmail?: string }>(request);
       mockDb.me.schoolEmail = body.schoolEmail ?? mockDb.me.schoolEmail;
-      mockDb.me.isVerified = true;
       mockDb.me.isEmailVerified = true;
 
       return success('/api/v1/users/me/verification/email/confirm', {
