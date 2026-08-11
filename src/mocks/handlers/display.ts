@@ -527,7 +527,7 @@ export const displayHandlers = [
     http.post(path, ({ params }) =>
       success('/api/v1/display/{displayId}/reviews/{displayReviewId}/like', {
         displayReviewId: toNumber(params.displayReviewId),
-        isLiked: true,
+        liked: true,
         likeCount: 1,
       }),
     ),
@@ -603,7 +603,7 @@ export const displayHandlers = [
         '/api/v1/display/{displayId}/reviews/{displayReviewId}/reply/{displayReviewReplyId}/like',
         {
           displayReviewReplyId: toNumber(params.displayReviewReplyId),
-          isLiked: true,
+          liked: true,
           likeCount: 1,
         },
       ),

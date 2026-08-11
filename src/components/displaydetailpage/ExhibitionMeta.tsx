@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Calendar, Clock, Heart, MapPin } from 'lucide-react';
 
 import type { DisplayDetailDto } from '@/api/dto/display.dto';
-import { useToggleDisplayLike } from '@/hooks/queries/useDisplayDetail';
+import { useDisplayLikeStatus, useToggleDisplayLike } from '@/hooks/queries/useDisplayDetail';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArchivePolicy } from '@/hooks/usePolicy';
 import { cn } from '@/utils/cn';
@@ -52,10 +52,10 @@ function MetaRow({
 
 export function ExhibitionMeta({ display: ex }: Props) {
   const toggleLike = useToggleDisplayLike();
+  const { data: likeStatus, isSuccess: isLikeStatusReady } = useDisplayLikeStatus(ex.displayId);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
-  /* 좋아요 상태는 토글 응답이 전시 상세 캐시에 반영됩니다. */
-  const liked = Boolean((ex as DisplayDetailDto & { isLiked?: boolean }).isLiked);
+  const liked = Boolean(likeStatus?.isLiked);
   const [isAtTop, setIsAtTop] = useState(true);
 
   useEffect(() => {
@@ -70,9 +70,11 @@ export function ExhibitionMeta({ display: ex }: Props) {
   const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
   const displayedLikeCount = ex.likeCount ?? 0;
   const canToggleArchive = hasPermission(archivePolicy, liked ? 'delete' : 'create');
+  /* 로그인한 사용자만 해당. 실제 좋아요 여부를 확인하기 전에는 토글을 막아 중복 요청을 방지합니다. */
+  const isLikeActionBlocked = canToggleArchive && !isLikeStatusReady;
 
   const handleLikeClick = () => {
-    if (toggleLike.isPending) return;
+    if (toggleLike.isPending || isLikeActionBlocked) return;
     if (!canToggleArchive) {
       openLoginModal();
       return;
@@ -92,20 +94,18 @@ export function ExhibitionMeta({ display: ex }: Props) {
           type="button"
           id="meta-heart-btn"
           onClick={handleLikeClick}
-          disabled={toggleLike.isPending}
+          disabled={toggleLike.isPending || isLikeActionBlocked}
           className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5 transition-all duration-200 active:scale-95 cursor-pointer disabled:opacity-60"
         >
           <Heart
             size={24}
-            strokeWidth={1.75}
+            strokeWidth={1.5}
             className={cn(
               'transition-colors duration-200',
-              liked ? 'fill-heart text-heart' : 'fill-none text-sub700',
+              liked ? 'fill-heart text-heart' : 'fill-none text-main',
             )}
           />
-          <span className={cn('typo-body-xs-regular', liked ? 'text-heart' : 'text-sub700')}>
-            {displayedLikeCount}
-          </span>
+          <span className="typo-body-xs-regular text-main">{displayedLikeCount}</span>
         </button>
       </div>
 

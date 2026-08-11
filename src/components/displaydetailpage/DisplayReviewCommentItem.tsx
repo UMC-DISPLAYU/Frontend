@@ -162,8 +162,6 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
         activeReplyId={activeReplyId}
         tightSpacing
         showDivider
-        likeIconSize={{ width: 20, height: 20 }}
-        replyLikeIconSize={{ width: 12, height: 17 }}
       />
       {loginModal}
     </>
