@@ -32,6 +32,7 @@ import {
   useQuestionPolicy,
   useQuestionReplyPolicy,
 } from '@/hooks/usePolicy';
+import { useShare } from '@/hooks/useShare';
 import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -42,6 +43,7 @@ export function ArtworkDetailPage() {
 
   const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>('intro');
   const [isArtistView, setIsArtistView] = useState(false);
+  const { handleShare } = useShare();
 
   const { data: userMe } = useUserMe();
   const myUserId = userMe?.id;
@@ -264,6 +266,8 @@ export function ArtworkDetailPage() {
           <div className="flex items-center justify-between">
             <button
               type="button"
+              onClick={() => handleShare(window.location.href, detail.artworkName)}
+              aria-label="작품 공유"
               className="flex size-12 shrink-0 cursor-pointer items-center justify-center"
             >
               <Share2 size={24} className="text-sub700" />

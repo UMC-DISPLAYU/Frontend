@@ -16,6 +16,7 @@ import {
 import { BackButton } from '@/components/ui/BackButton';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useShare } from '@/hooks/useShare';
 import { useAuthStore } from '@/stores/authStore';
 import type { DetailTabKey } from '@/types/exhibition';
 import { parseDisplayId } from '@/utils/parseDisplayId';
@@ -28,6 +29,7 @@ export function DisplayDetailPage() {
   const [activeTab, setActiveTab] = useState<DetailTabKey>('intro');
   const accessToken = useAuthStore((state) => state.accessToken);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
+  const { handleShare } = useShare();
 
   const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
 
@@ -87,6 +89,8 @@ export function DisplayDetailPage() {
           <div className="flex items-center justify-between">
             <button
               type="button"
+              onClick={() => handleShare(window.location.href, display.title)}
+              aria-label="전시 공유"
               className="flex size-12 shrink-0 cursor-pointer items-center justify-center"
             >
               <Share2 size={24} className="text-sub700" />

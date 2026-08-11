@@ -72,6 +72,7 @@
   --safe-area-bottom: env(safe-area-inset-bottom);
   --safe-bottom: calc(max(20px, 10px + var(--safe-area-bottom)));
   --bottom-bar-offset: 112px;
+  --comment-bar-offset: 200px;
 
   /* 캘린더에서 필요한 색상입니다! primitive에 적용하지 않은 건 피그마 상 디자인 토큰이 정의되지 않아
   일단 semantic에 하드코딩하는 방식으로 진행했습니다 */

@@ -81,6 +81,10 @@ function ArtworkRegisterPageContent() {
   const createArtwork = useCreateDisplayArtwork(displayId);
   const isSubmitting =
     artworkUpload.isUploading || processUpload.isUploading || createArtwork.isPending;
+  const artworkImages = artworkUpload.images;
+  const processImages = processUpload.images;
+  const setUploadedArtworkImages = artworkUpload.setUploadedImages;
+  const setUploadedProcessImages = processUpload.setUploadedImages;
 
   const [step, setStepState] = useState<RegisterStep>(
     isEditMode ? 'basic' : (routeStep ?? draft.step),
@@ -246,6 +250,18 @@ function ArtworkRegisterPageContent() {
     },
     [updateDraft],
   );
+
+  useEffect(() => {
+    if (artworkImages.length === 0 && draft.artworkImageUrls.length > 0) {
+      setUploadedArtworkImages(draft.artworkImageUrls);
+    }
+  }, [artworkImages.length, setUploadedArtworkImages, draft.artworkImageUrls]);
+
+  useEffect(() => {
+    if (processImages.length === 0 && draft.processImageUrls.length > 0) {
+      setUploadedProcessImages(draft.processImageUrls);
+    }
+  }, [processImages.length, setUploadedProcessImages, draft.processImageUrls]);
 
   useEffect(() => {
     if (isEditMode) return;
@@ -547,6 +563,19 @@ function ArtworkRegisterPageContent() {
 
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const syncImageDraft = async () => {
+    const [artworkImageUrls, processImageUrls] = await Promise.all([
+      artworkUpload.images.length > 0 ? artworkUpload.uploadImages() : Promise.resolve([]),
+      processUpload.images.length > 0 ? processUpload.uploadImages() : Promise.resolve([]),
+    ]);
+
+    updateDraft({ artworkImageUrls, processImageUrls });
+    artworkUpload.setUploadedImages(artworkImageUrls);
+    processUpload.setUploadedImages(processImageUrls);
+
+    return { artworkImageUrls, processImageUrls };
+  };
+
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
     if (isSubmitting) return;
@@ -561,12 +590,7 @@ function ArtworkRegisterPageContent() {
     let artworkImageUrls: string[] = [];
     let processImageUrls: string[] = [];
     try {
-      artworkImageUrls = await Promise.all(
-        artworkUpload.files.map((file) => artworkUpload.uploadImage(file)),
-      );
-      processImageUrls = await Promise.all(
-        processUpload.files.map((file) => processUpload.uploadImage(file)),
-      );
+      ({ artworkImageUrls, processImageUrls } = await syncImageDraft());
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
       return;
@@ -707,6 +731,19 @@ function ArtworkRegisterPageContent() {
     setStep('basic');
   };
 
+  const handleBasicNext = async () => {
+    if (isSubmitting) return;
+
+    setSubmitError(null);
+
+    try {
+      await syncImageDraft();
+      setStep('participants');
+    } catch {
+      setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }
+  };
+
   const openTeamCollaboratorSheet = () => {
     setActiveSheet('collaboratorTeam');
   };
@@ -796,8 +833,8 @@ function ArtworkRegisterPageContent() {
           medium={medium}
           size={size}
           point={point}
-          artworkImages={artworkUpload.images}
-          processImages={processUpload.images}
+          artworkImages={artworkImages}
+          processImages={processImages}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}
@@ -810,7 +847,7 @@ function ArtworkRegisterPageContent() {
           onRemoveArtworkImage={artworkUpload.removeImage}
           onAddProcessImages={processUpload.addImages}
           onRemoveProcessImage={processUpload.removeImage}
-          onNext={() => setStep('participants')}
+          onNext={handleBasicNext}
         />
       )}
       {step === 'participants' && (

@@ -41,22 +41,27 @@ export const useImageUpload = ({ domain, maxImages = Infinity }: UseImageUploadO
     };
   }, []);
 
-  const addImages = useCallback((fileList: FileList | File[]) => {
-    const files = Array.from(fileList);
-    if (files.length === 0) {
-      return [];
-    }
+  const addImages = useCallback(
+    (fileList: FileList | File[]) => {
+      const remainingSlots = Math.max(maxImages - imagesRef.current.length, 0);
+      const files = Array.from(fileList).slice(0, remainingSlots);
 
-    const nextImages = files.map((file) => ({
-      id: createImageId(),
-      file,
-      previewUrl: URL.createObjectURL(file),
-    }));
+      if (files.length === 0) {
+        return [];
+      }
 
-    setImages((prev) => [...prev, ...nextImages]);
+      const nextImages = files.map((file) => ({
+        id: createImageId(),
+        file,
+        previewUrl: URL.createObjectURL(file),
+      }));
 
-    return nextImages;
-  }, []);
+      setImages((prev) => [...prev, ...nextImages]);
+
+      return nextImages;
+    },
+    [maxImages],
+  );
 
   const setUploadedImages = useCallback((imageUrls: string[]) => {
     setImages((prev) => {

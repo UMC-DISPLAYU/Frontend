@@ -152,9 +152,7 @@ export function ExhibitionBasicInfo() {
       placeName: shouldUseDraft
         ? draft.placeName
         : ((restored.placeName as string) ?? displayDetail?.location?.placeName ?? ''),
-      address: shouldUseDraft
-        ? draft.address
-        : ((restored.address as string) ?? displayDetail?.location?.placeName ?? ''),
+      address: shouldUseDraft ? draft.address : ((restored.address as string) ?? ''),
       latitude: shouldUseDraft
         ? (draft.latitude ?? undefined)
         : ((restored.latitude as number) ?? displayDetail?.location?.latitude ?? undefined),
@@ -226,8 +224,7 @@ export function ExhibitionBasicInfo() {
             }
           : null);
 
-      const restoredAddress =
-        (restored.address as string) ?? fetchedDetail.location?.placeName ?? '';
+      const restoredAddress = (restored.address as string) ?? '';
 
       reset({
         startDate: restoredPeriod ? formatDate(restoredPeriod.start) : '',

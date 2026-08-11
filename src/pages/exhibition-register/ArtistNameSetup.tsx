@@ -64,6 +64,25 @@ const formatPeriodLabel = (startDate?: string | null, endDate?: string | null) =
   return `${startDate.split('-').join('.')} - ${endDate.split('-').join('.')}`;
 };
 
+const hasCompleteRegisterDraft = (draft: ExhibitionRegisterState) =>
+  Boolean(
+    draft.imageUrls?.[0] &&
+    draft.title &&
+    draft.type &&
+    draft.field?.length &&
+    draft.startDate &&
+    draft.endDate &&
+    draft.startTime &&
+    draft.endTime &&
+    draft.placeName &&
+    draft.address &&
+    draft.contact?.trim() &&
+    draft.latitude !== null &&
+    draft.latitude !== undefined &&
+    draft.longitude !== null &&
+    draft.longitude !== undefined,
+  );
+
 function SummaryRow({ label, value }: SummaryRowProps) {
   return (
     <div className="flex items-start gap-5">
@@ -77,9 +96,10 @@ export function ArtistNameSetup() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
+  const shouldUseDraft = hasDraft && hasCompleteRegisterDraft(draft);
   const registerState = {
     ...(state ?? {}),
-    ...(hasDraft ? draft : {}),
+    ...(shouldUseDraft ? draft : {}),
   } as ExhibitionRegisterState;
   const createDisplay = useCreateDisplay();
 
@@ -87,7 +107,7 @@ export function ArtistNameSetup() {
     title: registerState.title ?? '',
     org: registerState.school || registerState.organizer || '',
     period:
-      hasDraft && draft.startDate && draft.endDate
+      shouldUseDraft && draft.startDate && draft.endDate
         ? formatPeriodLabel(draft.startDate, draft.endDate)
         : (registerState.period ?? ''),
     role: '대표자',
