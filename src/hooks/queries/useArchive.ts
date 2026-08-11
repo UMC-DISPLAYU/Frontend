@@ -8,7 +8,6 @@ import type {
   GetArchivedArtworksRequestDto,
   GetArchivedArtworksResponseDataDto,
   GetArchivedExhibitionsResponseDataDto,
-  PersonalArtworkResponseDataDto,
 } from '@/api/dto';
 import {
   archiveArtist,
@@ -224,21 +223,14 @@ export const useArchivePersonalArtwork = () => {
 
   return useMutation({
     mutationFn: archivePersonalArtwork,
-    onSuccess: (_, personalArtworkId) => {
-      queryClient.setQueryData(
-        queryKeys.personalArtworks.detail(personalArtworkId),
-        (current: PersonalArtworkResponseDataDto | undefined) =>
-          current ? { ...current, isArchived: true } : current,
-      );
-
-      return Promise.all([
+    onSuccess: (_, personalArtworkId) =>
+      Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
         queryClient.invalidateQueries({
           queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
         }),
         queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() }),
-      ]);
-    },
+      ]),
   });
 };
 
@@ -247,21 +239,14 @@ export const useUnarchivePersonalArtwork = () => {
 
   return useMutation({
     mutationFn: unarchivePersonalArtwork,
-    onSuccess: (_, personalArtworkId) => {
-      queryClient.setQueryData(
-        queryKeys.personalArtworks.detail(personalArtworkId),
-        (current: PersonalArtworkResponseDataDto | undefined) =>
-          current ? { ...current, isArchived: false } : current,
-      );
-
-      return Promise.all([
+    onSuccess: (_, personalArtworkId) =>
+      Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
         queryClient.invalidateQueries({
           queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
         }),
         queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() }),
-      ]);
-    },
+      ]),
   });
 };
 
