@@ -68,8 +68,10 @@ export const unarchiveArtist = async (artistId: number): Promise<ArchivedArtistS
   apiRequest(`/v1/archives/artists/${artistId}`, { method: 'DELETE' });
 
 // GET /v1/archives/artists
-export const getArchivedArtists = async (): Promise<GetArchivedArtistsResponseDataDto> =>
-  apiRequest('/v1/archives/artists');
+export const getArchivedArtists = async (
+  params: { cursorId?: number } = {},
+): Promise<GetArchivedArtistsResponseDataDto> =>
+  apiRequest('/v1/archives/artists', { query: params });
 
 // GET /v1/archives/exhibitions/:savedExhibitionId
 export const getArchivedExhibition = async (
