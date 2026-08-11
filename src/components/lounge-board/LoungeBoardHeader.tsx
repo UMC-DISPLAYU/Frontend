@@ -36,7 +36,7 @@ export function LoungeBoardHeader({
   };
 
   return (
-    <div className={`relative flex items-center py-3 ${className}`}>
+    <div className={`relative flex items-center py-3 border-b border-line-soft ${className}`}>
       <div className="h-9 flex items-center gap-3">
         <button type="button" aria-label="뒤로가기" onClick={() => navigate(-1)}>
           <ChevronLeft className="size-7 text-main" />
