@@ -47,14 +47,7 @@ function CardItem({ item, isActive }: CardProps) {
   const { title, description } = getItemFields(item);
 
   return (
-    <div
-      className={cn(
-        'relative w-full h-full rounded-xl overflow-hidden bg-box200 select-none transition-all duration-300 ease-out',
-        isActive
-          ? 'shadow-[inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]'
-          : 'shadow-[inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]',
-      )}
-    >
+    <div className="relative w-full h-full rounded-xl overflow-hidden bg-box200 select-none transition-all duration-300 ease-out">
       {/* 배경 이미지 */}
       {item.bannerImageUrl ? (
         <img
