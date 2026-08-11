@@ -95,7 +95,7 @@ export function TeamManage() {
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
       <ExhibitionHeader title="팀원 초대/관리" onBack={() => navigate(-1)} />
 
-      <main className="px-5 pb-24">
+      <main className="px-5">
         {canCreateInvitation && (
           <div className="flex items-center gap-2 rounded-xl bg-box px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.10),inset_-1px_-1px_1px_0px_rgba(255,255,255,1)] mb-3">
             <input

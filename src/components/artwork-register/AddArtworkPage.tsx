@@ -1,4 +1,4 @@
-import { BottomFixedBar } from '@/components/common';
+import { BottomButton } from '@/components/common';
 import { useUserStore } from '@/stores/useUserStore';
 
 import { ChoiceCard } from './ArtworkRegisterControls';
@@ -24,16 +24,11 @@ function AddArtworkPage({
     <ArtworkRegisterLayout
       title="전시작 추가"
       onBack={onBack}
+      hasFixedBottomBar={false}
       bottomBar={
-        <BottomFixedBar>
-          <button
-            type="button"
-            onClick={onNext}
-            className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white"
-          >
-            다음
-          </button>
-        </BottomFixedBar>
+        <BottomButton type="button" onClick={onNext}>
+          다음
+        </BottomButton>
       }
     >
       <section className="mb-5">

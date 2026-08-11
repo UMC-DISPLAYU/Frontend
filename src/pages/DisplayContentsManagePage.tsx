@@ -129,7 +129,7 @@ export function DisplayContentsManagePage() {
       <ExhibitionHeader title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
 
       {/* 메인 스크롤 영역 */}
-      <main ref={listRef} className="pb-24">
+      <main ref={listRef}>
         {/* 제목 + 설명 */}
         <div className="flex items-end justify-between gap-6 px-5 pb-3">
           <div className="flex flex-col gap-1">

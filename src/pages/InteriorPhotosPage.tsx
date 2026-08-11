@@ -118,6 +118,7 @@ function InteriorPhotos({
   const isBusy = imageUpload.isUploading || createImage.isPending;
   const isSavingOrder = reorderImages.isPending;
   const canShowActions = canCreateContent || canReorder;
+  const shouldShowBottomBar = isReorderMode;
 
   const handleAddPhotos = () => {
     if (!canCreateContent) return;
@@ -244,10 +245,10 @@ function InteriorPhotos({
   };
 
   return (
-    <div className="bg-page pb-11">
+    <div className="bg-page">
       <ExhibitionHeader title={title} onBack={onBack} />
 
-      <main className="pb-bottom-bar-offset">
+      <main className={shouldShowBottomBar ? 'pb-bottom-bar-offset' : undefined}>
         {/* 안내 */}
         <div className="px-5 flex flex-col gap-1">
           <p className="typo-body-md-regular text-main">
@@ -343,7 +344,7 @@ function InteriorPhotos({
         )}
       </main>
 
-      {isReorderMode && (
+      {shouldShowBottomBar && (
         <BottomFixedBar>
           <button
             type="button"

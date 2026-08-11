@@ -6,7 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
-import { BottomFixedBar } from '@/components/common';
+import { BottomButton } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
@@ -182,7 +182,7 @@ export function ArtistNameSetup() {
   };
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
+    <div className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
       <ExhibitionHeader
         title="전시 작가명 설정"
         onBack={() => {
@@ -191,11 +191,11 @@ export function ArtistNameSetup() {
         }}
       />
 
-      <div className="px-5 pb-bottom-bar-offset">
+      <main className="flex min-h-0 flex-1 overflow-hidden px-5">
         <form
           id="artist-name-setup-form"
           onSubmit={handleSubmit(goCreate)}
-          className="flex flex-col gap-5"
+          className="flex h-full flex-col gap-5"
         >
           {/* 안내 문구 */}
           <div className="flex flex-col gap-1">
@@ -239,7 +239,7 @@ export function ArtistNameSetup() {
               실명 또는 이 전시에서 사용할 작가명을 입력해주세요.
             </p>
           </div>
-          <div className="pt-7">
+          <div className="mt-auto pb-6">
             <div className="flex items-start gap-2 rounded-2xl bg-card p-3.5">
               <Info className="mt-0.5 size-4 shrink-0 text-faint" strokeWidth={1} />
               <p className="typo-body-xs-regular text-faint">
@@ -250,19 +250,15 @@ export function ArtistNameSetup() {
             </div>
           </div>
         </form>
-      </div>
+      </main>
 
-      {/* 하단 고정 영역 */}
-      <BottomFixedBar>
-        <button
-          form="artist-name-setup-form"
-          type="submit"
-          disabled={!isValid || createDisplay.isPending}
-          className="typo-body-sm-bold h-11 w-full rounded-xl bg-dark text-white disabled:opacity-40"
-        >
-          {createDisplay.isPending ? '전시 등록 중' : '전시 관리 페이지 만들기'}
-        </button>
-      </BottomFixedBar>
+      <BottomButton
+        form="artist-name-setup-form"
+        type="submit"
+        disabled={!isValid || createDisplay.isPending}
+      >
+        {createDisplay.isPending ? '전시 등록 중' : '전시 관리 페이지 만들기'}
+      </BottomButton>
     </div>
   );
 }

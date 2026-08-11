@@ -31,20 +31,28 @@ interface PersonalArtworkCompleteState {
 
 type CompleteState = ExhibitionCompleteState | ArtworkCompleteState | PersonalArtworkCompleteState;
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({
+  label,
+  value,
+  labelClassName = 'w-10',
+}: {
+  label: string;
+  value: string;
+  labelClassName?: string;
+}) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="typo-body-xs-regular shrink-0 text-faint">{label}</span>
-      <span className="typo-body-xs-regular text-main">{value}</span>
+    <div className="grid grid-cols-[auto_1fr] items-start gap-3">
+      <span className={`typo-body-xs-regular shrink-0 text-faint ${labelClassName}`}>{label}</span>
+      <span className="typo-body-xs-regular min-w-0 truncate text-main">{value}</span>
     </div>
   );
 }
 
 function ArtworkSummaryItem({ label, value }: { label: string; value: string }) {
   return (
-    <li className="flex items-start gap-3">
+    <li className="flex min-w-0 items-start gap-3">
       <span className="typo-body-xs-regular shrink-0 text-faint">{label}</span>
-      <span className="typo-body-xs-regular text-main">{value}</span>
+      <span className="typo-body-xs-regular min-w-0 truncate text-main">{value}</span>
     </li>
   );
 }
@@ -117,7 +125,7 @@ export function ExhibitionRegisterComplete() {
   if (isArtworkComplete || isPersonalArtworkComplete) {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-        <main className="flex flex-1 flex-col overflow-y-auto px-5 pb-8">
+        <main className="flex flex-1 flex-col overflow-y-auto px-5">
           <CompleteHeader
             title="작품등록이 완료되었어요"
             description={
@@ -162,7 +170,7 @@ export function ExhibitionRegisterComplete() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <main className="flex flex-1 flex-col overflow-y-auto px-5 pb-8">
+      <main className="flex flex-1 flex-col overflow-y-auto px-5">
         <CompleteHeader
           title="전시 등록이 완료되었어요"
           description={
@@ -174,20 +182,22 @@ export function ExhibitionRegisterComplete() {
           }
         />
 
-        <div className="mt-14 flex items-start gap-1.5">
-          <div className="flex flex-1 flex-col gap-1.5">
+        <div className="mt-14 grid grid-cols-2 gap-x-1.5">
+          <div className="min-w-0 flex flex-col gap-1.5">
             <SummaryRow label="전시명" value={state?.title ?? '-'} />
             <SummaryRow label="소속" value={affiliation || '-'} />
             <SummaryRow label="장소" value={state?.placeName ?? '-'} />
           </div>
-          <div className="flex flex-1 flex-col gap-1.5">
+          <div className="min-w-0 flex flex-col gap-1.5">
             <SummaryRow
               label="전시작 공개"
               value={state?.artworkVisibility ? VISIBILITY_LABEL[state.artworkVisibility] : '-'}
+              labelClassName="w-15"
             />
             <SummaryRow
               label="콘텐츠 공개"
               value={state?.contentVisibility ? VISIBILITY_LABEL[state.contentVisibility] : '-'}
+              labelClassName="w-15"
             />
           </div>
         </div>

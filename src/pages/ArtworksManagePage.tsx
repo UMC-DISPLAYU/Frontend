@@ -62,6 +62,7 @@ export function ArtworksManagePage() {
   const canDeleteSheetArtwork = true;
 
   const canCreateArtwork = true;
+  const shouldShowBottomBar = screen === 'manage' ? canCreateArtwork : true;
 
   const handleDelete = () => {
     if (sheetWork) {
@@ -99,7 +100,7 @@ export function ArtworksManagePage() {
         onBack={screen === 'manage' ? handleBack : handleOrderBack}
       />
 
-      <main className="pb-bottom-bar-offset">
+      <main className={shouldShowBottomBar ? 'pb-bottom-bar-offset' : undefined}>
         {screen === 'manage' ? (
           <ManageScreen
             works={works}
@@ -112,19 +113,17 @@ export function ArtworksManagePage() {
         )}
       </main>
 
-      {screen === 'manage' ? (
-        canCreateArtwork && (
-          <BottomFixedBar>
-            <button
-              type="button"
-              onClick={() => navigate(`/exhibition/${displayId}/artworks/add`)}
-              className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
-            >
-              전시작 추가
-            </button>
-          </BottomFixedBar>
-        )
-      ) : (
+      {shouldShowBottomBar && screen === 'manage' ? (
+        <BottomFixedBar>
+          <button
+            type="button"
+            onClick={() => navigate(`/exhibition/${displayId}/artworks/add`)}
+            className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
+          >
+            전시작 추가
+          </button>
+        </BottomFixedBar>
+      ) : shouldShowBottomBar ? (
         <BottomFixedBar>
           <button
             type="button"
@@ -134,7 +133,7 @@ export function ArtworksManagePage() {
             순서 저장하기
           </button>
         </BottomFixedBar>
-      )}
+      ) : null}
 
       {sheetWork && (canEditSheetArtwork || canDeleteSheetArtwork) && (
         <WorkActionSheet

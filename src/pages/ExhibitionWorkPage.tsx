@@ -90,7 +90,7 @@ export function ExhibitionWorkPage() {
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
       <ExhibitionHeader title="전시 작업" onBack={() => navigate(-1)} />
-      <main className="px-5 pb-24">
+      <main className="px-5">
         <div className="flex flex-col gap-5">
           <div
             className={cn(

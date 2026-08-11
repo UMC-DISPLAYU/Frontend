@@ -519,7 +519,7 @@ export function ExhibitionBasicInfo() {
           </div>
 
           {/* 유의사항 */}
-          <div className="flex flex-col gap-3 pb-8">
+          <div className="flex flex-col gap-3">
             <Label>유의사항</Label>
             <div className="flex flex-col gap-1.5">
               <Underline className="items-start">
