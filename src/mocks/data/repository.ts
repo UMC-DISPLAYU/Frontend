@@ -65,6 +65,7 @@ const displayToListItem = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   content: display.content,
   organization: display.organization,
   department: display.department,
+  schoolDepartmentName: [display.organization, display.department].filter(Boolean).join(' '),
   displayType: display.displayType,
   displayFields: display.displayFields,
   region: display.region,
@@ -84,6 +85,7 @@ const displayToListItem = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   likeCount: 12 + display.displayId,
   liked: false,
   archived: false,
+  isArchived: false,
 });
 
 const displayToDetail = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({

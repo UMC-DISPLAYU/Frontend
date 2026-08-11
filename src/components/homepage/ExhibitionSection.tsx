@@ -29,7 +29,8 @@ function ExhibitionCard({
   onBookmarkClick: (displayId: number, saved: boolean, e: React.MouseEvent) => void;
 }) {
   const navigate = useNavigate();
-  const orgDept = [item.organization, item.department].filter(Boolean).join(' ');
+  const schoolDepartmentName =
+    item.schoolDepartmentName ?? [item.organization, item.department].filter(Boolean).join(' ');
   const isSaved = item.isArchived === true || savedExhibitionIds.has(item.displayId);
 
   return (
@@ -70,8 +71,10 @@ function ExhibitionCard({
       </div>
       <div className="flex flex-col">
         <p className="typo-body-xs-bold text-main truncate">{item.title}</p>
-        {orgDept ? (
-          <p className="typo-body-xs-regular text-sub700 truncate -mt-0.5">{orgDept}</p>
+        {schoolDepartmentName ? (
+          <p className="typo-body-xs-regular text-sub700 truncate -mt-0.5">
+            {schoolDepartmentName}
+          </p>
         ) : null}
         <p className="typo-body-xs-regular text-hint mt-0.5">
           {formatMonthDay(item.startedAt)} - {formatMonthDay(item.endedAt)}

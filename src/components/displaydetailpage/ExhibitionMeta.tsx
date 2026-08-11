@@ -67,7 +67,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
+  const fullSubtitle = ex.subtitle;
   const displayedLikeCount = ex.likeCount ?? 0;
   const canToggleArchive = hasPermission(archivePolicy, liked ? 'delete' : 'create');
   /* 로그인한 사용자만 해당. 실제 좋아요 여부를 확인하기 전에는 토글을 막아 중복 요청을 방지합니다. */
