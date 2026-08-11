@@ -4,9 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronLeft, Info, Plus, X } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
 
 import type { UserProfileDto } from '@/api/dto';
+import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
 import { LoadingView } from '@/components/common/LoadingView';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';

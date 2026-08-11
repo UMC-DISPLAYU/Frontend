@@ -4,9 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronLeft, Plus } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
 
 import type { ArtistProfileDto } from '@/api/dto';
+import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
 import { ChipGroup } from '@/components/ui';
 import {
   ARTIST_FIELD_MAP,

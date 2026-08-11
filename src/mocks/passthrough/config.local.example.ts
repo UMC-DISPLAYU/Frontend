@@ -2,8 +2,8 @@
 
 export const MSW_LOCAL_PASSTHROUGH_ENDPOINTS = [
   //(추천 세팅)
-  'GET /api/auth/google/login-url',
-  'GET /api/auth/kakao/login-url',
+  'GET /api/v1/auth/google/login-url',
+  'GET /api/v1/auth/kakao/login-url',
   'GET /api/auth/google/callback',
   'GET /api/auth/kakao/callback',
   'POST /api/v1/files/presigned-url',
