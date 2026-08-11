@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { X } from 'lucide-react';
@@ -73,6 +73,35 @@ export function ShareBottomSheet({
 }: ShareBottomSheetProps) {
   const [copied, setCopied] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    document.body.style.overflow = 'hidden';
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    // 시트가 렌더된 다음 포커스를 옮기기 위해 requestAnimationFrame을 씁니다.
+    requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
+      // 시트가 닫히면 이전 세션의 복사/에러 피드백을 정리합니다.
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+      setCopied(false);
+      setErrorMessage(null);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -118,7 +147,8 @@ export function ShareBottomSheet({
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      setTimeout(() => {
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+      copiedTimeoutRef.current = setTimeout(() => {
         setCopied(false);
       }, 1500);
     } catch {
@@ -131,12 +161,14 @@ export function ShareBottomSheet({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div
         role="dialog"
+        aria-modal="true"
         aria-label="공유하기"
         className="relative flex h-[297px] w-full max-w-md flex-col rounded-t-xl bg-card px-5 pt-6 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0px_-8px_30px_0px_rgba(4,0,250,0.10)]"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-[20px] leading-[130%] font-bold text-main">공유하기</h2>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={onClose}
             aria-label="닫기"
