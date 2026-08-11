@@ -1,5 +1,6 @@
 import type {
   ArtworkFeelingLikeDto,
+  ArtworkFeelingReplyImageRequestDto,
   ArtworkFeelingReplyLikeDto,
   ArtworkFeelingReplyListResponseDataDto,
   ArtworkQuestionRecordDto,
@@ -11,7 +12,6 @@ import type {
   CreateExhibitionArtworkRequestDto,
   CreateExhibitionArtworkResponseDataDto,
   DeleteArtworkFeelingReplyResponseDataDto,
-  DeleteArtworkQuestionReplyResponseDataDto,
   DeleteArtworkQuestionResponseDataDto,
   DeleteArtworkResponseDataDto,
   GetArtworkDetailResponseDataDto,
@@ -28,7 +28,6 @@ import type {
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
   UpdateArtworkOrderResponseDataDto,
-  UpdateArtworkQuestionRequestDto,
 } from '@/api/dto';
 
 import { apiRequest } from '../client';
@@ -67,7 +66,9 @@ export const deleteArtworkFeeling = async (artworkId: number, feelingId: number)
 // GET /v1/artworks/:artworkId/questions
 export const getArtworkQuestions = async (
   artworkId: number,
-): Promise<GetArtworkQuestionsResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/questions`);
+  params: { cursorId?: number } = {},
+): Promise<GetArtworkQuestionsResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/questions`, { query: params });
 
 // GET /api/v1/artworks/feelings/me
 export const getMyArtworkFeelings = async (
@@ -104,14 +105,6 @@ export const createArtworkQuestion = async (
 ): Promise<ArtworkQuestionRecordDto> =>
   apiRequest(`/v1/artworks/${artworkId}/questions`, { method: 'POST', body });
 
-// PATCH /v1/artworks/:artworkId/questions/:questionId
-export const updateArtworkQuestion = async (
-  artworkId: number,
-  questionId: number,
-  body: UpdateArtworkQuestionRequestDto,
-): Promise<ArtworkQuestionRecordDto> =>
-  apiRequest(`/v1/artworks/${artworkId}/questions/${questionId}`, { method: 'PATCH', body });
-
 // DELETE /v1/artworks/:artworkId/questions/:questionId
 export const deleteArtworkQuestion = async (
   artworkId: number,
@@ -128,16 +121,6 @@ export const createArtworkQuestionReply = async (
   apiRequest(`/v1/artworks/${artworkId}/questions/${questionId}/reply`, {
     method: 'POST',
     body,
-  });
-
-// DELETE /v1/artworks/:artworkId/questions/:questionId/reply/:questionReplyId
-export const deleteArtworkQuestionReply = async (
-  artworkId: number,
-  questionId: number,
-  questionReplyId: number,
-): Promise<DeleteArtworkQuestionReplyResponseDataDto> =>
-  apiRequest(`/v1/artworks/${artworkId}/questions/${questionId}/reply/${questionReplyId}`, {
-    method: 'DELETE',
   });
 
 // POST /v1/artworks/:artworkId/feelings/:feelingId/like
@@ -183,7 +166,7 @@ export const getArtworkPreview = async (
 export const createArtworkFeelingReply = async (
   artworkId: number,
   feelingId: number,
-  body: { content: string },
+  body: { content: string; images?: ArtworkFeelingReplyImageRequestDto[] },
 ): Promise<unknown> =>
   apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply`, { method: 'POST', body });
 

@@ -23,7 +23,7 @@ export function SectionHeader({ title, linkTo, onLinkClick }: SectionHeaderProps
   };
 
   return (
-    <div className="flex items-center justify-between px-4 mb-2.5">
+    <div className="flex items-end justify-between px-4 mb-2.5">
       <h2 className="typo-body-xl-bold text-main">{title}</h2>
       {hasLink ? (
         <button
