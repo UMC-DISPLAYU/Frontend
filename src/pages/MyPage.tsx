@@ -18,13 +18,14 @@ import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
 import {
   useArchivedArtists,
-  useArchivedArtworks,
   useArchivedExhibitions,
   useDeleteArchivedArtworkMemo,
   useDeleteArchivedExhibitionMemo,
+  useInfiniteArchivedArtworks,
   useUnarchiveArtist,
   useUnarchiveArtwork,
   useUnarchiveExhibition,
+  useUnarchivePersonalArtwork,
   useUpdateArchivedArtworkMemo,
   useUpdateArchivedExhibitionMemo,
 } from '@/hooks/queries/useArchive';
@@ -121,7 +122,7 @@ export function MyPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData?.isVerified]); // isArtistView, toggleArtistView는 의존성에서 제외 (무한 루프 방지)
   const archivedExhibitionsQuery = useArchivedExhibitions();
-  const archivedArtworksQuery = useArchivedArtworks();
+  const archivedArtworksQuery = useInfiniteArchivedArtworks({ size: 20 });
   const archivedArtistsQuery = useArchivedArtists();
   const myArtistProfileQuery = useMyArtistProfile({
     enabled: isArtistView,
@@ -134,6 +135,7 @@ export function MyPage() {
   });
   const unarchiveExhibition = useUnarchiveExhibition();
   const unarchiveArtwork = useUnarchiveArtwork();
+  const unarchivePersonalArtwork = useUnarchivePersonalArtwork();
   const unarchiveArtist = useUnarchiveArtist();
   const updateExhibitionMemo = useUpdateArchivedExhibitionMemo();
   const deleteExhibitionMemo = useDeleteArchivedExhibitionMemo();
@@ -190,11 +192,13 @@ export function MyPage() {
   const myExhibitions = myDisplaysQuery.data ?? [];
 
   const artworks = useMemo<SavedArtworkItem[]>(() => {
-    const items = (archivedArtworksQuery.data?.works ?? []) as ArchivedArtworkView[];
+    const items = (archivedArtworksQuery.data?.pages.flatMap((page) => page.works) ??
+      []) as ArchivedArtworkView[];
     return items.map((item) => ({
       id: String(item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId),
       archiveWorkId: item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId,
       artworkId: item.artworkId,
+      personalArtworkId: item.personalArtworkId,
       userId: item.userId ?? userData?.id,
       title: item.title ?? item.artworkTitle ?? '작품',
       artist: item.artist ?? item.artistName ?? '',
@@ -208,6 +212,7 @@ export function MyPage() {
     return items.map((item) => ({
       id: String(item.personalArtworkId),
       artworkId: item.personalArtworkId,
+      personalArtworkId: item.personalArtworkId,
       title: item.artworkName,
       artist: userData?.nickname || userData?.name || '',
       thumbnail: item.thumbnailUrl ?? '',
@@ -352,14 +357,21 @@ export function MyPage() {
                 isArtistView={isArtistView}
                 onUnarchive={(artwork) => {
                   if (window.confirm('저장한 작품에서 삭제할까요?')) {
-                    unarchiveArtwork.mutate(artwork.artworkId ?? Number(artwork.id));
+                    if (artwork.personalArtworkId) {
+                      unarchivePersonalArtwork.mutate(artwork.personalArtworkId);
+                    } else {
+                      unarchiveArtwork.mutate(artwork.artworkId ?? Number(artwork.id));
+                    }
                   }
                 }}
                 onSaveMemo={handleSaveArtworkMemo}
                 onDeleteMemo={handleDeleteArtworkMemo}
                 onOpen={
                   isArtistView
-                    ? (artwork) => navigate(`/personal-artworks/${artwork.artworkId ?? artwork.id}`)
+                    ? (artwork) =>
+                        navigate(
+                          `/personal-artworks/${artwork.personalArtworkId ?? artwork.artworkId ?? artwork.id}`,
+                        )
                     : undefined
                 }
               />
