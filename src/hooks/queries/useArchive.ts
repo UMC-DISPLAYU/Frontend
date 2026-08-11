@@ -32,8 +32,6 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
-const DEFAULT_ARCHIVED_ARTWORKS_SIZE = 20;
-
 export const useArchivedExhibitions = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
   return useQuery({
@@ -53,7 +51,7 @@ export const useArchivedArtworks = (params: GetArchivedArtworksRequestDto = {}) 
 };
 
 export const useInfiniteArchivedArtworks = (
-  params: Omit<GetArchivedArtworksRequestDto, 'cursorId'> = {},
+  params: Omit<GetArchivedArtworksRequestDto, 'cursorId'> & { size: number },
 ) => {
   const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -63,7 +61,6 @@ export const useInfiniteArchivedArtworks = (
       getArchivedArtworks({
         ...params,
         cursorId: pageParam,
-        size: params.size ?? DEFAULT_ARCHIVED_ARTWORKS_SIZE,
       }),
     initialPageParam: null as ArchiveArtworkCursorDto | null,
     getNextPageParam: (lastPage) =>
