@@ -66,7 +66,8 @@ export function AuthPage() {
       isVerified: true,
       avatar: data?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
       school: data?.schoolName || '',
-      fields: data?.fields?.map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code) ?? [],
+      fields:
+        data?.fields?.map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code) ?? [],
       exhibitionCount: formatCount(exhibitionsQuery.data?.length),
       /* 개인 작품 + 전시 내 작품을 실제로 합산한 값입니다. */
       artworkCount: formatCount(personalArtworks.length + exhibitionArtworks.length),

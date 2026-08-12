@@ -58,9 +58,7 @@ export function AuthPageHeader({
           />
           <div className="flex-1 min-w-0 px-4 flex flex-col gap-1.5">
             <span className="w-fit inline-flex items-center px-1.5 py-0.5 bg-sky-100 rounded-full">
-              <span className="text-line-active typo-body-xxs-regular uppercase">
-                작가 프로필
-              </span>
+              <span className="text-line-active typo-body-xxs-regular uppercase">작가 프로필</span>
             </span>
 
             <div className="flex flex-col gap-1">
