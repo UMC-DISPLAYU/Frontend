@@ -2,17 +2,11 @@ import { useNavigate } from 'react-router-dom';
 
 import LockIcon from '@/assets/common/LockIcon.svg';
 import { BottomButton } from '@/components/common';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 
 export function ForbiddenPage() {
   const navigate = useNavigate();
-  const handleGoBack = () => {
-    if (window.history.length > 2) {
-      navigate(-1);
-      return;
-    }
-
-    navigate('/home', { replace: true });
-  };
+  const goBackOrHome = useGoBackOrHome();
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
@@ -27,7 +21,7 @@ export function ForbiddenPage() {
           <button
             type="button"
             className="mt-5 typo-body-sm-regular text-neutral-400 underline underline-offset-2"
-            onClick={handleGoBack}
+            onClick={goBackOrHome}
           >
             이전 페이지로 돌아가기
           </button>

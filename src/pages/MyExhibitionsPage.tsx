@@ -1,14 +1,13 @@
-import { useNavigate } from 'react-router-dom';
-
 import { LoadingView } from '@/components/common';
 import { ManageScreen } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 
 export function MyExhibitionsPage() {
   useHideFooter();
 
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { data: myDisplays = [], isLoading } = useMyDisplays();
 
   if (isLoading) {
@@ -24,7 +23,7 @@ export function MyExhibitionsPage() {
             state: { ...exhibition, displayId: Number(exhibition.id) },
           })
         }
-        onBack={() => window.history.back()}
+        onBack={() => goBackOrHome()}
         onDone={() => navigate('/setting')}
         onDelete={() => {}}
         onEditArtistName={(ex) => navigate(`/exhibition/register/artist`, { state: ex })}

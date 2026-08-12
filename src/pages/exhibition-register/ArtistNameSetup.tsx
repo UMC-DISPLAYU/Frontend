@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Info } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
-import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
 import { BottomButton } from '@/components/common';
@@ -11,6 +10,7 @@ import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 
 import { type ArtistNameSetupFormValues, artistNameSetupSchema } from './exhibitionRegister.schema';
 
@@ -93,7 +93,7 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 }
 
 export function ArtistNameSetup() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
   const shouldUseDraft = hasDraft && hasCompleteRegisterDraft(draft);
@@ -208,7 +208,7 @@ export function ArtistNameSetup() {
         title="전시 작가명 설정"
         onBack={() => {
           saveCurrentDraft();
-          navigate(-1);
+          goBackOrHome();
         }}
       />
 

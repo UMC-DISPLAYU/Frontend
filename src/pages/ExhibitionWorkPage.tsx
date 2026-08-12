@@ -1,5 +1,4 @@
 import { ChevronRight, Info, Plus } from 'lucide-react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { ErrorView, LoadingView } from '@/components/common';
 import { ArtworkCard } from '@/components/display-manage/ArtworkCard';
@@ -11,6 +10,7 @@ import { useHideFooter } from '@/components/layout';
 import { ExhibitionHeader } from '@/components/ui';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import type { WorkData } from '@/types/exhibition';
 import type { ExhibitionItem } from '@/types/mypage';
@@ -26,7 +26,8 @@ export function ExhibitionWorkPage() {
 
   const { displayId } = useParams();
   const { state } = useLocation() as { state: LocationState | null };
-  const navigate = useNavigate();
+
+  const goBackOrHome = useGoBackOrHome();
 
   const exhibition = state?.initialExhibition;
   const { data: displayDetail, isPending, isError } = useDisplayDetail(Number(displayId));
@@ -54,7 +55,7 @@ export function ExhibitionWorkPage() {
   }
 
   if (!exhibition && (isError || !displayDetail)) {
-    return <ErrorView message="전시 정보를 찾을 수 없습니다." onRetry={() => navigate(-1)} />;
+    return <ErrorView message="전시 정보를 찾을 수 없습니다." onRetry={() => goBackOrHome()} />;
   }
 
   const exItem: ExhibitionItem = exhibition ?? {
@@ -89,7 +90,7 @@ export function ExhibitionWorkPage() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <ExhibitionHeader title="전시 작업" onBack={() => navigate(-1)} />
+      <ExhibitionHeader title="전시 작업" onBack={() => goBackOrHome()} />
       <main className="px-5">
         <div className="flex flex-col gap-5">
           <div

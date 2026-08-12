@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 
 interface ExhibitionHeaderProps {
   title: string;
@@ -8,8 +9,8 @@ interface ExhibitionHeaderProps {
 }
 
 export function ExhibitionHeader({ title, onBack, centered = false }: ExhibitionHeaderProps) {
-  const navigate = useNavigate();
-  const handleBack = onBack || (() => navigate(-1));
+  const goBackOrHome = useGoBackOrHome();
+  const handleBack = onBack || goBackOrHome;
 
   if (centered) {
     return (

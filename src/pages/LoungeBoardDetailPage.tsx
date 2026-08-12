@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
-
 import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import {
   LoungeBoardActionBar,
@@ -21,9 +19,10 @@ import {
   useLoungeComments,
 } from '@/hooks/queries/useLoungeComments';
 import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 
 export const LoungeBoardDetailPage = () => {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { category, id } = useParams<{ category: string; id: string }>();
   const isValidCategory = isLoungeCategoryKey(category);
   const postId = id ? Number(id) : NaN;
@@ -132,7 +131,7 @@ export const LoungeBoardDetailPage = () => {
           fullScreen={false}
           title="게시글을 찾을 수 없습니다"
           message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
-          onRetry={() => navigate(-1)}
+          onRetry={() => goBackOrHome()}
         />
       ) : isLoading ? (
         <LoadingView fullScreen={false} />
@@ -152,7 +151,7 @@ export const LoungeBoardDetailPage = () => {
                 post={post}
                 onEdit={() => navigate(`/lounge/${category}/${id}/edit`)}
                 onDelete={() =>
-                  deletePostMutation.mutate(postId, { onSuccess: () => navigate(-1) })
+                  deletePostMutation.mutate(postId, { onSuccess: () => goBackOrHome() })
                 }
               />
               <LoungeBoardActionBar
@@ -214,7 +213,7 @@ export const LoungeBoardDetailPage = () => {
           fullScreen={false}
           title="게시글을 찾을 수 없습니다"
           message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
-          onRetry={() => navigate(-1)}
+          onRetry={() => goBackOrHome()}
         />
       )}
     </div>

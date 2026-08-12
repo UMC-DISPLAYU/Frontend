@@ -1,8 +1,8 @@
 import { Bookmark, ChevronLeft, ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 import Share from '@/assets/mypage/share.svg';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import type { ArtistProfile, TabKey } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 
@@ -29,7 +29,7 @@ export function AuthPageHeader({
   profile,
   isSaved = false,
 }: AuthPageHeaderProps) {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
 
   return (
     <header className="shrink-0 bg-page">
@@ -37,7 +37,7 @@ export function AuthPageHeader({
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={goBackOrHome}
             className="cursor-pointer"
             aria-label="뒤로가기"
           >
@@ -60,15 +60,11 @@ export function AuthPageHeader({
 
           <div>
             <span className="w-fit inline-flex items-center ml-2.5 px-1.5 py-0.5 bg-[#DBEAFE] rounded-full">
-              <span className="text-line-active typo-body-xxs-regular uppercase">
-                작가 프로필
-              </span>
-             </span>
+              <span className="text-line-active typo-body-xxs-regular uppercase">작가 프로필</span>
+            </span>
 
-
-          <div className="flex-1 min-w-0 px-4 flex flex-col gap-1.5">
-
-            <div className="flex flex-col gap-1">
+            <div className="flex-1 min-w-0 px-4 flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-0.5">
                   <div className="flex-1 w-42.5 flex flex-col">
                     <div className="typo-body-xl-bold text-main truncate">{profile.name}</div>
@@ -88,22 +84,22 @@ export function AuthPageHeader({
                   </div>
                 </div>
 
-              {profile.fields.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1">
-                  {profile.fields.map((field) => (
-                    <span
-                      key={field}
-                      className="px-1.5 rounded-sm border border-line typo-body-xxs-regular text-hint"
-                    >
-                      {field}
-                    </span>
-                  ))}
-                </div>
-              )}
+                {profile.fields.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1">
+                    {profile.fields.map((field) => (
+                      <span
+                        key={field}
+                        className="px-1.5 rounded-sm border border-line typo-body-xxs-regular text-hint"
+                      >
+                        {field}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
         <div className="flex flex-col gap-2">
           <p className="typo-body-xs-regular text-sub700">{profile.bio}</p>
@@ -167,4 +163,3 @@ export function AuthPageHeader({
     </header>
   );
 }
-

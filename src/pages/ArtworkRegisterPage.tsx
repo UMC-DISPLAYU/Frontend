@@ -32,6 +32,7 @@ import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/use
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
@@ -60,6 +61,7 @@ function ArtworkRegisterPageContent() {
 
   const { draft, updateDraft, resetDraft } = useArtworkRegisterDraft();
   const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const location = useLocation();
   const { displayId: paramDisplayId, artworkId: paramArtworkId } = useParams();
   const [searchParams] = useSearchParams();
@@ -566,7 +568,7 @@ function ArtworkRegisterPageContent() {
       setStep('choice', { replace: true });
       return;
     }
-    navigate(-1);
+    goBackOrHome();
   };
 
   const [submitError, setSubmitError] = useState<string | null>(null);

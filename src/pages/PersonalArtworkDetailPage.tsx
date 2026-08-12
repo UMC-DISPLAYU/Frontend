@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import { Heart, Lock } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
 
 import type {
   PersonalArtworkFeelingReplyDto,
@@ -32,6 +31,7 @@ import {
   useTogglePersonalArtworkQuestionLike,
   useTogglePersonalArtworkQuestionReplyLike,
 } from '@/hooks/queries/usePersonalArtwork';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import {
   usePersonalArtworkPolicy,
@@ -447,7 +447,7 @@ function PersonalQuestionCard({
 }
 
 export function PersonalArtworkDetailPage() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { personalArtworkId: idParam } = useParams<{ personalArtworkId: string }>();
   const personalArtworkId = Number(idParam ?? 0);
   const [activeTab, setActiveTab] = useState<'intro' | 'guestbook'>('intro');
@@ -488,7 +488,7 @@ export function PersonalArtworkDetailPage() {
       <ErrorView
         title="작품 정보를 찾을 수 없습니다"
         message="요청하신 작품 정보가 존재하지 않거나 삭제되었습니다."
-        onRetry={() => navigate(-1)}
+        onRetry={() => goBackOrHome()}
       />
     );
   }
@@ -551,7 +551,7 @@ export function PersonalArtworkDetailPage() {
   return (
     <div className="relative mx-auto min-h-dvh w-full max-w-md bg-page">
       {/* 히어로 이미지 */}
-      <HeroSlider images={displayHeroImages} onBack={() => navigate(-1)} />
+      <HeroSlider images={displayHeroImages} onBack={() => goBackOrHome()} />
 
       {/* 작품 메타 (제목, 작가, 제작 정보) */}
       <section className="bg-page px-5 pt-5 pb-6">

@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
-
 import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtworkTab,
@@ -15,11 +13,12 @@ import {
 } from '@/components/displaydetailpage';
 import { BackButton } from '@/components/ui/BackButton';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import type { DetailTabKey } from '@/types/exhibition';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayDetailPage() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { id } = useParams<{ id: string }>();
   const displayId = parseDisplayId(id);
 
@@ -36,7 +35,7 @@ export function DisplayDetailPage() {
       <ErrorView
         title="전시 정보를 찾을 수 없습니다"
         message="요청하신 전시 정보가 존재하지 않거나 삭제되었습니다."
-        onRetry={() => navigate(-1)}
+        onRetry={() => goBackOrHome()}
       />
     );
   }
@@ -48,7 +47,7 @@ export function DisplayDetailPage() {
       <div className="fixed top-4 left-1/2 z-30 w-full max-w-md -translate-x-1/2 px-4 pointer-events-none">
         <BackButton
           id="display-back-btn"
-          onClick={() => navigate(-1)}
+          onClick={() => goBackOrHome()}
           className="pointer-events-auto"
         />
       </div>

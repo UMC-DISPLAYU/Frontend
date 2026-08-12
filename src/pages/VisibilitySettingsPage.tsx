@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-
 import { BottomButton } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';
 import { RadioOption } from '@/components/visibility-settings';
@@ -14,6 +12,7 @@ import {
 } from '@/constants/visibility';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUpdateDisplayReservation } from '@/hooks/queries/useDisplayReservation';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { useDisplayPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -69,7 +68,7 @@ function VisibilitySection({
 }
 
 export function VisibilitySettings() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { state } = useLocation() as { state: VisibilityState | null };
   const { displayId: paramDisplayId } = useParams();
   const displayId = Number(paramDisplayId ?? state?.displayId ?? 0);
@@ -148,7 +147,7 @@ export function VisibilitySettings() {
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
-      <ExhibitionHeader title="공개 설정" onBack={() => navigate(-1)} />
+      <ExhibitionHeader title="공개 설정" onBack={() => goBackOrHome()} />
 
       <main className="min-h-0 flex-1 overflow-hidden px-5">
         <div className="flex flex-col gap-1">

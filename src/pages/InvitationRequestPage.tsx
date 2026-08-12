@@ -1,13 +1,13 @@
 import { useState } from 'react';
 
 import { ChevronLeft } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import type { DisplayInvitationDto } from '@/api/dto';
 import {
   useMyDisplayInvitations,
   useRejectDisplayInvitation,
 } from '@/hooks/queries/useDisplayInvitations';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import type { Invitation } from '@/types/invitation';
 import { cn } from '@/utils/cn';
 
@@ -161,7 +161,7 @@ function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
 }
 
 export function InvitationRequestPage() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const [searchParams] = useSearchParams();
   const { data, isLoading, isError } = useMyDisplayInvitations();
   /* 초대 링크를 타고 들어왔다면 어떤 전시의 초대인지 표시해줍니다. */
@@ -204,7 +204,7 @@ export function InvitationRequestPage() {
         <header className="flex items-center gap-3 px-5 pt-4 pb-3">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => goBackOrHome()}
             aria-label="뒤로가기"
             className="-ml-1"
           >

@@ -3,6 +3,7 @@ import { type ReactNode, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { useAuthStore } from '@/stores/authStore';
 
 type AuthGuardProps = {
@@ -13,6 +14,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const location = useLocation();
   const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const [isModalOpen, setIsModalOpen] = useState(true);
 
   if (!accessToken) {
@@ -21,11 +23,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          if (window.history.length > 2) {
-            navigate(-1);
-          } else {
-            navigate('/home', { replace: true });
-          }
+          goBackOrHome();
         }}
         onConfirm={() => {
           setIsModalOpen(false);

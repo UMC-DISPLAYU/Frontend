@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
 
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-
 import {
   DeleteConfirmDialog,
   ManageScreen,
@@ -16,12 +14,13 @@ import {
   useUpdateArtworkOrder,
 } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 // import { useArtworkPolicy } from '@/hooks/usePolicy';
 // import type { ArtworkPolicyResource } from '@/policies/util';
 import type { Work } from '@/types/artworkManage';
 
 export function ArtworksManagePage() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
 
@@ -90,7 +89,7 @@ export function ArtworksManagePage() {
   };
 
   const handleBack = () => {
-    navigate(-1);
+    goBackOrHome();
   };
 
   return (

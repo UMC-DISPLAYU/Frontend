@@ -1,7 +1,5 @@
 import { useRef, useState } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
-
 import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import { ImageUploadPlaceholder, PostWriteHeader } from '@/components/post-write';
 import { AlertModal, RequiredLabel } from '@/components/ui';
@@ -11,13 +9,14 @@ import {
   useLoungePostDetail,
   useUpdateLoungePost,
 } from '@/hooks/queries/useLounge';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { getErrorMessage } from '@/utils/error';
 
 const BASE_INPUT_CLASS =
   'px-3 py-2.5 bg-transparent border-b border-line typo-body-xs-regular text-main placeholder:text-faint leading-4 focus-visible:outline-2 focus-visible:outline-blue-500';
 
 export function ExhibitionReviewWritePage() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { category, id } = useParams<{ category: string; id?: string }>();
   const isValidCategory = isLoungeCategoryKey(category);
   const isEditMode = Boolean(id);
@@ -103,7 +102,7 @@ export function ExhibitionReviewWritePage() {
       <ErrorView
         title="존재하지 않는 게시판입니다"
         message="요청하신 라운지 게시판을 찾을 수 없습니다."
-        onRetry={() => navigate(-1)}
+        onRetry={() => goBackOrHome()}
       />
     );
   }
@@ -113,7 +112,7 @@ export function ExhibitionReviewWritePage() {
       <ErrorView
         title="게시글을 찾을 수 없습니다"
         message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
-        onRetry={() => navigate(-1)}
+        onRetry={() => goBackOrHome()}
       />
     );
   }
@@ -187,7 +186,7 @@ export function ExhibitionReviewWritePage() {
       {isSubmitted && (
         <AlertModal
           message={`정상적으로 게시글이 ${isEditMode ? '수정' : '작성'}되었습니다.`}
-          onConfirm={() => navigate(-1)}
+          onConfirm={() => goBackOrHome()}
         />
       )}
     </div>

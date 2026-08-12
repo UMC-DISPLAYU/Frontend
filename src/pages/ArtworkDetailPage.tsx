@@ -1,7 +1,5 @@
 import { useCallback, useState } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
-
 import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';
@@ -27,6 +25,7 @@ import {
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useFeelingPolicy, useFeelingReplyPolicy, useQuestionPolicy } from '@/hooks/usePolicy';
 import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
@@ -34,7 +33,7 @@ import { parseServerDate } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 export function ArtworkDetailPage() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
 
@@ -199,7 +198,7 @@ export function ArtworkDetailPage() {
       <ErrorView
         title="작품 정보를 찾을 수 없습니다"
         message="요청하신 작품 정보가 존재하지 않거나 삭제되었습니다."
-        onRetry={() => navigate(-1)}
+        onRetry={() => goBackOrHome()}
       />
     );
   }
@@ -240,7 +239,7 @@ export function ArtworkDetailPage() {
       <div className="fixed top-4 left-1/2 z-30 w-full max-w-md -translate-x-1/2 px-4 pointer-events-none">
         <BackButton
           id="artwork-back-btn"
-          onClick={() => navigate(-1)}
+          onClick={() => goBackOrHome()}
           className="pointer-events-auto"
         />
       </div>

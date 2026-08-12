@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronLeft, Plus } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
 import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
@@ -18,6 +17,7 @@ import {
 } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 
 import {
   type EditArtistProfileFormValues,
@@ -75,7 +75,7 @@ export function EditArtistProfilePage() {
 }
 
 function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfileDto }) {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const [profileImage, setProfileImage] = useState<string | null>(
     artistProfile?.profileImageUrl ?? null,
   );
@@ -154,7 +154,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
       },
       {
         onSuccess: () => {
-          navigate(-1);
+          goBackOrHome();
         },
       },
     );
@@ -163,7 +163,12 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   return (
     <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
-        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
+        <button
+          type="button"
+          onClick={() => goBackOrHome()}
+          aria-label="뒤로가기"
+          className="-ml-1"
+        >
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <h1 className="typo-body-xl-bold text-main">작가 프로필 설정</h1>

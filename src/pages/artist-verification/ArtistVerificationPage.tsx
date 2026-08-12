@@ -2,7 +2,6 @@ import { useCallback, useReducer, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 
 import {
   ArtistFieldSelector,
@@ -26,6 +25,7 @@ import {
   useSendVerificationEmail,
 } from '@/hooks/queries/useSchoolEmailVerification';
 import { useCreateMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { getErrorMessage } from '@/utils/error';
 
 import {
@@ -122,7 +122,7 @@ function verificationReducer(
 }
 
 export function ArtistVerificationPage() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const [state, dispatch] = useReducer(verificationReducer, initialState);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
@@ -270,7 +270,7 @@ export function ArtistVerificationPage() {
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-page">
       <main className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page px-5 pt-[58px]">
-        <ArtistVerificationHeader onBack={() => navigate(-1)} />
+        <ArtistVerificationHeader onBack={() => goBackOrHome()} />
 
         <form
           id="artist-verification-form"

@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { BottomFixedBar } from '@/components/common';
@@ -14,6 +13,7 @@ import { type TimeRangeValue, TimeSheet } from '@/components/ui/TimeSheet';
 import { useUpdateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 
 import {
   type ExhibitionBasicInfoFormValues,
@@ -67,7 +67,7 @@ function Label({ children, required }: { children: React.ReactNode; required?: b
 }
 
 export function ExhibitionBasicInfo() {
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft } = useExhibitionRegisterDraft();
   const { displayId: paramDisplayId } = useParams();
@@ -387,7 +387,7 @@ export function ExhibitionBasicInfo() {
         title="전시 기본 정보"
         onBack={() => {
           saveCurrentDraft();
-          navigate(-1);
+          goBackOrHome();
         }}
       />
 

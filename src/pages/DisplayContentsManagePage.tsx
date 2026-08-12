@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Plus } from 'lucide-react';
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import {
   CardPopover,
@@ -18,6 +17,7 @@ import {
   useUpdateContentCategory,
 } from '@/hooks/queries/useContentCategories';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { type Content, EMPTY_CONTENT } from '@/types';
 import { hasPermission } from '@/utils/hasPermission';
@@ -25,7 +25,7 @@ import { hasPermission } from '@/utils/hasPermission';
 export function DisplayContentsManagePage() {
   useHideFooter();
 
-  const navigate = useNavigate();
+  const goBackOrHome = useGoBackOrHome();
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
   const { state } = useLocation();
@@ -118,7 +118,7 @@ export function DisplayContentsManagePage() {
     return (
       <ErrorView
         message="전시 정보를 불러올 수 없습니다."
-        onRetry={() => navigate(-1)}
+        onRetry={() => goBackOrHome()}
         retryLabel="이전 페이지로 돌아가기"
       />
     );
@@ -126,7 +126,7 @@ export function DisplayContentsManagePage() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <ExhibitionHeader title="전시 콘텐츠 관리" onBack={() => navigate(-1)} />
+      <ExhibitionHeader title="전시 콘텐츠 관리" onBack={() => goBackOrHome()} />
 
       {/* 메인 스크롤 영역 */}
       <main ref={listRef}>
