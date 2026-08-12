@@ -179,9 +179,9 @@ export function MyPage() {
       userId: item.userId ?? userData?.id,
       status: STATUS_LABEL[item.status] ?? item.status ?? '전시 중',
       title: item.title ?? item.name ?? '',
-      org: item.organization ?? item.department ?? '',
+      org: [item.organization, item.department].filter(Boolean).join(' '),
       period: `${formatMonthDay(item.startDate ?? item.startedAt)} - ${formatMonthDay(item.endDate ?? item.endedAt)}`,
-      place: item.placeName ?? item.locationName ?? '',
+      place: item.placeName ?? item.locationName ?? item.location ?? '',
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
     }));

@@ -9,6 +9,12 @@ const formatDate = (date: string) => {
   return year && month && day ? `${year}.${month}.${day}` : date;
 };
 
+const STATUS_LABEL: Record<string, string> = {
+  DISPLAYING: '전시 중',
+  UPCOMING: '전시 예정',
+  ENDED: '전시 종료',
+};
+
 // 가짜 API 연동: 백엔드 내 전시 관리 API가 확정되기 전까지 GET /v1/display/me 응답을 화면 카드 타입으로 변환합니다.
 export const useMyDisplays = ({ enabled = true }: { enabled?: boolean } = {}) =>
   useQuery<ExhibitionItem[]>({
@@ -26,7 +32,7 @@ export const useMyDisplays = ({ enabled = true }: { enabled?: boolean } = {}) =>
         id: String(display.displayId),
         displayId: display.displayId,
         isOwner,
-        status: display.isDisplaying ? '전시 중' : '전시 종료',
+        status: STATUS_LABEL[display.displayStatus] ?? display.displayStatus,
         title: display.title,
         org: isOwner ? '대표자' : '팀원',
         period: `${formatDate(display.startDate)} – ${formatDate(display.endDate)}`,

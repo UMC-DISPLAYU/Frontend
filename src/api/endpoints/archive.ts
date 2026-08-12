@@ -55,11 +55,11 @@ export const unarchiveArtist = async (artistId: number): Promise<ArchivedArtistS
 export const getArchivedArtists = async (): Promise<GetArchivedArtistsResponseDataDto> =>
   apiRequest('/v1/archives/artists');
 
-// GET /v1/archives/exhibitions/:savedExhibitionId
+// GET /v1/archives/exhibitions/:archiveDisplayId
 export const getArchivedExhibition = async (
-  savedExhibitionId: number,
+  archiveDisplayId: number,
 ): Promise<NonNullable<GetArchivedExhibitionResponseDto['success']>['data']> =>
-  apiRequest(`/v1/archives/exhibitions/${savedExhibitionId}`);
+  apiRequest(`/v1/archives/exhibitions/${archiveDisplayId}`);
 
 // PUT /v1/archives/exhibitions/:archiveDisplayId/memo
 export const updateArchivedExhibitionMemo = async (

@@ -46,7 +46,16 @@ export function ExhibitionCard({
   const handleSaveMemo = () => {
     if (!canUpsertMemo) return;
 
-    onSaveMemo?.(item, memoInput);
+    const trimmedInput = memoInput.trim();
+    const originalMemo = item.memo ?? '';
+
+    if (trimmedInput === '') {
+      if (hasMemo && canDeleteMemo) {
+        onDeleteMemo?.(item);
+      }
+    } else if (trimmedInput !== originalMemo) {
+      onSaveMemo?.(item, trimmedInput);
+    }
     setIsEditingMemo(false);
   };
 
@@ -101,32 +110,34 @@ export function ExhibitionCard({
       </div>
 
       {!isArtistView && canViewMemo && (
-        <footer className="min-h-11 px-4 py-2 bg-box200 flex flex-col justify-center">
+        <footer className="px-4 py-2 bg-box200 flex flex-col justify-center">
           {isEditingMemo ? (
-            <div className="self-stretch flex flex-col gap-2">
+            <div className="self-stretch flex flex-col gap-[6px]">
+              <div className="self-stretch flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-faint typo-body-xs-regular">
+                  <Pencil className="size-3 shrink-0" />
+                  <span>메모</span>
+                </div>
+                <button
+                  type="button"
+                  className="typo-body-xs-regular text-faint underline underline-offset-2"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleSaveMemo();
+                  }}
+                >
+                  확인
+                </button>
+              </div>
               <textarea
                 value={memoInput}
                 onChange={(event) => setMemoInput(event.target.value)}
-                placeholder="메모"
-                className="min-h-10 w-full resize-none bg-transparent typo-body-xs-regular text-hint outline-none placeholder:text-faint"
+                onBlur={handleSaveMemo}
+                placeholder=""
+                className="w-full resize-none bg-transparent typo-body-xs-regular text-main outline-none"
                 autoFocus
+                rows={1}
               />
-              <div className="self-stretch flex justify-end gap-2">
-                <button
-                  type="button"
-                  className="typo-body-xs-regular text-faint"
-                  onClick={handleCancelMemo}
-                >
-                  취소
-                </button>
-                <button
-                  type="button"
-                  className="typo-body-xs-semibold text-main"
-                  onClick={handleSaveMemo}
-                >
-                  저장
-                </button>
-              </div>
             </div>
           ) : hasMemo ? (
             <div className="self-stretch flex items-start gap-2">
