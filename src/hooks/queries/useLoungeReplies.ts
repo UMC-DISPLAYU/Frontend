@@ -42,8 +42,8 @@ export const useCreateLoungeReply = () => {
      * 사실로부터 확정되는 기본값으로 채워 캐시에 곧바로 이어붙입니다.
      */
     onSuccess: (newReply, variables) => {
-      queryClient.setQueryData<InfiniteData<GetLoungeRepliesResponseDataDto>>(
-        queryKeys.loungeComments.replies(variables.commentId, {}),
+      queryClient.setQueriesData<InfiniteData<GetLoungeRepliesResponseDataDto>>(
+        { queryKey: queryKeys.loungeComments.replyLists(variables.commentId) },
         (old) => {
           if (!old || old.pages.length === 0) return old;
           const lastIndex = old.pages.length - 1;

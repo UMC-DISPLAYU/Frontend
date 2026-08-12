@@ -214,26 +214,28 @@ export function IntroTab({ display: ex }: Props) {
       )}
 
       {/* 주최·문의 */}
-      <section className="px-5 mt-6 pb-6">
-        <h2 className="typo-body-xl-bold text-main mb-3">주최 · 문의</h2>
-        <div className="flex flex-col gap-3">
-          {organizer && (
-            <div className="flex items-center gap-2 typo-body-sm-regular text-main">
-              <span className="text-faint w-6 shrink-0">주최</span>
-              <span>{organizer}</span>
-            </div>
-          )}
-          {ex.qnaAccount && (
-            <div className="flex items-center gap-2 typo-body-sm-regular text-main">
-              <span className="text-faint w-6 shrink-0">문의</span>
-              <span>
-                {ex.qnaAccount}
-                {ex.contract && ` (${ex.contract})`}
-              </span>
-            </div>
-          )}
-        </div>
-      </section>
+      {(organizer || ex.qnaAccount) && (
+        <section className="px-5 mt-6 pb-6">
+          <h2 className="typo-body-xl-bold text-main mb-3">주최 · 문의</h2>
+          <div className="flex flex-col gap-3">
+            {organizer && (
+              <div className="flex items-center gap-2 typo-body-sm-regular text-main">
+                <span className="text-faint w-6 shrink-0">주최</span>
+                <span>{organizer}</span>
+              </div>
+            )}
+            {ex.qnaAccount && (
+              <div className="flex items-center gap-2 typo-body-sm-regular text-main">
+                <span className="text-faint w-6 shrink-0">문의</span>
+                <span>
+                  {ex.qnaAccount}
+                  {ex.contract && ` (${ex.contract})`}
+                </span>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
