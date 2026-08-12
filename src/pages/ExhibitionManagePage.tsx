@@ -13,6 +13,7 @@ import { useHideFooter } from '@/components/layout';
 import { ExhibitionHeader } from '@/components/ui';
 import { type VisibilityType } from '@/constants/visibility';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useCreateDisplay, usePublishDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useDisplayPolicy } from '@/hooks/usePolicy';
@@ -47,7 +48,6 @@ export function ExhibitionManage() {
   const { displayId: paramDisplayId } = useParams();
   const { state } = useLocation();
 
-  // 등록된 전시 데이터를 서버에서 불러옵니다. URL 파라미터나 state에서 displayId를 가져옵니다.
   const displayId = Number(paramDisplayId ?? state?.displayId ?? state?.id ?? 0);
   const { data: display } = useDisplayDetail(displayId);
   const { data: memberList } = useDisplayMembers(displayId);
@@ -59,6 +59,9 @@ export function ExhibitionManage() {
     },
   );
   const canEditDisplay = Boolean(display) && hasPermission(displayPolicy, 'edit');
+
+  const createDisplayMutation = useCreateDisplay();
+  const publishDisplayMutation = usePublishDisplay();
 
   /* 팀원 목록의 accepted로 참여팀원과 초대대기를 나눕니다. */
   const teamMembers = memberList?.members ?? [];
@@ -189,23 +192,57 @@ export function ExhibitionManage() {
         <div className="flex gap-2.5">
           <button
             type="button"
-            className="typo-body-sm-bold h-11 w-24 shrink-0 rounded-xl bg-bt-gray text-main"
+            disabled={createDisplayMutation.isPending}
+            className="typo-body-sm-bold h-11 w-24 shrink-0 rounded-xl bg-bt-gray text-main disabled:opacity-50"
+            onClick={() => {
+              if (!display) {
+                alert('전시 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+                return;
+              }
+              createDisplayMutation.mutate({
+                title: display.title,
+                posterImageUrl: display.images?.[0]?.imageUrl || '',
+                type: display.displayType || '',
+                fields: display.displayFields || [],
+                region: display.region || '',
+                startDate: display.period?.startDate || '',
+                endDate: display.period?.endDate || '',
+                openTime: display.period?.startTime || '10:00',
+                closeTime: display.period?.endTime || '18:00',
+                locationName: display.location?.placeName || '',
+                latitude: display.location?.latitude || 0,
+                longitude: display.location?.longitude || 0,
+                roadAddress: display.location?.roadAddress || '',
+                displayNickname: display.teamMembers?.[0]?.displayNickname || '',
+                qnaAccount: display.qnaAccount || '',
+                schoolOrOrganization: display.organization || '',
+                departmentOrClub: display.department ?? undefined,
+                subtitle: display.subtitle ?? undefined,
+                description: display.content ?? undefined,
+                precautions: display.note ?? undefined,
+              });
+            }}
           >
             임시저장
           </button>
           <button
             type="button"
-            className="typo-body-sm-bold h-11 flex-1 rounded-xl bg-dark text-white"
+            disabled={publishDisplayMutation.isPending}
+            className="typo-body-sm-bold h-11 flex-1 rounded-xl bg-dark text-white disabled:opacity-50"
             onClick={() =>
-              navigate(`/exhibition/${displayId}/complete`, {
-                state: {
-                  title: exhibition.title,
-                  school: source?.organization ?? state?.school,
-                  department: source?.department ?? state?.department,
-                  organizer: state?.organizer,
-                  placeName: exhibition.place,
-                  artworkVisibility,
-                  contentVisibility,
+              publishDisplayMutation.mutate(displayId, {
+                onSuccess: () => {
+                  navigate(`/exhibition/${displayId}/complete`, {
+                    state: {
+                      title: exhibition.title,
+                      school: source?.organization ?? state?.school,
+                      department: source?.department ?? state?.department,
+                      organizer: state?.organizer,
+                      placeName: exhibition.place,
+                      artworkVisibility,
+                      contentVisibility,
+                    },
+                  });
                 },
               })
             }

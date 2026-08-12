@@ -6,7 +6,13 @@ import type {
   SearchDisplaysRequestDto,
   UpdateDisplayRequestDto,
 } from '@/api/dto';
-import { createDisplay, getDisplayMap, searchDisplays, updateDisplay } from '@/api/endpoints';
+import {
+  createDisplay,
+  getDisplayMap,
+  publishDisplay,
+  searchDisplays,
+  updateDisplay,
+} from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
 export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
@@ -43,6 +49,19 @@ export const useUpdateDisplay = (displayId: number | undefined) => {
     },
     onSuccess: () => {
       if (!displayId) return;
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+    },
+  });
+};
+
+// PATCH /v1/display/publish: 전시 등록하기
+export const usePublishDisplay = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (displayId: number) => publishDisplay(displayId),
+    onSuccess: (_, displayId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
     },

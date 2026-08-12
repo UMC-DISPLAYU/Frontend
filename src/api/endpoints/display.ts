@@ -99,6 +99,10 @@ export const updateDisplayReservation = async (
 ): Promise<UpdateDisplayReservationResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/reservation`, { method: 'PATCH', body });
 
+// PATCH /v1/display/publish
+export const publishDisplay = async (displayId: number): Promise<DisplayDetailDto> =>
+  apiRequest('/v1/display/publish', { method: 'PATCH', body: { displayId } });
+
 // POST /v1/display/like
 export const toggleDisplayLike = async (
   displayId: number,
