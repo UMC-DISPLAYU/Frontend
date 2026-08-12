@@ -14,20 +14,22 @@ const getFirstImageUrl = (item: any) =>
   '';
 
 const archivedExhibitions = () => ({
-  savedExhibitions: mockDb.displays.map((display: any) => ({
-    savedExhibitionId: display.displayId,
-    displayId: display.displayId,
-    title: display.title,
-    thumbnailUrl: getFirstImageUrl(display),
-    organization: display.organization,
-    placeName: display.placeName,
-    startDate: display.startDate ?? display.startedAt,
-    endDate: display.endDate ?? display.endedAt,
-    displayType: display.displayType,
-    status: display.status,
-    memo: display.memo ?? null,
-    savedAt: '2026-08-02T00:00:00.000Z',
-  })),
+  savedExhibitions: mockDb.displays
+    .filter((display: any) => display.isArchived ?? display.archived ?? false)
+    .map((display: any) => ({
+      savedExhibitionId: display.displayId,
+      displayId: display.displayId,
+      title: display.title,
+      thumbnailUrl: getFirstImageUrl(display),
+      organization: display.organization,
+      placeName: display.placeName,
+      startDate: display.startDate ?? display.startedAt,
+      endDate: display.endDate ?? display.endedAt,
+      displayType: display.displayType,
+      status: display.status,
+      memo: display.memo ?? null,
+      savedAt: '2026-08-02T00:00:00.000Z',
+    })),
 });
 
 const archivedArtworks = () => ({
@@ -86,6 +88,14 @@ const updateDisplayMemo = (archiveDisplayId: number, memo: string | null) => {
   const display = mockDb.displays.find((item: any) => item.displayId === archiveDisplayId);
   if (display) {
     Object.assign(display, { memo });
+  }
+};
+
+const updateDisplayArchiveStatus = (displayId: number, isArchived: boolean) => {
+  const display = mockDb.displays.find((item: any) => item.displayId === displayId);
+
+  if (display) {
+    Object.assign(display, { archived: isArchived, isArchived });
   }
 };
 
@@ -153,12 +163,13 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/artworks/{archiveWorkId}/memo').map((path) =>
     http.put(path, async ({ params, request }) => {
       const archiveWorkId = toNumber(params.archiveWorkId);
-      const body = await readJson<{ memo?: string }>(request);
-      const memo = body.memo ?? '';
+      const body = await readJson<{ content?: string }>(request);
+      const memo = body.content ?? '';
       updateArtworkMemo(archiveWorkId, memo);
 
       return success('/api/v1/archives/artworks/{archiveWorkId}/memo', {
         archiveWorkId,
+        memo,
         ...body,
       });
     }),
@@ -198,20 +209,22 @@ export const archiveHandlers = [
     http.get(path, () => success('/api/v1/archives/exhibitions', archivedExhibitions())),
   ),
   ...paths('/api/v1/archives/exhibitions/{exhibitionId}').map((path) =>
-    http.post(path, ({ params }) =>
-      success(
-        '/api/v1/archives/exhibitions/{exhibitionId}',
-        okStatus(toNumber(params.exhibitionId), true),
-      ),
-    ),
+    http.post(path, ({ params }) => {
+      const exhibitionId = toNumber(params.exhibitionId);
+
+      updateDisplayArchiveStatus(exhibitionId, true);
+
+      return success('/api/v1/archives/exhibitions/{exhibitionId}', okStatus(exhibitionId, true));
+    }),
   ),
   ...paths('/api/v1/archives/exhibitions/{exhibitionId}').map((path) =>
-    http.delete(path, ({ params }) =>
-      success(
-        '/api/v1/archives/exhibitions/{exhibitionId}',
-        okStatus(toNumber(params.exhibitionId), false),
-      ),
-    ),
+    http.delete(path, ({ params }) => {
+      const exhibitionId = toNumber(params.exhibitionId);
+
+      updateDisplayArchiveStatus(exhibitionId, false);
+
+      return success('/api/v1/archives/exhibitions/{exhibitionId}', okStatus(exhibitionId, false));
+    }),
   ),
   ...paths('/api/v1/archives/exhibitions/{savedExhibitionId}').map((path) =>
     http.get(path, ({ params }) =>
@@ -225,12 +238,13 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/exhibitions/{archiveDisplayId}/memo').map((path) =>
     http.put(path, async ({ params, request }) => {
       const archiveDisplayId = toNumber(params.archiveDisplayId);
-      const body = await readJson<{ memo?: string }>(request);
-      const memo = body.memo ?? '';
+      const body = await readJson<{ content?: string }>(request);
+      const memo = body.content ?? '';
       updateDisplayMemo(archiveDisplayId, memo);
 
       return success('/api/v1/archives/exhibitions/{archiveDisplayId}/memo', {
         archiveDisplayId,
+        memo,
         ...body,
       });
     }),

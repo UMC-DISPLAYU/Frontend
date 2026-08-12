@@ -1,4 +1,4 @@
-import type { ApiResponseDto } from './common.dto';
+import type { ApiResponseDto, CursorPageInfoDto } from './common.dto';
 
 export interface ArchivedExhibitionStatusDto {
   exhibitionId: number;
@@ -105,7 +105,7 @@ export interface GetArchivedArtistsResponseDataDto extends CursorPageInfoDto {
 export type GetArchivedArtistsResponseDto = ApiResponseDto<GetArchivedArtistsResponseDataDto>;
 
 export interface ArchiveMemoRequestDto {
-  memo: string;
+  content: string;
 }
 
 export type GetArchivedExhibitionResponseDto = ApiResponseDto<ArchivedExhibitionDto>;
