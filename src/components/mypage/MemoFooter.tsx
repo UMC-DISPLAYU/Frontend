@@ -51,6 +51,7 @@ export function MemoFooter({ memo, userId, className, onSave, onDelete }: MemoFo
   const handleDeleteMemo = () => {
     if (!canDeleteMemo) return;
     onDelete?.();
+    setIsEditingMemo(false);
   };
 
   return (
@@ -62,16 +63,30 @@ export function MemoFooter({ memo, userId, className, onSave, onDelete }: MemoFo
               <Pencil className="size-3 shrink-0" />
               <span>메모</span>
             </div>
-            <button
-              type="button"
-              className="typo-body-xs-regular text-faint underline underline-offset-2"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                handleSaveMemo();
-              }}
-            >
-              확인
-            </button>
+            <div className="flex items-center gap-[6px]">
+              {hasMemo && canDeleteMemo && (
+                <button
+                  type="button"
+                  className="typo-body-xs-regular text-error underline underline-offset-2"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleDeleteMemo();
+                  }}
+                >
+                  삭제
+                </button>
+              )}
+              <button
+                type="button"
+                className="typo-body-xs-regular text-faint underline underline-offset-2"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleSaveMemo();
+                }}
+              >
+                확인
+              </button>
+            </div>
           </div>
           <textarea
             value={memoInput}
