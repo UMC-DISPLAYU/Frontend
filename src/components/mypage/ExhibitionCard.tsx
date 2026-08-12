@@ -81,11 +81,11 @@ export function ExhibitionCard({
             )}
           </div>
 
-          <div className="self-stretch pt-2.5">
-            <div className="typo-body-xl-bold text-main truncate">{item.title}</div>
+          <div className="self-stretch pt-4">
+            <div className="typo-body-md-bold text-main truncate">{item.title}</div>
           </div>
           <div className="self-stretch pt-2.5">
-            <div className="typo-body-xs-regular text-sub700 truncate">{item.org}</div>
+            <div className="typo-body-xs-regular text-gray-800 truncate">{item.org}</div>
             <div className="typo-body-xs-regular text-hint">{item.period}</div>
           </div>
           <div className="self-stretch pt-4">

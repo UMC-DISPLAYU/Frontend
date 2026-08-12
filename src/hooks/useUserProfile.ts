@@ -3,19 +3,15 @@ import { useEffect, useState } from 'react';
 import { getMyArtistProfile } from '@/api/endpoints/artist';
 import { getUserMe } from '@/api/endpoints/user';
 import AvatarImage from '@/assets/mypage/Icon (1).svg';
-import SchoolIcon from '@/assets/mypage/image 3666.svg';
-import FieldIcon from '@/assets/mypage/image 3673.svg';
 import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
 
 export interface UserProfile {
   name: string;
   avatar: string;
   school?: string;
-  schoolIcon?: string;
-  field?: string;
-  fieldIcon?: string;
-  exhibit?: string;
-  exhibitionIcon?: string;
+  fields?: string[];
+  exhibitionCount?: string;
+  artworkCount?: string;
   bio?: string;
   portfolioUrl?: string;
   caption?: string;
@@ -67,13 +63,12 @@ export function useUserProfile() {
               name: `${userMe.name} 님`,
               avatar: AvatarImage, // TODO: 실제 프로필 이미지 URL
               school: artistProfile?.schoolName,
-              schoolIcon: artistProfile?.schoolName ? SchoolIcon : undefined,
-              field: artistProfile?.fields
-                .map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code)
-                .join(' · '),
-              fieldIcon: artistProfile?.fields.length ? FieldIcon : undefined,
-              exhibit: undefined, // TODO: 전시 수 API 연동 필요
-              exhibitionIcon: undefined,
+              fields:
+                artistProfile?.fields.map(
+                  (code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code,
+                ) ?? [],
+              exhibitionCount: undefined, // TODO: 전시 수 API 연동 필요
+              artworkCount: undefined, // TODO: 작품 수 API 연동 필요
               bio: undefined, // TODO: bio API 필드 추가 필요
               portfolioUrl: artistProfile?.portfolioUrl || undefined,
               caption: '내가 저장한 작품 확인하기',
