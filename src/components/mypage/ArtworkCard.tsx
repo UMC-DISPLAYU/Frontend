@@ -29,6 +29,7 @@ export function ArtworkCard({
         onClick: () => onOpen(item),
         onKeyDown: (event: React.KeyboardEvent) => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
+          if (event.target !== event.currentTarget) return;
 
           event.preventDefault();
           onOpen(item);

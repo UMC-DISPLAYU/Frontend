@@ -232,8 +232,10 @@ export const archiveHandlers = [
     http.get(path, ({ params }) =>
       success(
         '/api/v1/archives/exhibitions/{archiveDisplayId}',
-        archivedExhibitions().displays[toNumber(params.archiveDisplayId, 1) - 1] ??
-          archivedExhibitions().displays[0],
+        archivedExhibitions().displays.find(
+          (display: { archiveDisplayId: number }) =>
+            display.archiveDisplayId === toNumber(params.archiveDisplayId, 1),
+        ) ?? archivedExhibitions().displays[0],
       ),
     ),
   ),

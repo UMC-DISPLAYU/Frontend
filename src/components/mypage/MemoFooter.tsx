@@ -95,10 +95,8 @@ export function MemoFooter({ memo, userId, className, onSave, onDelete }: MemoFo
                   <button
                     type="button"
                     className="typo-body-xs-regular text-error underline underline-offset-2"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleDeleteMemo();
-                    }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={handleDeleteMemo}
                   >
                     삭제
                   </button>
@@ -106,10 +104,8 @@ export function MemoFooter({ memo, userId, className, onSave, onDelete }: MemoFo
                 <button
                   type="button"
                   className="typo-body-xs-regular text-faint underline underline-offset-2"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleSaveMemo();
-                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleSaveMemo}
                 >
                   확인
                 </button>
