@@ -347,6 +347,9 @@ export function MyPage() {
                 }}
                 onSaveMemo={handleSaveExhibitionMemo}
                 onDeleteMemo={handleDeleteExhibitionMemo}
+                onOpen={(exhibition) =>
+                  navigate(`/display/${exhibition.displayId ?? exhibition.id}`)
+                }
               />
             ))}
           </div>
@@ -365,10 +368,12 @@ export function MyPage() {
                 }}
                 onSaveMemo={handleSaveArtworkMemo}
                 onDeleteMemo={handleDeleteArtworkMemo}
-                onOpen={
-                  isArtistView
-                    ? (artwork) => navigate(`/personal-artworks/${artwork.artworkId ?? artwork.id}`)
-                    : undefined
+                onOpen={(artwork) =>
+                  navigate(
+                    isArtistView
+                      ? `/personal-artworks/${artwork.artworkId ?? artwork.id}`
+                      : `/artwork/${artwork.artworkId ?? artwork.id}`,
+                  )
                 }
               />
             ))}

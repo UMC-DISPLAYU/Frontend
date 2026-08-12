@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Pencil } from 'lucide-react';
 
@@ -57,13 +57,13 @@ export function MemoFooter({ memo, userId, className, onSave, onDelete }: MemoFo
   return (
     <footer className={cn('bg-box200 flex flex-col justify-center', className)}>
       {isEditingMemo ? (
-        <div className="flex flex-col gap-[6px] self-stretch">
+        <div className="flex flex-col gap-1.5 self-stretch">
           <div className="flex items-center justify-between self-stretch">
             <div className="flex items-center gap-1.5 typo-body-xs-regular text-faint">
               <Pencil className="size-3 shrink-0" />
               <span>메모</span>
             </div>
-            <div className="flex items-center gap-[6px]">
+            <div className="flex items-center gap-1.5">
               {hasMemo && canDeleteMemo && (
                 <button
                   type="button"

@@ -12,6 +12,7 @@ interface ExhibitionCardProps {
   onUnarchive?: (item: ExhibitionItem) => void;
   onSaveMemo?: (item: ExhibitionItem, memo: string) => void;
   onDeleteMemo?: (item: ExhibitionItem) => void;
+  onOpen?: (item: ExhibitionItem) => void;
 }
 
 export function ExhibitionCard({
@@ -20,10 +21,30 @@ export function ExhibitionCard({
   onUnarchive,
   onSaveMemo,
   onDeleteMemo,
+  onOpen,
 }: ExhibitionCardProps) {
+  const openHandlers = onOpen
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        onClick: () => onOpen(item),
+        onKeyDown: (event: React.KeyboardEvent) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          onOpen(item);
+        },
+      }
+    : {};
+
   return (
     <article className="shrink-0 w-full bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
-      <div className="px-4 py-3.5 flex justify-start items-start gap-3">
+      <div
+        {...openHandlers}
+        className={cn(
+          'px-4 py-3.5 flex justify-start items-start gap-3',
+          onOpen && 'cursor-pointer',
+        )}
+      >
         <div className="w-24 h-32 rounded-xl overflow-hidden bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
           {item.thumbnail && (
             <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
@@ -45,7 +66,10 @@ export function ExhibitionCard({
                 type="button"
                 aria-label="북마크 해제"
                 className="shrink-0"
-                onClick={() => onUnarchive?.(item)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onUnarchive?.(item);
+                }}
               >
                 <Bookmark fill="currentColor" className="size-4 text-bookmark" />
               </button>
