@@ -1,4 +1,4 @@
-import { type ChangeEvent, type KeyboardEvent, useRef, useState } from 'react';
+import { type ChangeEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import { Check, X } from 'lucide-react';
 
@@ -48,6 +48,7 @@ export function BottomCommentBar({
   const [content, setContent] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { images, addImages, removeImage, clearImages, uploadImages, isUploading } = useImageUpload(
     {
       domain: imageDomain,
@@ -57,6 +58,13 @@ export function BottomCommentBar({
 
   const isBusy = isSubmitting || isUploading;
   const canSubmit = (content.trim().length > 0 || images.length > 0) && !isBusy;
+
+  /* 답글달기를 누르면 입력창에 바로 포커스를 줘서 이어서 타이핑할 수 있게 합니다. */
+  useEffect(() => {
+    if (replyingTo) {
+      inputRef.current?.focus();
+    }
+  }, [replyingTo]);
 
   const pickImages = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.length) addImages(event.target.files);
@@ -120,11 +128,13 @@ export function BottomCommentBar({
       )}
 
       <input
+        ref={inputRef}
         value={content}
         onFocus={(e) => {
           if (!accessToken) {
             e.target.blur();
             setIsLoginModalOpen(true);
+            onCancelReply?.();
           }
         }}
         onChange={(e) => setContent(e.target.value)}

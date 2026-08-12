@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 
 import type { CreateDisplayReviewReplyRequestDto } from '@/api/dto';
 import {
+  cancelDisplayReviewReplyLike,
   createDisplayReviewReply,
   deleteDisplayReviewReply,
   getDisplayReviewReplies,
@@ -73,8 +74,16 @@ export const useToggleDisplayReviewReplyLike = (displayId: number, displayReview
   const invalidate = useInvalidateReplies(displayId, displayReviewId);
 
   return useMutation({
-    mutationFn: (displayReviewReplyId: number) =>
-      toggleDisplayReviewReplyLike(displayId, displayReviewId, displayReviewReplyId),
+    mutationFn: ({
+      displayReviewReplyId,
+      liked,
+    }: {
+      displayReviewReplyId: number;
+      liked: boolean;
+    }) =>
+      liked
+        ? cancelDisplayReviewReplyLike(displayId, displayReviewId, displayReviewReplyId)
+        : toggleDisplayReviewReplyLike(displayId, displayReviewId, displayReviewReplyId),
     onSuccess: invalidate,
   });
 };

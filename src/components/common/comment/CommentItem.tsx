@@ -262,7 +262,10 @@ export const CommentItem = memo(function CommentItem({
               type="button"
               onClick={() => onLoadMoreReplies?.()}
               disabled={isLoadingMoreReplies}
-              className="pl-9 typo-body-xs-regular text-faint disabled:opacity-50 text-left"
+              className={cn(
+                '-mx-5 w-[calc(100%+2.5rem)] pl-[90px] typo-body-xs-regular text-hint disabled:opacity-50 text-left',
+                dividerClasses,
+              )}
             >
               {isLoadingMoreReplies ? '댓글 불러오는 중...' : '댓글 더보기'}
             </button>
