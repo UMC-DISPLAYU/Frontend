@@ -171,19 +171,17 @@ export function MyPage() {
   );
 
   const exhibitions = useMemo<ExhibitionItem[]>(() => {
-    const items = (archivedExhibitionsQuery.data?.savedExhibitions ??
-      archivedExhibitionsQuery.data?.displays ??
-      []) as ArchivedExhibitionView[];
+    const items = (archivedExhibitionsQuery.data?.displays ?? []) as ArchivedExhibitionView[];
     return items.map((item) => ({
-      id: String(item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId),
-      archiveDisplayId: item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId,
+      id: String(item.archiveDisplayId ?? item.displayId),
+      archiveDisplayId: item.archiveDisplayId ?? item.displayId,
       displayId: item.displayId,
       userId: item.userId ?? userData?.id,
       status: STATUS_LABEL[item.status] ?? item.status ?? '전시 중',
       title: item.title ?? item.name ?? '',
-      org: item.organization ?? item.department ?? '',
-      period: `${formatMonthDay(item.startDate ?? item.startedAt)} - ${formatMonthDay(item.endDate ?? item.endedAt)}`,
-      place: item.placeName ?? item.locationName ?? '',
+      org: [item.organization, item.department].filter(Boolean).join(' '),
+      period: `${formatMonthDay(item.startedAt)} - ${formatMonthDay(item.endedAt)}`,
+      place: item.locationName ?? item.location ?? '',
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
     }));
@@ -326,11 +324,19 @@ export function MyPage() {
         isArtistVerified={isArtistVerified}
       />
 
-      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
+      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6 bg-box">
         {activeQuery.isLoading ? (
-          <LoadingView fullScreen={false} message="저장 목록 로딩 중..." />
+          <LoadingView
+            fullScreen={false}
+            message="저장 목록 로딩 중..."
+            className="bg-transparent"
+          />
         ) : activeQuery.error ? (
-          <ErrorView fullScreen={false} message="저장 목록을 불러오지 못했습니다." />
+          <ErrorView
+            fullScreen={false}
+            message="저장 목록을 불러오지 못했습니다."
+            className="bg-transparent"
+          />
         ) : activeTab === 'exhibition' &&
           (isArtistView ? myExhibitions : exhibitions).length > 0 ? (
           <div className="flex flex-col gap-4">
@@ -346,6 +352,9 @@ export function MyPage() {
                 }}
                 onSaveMemo={handleSaveExhibitionMemo}
                 onDeleteMemo={handleDeleteExhibitionMemo}
+                onOpen={(exhibition) =>
+                  navigate(`/display/${exhibition.displayId ?? exhibition.id}`)
+                }
               />
             ))}
           </div>
@@ -368,13 +377,12 @@ export function MyPage() {
                 }}
                 onSaveMemo={handleSaveArtworkMemo}
                 onDeleteMemo={handleDeleteArtworkMemo}
-                onOpen={
-                  isArtistView
-                    ? (artwork) =>
-                        navigate(
-                          `/personal-artworks/${artwork.personalArtworkId ?? artwork.artworkId ?? artwork.id}`,
-                        )
-                    : undefined
+                onOpen={(artwork) =>
+                  navigate(
+                    isArtistView
+                      ? `/personal-artworks/${artwork.artworkId ?? artwork.id}`
+                      : `/artwork/${artwork.artworkId ?? artwork.id}`,
+                  )
                 }
               />
             ))}
@@ -395,7 +403,7 @@ export function MyPage() {
             ))}
           </div>
         ) : (
-          <ErrorView fullScreen={false} message={emptyMessage} />
+          <ErrorView fullScreen={false} message={emptyMessage} className="bg-transparent" />
         )}
       </section>
 

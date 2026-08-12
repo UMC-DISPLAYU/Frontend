@@ -62,6 +62,7 @@
   /* Button */
   --bt-gray: var(--palette-gray-200);
   --bt-black: var(--palette-gray-black);
+  --bt-border: var(--palette-gray-100);
 
   /* Border */
   --line: var(--palette-gray-300);
