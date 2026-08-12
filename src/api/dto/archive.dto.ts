@@ -80,7 +80,7 @@ export interface GetArchivedArtistsResponseDataDto {
 export type GetArchivedArtistsResponseDto = ApiResponseDto<GetArchivedArtistsResponseDataDto>;
 
 export interface ArchiveMemoRequestDto {
-  memo: string;
+  content: string;
 }
 
 export type GetArchivedExhibitionResponseDto = ApiResponseDto<ArchivedExhibitionDto>;

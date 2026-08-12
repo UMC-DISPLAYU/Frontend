@@ -136,15 +136,6 @@ export function MemoFooter({ memo, userId, className, onSave, onDelete }: MemoFo
           >
             {memo}
           </button>
-          {canDeleteMemo && (
-            <button
-              type="button"
-              className="shrink-0 typo-body-xs-regular text-faint underline"
-              onClick={handleDeleteMemo}
-            >
-              삭제
-            </button>
-          )}
         </div>
       ) : canUpsertMemo ? (
         <button
