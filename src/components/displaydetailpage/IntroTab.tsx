@@ -60,6 +60,13 @@ export function IntroTab({ display: ex }: Props) {
   const [isContentClamped, setIsContentClamped] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
 
+  /* 다른 전시의 소개로 콘텐츠가 바뀌면(라우트 파라미터만 바뀌어 리마운트되지 않는 경우) 접힌 상태로 되돌립니다. */
+  const [prevContent, setPrevContent] = useState(ex.content);
+  if (ex.content !== prevContent) {
+    setPrevContent(ex.content);
+    setExpanded(false);
+  }
+
   const handleGoToContents = () => {
     navigate(`/display/${ex.displayId}/contents`);
   };
@@ -69,7 +76,14 @@ export function IntroTab({ display: ex }: Props) {
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-    setIsContentClamped(el.scrollHeight > el.clientHeight);
+
+    const measure = () => setIsContentClamped(el.scrollHeight > el.clientHeight);
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+
+    return () => observer.disconnect();
   }, [ex.content]);
 
   return (
