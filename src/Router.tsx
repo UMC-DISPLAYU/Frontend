@@ -1,6 +1,17 @@
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 
 import { AuthGuard } from './components/guards/AuthGuard';
+import {
+  ArtistPermissionGuard,
+  ArtworkPermissionGuard,
+  DisplayContentPermissionGuard,
+  DisplayCreatePermissionGuard,
+  DisplayInvitationPermissionGuard,
+  DisplayPermissionGuard,
+  FlowRoute,
+  GuardedFlowStep,
+  PersonalArtworkPermissionGuard,
+} from './components/guards/RoutePermissionGuards';
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
 import { ArtistVerificationPage } from './pages/artist-verification';
@@ -120,15 +131,57 @@ export const router = createBrowserRouter([
           { path: 'artist-verification', element: <ArtistVerificationPage /> },
 
           // 내 전시 관리 목록
-          { path: 'my/exhibitions', element: <MyExhibitionsPage /> },
+          {
+            path: 'my/exhibitions',
+            element: (
+              <ArtistPermissionGuard>
+                <MyExhibitionsPage />
+              </ArtistPermissionGuard>
+            ),
+          },
 
           // 1. 전시 등록 플로우
           {
-            element: <ExhibitionRegisterDraftRoute />,
+            element: (
+              <FlowRoute initialFlow="exhibition-register">
+                <DisplayCreatePermissionGuard>
+                  <ExhibitionRegisterDraftRoute />
+                </DisplayCreatePermissionGuard>
+              </FlowRoute>
+            ),
             children: [
-              { path: 'exhibition/register', element: <ExhibitionRegister /> },
-              { path: 'exhibition/register/basic', element: <ExhibitionBasicInfo /> },
-              { path: 'exhibition/register/artist', element: <ArtistNameSetup /> },
+              {
+                path: 'exhibition/register',
+                element: (
+                  <GuardedFlowStep required={[]} fallback="/exhibition/register" complete="start">
+                    <ExhibitionRegister />
+                  </GuardedFlowStep>
+                ),
+              },
+              {
+                path: 'exhibition/register/basic',
+                element: (
+                  <GuardedFlowStep
+                    required={['start']}
+                    fallback="/exhibition/register"
+                    complete="basic"
+                  >
+                    <ExhibitionBasicInfo />
+                  </GuardedFlowStep>
+                ),
+              },
+              {
+                path: 'exhibition/register/artist',
+                element: (
+                  <GuardedFlowStep
+                    required={['basic']}
+                    fallback="/exhibition/register/basic"
+                    complete="artist"
+                  >
+                    <ArtistNameSetup />
+                  </GuardedFlowStep>
+                ),
+              },
             ],
           },
 
@@ -137,38 +190,190 @@ export const router = createBrowserRouter([
             path: 'exhibition/:displayId',
             loader: validateNumericId('displayId'),
             errorElement: <NotFound />,
-            element: <ExhibitionRegisterDraftRoute />,
+            element: (
+              <FlowRoute initialFlow="exhibition-edit">
+                <ExhibitionRegisterDraftRoute />
+              </FlowRoute>
+            ),
             children: [
-              { path: 'manage', element: <ExhibitionManage /> },
-              { path: 'work', element: <ExhibitionWorkPage /> },
-              { path: 'edit', element: <ExhibitionRegister /> },
-              { path: 'edit/basic', element: <ExhibitionBasicInfo /> },
-              { path: 'team', element: <TeamManage /> },
-              { path: 'visibility', element: <VisibilitySettings /> },
-              { path: 'contents', element: <DisplayContentsManagePage /> },
-              { path: 'contents/:categoryId', element: <InteriorPhotosPage /> },
+              {
+                path: 'manage',
+                element: (
+                  <DisplayPermissionGuard action="edit">
+                    <ExhibitionManage />
+                  </DisplayPermissionGuard>
+                ),
+              },
+              {
+                path: 'work',
+                element: (
+                  <ArtworkPermissionGuard action="create">
+                    <ExhibitionWorkPage />
+                  </ArtworkPermissionGuard>
+                ),
+              },
+              {
+                path: 'edit',
+                element: (
+                  <DisplayPermissionGuard action="edit">
+                    <GuardedFlowStep required={[]} fallback="../edit" complete="edit-start">
+                      <ExhibitionRegister />
+                    </GuardedFlowStep>
+                  </DisplayPermissionGuard>
+                ),
+              },
+              {
+                path: 'edit/basic',
+                element: (
+                  <DisplayPermissionGuard action="edit">
+                    <GuardedFlowStep
+                      required={['edit-start']}
+                      fallback="../edit"
+                      complete="edit-basic"
+                    >
+                      <ExhibitionBasicInfo />
+                    </GuardedFlowStep>
+                  </DisplayPermissionGuard>
+                ),
+              },
+              {
+                path: 'team',
+                element: (
+                  <DisplayInvitationPermissionGuard action="create">
+                    <TeamManage />
+                  </DisplayInvitationPermissionGuard>
+                ),
+              },
+              {
+                path: 'visibility',
+                element: (
+                  <DisplayPermissionGuard action="edit">
+                    <VisibilitySettings />
+                  </DisplayPermissionGuard>
+                ),
+              },
+              {
+                path: 'contents',
+                element: (
+                  <DisplayContentPermissionGuard action="createContent">
+                    <DisplayContentsManagePage />
+                  </DisplayContentPermissionGuard>
+                ),
+              },
+              {
+                path: 'contents/:categoryId',
+                element: (
+                  <DisplayContentPermissionGuard action="editContent">
+                    <InteriorPhotosPage />
+                  </DisplayContentPermissionGuard>
+                ),
+              },
               {
                 path: 'artworks',
                 children: [
-                  { index: true, element: <ArtworksManagePage /> },
-                  { path: 'add', element: <ArtworkRegisterPage /> },
-                  { path: 'add/choice', element: <ArtworkRegisterPage /> },
-                  { path: 'add/artist', element: <ArtworkRegisterPage /> },
-                  { path: 'add/basic', element: <ArtworkRegisterPage /> },
-                  { path: 'add/participants', element: <ArtworkRegisterPage /> },
-                  { path: ':artworkId/edit', element: <ArtworkRegisterPage /> },
+                  {
+                    index: true,
+                    element: (
+                      <ArtworkPermissionGuard action="create">
+                        <ArtworksManagePage />
+                      </ArtworkPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'add',
+                    element: (
+                      <ArtworkPermissionGuard action="create">
+                        <ArtworkRegisterPage />
+                      </ArtworkPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'add/choice',
+                    element: (
+                      <ArtworkPermissionGuard action="create">
+                        <ArtworkRegisterPage />
+                      </ArtworkPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'add/artist',
+                    element: (
+                      <ArtworkPermissionGuard action="create">
+                        <ArtworkRegisterPage />
+                      </ArtworkPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'add/basic',
+                    element: (
+                      <ArtworkPermissionGuard action="create">
+                        <ArtworkRegisterPage />
+                      </ArtworkPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'add/participants',
+                    element: (
+                      <ArtworkPermissionGuard action="create">
+                        <ArtworkRegisterPage />
+                      </ArtworkPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: ':artworkId/edit',
+                    element: (
+                      <ArtworkPermissionGuard action="edit">
+                        <ArtworkRegisterPage />
+                      </ArtworkPermissionGuard>
+                    ),
+                  },
                 ],
               },
-              { path: 'complete', element: <ExhibitionRegisterComplete /> },
+              {
+                path: 'complete',
+                element: (
+                  <DisplayPermissionGuard action="edit">
+                    <ExhibitionRegisterComplete />
+                  </DisplayPermissionGuard>
+                ),
+              },
             ],
           },
 
           { path: 'setting', element: <SettingPage /> },
           { path: 'edit-basic-info', element: <EditBasicInfoPage /> },
-          { path: 'edit-artist-profile', element: <EditArtistProfilePage /> },
-          { path: 'personal-artworks/register', element: <PersonalArtworksRegister /> },
-          { path: 'personal-artworks/complete', element: <ExhibitionRegisterComplete /> },
-          { path: 'answer-questions', element: <AnswerPage /> },
+          {
+            path: 'edit-artist-profile',
+            element: (
+              <ArtistPermissionGuard>
+                <EditArtistProfilePage />
+              </ArtistPermissionGuard>
+            ),
+          },
+          {
+            path: 'personal-artworks/register',
+            element: (
+              <PersonalArtworkPermissionGuard action="create">
+                <PersonalArtworksRegister />
+              </PersonalArtworkPermissionGuard>
+            ),
+          },
+          {
+            path: 'personal-artworks/complete',
+            element: (
+              <PersonalArtworkPermissionGuard action="create">
+                <ExhibitionRegisterComplete />
+              </PersonalArtworkPermissionGuard>
+            ),
+          },
+          {
+            path: 'answer-questions',
+            element: (
+              <ArtistPermissionGuard>
+                <AnswerPage />
+              </ArtistPermissionGuard>
+            ),
+          },
           { path: 'invitation-request', element: <InvitationRequestPage /> },
           { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
           { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },

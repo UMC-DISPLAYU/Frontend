@@ -1,11 +1,20 @@
 import { type ReactNode, useEffect } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router-dom';
 
+import { FlowProvider } from '@/contexts/flowContext';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
-import { useArtworkPolicy, useDisplayArtistNamePolicy, useDisplayPolicy } from '@/hooks/usePolicy';
+import {
+  useArtworkPolicy,
+  useDisplayArtistNamePolicy,
+  useDisplayContentPolicy,
+  useDisplayCreatePolicy,
+  useDisplayInvitationPolicy,
+  useDisplayPolicy,
+  usePersonalArtworkPolicy,
+} from '@/hooks/usePolicy';
 import type { ArtworkPolicyResource, DisplayPolicyResource } from '@/policies/util';
 
 import { FlowGuard } from './FlowGuard';
@@ -31,6 +40,28 @@ type ArtworkGuardProps = GuardChildrenProps & {
   fallback?: string;
 };
 
+type DisplayContentGuardProps = GuardChildrenProps & {
+  action:
+    | 'createCategory'
+    | 'editCategory'
+    | 'deleteCategory'
+    | 'createContent'
+    | 'editContent'
+    | 'deleteContent'
+    | 'reorder';
+  fallback?: string;
+};
+
+type DisplayInvitationGuardProps = GuardChildrenProps & {
+  action: 'create';
+  fallback?: string;
+};
+
+type PersonalArtworkGuardProps = GuardChildrenProps & {
+  action: 'create';
+  fallback?: string;
+};
+
 type FlowStepCompleteProps = GuardChildrenProps & {
   stepId: string;
 };
@@ -39,6 +70,11 @@ type GuardedFlowStepProps = GuardChildrenProps & {
   required: string[];
   fallback: string;
   complete?: string;
+};
+
+type FlowRouteProps = {
+  initialFlow: string;
+  children?: ReactNode;
 };
 
 function useDisplayPolicyResource(): DisplayPolicyResource | null {
@@ -83,6 +119,19 @@ export function ArtistPermissionGuard({ children }: GuardChildrenProps) {
   );
 }
 
+export function DisplayCreatePermissionGuard({
+  fallback = '/403',
+  children,
+}: GuardChildrenProps & { fallback?: string }) {
+  const policy = useDisplayCreatePolicy();
+
+  return (
+    <PermissionGuard resource="display" action="create" fallback={fallback} policy={policy}>
+      {children}
+    </PermissionGuard>
+  );
+}
+
 export function DisplayPermissionGuard({ action, fallback = '/403', children }: DisplayGuardProps) {
   const display = useDisplayPolicyResource();
   const policy = useDisplayPolicy(display ?? { ownerUserId: 0, teamMembers: [] });
@@ -91,6 +140,59 @@ export function DisplayPermissionGuard({ action, fallback = '/403', children }: 
 
   return (
     <PermissionGuard resource="display" action={action} fallback={fallback} policy={policy}>
+      {children}
+    </PermissionGuard>
+  );
+}
+
+export function DisplayContentPermissionGuard({
+  action,
+  fallback = '/403',
+  children,
+}: DisplayContentGuardProps) {
+  const display = useDisplayPolicyResource();
+  const policy = useDisplayContentPolicy(display ?? undefined);
+
+  if (!display) return null;
+
+  return (
+    <PermissionGuard resource="displayContent" action={action} fallback={fallback} policy={policy}>
+      {children}
+    </PermissionGuard>
+  );
+}
+
+export function DisplayInvitationPermissionGuard({
+  action,
+  fallback = '/403',
+  children,
+}: DisplayInvitationGuardProps) {
+  const display = useDisplayPolicyResource();
+  const policy = useDisplayInvitationPolicy(display ?? { ownerUserId: 0, teamMembers: [] });
+
+  if (!display) return null;
+
+  return (
+    <PermissionGuard
+      resource="displayInvitation"
+      action={action}
+      fallback={fallback}
+      policy={policy}
+    >
+      {children}
+    </PermissionGuard>
+  );
+}
+
+export function PersonalArtworkPermissionGuard({
+  action,
+  fallback = '/403',
+  children,
+}: PersonalArtworkGuardProps) {
+  const policy = usePersonalArtworkPolicy();
+
+  return (
+    <PermissionGuard resource="personalArtwork" action={action} fallback={fallback} policy={policy}>
       {children}
     </PermissionGuard>
   );
@@ -154,4 +256,8 @@ export function GuardedFlowStep({ required, fallback, complete, children }: Guar
       {content}
     </FlowGuard>
   );
+}
+
+export function FlowRoute({ initialFlow, children }: FlowRouteProps) {
+  return <FlowProvider initialFlow={initialFlow}>{children ?? <Outlet />}</FlowProvider>;
 }
