@@ -169,19 +169,17 @@ export function MyPage() {
   );
 
   const exhibitions = useMemo<ExhibitionItem[]>(() => {
-    const items = (archivedExhibitionsQuery.data?.savedExhibitions ??
-      archivedExhibitionsQuery.data?.displays ??
-      []) as ArchivedExhibitionView[];
+    const items = (archivedExhibitionsQuery.data?.displays ?? []) as ArchivedExhibitionView[];
     return items.map((item) => ({
-      id: String(item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId),
-      archiveDisplayId: item.savedExhibitionId ?? item.archiveDisplayId ?? item.displayId,
+      id: String(item.archiveDisplayId ?? item.displayId),
+      archiveDisplayId: item.archiveDisplayId ?? item.displayId,
       displayId: item.displayId,
       userId: item.userId ?? userData?.id,
       status: STATUS_LABEL[item.status] ?? item.status ?? '전시 중',
       title: item.title ?? item.name ?? '',
       org: [item.organization, item.department].filter(Boolean).join(' '),
-      period: `${formatMonthDay(item.startDate ?? item.startedAt)} - ${formatMonthDay(item.endDate ?? item.endedAt)}`,
-      place: item.placeName ?? item.locationName ?? item.location ?? '',
+      period: `${formatMonthDay(item.startedAt)} - ${formatMonthDay(item.endedAt)}`,
+      place: item.locationName ?? item.location ?? '',
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
     }));
