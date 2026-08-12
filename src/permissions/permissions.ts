@@ -67,7 +67,7 @@ function toDisplay(a: Attrs): DisplayPolicyResource {
 function toArtwork(a: Attrs): ArtworkPolicyResource {
   return {
     artistUserId: a.isArtworkCreator ? SELF_ID : OTHER_ID,
-    coAuthorUserIds: a.isArtworkCollaborator ? [SELF_ID] : [],
+    coAuthors: a.isArtworkCollaborator ? [{ userId: SELF_ID, name: '' }] : [],
     qaHandlers: a.isQnaManager ? [{ userId: SELF_ID }] : [],
   };
 }
@@ -143,7 +143,7 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
   'artwork:reorder': (a) => policies.artwork.reorder(toUser(a), toDisplay(a)),
 
   'question:view': (a) => policies.question.view(toUser(a), toPost(a), toDisplay(a)),
-  'question:create': (a) => policies.question.create(toUser(a)),
+  'question:create': (a) => policies.question.create(toUser(a), toArtwork(a)),
   'question:delete': (a) => policies.question.delete(toUser(a), toPost(a), toDisplay(a)),
   'question:like': (a) => policies.question.like(toUser(a)),
   'question:unlike': (a) => policies.question.unlike(toUser(a)),

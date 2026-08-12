@@ -206,7 +206,11 @@ const MATRIX: Record<string, Rule[]> = {
       desc: '비공개: 질문 쓴 사람 || (작가 인증 && 전시 소속인)',
       allow: ['author', ...DISPLAY_MEMBERS],
     },
-    { permission: 'question:create', desc: '회원', allow: MEMBERS },
+    {
+      permission: 'question:create',
+      desc: '회원 && 해당 작품의 작가(공동 작업자 포함)가 아님',
+      allow: MEMBERS.filter((r) => r !== 'artworkCreator' && r !== 'artworkCollaborator'),
+    },
     {
       permission: 'question:delete',
       desc: '질문 쓴 사람 || (작가 인증 && 전시 소유자)',

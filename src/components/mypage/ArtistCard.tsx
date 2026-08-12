@@ -25,7 +25,7 @@ export function ArtistCard({ item, onUnarchive, onOpen }: ArtistCardProps) {
     : {};
 
   return (
-    <article className="w-full bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] overflow-hidden">
+    <article className="w-full bg-card rounded-2xl overflow-hidden">
       <div
         {...openHandlers}
         className={`flex items-center gap-3.5 px-3 py-3.5 ${onOpen ? 'cursor-pointer' : ''}`}
