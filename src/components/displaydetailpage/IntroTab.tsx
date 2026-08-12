@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ChevronRight, CircleAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -57,39 +57,55 @@ function ContentCategoryCard({ category, fullWidth = false }: ContentCarouselPro
 export function IntroTab({ display: ex }: Props) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+  const [isContentClamped, setIsContentClamped] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
 
   const handleGoToContents = () => {
     navigate(`/display/${ex.displayId}/contents`);
   };
 
+  const organizer = [ex.organization, ex.department].filter(Boolean).join(' ');
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    setIsContentClamped(el.scrollHeight > el.clientHeight);
+  }, [ex.content]);
+
   return (
     <div className="bg-page">
       {/* 전시소개 */}
-      <section className="px-5 pt-6">
-        <h2 className="mb-2 text-main typo-body-xl-bold">전시소개</h2>
-        <p
-          className="typo-body-sm-regular text-main"
-          style={{
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: expanded ? 'unset' : 3,
-            overflow: expanded ? 'visible' : 'hidden',
-          }}
-        >
-          {ex.content}
-        </p>
-        <div className="flex justify-end mt-3">
-          <button
-            type="button"
-            id="intro-expand-btn"
-            onClick={() => setExpanded((v) => !v)}
-            className="flex items-center typo-body-xs-regular text-faint cursor-pointer"
+      {ex.content && (
+        <section className="px-5 pt-6">
+          <h2 className="mb-2 text-main typo-body-xl-bold">전시소개</h2>
+          <p
+            ref={contentRef}
+            className="typo-body-sm-regular text-main"
+            style={{
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: expanded ? 'unset' : 3,
+              overflow: expanded ? 'visible' : 'hidden',
+              textOverflow: 'ellipsis',
+            }}
           >
-            {expanded ? '접기' : '더보기'}
-            <ChevronRight className="text-faint size-3" />
-          </button>
-        </div>
-      </section>
+            {ex.content}
+          </p>
+          {isContentClamped && (
+            <div className="flex justify-end mt-3">
+              <button
+                type="button"
+                id="intro-expand-btn"
+                onClick={() => setExpanded((v) => !v)}
+                className="flex items-center typo-body-xs-regular text-faint cursor-pointer"
+              >
+                {expanded ? '접기' : '더보기'}
+                <ChevronRight className="text-faint size-3" />
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 전시콘텐츠 */}
       {ex.contentCategories.length > 0 && (
@@ -178,10 +194,10 @@ export function IntroTab({ display: ex }: Props) {
       <section className="px-5 mt-6 pb-6">
         <h2 className="typo-body-xl-bold text-main mb-3">주최 · 문의</h2>
         <div className="flex flex-col gap-3">
-          {ex.organization && (
+          {organizer && (
             <div className="flex items-center gap-2 typo-body-sm-regular text-main">
               <span className="text-faint w-6 shrink-0">주최</span>
-              <span>{ex.organization}</span>
+              <span>{organizer}</span>
             </div>
           )}
           {ex.qnaAccount && (

@@ -198,6 +198,13 @@ export const toggleDisplayReviewLike = async (
 ): Promise<DisplayReviewLikeResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/reviews/${displayReviewId}/like`, { method: 'POST' });
 
+// DELETE /v1/display/:displayId/reviews/:displayReviewId/like
+export const cancelDisplayReviewLike = async (
+  displayId: number,
+  displayReviewId: number,
+): Promise<DisplayReviewLikeResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/reviews/${displayReviewId}/like`, { method: 'DELETE' });
+
 // GET /v1/display/:displayId/reviews/:displayReviewId/replies
 export const getDisplayReviewReplies = async (
   displayId: number,
@@ -236,6 +243,17 @@ export const toggleDisplayReviewReplyLike = async (
   apiRequest(
     `/v1/display/${displayId}/reviews/${displayReviewId}/reply/${displayReviewReplyId}/like`,
     { method: 'POST' },
+  );
+
+// DELETE /v1/display/:displayId/reviews/:displayReviewId/reply/:displayReviewReplyId/like
+export const cancelDisplayReviewReplyLike = async (
+  displayId: number,
+  displayReviewId: number,
+  displayReviewReplyId: number,
+): Promise<DisplayReviewReplyLikeResponseDataDto> =>
+  apiRequest(
+    `/v1/display/${displayId}/reviews/${displayReviewId}/reply/${displayReviewReplyId}/like`,
+    { method: 'DELETE' },
   );
 
 // GET /v1/display/reviews/me

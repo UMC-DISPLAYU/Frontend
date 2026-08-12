@@ -112,12 +112,16 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
         return;
       }
       if (parentCommentId) {
-        likeReplyMutation.mutate(Number(commentId));
+        const targetReply = replies.find((reply) => reply.id === commentId);
+        likeReplyMutation.mutate({
+          displayReviewReplyId: Number(commentId),
+          liked: targetReply?.isLiked ?? false,
+        });
       } else {
-        likeMutation.mutate(Number(commentId));
+        likeMutation.mutate({ displayReviewId: Number(commentId), liked: comment.isLiked });
       }
     },
-    [isLoggedIn, openLoginModal, likeReplyMutation, likeMutation],
+    [isLoggedIn, openLoginModal, likeReplyMutation, likeMutation, replies, comment.isLiked],
   );
 
   const handleDelete = useCallback(

@@ -67,7 +67,6 @@ export function ExhibitionMeta({ display: ex }: Props) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const fullSubtitle = [ex.organization, ex.subtitle].filter(Boolean).join(' ');
   const displayedLikeCount = ex.likeCount ?? 0;
   const canToggleArchive = hasPermission(archivePolicy, liked ? 'delete' : 'create');
   /* 로그인한 사용자만 해당. 실제 좋아요 여부를 확인하기 전에는 토글을 막아 중복 요청을 방지합니다. */
@@ -88,7 +87,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 flex flex-col gap-1.5">
           <h1 className="typo-body-xl-bold text-main">{ex.title}</h1>
-          {fullSubtitle && <p className="typo-body-sm-regular text-sub600">{fullSubtitle}</p>}
+          {ex.subtitle && <p className="typo-body-sm-regular text-sub600">{ex.subtitle}</p>}
         </div>
         <button
           type="button"

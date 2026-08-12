@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 
 import type { CreateDisplayReviewRequestDto } from '@/api/dto';
 import {
+  cancelDisplayReviewLike,
   createDisplayReview,
   deleteDisplayReview,
   getDisplayReviews,
@@ -58,7 +59,10 @@ export const useToggleDisplayReviewLike = (displayId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (displayReviewId: number) => toggleDisplayReviewLike(displayId, displayReviewId),
+    mutationFn: ({ displayReviewId, liked }: { displayReviewId: number; liked: boolean }) =>
+      liked
+        ? cancelDisplayReviewLike(displayId, displayReviewId)
+        : toggleDisplayReviewLike(displayId, displayReviewId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.displays.reviews(displayId),
