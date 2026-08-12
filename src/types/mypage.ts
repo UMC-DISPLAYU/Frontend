@@ -19,7 +19,8 @@ export interface ExhibitionItem {
 export interface SavedArtworkItem {
   id: string;
   archiveWorkId?: number;
-  artworkId?: number;
+  artworkId?: number | null;
+  personalArtworkId?: number | null;
   userId?: number;
   title: string;
   artist: string;

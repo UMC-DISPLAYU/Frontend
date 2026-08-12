@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import type { DisplayDetailDto, GetArtworkDetailResponseDataDto } from '@/api/dto';
+import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
@@ -23,16 +23,12 @@ import {
   useArtworkQuestions,
   useCreateArtworkQuestion,
   useCreateArtworkQuestionReply,
+  useDeleteArtworkQuestion,
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
-import {
-  useFeelingPolicy,
-  useFeelingReplyPolicy,
-  useQuestionPolicy,
-  useQuestionReplyPolicy,
-} from '@/hooks/usePolicy';
+import { useFeelingPolicy, useFeelingReplyPolicy, useQuestionPolicy } from '@/hooks/usePolicy';
 import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
 import { parseServerDate } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
@@ -43,7 +39,6 @@ export function ArtworkDetailPage() {
   const artworkId = Number(artworkIdParam ?? 0);
 
   const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>('intro');
-  const [isArtistView, setIsArtistView] = useState(false);
 
   const { data: userMe } = useUserMe();
   const myUserId = userMe?.id;
@@ -55,16 +50,19 @@ export function ArtworkDetailPage() {
     fetchNextPage: fetchMoreFeelings,
     isFetchingNextPage: isFetchingMoreFeelings,
   } = useArtworkFeelings(artworkId);
-  const { data: questionsData } = useArtworkQuestions(artworkId);
+  const {
+    data: questionsData,
+    hasNextPage: hasMoreQuestions,
+    fetchNextPage: fetchMoreQuestions,
+    isFetchingNextPage: isFetchingMoreQuestions,
+  } = useArtworkQuestions(artworkId);
 
-  /*
-   * 스웨거 ExhibitionInfoResponse에는 전시 포스터가 없어
-   * displayId로 전시 상세를 조회해 썸네일을 가져옵니다.
-   */
+  /* 작가 전용 권한 판단(팀원 여부 등)에 필요해 전시 상세도 함께 조회합니다. */
   const { data: display } = useDisplayDetail(detail?.exhibitionInfo?.displayId ?? 0);
 
   const createFeeling = useCreateArtworkFeeling();
   const createQuestion = useCreateArtworkQuestion();
+  const deleteQuestion = useDeleteArtworkQuestion();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
 
   /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 BottomCommentBar가 씀) */
@@ -98,25 +96,23 @@ export function ArtworkDetailPage() {
     ownerUserId: 0,
     teamMembers: [],
   }) as DisplayDetailDto;
-  const policyArtwork = (detail ?? {
-    artistUserId: 0,
-    qaHandlers: [],
-  }) as GetArtworkDetailResponseDataDto;
   const feelingPolicy = useFeelingPolicy(policyDisplay, undefined);
   const feelingReplyPolicy = useFeelingReplyPolicy(policyDisplay);
   const fallbackQuestion: GuestbookQuestion = {
     questionId: 0,
     content: '',
     isPublic: true,
+    accessible: true,
+    canReply: false,
+    likeCount: null,
     createdAt: '',
     user: { userId: 0, nickname: '' },
     reply: null,
   };
-  const questionPolicy = useQuestionPolicy(questionReplyTarget ?? fallbackQuestion, policyDisplay);
-  const questionReplyPolicy = useQuestionReplyPolicy(
+  const questionPolicy = useQuestionPolicy(
     questionReplyTarget ?? fallbackQuestion,
     policyDisplay,
-    policyArtwork,
+    detail,
   );
 
   const feelings = (feelingsData?.pages.flatMap((page) => page.feelings) ?? []).filter(
@@ -126,21 +122,28 @@ export function ArtworkDetailPage() {
 
   /*
    * 질문 응답을 방명록 화면이 쓰는 형태로 맞춥니다.
-   * 스웨거 응답에는 프로필 이미지와 좋아요 정보가 없어 화면 기본값을 사용합니다.
+   * 스웨거 응답에는 프로필 이미지가 없어 화면 기본값을 사용합니다.
    * 새로 등록한 질문이 "+" 버튼과 같은 위치(맨 위)에 보이도록 최신순으로 정렬합니다.
    */
-  const questions: GuestbookQuestion[] = (questionsData?.questions ?? [])
+  const questions: GuestbookQuestion[] = (
+    questionsData?.pages.flatMap((page) => page.questions) ?? []
+  )
     .slice()
     .sort((a, b) => parseServerDate(b.createdAt).getTime() - parseServerDate(a.createdAt).getTime())
     .map((question) => ({
       questionId: question.questionId,
       content: question.content,
       isPublic: question.isPublic ?? true,
+      accessible: question.accessible,
+      canReply: question.canReply,
+      likeCount: question.likeCount,
       createdAt: question.createdAt,
-      user: {
-        userId: question.user?.userId ?? 0,
-        nickname: question.user?.nickname ?? '',
-      },
+      user: question.user
+        ? {
+            userId: question.user.userId ?? 0,
+            nickname: question.user.nickname ?? '',
+          }
+        : null,
       reply: question.reply
         ? {
             questionReplyId: question.reply.questionReplyId,
@@ -163,7 +166,8 @@ export function ArtworkDetailPage() {
     if (!content) return;
 
     if (questionReplyTarget) {
-      if (!hasPermission(questionReplyPolicy, 'reply.create')) {
+      /* 답변 등록 가능 여부는 서버가 계산해서 canReply로 내려줍니다. */
+      if (!questionReplyTarget.canReply) {
         openLoginModal();
         return;
       }
@@ -200,9 +204,6 @@ export function ArtworkDetailPage() {
     );
   }
 
-  const source = display as (typeof display & { posterImageUrl?: string }) | undefined;
-  const displayPoster = source?.posterImageUrl ?? source?.images?.[0]?.imageUrl ?? '';
-
   /* 화면이 쓰는 ArtworkDetail 형태로 변환합니다. */
   const artwork: ArtworkDetail = {
     artworkId: detail.artworkId,
@@ -217,12 +218,12 @@ export function ArtworkDetailPage() {
     artist: detail.artistName,
     exhibitionId: String(detail.exhibitionInfo?.displayId ?? ''),
     exhibitionTitle: detail.exhibitionInfo?.exhibitionTitle ?? '',
-    exhibitionOrganizer: detail.exhibitionInfo?.exhibitionLocation ?? '',
+    exhibitionOrganizer: detail.exhibitionInfo?.exhibitionOrganizer ?? '',
     exhibitionPeriod: detail.exhibitionInfo?.exhibitionPeriod ?? '',
-    exhibitionThumbnail: displayPoster,
+    exhibitionThumbnail: detail.exhibitionInfo?.exhibitionThumbnailUrl ?? '',
     bookmarkCount: detail.likeCount ?? 0,
     isLiked: detail.isLiked ?? false,
-    isArchived: false,
+    isArchived: detail.isArchived ?? false,
   };
 
   /* 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
@@ -254,7 +255,11 @@ export function ArtworkDetailPage() {
 
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && (
-        <ArtworkIntroTab artwork={artwork} artistUserId={detail.artistUserId} />
+        <ArtworkIntroTab
+          artwork={artwork}
+          artistUserId={detail.artistUserId}
+          coAuthors={detail.coAuthors}
+        />
       )}
       {(activeTab === 'review' || activeTab === 'question') && (
         <ArtworkGuestbookTab
@@ -263,13 +268,14 @@ export function ArtworkDetailPage() {
           onLoadMoreFeelings={fetchMoreFeelings}
           isLoadingMoreFeelings={isFetchingMoreFeelings}
           questions={questions}
+          hasMoreQuestions={hasMoreQuestions}
+          onLoadMoreQuestions={fetchMoreQuestions}
+          isLoadingMoreQuestions={isFetchingMoreQuestions}
           artworkId={artworkId}
           myUserId={myUserId}
           artwork={detail}
           display={policyDisplay}
           activeTab={activeTab}
-          isArtistView={isArtistView}
-          onArtistViewChange={setIsArtistView}
           activeReplyId={activeReplyId}
           onFeelingReplyClick={handleFeelingReplyClick}
           replyTargetQuestionId={questionReplyTarget?.questionId ?? null}
@@ -285,6 +291,7 @@ export function ArtworkDetailPage() {
           onCloseComposeQuestion={() => setIsComposingQuestion(false)}
           onSubmitQuestion={handleSendQuestion}
           isSubmittingQuestion={createQuestion.isPending || createQuestionReply.isPending}
+          onDeleteQuestion={(questionId) => deleteQuestion.mutate({ artworkId, questionId })}
         />
       )}
 
@@ -294,7 +301,7 @@ export function ArtworkDetailPage() {
             <ArtworkSaveButton
               className="w-full"
               artworkId={artworkId}
-              saved={detail.isSaved ?? false}
+              saved={detail.isArchived ?? false}
             />
           }
           shareTitle={artwork.artworkName}
@@ -313,8 +320,10 @@ export function ArtworkDetailPage() {
                 openLoginModal();
                 return;
               }
-              // 감상 답글 API는 이미지 첨부를 지원하지 않음
-              createFeelingReply.mutate(content, { onSuccess: clearFeelingReplyTarget });
+              createFeelingReply.mutate(
+                { content, images },
+                { onSuccess: clearFeelingReplyTarget },
+              );
               return;
             }
 

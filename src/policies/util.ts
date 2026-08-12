@@ -13,8 +13,11 @@ export interface ArtworkPolicyResource {
   qaHandlers?: {
     userId: number;
   }[];
-  // 공동 작업자. 작품 상세 조회 응답에 아직 없어 선택 필드로 둡니다.
-  coAuthorUserIds?: number[];
+  /* 공동 작업자. 계정이 연결되지 않은 공동 작업자는 userId가 null입니다. */
+  coAuthors?: {
+    userId: number | null;
+    name: string;
+  }[];
 }
 
 export interface PrivatableResource {
@@ -25,7 +28,7 @@ export interface UserOwnedResource {
   userId?: number;
   user?: {
     userId: number;
-  };
+  } | null;
 }
 
 export interface MyResource {
@@ -80,7 +83,10 @@ export function isArtworkAuthor(user: User, artwork: ArtworkPolicyResource): boo
   const userId = user.id;
   if (userId === null) return false;
 
-  return userId === artwork.artistUserId || Boolean(artwork.coAuthorUserIds?.includes(userId));
+  return (
+    userId === artwork.artistUserId ||
+    Boolean(artwork.coAuthors?.some((coAuthor) => coAuthor.userId === userId))
+  );
 }
 
 export function isQaHandler(user: User, artwork: ArtworkPolicyResource): boolean {

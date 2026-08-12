@@ -35,42 +35,69 @@ const archivedExhibitions = () => ({
 });
 
 const archivedArtworks = () => ({
-  works: mockDb.artworks.map((artwork: any) => ({
-    archiveWorkId: artwork.artworkId,
-    artworkId: artwork.artworkId,
-    userId: 1,
-    title: artwork.title,
-    artist: artwork.artist ?? artwork.artistName,
-    thumbnailUrl: getFirstImageUrl(artwork),
-    memo: artwork.memo ?? null,
-    savedAt: '2026-08-02T00:00:00.000Z',
-  })),
-  nextCursor: null,
+  works: [
+    ...mockDb.artworks.map((artwork: any) => ({
+      archiveWorkId: artwork.artworkId,
+      artworkId: artwork.artworkId,
+      personalArtworkId: null,
+      userId: 1,
+      title: artwork.title,
+      artist: artwork.artist ?? artwork.artistName,
+      thumbnailUrl: getFirstImageUrl(artwork),
+      memo: artwork.memo ?? null,
+      savedAt: '2026-08-02T00:00:00.000Z',
+    })),
+    ...mockDb.personalArtworks.map((artwork: any, index: number) => ({
+      archiveWorkId: -(index + 1),
+      artworkId: null,
+      personalArtworkId: artwork.personalArtworkId,
+      userId: artwork.userId,
+      title: artwork.artworkName,
+      artist: artwork.nickname ?? '',
+      thumbnailUrl: getFirstImageUrl(artwork),
+      memo: artwork.memo ?? null,
+      savedAt: '2026-08-03T00:00:00.000Z',
+    })),
+  ],
+  nextCursorId: null,
   hasNext: false,
+  size: mockDb.artworks.length + mockDb.personalArtworks.length,
 });
 
 /* 저장한 작가는 mockDb.savedArtistIds를 기준으로 만듭니다. */
 const archivedArtists = () => ({
-  savedArtists: mockDb.savedArtistIds.map((artistId: number, index: number) => ({
-    savedArtistId: index + 1,
+  artists: mockDb.savedArtistIds.map((artistId: number, index: number) => ({
+    archiveArtistId: index + 1,
     artistId,
-    name:
+    userId: mockDb.me.userId,
+    artistName:
       artistId === mockDb.me.userId
         ? mockDb.me.nickname
         : (mockDb.artworks.find((artwork: any) => artwork.artistUserId === artistId)?.artistName ??
           ''),
-    field: '시각디자인',
+    fields: ['시각디자인'],
     profileImageUrl: '',
     artworkCount: mockDb.artworks.length,
     exhibitionCount: mockDb.displays.length,
     savedAt: '2026-08-02T00:00:00.000Z',
   })),
+  nextCursorId: null,
+  size: mockDb.savedArtistIds.length,
+  hasNext: false,
 });
 
 const updateDisplayMemo = (archiveDisplayId: number, memo: string | null) => {
   const display = mockDb.displays.find((item: any) => item.displayId === archiveDisplayId);
   if (display) {
     Object.assign(display, { memo });
+  }
+};
+
+const updateDisplayArchiveStatus = (displayId: number, isArchived: boolean) => {
+  const display = mockDb.displays.find((item: any) => item.displayId === displayId);
+
+  if (display) {
+    Object.assign(display, { archived: isArchived, isArchived });
   }
 };
 
@@ -107,8 +134,8 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/artists/{savedArtistId}').map((path) =>
     http.get(path, ({ params }) =>
       success('/api/v1/archives/artists/{savedArtistId}', {
-        ...archivedArtists().savedArtists[0],
-        savedArtistId: toNumber(params.savedArtistId),
+        ...archivedArtists().artists[0],
+        archiveArtistId: toNumber(params.savedArtistId),
         artistId: toNumber(params.savedArtistId),
       }),
     ),
@@ -138,12 +165,13 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/artworks/{archiveWorkId}/memo').map((path) =>
     http.put(path, async ({ params, request }) => {
       const archiveWorkId = toNumber(params.archiveWorkId);
-      const body = await readJson<{ memo?: string }>(request);
-      const memo = body.memo ?? '';
+      const body = await readJson<{ content?: string }>(request);
+      const memo = body.content ?? '';
       updateArtworkMemo(archiveWorkId, memo);
 
       return success('/api/v1/archives/artworks/{archiveWorkId}/memo', {
         archiveWorkId,
+        memo,
         ...body,
       });
     }),
@@ -155,24 +183,50 @@ export const archiveHandlers = [
       return noContent('/api/v1/archives/artworks/{archiveWorkId}/memo');
     }),
   ),
+  ...paths('/api/v1/archives/personal-artworks/{personalArtworkId}').map((path) =>
+    http.post(path, ({ params }) => {
+      const personalArtworkId = toNumber(params.personalArtworkId);
+
+      mockDb.archivedPersonalArtworkIds.add(personalArtworkId);
+
+      return success('/api/v1/archives/personal-artworks/{personalArtworkId}', {
+        personalArtworkId,
+        isArchived: true,
+      });
+    }),
+  ),
+  ...paths('/api/v1/archives/personal-artworks/{personalArtworkId}').map((path) =>
+    http.delete(path, ({ params }) => {
+      const personalArtworkId = toNumber(params.personalArtworkId);
+
+      mockDb.archivedPersonalArtworkIds.delete(personalArtworkId);
+
+      return success('/api/v1/archives/personal-artworks/{personalArtworkId}', {
+        personalArtworkId,
+        isArchived: false,
+      });
+    }),
+  ),
   ...paths('/api/v1/archives/exhibitions').map((path) =>
     http.get(path, () => success('/api/v1/archives/exhibitions', archivedExhibitions())),
   ),
   ...paths('/api/v1/archives/exhibitions/{exhibitionId}').map((path) =>
-    http.post(path, ({ params }) =>
-      success(
-        '/api/v1/archives/exhibitions/{exhibitionId}',
-        okStatus(toNumber(params.exhibitionId), true),
-      ),
-    ),
+    http.post(path, ({ params }) => {
+      const exhibitionId = toNumber(params.exhibitionId);
+
+      updateDisplayArchiveStatus(exhibitionId, true);
+
+      return success('/api/v1/archives/exhibitions/{exhibitionId}', okStatus(exhibitionId, true));
+    }),
   ),
   ...paths('/api/v1/archives/exhibitions/{exhibitionId}').map((path) =>
-    http.delete(path, ({ params }) =>
-      success(
-        '/api/v1/archives/exhibitions/{exhibitionId}',
-        okStatus(toNumber(params.exhibitionId), false),
-      ),
-    ),
+    http.delete(path, ({ params }) => {
+      const exhibitionId = toNumber(params.exhibitionId);
+
+      updateDisplayArchiveStatus(exhibitionId, false);
+
+      return success('/api/v1/archives/exhibitions/{exhibitionId}', okStatus(exhibitionId, false));
+    }),
   ),
   ...paths('/api/v1/archives/exhibitions/{archiveDisplayId}').map((path) =>
     http.get(path, ({ params }) =>
@@ -186,12 +240,13 @@ export const archiveHandlers = [
   ...paths('/api/v1/archives/exhibitions/{archiveDisplayId}/memo').map((path) =>
     http.put(path, async ({ params, request }) => {
       const archiveDisplayId = toNumber(params.archiveDisplayId);
-      const body = await readJson<{ memo?: string }>(request);
-      const memo = body.memo ?? '';
+      const body = await readJson<{ content?: string }>(request);
+      const memo = body.content ?? '';
       updateDisplayMemo(archiveDisplayId, memo);
 
       return success('/api/v1/archives/exhibitions/{archiveDisplayId}/memo', {
         archiveDisplayId,
+        memo,
         ...body,
       });
     }),

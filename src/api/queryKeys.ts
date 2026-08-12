@@ -111,8 +111,6 @@ export const queryKeys = {
     all: ['artworkQuestions'] as const,
     lists: () => [...queryKeys.artworkQuestions.all, 'list'] as const,
     list: (artworkId: number) => [...queryKeys.artworkQuestions.lists(), artworkId] as const,
-    // 가짜 쿼리 키: 백엔드에 내 작품 질문 조회 API가 생기기 전까지 답변할 질문 화면에서 사용합니다.
-    me: () => [...queryKeys.artworkQuestions.lists(), 'me'] as const,
   },
 
   loungePosts: {

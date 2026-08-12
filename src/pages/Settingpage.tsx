@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { LogoutConfirmModal } from '@/components/common';
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
-import { useMyArtworkQuestions } from '@/hooks/queries/useArtworkQuestions';
 import { useLogout } from '@/hooks/queries/useAuth';
 import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
+import { useReceivedArtworkQuestions } from '@/hooks/queries/useReceivedArtworkQuestions';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
@@ -22,7 +22,7 @@ export function SettingPage() {
   const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
 
   const { data: invitationsData } = useMyDisplayInvitations();
-  const { data: questionsData } = useMyArtworkQuestions({ answerStatus: 'WAITING' });
+  const { data: questionsData } = useReceivedArtworkQuestions({ answerStatus: 'WAITING' });
 
   const invitationCount = invitationsData?.invitations?.length ?? 0;
   const pendingQuestionCount = questionsData?.questions?.length ?? 0;

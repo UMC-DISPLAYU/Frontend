@@ -24,6 +24,7 @@ export interface PersonalArtworkResponseDataDto {
   size?: string;
   point?: string;
   createdAt: string;
+  isArchived?: boolean;
   isLiked?: boolean;
   likeCount?: number;
   images: ImageResponseDto[];
@@ -35,6 +36,7 @@ export interface PersonalArtworkSummaryDto {
   thumbnailUrl: string;
   type: string;
   createdAt: string;
+  isArchived?: boolean;
 }
 
 export type GetPersonalArtworksResponseDataDto = PersonalArtworkSummaryDto[];

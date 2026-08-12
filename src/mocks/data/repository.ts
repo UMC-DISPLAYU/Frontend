@@ -65,6 +65,7 @@ const displayToListItem = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   content: display.content,
   organization: display.organization,
   department: display.department,
+  schoolDepartmentName: [display.organization, display.department].filter(Boolean).join(' '),
   displayType: display.displayType,
   displayFields: display.displayFields,
   region: display.region,
@@ -84,6 +85,7 @@ const displayToListItem = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   likeCount: 12 + display.displayId,
   liked: false,
   archived: false,
+  isArchived: false,
 });
 
 const displayToDetail = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
@@ -159,6 +161,8 @@ const artworkToDetail = (artwork: any) => ({
     return {
       displayId: artwork.displayId,
       exhibitionTitle: display?.title ?? '',
+      exhibitionThumbnailUrl: display?.posterSection?.images?.[0]?.imageUrl ?? '',
+      exhibitionOrganizer: display?.organization ?? '',
       exhibitionPeriod: formatPeriod(display?.startedAt, display?.endedAt),
       exhibitionLocation: display?.placeName ?? '',
     };
@@ -177,25 +181,32 @@ const artworkToDetail = (artwork: any) => ({
   liked: false,
   /* 작품 상세 응답(ArtworkDetailResponse)이 내려주는 좋아요/저장 상태입니다. */
   isLiked: false,
-  isSaved: false,
+  isArchived: false,
   likeCount: 3,
   thumbnailUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
-  images: artwork.images.map((image: any, index: number) => ({
-    imageId: artwork.artworkId * 100 + index + 1,
-    artworkImageId: artwork.artworkId * 100 + index + 1,
-    imageUrl: image.imageUrl,
-    width: 1600,
-    height: 1600,
-    sortOrder: index + 1,
-  })),
-  processImages: (artwork.processImages ?? []).map((image: any, index: number) => ({
-    imageId: artwork.artworkId * 1000 + index + 1,
-    artworkImageId: artwork.artworkId * 1000 + index + 1,
-    imageUrl: image.imageUrl,
-    width: 1600,
-    height: 1600,
-    sortOrder: index + 1,
-  })),
+  /* 실제 API처럼 대표 이미지(ARTWORK, 첫 장이 썸네일)와 작업과정 이미지(WORK_PROCESS)를 한 배열에 담습니다. */
+  images: [
+    ...artwork.images.map((image: any, index: number) => ({
+      imageId: artwork.artworkId * 100 + index + 1,
+      artworkImageId: artwork.artworkId * 100 + index + 1,
+      imageUrl: image.imageUrl,
+      isThumbnail: index === 0,
+      imageType: 'ARTWORK',
+      width: 1600,
+      height: 1600,
+      sortOrder: index,
+    })),
+    ...(artwork.processImages ?? []).map((image: any, index: number) => ({
+      imageId: artwork.artworkId * 1000 + index + 1,
+      artworkImageId: artwork.artworkId * 1000 + index + 1,
+      imageUrl: image.imageUrl,
+      isThumbnail: false,
+      imageType: 'WORK_PROCESS',
+      width: 1600,
+      height: 1600,
+      sortOrder: index,
+    })),
+  ],
 });
 
 /*
@@ -301,6 +312,10 @@ export const mockDb: {
       questionId: 1,
       artworkId: 1001,
       content: '설치 위치는 어디인가요?',
+      isPublic: true,
+      accessible: true,
+      canReply: false,
+      likeCount: 0,
       writer: makeUser(6),
       author: makeUser(6),
       answer: null,
@@ -316,6 +331,7 @@ export const mockDb: {
   personalArtworkQuestionReplies: [...MOCK_PERSONAL_ARTWORK_QUESTION_REPLIES],
   archivedExhibitionIds: new Set<number>(),
   archivedArtworkIds: new Set<number>(),
+  archivedPersonalArtworkIds: new Set<number>(),
   archivedArtistIds: new Set<number>(),
 };
 

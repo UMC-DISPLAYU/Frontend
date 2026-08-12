@@ -1,9 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
+  ArchiveArtworkCursorDto,
   ArchivedExhibitionDto,
   ArchiveMemoRequestDto,
   DisplayDetailDto,
+  GetArchivedArtworksRequestDto,
   GetArchivedArtworksResponseDataDto,
   GetArchivedExhibitionsResponseDataDto,
 } from '@/api/dto';
@@ -11,6 +13,7 @@ import {
   archiveArtist,
   archiveArtwork,
   archiveExhibition,
+  archivePersonalArtwork,
   deleteArchivedArtworkMemo,
   deleteArchivedExhibitionMemo,
   getArchivedArtist,
@@ -22,6 +25,7 @@ import {
   unarchiveArtist,
   unarchiveArtwork,
   unarchiveExhibition,
+  unarchivePersonalArtwork,
   updateArchivedArtworkMemo,
   updateArchivedExhibitionMemo,
 } from '@/api/endpoints';
@@ -37,20 +41,32 @@ export const useArchivedExhibitions = () => {
   });
 };
 
-export const useArchivedArtworks = () => {
+export const useInfiniteArchivedArtworks = (
+  params: Omit<GetArchivedArtworksRequestDto, 'cursorId'> & { size: number },
+) => {
   const accessToken = useAuthStore((state) => state.accessToken);
-  return useQuery({
-    queryKey: queryKeys.archives.works.list(),
-    queryFn: getArchivedArtworks,
+
+  return useInfiniteQuery({
+    queryKey: queryKeys.archives.works.list({ ...params }),
+    queryFn: ({ pageParam }) =>
+      getArchivedArtworks({
+        ...params,
+        cursorId: pageParam,
+      }),
+    initialPageParam: null as ArchiveArtworkCursorDto | null,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? (lastPage.nextCursorId ?? lastPage.nextCursor ?? null) : null,
     enabled: !!accessToken,
   });
 };
 
 export const useArchivedArtists = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.archives.artists.list(),
-    queryFn: getArchivedArtists,
+    queryFn: ({ pageParam }) => getArchivedArtists({ cursorId: pageParam ?? undefined }),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled: !!accessToken,
   });
 };
@@ -196,6 +212,38 @@ export const useUnarchiveArtwork = () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.detail(artworkId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() }),
+      ]),
+  });
+};
+
+export const useArchivePersonalArtwork = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: archivePersonalArtwork,
+    onSuccess: (_, personalArtworkId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
+        }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() }),
+      ]),
+  });
+};
+
+export const useUnarchivePersonalArtwork = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: unarchivePersonalArtwork,
+    onSuccess: (_, personalArtworkId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
+        }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() }),
       ]),
   });
 };

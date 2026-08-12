@@ -287,6 +287,8 @@ export const displayHandlers = [
             endDate: display.period?.endDate ?? display.endedAt,
             locationName: display.location?.placeName ?? display.placeName,
             posterImageUrl: display.posterImageUrl,
+            schoolDepartmentName: display.schoolDepartmentName,
+            isArchived: display.isArchived ?? display.archived ?? false,
             latitude: coordinates.latitude,
             longitude: coordinates.longitude,
           };
