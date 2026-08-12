@@ -11,6 +11,7 @@ export interface HomeExhibitionDto {
   posterImageUrl: string;
   organization: string;
   department: string;
+  schoolDepartmentName?: string;
   startedAt: string;
   endedAt: string;
   dayLeft?: number;

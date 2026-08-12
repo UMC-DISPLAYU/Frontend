@@ -80,6 +80,10 @@ export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem
             isLiked: reply.isLiked ?? false,
             isMyComment,
             canDelete: isMyComment || isModerator,
+            images:
+              reply.images && reply.images.length > 0
+                ? reply.images.map((img) => img.imageUrl)
+                : undefined,
           };
         }),
     [repliesData, myUserId, isModerator],

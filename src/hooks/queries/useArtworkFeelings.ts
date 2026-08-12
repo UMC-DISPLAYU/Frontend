@@ -1,6 +1,10 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateArtworkFeelingRequestDto, UpdateArtworkFeelingRequestDto } from '@/api/dto';
+import type {
+  ArtworkFeelingReplyImageRequestDto,
+  CreateArtworkFeelingRequestDto,
+  UpdateArtworkFeelingRequestDto,
+} from '@/api/dto';
 import {
   createArtworkFeeling,
   createArtworkFeelingReply,
@@ -20,7 +24,7 @@ export const useArtworkFeelings = (artworkId: number) =>
     queryFn: ({ pageParam }) => getArtworkFeelings(artworkId, { cursorId: pageParam ?? undefined }),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
-    enabled: Number.isFinite(artworkId),
+    enabled: Number.isFinite(artworkId) && artworkId > 0,
   });
 
 export const useCreateArtworkFeeling = () => {
@@ -120,7 +124,13 @@ export const useCreateArtworkFeelingReply = (artworkId: number, feelingId: numbe
   const invalidate = useInvalidateFeelingReplies(artworkId, feelingId);
 
   return useMutation({
-    mutationFn: (content: string) => createArtworkFeelingReply(artworkId, feelingId, { content }),
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: ArtworkFeelingReplyImageRequestDto[];
+    }) => createArtworkFeelingReply(artworkId, feelingId, { content, images }),
     onSuccess: invalidate,
   });
 };
