@@ -26,7 +26,11 @@ export function DisplayAcceptPage() {
   const exhibitionInfo = buildExhibitionInfo(invitation);
 
   const handleGoManage = () => {
-    navigate('/display/manage');
+    if (invitation?.displayId) {
+      navigate(`/exhibition/${invitation.displayId}/manage`);
+    } else {
+      navigate('/my/exhibitions');
+    }
   };
 
   return (

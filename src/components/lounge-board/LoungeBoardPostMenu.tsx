@@ -9,6 +9,7 @@ import { hasPermission } from '@/utils/hasPermission';
 type Props = {
   post: {
     isMyPost: boolean;
+    category: string;
   };
   onEdit?: () => void;
   onDelete?: () => void;

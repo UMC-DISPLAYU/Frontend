@@ -4,6 +4,7 @@ import type { CreateExhibitionArtworkRequestDto } from '@/api/dto';
 import {
   createExhibitionArtwork,
   deleteArtwork,
+  getArtistArtworks,
   getDisplayArtworks,
   updateArtworkOrder,
 } from '@/api/endpoints';
@@ -82,5 +83,16 @@ export const useUserArtworks = (userId: number, { enabled = true }: { enabled?: 
   useQuery({
     queryKey: queryKeys.displayArtworks.byUserId(userId),
     queryFn: () => getPersonalArtworks(userId),
+    enabled: enabled && Number.isFinite(userId) && userId > 0,
+  });
+
+// GET /v1/artworks?userId= - 특정 작가가 전시에 등록한 작품 목록 조회 (작가 프로필 작품 탭)
+export const useArtistExhibitionArtworks = (
+  userId: number,
+  { enabled = true }: { enabled?: boolean } = {},
+) =>
+  useQuery({
+    queryKey: queryKeys.displayArtworks.byArtistUserId(userId),
+    queryFn: () => getArtistArtworks(userId),
     enabled: enabled && Number.isFinite(userId) && userId > 0,
   });

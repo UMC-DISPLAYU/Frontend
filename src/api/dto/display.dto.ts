@@ -454,7 +454,7 @@ export type DisplayLikeStatusResponseDto = ApiResponseDto<DisplayLikeStatusRespo
 export interface MyDisplayDto {
   displayId: number;
   title: string;
-  isDisplaying: boolean;
+  displayStatus: string;
   startDate: string;
   endDate: string;
   school: string;
@@ -466,6 +466,13 @@ export interface MyDisplayDto {
 export interface GetMyDisplaysResponseDataDto {
   createdDisplays: MyDisplayDto[];
   participatedDisplays: MyDisplayDto[];
+}
+
+export type ArtistDisplayDto = MyDisplayDto;
+
+export interface GetArtistDisplaysResponseDataDto {
+  createdDisplays: ArtistDisplayDto[];
+  participatedDisplays: ArtistDisplayDto[];
 }
 
 export interface InviteDisplayMemberRequestDto {

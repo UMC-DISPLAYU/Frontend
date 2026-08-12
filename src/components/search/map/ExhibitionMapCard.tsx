@@ -32,7 +32,7 @@ export function ExhibitionMapCard({
 
   const isPending = archive.isPending || unarchive.isPending;
 
-  const savedExhibitionIds = new Set(archivedData?.savedExhibitions?.map((s) => s.displayId) ?? []);
+  const savedExhibitionIds = new Set(archivedData?.displays?.map((s) => s.displayId) ?? []);
   const isSaved = exhibition.isArchived || savedExhibitionIds.has(exhibition.displayId);
 
   const handleBookmarkClick = (e: React.MouseEvent) => {

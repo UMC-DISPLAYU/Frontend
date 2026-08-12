@@ -16,6 +16,7 @@ import type {
   DisplayMemberListResponseDataDto,
   DisplayReviewLikeResponseDataDto,
   DisplayReviewReplyLikeResponseDataDto,
+  GetArtistDisplaysResponseDataDto,
   GetClosingSoonDisplaysRequestDto,
   GetClosingSoonDisplaysResponseDataDto,
   GetDisplayMapRequestDto,
@@ -120,6 +121,11 @@ export const getDisplayLikeStatus = async (
 // GET /v1/display/me
 export const getMyDisplays = async (): Promise<GetMyDisplaysResponseDataDto> =>
   apiRequest('/v1/display/me');
+
+// GET /v1/display/artists/:userId
+export const getArtistDisplays = async (
+  userId: number,
+): Promise<GetArtistDisplaysResponseDataDto> => apiRequest(`/v1/display/artists/${userId}`);
 
 // PATCH /v1/display/me/nickname
 export const updateMyDisplayNickname = async (body: { nickname: string }): Promise<unknown> =>

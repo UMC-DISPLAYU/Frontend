@@ -18,7 +18,7 @@ type Props = {
 export function LoungeBoardPostDetail({ post, onEdit, onDelete }: Props) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const policyPost = { isMyPost: Boolean(post.isMyPost) };
+  const policyPost = { isMyPost: Boolean(post.isMyPost), category: post.category };
   const loungePostPolicy = useLoungePostPolicy(policyPost);
   const canShowPostMenu =
     hasPermission(loungePostPolicy, 'edit') || hasPermission(loungePostPolicy, 'delete');

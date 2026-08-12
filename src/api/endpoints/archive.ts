@@ -59,13 +59,13 @@ export const getArchivedArtworks = async (
 ): Promise<GetArchivedArtworksResponseDataDto> =>
   apiRequest('/v1/archives/artworks', { query: params });
 
-// POST /v1/archives/artists/:artistId
-export const archiveArtist = async (artistId: number): Promise<ArchivedArtistStatusDto> =>
-  apiRequest(`/v1/archives/artists/${artistId}`, { method: 'POST' });
+// POST /v1/archives/artists/:artistUserId (경로 이름은 artistId지만 실제로는 작가의 userId를 전달합니다)
+export const archiveArtist = async (artistUserId: number): Promise<ArchivedArtistStatusDto> =>
+  apiRequest(`/v1/archives/artists/${artistUserId}`, { method: 'POST' });
 
-// DELETE /v1/archives/artists/:artistId
-export const unarchiveArtist = async (artistId: number): Promise<ArchivedArtistStatusDto> =>
-  apiRequest(`/v1/archives/artists/${artistId}`, { method: 'DELETE' });
+// DELETE /v1/archives/artists/:artistUserId (경로 이름은 artistId지만 실제로는 작가의 userId를 전달합니다)
+export const unarchiveArtist = async (artistUserId: number): Promise<ArchivedArtistStatusDto> =>
+  apiRequest(`/v1/archives/artists/${artistUserId}`, { method: 'DELETE' });
 
 // GET /v1/archives/artists
 export const getArchivedArtists = async (
@@ -73,11 +73,11 @@ export const getArchivedArtists = async (
 ): Promise<GetArchivedArtistsResponseDataDto> =>
   apiRequest('/v1/archives/artists', { query: params });
 
-// GET /v1/archives/exhibitions/:savedExhibitionId
+// GET /v1/archives/exhibitions/:archiveDisplayId
 export const getArchivedExhibition = async (
-  savedExhibitionId: number,
+  archiveDisplayId: number,
 ): Promise<NonNullable<GetArchivedExhibitionResponseDto['success']>['data']> =>
-  apiRequest(`/v1/archives/exhibitions/${savedExhibitionId}`);
+  apiRequest(`/v1/archives/exhibitions/${archiveDisplayId}`);
 
 // PUT /v1/archives/exhibitions/:archiveDisplayId/memo
 export const updateArchivedExhibitionMemo = async (

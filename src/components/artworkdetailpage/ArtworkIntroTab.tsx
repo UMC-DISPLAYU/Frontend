@@ -54,7 +54,7 @@ function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
   const isPending = archiveArtist.isPending || unarchiveArtist.isPending;
 
   const isSaved = (archivedArtists?.pages.flatMap((page) => page.artists) ?? []).some(
-    (artist) => artist.artistId === userId,
+    (artist) => artist.artistUserId === userId,
   );
 
   /* 공동 작업자는 작품에 기록된 이름이 없어, 있으면 프로필명을 대표 이름으로 씁니다. */

@@ -1,6 +1,7 @@
 import type {
   ArtworkPolicyResource,
   DisplayPolicyResource,
+  LoungePostPolicyResource,
   MyResource,
   PrivatableResource,
   UserOwnedResource,
@@ -10,6 +11,7 @@ import {
   canManageDisplay,
   canModerateDisplayPost,
   canModeratePersonalPost,
+  canViewLoungePost,
   isArtistVerified,
   isArtworkAuthor,
   isDisplayMember,
@@ -197,6 +199,7 @@ export const policies = {
   },
 
   loungePost: {
+    view: (user: User, post: LoungePostPolicyResource) => canViewLoungePost(user, post),
     create: (user: User) => isLoggedIn(user),
     edit: (user: User, post: MyResource) => isLoggedIn(user) && isMine(post),
     delete: (user: User, post: MyResource) => isLoggedIn(user) && isMine(post),

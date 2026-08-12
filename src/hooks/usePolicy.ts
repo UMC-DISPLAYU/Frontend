@@ -361,12 +361,13 @@ export function usePersonalFeelingReplyPolicy(
 }
 
 export function useLoungePostPolicy(
-  post?: Pick<LoungePostDetailDto, 'isMyPost'>,
+  post?: Pick<LoungePostDetailDto, 'isMyPost' | 'category'>,
 ): PolicyPermissionMap<'loungePost'> {
   const user = useCurrentPolicyUser();
 
   return useMemo(
     () => ({
+      view: () => (post ? policies.loungePost.view(user, post) : true),
       create: () => policies.loungePost.create(user),
       edit: () => (post ? policies.loungePost.edit(user, post) : false),
       delete: () => (post ? policies.loungePost.delete(user, post) : false),

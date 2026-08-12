@@ -38,7 +38,7 @@ export function MyPageHeader({
   const canCreatePersonalArtwork = hasPermission(personalArtworkPolicy, 'create');
 
   return (
-    <header className="shrink-0 bg-card">
+    <header className="shrink-0 bg-page">
       <div className="px-5 pt-2 flex justify-between items-center">
         <div className="flex items-center gap-2.5">
           <h1 className="typo-heading-3xl text-main">My Page</h1>
@@ -60,8 +60,8 @@ export function MyPageHeader({
         </div>
       </div>
 
-      <div className="px-5 pt-5 pb-5 flex flex-col gap-3.5">
-        <div className="flex gap-6 items-start">
+      <div className="px-5 py-4 flex flex-col gap-3.5">
+        <div className="flex items-center gap-3">
           <img
             className="size-20 rounded-full object-cover shrink-0"
             src={profile.avatar || FALLBACK_PROFILE_IMAGE}
@@ -70,38 +70,40 @@ export function MyPageHeader({
               event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
             }}
           />
-          <div className="flex-1 min-w-0 flex flex-col gap-3">
-            <div className="typo-body-xl-bold text-main truncate">{profile.name}</div>
-            {isArtistView ? (
-              <div className="flex items-center gap-5.5">
-                <div className="w-17.5 flex flex-col items-center gap-0.5">
-                  <img className="w-12 h-9 object-contain" src={profile.schoolIcon} alt="" />
-                  <span className="typo-body-xs-semibold text-main">{profile.school}</span>
+          <div className="flex-1 min-w-0 flex items-end justify-between gap-3">
+            <div className="flex flex-col gap-1 min-w-0">
+              <div className="typo-body-xl-bold text-main truncate">{profile.name}</div>
+              {isArtistView ? (
+                <div className="flex items-center gap-5.5">
+                  <div className="w-17.5 flex flex-col items-center gap-0.5">
+                    <img className="w-12 h-9 object-contain" src={profile.schoolIcon} alt="" />
+                    <span className="typo-body-xs-semibold text-main">{profile.school}</span>
+                  </div>
+                  <div className="w-18 flex flex-col items-center gap-0.5">
+                    <img className="w-12 h-9 object-contain" src={profile.fieldIcon} alt="" />
+                    <span className="typo-body-xs-semibold text-main">{profile.field}</span>
+                  </div>
+                  <div className="w-17.5 flex flex-col items-center gap-0.5">
+                    <img className="w-12 h-9 object-contain" src={profile.exhibitionIcon} alt="" />
+                    <span className="typo-body-xs-semibold text-main">{profile.exhibit}</span>
+                  </div>
                 </div>
-                <div className="w-18 flex flex-col items-center gap-0.5">
-                  <img className="w-12 h-9 object-contain" src={profile.fieldIcon} alt="" />
-                  <span className="typo-body-xs-semibold text-main">{profile.field}</span>
+              ) : (
+                <div className="typo-body-xs-regular text-main truncate">
+                  {profile.caption || '내가 저장한 작품 확인하기'}
                 </div>
-                <div className="w-17.5 flex flex-col items-center gap-0.5">
-                  <img className="w-12 h-9 object-contain" src={profile.exhibitionIcon} alt="" />
-                  <span className="typo-body-xs-semibold text-main">{profile.exhibit}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="typo-body-xs-regular text-main truncate">
-                {profile.caption || '내가 저장한 작품 확인하기'}
-              </div>
+              )}
+            </div>
+            {!isArtistVerified && !isArtistView && (
+              <button
+                type="button"
+                onClick={onVerifyArtist}
+                className="shrink-0 inline-flex items-center justify-center px-6 py-1.5 bg-box rounded-lg border border-bt-border cursor-pointer"
+              >
+                <span className="typo-body-xs-regular text-main underline">작가 인증하기</span>
+              </button>
             )}
           </div>
-          {!isArtistVerified && !isArtistView && (
-            <button
-              type="button"
-              onClick={onVerifyArtist}
-              className="shrink-0 px-6 py-1.5 bg-box200 rounded-lg border border-line-soft self-center"
-            >
-              <span className="typo-body-xs-regular text-main underline">작가 인증하기</span>
-            </button>
-          )}
         </div>
 
         {isArtistView && profile.bio && (
@@ -158,7 +160,7 @@ export function MyPageHeader({
         )}
       </div>
 
-      <nav className="border-b-2 border-line flex shadow-[0px_0px_18px_0px_rgba(67,0,209,0.04)]">
+      <nav className="bg-page border-b border-line flex px-5">
         {TABS.map((tab) => {
           if (isArtistView && tab.key === 'artist') return null;
 
@@ -169,13 +171,13 @@ export function MyPageHeader({
               type="button"
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                'relative flex-1 h-11 flex justify-center pt-3',
+                'relative flex-1 py-3 flex justify-center items-center',
                 isActive ? 'typo-body-sm-bold text-main' : 'typo-body-sm-regular text-faint',
               )}
             >
               {tab.label}
               {isActive && (
-                <span className="absolute w-35 h-0.5 bg-main bottom-0 left-1/2 -translate-x-1/2" />
+                <span className="absolute left-0 right-0 -bottom-[1px] h-[2px] bg-main z-10" />
               )}
             </button>
           );
