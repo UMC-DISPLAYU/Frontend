@@ -1,7 +1,7 @@
 import { Bookmark, ChevronLeft, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Share from '@/assets/mypage/share.svg';
 
+import Share from '@/assets/mypage/share.svg';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { ArtistProfile, TabKey } from '@/types/mypage';
 import { cn } from '@/utils/cn';
