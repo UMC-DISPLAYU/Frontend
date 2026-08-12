@@ -55,6 +55,9 @@ export interface ArchivedArtworkDto {
   artworkId: number | null;
   personalArtworkId?: number | null;
   userId: number;
+  artworkName: string;
+  artworkImageUrl: string | null;
+  artistName: string | null;
   memo: string | null;
   savedAt: string;
 }
@@ -77,7 +80,7 @@ export interface GetArchivedArtworksResponseDataDto {
 export type GetArchivedArtworksResponseDto = ApiResponseDto<GetArchivedArtworksResponseDataDto>;
 
 export interface ArchivedArtistStatusDto {
-  artistId: number;
+  artistUserId: number;
   isArchived: boolean;
 }
 
@@ -87,8 +90,12 @@ export type UnarchiveArtistResponseDto = ApiResponseDto<ArchivedArtistStatusDto>
 
 export interface ArchivedArtistDto {
   archiveArtistId: number;
+  /* 작가 프로필 ID. 상세조회에는 쓰지 않습니다 - 대신 artistUserId를 사용하세요. */
   artistId: number;
+  /* 이 작가를 저장한 사람(나)의 userId */
   userId: number;
+  /* 작가 본인의 userId. 상세조회(/artist/:userId) 등 계정 기준 라우팅에 사용합니다. */
+  artistUserId: number;
   artistName: string;
   fields: string[];
   profileImageUrl: string;

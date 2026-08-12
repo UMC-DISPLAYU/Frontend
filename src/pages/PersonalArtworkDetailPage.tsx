@@ -28,11 +28,13 @@ import {
   usePersonalArtworkQuestions,
   useTogglePersonalArtworkFeelingLike,
   useTogglePersonalArtworkFeelingReplyLike,
+  useTogglePersonalArtworkLike,
   useTogglePersonalArtworkQuestionLike,
   useTogglePersonalArtworkQuestionReplyLike,
 } from '@/hooks/queries/usePersonalArtwork';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import {
+  usePersonalArtworkPolicy,
   usePersonalFeelingPolicy,
   usePersonalFeelingReplyPolicy,
   usePersonalQuestionPolicy,
@@ -465,6 +467,10 @@ export function PersonalArtworkDetailPage() {
 
   const feelingPolicy = usePersonalFeelingPolicy(undefined, artwork);
   const questionPolicy = usePersonalQuestionPolicy(undefined, artwork);
+  const artworkPolicy = usePersonalArtworkPolicy(artwork);
+  const liked = artwork?.isLiked ?? false;
+  const canToggleLike = hasPermission(artworkPolicy, liked ? 'unlike' : 'like');
+  const toggleLike = useTogglePersonalArtworkLike(personalArtworkId);
   const createFeeling = useCreatePersonalArtworkFeeling(personalArtworkId);
   const createQuestion = useCreatePersonalArtworkQuestion(personalArtworkId);
   const createFeelingReply = useCreatePersonalArtworkFeelingReply(
@@ -494,6 +500,16 @@ export function PersonalArtworkDetailPage() {
   const displayHeroImages = heroImages.length > 0 ? heroImages : [FALLBACK_POSTER_IMAGE];
   const feelingItems = feelings?.feelings;
   const questionItems = questions?.questions;
+
+  const handleLike = () => {
+    if (toggleLike.isPending) return;
+    if (!canToggleLike) {
+      openLoginModal();
+      return;
+    }
+
+    toggleLike.mutate(liked);
+  };
 
   const handleSend = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
     if (!content) return;
@@ -541,6 +557,25 @@ export function PersonalArtworkDetailPage() {
       <section className="bg-page px-5 pt-5 pb-6">
         <div className="flex items-start justify-between gap-3">
           <h1 className="typo-body-2xl-bold text-main">{artwork.artworkName}</h1>
+          <div className="flex shrink-0 flex-col items-center">
+            <button
+              type="button"
+              aria-pressed={liked}
+              aria-label={`좋아요 ${artwork.likeCount ?? 0}개`}
+              onClick={handleLike}
+              className="cursor-pointer transition-transform active:scale-95"
+            >
+              <Heart
+                size={24}
+                strokeWidth={1.5}
+                className={cn(
+                  'transition-colors duration-200',
+                  liked ? 'fill-heart text-heart' : 'fill-none text-main',
+                )}
+              />
+            </button>
+            <span className="typo-body-xs-regular mt-1 text-main">{artwork.likeCount ?? 0}</span>
+          </div>
         </div>
         {artwork.nickname && (
           <p className="typo-body-sm-regular -mt-1.5 text-main">{artwork.nickname}</p>

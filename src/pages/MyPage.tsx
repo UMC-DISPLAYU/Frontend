@@ -198,7 +198,7 @@ export function MyPage() {
       artworkId: item.artworkId,
       personalArtworkId: item.personalArtworkId,
       userId: item.userId ?? userData?.id,
-      title: item.title ?? item.artworkTitle ?? '작품',
+      title: item.artworkName ?? item.title ?? item.artworkTitle ?? '작품',
       artist: item.artist ?? item.artistName ?? '',
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
@@ -223,6 +223,7 @@ export function MyPage() {
     return items.map((item) => ({
       id: String(item.archiveArtistId ?? item.artistId),
       artistId: item.artistId,
+      artistUserId: item.artistUserId,
       name: item.artistName ?? item.nickname ?? '작가',
       field: item.fields?.join(', ') ?? '',
       registeration: String(item.artworkCount ?? item.registeration ?? 0),
@@ -323,7 +324,7 @@ export function MyPage() {
         isArtistVerified={isArtistVerified}
       />
 
-      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6 bg-box">
+      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6 bg-box100">
         {activeQuery.isLoading ? (
           <LoadingView
             fullScreen={false}
@@ -392,10 +393,10 @@ export function MyPage() {
               <ArtistCard
                 key={item.id}
                 item={item}
-                onOpen={(artist) => navigate(`/auth/${artist.artistId ?? artist.id}`)}
+                onOpen={(artist) => navigate(`/artist/${artist.artistUserId ?? artist.id}`)}
                 onUnarchive={(artist) => {
                   if (window.confirm('저장한 작가에서 삭제할까요?')) {
-                    unarchiveArtist.mutate(artist.artistId ?? Number(artist.id));
+                    unarchiveArtist.mutate(artist.artistUserId ?? Number(artist.id));
                   }
                 }}
               />

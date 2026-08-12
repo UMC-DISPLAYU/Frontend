@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { PersonalArtworkRequestDto } from '@/api/dto';
+import type { PersonalArtworkRequestDto, PersonalArtworkResponseDataDto } from '@/api/dto';
 import {
   createPersonalArtwork,
   createPersonalArtworkFeeling,
@@ -18,10 +18,12 @@ import {
   getPersonalArtworkQuestionReply,
   getPersonalArtworkQuestions,
   getPersonalArtworks,
+  likePersonalArtwork,
   togglePersonalArtworkFeelingLike,
   togglePersonalArtworkFeelingReplyLike,
   togglePersonalArtworkQuestionLike,
   togglePersonalArtworkQuestionReplyLike,
+  unlikePersonalArtwork,
   updatePersonalArtwork,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -80,6 +82,21 @@ export const useDeletePersonalArtwork = () => {
       queryClient.removeQueries({
         queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
       });
+    },
+  });
+};
+
+export const useTogglePersonalArtworkLike = (personalArtworkId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (liked: boolean) =>
+      liked ? unlikePersonalArtwork(personalArtworkId) : likePersonalArtwork(personalArtworkId),
+    onSuccess: ({ isLiked, likeCount }) => {
+      queryClient.setQueryData<PersonalArtworkResponseDataDto>(
+        queryKeys.personalArtworks.detail(personalArtworkId),
+        (current) => (current ? { ...current, isLiked, likeCount } : current),
+      );
     },
   });
 };

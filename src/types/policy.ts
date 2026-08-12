@@ -67,7 +67,7 @@ export type PolicyActionMap = {
     | 'reply.like'
     | 'reply.unlike'
     | 'reply.delete';
-  loungePost: 'create' | 'edit' | 'delete' | 'like' | 'unlike' | 'scrap';
+  loungePost: 'view' | 'create' | 'edit' | 'delete' | 'like' | 'unlike' | 'scrap';
   loungeComment: 'create' | 'delete' | 'like' | 'unlike';
   archive: 'create' | 'delete';
   memo: 'view' | 'upsert' | 'delete';

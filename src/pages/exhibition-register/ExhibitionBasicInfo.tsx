@@ -136,6 +136,7 @@ export function ExhibitionBasicInfo() {
     getValues,
     setValue,
     reset,
+    trigger,
     formState: { errors, isValid },
   } = useForm<ExhibitionBasicInfoFormValues>({
     resolver: zodResolver(exhibitionBasicInfoSchema),
@@ -167,6 +168,16 @@ export function ExhibitionBasicInfo() {
         : ((restored.notice as string) ?? displayDetail?.note ?? ''),
     },
   });
+
+  /*
+   * mode: 'onChange'는 값이 바뀔 때만 재검증하고 마운트 시점엔 돌지 않아서,
+   * defaultValues가 이미 유효해도 사용자가 아무 필드나 건드리기 전까진 isValid가 false로 남는다.
+   * 마운트 시 한 번 직접 트리거해 초기 defaultValues 기준으로 isValid를 맞춰준다.
+   */
+  useEffect(() => {
+    trigger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const notice = useWatch({ control, name: 'notice' }) ?? '';
   const [
@@ -240,8 +251,10 @@ export function ExhibitionBasicInfo() {
         contact: (restored.contact as string) ?? fetchedDetail.qnaAccount ?? '',
         notice: (restored.notice as string) ?? fetchedDetail.note ?? '',
       });
+      /* reset()도 isValid를 자동으로 재계산하지 않으므로 다시 트리거해준다. */
+      trigger();
     }
-  }, [displayId, state, fetchedDetail, restored, reset, shouldUseDraft]);
+  }, [displayId, state, fetchedDetail, restored, reset, shouldUseDraft, trigger]);
 
   useEffect(() => {
     if (displayId > 0) {

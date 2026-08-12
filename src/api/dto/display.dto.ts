@@ -468,6 +468,13 @@ export interface GetMyDisplaysResponseDataDto {
   participatedDisplays: MyDisplayDto[];
 }
 
+export type ArtistDisplayDto = MyDisplayDto;
+
+export interface GetArtistDisplaysResponseDataDto {
+  createdDisplays: ArtistDisplayDto[];
+  participatedDisplays: ArtistDisplayDto[];
+}
+
 export interface InviteDisplayMemberRequestDto {
   inviteeUserId: number;
   role?: 'TEAM_MEM';
