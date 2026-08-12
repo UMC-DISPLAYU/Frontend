@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { useParams } from 'react-router-dom';
+
 import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtworkTab,

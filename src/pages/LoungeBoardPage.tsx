@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+import { useParams } from 'react-router-dom';
+
 import type { LoungePostSummaryDto } from '@/api/dto';
 import { ErrorView, LoadingView } from '@/components/common';
 import { LoungeBoardHeader, LoungeBoardPostCard } from '@/components/lounge-board';

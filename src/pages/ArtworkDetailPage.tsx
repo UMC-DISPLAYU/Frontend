@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 
+import { useParams } from 'react-router-dom';
+
 import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';

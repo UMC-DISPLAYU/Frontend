@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Heart, Lock } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 
 import type {
   PersonalArtworkFeelingReplyDto,

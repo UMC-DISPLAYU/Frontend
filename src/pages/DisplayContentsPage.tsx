@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto } from '@/api/dto/display.dto';
 import DUfontlogo from '@/assets/brand/DUfontlogo.svg';

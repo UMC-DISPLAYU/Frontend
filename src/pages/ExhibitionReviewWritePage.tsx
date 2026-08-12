@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 
+import { useParams } from 'react-router-dom';
+
 import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import { ImageUploadPlaceholder, PostWriteHeader } from '@/components/post-write';
 import { AlertModal, RequiredLabel } from '@/components/ui';

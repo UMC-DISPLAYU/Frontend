@@ -123,7 +123,12 @@ export function DisplayCreatePermissionGuard({
   fallback = '/403',
   children,
 }: GuardChildrenProps & { fallback?: string }) {
-  const policy = useDisplayCreatePolicy();
+  const createPolicy = useDisplayCreatePolicy();
+  const policy = {
+    create: createPolicy.create,
+    edit: () => false,
+    delete: () => false,
+  };
 
   return (
     <PermissionGuard resource="display" action="create" fallback={fallback} policy={policy}>
