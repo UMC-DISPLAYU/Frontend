@@ -20,7 +20,7 @@ const archivedExhibitions = () => ({
     title: display.title,
     posterImageUrl: getFirstImageUrl(display),
     organization: display.organization,
-    department: display.department ?? '디자인학과',
+    department: display.department ?? '',
     location: display.placeName,
     startedAt: display.startDate ?? display.startedAt,
     endedAt: display.endDate ?? display.endedAt,
