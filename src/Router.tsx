@@ -25,6 +25,7 @@ import { ExhibitionRegisterDraftRoute } from './pages/exhibition-register/Exhibi
 import { ExhibitionManage } from './pages/ExhibitionManagePage';
 import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
 import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
+import { ForbiddenPage } from './pages/ForbiddenPage';
 import { Homepage } from './pages/Homepage';
 import { InteriorPhotosPage } from './pages/InteriorPhotosPage';
 import { InvitationRequestPage } from './pages/InvitationRequestPage';
@@ -109,6 +110,7 @@ export const router = createBrowserRouter([
         handle: { hideNavbar: true },
       },
       { path: 'policy', element: <PolicyPage /> },
+      { path: '403', element: <ForbiddenPage /> },
 
       // 🔒 보호된 라우트 (인증 필요 - PrivateRoute Layout 적용)
       {
