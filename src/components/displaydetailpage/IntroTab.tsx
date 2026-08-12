@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { ChevronRight, CircleAlert } from 'lucide-react';
+import { ChevronRight, ChevronUp, CircleAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto, DisplayDetailDto } from '@/api/dto/display.dto';
@@ -73,9 +73,14 @@ export function IntroTab({ display: ex }: Props) {
 
   const organizer = [ex.organization, ex.department].filter(Boolean).join(' ');
 
+  /*
+   * 펼친 상태에서는 line-clamp가 풀려 요소 자체의 높이가 커지는데, 그걸 리사이즈로 감지해
+   * 다시 재보면 scrollHeight === clientHeight가 되어 접기 버튼이 사라집니다. 접힌 상태일 때만
+   * 관찰합니다.
+   */
   useEffect(() => {
     const el = contentRef.current;
-    if (!el) return;
+    if (!el || expanded) return;
 
     const measure = () => setIsContentClamped(el.scrollHeight > el.clientHeight);
     measure();
@@ -84,7 +89,7 @@ export function IntroTab({ display: ex }: Props) {
     observer.observe(el);
 
     return () => observer.disconnect();
-  }, [ex.content]);
+  }, [ex.content, expanded]);
 
   return (
     <div className="bg-page">
@@ -114,7 +119,11 @@ export function IntroTab({ display: ex }: Props) {
                 className="flex items-center typo-body-xs-regular text-faint cursor-pointer"
               >
                 {expanded ? '접기' : '더보기'}
-                <ChevronRight className="text-faint size-3" />
+                {expanded ? (
+                  <ChevronUp className="text-faint size-3" />
+                ) : (
+                  <ChevronRight className="text-faint size-3" />
+                )}
               </button>
             </div>
           )}

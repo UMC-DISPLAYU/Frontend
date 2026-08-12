@@ -601,13 +601,16 @@ export function PersonalArtworkDetailPage() {
           {processImages.length > 0 && (
             <section className="bg-box200 px-5 pt-5 pb-5">
               <h2 className="typo-body-xl-bold mb-3 text-main">작업과정</h2>
-              <div className="grid grid-cols-3 gap-2">
+              <div
+                className="-mx-5 flex min-w-0 gap-2 overflow-x-auto px-5"
+                style={{ scrollbarWidth: 'none' }}
+              >
                 {processImages.map((image) => (
                   <img
                     key={image.imageUrl}
                     src={image.imageUrl}
                     alt=""
-                    className="h-40 w-full rounded-2xl object-cover"
+                    className="h-[152px] w-[119px] shrink-0 rounded-[13px] object-cover"
                   />
                 ))}
               </div>

@@ -4,6 +4,7 @@ import type {
   ArtworkFeelingReplyLikeDto,
   ArtworkFeelingReplyListResponseDataDto,
   ArtworkQuestionRecordDto,
+  CreateArtworkFeelingReplyResponseDataDto,
   CreateArtworkFeelingRequestDto,
   CreateArtworkFeelingResponseDataDto,
   CreateArtworkQuestionReplyRequestDto,
@@ -167,7 +168,7 @@ export const createArtworkFeelingReply = async (
   artworkId: number,
   feelingId: number,
   body: { content: string; images?: ArtworkFeelingReplyImageRequestDto[] },
-): Promise<unknown> =>
+): Promise<CreateArtworkFeelingReplyResponseDataDto> =>
   apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply`, { method: 'POST', body });
 
 // DELETE /v1/artworks/:artworkId/feelings/:feelingId/reply/:feelingReplyId
