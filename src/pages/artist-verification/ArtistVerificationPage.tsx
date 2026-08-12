@@ -1,7 +1,8 @@
-import { useCallback, useReducer, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 import {
   ArtistFieldSelector,

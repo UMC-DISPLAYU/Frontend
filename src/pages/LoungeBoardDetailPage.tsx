@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import {
   LoungeBoardActionBar,
