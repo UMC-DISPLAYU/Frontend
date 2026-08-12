@@ -37,7 +37,7 @@ export function ExhibitionCard({
     : {};
 
   return (
-    <article className="shrink-0 w-full bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
+    <article className="shrink-0 w-full bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col relative">
       <div
         {...openHandlers}
         className={cn(
@@ -47,7 +47,11 @@ export function ExhibitionCard({
       >
         <div className="w-24 h-32 rounded-xl overflow-hidden bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
           {item.thumbnail && (
-            <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+            <img
+              className="block w-full h-full object-cover"
+              src={item.thumbnail}
+              alt={item.title}
+            />
           )}
         </div>
 

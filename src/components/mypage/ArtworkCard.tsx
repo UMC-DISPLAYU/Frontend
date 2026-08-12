@@ -36,12 +36,16 @@ export function ArtworkCard({
       }
     : {};
   return (
-    <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col overflow-hidden">
+    <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col relative">
       <div {...openHandlers} className={onOpen ? 'cursor-pointer px-1.5 py-2.5' : 'px-1.5 py-2.5'}>
         <div className="relative rounded-xl overflow-hidden">
           <div className="w-full h-44 bg-box200">
             {item.thumbnail && (
-              <img className="w-full h-full object-cover" src={item.thumbnail} alt={item.title} />
+              <img
+                className="block w-full h-full object-cover"
+                src={item.thumbnail}
+                alt={item.title}
+              />
             )}
           </div>
           {!isArtistView && (
