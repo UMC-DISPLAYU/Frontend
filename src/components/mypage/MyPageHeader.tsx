@@ -160,7 +160,7 @@ export function MyPageHeader({
         )}
       </div>
 
-      <nav className="bg-page border-b border-line flex justify-center">
+      <nav className="bg-page border-b border-line flex px-5">
         {TABS.map((tab) => {
           if (isArtistView && tab.key === 'artist') return null;
 
@@ -171,7 +171,7 @@ export function MyPageHeader({
               type="button"
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                'relative px-12 py-3 flex justify-center items-center',
+                'relative flex-1 py-3 flex justify-center items-center',
                 isActive ? 'typo-body-sm-bold text-main' : 'typo-body-sm-regular text-faint',
               )}
             >
