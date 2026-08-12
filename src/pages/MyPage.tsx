@@ -350,7 +350,7 @@ export function MyPage() {
           />
         ) : activeTab === 'exhibition' &&
           (isArtistView ? myExhibitions : exhibitions).length > 0 ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {(isArtistView ? myExhibitions : exhibitions).map((item) => (
               <ExhibitionCard
                 key={item.id}

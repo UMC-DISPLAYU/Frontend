@@ -17,7 +17,9 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   isOwner,
   status: getDisplayStatusLabel(display.displayStatus),
   title: display.title,
-  org: isOwner ? '대표자' : '팀원',
+  /* 학과·학회 등 소속 전시는 학교/기관명+세부소속을, 연합 전시는 주최/소속명만 저장하므로
+   * department가 비어있으면 자연히 주최/소속명만 남습니다. */
+  org: [display.school, display.department].filter(Boolean).join(' '),
   period: `${formatDate(display.startDate)} – ${formatDate(display.endDate)}`,
   place: display.placeName,
   thumbnail: display.postImageUrl,

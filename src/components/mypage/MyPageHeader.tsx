@@ -115,13 +115,13 @@ export function MyPageHeader({
 
           {(profile.bio || profile.portfolioUrl) && (
             <div className="flex flex-col gap-2">
-              {profile.bio && <p className="typo-body-xs-semibold text-sub700">{profile.bio}</p>}
+              {profile.bio && <p className="typo-body-xs-regular text-sub700">{profile.bio}</p>}
               {profile.portfolioUrl && (
                 <a
                   href={`https://${profile.portfolioUrl}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1 typo-body-xs-semibold text-[#2563EB]"
+                  className="flex items-center gap-1 typo-body-xs-regular text-[#2563EB]"
                 >
                   <ExternalLink className="size-4" />
                   {profile.portfolioUrl}
