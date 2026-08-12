@@ -7,6 +7,7 @@ import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 export function MyExhibitionsPage() {
   useHideFooter();
 
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const { data: myDisplays = [], isLoading } = useMyDisplays();
 

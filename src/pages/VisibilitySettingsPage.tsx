@@ -68,6 +68,7 @@ function VisibilitySection({
 }
 
 export function VisibilitySettings() {
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const { state } = useLocation() as { state: VisibilityState | null };
   const { displayId: paramDisplayId } = useParams();

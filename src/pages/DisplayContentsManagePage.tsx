@@ -25,6 +25,7 @@ import { hasPermission } from '@/utils/hasPermission';
 export function DisplayContentsManagePage() {
   useHideFooter();
 
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();

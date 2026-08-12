@@ -122,6 +122,7 @@ function verificationReducer(
 }
 
 export function ArtistVerificationPage() {
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const [state, dispatch] = useReducer(verificationReducer, initialState);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);

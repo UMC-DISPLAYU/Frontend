@@ -27,6 +27,7 @@ export function ExhibitionWorkPage() {
   const { displayId } = useParams();
   const { state } = useLocation() as { state: LocationState | null };
 
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
 
   const exhibition = state?.initialExhibition;

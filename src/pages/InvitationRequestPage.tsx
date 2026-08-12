@@ -161,6 +161,7 @@ function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
 }
 
 export function InvitationRequestPage() {
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const [searchParams] = useSearchParams();
   const { data, isLoading, isError } = useMyDisplayInvitations();

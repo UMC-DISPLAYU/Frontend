@@ -22,6 +22,7 @@ import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
 import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 
 export const LoungeBoardDetailPage = () => {
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const { category, id } = useParams<{ category: string; id: string }>();
   const isValidCategory = isLoungeCategoryKey(category);

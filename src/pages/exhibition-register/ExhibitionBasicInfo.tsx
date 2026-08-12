@@ -67,6 +67,7 @@ function Label({ children, required }: { children: React.ReactNode; required?: b
 }
 
 export function ExhibitionBasicInfo() {
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft } = useExhibitionRegisterDraft();

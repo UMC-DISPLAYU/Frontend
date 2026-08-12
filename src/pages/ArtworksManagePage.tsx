@@ -20,6 +20,7 @@ import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
 import type { Work } from '@/types/artworkManage';
 
 export function ArtworksManagePage() {
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();

@@ -93,6 +93,7 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 }
 
 export function ArtistNameSetup() {
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();

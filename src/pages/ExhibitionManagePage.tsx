@@ -44,6 +44,7 @@ type DisplaySource = {
 export function ExhibitionManage() {
   useHideFooter();
 
+  const navigate = useNavigate();
   const goBackOrHome = useGoBackOrHome();
   const { displayId: paramDisplayId } = useParams();
   const { state } = useLocation();
