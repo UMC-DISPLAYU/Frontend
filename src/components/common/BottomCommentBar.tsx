@@ -134,6 +134,7 @@ export function BottomCommentBar({
           if (!accessToken) {
             e.target.blur();
             setIsLoginModalOpen(true);
+            onCancelReply?.();
           }
         }}
         onChange={(e) => setContent(e.target.value)}
