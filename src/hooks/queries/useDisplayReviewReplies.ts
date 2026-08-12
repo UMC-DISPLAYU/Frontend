@@ -1,6 +1,10 @@
+import type { InfiniteData } from '@tanstack/react-query';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateDisplayReviewReplyRequestDto } from '@/api/dto';
+import type {
+  CreateDisplayReviewReplyRequestDto,
+  GetDisplayReviewRepliesResponseDataDto,
+} from '@/api/dto';
 import {
   cancelDisplayReviewReplyLike,
   createDisplayReviewReply,
@@ -51,12 +55,36 @@ const useInvalidateReplies = (displayId: number, displayReviewId: number) => {
 };
 
 export const useCreateDisplayReviewReply = (displayId: number, displayReviewId: number) => {
-  const invalidate = useInvalidateReplies(displayId, displayReviewId);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (body: CreateDisplayReviewReplyRequestDto) =>
       createDisplayReviewReply(displayId, displayReviewId, body),
-    onSuccess: invalidate,
+    /*
+     * 답글은 오래된 순으로 쌓여서, 무효화 후 재조회하면 방금 쓴 답글이 다음 페이지로
+     * 밀려나 "더보기"를 눌러야만 보입니다. 생성 응답이 목록 항목과 동일한 모양이라
+     * 캐시에 곧바로 이어붙여 작성자 본인에게는 즉시 보이게 합니다.
+     */
+    onSuccess: (newReply) => {
+      queryClient.setQueryData<InfiniteData<GetDisplayReviewRepliesResponseDataDto>>(
+        queryKeys.displays.reviewReplies(displayId, displayReviewId),
+        (old) => {
+          if (!old || old.pages.length === 0) return old;
+          const lastIndex = old.pages.length - 1;
+          return {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === lastIndex ? { ...page, replies: [...page.replies, newReply] } : page,
+            ),
+          };
+        },
+      );
+      /* 답글 수 표시를 위해 후기 목록만 갱신합니다(답글 목록은 위에서 직접 갱신했으므로 제외). */
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.displays.reviews(displayId),
+        exact: true,
+      });
+    },
   });
 };
 

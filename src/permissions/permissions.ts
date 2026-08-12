@@ -129,8 +129,7 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
     policies.displayContent.deleteCategory(toUser(a), toDisplay(a)),
   'displayContent:createContent': (a) =>
     policies.displayContent.createContent(toUser(a), toDisplay(a)),
-  'displayContent:editContent': (a) =>
-    policies.displayContent.editContent(toUser(a), toDisplay(a)),
+  'displayContent:editContent': (a) => policies.displayContent.editContent(toUser(a), toDisplay(a)),
   'displayContent:deleteContent': (a) =>
     policies.displayContent.deleteContent(toUser(a), toDisplay(a)),
   'displayContent:reorder': (a) => policies.displayContent.reorder(toUser(a), toDisplay(a)),
@@ -162,14 +161,12 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
   'feeling:reply.create': (a) => policies.feeling.reply.create(toUser(a)),
   'feeling:reply.like': (a) => policies.feeling.reply.like(toUser(a)),
   'feeling:reply.unlike': (a) => policies.feeling.reply.unlike(toUser(a)),
-  'feeling:reply.delete': (a) =>
-    policies.feeling.reply.delete(toUser(a), toReply(a), toDisplay(a)),
+  'feeling:reply.delete': (a) => policies.feeling.reply.delete(toUser(a), toReply(a), toDisplay(a)),
 
   'displayReview:create': (a) => policies.displayReview.create(toUser(a)),
   'displayReview:like': (a) => policies.displayReview.like(toUser(a)),
   'displayReview:unlike': (a) => policies.displayReview.unlike(toUser(a)),
-  'displayReview:delete': (a) =>
-    policies.displayReview.delete(toUser(a), toPost(a), toDisplay(a)),
+  'displayReview:delete': (a) => policies.displayReview.delete(toUser(a), toPost(a), toDisplay(a)),
   'displayReview:reply.create': (a) => policies.displayReview.reply.create(toUser(a)),
   'displayReview:reply.like': (a) => policies.displayReview.reply.like(toUser(a)),
   'displayReview:reply.unlike': (a) => policies.displayReview.reply.unlike(toUser(a)),
@@ -180,8 +177,7 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
   'personalArtwork:like': (a) => policies.personalArtwork.like(toUser(a)),
   'personalArtwork:unlike': (a) => policies.personalArtwork.unlike(toUser(a)),
   'personalArtwork:edit': (a) => policies.personalArtwork.edit(toUser(a), toPersonalArtwork(a)),
-  'personalArtwork:delete': (a) =>
-    policies.personalArtwork.delete(toUser(a), toPersonalArtwork(a)),
+  'personalArtwork:delete': (a) => policies.personalArtwork.delete(toUser(a), toPersonalArtwork(a)),
 
   'personalQuestion:view': (a) =>
     policies.personalQuestion.view(toUser(a), toPost(a), toPersonalArtwork(a)),
@@ -196,7 +192,8 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
     policies.personalQuestion.reply.create(toUser(a), toPersonalArtwork(a)),
   'personalQuestion:reply.like': (a) => policies.personalQuestion.reply.like(toUser(a)),
   'personalQuestion:reply.unlike': (a) => policies.personalQuestion.reply.unlike(toUser(a)),
-  'personalQuestion:reply.delete': (a) => policies.personalQuestion.reply.delete(toUser(a), toReply(a)),
+  'personalQuestion:reply.delete': (a) =>
+    policies.personalQuestion.reply.delete(toUser(a), toReply(a)),
 
   'personalFeeling:create': (a) => policies.personalFeeling.create(toUser(a)),
   'personalFeeling:like': (a) => policies.personalFeeling.like(toUser(a)),
