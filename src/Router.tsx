@@ -1,6 +1,6 @@
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 
-import { PrivateRoute } from './components/auth/PrivateRoute';
+import { AuthGuard } from './components/guards/AuthGuard';
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
 import { ArtistVerificationPage } from './pages/artist-verification';
@@ -112,9 +112,9 @@ export const router = createBrowserRouter([
       { path: 'policy', element: <PolicyPage /> },
       { path: '403', element: <ForbiddenPage /> },
 
-      // 🔒 보호된 라우트 (인증 필요 - PrivateRoute Layout 적용)
+      // 🔒 보호된 라우트 (인증 필요 - AuthGuard Layout 적용)
       {
-        element: <PrivateRoute />,
+        element: <AuthGuard />,
         children: [
           { path: 'my', element: <MyPage /> },
           { path: 'artist-verification', element: <ArtistVerificationPage /> },
