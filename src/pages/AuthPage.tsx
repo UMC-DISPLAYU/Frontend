@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { ErrorView, LoadingView, LoginConfirmModal } from '@/components/common';
-import { ArtworkCard, AuthPageHeader } from '@/components/mypage';
+import { ArtworkCard, AuthPageHeader, ExhibitionCard } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
 import {
@@ -12,6 +12,7 @@ import {
   useUnarchiveArtist,
 } from '@/hooks/queries/useArchive';
 import { useArtistExhibitionArtworks, useUserArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useArtistDisplays } from '@/hooks/queries/useMyDisplays';
 import { useUserArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useShare } from '@/hooks/useShare';
 import { useAuthStore } from '@/stores/authStore';
@@ -34,6 +35,7 @@ export function AuthPage() {
   /* 작품 탭 진입 전에도 헤더의 작품 수를 보여줘야 해서 탭과 무관하게 항상 불러옵니다. */
   const personalArtworksQuery = useUserArtworks(userId);
   const exhibitionArtworksQuery = useArtistExhibitionArtworks(userId);
+  const exhibitionsQuery = useArtistDisplays(userId);
   const {
     data: archivedArtists,
     hasNextPage,
@@ -48,13 +50,8 @@ export function AuthPage() {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  /*
-   * 전시 수는 작가 프로필 API에 아직 없어, 내가 저장한 작가 목록에 이 작가가 있으면
-   * 거기 딸려오는 집계값을 재사용합니다. (ArtistCard와 동일한 방식)
-   * 저장하지 않은 작가라면 알 방법이 없어 00으로 표시합니다.
-   */
   const archivedArtistMatch = (archivedArtists?.pages.flatMap((page) => page.artists) ?? []).find(
-    (artist) => artist.artistId === userId,
+    (artist) => artist.artistUserId === userId,
   );
   const isSaved = Boolean(archivedArtistMatch);
   const isSavePending = archiveArtist.isPending || unarchiveArtist.isPending;
@@ -70,7 +67,7 @@ export function AuthPage() {
       avatar: data?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
       school: data?.schoolName || '',
       fields: data?.fields?.map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code) ?? [],
-      exhibitionCount: formatCount(archivedArtistMatch?.exhibitionCount),
+      exhibitionCount: formatCount(exhibitionsQuery.data?.length),
       /* 개인 작품 + 전시 내 작품을 실제로 합산한 값입니다. */
       artworkCount: formatCount(personalArtworks.length + exhibitionArtworks.length),
       bio: data?.introduction ?? '',
@@ -78,7 +75,7 @@ export function AuthPage() {
     };
   }, [
     artistProfileQuery.data,
-    archivedArtistMatch,
+    exhibitionsQuery.data?.length,
     personalArtworks.length,
     exhibitionArtworks.length,
   ]);
@@ -144,12 +141,28 @@ export function AuthPage() {
         onRegister={handleToggleSave}
         onShare={handleShareProfile}
         profile={profile}
+        isSaved={isSaved}
       />
 
       <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
         {activeTab === 'exhibition' ? (
-          // 다른 작가의 전시 목록을 조회하는 API가 아직 없어 준비 중 안내만 표시합니다.
-          <ErrorView fullScreen={false} message="전시 정보를 준비 중입니다." />
+          exhibitionsQuery.isLoading ? (
+            <LoadingView fullScreen={false} message="전시 로딩 중..." />
+          ) : exhibitionsQuery.error ? (
+            <ErrorView
+              fullScreen={false}
+              message="전시 정보를 불러오지 못했습니다."
+              onRetry={() => exhibitionsQuery.refetch()}
+            />
+          ) : (exhibitionsQuery.data ?? []).length > 0 ? (
+            <div className="flex flex-col gap-4">
+              {(exhibitionsQuery.data ?? []).map((item) => (
+                <ExhibitionCard key={item.id} item={item} isArtistView />
+              ))}
+            </div>
+          ) : (
+            <ErrorView fullScreen={false} message="등록된 전시가 없습니다." />
+          )
         ) : personalArtworksQuery.isLoading || exhibitionArtworksQuery.isLoading ? (
           <LoadingView fullScreen={false} message="작품 로딩 중..." />
         ) : personalArtworksQuery.error || exhibitionArtworksQuery.error ? (

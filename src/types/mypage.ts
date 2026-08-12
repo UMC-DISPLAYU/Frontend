@@ -31,6 +31,7 @@ export interface SavedArtworkItem {
 export interface ArtistItem {
   id: string;
   artistId?: number;
+  artistUserId?: number;
   name: string;
   field: string;
   registeration: string;

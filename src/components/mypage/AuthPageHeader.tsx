@@ -17,6 +17,7 @@ interface AuthPageHeaderProps {
   onRegister: () => void;
   onShare: () => void;
   profile: ArtistProfile;
+  isSaved?: boolean;
 }
 
 export function AuthPageHeader({
@@ -25,6 +26,7 @@ export function AuthPageHeader({
   onRegister,
   onShare,
   profile,
+  isSaved = false,
 }: AuthPageHeaderProps) {
   const navigate = useNavigate();
 
@@ -34,7 +36,7 @@ export function AuthPageHeader({
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(-1)}
             className="cursor-pointer"
             aria-label="뒤로가기"
           >
@@ -118,7 +120,10 @@ export function AuthPageHeader({
             onClick={onRegister}
             className="flex-1 h-11 bg-bt-gray rounded-xl flex justify-center items-center gap-1.5"
           >
-            <Bookmark className="size-4 text-main" strokeWidth={1.5} />
+            <Bookmark
+              className={cn('size-4 text-main', isSaved && 'fill-bookmark text-bookmark')}
+              strokeWidth={1.5}
+            />
             <span className="typo-body-sm-regular text-main">작가 저장</span>
           </button>
           <button
