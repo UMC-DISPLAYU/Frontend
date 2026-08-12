@@ -56,8 +56,14 @@ export function AuthPage() {
   const isSaved = Boolean(archivedArtistMatch);
   const isSavePending = archiveArtist.isPending || unarchiveArtist.isPending;
 
-  const personalArtworks = personalArtworksQuery.data ?? [];
-  const exhibitionArtworks = exhibitionArtworksQuery.data?.artworks ?? [];
+  const personalArtworks = useMemo(
+    () => personalArtworksQuery.data ?? [],
+    [personalArtworksQuery.data],
+  );
+  const exhibitionArtworks = useMemo(
+    () => exhibitionArtworksQuery.data?.artworks ?? [],
+    [exhibitionArtworksQuery.data],
+  );
 
   const profile = useMemo<ArtistProfile>(() => {
     const data = artistProfileQuery.data;
