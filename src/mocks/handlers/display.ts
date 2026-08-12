@@ -42,7 +42,7 @@ const displayDetailResponse = (displayId: number) => {
 const myDisplayItem = (display: any) => ({
   displayId: display.displayId,
   title: display.title,
-  isDisplaying: display.status === 'ONGOING',
+  displayStatus: display.status === 'ONGOING' ? 'DISPLAYING' : display.status,
   startDate: display.startDate ?? display.startedAt,
   endDate: display.endDate ?? display.endedAt,
   school: display.organization,

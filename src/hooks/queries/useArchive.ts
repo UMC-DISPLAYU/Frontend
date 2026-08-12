@@ -71,11 +71,11 @@ export const useArchivedArtists = () => {
   });
 };
 
-export const useArchivedExhibition = (savedExhibitionId: number) =>
+export const useArchivedExhibition = (archiveDisplayId: number) =>
   useQuery({
-    queryKey: queryKeys.archives.displays.detail(savedExhibitionId),
-    queryFn: () => getArchivedExhibition(savedExhibitionId),
-    enabled: Number.isFinite(savedExhibitionId),
+    queryKey: queryKeys.archives.displays.detail(archiveDisplayId),
+    queryFn: () => getArchivedExhibition(archiveDisplayId),
+    enabled: Number.isFinite(archiveDisplayId),
   });
 
 export const useArchivedArtwork = (savedArtworkId: number) =>
@@ -108,10 +108,13 @@ export const useArchiveExhibition = () => {
 
       queryClient.setQueryData<GetArchivedExhibitionsResponseDataDto>(
         queryKeys.archives.displays.list(),
-        (old) => ({
-          ...old,
-          savedExhibitions: [...(old?.savedExhibitions ?? []), newItem],
-        }),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            displays: [...old.displays, newItem],
+          };
+        },
       );
 
       return { previousList };
@@ -152,11 +155,13 @@ export const useUnarchiveExhibition = () => {
 
       queryClient.setQueryData<GetArchivedExhibitionsResponseDataDto>(
         queryKeys.archives.displays.list(),
-        (old) => ({
-          ...old,
-          savedExhibitions:
-            old?.savedExhibitions?.filter((s) => s.displayId !== exhibitionId) ?? [],
-        }),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            displays: old.displays.filter((s) => s.displayId !== exhibitionId),
+          };
+        },
       );
 
       return { previousList };
@@ -279,12 +284,11 @@ export const useUpdateArchivedExhibitionMemo = () => {
           previous
             ? {
                 ...previous,
-                savedExhibitions:
-                  previous.savedExhibitions?.map((exhibition) =>
-                    exhibition.savedExhibitionId === archiveDisplayId
-                      ? { ...exhibition, memo: body.content }
-                      : exhibition,
-                  ) ?? [],
+                displays: previous.displays.map((exhibition) =>
+                  exhibition.archiveDisplayId === archiveDisplayId
+                    ? { ...exhibition, memo: body.content }
+                    : exhibition,
+                ),
               }
             : previous,
       );
@@ -305,12 +309,11 @@ export const useDeleteArchivedExhibitionMemo = () => {
           previous
             ? {
                 ...previous,
-                savedExhibitions:
-                  previous.savedExhibitions?.map((exhibition) =>
-                    exhibition.savedExhibitionId === archiveDisplayId
-                      ? { ...exhibition, memo: null }
-                      : exhibition,
-                  ) ?? [],
+                displays: previous.displays.map((exhibition) =>
+                  exhibition.archiveDisplayId === archiveDisplayId
+                    ? { ...exhibition, memo: null }
+                    : exhibition,
+                ),
               }
             : previous,
       );

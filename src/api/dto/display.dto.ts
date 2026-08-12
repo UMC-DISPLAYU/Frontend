@@ -454,7 +454,7 @@ export type DisplayLikeStatusResponseDto = ApiResponseDto<DisplayLikeStatusRespo
 export interface MyDisplayDto {
   displayId: number;
   title: string;
-  isDisplaying: boolean;
+  displayStatus: string;
   startDate: string;
   endDate: string;
   school: string;

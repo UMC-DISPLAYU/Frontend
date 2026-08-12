@@ -14,22 +14,24 @@ const getFirstImageUrl = (item: any) =>
   '';
 
 const archivedExhibitions = () => ({
-  savedExhibitions: mockDb.displays
-    .filter((display: any) => display.isArchived ?? display.archived ?? false)
-    .map((display: any) => ({
-      savedExhibitionId: display.displayId,
-      displayId: display.displayId,
-      title: display.title,
-      thumbnailUrl: getFirstImageUrl(display),
-      organization: display.organization,
-      placeName: display.placeName,
-      startDate: display.startDate ?? display.startedAt,
-      endDate: display.endDate ?? display.endedAt,
-      displayType: display.displayType,
-      status: display.status,
-      memo: display.memo ?? null,
-      savedAt: '2026-08-02T00:00:00.000Z',
-    })),
+  displays: mockDb.displays.map((display: any) => ({
+    archiveDisplayId: display.displayId,
+    displayId: display.displayId,
+    title: display.title,
+    posterImageUrl: getFirstImageUrl(display),
+    organization: display.organization,
+    department: display.department ?? '',
+    location: display.placeName,
+    startedAt: display.startDate ?? display.startedAt,
+    endedAt: display.endDate ?? display.endedAt,
+    status: display.status,
+    memo: display.memo ?? null,
+    savedAt: '2026-08-02T00:00:00.000Z',
+    userId: 1,
+  })),
+  nextCursorId: null,
+  size: mockDb.displays.length,
+  hasNext: false,
 });
 
 const archivedArtworks = () => ({
@@ -226,12 +228,14 @@ export const archiveHandlers = [
       return success('/api/v1/archives/exhibitions/{exhibitionId}', okStatus(exhibitionId, false));
     }),
   ),
-  ...paths('/api/v1/archives/exhibitions/{savedExhibitionId}').map((path) =>
+  ...paths('/api/v1/archives/exhibitions/{archiveDisplayId}').map((path) =>
     http.get(path, ({ params }) =>
       success(
-        '/api/v1/archives/exhibitions/{savedExhibitionId}',
-        archivedExhibitions().savedExhibitions[toNumber(params.savedExhibitionId, 1) - 1] ??
-          archivedExhibitions().savedExhibitions[0],
+        '/api/v1/archives/exhibitions/{archiveDisplayId}',
+        archivedExhibitions().displays.find(
+          (display: { archiveDisplayId: number }) =>
+            display.archiveDisplayId === toNumber(params.archiveDisplayId, 1),
+        ) ?? archivedExhibitions().displays[0],
       ),
     ),
   ),
