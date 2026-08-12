@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Bookmark, ChevronRight, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { ArtworkCoAuthorDto } from '@/api/dto';
 import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
@@ -30,6 +31,7 @@ type ArtworkArtistRowProps = {
 };
 
 function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
+  const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
@@ -74,7 +76,12 @@ function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
   return (
     <div className="flex h-[84px] w-full items-center justify-between px-5">
       <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
-      <div className="flex min-w-0 items-center gap-2">
+      <button
+        type="button"
+        onClick={() => userId && profile && navigate(`/auth/${userId}`)}
+        disabled={!userId || !profile}
+        className="flex min-w-0 items-center gap-2 text-left disabled:cursor-default"
+      >
         <img
           src={profile?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
           alt={primaryName}
@@ -87,7 +94,7 @@ function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
           <p className="w-full truncate typo-body-md-bold text-main">{primaryName}</p>
           <p className="w-full truncate typo-body-xs-regular text-faint">{nicknameText}</p>
         </div>
-      </div>
+      </button>
 
       {userId ? (
         <button
@@ -113,6 +120,33 @@ function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
 
 export function ArtworkIntroTab({ artwork, artistUserId, coAuthors = [] }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isContentClamped, setIsContentClamped] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
+
+  /* 다른 작품 소개로 콘텐츠가 바뀌면(라우트 파라미터만 바뀌어 리마운트되지 않는 경우) 접힌 상태로 되돌립니다. */
+  const [prevContent, setPrevContent] = useState(artwork.content);
+  if (artwork.content !== prevContent) {
+    setPrevContent(artwork.content);
+    setIsExpanded(false);
+  }
+
+  /*
+   * 펼친 상태에서는 line-clamp가 풀려 요소 자체의 높이가 커지는데, 그걸 리사이즈로 감지해
+   * 다시 재보면 scrollHeight === clientHeight가 되어 접기 버튼이 사라집니다. 접힌 상태일 때만
+   * 관찰합니다.
+   */
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el || isExpanded) return;
+
+    const measure = () => setIsContentClamped(el.scrollHeight > el.clientHeight);
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, [artwork.content, isExpanded]);
 
   /* 대표 작가 + 공동 작업자를 한 줄씩 보여줍니다. */
   const artistRows: ArtworkArtistRowProps[] = [
@@ -133,33 +167,38 @@ export function ArtworkIntroTab({ artwork, artistUserId, coAuthors = [] }: Props
   return (
     <div className="pb-28">
       {/* 작품소개 */}
-      <section className="px-5 pt-6 pb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="typo-body-xl-bold text-main">작품소개</h2>
-        </div>
-        <p
-          className={cn(
-            'typo-body-sm-regular text-main leading-relaxed',
-            !isExpanded && 'line-clamp-3',
-          )}
-        >
-          {artwork.content}
-        </p>
-        <div className="flex items-center justify-end pt-3">
-          <button
-            type="button"
-            onClick={() => setIsExpanded((prev) => !prev)}
-            className="flex items-center gap-0.5 typo-body-xs-regular text-faint cursor-pointer"
-          >
-            <span>{isExpanded ? '접기' : '더보기'}</span>
-            {isExpanded ? (
-              <ChevronUp size={14} strokeWidth={1.5} />
-            ) : (
-              <ChevronRight size={14} strokeWidth={1.5} />
+      {artwork.content && (
+        <section className="px-5 pt-6 pb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="typo-body-xl-bold text-main">작품소개</h2>
+          </div>
+          <p
+            ref={contentRef}
+            className={cn(
+              'typo-body-sm-regular text-main leading-relaxed',
+              !isExpanded && 'line-clamp-3',
             )}
-          </button>
-        </div>
-      </section>
+          >
+            {artwork.content}
+          </p>
+          {isContentClamped && (
+            <div className="flex items-center justify-end pt-3">
+              <button
+                type="button"
+                onClick={() => setIsExpanded((prev) => !prev)}
+                className="flex items-center gap-0.5 typo-body-xs-regular text-faint cursor-pointer"
+              >
+                <span>{isExpanded ? '접기' : '더보기'}</span>
+                {isExpanded ? (
+                  <ChevronUp size={14} strokeWidth={1.5} />
+                ) : (
+                  <ChevronRight size={14} strokeWidth={1.5} />
+                )}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 작업과정 */}
       {processImages.length > 0 && (
@@ -186,10 +225,12 @@ export function ArtworkIntroTab({ artwork, artistUserId, coAuthors = [] }: Props
       )}
 
       {/* 감상 포인트 */}
-      <section className="px-5 pt-5 pb-5">
-        <h2 className="typo-body-xl-bold text-main mb-3">감상 포인트</h2>
-        <p className="typo-body-sm-regular text-main leading-relaxed">{artwork.point}</p>
-      </section>
+      {artwork.point && (
+        <section className="px-5 pt-5 pb-5">
+          <h2 className="typo-body-xl-bold text-main mb-3">감상 포인트</h2>
+          <p className="typo-body-sm-regular text-main leading-relaxed">{artwork.point}</p>
+        </section>
+      )}
 
       {/* 작가 정보 */}
       <section className="flex flex-col">

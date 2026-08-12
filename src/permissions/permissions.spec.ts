@@ -1,4 +1,4 @@
-import { describe, expect,it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { Attrs } from './permissions';
 import { can } from './permissions';
@@ -445,7 +445,7 @@ describe.each(ALL_ROLES)('역할: %s', (role) => {
             .filter(Boolean)
             .join(' ');
           return [label, rule, expected] as const;
-        })
+        }),
       )('%s', (_label, rule, expected) => {
         expect(check(role, rule.permission, rule.when)).toBe(expected);
       });
@@ -466,16 +466,12 @@ function describeWhen(when: Partial<Attrs>) {
 
 describe('권한 테이블 무결성', () => {
   it('허용 목록에 오타나 미정의 역할이 없다', () => {
-    const unknown = ALL_RULES.flatMap((r) =>
-      r.allow.filter((role) => !ALL_ROLES.includes(role))
-    );
+    const unknown = ALL_RULES.flatMap((r) => r.allow.filter((role) => !ALL_ROLES.includes(role)));
     expect(unknown).toEqual([]);
   });
 
   it('같은 조건의 규칙이 중복 선언되지 않았다', () => {
-    const keys = ALL_RULES.map(
-      (r) => `${r.permission}|${JSON.stringify(r.when ?? {})}`
-    );
+    const keys = ALL_RULES.map((r) => `${r.permission}|${JSON.stringify(r.when ?? {})}`);
     expect(new Set(keys).size).toBe(keys.length);
   });
 
@@ -491,9 +487,7 @@ describe('권한 테이블 무결성', () => {
       permission: rule.permission,
       when: rule.when ?? null,
       condition: rule.desc,
-      allowed: ALL_ROLES.filter((role) =>
-        check(role, rule.permission, rule.when)
-      ),
+      allowed: ALL_ROLES.filter((role) => check(role, rule.permission, rule.when)),
     }));
     expect(snapshot).toMatchSnapshot();
   });

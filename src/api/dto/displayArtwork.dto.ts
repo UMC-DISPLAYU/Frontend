@@ -148,6 +148,16 @@ export interface CreateArtworkFeelingResponseDataDto {
 
 export type CreateArtworkFeelingResponseDto = ApiResponseDto<CreateArtworkFeelingResponseDataDto>;
 
+export interface CreateArtworkFeelingReplyResponseDataDto {
+  feelingReplyId: number;
+  content: string;
+  createdAt: string;
+  feelingId: number;
+  userId: number;
+  nickname: string;
+  images?: ArtworkFeelingReplyImageDto[];
+}
+
 export interface UpdateArtworkFeelingRequestDto {
   content: string;
 }
