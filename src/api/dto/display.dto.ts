@@ -475,23 +475,6 @@ export interface GetArtistDisplaysResponseDataDto {
   participatedDisplays: ArtistDisplayDto[];
 }
 
-export interface ArtistDisplayDto {
-  displayId: number;
-  title: string;
-  displayStatus: string;
-  startDate: string;
-  endDate: string;
-  school: string;
-  department: string;
-  placeName: string;
-  postImageUrl: string;
-}
-
-export interface GetArtistDisplaysResponseDataDto {
-  createdDisplays: ArtistDisplayDto[];
-  participatedDisplays: ArtistDisplayDto[];
-}
-
 export interface InviteDisplayMemberRequestDto {
   inviteeUserId: number;
   role?: 'TEAM_MEM';

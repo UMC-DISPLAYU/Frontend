@@ -560,7 +560,8 @@ export function PersonalArtworkDetailPage() {
           <div className="flex shrink-0 flex-col items-center">
             <button
               type="button"
-              aria-label="좋아요"
+              aria-pressed={liked}
+              aria-label={`좋아요 ${artwork.likeCount ?? 0}개`}
               onClick={handleLike}
               className="cursor-pointer transition-transform active:scale-95"
             >

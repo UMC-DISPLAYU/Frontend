@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { can } from './permissions';
+import { describe, expect,it } from 'vitest';
+
 import type { Attrs } from './permissions';
+import { can } from './permissions';
 
 /* ------------------------------------------------------------------
  * 1. 속성(Attribute) 정의  — ABAC의 subject / resource / environment
@@ -311,6 +312,12 @@ const MATRIX: Record<string, Rule[]> = {
       permission: 'personalQuestion:delete',
       desc: '질문 쓴 사람 || (작가 인증 && 작품 만든 사람)',
       allow: ['author', 'personalArtworkOwner'],
+    },
+    {
+      permission: 'personalQuestion:reply.view',
+      when: { isPrivate: false },
+      desc: '공개 질문의 답변은 누구나',
+      allow: ALL_ROLES,
     },
     {
       permission: 'personalQuestion:reply.view',

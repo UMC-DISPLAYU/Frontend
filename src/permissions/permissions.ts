@@ -1,5 +1,5 @@
-import { policies } from '@/policies/policies';
 import { LOUNGE_CATEGORY_API_VALUES } from '@/constants/loungeCategories';
+import { policies } from '@/policies/policies';
 import type {
   ArtworkPolicyResource,
   DisplayPolicyResource,
