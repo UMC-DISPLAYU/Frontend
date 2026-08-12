@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-
 import { Plus } from 'lucide-react';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import {
   CardPopover,

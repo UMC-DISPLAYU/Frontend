@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { BottomFixedBar } from '@/components/common';

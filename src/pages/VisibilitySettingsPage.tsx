@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { BottomButton } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';

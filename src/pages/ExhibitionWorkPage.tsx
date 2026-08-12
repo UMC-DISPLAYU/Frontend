@@ -1,4 +1,5 @@
 import { ChevronRight, Info, Plus } from 'lucide-react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { ErrorView, LoadingView } from '@/components/common';
 import { ArtworkCard } from '@/components/display-manage/ArtworkCard';

@@ -1,4 +1,5 @@
 import { ChevronRight, Info } from 'lucide-react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { BottomFixedBar } from '@/components/common';
 import {

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { useParams } from 'react-router-dom';
+
 import SearchIcon from '@/assets/exhibition-register/search.svg';
 import { InviteLinkSection, type Member, MemberRow } from '@/components/team-manage';
 import { ExhibitionHeader } from '@/components/ui';

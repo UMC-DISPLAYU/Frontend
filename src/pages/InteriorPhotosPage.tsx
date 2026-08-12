@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import { X } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 
 import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import { useHideFooter } from '@/components/layout';

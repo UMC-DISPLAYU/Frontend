@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import { LoadingView } from '@/components/common';
 import { ManageScreen } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
