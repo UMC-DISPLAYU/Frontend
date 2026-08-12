@@ -3,9 +3,6 @@ import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArchivedArtistDto, ArchivedArtworkDto, ArchivedExhibitionDto } from '@/api/dto';
-import ExhibitionIcon from '@/assets/mypage/exhibit.svg';
-import FieldIcon from '@/assets/mypage/field.svg';
-import SchoolIcon from '@/assets/mypage/school.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 import {
   ArtistCard,
@@ -29,12 +26,14 @@ import {
   useUpdateArchivedArtworkMemo,
   useUpdateArchivedExhibitionMemo,
 } from '@/hooks/queries/useArchive';
-import { useMyArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useArtistExhibitionArtworks, useMyArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
 import { useMyArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
 import { useShare } from '@/hooks/useShare';
 import { useMyPageStore } from '@/stores/useMyPageStore';
 import type { ArtistItem, ExhibitionItem, SavedArtworkItem } from '@/types/mypage';
+
+const formatCount = (count: number | undefined) => String(count ?? 0).padStart(2, '0');
 
 const STATUS_LABEL: Record<string, string> = {
   ONGOING: '전시 중',
@@ -127,11 +126,15 @@ export function MyPage() {
   const myArtistProfileQuery = useMyArtistProfile({
     enabled: isArtistView,
   });
+  /* 탭 진입 전에도 헤더의 전시/작품 수를 보여줘야 해서 탭과 무관하게 항상 불러옵니다. */
   const myDisplaysQuery = useMyDisplays({
-    enabled: isArtistView && activeTab === 'exhibition',
+    enabled: isArtistView,
   });
   const myArtworksQuery = useMyArtworks({
-    enabled: isArtistView && activeTab === 'artwork',
+    enabled: isArtistView,
+  });
+  const myExhibitionArtworksQuery = useArtistExhibitionArtworks(userData?.id ?? 0, {
+    enabled: isArtistView && Boolean(userData?.id),
   });
   const unarchiveExhibition = useUnarchiveExhibition();
   const unarchiveArtwork = useUnarchiveArtwork();
@@ -155,19 +158,27 @@ export function MyPage() {
       caption: '내가 저장한 작품 확인하기',
       isVerified: Boolean(userData?.isVerified),
       school: myArtistProfileQuery.data?.schoolName || userData?.schoolEmail?.split('@')[1] || '',
-      schoolIcon: SchoolIcon,
-      field:
-        myArtistProfileQuery.data?.fields
-          ?.map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code)
-          .join(' · ') ?? '',
-      fieldIcon: FieldIcon,
-      exhibit: `${myDisplaysQuery.data?.length ?? 0}_작`,
-      exhibitionIcon: ExhibitionIcon,
+      fields:
+        myArtistProfileQuery.data?.fields.map(
+          (code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code,
+        ) ?? [],
+      exhibitionCount: formatCount(myDisplaysQuery.data?.length),
+      /* 개인 작품 + 전시 내 작품을 실제로 합산한 값입니다. */
+      artworkCount: formatCount(
+        (myArtworksQuery.data?.length ?? 0) + (myExhibitionArtworksQuery.data?.artworks.length ?? 0),
+      ),
       bio: myArtistProfileQuery.data?.introduction ?? '',
       portfolioUrl:
         myArtistProfileQuery.data?.portfolioUrl || myArtistProfileQuery.data?.externalLink || '',
     }),
-    [isArtistView, myArtistProfileQuery.data, myDisplaysQuery.data?.length, userData],
+    [
+      isArtistView,
+      myArtistProfileQuery.data,
+      myDisplaysQuery.data?.length,
+      myArtworksQuery.data?.length,
+      myExhibitionArtworksQuery.data?.artworks.length,
+      userData,
+    ],
   );
 
   const exhibitions = useMemo<ExhibitionItem[]>(() => {
@@ -324,7 +335,7 @@ export function MyPage() {
         isArtistVerified={isArtistVerified}
       />
 
-      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6 bg-box100">
+      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6 pb-20 bg-box100">
         {activeQuery.isLoading ? (
           <LoadingView
             fullScreen={false}

@@ -1,5 +1,6 @@
-import { Bookmark, ChevronLeft, ExternalLink, Upload } from 'lucide-react';
+import { Bookmark, ChevronLeft, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Share from '@/assets/mypage/share.svg';
 
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import type { ArtistProfile, TabKey } from '@/types/mypage';
@@ -31,7 +32,7 @@ export function AuthPageHeader({
   const navigate = useNavigate();
 
   return (
-    <header className="shrink-0 bg-card">
+    <header className="shrink-0 bg-page">
       <div className="px-5 pt-2 flex justify-between items-center">
         <div className="flex items-center gap-2.5">
           <button
@@ -46,7 +47,7 @@ export function AuthPageHeader({
         </div>
       </div>
 
-      <div className="px-5 pt-5 pb-5 flex flex-col gap-3.5">
+      <div className="px-5 pt-5 pb-2.75 flex flex-col gap-3.5">
         <div className="flex items-center">
           <img
             className="size-20 rounded-full border-[2.67px] border-line object-cover shrink-0"
@@ -56,32 +57,36 @@ export function AuthPageHeader({
               event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
             }}
           />
-          <div className="flex-1 min-w-0 px-4 flex flex-col gap-1.5">
-            <span className="w-fit inline-flex items-center px-1.5 py-0.5 bg-sky-100 rounded-full">
+
+          <div>
+            <span className="w-fit inline-flex items-center ml-2.5 px-1.5 py-0.5 bg-[#DBEAFE] rounded-full">
               <span className="text-line-active typo-body-xxs-regular uppercase">
                 작가 프로필
               </span>
-            </span>
+             </span>
+
+
+          <div className="flex-1 min-w-0 px-4 flex flex-col gap-1.5">
 
             <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-0.5">
-                <div className="flex-1 min-w-0 flex flex-col">
-                  <div className="typo-body-xl-bold text-main truncate">{profile.name}</div>
-                  <div className="typo-body-xs-regular text-hint truncate">{profile.school}</div>
-                </div>
+                <div className="flex items-center gap-0.5">
+                  <div className="flex-1 w-42.5 flex flex-col">
+                    <div className="typo-body-xl-bold text-main truncate">{profile.name}</div>
+                    <div className="typo-body-xs-regular text-hint truncate">{profile.school}</div>
+                  </div>
 
-                <div className="flex items-center shrink-0">
-                  <div className="w-11 flex flex-col items-center">
-                    <span className="typo-body-xl-bold text-main">{profile.exhibitionCount}</span>
-                    <span className="typo-body-xs-regular text-faint">전시</span>
-                  </div>
-                  <div className="w-px h-7 bg-line" />
-                  <div className="w-11 flex flex-col items-center">
-                    <span className="typo-body-xl-bold text-main">{profile.artworkCount}</span>
-                    <span className="typo-body-xs-regular text-faint">작품</span>
+                  <div className="flex items-center shrink-0">
+                    <div className="w-11.5 flex flex-col items-center">
+                      <span className="typo-body-xl-bold text-main">{profile.exhibitionCount}</span>
+                      <span className="typo-body-xs-regular text-faint">전시</span>
+                    </div>
+                    <div className="w-px h-7 bg-line" />
+                    <div className="w-11 flex flex-col items-center">
+                      <span className="typo-body-xl-bold text-main">{profile.artworkCount}</span>
+                      <span className="typo-body-xs-regular text-faint">작품</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {profile.fields.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1">
@@ -98,6 +103,7 @@ export function AuthPageHeader({
             </div>
           </div>
         </div>
+      </div>
 
         <div className="flex flex-col gap-2">
           <p className="typo-body-xs-semibold text-sub700">{profile.bio}</p>
@@ -118,7 +124,7 @@ export function AuthPageHeader({
           <button
             type="button"
             onClick={onRegister}
-            className="flex-1 h-11 bg-bt-gray rounded-xl flex justify-center items-center gap-1.5"
+            className="flex-1 w-full h-11 bg-box200 rounded-xl flex justify-center items-center gap-1.5"
           >
             <Bookmark
               className={cn('size-4 text-main', isSaved && 'fill-bookmark text-bookmark')}
@@ -129,15 +135,15 @@ export function AuthPageHeader({
           <button
             type="button"
             onClick={onShare}
-            className="flex-1 h-11 bg-dark rounded-xl flex justify-center items-center gap-1.5"
+            className="flex-1 w-full h-11 bg-dark rounded-xl flex justify-center items-center gap-1.5"
           >
             <span className="typo-body-sm-regular text-white">프로필 공유</span>
-            <Upload className="size-5 text-white" />
+            <img src={Share} alt="" className="size-4" />
           </button>
         </div>
       </div>
 
-      <nav className="border-b-2 border-line flex">
+      <nav className="bg-page border-b border-line flex px-5">
         {TABS.filter((tab) => tab.key !== 'artist').map((tab) => {
           const isActive = tab.key === activeTab;
           return (
@@ -146,13 +152,13 @@ export function AuthPageHeader({
               type="button"
               onClick={() => onTabChange(tab.key)}
               className={cn(
-                'relative flex-1 h-11 flex justify-center pt-3',
+                'relative flex-1 py-3 flex justify-center items-center',
                 isActive ? 'typo-body-sm-bold text-main' : 'typo-body-sm-regular text-faint',
               )}
             >
               {tab.label}
               {isActive && (
-                <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-45.25 h-0.5 bg-main" />
+                <span className="absolute left-0 right-0 -bottom-[1px] h-[2px] bg-main z-10" />
               )}
             </button>
           );

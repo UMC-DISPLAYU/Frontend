@@ -128,7 +128,7 @@ export function AuthPage() {
   }
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-box100 flex flex-col">
       <LoginConfirmModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
