@@ -40,10 +40,7 @@ export const useMyDisplays = ({ enabled = true }: { enabled?: boolean } = {}) =>
   });
 
 // GET /v1/display/artists/:userId - 다른 작가가 만들거나 참여한 발행 전시 목록 조회 (작가 프로필 전시 탭)
-export const useArtistDisplays = (
-  userId: number,
-  { enabled = true }: { enabled?: boolean } = {},
-) =>
+export const useArtistDisplays = (userId: number, { enabled = true }: { enabled?: boolean } = {}) =>
   useQuery<ExhibitionItem[]>({
     queryKey: [...queryKeys.displays.lists(), 'artist', userId],
     enabled: enabled && Number.isFinite(userId) && userId > 0,
