@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { AddArtworkPage } from '@/components/artwork-register/AddArtworkPage';
@@ -34,11 +36,11 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
-import { useZodFieldError } from '@/hooks/useZodFieldError';
 import { useUserStore } from '@/stores/useUserStore';
 import { hasPermission } from '@/utils/hasPermission';
 
 import {
+  type ArtworkRegisterFormValues,
   artworkRegisterSchema,
   artworkRegisterSubmitSchema,
   toArtworkRegisterProductionYear,
@@ -120,6 +122,24 @@ function ArtworkRegisterPageContent() {
   >(draft.collaborators);
   const [qnaAssigneeIds, setQnaAssigneeIdsState] = useState<string[]>(draft.qnaAssigneeIds);
 
+  const {
+    formState: { errors },
+    setValue,
+  } = useForm<ArtworkRegisterFormValues>({
+    resolver: zodResolver(artworkRegisterSchema),
+    mode: 'onChange',
+    defaultValues: {
+      artworkImageCount: artworkImages.length,
+      title,
+      intro: description,
+      field,
+      year,
+      material: medium,
+      size,
+      thoughts: point,
+    },
+  });
+
   const basicFormValue = {
     artworkImageCount: artworkImages.length,
     title,
@@ -131,11 +151,10 @@ function ArtworkRegisterPageContent() {
     thoughts: point,
   };
   const canProceedBasic = artworkRegisterSchema.safeParse(basicFormValue).success;
-  const { error: yearError, markTouched: markYearTouched } = useZodFieldError({
-    schema: artworkRegisterSchema,
-    value: basicFormValue,
-    field: 'year',
-  });
+
+  useEffect(() => {
+    setValue('artworkImageCount', artworkImages.length, { shouldValidate: true });
+  }, [artworkImages.length, setValue]);
 
   const setStep = useCallback(
     (nextStep: RegisterStep, options: { replace?: boolean } = {}) => {
@@ -196,59 +215,65 @@ function ArtworkRegisterPageContent() {
 
   const setTitle = useCallback(
     (value: string) => {
+      setValue('title', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setTitleState(value);
       updateDraft({ title: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setDescription = useCallback(
     (value: string) => {
+      setValue('intro', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setDescriptionState(value);
       updateDraft({ description: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setField = useCallback(
     (value: string) => {
+      setValue('field', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setFieldState(value);
       updateDraft({ field: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setYear = useCallback(
     (value: string) => {
-      markYearTouched();
+      setValue('year', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setYearState(value);
       updateDraft({ year: value });
     },
-    [markYearTouched, updateDraft],
+    [setValue, updateDraft],
   );
 
   const setMedium = useCallback(
     (value: string) => {
+      setValue('material', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setMediumState(value);
       updateDraft({ medium: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setSize = useCallback(
     (value: string) => {
+      setValue('size', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setSizeState(value);
       updateDraft({ size: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setPoint = useCallback(
     (value: string) => {
+      setValue('thoughts', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setPointState(value);
       updateDraft({ point: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setCollaborators = useCallback(
@@ -877,8 +902,8 @@ function ArtworkRegisterPageContent() {
           artworkImages={artworkImages}
           processImages={processImages}
           canProceed={canProceedBasic}
-          yearError={yearError}
-          onBlurYear={markYearTouched}
+          yearError={errors.year?.message}
+          onBlurYear={() => setValue('year', year, { shouldTouch: true, shouldValidate: true })}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}
