@@ -65,10 +65,10 @@ export function MyExhibitionsPage() {
         onDelete={(ex) => setDisplayToDelete(ex)}
         onLeave={(ex) => setDisplayToLeave(ex)}
         onEditArtistName={(ex) =>
-          navigate(`/exhibition/register/artist`, {
+          navigate(`/exhibition/${ex.displayId ?? ex.id}/edit/artist`, {
             state: {
               ...ex,
-              displayId: Number(ex.id),
+              displayId: ex.displayId ?? Number(ex.id),
               artistName: ex.artistName,
               displayNickname: ex.artistName,
             },
