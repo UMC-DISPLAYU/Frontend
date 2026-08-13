@@ -86,6 +86,10 @@ export const getDisplayDetail = async (displayId: number): Promise<DisplayDetail
 export const deleteDisplay = async (displayId: number): Promise<void> =>
   apiRequest(`/v1/display/${displayId}`, { method: 'DELETE' });
 
+// DELETE /v1/display/:displayId/exit
+export const exitDisplay = async (displayId: number): Promise<void> =>
+  apiRequest(`/v1/display/${displayId}/exit`, { method: 'DELETE' });
+
 // POST /v1/display
 export const createDisplay = async (
   body: CreateDisplayRequestDto,
@@ -181,9 +185,9 @@ export const inviteDisplayMember = async (
 ): Promise<DisplayMemberInvitationResponseDataDto> =>
   apiRequest(`/v1/display-invitations/displays/${displayId}`, { method: 'POST', body });
 
-// GET /v1/display-invitations
+// GET /v1/display-invitations/me
 export const getMyDisplayInvitations = async (): Promise<MyDisplayInvitationListResponseDataDto> =>
-  apiRequest('/v1/display-invitations');
+  apiRequest('/v1/display-invitations/me');
 
 // POST /v1/display-invitations/:invitationId/accept
 export const acceptDisplayInvitation = async (

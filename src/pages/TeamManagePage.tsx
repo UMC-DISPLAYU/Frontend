@@ -77,6 +77,21 @@ export function TeamManage() {
           : 'unverified',
   }));
 
+  const [invitedUserIds, setInvitedUserIds] = useState<Set<number>>(new Set());
+
+  const handleInvite = (userId: number) => {
+    setInvitedUserIds((prev) => new Set(prev).add(userId));
+    invite.mutate(userId, {
+      onError: () => {
+        setInvitedUserIds((prev) => {
+          const next = new Set(prev);
+          next.delete(userId);
+          return next;
+        });
+      },
+    });
+  };
+
   /* 검색 결과의 초대 버튼 라벨을 정하기 위해 이미 팀원인 사람과 초대 대기 중인 사람을 구분합니다. */
   const memberUserIds = new Set(
     (memberList?.members ?? [])
@@ -121,30 +136,26 @@ export function TeamManage() {
           <div className="mt-6 flex flex-col gap-3">
             <span className="typo-body-sm-bold text-main">검색 결과</span>
             <ul className="flex flex-col gap-2.5">
-              {searchResults.map((user) => (
-                <MemberRow
-                  key={user.userId}
-                  member={{
-                    id: String(user.userId),
-                    name: user.name,
-                    nickname: user.nickname,
-                    status: 'unverified',
-                  }}
-                  onInvite={() => invite.mutate(user.userId)}
-                  inviteDisabled={
-                    memberUserIds.has(user.userId) ||
-                    pendingUserIds.has(user.userId) ||
-                    invite.isPending
-                  }
-                  inviteLabel={
-                    memberUserIds.has(user.userId)
-                      ? '팀원'
-                      : pendingUserIds.has(user.userId)
-                        ? '초대 대기'
-                        : '초대'
-                  }
-                />
-              ))}
+              {searchResults.map((user) => {
+                const isMember = memberUserIds.has(user.userId);
+                const isPendingOrInvited =
+                  pendingUserIds.has(user.userId) || invitedUserIds.has(user.userId);
+
+                return (
+                  <MemberRow
+                    key={user.userId}
+                    member={{
+                      id: String(user.userId),
+                      name: user.name,
+                      nickname: user.nickname,
+                      status: 'unverified',
+                    }}
+                    onInvite={() => handleInvite(user.userId)}
+                    inviteDisabled={isMember || isPendingOrInvited || invite.isPending}
+                    inviteLabel={isMember ? '팀원' : isPendingOrInvited ? '초대완료' : '초대'}
+                  />
+                );
+              })}
             </ul>
             {!searching && searchResults.length === 0 && (
               <p className="typo-body-xs-regular py-8 text-center text-faint">

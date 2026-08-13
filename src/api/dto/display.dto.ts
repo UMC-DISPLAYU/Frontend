@@ -559,8 +559,23 @@ export interface DisableDisplayInvitationLinkResponseDataDto {
   invitationDisabledAt: string;
 }
 
+export interface MyDisplayInvitationDto {
+  invitationId: number;
+  displayId: number;
+  thumbnailUrl: string | null;
+  startDate: string;
+  endDate: string;
+  location: string;
+  leaderName: string;
+  userNickname?: string;
+  schoolDepartmentName?: string;
+  title: string;
+  placeName: string;
+  status?: string;
+}
+
 export interface MyDisplayInvitationListResponseDataDto {
-  exhibitions: DisplayInvitationDto[];
+  invitations: MyDisplayInvitationDto[];
 }
 
 export interface AcceptDisplayInvitationRequestDto {

@@ -1,8 +1,11 @@
 import { useState } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { useAcceptDisplayInvitation } from '@/hooks/queries/useDisplayInvitations';
+import {
+  useAcceptDisplayInvitation,
+  useMyDisplayInvitations,
+} from '@/hooks/queries/useDisplayInvitations';
 import type { Invitation } from '@/types/invitation';
 
 type InfoRow = { label: string; value: string };
@@ -19,9 +22,30 @@ function buildExhibitionInfo(invitation?: Invitation): InfoRow[] {
 export function DisplayArtistNamePage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams<{ id: string }>();
   const acceptInvitation = useAcceptDisplayInvitation();
+  const { data: invitationsData } = useMyDisplayInvitations();
 
-  const invitation = (location.state as { invitation?: Invitation } | null)?.invitation;
+  const stateInvitation = (location.state as { invitation?: Invitation } | null)?.invitation;
+
+  const fetchedDto = invitationsData?.invitations?.find(
+    (item) => String(item.invitationId) === id || String(item.displayId) === id,
+  );
+
+  const invitation: Invitation | undefined =
+    stateInvitation ??
+    (fetchedDto
+      ? {
+          id: String(fetchedDto.invitationId),
+          invitationId: fetchedDto.invitationId,
+          displayId: fetchedDto.displayId,
+          title: fetchedDto.title,
+          department: fetchedDto.placeName ?? '',
+          period: `${fetchedDto.startDate ?? ''} - ${fetchedDto.endDate ?? ''}`,
+          posterUrl: fetchedDto.thumbnailUrl ?? null,
+        }
+      : undefined);
+
   const exhibitionInfo = buildExhibitionInfo(invitation);
 
   const [artistName, setArtistName] = useState('');
@@ -31,9 +55,12 @@ export function DisplayArtistNamePage() {
     if (!isValid) return;
 
     const displayNickname = artistName.trim();
-    const invitationId = invitation?.invitationId;
+    const invitationId = Number(invitation?.invitationId || invitation?.id || id || 0);
 
-    if (!invitationId) return;
+    if (!invitationId) {
+      alert('초대 정보를 찾을 수 없습니다. 다시 시도해주세요.');
+      return;
+    }
 
     acceptInvitation.mutate(
       { invitationId, displayNickname },
@@ -42,9 +69,13 @@ export function DisplayArtistNamePage() {
           // TODO: 작가(학교 이메일) 인증 여부를 실제 유저 상태/응답에서 가져오기
           const isVerified = false; // 임시값: 인증되면 true → 완료 화면이 인증 상태로 표시됨
 
-          navigate(`/invitations/${invitation.id}/complete`, {
+          const targetId = invitation?.id || id || String(invitationId);
+          navigate(`/invitations/${targetId}/complete`, {
             state: { invitation, artistName: displayNickname, isVerified },
           });
+        },
+        onError: (error) => {
+          alert(error instanceof Error ? error.message : '초대 수락 처리 중 오류가 발생했습니다.');
         },
       },
     );
