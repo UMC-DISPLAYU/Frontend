@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateExhibitionArtworkRequestDto } from '@/api/dto';
+import type { CreateExhibitionArtworkRequestDto, UpdateDisplayArtworkRequestDto } from '@/api/dto';
 import {
   createExhibitionArtwork,
   deleteArtwork,
   getArtistArtworks,
   getDisplayArtworks,
   updateArtworkOrder,
+  updateDisplayArtwork,
 } from '@/api/endpoints';
 import { getPersonalArtworks } from '@/api/endpoints/personalArtwork';
 import { queryKeys } from '@/api/queryKeys';
@@ -39,6 +40,21 @@ export const useCreateDisplayArtwork = (displayId: number) => {
     mutationFn: (body: CreateExhibitionArtworkRequestDto) =>
       createExhibitionArtwork(displayId, body),
     onSuccess: invalidate,
+  });
+};
+
+// PATCH /v1/artworks/{artworkId}
+export const useUpdateDisplayArtwork = (displayId: number, artworkId: number) => {
+  const queryClient = useQueryClient();
+  const invalidate = useInvalidateDisplayArtworks(displayId);
+
+  return useMutation({
+    mutationFn: (body: UpdateDisplayArtworkRequestDto) => updateDisplayArtwork(artworkId, body),
+    onSuccess: () => {
+      /* 수정한 작품 자체의 상세 캐시(작품상세페이지, 수정 폼 미리채움)도 같이 갱신합니다. */
+      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.detail(artworkId) });
+      invalidate();
+    },
   });
 };
 

@@ -30,6 +30,7 @@ import type {
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
   UpdateArtworkOrderResponseDataDto,
+  UpdateDisplayArtworkRequestDto,
 } from '@/api/dto';
 
 import { apiRequest } from '../client';
@@ -170,6 +171,12 @@ export const createExhibitionArtwork = async (
   body: CreateExhibitionArtworkRequestDto,
 ): Promise<CreateExhibitionArtworkResponseDataDto> =>
   apiRequest('/v1/artworks', { method: 'POST', body });
+
+// PATCH /v1/artworks/:artworkId
+export const updateDisplayArtwork = async (
+  artworkId: number,
+  body: UpdateDisplayArtworkRequestDto,
+): Promise<unknown> => apiRequest(`/v1/artworks/${artworkId}`, { method: 'PATCH', body });
 
 // DELETE /v1/artworks/:artworkId
 export const deleteArtwork = async (artworkId: number): Promise<DeleteArtworkResponseDataDto> =>

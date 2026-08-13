@@ -395,6 +395,21 @@ export interface ArtworkCoAuthorsDto {
   rawNames: string[];
 }
 
+export interface UpdateDisplayArtworkRequestDto {
+  artworkName: string;
+  content: string;
+  type: string;
+  productionYear: number;
+  materialMedia: string;
+  size: string;
+  point: string;
+  images: ImageRequestDto[];
+  artistName?: string;
+  artistUserId?: number;
+  coAuthors: ArtworkCoAuthorsDto;
+  qaHandlerUserIds: number[];
+}
+
 export interface DeleteArtworkResponseDataDto {
   deletedArtworkId: number;
   message: string;

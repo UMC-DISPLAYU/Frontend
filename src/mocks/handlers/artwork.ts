@@ -193,6 +193,33 @@ export const artworkHandlers = [
     ),
   ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
+    http.patch(path, async ({ params, request }) => {
+      const artworkId = toNumber(params.artworkId);
+      const artwork = findArtwork(artworkId);
+      const body = await readJson<Record<string, any>>(request);
+      const imageUrl = body.images?.[0]?.imageUrl ?? artwork.imageUrl ?? '';
+      const artworkName = body.artworkName !== undefined ? String(body.artworkName) : artwork.title;
+
+      Object.assign(artwork, {
+        ...body,
+        artworkId,
+        artworkName,
+        title: artworkName,
+        artist: body.artistName ?? artwork.artist,
+        content: body.content ?? artwork.content,
+        description: body.content ?? artwork.description,
+        materialMedia: body.materialMedia ?? artwork.materialMedia,
+        material: body.materialMedia ?? artwork.material,
+        images: body.images ?? artwork.images,
+        artworkImageUrl: imageUrl,
+        thumbnailUrl: imageUrl,
+        imageUrl,
+      });
+
+      return success('/api/v1/artworks/{artworkId}', artwork);
+    }),
+  ),
+  ...paths('/api/v1/artworks/{artworkId}').map((path) =>
     http.delete(path, ({ params }) => {
       const artworkId = toNumber(params.artworkId);
       mockDb.artworks = mockDb.artworks.filter((artwork: any) => artwork.artworkId !== artworkId);
