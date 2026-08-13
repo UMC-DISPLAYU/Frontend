@@ -1,5 +1,6 @@
 import { Bookmark } from 'lucide-react';
 
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 import { statusBadgeClass } from '@/utils/mypage';
@@ -48,9 +49,10 @@ export function ExhibitionCard({
       >
         <div className="w-24 h-32 rounded-xl overflow-hidden bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)] shrink-0">
           {item.thumbnail && (
-            <img
+            <OptimizedImage
               className="block w-full h-full object-cover"
               src={item.thumbnail}
+              displayWidth={96}
               alt={item.title}
             />
           )}

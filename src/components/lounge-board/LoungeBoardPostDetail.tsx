@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import type { LoungePostDetailDto } from '@/api/dto/lounge.dto';
 import { ImageModal } from '@/components/common/ImageModal';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { useLoungePostPolicy } from '@/hooks/usePolicy';
 import { formatFullDate } from '@/utils/date';
@@ -27,10 +28,11 @@ export function LoungeBoardPostDetail({ post, onEdit, onDelete }: Props) {
     <div className="w-full flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <img
+          <OptimizedImage
             alt=""
             className="size-10 rounded-full shrink-0 object-cover"
             src={post.writer.profileImageUrl || FALLBACK_PROFILE_IMAGE}
+            displayWidth={40}
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = FALLBACK_PROFILE_IMAGE;
             }}
@@ -59,7 +61,12 @@ export function LoungeBoardPostDetail({ post, onEdit, onDelete }: Props) {
                 className="w-[112px] h-[136px] shrink-0 rounded-sm overflow-hidden cursor-pointer"
                 aria-label="이미지 크게 보기"
               >
-                <img alt="" className="w-full h-full object-cover" src={src} />
+                <OptimizedImage
+                  alt=""
+                  className="w-full h-full object-cover"
+                  src={src}
+                  displayWidth={112}
+                />
               </button>
             ))}
           </div>

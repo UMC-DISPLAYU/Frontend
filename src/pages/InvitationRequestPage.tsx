@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -122,38 +122,87 @@ interface RejectModalProps {
 }
 
 function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
+  const descriptionId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    cancelButtonRef.current?.focus();
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="w-80 h-48 relative bg-neutral-50/20 rounded-[20px] shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06)] shadow-[inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60)] shadow-[inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px] overflow-hidden">
-        <div className="w-72 left-[24px] top-[24px] absolute inline-flex flex-col justify-center items-center gap-2">
-          <div className="self-stretch text-center justify-start text-neutral-900 text-xl font-bold font-['Pretendard'] leading-7">
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-label="초대 거절"
+      aria-describedby={descriptionId}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40"
+    >
+      <div
+        ref={dialogRef}
+        className="relative w-80 h-48 bg-neutral-50/40 rounded-[20px] shadow-[inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px] overflow-hidden"
+      >
+        <div className="absolute inset-x-6 top-6 flex flex-col items-center gap-2">
+          <h3 className="w-full text-center typo-body-xl-bold text-modal-title">
             초대를 거절할까요?
-          </div>
-          <div className="self-stretch text-center justify-start text-neutral-600 text-sm font-normal font-['Pretendard'] leading-5">
-            거절하면 이 전시의 팀원으로 참여할 수 없어요. 다시 참여하려면 대표자가 다시 초대해야
-            해요.
-          </div>
+          </h3>
+          <p id={descriptionId} className="w-full text-center typo-body-sm-regular text-modal-desc">
+            거절하면 이 전시의 팀원으로 참여할 수 없어요.
+            <br />
+            다시 참여하려면 대표자가 다시 초대해야 해요.
+          </p>
         </div>
-        <div className="left-[20px] top-[122px] absolute inline-flex justify-start items-center gap-2.5">
+        <div className="absolute left-5 w-full top-[122px] flex justify-start items-center gap-2.5">
           <button
             type="button"
             onClick={onConfirm}
-            className="w-32 h-11 py-3.5 bg-neutral-900 rounded-[100px] flex justify-center items-center gap-2.5"
+            className="w-34 h-11 bg-modal-btn-hover-bg rounded-full flex justify-center items-center gap-2.5"
           >
-            <div className="justify-start text-white text-lg font-normal font-['Pretendard'] leading-6">
-              확인
-            </div>
+            <span className="typo-body-lg-regular text-modal-btn-hover-fg">확인</span>
           </button>
           <button
+            ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
-            className="w-32 h-11 py-3.5 bg-neutral-200 rounded-[100px] flex justify-center items-center gap-2.5"
+            className="w-34 h-11 bg-modal-btn-bg rounded-full flex justify-center items-center gap-2.5"
           >
-            <div className="justify-start text-neutral-900 text-lg font-normal font-['Pretendard'] leading-6">
-              취소
-            </div>
+            <span className="typo-body-lg-regular text-modal-btn-fg">취소</span>
           </button>
         </div>
       </div>

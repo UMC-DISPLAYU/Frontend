@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { LOUNGE_CATEGORY_TAGS } from '@/constants/loungeCategories';
 import type { LoungeBoardPost } from '@/types/exhibition';
 
@@ -46,7 +47,12 @@ export function LoungeBoardPostCard({ post, tagLabel }: Props) {
                   key={`${src}-${index}`}
                   className="w-27 h-32.5 shrink-0 rounded-sm overflow-hidden"
                 >
-                  <img alt="" className="w-full h-full object-cover" src={src} />
+                  <OptimizedImage
+                    alt=""
+                    className="w-full h-full object-cover"
+                    src={src}
+                    displayWidth={108}
+                  />
                 </div>
               ))}
             </div>
