@@ -13,8 +13,10 @@ import {
 import { useCreatePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { usePersonalArtworkPolicy } from '@/hooks/usePolicy';
-import { toProductionYear } from '@/utils/date';
+import { sanitizeProductionYearInput, toProductionYear } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
+
+import { personalArtworkRegisterSchema } from './personalArtworksRegister.schema';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
@@ -52,16 +54,23 @@ export function PersonalArtworksRegister() {
   const [isUploading, setIsUploading] = useState(false);
   const isSubmitting = isUploading || createPersonalArtwork.isPending;
 
+  const formValue = {
+    artworkImageCount: images.length,
+    title,
+    intro,
+    field,
+    year,
+    material,
+    size,
+    thoughts,
+  };
   const isFormValid =
-    canCreatePersonalArtwork &&
-    images.length > 0 &&
-    title.trim() !== '' &&
-    year.trim() !== '' &&
-    material.trim() !== '';
+    canCreatePersonalArtwork && personalArtworkRegisterSchema.safeParse(formValue).success;
 
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
-    if (!isFormValid || isSubmitting) return;
+    const parsed = personalArtworkRegisterSchema.safeParse(formValue);
+    if (!canCreatePersonalArtwork || !parsed.success || isSubmitting) return;
 
     setSubmitError(null);
 
@@ -186,9 +195,10 @@ export function PersonalArtworksRegister() {
             <input
               id="artwork-year"
               value={year}
+              inputMode="numeric"
               maxLength={4}
-              onChange={(e) => setYear(e.target.value)}
-              placeholder="YYYY"
+              onChange={(e) => setYear(sanitizeProductionYearInput(e.target.value))}
+              placeholder="2026"
               className={INPUT_CLASS}
             />
           </div>
