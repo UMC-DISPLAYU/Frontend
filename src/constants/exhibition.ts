@@ -19,6 +19,7 @@ export const EXHIBITION_FIELDS = [
   'FASHION',
   'ILLUSTRATION',
   'CRAFT',
+  'COMPLEX',
   'ETC',
 ] as const;
 
@@ -54,12 +55,13 @@ export const DISPLAY_FIELD_MAP: Record<string, string> = {
   DESIGN: 'DESIGN',
   PHOTOGRAPHY: 'PHOTOGRAPHY',
   ARCHITECTURE: 'ARCHITECTURE',
-  VIDEO: 'MEDIA',
+  VIDEO: 'VIDEO',
   SCULPTURE: 'SCULPTURE',
   FASHION: 'FASHION',
-  ILLUSTRATION: 'DESIGN',
-  CRAFT: 'CRAFT',
-  ETC: 'ETC',
+  ILLUSTRATION: 'INTERDISCIPLINARY',
+  CRAFT: 'CRAFTS',
+  COMPLEX: 'COMPLEX',
+  ETC: 'OTHERS',
 } satisfies Record<ExhibitionField, string>;
 
 export type ArtistFieldCode =
@@ -72,6 +74,7 @@ export type ArtistFieldCode =
   | 'SCULPTURE'
   | 'FASHION'
   | 'ILLUSTRATION'
+  | 'COMPLEX'
   | 'ETC';
 
 export const ARTIST_FIELD_MAP: Record<ExhibitionField, ArtistFieldCode> = {
@@ -84,6 +87,7 @@ export const ARTIST_FIELD_MAP: Record<ExhibitionField, ArtistFieldCode> = {
   FASHION: 'FASHION',
   ILLUSTRATION: 'ILLUSTRATION',
   CRAFT: 'CRAFT',
+  COMPLEX: 'COMPLEX',
   ETC: 'ETC',
 };
 
@@ -97,6 +101,7 @@ export const EXHIBITION_FIELD_LABELS: Record<ExhibitionField, string> = {
   SCULPTURE: '조소',
   FASHION: '패션',
   ILLUSTRATION: '일러스트',
+  COMPLEX: '복합',
   ETC: '기타',
 };
 
@@ -110,6 +115,7 @@ export const ARTIST_FIELD_REVERSE_MAP: Record<ArtistFieldCode, ExhibitionField> 
   SCULPTURE: 'SCULPTURE',
   FASHION: 'FASHION',
   ILLUSTRATION: 'ILLUSTRATION',
+  COMPLEX: 'COMPLEX',
   ETC: 'ETC',
 };
 
