@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { ExhibitionItem } from '@/types/mypage';
 
@@ -10,7 +11,6 @@ import { ExhibitionCard } from './ExhibitionCard';
 export function ManageScreen({
   exhibitions,
   onOpen,
-  onBack,
   onDelete,
   onLeave,
   onEditArtistName,
@@ -18,17 +18,17 @@ export function ManageScreen({
 }: {
   exhibitions: ExhibitionItem[];
   onOpen: (ex: ExhibitionItem) => void;
-  onBack?: () => void;
   onDelete: (ex: ExhibitionItem) => void;
   onLeave: (ex: ExhibitionItem) => void;
   onEditArtistName: (ex: ExhibitionItem) => void;
   onRegister: () => void;
 }) {
+  const navigate = useNavigate();
   const [menuId, setMenuId] = useState<string | null>(null);
 
   return (
     <Screen>
-      <Header title="내 전시 관리" onBack={onBack} />
+      <Header title="내 전시 관리" onBack={() => navigate('/my')} />
       <div className="flex-1 overflow-y-auto px-5 pt-1.5 pb-4">
         {/* 전시 관리 섹션 헤더 */}
         <div className="flex items-end justify-between gap-10 mb-4">
