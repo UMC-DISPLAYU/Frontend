@@ -22,24 +22,6 @@ export function formatFullDate(dateStr: string): string {
   return `${year}.${month}.${day}`;
 }
 
-export function sanitizeProductionYearInput(value: string): string {
-  return value.replace(/\D/g, '').slice(0, 4);
-}
-
-export function isProductionYearValid(value: string): boolean {
-  if (!/^\d{4}$/.test(value)) return false;
-
-  const year = Number(value);
-  return year >= 1000 && year < 9999;
-}
-
-/**
- * 제작연도 입력값을 숫자로 변환합니다. 호출 전 isProductionYearValid로 검증해야 합니다.
- */
-export function toProductionYear(value: string): number {
-  return Number(value);
-}
-
 /**
  * 서버가 타임존 표시(Z 또는 +09:00 등) 없이 UTC 시각을 그대로 내려주는 경우를 보정한다.
  * 타임존 표시가 이미 있으면 손대지 않는다 — 서버가 나중에 정상적으로 Z를 붙여 보내도

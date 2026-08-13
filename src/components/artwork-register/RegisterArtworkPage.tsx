@@ -4,8 +4,8 @@ import { ChipGroup, RequiredLabel } from '@/components/ui';
 import { ARTWORK_FIELD_MAP } from '@/constants';
 import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
+import { sanitizeArtworkRegisterYearInput } from '@/pages/artwork-register/artworkRegister.schema';
 import { cn } from '@/utils/cn';
-import { isProductionYearValid, sanitizeProductionYearInput } from '@/utils/date';
 
 import { UnderlineTextarea } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
@@ -21,6 +21,7 @@ interface RegisterArtworkPageProps {
   point: string;
   artworkImages: ImageUploadItem[];
   processImages: ImageUploadItem[];
+  canProceed: boolean;
   onBack: () => void;
   onChangeTitle: (value: string) => void;
   onChangeDescription: (value: string) => void;
@@ -47,6 +48,7 @@ function RegisterArtworkPage({
   point,
   artworkImages,
   processImages,
+  canProceed,
   onBack,
   onChangeTitle,
   onChangeDescription,
@@ -61,12 +63,6 @@ function RegisterArtworkPage({
   onRemoveProcessImage,
   onNext,
 }: RegisterArtworkPageProps) {
-  const isNextEnabled =
-    title.trim().length > 0 &&
-    field.trim().length > 0 &&
-    isProductionYearValid(year) &&
-    medium.trim().length > 0;
-
   return (
     <ArtworkRegisterLayout
       title={isEditMode ? '작품 정보 수정' : '전시작 등록'}
@@ -76,10 +72,10 @@ function RegisterArtworkPage({
           <button
             type="button"
             onClick={onNext}
-            disabled={!isNextEnabled}
+            disabled={!canProceed}
             className={cn(
               'typo-body-sm-bold h-11 w-full rounded-xl',
-              isNextEnabled ? 'bg-dark text-white' : 'bg-bt-gray text-faint',
+              canProceed ? 'bg-dark text-white' : 'bg-bt-gray text-faint',
             )}
           >
             다음
@@ -144,7 +140,7 @@ function RegisterArtworkPage({
               value={year}
               inputMode="numeric"
               maxLength={4}
-              onChange={(e) => onChangeYear(sanitizeProductionYearInput(e.target.value))}
+              onChange={(e) => onChangeYear(sanitizeArtworkRegisterYearInput(e.target.value))}
               placeholder="2026"
               className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
             />

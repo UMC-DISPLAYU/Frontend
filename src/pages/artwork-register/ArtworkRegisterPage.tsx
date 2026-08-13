@@ -35,8 +35,13 @@ import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
-import { toProductionYear } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
+
+import {
+  artworkRegisterBasicSchema,
+  artworkRegisterSubmitSchema,
+  toArtworkRegisterProductionYear,
+} from './artworkRegister.schema';
 
 type RegisterStep = 'choice' | 'otherTeamAuthor' | 'otherAuthor' | 'basic' | 'participants';
 const DIRECT_INPUT_ACCOUNT = '직접입력';
@@ -113,6 +118,17 @@ function ArtworkRegisterPageContent() {
     { id: string; name: string; account: string; userId?: number }[]
   >(draft.collaborators);
   const [qnaAssigneeIds, setQnaAssigneeIdsState] = useState<string[]>(draft.qnaAssigneeIds);
+
+  const basicFormValue = {
+    title,
+    description,
+    field,
+    year,
+    medium,
+    size,
+    point,
+  };
+  const canProceedBasic = artworkRegisterBasicSchema.safeParse(basicFormValue).success;
 
   const setStep = useCallback(
     (nextStep: RegisterStep, options: { replace?: boolean } = {}) => {
@@ -620,8 +636,15 @@ function ArtworkRegisterPageContent() {
       ),
     );
 
-    if (qaHandlerUserIds.length === 0) {
-      setSubmitError('Q&A 담당자를 선택해주세요.');
+    const submitResult = artworkRegisterSubmitSchema.safeParse({
+      ...basicFormValue,
+      artworkImageCount: artworkImageUrls.length,
+      artistName: displayAuthor.name,
+      qaHandlerUserIds,
+    });
+
+    if (!submitResult.success) {
+      setSubmitError(submitResult.error.issues[0]?.message ?? '작품 정보를 확인해주세요.');
       return;
     }
 
@@ -638,7 +661,7 @@ function ArtworkRegisterPageContent() {
         artworkName: title.trim(),
         content: description.trim(),
         type: artworkType,
-        productionYear: toProductionYear(year),
+        productionYear: toArtworkRegisterProductionYear(year),
         materialMedia: medium.trim(),
         size: size.trim(),
         point: point.trim(),
@@ -846,6 +869,7 @@ function ArtworkRegisterPageContent() {
           point={point}
           artworkImages={artworkImages}
           processImages={processImages}
+          canProceed={canProceedBasic}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}

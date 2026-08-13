@@ -13,10 +13,13 @@ import {
 import { useCreatePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { usePersonalArtworkPolicy } from '@/hooks/usePolicy';
-import { sanitizeProductionYearInput, toProductionYear } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
-import { personalArtworkRegisterSchema } from './personalArtworksRegister.schema';
+import {
+  personalArtworkRegisterSchema,
+  sanitizePersonalArtworkYearInput,
+  toPersonalArtworkProductionYear,
+} from './personalArtworksRegister.schema';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
@@ -109,7 +112,7 @@ export function PersonalArtworksRegister() {
         artworkName: title.trim(),
         content: intro.trim(),
         type: ARTWORK_FIELD_MAP[field] ?? ARTWORK_FIELD_MAP['기타'],
-        productionYear: toProductionYear(year),
+        productionYear: toPersonalArtworkProductionYear(year),
         materialMedia: material.trim(),
         size: size.trim(),
         point: thoughts.trim(),
@@ -197,7 +200,7 @@ export function PersonalArtworksRegister() {
               value={year}
               inputMode="numeric"
               maxLength={4}
-              onChange={(e) => setYear(sanitizeProductionYearInput(e.target.value))}
+              onChange={(e) => setYear(sanitizePersonalArtworkYearInput(e.target.value))}
               placeholder="2026"
               className={INPUT_CLASS}
             />
