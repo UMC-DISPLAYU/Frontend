@@ -70,6 +70,37 @@ const validateNumericId =
     return null;
   };
 
+const artworkRegisterFlowSteps = [
+  {
+    path: '/artworks/add/choice',
+    step: 'artwork-choice',
+  },
+  {
+    path: '/artworks/add/artist',
+    step: 'artwork-author-select',
+    required: ['artwork-choice'],
+    fallback: '/artworks/add/choice',
+  },
+  {
+    path: '/artworks/add/artist/direct',
+    step: 'artwork-author-direct',
+    required: ['artwork-choice'],
+    fallback: '/artworks/add/choice',
+  },
+  {
+    path: '/artworks/add/basic',
+    step: 'artwork-basic',
+    required: ['artwork-choice'],
+    fallback: '/artworks/add/choice',
+  },
+  {
+    path: '/artworks/add/participants',
+    step: 'artwork-participants',
+    required: ['artwork-basic'],
+    fallback: '/artworks/add/choice',
+  },
+];
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -270,6 +301,9 @@ export const router = createBrowserRouter([
               },
               {
                 path: 'artworks',
+                element: (
+                  <FlowRoute initialFlow="artwork-register" steps={artworkRegisterFlowSteps} />
+                ),
                 children: [
                   {
                     index: true,
@@ -281,11 +315,7 @@ export const router = createBrowserRouter([
                   },
                   {
                     path: 'add',
-                    element: (
-                      <ArtworkPermissionGuard action="create">
-                        <ArtworkRegisterPage />
-                      </ArtworkPermissionGuard>
-                    ),
+                    element: <Navigate to="choice" replace />,
                   },
                   {
                     path: 'add/choice',

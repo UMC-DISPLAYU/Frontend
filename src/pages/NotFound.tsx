@@ -1,3 +1,5 @@
+import { ForbiddenPage } from './ForbiddenPage';
+
 export function NotFound() {
-  return <h1>Page not found.</h1>;
+  return <ForbiddenPage />;
 }

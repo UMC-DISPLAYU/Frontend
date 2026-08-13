@@ -63,7 +63,7 @@ function ArtworkRegisterPageContent() {
   const { draft, updateDraft, resetDraft } = useArtworkRegisterDraft();
   const navigate = useNavigate();
   const flowBack = useFlowBack();
-  const { completeFlow } = useFlowContext();
+  const { completeFlow, completeStep } = useFlowContext();
   const location = useLocation();
   const { displayId: paramDisplayId, artworkId: paramArtworkId } = useParams();
   const [searchParams] = useSearchParams();
@@ -707,11 +707,13 @@ function ArtworkRegisterPageContent() {
 
   const handleChoiceNext = () => {
     if (registerMode === 'other') {
+      completeStep('artwork-choice');
       setOtherAuthorSource('team');
       setActiveSheet('otherAuthorMethod');
       return;
     }
 
+    completeStep('artwork-choice');
     setStep('basic');
   };
 
@@ -732,6 +734,7 @@ function ArtworkRegisterPageContent() {
 
     setOtherAuthorName(selectedOtherAuthor.name);
     setOtherAuthorSource('team');
+    completeStep('artwork-author');
     setStep('basic');
   };
 
@@ -741,6 +744,7 @@ function ArtworkRegisterPageContent() {
 
     setOtherAuthorName(trimmedAuthorName);
     setOtherAuthorSource('direct');
+    completeStep('artwork-author');
     setStep('basic');
   };
 
@@ -751,6 +755,7 @@ function ArtworkRegisterPageContent() {
 
     try {
       await syncImageDraft();
+      completeStep('artwork-basic');
       setStep('participants');
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');

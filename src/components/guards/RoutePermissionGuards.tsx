@@ -17,7 +17,7 @@ import {
 } from '@/hooks/usePolicy';
 import type { ArtworkPolicyResource, DisplayPolicyResource } from '@/policies/util';
 
-import { FlowGuard } from './FlowGuard';
+import { FlowGuard, type FlowStepDefinition } from './FlowGuard';
 import { PermissionGuard } from './PermissionGuard';
 import { useFlowContext } from './useFlowContext';
 
@@ -74,6 +74,7 @@ type GuardedFlowStepProps = GuardChildrenProps & {
 
 type FlowRouteProps = {
   initialFlow: string;
+  steps?: FlowStepDefinition[];
   children?: ReactNode;
 };
 
@@ -263,6 +264,14 @@ export function GuardedFlowStep({ required, fallback, complete, children }: Guar
   );
 }
 
-export function FlowRoute({ initialFlow, children }: FlowRouteProps) {
-  return <FlowProvider initialFlow={initialFlow}>{children ?? <Outlet />}</FlowProvider>;
+export function FlowRoute({ initialFlow, steps, children }: FlowRouteProps) {
+  return (
+    <FlowProvider initialFlow={initialFlow}>
+      {steps ? (
+        <FlowGuard steps={steps}>{children ?? <Outlet />}</FlowGuard>
+      ) : (
+        (children ?? <Outlet />)
+      )}
+    </FlowProvider>
+  );
 }
