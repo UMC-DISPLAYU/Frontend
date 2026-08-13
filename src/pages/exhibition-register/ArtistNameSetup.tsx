@@ -13,6 +13,7 @@ import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUpdateMyDisplayNickname } from '@/hooks/queries/useMyDisplays';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useAuthStore } from '@/stores/authStore';
@@ -110,27 +111,30 @@ export function ArtistNameSetup() {
   const { completeFlow } = useFlowContext();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
+  const { data: userMeData } = useUserMe();
   const userMe = useAuthStore((s) => s.user);
   const userStoreUserId = useUserStore((s) => s.userId);
-  const myUserId = userMe?.id ?? userStoreUserId;
+  const myUserId = userMeData?.id ?? userMe?.id ?? userStoreUserId;
   const userStoreName = useUserStore((s) => s.displayArtistName || s.artistName);
 
   const createDisplay = useCreateDisplay();
   const updateNickname = useUpdateMyDisplayNickname();
 
-  const shouldUseDraft = hasDraft && hasCompleteRegisterDraft(draft);
+  const isEditMode = Boolean(state?.displayId || state?.id);
+  const shouldUseDraft = !isEditMode && hasDraft && hasCompleteRegisterDraft(draft);
   const registerState = {
     ...(state ?? {}),
     ...(shouldUseDraft ? draft : {}),
   } as ExhibitionRegisterState;
 
-  const isEditMode = Boolean(registerState.displayId || registerState.id) && !shouldUseDraft;
   const displayId = Number(registerState.displayId || registerState.id || 0);
 
   const { data: membersData } = useDisplayMembers(isEditMode ? displayId : 0);
 
   const currentMember = membersData?.members?.find((m) =>
-    myUserId ? m.userId === myUserId : m.loggedIn === true,
+    myUserId != null && m.userId != null
+      ? Number(m.userId) === Number(myUserId)
+      : m.loggedIn === true,
   );
   const fetchedMemberNickname = currentMember?.displayNickname;
 
@@ -165,6 +169,7 @@ export function ArtistNameSetup() {
     control,
     getValues,
     setValue,
+    reset,
     formState: { errors, isValid },
   } = useForm<ArtistNameSetupFormValues>({
     resolver: zodResolver(artistNameSetupSchema),

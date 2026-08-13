@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ArtistDisplayDto, UpdateMyDisplayNicknameRequestDto } from '@/api/dto';
 import {
   deleteDisplay,
+  exitDisplay,
   getArtistDisplays,
   getMyDisplays,
   updateMyDisplayNickname,
@@ -66,6 +67,17 @@ export const useDeleteDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => deleteDisplay(displayId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
+    },
+  });
+};
+
+export const useExitDisplay = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (displayId: number) => exitDisplay(displayId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
     },

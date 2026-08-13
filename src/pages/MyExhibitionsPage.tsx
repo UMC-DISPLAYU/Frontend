@@ -2,11 +2,12 @@ import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { DeleteConfirmModal, LoadingView } from '@/components/common';
+import { DeleteConfirmModal, LeaveConfirmModal, LoadingView } from '@/components/common';
 import { ManageScreen } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
 import { useDeleteDisplay, useMyDisplays } from '@/hooks/queries/useMyDisplays';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useDeleteDisplay, useExitDisplay, useMyDisplays } from '@/hooks/queries/useMyDisplays';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
@@ -19,6 +20,7 @@ export function MyExhibitionsPage() {
   const flowBack = useFlowBack();
   const { data: myDisplays = [], isLoading } = useMyDisplays();
   const deleteDisplayMutation = useDeleteDisplay();
+  const exitDisplayMutation = useExitDisplay();
 
   const displayCreatePolicy = useDisplayCreatePolicy();
   const canCreateDisplay = hasPermission(displayCreatePolicy, 'create');
@@ -26,6 +28,7 @@ export function MyExhibitionsPage() {
     useArtistVerificationRequiredModal();
 
   const [displayToDelete, setDisplayToDelete] = useState<ExhibitionItem | null>(null);
+  const [displayToLeave, setDisplayToLeave] = useState<ExhibitionItem | null>(null);
 
   const handleRegister = () => {
     if (canCreateDisplay) {
@@ -61,8 +64,17 @@ export function MyExhibitionsPage() {
         }}
         onBack={() => flowBack()}
         onDelete={(ex) => setDisplayToDelete(ex)}
-        onLeave={() => {}}
-        onEditArtistName={(ex) => navigate(`/exhibition/register/artist`, { state: ex })}
+        onLeave={(ex) => setDisplayToLeave(ex)}
+        onEditArtistName={(ex) =>
+          navigate(`/exhibition/register/artist`, {
+            state: {
+              ...ex,
+              displayId: Number(ex.id),
+              artistName: ex.artistName,
+              displayNickname: ex.artistName,
+            },
+          })
+        }
         onRegister={handleRegister}
       />
 
@@ -74,6 +86,17 @@ export function MyExhibitionsPage() {
             });
           }}
           onCancel={() => setDisplayToDelete(null)}
+        />
+      )}
+
+      {displayToLeave && (
+        <LeaveConfirmModal
+          onConfirm={() => {
+            exitDisplayMutation.mutate(Number(displayToLeave.id), {
+              onSuccess: () => setDisplayToLeave(null),
+            });
+          }}
+          onCancel={() => setDisplayToLeave(null)}
         />
       )}
 
