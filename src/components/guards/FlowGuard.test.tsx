@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { FlowGuard } from './FlowGuard';
@@ -7,6 +8,11 @@ const mocks = vi.hoisted(() => ({
   location: { pathname: '/exhibition/104/artworks/add/participants' },
   completeStep: vi.fn(),
 }));
+
+const asElement = (element: React.ReactNode) => {
+  expect(element).not.toBeNull();
+  return element as ReactElement;
+};
 
 vi.mock('react-router-dom', () => ({
   Navigate: ({ to, replace }: { to: string; replace?: boolean }) => (
@@ -35,11 +41,13 @@ describe('FlowGuard', () => {
   it('required 단계가 모두 완료되면 children을 렌더링한다', () => {
     mocks.completedSteps = new Set(['display-basic', 'display-artworks']);
 
-    const element = FlowGuard({
-      required: ['display-basic', 'display-artworks'],
-      fallback: '/display/manage',
-      children: <div>Flow Content</div>,
-    });
+    const element = asElement(
+      FlowGuard({
+        required: ['display-basic', 'display-artworks'],
+        fallback: '/display/manage',
+        children: <div>Flow Content</div>,
+      }),
+    );
 
     expect(element.props.children.props.children).toBe('Flow Content');
   });
@@ -47,11 +55,13 @@ describe('FlowGuard', () => {
   it('required 단계 중 하나라도 미완료되면 fallback으로 replace 이동한다', () => {
     mocks.completedSteps = new Set(['display-basic']);
 
-    const element = FlowGuard({
-      required: ['display-basic', 'display-artworks'],
-      fallback: '/display/manage',
-      children: <div>Flow Content</div>,
-    });
+    const element = asElement(
+      FlowGuard({
+        required: ['display-basic', 'display-artworks'],
+        fallback: '/display/manage',
+        children: <div>Flow Content</div>,
+      }),
+    );
 
     expect(element.type).toBeTypeOf('function');
     expect(element.props).toMatchObject({
@@ -64,17 +74,19 @@ describe('FlowGuard', () => {
     mocks.completedSteps = new Set(['artwork-basic']);
     mocks.location = { pathname: '/exhibition/104/artworks/add/participants' };
 
-    const element = FlowGuard({
-      steps: [
-        {
-          path: '/artworks/add/participants',
-          step: 'artwork-participants',
-          required: ['artwork-basic'],
-          fallback: '/artworks/add/choice',
-        },
-      ],
-      children: <div>Participants</div>,
-    });
+    const element = asElement(
+      FlowGuard({
+        steps: [
+          {
+            path: '/artworks/add/participants',
+            step: 'artwork-participants',
+            required: ['artwork-basic'],
+            fallback: '/artworks/add/choice',
+          },
+        ],
+        children: <div>Participants</div>,
+      }),
+    );
 
     expect(element.props.children.props.children).toBe('Participants');
   });
@@ -83,17 +95,19 @@ describe('FlowGuard', () => {
     mocks.completedSteps = new Set();
     mocks.location = { pathname: '/exhibition/104/artworks/add/participants' };
 
-    const element = FlowGuard({
-      steps: [
-        {
-          path: '/artworks/add/participants',
-          step: 'artwork-participants',
-          required: ['artwork-basic'],
-          fallback: '/artworks/add/choice',
-        },
-      ],
-      children: <div>Participants</div>,
-    });
+    const element = asElement(
+      FlowGuard({
+        steps: [
+          {
+            path: '/artworks/add/participants',
+            step: 'artwork-participants',
+            required: ['artwork-basic'],
+            fallback: '/artworks/add/choice',
+          },
+        ],
+        children: <div>Participants</div>,
+      }),
+    );
 
     expect(element.props).toMatchObject({
       to: '/exhibition/104/artworks/add/choice',
