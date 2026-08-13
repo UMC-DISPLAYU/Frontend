@@ -161,6 +161,7 @@ const artworkToDetail = (artwork: any) => ({
     return {
       displayId: artwork.displayId,
       exhibitionTitle: display?.title ?? '',
+      exhibitionSubtitle: display?.subtitle ?? '',
       exhibitionThumbnailUrl: display?.posterSection?.images?.[0]?.imageUrl ?? '',
       exhibitionOrganizer: display?.organization ?? '',
       exhibitionPeriod: formatPeriod(display?.startedAt, display?.endedAt),

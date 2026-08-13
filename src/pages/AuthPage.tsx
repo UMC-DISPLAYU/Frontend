@@ -117,7 +117,7 @@ export function AuthPage() {
   };
 
   const handleShareProfile = async () => {
-    const url = `${window.location.origin}/auth/${userId}`;
+    const url = `${window.location.origin}/artist/${userId}`;
     await handleShare(url, `${profile.name} 작가님`);
   };
 
@@ -139,7 +139,7 @@ export function AuthPage() {
       <LoginConfirmModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        redirectPath={`/auth/${userId}`}
+        redirectPath={`/artist/${userId}`}
       />
 
       <AuthPageHeader

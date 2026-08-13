@@ -242,14 +242,14 @@ function QuestionCard({
       <div className="w-full overflow-hidden rounded-[18px] bg-card shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
         {!canView ? (
           <div className="flex flex-col items-start gap-1 px-4 py-3.5">
-            <div className="flex h-[50px] items-center gap-3 self-stretch">
-              <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
+            <div className="flex h-[50px] items-center justify-between self-stretch">
               <div className="flex w-[280px] shrink-0 flex-col items-start gap-1">
                 <span className="typo-body-md-bold text-main">비공개 질문입니다.</span>
                 <span className="typo-body-xs-regular text-sub600">
                   {formatRelativeTime(question.createdAt)}
                 </span>
               </div>
+              <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
             </div>
           </div>
         ) : (

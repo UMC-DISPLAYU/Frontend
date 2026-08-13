@@ -236,6 +236,7 @@ export function ArtworkDetailPage() {
     artist: detail.artistName,
     exhibitionId: String(detail.exhibitionInfo?.displayId ?? ''),
     exhibitionTitle: detail.exhibitionInfo?.exhibitionTitle ?? '',
+    exhibitionSubtitle: detail.exhibitionInfo?.exhibitionSubtitle ?? '',
     exhibitionOrganizer: detail.exhibitionInfo?.exhibitionOrganizer ?? '',
     exhibitionPeriod: detail.exhibitionInfo?.exhibitionPeriod ?? '',
     exhibitionThumbnail: detail.exhibitionInfo?.exhibitionThumbnailUrl ?? '',

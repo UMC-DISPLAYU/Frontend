@@ -124,7 +124,7 @@ export function ArtworkMeta({ artwork }: Props) {
               {artwork.exhibitionTitle}
             </h2>
             <p className="w-full typo-body-xs-regular text-sub600 truncate">
-              {artwork.exhibitionOrganizer}
+              {artwork.exhibitionSubtitle}
             </p>
           </div>
 
