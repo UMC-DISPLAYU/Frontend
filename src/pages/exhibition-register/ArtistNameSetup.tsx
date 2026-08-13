@@ -76,7 +76,6 @@ const hasCompleteRegisterDraft = (draft: ExhibitionRegisterState) =>
     draft.endTime &&
     draft.placeName &&
     draft.address &&
-    draft.contact?.trim() &&
     draft.latitude !== null &&
     draft.latitude !== undefined &&
     draft.longitude !== null &&
@@ -150,7 +149,6 @@ export function ArtistNameSetup() {
       !registerState.endTime ||
       !registerState.placeName ||
       !registerState.address ||
-      !registerState.contact?.trim() ||
       registerState.latitude === null ||
       registerState.latitude === undefined ||
       registerState.longitude === null ||
@@ -175,7 +173,9 @@ export function ArtistNameSetup() {
       longitude: registerState.longitude,
       roadAddress: registerState.address.trim(),
       displayNickname: data.artistName.trim(),
-      qnaAccount: (registerState.contact ?? '').trim(),
+      ...(optionalText(registerState.contact)
+        ? { qnaAccount: optionalText(registerState.contact) }
+        : {}),
       schoolOrOrganization: optionalText(registerState.school || registerState.organizer) ?? '',
       departmentOrClub: optionalText(registerState.department),
       subtitle: optionalText(registerState.subtitle),
