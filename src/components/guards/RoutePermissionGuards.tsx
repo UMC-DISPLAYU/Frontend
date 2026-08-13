@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { Navigate, Outlet, useParams } from 'react-router-dom';
 
@@ -73,6 +73,7 @@ type GuardedFlowStepProps = GuardChildrenProps & {
 };
 
 type FlowRouteProps = {
+  captureEntryHistoryIndex?: boolean;
   initialFlow: string;
   steps?: FlowStepDefinition[];
   children?: ReactNode;
@@ -312,9 +313,18 @@ export function GuardedFlowStep({ required, fallback, complete, children }: Guar
   );
 }
 
-export function FlowRoute({ initialFlow, steps, children }: FlowRouteProps) {
+export function FlowRoute({
+  captureEntryHistoryIndex = false,
+  initialFlow,
+  steps,
+  children,
+}: FlowRouteProps) {
+  const [initialEntryHistoryIndex] = useState<number | null>(() =>
+    captureEntryHistoryIndex ? (window.history.state?.idx ?? null) : null,
+  );
+
   return (
-    <FlowProvider initialFlow={initialFlow}>
+    <FlowProvider initialEntryHistoryIndex={initialEntryHistoryIndex} initialFlow={initialFlow}>
       {steps ? (
         <FlowGuard steps={steps}>{children ?? <Outlet />}</FlowGuard>
       ) : (

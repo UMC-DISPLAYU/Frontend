@@ -174,7 +174,7 @@ export const router = createBrowserRouter([
           // 1. 전시 등록 플로우
           {
             element: (
-              <FlowRoute initialFlow="exhibition-register">
+              <FlowRoute captureEntryHistoryIndex initialFlow="exhibition-register">
                 <DisplayCreatePermissionGuard>
                   <ExhibitionRegisterDraftRoute />
                 </DisplayCreatePermissionGuard>

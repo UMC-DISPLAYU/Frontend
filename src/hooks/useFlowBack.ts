@@ -1,16 +1,23 @@
 import { useCallback } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useOptionalFlowContextValue } from '@/contexts/FlowContext';
 
+type CompletedFlowLocationState = {
+  completedFlowBackIndex?: number | null;
+};
+
 export function useFlowBack() {
+  const location = useLocation();
   const navigate = useNavigate();
   const flow = useOptionalFlowContextValue();
 
   return useCallback(() => {
     const currentHistoryIndex = window.history.state?.idx;
-    const completedBackHistoryIndex = flow?.consumeCompletedFlowBackIndex();
+    const completedBackHistoryIndex =
+      flow?.consumeCompletedFlowBackIndex() ??
+      (location.state as CompletedFlowLocationState | null)?.completedFlowBackIndex;
 
     if (
       typeof currentHistoryIndex === 'number' &&
@@ -27,5 +34,5 @@ export function useFlowBack() {
     }
 
     navigate('/', { replace: true });
-  }, [flow, navigate]);
+  }, [flow, location.state, navigate]);
 }

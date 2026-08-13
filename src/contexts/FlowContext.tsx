@@ -15,7 +15,7 @@ type FlowState = {
 
 type FlowContextValue = FlowState & {
   startFlow: (flowId: string, entryHistoryIndex?: number | null) => void;
-  completeFlow: () => void;
+  completeFlow: () => number | null;
   consumeCompletedFlowBackIndex: () => number | null;
   completeStep: (stepId: string) => void;
   resetFlow: (flowId: string) => void;
@@ -26,15 +26,20 @@ const FlowContext = createContext<FlowContextValue | null>(null);
 
 type FlowProviderProps = {
   children: ReactNode;
+  initialEntryHistoryIndex?: number | null;
   initialFlow?: string;
 };
 
-export function FlowProvider({ children, initialFlow = '' }: FlowProviderProps) {
+export function FlowProvider({
+  children,
+  initialEntryHistoryIndex = null,
+  initialFlow = '',
+}: FlowProviderProps) {
   const [state, setState] = useState<FlowState>({
     completedSteps: [],
     currentFlow: initialFlow,
   });
-  const entryHistoryIndexRef = useRef<number | null>(null);
+  const entryHistoryIndexRef = useRef<number | null>(initialEntryHistoryIndex);
   const completedBackHistoryIndexRef = useRef<number | null>(null);
 
   const startFlow = useCallback((flowId: string, entryHistoryIndex: number | null = null) => {
@@ -48,8 +53,12 @@ export function FlowProvider({ children, initialFlow = '' }: FlowProviderProps) 
   }, []);
 
   const completeFlow = useCallback(() => {
-    completedBackHistoryIndexRef.current =
+    const completedBackHistoryIndex =
       entryHistoryIndexRef.current === null ? null : Math.max(entryHistoryIndexRef.current - 1, 0);
+
+    completedBackHistoryIndexRef.current = completedBackHistoryIndex;
+
+    return completedBackHistoryIndex;
   }, []);
 
   const consumeCompletedFlowBackIndex = useCallback(() => {

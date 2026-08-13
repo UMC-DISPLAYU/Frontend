@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
 import { BottomButton } from '@/components/common';
+import { useFlowContext } from '@/components/guards/useFlowContext';
 import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
@@ -96,6 +97,7 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 export function ArtistNameSetup() {
   const navigate = useNavigate();
   const flowBack = useFlowBack();
+  const { completeFlow } = useFlowContext();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
   const shouldUseDraft = hasDraft && hasCompleteRegisterDraft(draft);
@@ -191,11 +193,14 @@ export function ArtistNameSetup() {
 
     createDisplay.mutate(requestBody, {
       onSuccess: (display) => {
+        const completedFlowBackIndex = completeFlow();
+
         resetDraft();
         navigate(`/exhibition/${display.displayId}/manage`, {
           state: {
             ...registerState,
             artistName: data.artistName.trim(),
+            completedFlowBackIndex,
             displayId: display.displayId,
             posterImageUrl,
           },
