@@ -13,6 +13,7 @@ export const ARTWORK_FIELD_MAP: Record<string, string> = {
   조소: 'SCULPTURE',
   패션: 'FASHION',
   공예: 'CRAFT',
+  복합: 'COMPLEX',
   기타: 'ETC',
 };
 

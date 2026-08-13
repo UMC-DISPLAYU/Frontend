@@ -10,6 +10,7 @@ interface InviteLinkSectionProps {
   inviteLink: string;
   enabled: boolean;
   onToggle: (next: boolean) => void;
+  onRefresh?: () => void;
   pending?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function InviteLinkSection({
   inviteLink,
   enabled,
   onToggle,
+  onRefresh,
   pending = false,
 }: InviteLinkSectionProps) {
   const [copied, setCopied] = useState(false);
@@ -41,9 +43,19 @@ export function InviteLinkSection({
       {enabled && inviteLink && (
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1">
-            <span className="grid h-4 w-7 shrink-0 place-items-center rounded-sm bg-card outline -outline-offset-1 outline-line-soft">
-              <img src={EntypoCycle} className="size-3" alt="cycle" />
-            </span>
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={pending}
+              aria-label="초대 링크 재발급"
+              className="grid h-4 w-7 shrink-0 place-items-center rounded-sm bg-card outline -outline-offset-1 outline-line-soft cursor-pointer hover:bg-box disabled:opacity-50"
+            >
+              <img
+                src={EntypoCycle}
+                className={`size-3 ${pending ? 'animate-spin' : ''}`}
+                alt="cycle"
+              />
+            </button>
             <span className="typo-body-xs-regular truncate text-main">{inviteLink}</span>
           </div>
           <button type="button" onClick={copyLink} className="flex shrink-0 items-center gap-0.5">

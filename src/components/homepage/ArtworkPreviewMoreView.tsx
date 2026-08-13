@@ -3,14 +3,16 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { ARTWORK_FIELD_MAP } from '@/constants/artwork';
 import { useInfiniteArtworkPreview } from '@/hooks/queries/useHome';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { cn } from '@/utils/cn';
 
-import { FILTER_CONFIG } from '../search';
-
-// '전체' 옵션을 제외한 순수 카테고리 필터 목록
-const CATEGORY_OPTIONS = FILTER_CONFIG.전시분야.options.filter((opt) => opt.value !== null);
+// 작품 전용 카테고리 필터 목록 (MEDIA, CRAFT, COMPLEX, ETC 등)
+const CATEGORY_OPTIONS = Object.entries(ARTWORK_FIELD_MAP).map(([label, value]) => ({
+  label,
+  value,
+}));
 
 type Props = {
   onClose?: () => void;
