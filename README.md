@@ -1,10 +1,5 @@
 # DISPLAYU FRONTEND
 
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev)
-
 ![DisplayU Frontend banner](./docs/images/readme/banner.png)
 
 대학생의 전시 경험을 하나로 연결하는 플랫폼
@@ -56,11 +51,15 @@ DisplayU는 대학생의 전시와 작품을 발견하고, 기록하고, 소통�
 
 ## 👥 Frontend Team
 
+<div align="center">
+
 | <img src="https://github.com/anjaein.png" width="120" /> | <img src="https://github.com/hyunmin1756.png" width="120" /> | <img src="https://github.com/chulee-53.png" width="120" /> | <img src="https://github.com/aram426.png" width="120" /> |
 | :---: | :---: | :---: | :---: |
 | **안재인** | **서현민** | **이승철** | **정아람** |
 | Leader | Member | Member | Member |
 | [@anjaein](https://github.com/anjaein) | [@hyunmin1756](https://github.com/hyunmin1756) | [@chulee-53](https://github.com/chulee-53) | [@aram426](https://github.com/aram426) |
+
+</div>
 
 ## 🚀 시작하기
 
@@ -102,6 +101,6 @@ src/
 
 | 문서 | 내용 |
 | ---- | ---- |
-| [Code Convention](https://github.com/UMC-DISPLAYU/Frontend/blob/dev/docs/CODE_CONVENTION.md) |
+| [Code Convention](https://github.com/UMC-DISPLAYU/Frontend/blob/dev/docs/CODE_CONVENTION.md) | 전반적인 코드 컨벤션을 정리했습니다.
 
 **Made with passion by DisplayU Frontend Team**
