@@ -129,6 +129,7 @@ export function TeamManage() {
             inviteLink={inviteLink}
             enabled={linkEnabled}
             onToggle={toggleLink}
+            onRefresh={() => createLink.mutate()}
             pending={createLink.isPending || disableLink.isPending}
           />
         )}
