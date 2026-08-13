@@ -25,7 +25,7 @@ export const personalArtworkRegisterSchema = z.object({
     message: '작품분야를 선택해주세요.',
   }),
   year: z.string().refine(isPersonalArtworkYearValid, {
-    message: '제작연도는 1000 이상 9999 미만의 숫자로 입력해주세요.',
+    message: '제작연도는 4자리 숫자로 입력해주세요.',
   }),
   material: z.string().trim().min(1, { message: '재료/매체를 입력해주세요.' }),
   size: z.string().trim().optional(),

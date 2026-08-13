@@ -29,7 +29,7 @@ export const artworkRegisterSchema = z.object({
   intro: z.string().trim().optional(),
   field: artworkFieldSchema,
   year: z.string().refine(isArtworkRegisterYearValid, {
-    message: '제작연도는 1000 이상 9999 미만의 숫자로 입력해주세요.',
+    message: '제작연도는 4자리 숫자로 입력해주세요.',
   }),
   material: z.string().trim().min(1, { message: '재료/매체를 입력해주세요.' }),
   size: z.string().trim().optional(),
