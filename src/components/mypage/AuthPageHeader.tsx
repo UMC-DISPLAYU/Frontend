@@ -2,7 +2,7 @@ import { Bookmark, ChevronLeft, ExternalLink } from 'lucide-react';
 
 import Share from '@/assets/mypage/share.svg';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import type { ArtistProfile, TabKey } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 
@@ -29,18 +29,13 @@ export function AuthPageHeader({
   profile,
   isSaved = false,
 }: AuthPageHeaderProps) {
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
 
   return (
     <header className="shrink-0 bg-page">
       <div className="px-5 pt-2 flex justify-between items-center">
         <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={goBackOrHome}
-            className="cursor-pointer"
-            aria-label="뒤로가기"
-          >
+          <button type="button" onClick={flowBack} className="cursor-pointer" aria-label="뒤로가기">
             <ChevronLeft className="size-7 text-main" strokeWidth={2} />
           </button>
           <h1 className="typo-body-xl-bold text-main">작가 프로필</h1>

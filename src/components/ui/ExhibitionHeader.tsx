@@ -1,6 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
 
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 interface ExhibitionHeaderProps {
   title: string;
@@ -9,8 +9,8 @@ interface ExhibitionHeaderProps {
 }
 
 export function ExhibitionHeader({ title, onBack, centered = false }: ExhibitionHeaderProps) {
-  const goBackOrHome = useGoBackOrHome();
-  const handleBack = onBack || goBackOrHome;
+  const flowBack = useFlowBack();
+  const handleBack = onBack || flowBack;
 
   if (centered) {
     return (

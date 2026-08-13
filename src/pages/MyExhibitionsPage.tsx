@@ -4,13 +4,13 @@ import { LoadingView } from '@/components/common';
 import { ManageScreen } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
 import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 export function MyExhibitionsPage() {
   useHideFooter();
 
   const navigate = useNavigate();
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { data: myDisplays = [], isLoading } = useMyDisplays();
 
   if (isLoading) {
@@ -26,7 +26,7 @@ export function MyExhibitionsPage() {
             state: { ...exhibition, displayId: Number(exhibition.id) },
           })
         }
-        onBack={() => goBackOrHome()}
+        onBack={() => flowBack()}
         onDone={() => navigate('/setting')}
         onDelete={() => {}}
         onEditArtistName={(ex) => navigate(`/exhibition/register/artist`, { state: ex })}

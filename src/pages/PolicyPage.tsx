@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import type { AgreementDto } from '@/api/dto';
 import { useAgreements } from '@/hooks/queries/useAgreements';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 type PolicyBlock = { type: 'heading' | 'bullet' | 'paragraph'; text: string };
 
@@ -84,7 +84,7 @@ function PolicyDetail({ agreement, onBack }: { agreement: AgreementDto; onBack: 
 }
 
 export function PolicyPage() {
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { data: agreements = [], isError, isLoading } = useAgreements();
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
@@ -98,12 +98,7 @@ export function PolicyPage() {
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       {/* Header */}
       <header className="mt-14.5 flex items-center gap-3 px-5 pb-3 pt-4">
-        <button
-          type="button"
-          onClick={() => goBackOrHome()}
-          aria-label="뒤로가기"
-          className="-ml-1"
-        >
+        <button type="button" onClick={() => flowBack()} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <div className="typo-body-xl-bold text-main">약관 및 개인정보</div>

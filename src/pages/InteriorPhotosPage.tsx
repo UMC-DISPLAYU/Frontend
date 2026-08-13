@@ -17,7 +17,7 @@ import {
   useReorderContentImages,
 } from '@/hooks/queries/useContentImages';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
@@ -31,7 +31,7 @@ type Photo = {
 export function InteriorPhotosPage() {
   useHideFooter();
 
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { displayId: paramDisplayId, categoryId: paramCategoryId } = useParams();
 
   const displayId = Number(paramDisplayId ?? 0);
@@ -49,17 +49,14 @@ export function InteriorPhotosPage() {
   }
 
   if (error || !displayDetail) {
-    return <ErrorView message="전시 정보를 찾을 수 없습니다." onRetry={() => goBackOrHome()} />;
+    return <ErrorView message="전시 정보를 찾을 수 없습니다." onRetry={() => flowBack()} />;
   }
 
   const category = displayDetail.contentCategories?.find((cat) => cat.categoryId === categoryId);
 
   if (!category) {
     return (
-      <ErrorView
-        message="해당 콘텐츠 카테고리를 찾을 수 없습니다."
-        onRetry={() => goBackOrHome()}
-      />
+      <ErrorView message="해당 콘텐츠 카테고리를 찾을 수 없습니다." onRetry={() => flowBack()} />
     );
   }
 
@@ -80,7 +77,7 @@ export function InteriorPhotosPage() {
         canCreateContent={canCreateContent}
         canDeleteContent={canDeleteContent}
         canReorder={canReorder}
-        onBack={() => goBackOrHome()}
+        onBack={() => flowBack()}
       />
     </div>
   );

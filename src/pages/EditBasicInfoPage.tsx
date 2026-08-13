@@ -10,7 +10,7 @@ import { BottomButton } from '@/components/common';
 import { LoadingView } from '@/components/common/LoadingView';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import {
   alphaNumericKoSchema,
   nicknameLengthSchema,
@@ -73,7 +73,7 @@ export function EditBasicInfoPage() {
 }
 
 function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const [profileImage, setProfileImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [nicknameCheckResult, setNicknameCheckResult] = useState<
@@ -157,7 +157,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
       },
       {
         onSuccess: () => {
-          goBackOrHome();
+          flowBack();
         },
       },
     );
@@ -166,12 +166,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   return (
     <div className="max-w-md mx-auto h-dvh bg-page flex flex-col relative">
       <header className="flex items-center gap-3 px-5 pt-[14px] pb-[11px]">
-        <button
-          type="button"
-          onClick={() => goBackOrHome()}
-          aria-label="뒤로가기"
-          className="-ml-1"
-        >
+        <button type="button" onClick={() => flowBack()} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>

@@ -15,6 +15,7 @@ import { EnterArtistNamePage } from '@/components/artwork-register/EnterArtistNa
 import { RegisterArtworkPage } from '@/components/artwork-register/RegisterArtworkPage';
 import { RegisterCollaboratorsPage } from '@/components/artwork-register/RegisterCollaboratorsPage';
 import { SelectArtistPage } from '@/components/artwork-register/SelectArtistPage';
+import { useFlowContext } from '@/components/guards/useFlowContext';
 import { useHideFooter } from '@/components/layout';
 import {
   ARTWORK_FIELD_MAP,
@@ -32,7 +33,7 @@ import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/use
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
@@ -61,7 +62,8 @@ function ArtworkRegisterPageContent() {
 
   const { draft, updateDraft, resetDraft } = useArtworkRegisterDraft();
   const navigate = useNavigate();
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
+  const { completeFlow } = useFlowContext();
   const location = useLocation();
   const { displayId: paramDisplayId, artworkId: paramArtworkId } = useParams();
   const [searchParams] = useSearchParams();
@@ -72,14 +74,13 @@ function ArtworkRegisterPageContent() {
     const pathname = location.pathname;
 
     if (pathname.includes('/artworks/add/choice')) return 'choice';
-    if (pathname.includes('/artworks/add/artist')) {
-      return draft.step === 'otherAuthor' ? 'otherAuthor' : 'otherTeamAuthor';
-    }
+    if (pathname.includes('/artworks/add/artist/direct')) return 'otherAuthor';
+    if (pathname.includes('/artworks/add/artist')) return 'otherTeamAuthor';
     if (pathname.includes('/artworks/add/basic')) return 'basic';
     if (pathname.includes('/artworks/add/participants')) return 'participants';
 
     return null;
-  }, [draft.step, location.pathname]);
+  }, [location.pathname]);
 
   const { data: artworkDetail } = useArtworkDetail(artworkId);
 
@@ -133,7 +134,7 @@ function ArtworkRegisterPageContent() {
       const stepPathMap: Record<RegisterStep, string> = {
         choice: `/exhibition/${displayId}/artworks/add/choice`,
         otherTeamAuthor: `/exhibition/${displayId}/artworks/add/artist`,
-        otherAuthor: `/exhibition/${displayId}/artworks/add/artist`,
+        otherAuthor: `/exhibition/${displayId}/artworks/add/artist/direct`,
         basic: `/exhibition/${displayId}/artworks/add/basic`,
         participants: `/exhibition/${displayId}/artworks/add/participants`,
       };
@@ -564,11 +565,7 @@ function ArtworkRegisterPageContent() {
       setStep('choice', { replace: true });
       return;
     }
-    if (step === 'otherAuthor') {
-      setStep('choice', { replace: true });
-      return;
-    }
-    goBackOrHome();
+    flowBack();
   };
 
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -690,6 +687,7 @@ function ArtworkRegisterPageContent() {
             qnaAssigneeOptions[0];
 
           resetDraft();
+          completeFlow();
           navigate(`/exhibition/${displayId}/complete`, {
             state: {
               type: 'artwork',
@@ -726,7 +724,7 @@ function ArtworkRegisterPageContent() {
   const selectDirectOtherAuthor = () => {
     setOtherAuthorSource('direct');
     setActiveSheet(null);
-    setStep('otherAuthor');
+    setStep('otherAuthor', { replace: false });
   };
 
   const submitTeamOtherAuthor = () => {

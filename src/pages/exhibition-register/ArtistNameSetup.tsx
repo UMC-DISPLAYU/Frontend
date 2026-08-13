@@ -11,7 +11,7 @@ import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 import { type ArtistNameSetupFormValues, artistNameSetupSchema } from './exhibitionRegister.schema';
 
@@ -95,7 +95,7 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 
 export function ArtistNameSetup() {
   const navigate = useNavigate();
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
   const shouldUseDraft = hasDraft && hasCompleteRegisterDraft(draft);
@@ -210,7 +210,7 @@ export function ArtistNameSetup() {
         title="전시 작가명 설정"
         onBack={() => {
           saveCurrentDraft();
-          goBackOrHome();
+          flowBack();
         }}
       />
 

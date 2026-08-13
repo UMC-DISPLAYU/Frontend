@@ -13,7 +13,7 @@ import {
   useInviteDisplayMember,
 } from '@/hooks/queries/useDisplayMembers';
 import { useUserSearch } from '@/hooks/queries/useUserSearch';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useDisplayInvitationPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -24,7 +24,7 @@ import { hasPermission } from '@/utils/hasPermission';
 const buildInviteLink = (token: string) => `${window.location.origin}/display/invitation/${token}`;
 
 export function TeamManage() {
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { displayId: displayIdParam } = useParams();
   const displayId = Number(displayIdParam ?? 0);
 
@@ -94,7 +94,7 @@ export function TeamManage() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <ExhibitionHeader title="팀원 초대/관리" onBack={() => goBackOrHome()} />
+      <ExhibitionHeader title="팀원 초대/관리" onBack={() => flowBack()} />
 
       <main className="px-5">
         {canCreateInvitation && (

@@ -18,7 +18,7 @@ import {
   useUpdateContentCategory,
 } from '@/hooks/queries/useContentCategories';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { type Content, EMPTY_CONTENT } from '@/types';
 import { hasPermission } from '@/utils/hasPermission';
@@ -27,7 +27,7 @@ export function DisplayContentsManagePage() {
   useHideFooter();
 
   const navigate = useNavigate();
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
   const { state } = useLocation();
@@ -120,7 +120,7 @@ export function DisplayContentsManagePage() {
     return (
       <ErrorView
         message="전시 정보를 불러올 수 없습니다."
-        onRetry={() => goBackOrHome()}
+        onRetry={() => flowBack()}
         retryLabel="이전 페이지로 돌아가기"
       />
     );
@@ -128,7 +128,7 @@ export function DisplayContentsManagePage() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <ExhibitionHeader title="전시 콘텐츠 관리" onBack={() => goBackOrHome()} />
+      <ExhibitionHeader title="전시 콘텐츠 관리" onBack={() => flowBack()} />
 
       {/* 메인 스크롤 영역 */}
       <main ref={listRef}>

@@ -14,7 +14,7 @@ import { type TimeRangeValue, TimeSheet } from '@/components/ui/TimeSheet';
 import { useUpdateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 import {
   type ExhibitionBasicInfoFormValues,
@@ -69,7 +69,7 @@ function Label({ children, required }: { children: React.ReactNode; required?: b
 
 export function ExhibitionBasicInfo() {
   const navigate = useNavigate();
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft } = useExhibitionRegisterDraft();
   const { displayId: paramDisplayId } = useParams();
@@ -389,7 +389,7 @@ export function ExhibitionBasicInfo() {
         title="전시 기본 정보"
         onBack={() => {
           saveCurrentDraft();
-          goBackOrHome();
+          flowBack();
         }}
       />
 

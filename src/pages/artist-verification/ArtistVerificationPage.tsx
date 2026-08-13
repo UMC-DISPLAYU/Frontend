@@ -26,7 +26,7 @@ import {
   useSendVerificationEmail,
 } from '@/hooks/queries/useSchoolEmailVerification';
 import { useCreateMyArtistProfile } from '@/hooks/queries/useUserProfile';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { getErrorMessage } from '@/utils/error';
 
 import {
@@ -124,7 +124,7 @@ function verificationReducer(
 
 export function ArtistVerificationPage() {
   const navigate = useNavigate();
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const [state, dispatch] = useReducer(verificationReducer, initialState);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
@@ -272,7 +272,7 @@ export function ArtistVerificationPage() {
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-page">
       <main className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page px-5 pt-[58px]">
-        <ArtistVerificationHeader onBack={() => goBackOrHome()} />
+        <ArtistVerificationHeader onBack={() => flowBack()} />
 
         <form
           id="artist-verification-form"

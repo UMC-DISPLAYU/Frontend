@@ -2,7 +2,7 @@ import { ChevronLeft, SquarePen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { LoungeCategoryKey } from '@/constants/loungeCategories';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useLoungePostPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
@@ -21,7 +21,7 @@ export function LoungeBoardHeader({
   className = '',
 }: Props) {
   const navigate = useNavigate();
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const loungePostPolicy = useLoungePostPolicy();
   const canCreatePost = hasPermission(loungePostPolicy, 'create');
@@ -40,7 +40,7 @@ export function LoungeBoardHeader({
   return (
     <div className={`relative flex items-center py-3 border-b border-line-soft ${className}`}>
       <div className="h-9 flex items-center gap-3">
-        <button type="button" aria-label="뒤로가기" onClick={goBackOrHome}>
+        <button type="button" aria-label="뒤로가기" onClick={flowBack}>
           <ChevronLeft className="size-7 text-main" />
         </button>
         <h1 className="typo-body-xl-bold text-main">{title}</h1>

@@ -304,6 +304,14 @@ export const router = createBrowserRouter([
                     ),
                   },
                   {
+                    path: 'add/artist/direct',
+                    element: (
+                      <ArtworkPermissionGuard action="create">
+                        <ArtworkRegisterPage />
+                      </ArtworkPermissionGuard>
+                    ),
+                  },
+                  {
                     path: 'add/basic',
                     element: (
                       <ArtworkPermissionGuard action="create">

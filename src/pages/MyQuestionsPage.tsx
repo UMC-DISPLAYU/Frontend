@@ -3,7 +3,7 @@ import { ChevronLeft } from 'lucide-react';
 import type { MyArtworkQuestionDto } from '@/api/dto';
 import { ErrorView, LoadingView } from '@/components/common';
 import { useMyArtworkQuestions } from '@/hooks/queries/useMyArtworkQuestions';
-import { useGoBackOrHome } from '@/hooks/useGoBackOrHome';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 interface QuestionCardProps {
   question: MyArtworkQuestionDto;
@@ -43,7 +43,7 @@ function QuestionCard({ question }: QuestionCardProps) {
 }
 
 export function MyQuestionsPage() {
-  const goBackOrHome = useGoBackOrHome();
+  const flowBack = useFlowBack();
   const { data, isLoading, isError } = useMyArtworkQuestions({ size: 10 });
 
   const questions = data?.questions ?? [];
@@ -51,12 +51,7 @@ export function MyQuestionsPage() {
   return (
     <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
-        <button
-          type="button"
-          onClick={() => goBackOrHome()}
-          aria-label="뒤로가기"
-          className="-ml-1"
-        >
+        <button type="button" onClick={() => flowBack()} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <h1 className="typo-body-xl-bold text-main">내가 한 질문</h1>
