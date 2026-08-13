@@ -44,9 +44,9 @@ function ImagePreviewRow({
   if (images.length === 0) return null;
 
   return (
-    <div className="flex w-full items-center gap-2 overflow-x-auto">
+    <div className="flex w-full items-center gap-2 self-stretch overflow-x-auto pt-1.5 pr-1.5">
       {images.map((image) => (
-        <div key={image.id} className="relative size-16 shrink-0">
+        <div key={image.id} className="relative size-16 shrink-0 self-stretch">
           <img src={image.previewUrl} alt="" className="size-16 rounded-lg object-cover" />
           <button
             type="button"
@@ -131,26 +131,31 @@ type Props = {
   }) => void;
   isSubmittingQuestion?: boolean;
   onDeleteQuestion?: (questionId: number) => void;
+  onDeleteReply?: (questionId: number, questionReplyId: number) => void;
 };
 
 /* 방명록 질문 탭 카드 (일반인 시점 / 작가 시점 지원) */
 function QuestionCard({
   question,
   artistName,
+  myUserId,
   isReplyTarget = false,
   onReply,
   onSubmitReply,
   isSubmittingReply = false,
   onDelete,
+  onDeleteReply,
 }: {
   question: GuestbookQuestion;
   /* 답변 작성 카드에 표시되는 전시 대표 작가 이름 */
   artistName?: string;
+  myUserId?: number;
   isReplyTarget?: boolean;
   onReply?: () => void;
   onSubmitReply?: (content: string, images: ComposerImage[]) => void;
   isSubmittingReply?: boolean;
   onDelete?: () => void;
+  onDeleteReply?: (questionReplyId: number) => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState('');
@@ -185,6 +190,8 @@ function QuestionCard({
   const isComposingReply = question.canReply && isReplyTarget && !question.reply;
   /* 본인이 쓴 질문은 답변이 달리기 전까지만 삭제할 수 있습니다. */
   const canDelete = question.isMyQuestion && !question.reply;
+  /* 답변은 답변을 남긴 본인만 삭제할 수 있습니다. */
+  const isMyReply = Boolean(myUserId) && question.reply?.userId === myUserId;
 
   const handleFooterClick = () => {
     if (question.canReply && !question.reply) {
@@ -277,15 +284,21 @@ function QuestionCard({
 
             <div className="flex flex-col items-center gap-2 self-stretch px-4 pb-4">
               <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
-                <textarea
-                  ref={replyTextareaRef}
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
-                  placeholder="답변을 작성해주세요"
-                  rows={1}
-                  className="typo-body-xs-regular min-h-[80px] w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint"
-                />
-                <ImagePreviewRow images={replyImages} onRemove={removeReplyImage} />
+                <div className="flex w-full flex-col items-start gap-3.5 self-stretch">
+                  <ImagePreviewRow images={replyImages} onRemove={removeReplyImage} />
+                  <textarea
+                    ref={replyTextareaRef}
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
+                    placeholder="답변을 작성해주세요"
+                    rows={1}
+                    className={cn(
+                      'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint',
+                      /* 사진이 추가된 만큼 textarea 최소 높이를 줄여, 사진 추가 전후로 박스 전체 높이가 그대로 유지되게 합니다. */
+                      replyImages.length > 0 ? 'min-h-[2px]' : 'min-h-[80px]',
+                    )}
+                  />
+                </div>
                 <div className="flex w-full items-center justify-between">
                   <ImagePickButton
                     onPick={addReplyImages}
@@ -359,14 +372,14 @@ function QuestionCard({
         )}
 
         {showReplies && !isComposingReply && (
-          <div className="flex flex-col px-4 pb-3.5">
+          <div className="flex flex-col gap-1 px-4 pb-3.5">
             {question.reply ? (
               <>
                 <p className="typo-body-md-regular text-main wrap-break-word whitespace-pre-line">
                   {question.reply.content}
                 </p>
                 {question.reply.images && question.reply.images.length > 0 && (
-                  <div className="mt-1 flex w-full items-center gap-1.5 overflow-x-auto">
+                  <div className="flex w-full items-center gap-1.5 overflow-x-auto">
                     {question.reply.images.map((image, idx) => (
                       <img
                         key={idx}
@@ -377,9 +390,24 @@ function QuestionCard({
                     ))}
                   </div>
                 )}
-                <span className="typo-body-xs-regular mt-1 text-sub600">
-                  {formatRelativeTime(question.reply.createdAt)}
-                </span>
+                <div className="flex items-start gap-2">
+                  {isMyReply && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const replyId =
+                          question.reply?.questionReplyId ?? question.reply?.queReplyId;
+                        if (replyId != null) onDeleteReply?.(replyId);
+                      }}
+                      className="typo-body-xs-regular text-error cursor-pointer"
+                    >
+                      삭제
+                    </button>
+                  )}
+                  <span className="typo-body-xs-regular text-sub600">
+                    {formatRelativeTime(question.reply.createdAt)}
+                  </span>
+                </div>
               </>
             ) : (
               <p className="typo-body-xs-regular text-faint">등록된 답변이 없습니다.</p>
@@ -431,7 +459,7 @@ function QuestionComposerCard({
 
   return (
     <article className="w-full px-5 pt-1 pb-3.5">
-      <div className="flex w-full flex-col items-start gap-2 self-stretch rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+      <div className="flex w-full flex-col items-center gap-2 self-stretch rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
         {/* 질문작성 / 닫기 */}
         <div className="flex items-center justify-between self-stretch">
           <span className="typo-body-sm-bold text-main">질문작성</span>
@@ -441,20 +469,25 @@ function QuestionComposerCard({
         </div>
 
         <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
-            placeholder="질문을 작성해주세요"
-            rows={1}
-            className="typo-body-xs-regular min-h-[80px] w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint"
-          />
+          <div className="flex w-full flex-col items-start gap-1 self-stretch">
+            <ImagePreviewRow images={images} onRemove={removeImage} />
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => setContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
+              placeholder="질문을 작성해주세요"
+              rows={1}
+              className={cn(
+                'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint',
+                /* 사진이 추가된 만큼 textarea 최소 높이를 줄여, 사진 추가 전후로 박스 전체 높이가 그대로 유지되게 합니다. */
+                images.length > 0 ? 'min-h-[12px]' : 'min-h-[80px]',
+              )}
+            />
+          </div>
           <span className="typo-body-xs-regular w-full text-right text-faint">
             {content.length}/{QUESTION_MAX_LENGTH}
           </span>
         </div>
-
-        <ImagePreviewRow images={images} onRemove={removeImage} />
 
         <div className="flex items-start justify-between self-stretch">
           <button
@@ -516,6 +549,7 @@ export function ArtworkGuestbookTab({
   onSubmitQuestion,
   isSubmittingQuestion = false,
   onDeleteQuestion,
+  onDeleteReply,
 }: Props) {
   const feelingsTriggerRef = useRef<HTMLDivElement | null>(null);
 
@@ -626,6 +660,7 @@ export function ArtworkGuestbookTab({
                 key={q.questionId}
                 question={q}
                 artistName={artwork.artistName}
+                myUserId={myUserId}
                 isReplyTarget={replyTargetQuestionId === q.questionId}
                 onReply={() =>
                   onQuestionReplyTargetChange?.(replyTargetQuestionId === q.questionId ? null : q)
@@ -635,6 +670,7 @@ export function ArtworkGuestbookTab({
                 }
                 isSubmittingReply={isSubmittingQuestion}
                 onDelete={() => onDeleteQuestion?.(q.questionId)}
+                onDeleteReply={(questionReplyId) => onDeleteReply?.(q.questionId, questionReplyId)}
               />
             ))}
           </div>

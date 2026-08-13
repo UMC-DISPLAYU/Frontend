@@ -78,6 +78,9 @@ export const CommentItem = memo(function CommentItem({
   const replyCount = comment.replyCount ?? 0;
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  /* avatarUrl이 없거나 로드에 실패해 기본 프로필 이미지로 대체된 경우에만 테두리를 그립니다. */
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const isDefaultAvatar = !comment.avatarUrl || avatarLoadFailed;
 
   const handleLikeClick = () => {
     if (isLikePending) return;
@@ -115,10 +118,14 @@ export const CommentItem = memo(function CommentItem({
         <div className={cn('flex items-start gap-1.5', isReply && 'pl-9')}>
           <img
             alt=""
-            className="size-7 rounded-full shrink-0 object-cover"
+            className={cn(
+              'size-7 rounded-full shrink-0 object-cover',
+              isDefaultAvatar && 'border border-[#C4C4C4]',
+            )}
             src={comment.avatarUrl || defaultProfileIcon}
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = defaultProfileIcon;
+              setAvatarLoadFailed(true);
             }}
           />
 

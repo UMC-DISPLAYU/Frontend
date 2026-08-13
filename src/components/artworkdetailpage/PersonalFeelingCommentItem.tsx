@@ -67,6 +67,7 @@ export const PersonalFeelingCommentItem = memo(function PersonalFeelingCommentIt
   const { data: repliesData } = usePersonalArtworkFeelingReplies(
     personalArtworkId,
     feeling.personalFeelingId,
+    repliesOpen,
   );
 
   const replies: CommentData[] = useMemo(

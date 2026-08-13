@@ -137,6 +137,7 @@ export const usePersonalArtworkQuestions = (personalArtworkId: number) =>
 export const usePersonalArtworkFeelingReplies = (
   personalArtworkId: number,
   personalFeelingId: number,
+  enabled = true,
 ) =>
   useQuery({
     queryKey: [
@@ -147,6 +148,7 @@ export const usePersonalArtworkFeelingReplies = (
     ],
     queryFn: () => getPersonalArtworkFeelingReplies(personalArtworkId, personalFeelingId),
     enabled:
+      enabled &&
       Number.isFinite(personalArtworkId) &&
       personalArtworkId > 0 &&
       Number.isFinite(personalFeelingId) &&

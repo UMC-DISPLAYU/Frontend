@@ -24,6 +24,7 @@ import {
   useCreateArtworkQuestion,
   useCreateArtworkQuestionReply,
   useDeleteArtworkQuestion,
+  useDeleteArtworkQuestionReply,
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
@@ -63,6 +64,7 @@ export function ArtworkDetailPage() {
   const createFeeling = useCreateArtworkFeeling();
   const createQuestion = useCreateArtworkQuestion();
   const deleteQuestion = useDeleteArtworkQuestion();
+  const deleteQuestionReply = useDeleteArtworkQuestionReply();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
 
   /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 BottomCommentBar가 씀) */
@@ -302,6 +304,9 @@ export function ArtworkDetailPage() {
           onSubmitQuestion={handleSendQuestion}
           isSubmittingQuestion={createQuestion.isPending || createQuestionReply.isPending}
           onDeleteQuestion={(questionId) => deleteQuestion.mutate({ artworkId, questionId })}
+          onDeleteReply={(questionId, questionReplyId) =>
+            deleteQuestionReply.mutate({ artworkId, questionId, questionReplyId })
+          }
         />
       )}
 

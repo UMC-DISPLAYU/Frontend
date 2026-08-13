@@ -6,7 +6,10 @@ import type {
   PersonalArtworkQuestionResponseDataDto,
   PersonalArtworkResponseDataDto,
 } from '@/api/dto';
-import { useDeletePersonalArtworkQuestion } from '@/hooks/queries/usePersonalArtwork';
+import {
+  useDeletePersonalArtworkQuestion,
+  useDeletePersonalArtworkQuestionReply,
+} from '@/hooks/queries/usePersonalArtwork';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
 import { formatRelativeTime } from '@/utils/date';
@@ -42,9 +45,9 @@ function ImagePreviewRow({
   if (images.length === 0) return null;
 
   return (
-    <div className="flex w-full items-center gap-2 overflow-x-auto">
+    <div className="flex w-full items-center gap-2 self-stretch overflow-x-auto pt-1.5 pr-1.5">
       {images.map((image) => (
-        <div key={image.id} className="relative size-16 shrink-0">
+        <div key={image.id} className="relative size-16 shrink-0 self-stretch">
           <img src={image.previewUrl} alt="" className="size-16 rounded-lg object-cover" />
           <button
             type="button"
@@ -135,7 +138,7 @@ export function PersonalArtworkQuestionComposerCard({
 
   return (
     <article className="w-full px-5 pt-1 pb-3.5">
-      <div className="flex w-full flex-col items-start gap-2 self-stretch rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+      <div className="flex w-full flex-col items-center gap-2 self-stretch rounded-[18px] bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
         {/* 질문작성 / 닫기 */}
         <div className="flex items-center justify-between self-stretch">
           <span className="typo-body-sm-bold text-main">질문작성</span>
@@ -145,20 +148,25 @@ export function PersonalArtworkQuestionComposerCard({
         </div>
 
         <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
-            placeholder="질문을 작성해주세요"
-            rows={1}
-            className="typo-body-xs-regular min-h-[80px] w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint"
-          />
+          <div className="flex w-full flex-col items-start gap-1 self-stretch">
+            <ImagePreviewRow images={images} onRemove={removeImage} />
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => setContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
+              placeholder="질문을 작성해주세요"
+              rows={1}
+              className={cn(
+                'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint',
+                /* 사진이 추가된 만큼 textarea 최소 높이를 줄여, 사진 추가 전후로 박스 전체 높이가 그대로 유지되게 합니다. */
+                images.length > 0 ? 'min-h-[12px]' : 'min-h-[80px]',
+              )}
+            />
+          </div>
           <span className="typo-body-xs-regular w-full text-right text-faint">
             {content.length}/{QUESTION_MAX_LENGTH}
           </span>
         </div>
-
-        <ImagePreviewRow images={images} onRemove={removeImage} />
 
         <div className="flex items-start justify-between self-stretch">
           <button
@@ -229,14 +237,24 @@ export function PersonalArtworkQuestionCard({
   } = useImageUpload({ domain: 'personal-artwork-question-reply', maxImages: QUESTION_MAX_IMAGES });
   const isReplyBusy = isSubmittingReply || isUploadingReplyImages;
 
-  /* 비공개 질문 열람 가능 여부·답변 권한은 서버가 계산해서 accessible/canReply로 내려줍니다. */
-  const canView = question.accessible;
+  /*
+   * 비공개 질문 열람 가능 여부·답변 권한은 서버가 계산해서 accessible/canReply로 내려줍니다.
+   * accessible이 누락되면(옵셔널 필드) 공개 질문까지 잠금으로 보일 수 있어 기본값은 true로 둡니다
+   * — 실제로 비공개인데 값이 빠졌더라도 content/user는 서버에서 이미 null로 마스킹되어 오므로 안전합니다.
+   */
+  const canView = question.accessible ?? true;
   const canCreateReply = question.canReply;
   /* 본인 질문이면 삭제할 수 있습니다 — 단, 답변이 달리기 전까지만. */
   const isMyQuestion = Boolean(myUserId) && question.user?.userId === myUserId;
   const canDelete = isMyQuestion && !question.reply;
   const deleteQuestion = useDeletePersonalArtworkQuestion(artwork.personalArtworkId);
   const reply = question.reply;
+  /* 답변은 답변을 남긴 본인만 삭제할 수 있습니다. */
+  const isMyReply = Boolean(myUserId) && reply?.userId === myUserId;
+  const deleteReply = useDeletePersonalArtworkQuestionReply(
+    artwork.personalArtworkId,
+    question.personalQuestionId,
+  );
 
   /*
    * 답변할 질문이 없어졌으면(답변 등록 성공 등) 작성 중이던 입력값을 비웁니다.
@@ -345,15 +363,21 @@ export function PersonalArtworkQuestionCard({
 
             <div className="flex flex-col items-center gap-2 self-stretch px-4 pb-4">
               <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
-                <textarea
-                  ref={replyTextareaRef}
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
-                  placeholder="답변을 작성해주세요"
-                  rows={1}
-                  className="typo-body-xs-regular min-h-[80px] w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint"
-                />
-                <ImagePreviewRow images={replyImages} onRemove={removeReplyImage} />
+                <div className="flex w-full flex-col items-start gap-3.5 self-stretch">
+                  <ImagePreviewRow images={replyImages} onRemove={removeReplyImage} />
+                  <textarea
+                    ref={replyTextareaRef}
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
+                    placeholder="답변을 작성해주세요"
+                    rows={1}
+                    className={cn(
+                      'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint',
+                      /* 사진이 추가된 만큼 textarea 최소 높이를 줄여, 사진 추가 전후로 박스 전체 높이가 그대로 유지되게 합니다. */
+                      replyImages.length > 0 ? 'min-h-[2px]' : 'min-h-[80px]',
+                    )}
+                  />
+                </div>
                 <div className="flex w-full items-center justify-between">
                   <ImagePickButton
                     onPick={addReplyImages}
@@ -427,14 +451,14 @@ export function PersonalArtworkQuestionCard({
         )}
 
         {showReplies && !isComposingReply && (
-          <div className="flex flex-col px-4 pb-3.5">
+          <div className="flex flex-col gap-1 px-4 pb-3.5">
             {reply ? (
               <>
                 <p className="typo-body-md-regular text-main wrap-break-word whitespace-pre-line">
                   {reply.content}
                 </p>
                 {reply.images && reply.images.length > 0 && (
-                  <div className="mt-1 flex w-full items-center gap-1.5 overflow-x-auto">
+                  <div className="flex w-full items-center gap-1.5 overflow-x-auto">
                     {reply.images.map((image, idx) => (
                       <img
                         key={idx}
@@ -445,9 +469,20 @@ export function PersonalArtworkQuestionCard({
                     ))}
                   </div>
                 )}
-                <span className="typo-body-xs-regular mt-1 text-sub600">
-                  {formatRelativeTime(reply.createdAt)}
-                </span>
+                <div className="flex items-start gap-2">
+                  {isMyReply && (
+                    <button
+                      type="button"
+                      onClick={() => deleteReply.mutate(reply.personalQuestionReplyId)}
+                      className="typo-body-xs-regular text-error cursor-pointer"
+                    >
+                      삭제
+                    </button>
+                  )}
+                  <span className="typo-body-xs-regular text-sub600">
+                    {formatRelativeTime(reply.createdAt)}
+                  </span>
+                </div>
               </>
             ) : (
               <p className="typo-body-xs-regular text-faint">등록된 답변이 없습니다.</p>

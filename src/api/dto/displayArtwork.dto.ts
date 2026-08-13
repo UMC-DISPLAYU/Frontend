@@ -305,6 +305,14 @@ export interface CreateArtworkQuestionReplyResponseDataDto {
 export type CreateArtworkQuestionReplyResponseDto =
   ApiResponseDto<CreateArtworkQuestionReplyResponseDataDto>;
 
+export interface DeleteArtworkQuestionReplyResponseDataDto {
+  questionReplyId: number;
+  deletedAt: string;
+}
+
+export type DeleteArtworkQuestionReplyResponseDto =
+  ApiResponseDto<DeleteArtworkQuestionReplyResponseDataDto>;
+
 export interface ArtworkFeelingLikeDto {
   feelingId: number;
   liked: boolean;
