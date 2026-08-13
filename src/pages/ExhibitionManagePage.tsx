@@ -74,10 +74,8 @@ export function ExhibitionManage() {
   const createDisplayMutation = useCreateDisplay();
   const publishDisplayMutation = usePublishDisplay();
 
-  /* 팀원 목록의 accepted로 참여팀원과 초대대기를 나눕니다. */
-  const teamMembers = memberList?.members ?? [];
-  const acceptedCount = teamMembers.filter((member) => member.accepted !== false).length;
-  const pendingCount = teamMembers.filter((member) => member.accepted === false).length;
+  const acceptedCount = memberList?.memberAccept.length ?? 0;
+  const pendingCount = memberList?.memberPending.length ?? 0;
 
   // 전시 콘텐츠(사진) 총 개수 계산
   const contentCount =

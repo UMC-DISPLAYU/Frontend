@@ -24,7 +24,9 @@ export function CommunitySection() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const { artistVerificationModal, openArtistVerificationModal } =
-    useArtistVerificationRequiredModal();
+    useArtistVerificationRequiredModal(
+      '작가 인증을 하면 전시 준비·작업 팁,\n모집·협업 라운지에 참여할 수 있어요.',
+    );
   const artistPolicy = useArtistPolicy();
   const canViewArtist = hasPermission(artistPolicy, 'view');
 

@@ -2,6 +2,7 @@ import { ExternalLink, Menu, RefreshCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import Share from '@/assets/mypage/share.svg';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { useArtistPolicy, usePersonalArtworkPolicy } from '@/hooks/usePolicy';
 import type { UserProfile } from '@/hooks/useUserProfile';
@@ -59,9 +60,10 @@ export function MyPageHeader({
       {isArtistView ? (
         <div className="px-5 pt-5 pb-2.75 flex flex-col gap-3.5">
           <div className="flex items-center">
-            <img
+            <OptimizedImage
               className="size-22 rounded-full border-[2.67px] border-line object-cover shrink-0"
               src={profile.avatar || FALLBACK_PROFILE_IMAGE}
+              displayWidth={88}
               alt={profile.name}
               onError={(event) => {
                 event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
@@ -115,7 +117,7 @@ export function MyPageHeader({
               {profile.bio && <p className="typo-body-xs-regular text-sub700">{profile.bio}</p>}
               {profile.portfolioUrl && (
                 <a
-                  href={`https://${profile.portfolioUrl}`}
+                  href={profile.portfolioUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1 typo-body-xs-regular text-[#2563EB]"
@@ -164,9 +166,10 @@ export function MyPageHeader({
       ) : (
         <div className="px-5 py-4 flex flex-col gap-3.5">
           <div className="flex items-center gap-3">
-            <img
-              className="size-22 rounded-full object-cover shrink-0"
+            <OptimizedImage
+              className="size-22 rounded-full border-[2.67px] border-line object-cover shrink-0"
               src={profile.avatar || FALLBACK_PROFILE_IMAGE}
+              displayWidth={88}
               alt={profile.name}
               onError={(event) => {
                 event.currentTarget.src = FALLBACK_PROFILE_IMAGE;

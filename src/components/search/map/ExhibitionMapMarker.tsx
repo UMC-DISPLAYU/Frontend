@@ -1,6 +1,7 @@
 import { MapPin, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import type { NearbyDisplay } from '@/hooks/useNearbyDisplays';
 
 interface ExhibitionMapMarkerProps {
@@ -51,8 +52,9 @@ export function ExhibitionMapSelectedOverlay({
       {/* 1. 포스터 이미지 & 닫기 버튼 */}
       <div className="relative h-20 w-full bg-box200">
         {exhibition.posterImageUrl ? (
-          <img
+          <OptimizedImage
             src={exhibition.posterImageUrl}
+            displayWidth={152}
             alt={exhibition.title}
             className="size-full object-cover"
           />

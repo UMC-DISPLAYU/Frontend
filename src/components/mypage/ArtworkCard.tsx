@@ -1,5 +1,6 @@
 import { Bookmark } from 'lucide-react';
 
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import type { SavedArtworkItem } from '@/types/mypage';
 
 import { MemoFooter } from './MemoFooter';
@@ -42,9 +43,10 @@ export function ArtworkCard({
         <div className="relative rounded-xl overflow-hidden">
           <div className="w-full h-44 bg-box200">
             {item.thumbnail && (
-              <img
+              <OptimizedImage
                 className="block w-full h-full object-cover"
                 src={item.thumbnail}
+                displayWidth={170}
                 alt={item.title}
               />
             )}
