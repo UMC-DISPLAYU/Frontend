@@ -403,6 +403,7 @@ export type DeleteArtworkResponseDto = ApiResponseDto<DeleteArtworkResponseDataD
 
 export interface GetArtworkPreviewRequestDto extends Partial<OffsetPageRequestDto> {
   type?: string;
+  field?: string;
 }
 
 export interface ArtworkPreviewExhibitionInfoDto {

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
   CreateDisplayRequestDto,
@@ -19,6 +19,22 @@ export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
   useQuery({
     queryKey: queryKeys.displays.search(params),
     queryFn: () => searchDisplays(params),
+  });
+
+export const useInfiniteSearchDisplays = (params: Omit<SearchDisplaysRequestDto, 'cursor'>) =>
+  useInfiniteQuery({
+    queryKey: queryKeys.displays.search(params as SearchDisplaysRequestDto),
+    queryFn: ({ pageParam = 0 }) =>
+      searchDisplays({
+        ...params,
+        cursor: pageParam,
+        size: params.size ?? 20,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination?.hasNext && lastPage.pagination?.nextCursor !== null
+        ? lastPage.pagination.nextCursor
+        : undefined,
   });
 
 export const useDisplayMap = (params: GetDisplayMapRequestDto) =>

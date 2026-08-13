@@ -137,14 +137,24 @@ export const artworkHandlers = [
       const url = new URL(request.url);
       const page = Number(url.searchParams.get('page') ?? 0);
       const size = Number(url.searchParams.get('size') ?? mockDb.artworks.length);
+      const fieldParam = url.searchParams.get('field');
+      const fields = fieldParam ? fieldParam.split(',').filter(Boolean) : [];
+
+      const filteredArtworks =
+        fields.length > 0
+          ? mockDb.artworks.filter(
+              (artwork: any) => fields.includes(artwork.type) || fields.includes(artwork.field),
+            )
+          : mockDb.artworks;
+
       const start = page * size;
-      const artworks = mockDb.artworks.slice(start, start + size);
+      const artworks = filteredArtworks.slice(start, start + size);
 
       return success('/api/v1/artworks/preview', {
         artworks,
         page,
         size: artworks.length,
-        isLast: start + size >= mockDb.artworks.length,
+        isLast: start + size >= filteredArtworks.length,
       });
     }),
   ),
