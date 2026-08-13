@@ -325,10 +325,24 @@ export const displayHandlers = [
     ),
   ),
   ...paths('/api/v1/display/{displayId}/exit').map((path) =>
-    http.delete(path, () => noContent('/api/v1/display/{displayId}/exit')),
+    http.delete(path, ({ params }) => {
+      const displayId = toNumber(params.displayId);
+      const display = mockDb.displays.find((d: any) => d.displayId === displayId);
+      if (display?.teamMembers) {
+        display.teamMembers = display.teamMembers.filter(
+          (member: any) => member.userId !== mockDb.me.userId,
+        );
+      }
+      mockDb.displays = mockDb.displays.filter((d: any) => d.displayId !== displayId);
+      return noContent('/api/v1/display/{displayId}/exit');
+    }),
   ),
   ...paths('/api/v1/display/{displayId}').map((path) =>
-    http.delete(path, () => noContent('/api/v1/display/{displayId}')),
+    http.delete(path, ({ params }) => {
+      const displayId = toNumber(params.displayId);
+      mockDb.displays = mockDb.displays.filter((d: any) => d.displayId !== displayId);
+      return noContent('/api/v1/display/{displayId}');
+    }),
   ),
   ...paths('/api/v1/display/me/nickname').map((path) =>
     http.patch(path, async ({ request }) => {
