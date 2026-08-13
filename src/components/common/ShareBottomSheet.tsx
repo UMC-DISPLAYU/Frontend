@@ -40,7 +40,7 @@ type ShareBottomSheetProps = {
   imageUrl?: string;
 };
 
-const FALLBACK_SHARE_IMAGE = 'https://displayu.co.kr/favicon.svg';
+const FALLBACK_SHARE_IMAGE = `${window.location.origin}/icon.png`;
 const KAKAO_SDK_URL = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';
 
 let kakaoSdkPromise: Promise<void> | null = null;
@@ -61,6 +61,16 @@ function loadKakaoSdk() {
   });
 
   return kakaoSdkPromise;
+}
+
+function resolveShareImageUrl(imageUrl?: string) {
+  if (!imageUrl) return FALLBACK_SHARE_IMAGE;
+
+  try {
+    return new URL(imageUrl, window.location.origin).href;
+  } catch {
+    return FALLBACK_SHARE_IMAGE;
+  }
 }
 
 export function ShareBottomSheet({
@@ -106,6 +116,7 @@ export function ShareBottomSheet({
   if (!isOpen) return null;
 
   const shareUrl = url ?? window.location.href;
+  const shareImageUrl = resolveShareImageUrl(imageUrl);
 
   const handleKakaoShare = async () => {
     setErrorMessage(null);
@@ -125,7 +136,7 @@ export function ShareBottomSheet({
         content: {
           title,
           description,
-          imageUrl: imageUrl || FALLBACK_SHARE_IMAGE,
+          imageUrl: shareImageUrl,
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
         buttons: [
@@ -136,7 +147,8 @@ export function ShareBottomSheet({
         ],
       });
       onClose();
-    } catch {
+    } catch (err) {
+      console.error('Kakao share failed:', err);
       setErrorMessage('공유에 실패했어요');
     }
   };

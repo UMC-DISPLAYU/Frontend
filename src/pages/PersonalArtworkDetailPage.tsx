@@ -116,8 +116,11 @@ export function PersonalArtworkDetailPage() {
       (a, b) => parseServerDate(b.createdAt).getTime() - parseServerDate(a.createdAt).getTime(),
     );
 
-  /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
-  const handleSendQuestion = (payload: {
+  /*
+   * 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다.
+   * 등록 카드가 요청 실패 시 작성 내용을 보존할 수 있도록 mutateAsync로 실패를 그대로 전파합니다.
+   */
+  const handleSendQuestion = async (payload: {
     content: string;
     isPrivate: boolean;
     images?: { imageUrl: string; width?: number; height?: number }[];
@@ -130,9 +133,17 @@ export function PersonalArtworkDetailPage() {
         openLoginModal();
         return;
       }
-      createQuestionReply.mutate(
-        { content: payload.content, images: payload.images },
-        { onSuccess: () => setReplyQuestion(null) },
+      const targetQuestionId = replyQuestion.personalQuestionId;
+      await createQuestionReply.mutateAsync({
+        content: payload.content,
+        images: payload.images,
+      });
+      /*
+       * 이미지 업로드로 대기하는 동안 사용자가 다른 질문의 답변대기로 전환했을 수 있어,
+       * 완료 시점의 최신 상태를 확인해 같은 질문을 향하고 있을 때만 선택을 해제합니다.
+       */
+      setReplyQuestion((current) =>
+        current?.personalQuestionId === targetQuestionId ? null : current,
       );
       return;
     }
@@ -141,10 +152,12 @@ export function PersonalArtworkDetailPage() {
       openLoginModal();
       return;
     }
-    createQuestion.mutate(
-      { content: payload.content, isPublic: !payload.isPrivate, images: payload.images },
-      { onSuccess: () => setIsComposingQuestion(false) },
-    );
+    await createQuestion.mutateAsync({
+      content: payload.content,
+      isPublic: !payload.isPrivate,
+      images: payload.images,
+    });
+    setIsComposingQuestion(false);
   };
 
   const handleSend = ({

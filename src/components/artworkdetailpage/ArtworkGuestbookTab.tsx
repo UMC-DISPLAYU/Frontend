@@ -19,8 +19,10 @@ const QUESTION_MAX_IMAGES = 5;
 
 type ComposerImage = { imageUrl: string; width?: number; height?: number };
 
-/* 스크롤 대신 박스 자체가 늘어나도록 내용에 맞춰 textarea 높이를 맞춥니다. */
-function useAutoResizeTextarea(value: string) {
+/* 스크롤 대신 박스 자체가 늘어나도록 내용에 맞춰 textarea 높이를 맞춥니다.
+ * imagesLength도 함께 보고 있어야, 사진 추가/삭제로 min-height class가 바뀌는 순간에도
+ * (텍스트를 입력하기 전이라도) 즉시 높이를 다시 계산합니다. */
+function useAutoResizeTextarea(value: string, imagesLength: number) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ function useAutoResizeTextarea(value: string) {
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
-  }, [value]);
+  }, [value, imagesLength]);
 
   return ref;
 }
@@ -37,9 +39,11 @@ function useAutoResizeTextarea(value: string) {
 function ImagePreviewRow({
   images,
   onRemove,
+  disabled = false,
 }: {
   images: { id: string; previewUrl: string }[];
   onRemove: (id: string) => void;
+  disabled?: boolean;
 }) {
   if (images.length === 0) return null;
 
@@ -51,8 +55,9 @@ function ImagePreviewRow({
           <button
             type="button"
             onClick={() => onRemove(image.id)}
+            disabled={disabled}
             aria-label="이미지 삭제"
-            className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
+            className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main disabled:opacity-50"
           >
             <X size={12} className="text-white" strokeWidth={2.5} />
           </button>
@@ -128,7 +133,7 @@ type Props = {
     content: string;
     isPrivate: boolean;
     images?: ComposerImage[];
-  }) => void;
+  }) => Promise<void>;
   isSubmittingQuestion?: boolean;
   onDeleteQuestion?: (questionId: number) => void;
   onDeleteReply?: (questionId: number, questionReplyId: number) => void;
@@ -152,14 +157,13 @@ function QuestionCard({
   myUserId?: number;
   isReplyTarget?: boolean;
   onReply?: () => void;
-  onSubmitReply?: (content: string, images: ComposerImage[]) => void;
+  onSubmitReply?: (content: string, images: ComposerImage[]) => Promise<void>;
   isSubmittingReply?: boolean;
   onDelete?: () => void;
   onDeleteReply?: (questionReplyId: number) => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState('');
-  const replyTextareaRef = useAutoResizeTextarea(replyContent);
   const {
     images: replyImages,
     addImages: addReplyImages,
@@ -169,7 +173,11 @@ function QuestionCard({
     canAddMore: canAddMoreReplyImages,
     isUploading: isUploadingReplyImages,
   } = useImageUpload({ domain: 'artwork-question-reply', maxImages: QUESTION_MAX_IMAGES });
-  const isReplyBusy = isSubmittingReply || isUploadingReplyImages;
+  const replyTextareaRef = useAutoResizeTextarea(replyContent, replyImages.length);
+  /* isUploading은 실제 업로드 요청이 시작된 뒤에야 true가 되어, 그 전(이미지 크기 읽는 동안)
+   * 제출 버튼을 다시 누르면 중복 등록될 수 있습니다. 첫 await 전에 동기적으로 잠급니다. */
+  const [isReplyPreparing, setIsReplyPreparing] = useState(false);
+  const isReplyBusy = isSubmittingReply || isUploadingReplyImages || isReplyPreparing;
   /* 비공개 질문 열람 가능 여부는 서버가 계산해서 accessible로 내려줍니다. */
   const canView = question.accessible;
 
@@ -204,22 +212,29 @@ function QuestionCard({
   const handleSubmitReply = async () => {
     const trimmed = replyContent.trim();
     if (!trimmed || isReplyBusy) return;
+    setIsReplyPreparing(true);
 
-    const files = replyImages
-      .map((image) => image.file)
-      .filter((file): file is File => Boolean(file));
-    const dimensions =
-      files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
-    const imageUrls = replyImages.length > 0 ? await uploadReplyImages() : [];
-    const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
-      imageUrl,
-      width: dimensions[index]?.width,
-      height: dimensions[index]?.height,
-    }));
+    try {
+      const files = replyImages
+        .map((image) => image.file)
+        .filter((file): file is File => Boolean(file));
+      const dimensions =
+        files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
+      const imageUrls = replyImages.length > 0 ? await uploadReplyImages() : [];
+      const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
+        imageUrl,
+        width: dimensions[index]?.width,
+        height: dimensions[index]?.height,
+      }));
 
-    onSubmitReply?.(trimmed, submitImages);
-    setReplyContent('');
-    clearReplyImages();
+      await onSubmitReply?.(trimmed, submitImages);
+      setReplyContent('');
+      clearReplyImages();
+    } catch {
+      /* 등록 실패 시 작성 중이던 내용과 이미지를 유지합니다. */
+    } finally {
+      setIsReplyPreparing(false);
+    }
   };
 
   return (
@@ -227,14 +242,14 @@ function QuestionCard({
       <div className="w-full overflow-hidden rounded-[18px] bg-card shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
         {!canView ? (
           <div className="flex flex-col items-start gap-1 px-4 py-3.5">
-            <div className="flex h-[50px] items-center gap-3 self-stretch">
-              <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
+            <div className="flex h-[50px] items-center justify-between self-stretch">
               <div className="flex w-[280px] shrink-0 flex-col items-start gap-1">
                 <span className="typo-body-md-bold text-main">비공개 질문입니다.</span>
                 <span className="typo-body-xs-regular text-sub600">
                   {formatRelativeTime(question.createdAt)}
                 </span>
               </div>
+              <Lock size={16} className="text-main shrink-0" strokeWidth={3} />
             </div>
           </div>
         ) : (
@@ -271,7 +286,8 @@ function QuestionCard({
             <button
               type="button"
               onClick={() => onReply?.()}
-              className="flex h-[52px] w-full items-center justify-between gap-0.5 px-4 pt-4 pb-2 cursor-pointer"
+              disabled={isReplyBusy}
+              className="flex h-[52px] w-full items-center justify-between gap-0.5 px-4 pt-4 pb-2 cursor-pointer disabled:opacity-50"
             >
               <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
                 {artistName}
@@ -285,15 +301,20 @@ function QuestionCard({
             <div className="flex flex-col items-center gap-2 self-stretch px-4 pb-4">
               <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
                 <div className="flex w-full flex-col items-start gap-3.5 self-stretch">
-                  <ImagePreviewRow images={replyImages} onRemove={removeReplyImage} />
+                  <ImagePreviewRow
+                    images={replyImages}
+                    onRemove={removeReplyImage}
+                    disabled={isReplyBusy}
+                  />
                   <textarea
                     ref={replyTextareaRef}
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
                     placeholder="답변을 작성해주세요"
                     rows={1}
+                    disabled={isReplyBusy}
                     className={cn(
-                      'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint',
+                      'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint disabled:opacity-50',
                       /* 사진이 추가된 만큼 textarea 최소 높이를 줄여, 사진 추가 전후로 박스 전체 높이가 그대로 유지되게 합니다. */
                       replyImages.length > 0 ? 'min-h-[2px]' : 'min-h-[80px]',
                     )}
@@ -327,19 +348,27 @@ function QuestionCard({
             <button
               type="button"
               onClick={handleFooterClick}
-              className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2 cursor-pointer"
+              className="flex w-full items-center justify-between border-t border-box200 p-4 cursor-pointer"
             >
-              <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
-                {artistName}
+              {/* 답변완료 접힌 상태에서는 이름을 숨기고, 펼쳤을 때만 실제 답변자(작가 또는 QA 담당자) 이름을 보여줍니다. */}
+              {showReplies ? (
+                <span className="shrink-0 truncate text-left typo-body-xs-regular text-link">
+                  {question.reply.nickname}
+                </span>
+              ) : (
+                <span />
+              )}
+              <span className="flex shrink-0 items-center gap-0.5">
+                <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
+                {showReplies ? (
+                  <ChevronUp size={13} className="shrink-0 text-sub600" />
+                ) : (
+                  <ChevronDown size={13} className="shrink-0 text-sub600" />
+                )}
               </span>
-              <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
-              {showReplies && <ChevronUp size={13} className="shrink-0 text-sub600" />}
             </button>
           ) : (
-            <div className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2">
-              <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
-                {artistName}
-              </span>
+            <div className="flex w-full items-center justify-end border-t border-box200 p-4">
               <span className="typo-body-xs-regular text-sub600">답변완료</span>
             </div>
           )
@@ -363,7 +392,11 @@ function QuestionCard({
                 className="flex items-center gap-0.5 cursor-pointer"
               >
                 <span className="typo-body-xs-regular text-sub600 underline">답변대기</span>
-                {showReplies && <ChevronDown size={13} className="shrink-0 text-sub600" />}
+                {showReplies ? (
+                  <ChevronUp size={13} className="shrink-0 text-sub600" />
+                ) : (
+                  <ChevronDown size={13} className="shrink-0 text-sub600" />
+                )}
               </button>
             ) : (
               <span className="typo-body-xs-regular text-sub600">답변대기</span>
@@ -372,7 +405,7 @@ function QuestionCard({
         )}
 
         {showReplies && !isComposingReply && (
-          <div className="flex flex-col gap-1 px-4 pb-3.5">
+          <div className="flex flex-col items-start gap-1 px-4 pb-3.5">
             {question.reply ? (
               <>
                 <p className="typo-body-md-regular text-main wrap-break-word whitespace-pre-line">
@@ -427,34 +460,48 @@ function QuestionComposerCard({
   isSubmitting = false,
 }: {
   onClose: () => void;
-  onSubmit: (payload: { content: string; isPrivate: boolean; images: ComposerImage[] }) => void;
+  onSubmit: (payload: {
+    content: string;
+    isPrivate: boolean;
+    images: ComposerImage[];
+  }) => Promise<void>;
   isSubmitting?: boolean;
 }) {
   const [content, setContent] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
-  const textareaRef = useAutoResizeTextarea(content);
   const { images, addImages, removeImage, clearImages, uploadImages, canAddMore, isUploading } =
     useImageUpload({ domain: 'artwork-question', maxImages: QUESTION_MAX_IMAGES });
-  const isBusy = isSubmitting || isUploading;
+  const textareaRef = useAutoResizeTextarea(content, images.length);
+  /* isUploading은 실제 업로드 요청이 시작된 뒤에야 true가 되어, 그 전(이미지 크기 읽는 동안)
+   * 제출 버튼을 다시 누르면 중복 등록될 수 있습니다. 첫 await 전에 동기적으로 잠급니다. */
+  const [isPreparing, setIsPreparing] = useState(false);
+  const isBusy = isSubmitting || isUploading || isPreparing;
 
   const handleSubmit = async () => {
     const trimmed = content.trim();
     if (!trimmed || isBusy) return;
+    setIsPreparing(true);
 
-    const files = images.map((image) => image.file).filter((file): file is File => Boolean(file));
-    const dimensions =
-      files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
-    const imageUrls = images.length > 0 ? await uploadImages() : [];
-    const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
-      imageUrl,
-      width: dimensions[index]?.width,
-      height: dimensions[index]?.height,
-    }));
+    try {
+      const files = images.map((image) => image.file).filter((file): file is File => Boolean(file));
+      const dimensions =
+        files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
+      const imageUrls = images.length > 0 ? await uploadImages() : [];
+      const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
+        imageUrl,
+        width: dimensions[index]?.width,
+        height: dimensions[index]?.height,
+      }));
 
-    onSubmit({ content: trimmed, isPrivate, images: submitImages });
-    setContent('');
-    setIsPrivate(false);
-    clearImages();
+      await onSubmit({ content: trimmed, isPrivate, images: submitImages });
+      setContent('');
+      setIsPrivate(false);
+      clearImages();
+    } catch {
+      /* 등록 실패 시 작성 중이던 내용과 이미지를 유지합니다. */
+    } finally {
+      setIsPreparing(false);
+    }
   };
 
   return (
@@ -463,22 +510,29 @@ function QuestionComposerCard({
         {/* 질문작성 / 닫기 */}
         <div className="flex items-center justify-between self-stretch">
           <span className="typo-body-sm-bold text-main">질문작성</span>
-          <button type="button" onClick={onClose} aria-label="닫기" className="cursor-pointer">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isBusy}
+            aria-label="닫기"
+            className="cursor-pointer disabled:opacity-50"
+          >
             <X size={20} strokeWidth={1.5} className="text-main" />
           </button>
         </div>
 
         <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
           <div className="flex w-full flex-col items-start gap-1 self-stretch">
-            <ImagePreviewRow images={images} onRemove={removeImage} />
+            <ImagePreviewRow images={images} onRemove={removeImage} disabled={isBusy} />
             <textarea
               ref={textareaRef}
               value={content}
               onChange={(e) => setContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
               placeholder="질문을 작성해주세요"
               rows={1}
+              disabled={isBusy}
               className={cn(
-                'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint',
+                'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint disabled:opacity-50',
                 /* 사진이 추가된 만큼 textarea 최소 높이를 줄여, 사진 추가 전후로 박스 전체 높이가 그대로 유지되게 합니다. */
                 images.length > 0 ? 'min-h-[12px]' : 'min-h-[80px]',
               )}
@@ -494,7 +548,8 @@ function QuestionComposerCard({
             type="button"
             onClick={() => setIsPrivate((prev) => !prev)}
             aria-pressed={isPrivate}
-            className="flex cursor-pointer items-center gap-1.5"
+            disabled={isBusy}
+            className="flex cursor-pointer items-center gap-1.5 disabled:opacity-50"
           >
             <span
               className={cn(
@@ -651,7 +706,9 @@ export function ArtworkGuestbookTab({
             {isComposingQuestion && (
               <QuestionComposerCard
                 onClose={() => onCloseComposeQuestion?.()}
-                onSubmit={(payload) => onSubmitQuestion?.(payload)}
+                onSubmit={async (payload) => {
+                  await onSubmitQuestion?.(payload);
+                }}
                 isSubmitting={isSubmittingQuestion}
               />
             )}
@@ -665,9 +722,9 @@ export function ArtworkGuestbookTab({
                 onReply={() =>
                   onQuestionReplyTargetChange?.(replyTargetQuestionId === q.questionId ? null : q)
                 }
-                onSubmitReply={(content, images) =>
-                  onSubmitQuestion?.({ content, images, isPrivate: false })
-                }
+                onSubmitReply={async (content, images) => {
+                  await onSubmitQuestion?.({ content, images, isPrivate: false });
+                }}
                 isSubmittingReply={isSubmittingQuestion}
                 onDelete={() => onDeleteQuestion?.(q.questionId)}
                 onDeleteReply={(questionReplyId) => onDeleteReply?.(q.questionId, questionReplyId)}

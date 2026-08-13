@@ -719,7 +719,14 @@ function ArtworkRegisterPageContent() {
       return;
     }
 
-    const artworkType = ARTWORK_FIELD_MAP[field];
+    const selectedFieldLabels = field
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const artworkType = selectedFieldLabels
+      .map((label) => ARTWORK_FIELD_MAP[label])
+      .filter((val): val is string => Boolean(val))
+      .join(',');
 
     if (!artworkType) {
       setSubmitError('작품분야를 선택해주세요.');

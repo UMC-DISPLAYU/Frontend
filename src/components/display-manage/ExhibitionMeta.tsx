@@ -28,12 +28,7 @@ export function ExhibitionMeta({
   const roleBase = ex.isLeader === true ? '대표자' : ex.isLeader === false ? '팀원' : null;
   const roleLabel = roleBase ? (artistName ? `${roleBase}(${artistName})` : roleBase) : null;
 
-  const statusLabel =
-    ex.publishStatus === 'PUBLISHED'
-      ? '등록완료'
-      : ex.publishStatus === 'DRAFT'
-        ? '임시저장'
-        : null;
+  const statusLabel = ex.publishStatus === 'PUBLISHED' ? '등록완료' : null;
   const isDraft = ex.publishStatus === 'DRAFT';
 
   return (

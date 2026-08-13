@@ -120,12 +120,12 @@ export const toggleDisplayLike = async (
 ): Promise<ToggleDisplayLikeResponseDataDto> =>
   apiRequest('/v1/display/like', { method: 'POST', body: { displayId } });
 
-// PATCH /v1/display/like
+// DELETE /v1/display/like
 export const updateDisplayLike = async (body: {
   displayId: number;
   userId?: number;
 }): Promise<ToggleDisplayLikeResponseDataDto> =>
-  apiRequest('/v1/display/like', { method: 'PATCH', body });
+  apiRequest('/v1/display/like', { method: 'DELETE', body });
 
 // GET /v1/display/{displayId}/isliked
 export const getDisplayLikeStatus = async (
@@ -156,11 +156,14 @@ export const createDisplayInvitation = async (
 ): Promise<CreateDisplayInvitationLinkResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/invitation`, { method: 'POST' });
 
-// PATCH /v1/display/:displayId/invitation/disable
+// PATCH /v1/display/:displayId/invitation
 export const disableDisplayInvitation = async (
   displayId: number,
 ): Promise<DisableDisplayInvitationLinkResponseDataDto> =>
-  apiRequest(`/v1/display/${displayId}/invitation/disable`, { method: 'PATCH' });
+  apiRequest(`/v1/display/${displayId}/invitation`, {
+    method: 'PATCH',
+    body: { enabled: false },
+  });
 
 // GET /v1/display/:displayId/members
 export const getDisplayMembers = async (

@@ -392,6 +392,7 @@ export type GetMyDisplayReviewsResponseDto = ApiResponseDto<GetMyDisplayReviewsR
 export interface CreateDisplayRequestDto {
   title: string;
   posterImageUrl: string;
+  displayImageUrl?: string[];
   type: string;
   fields: string[];
   region: string;

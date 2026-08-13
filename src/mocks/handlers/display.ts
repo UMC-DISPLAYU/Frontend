@@ -227,7 +227,7 @@ export const displayHandlers = [
   ...paths('/api/v1/display/invitation/{token}').map((path) =>
     http.get(path, () => success('/api/v1/display/invitation/{token}', displayDetailResponse(101))),
   ),
-  /* 스웨거: POST는 좋아요 추가, PATCH는 좋아요 취소입니다. */
+  /* 스웨거: POST는 좋아요 추가, DELETE는 좋아요 취소입니다. */
   ...paths('/api/v1/display/like').map((path) =>
     http.post(path, async ({ request }) => {
       const body = await readJson<{ displayId?: number }>(request);
@@ -246,7 +246,7 @@ export const displayHandlers = [
     }),
   ),
   ...paths('/api/v1/display/like').map((path) =>
-    http.patch(path, async ({ request }) => {
+    http.delete(path, async ({ request }) => {
       const body = await readJson<{ displayId?: number }>(request);
       const display = findDisplay(Number(body.displayId ?? 101));
 
@@ -346,14 +346,58 @@ export const displayHandlers = [
   ),
   ...paths('/api/v1/display/search').map((path) =>
     http.get(path, ({ request }) => {
-      const keyword = new URL(request.url).searchParams.get('searchWord') ?? '';
-      const exhibitions = listDisplays().filter(
-        (display: any) => !keyword || display.title.includes(keyword),
-      );
+      const url = new URL(request.url);
+      const keyword = url.searchParams.get('searchWord') ?? '';
+      const cursor = Number(url.searchParams.get('cursor') ?? 0);
+      const size = Number(url.searchParams.get('size') ?? 20);
+
+      const getParams = (key: string) =>
+        url.searchParams
+          .getAll(key)
+          .flatMap((v) => v.split(','))
+          .map((v) => v.trim())
+          .filter(Boolean);
+
+      const fieldParams = getParams('field');
+      const statusParams = getParams('status');
+      const regionParams = getParams('region');
+      const typeParams = getParams('type');
+
+      const allExhibitions = listDisplays().filter((display: any) => {
+        const matchesKeyword =
+          !keyword ||
+          display.title?.includes(keyword) ||
+          display.schoolDepartmentName?.includes(keyword);
+
+        const matchesField =
+          fieldParams.length === 0 ||
+          fieldParams.some(
+            (f) =>
+              display.displayFields?.includes(f) ||
+              display.field === f ||
+              display.department?.includes(f),
+          );
+
+        const matchesStatus =
+          statusParams.length === 0 ||
+          statusParams.some((s) => display.status === s || display.exhibitionStatus === s);
+
+        const matchesRegion =
+          regionParams.length === 0 ||
+          regionParams.some((r) => display.region === r || display.locationRegion === r);
+
+        const matchesType =
+          typeParams.length === 0 ||
+          typeParams.some((t) => display.type === t || display.exhibitionType === t);
+
+        return matchesKeyword && matchesField && matchesStatus && matchesRegion && matchesType;
+      });
+      const exhibitions = allExhibitions.slice(cursor, cursor + size);
+      const nextCursor = cursor + size < allExhibitions.length ? cursor + size : null;
 
       return success('/api/v1/display/search', {
         exhibitions,
-        pagination: { nextCursor: null, size: exhibitions.length, hasNext: false },
+        pagination: { nextCursor, size: exhibitions.length, hasNext: nextCursor !== null },
       });
     }),
   ),
@@ -400,16 +444,19 @@ export const displayHandlers = [
       });
     }),
   ),
-  ...paths('/api/v1/display/{displayId}/invitation/disable').map((path) =>
-    http.patch(path, ({ params }) => {
+  ...paths('/api/v1/display/{displayId}/invitation').map((path) =>
+    http.patch(path, async ({ params, request }) => {
       const displayId = toNumber(params.displayId, 101);
       const display = findDisplay(displayId);
-      const invitationDisabledAt = now();
+      const body = await readJson<{ enabled?: boolean }>(request);
+      const invitationDisabledAt = body.enabled === false ? now() : null;
 
       display.invitationDisabledAt = invitationDisabledAt;
 
-      return success('/api/v1/display/{displayId}/invitation/disable', {
+      return success('/api/v1/display/{displayId}/invitation', {
         displayId,
+        enabled: body.enabled ?? false,
+        invitationUrl: display.invitationDisabledAt ? null : display.invitationToken,
         invitationDisabledAt,
       });
     }),

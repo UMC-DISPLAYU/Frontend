@@ -157,6 +157,7 @@ export interface ArtworkDetail {
   artist: string;
   exhibitionId: string;
   exhibitionTitle: string;
+  exhibitionSubtitle: string;
   exhibitionOrganizer: string;
   exhibitionPeriod: string;
   exhibitionThumbnail: string;

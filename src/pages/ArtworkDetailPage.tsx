@@ -166,8 +166,11 @@ export function ArtworkDetailPage() {
       isMyQuestion: Boolean(myUserId) && question.user?.userId === myUserId,
     }));
 
-  /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
-  const handleSendQuestion = ({
+  /*
+   * 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다.
+   * 등록 카드가 요청 실패 시 작성 내용을 보존할 수 있도록 mutateAsync로 실패를 그대로 전파합니다.
+   */
+  const handleSendQuestion = async ({
     content,
     isPrivate,
     images,
@@ -185,9 +188,18 @@ export function ArtworkDetailPage() {
         return;
       }
 
-      createQuestionReply.mutate(
-        { artworkId, questionId: questionReplyTarget.questionId, body: { content, images } },
-        { onSuccess: () => setQuestionReplyTarget(null) },
+      const targetQuestionId = questionReplyTarget.questionId;
+      await createQuestionReply.mutateAsync({
+        artworkId,
+        questionId: targetQuestionId,
+        body: { content, images },
+      });
+      /*
+       * 이미지 업로드로 대기하는 동안 사용자가 다른 질문의 답변대기로 전환했을 수 있어,
+       * 완료 시점의 최신 상태를 확인해 같은 질문을 향하고 있을 때만 선택을 해제합니다.
+       */
+      setQuestionReplyTarget((current) =>
+        current?.questionId === targetQuestionId ? null : current,
       );
       return;
     }
@@ -197,10 +209,11 @@ export function ArtworkDetailPage() {
       return;
     }
 
-    createQuestion.mutate(
-      { artworkId, body: { content, isPublic: !isPrivate, images } },
-      { onSuccess: () => setIsComposingQuestion(false) },
-    );
+    await createQuestion.mutateAsync({
+      artworkId,
+      body: { content, isPublic: !isPrivate, images },
+    });
+    setIsComposingQuestion(false);
   };
 
   if (isPending) {
@@ -217,6 +230,15 @@ export function ArtworkDetailPage() {
     );
   }
 
+  /*
+   * 작가명은 작품 등록 시점에 기록된 값(detail.artistName) 대신, 팀원이 그 전시에 참여할 때
+   * 정한 전시 작가명(teamMembers[].displayNickname)이 있으면 그걸 우선 보여줍니다.
+   * 초대받아 들어간 전시에서 원래 이름이 아니라 그 전시용 작가명이 나와야 하기 때문입니다.
+   */
+  const artistDisplayName =
+    display?.teamMembers?.find((member) => member.userId === detail.artistUserId)
+      ?.displayNickname || detail.artistName;
+
   /* 화면이 쓰는 ArtworkDetail 형태로 변환합니다. */
   const artwork: ArtworkDetail = {
     artworkId: detail.artworkId,
@@ -228,9 +250,10 @@ export function ArtworkDetailPage() {
     size: detail.size,
     point: detail.point,
     images: detail.images,
-    artist: detail.artistName,
+    artist: artistDisplayName,
     exhibitionId: String(detail.exhibitionInfo?.displayId ?? ''),
     exhibitionTitle: detail.exhibitionInfo?.exhibitionTitle ?? '',
+    exhibitionSubtitle: detail.exhibitionInfo?.exhibitionSubtitle ?? '',
     exhibitionOrganizer: detail.exhibitionInfo?.exhibitionOrganizer ?? '',
     exhibitionPeriod: detail.exhibitionInfo?.exhibitionPeriod ?? '',
     exhibitionThumbnail: detail.exhibitionInfo?.exhibitionThumbnailUrl ?? '',
@@ -239,11 +262,12 @@ export function ArtworkDetailPage() {
     isArchived: detail.isArchived ?? false,
   };
 
-  /* 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
-  const heroImages = (detail.images ?? [])
+  /* 히어로는 작품 이미지만 사용합니다(작업과정 이미지는 소개 탭에서 별도로 씁니다). 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
+  const artworkImages = (detail.images ?? []).filter((image) => image.imageType !== 'WORK_PROCESS');
+  const heroImages = artworkImages
     .map((image) => image.imageUrl)
     .filter((imageUrl): imageUrl is string => Boolean(imageUrl));
-  const thumbnailUrl = detail.images?.find((image) => image.isThumbnail)?.imageUrl;
+  const thumbnailUrl = artworkImages.find((image) => image.isThumbnail)?.imageUrl;
   const orderedHeroImages = thumbnailUrl
     ? [thumbnailUrl, ...heroImages.filter((imageUrl) => imageUrl !== thumbnailUrl)]
     : heroImages;

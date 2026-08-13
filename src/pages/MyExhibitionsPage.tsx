@@ -68,7 +68,7 @@ export function MyExhibitionsPage() {
           navigate(`/exhibition/${ex.id}/edit/artist`, {
             state: {
               ...ex,
-              displayId: Number(ex.id),
+              displayId: ex.displayId ?? Number(ex.id),
               artistName: ex.artistName,
               displayNickname: ex.artistName,
             },

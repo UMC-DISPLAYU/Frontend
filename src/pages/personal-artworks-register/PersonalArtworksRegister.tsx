@@ -142,11 +142,21 @@ export function PersonalArtworksRegister() {
       sortOrder: index + 1,
     });
 
+    const selectedFieldLabels = field
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const artworkType =
+      selectedFieldLabels
+        .map((label) => ARTWORK_FIELD_MAP[label])
+        .filter((val): val is string => Boolean(val))
+        .join(',') || ARTWORK_FIELD_MAP['기타'];
+
     createPersonalArtwork.mutate(
       {
         artworkName: title.trim(),
         content: intro.trim(),
-        type: ARTWORK_FIELD_MAP[field] ?? ARTWORK_FIELD_MAP['기타'],
+        type: artworkType,
         productionYear: toPersonalArtworkProductionYear(year),
         materialMedia: material.trim(),
         size: size.trim(),
@@ -232,9 +242,24 @@ export function PersonalArtworksRegister() {
             <RequiredLabel required>작품분야</RequiredLabel>
             <ChipGroup
               options={Object.keys(ARTWORK_FIELD_MAP)}
-              selected={[field]}
-              onChange={(next) => setField(next[0] ?? field)}
-              maxSelect={1}
+              selected={
+                field
+                  ? field
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                  : []
+              }
+              onChange={(next) => {
+                const nextStr = next.join(', ');
+                setValue('field', nextStr, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+                setField(nextStr);
+              }}
+              maxSelect={2}
               aria-label="작품분야"
               className="flex flex-wrap gap-2"
             />

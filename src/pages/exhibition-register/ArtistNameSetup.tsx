@@ -215,6 +215,7 @@ export function ArtistNameSetup() {
 
     const type = registerState.type ? DISPLAY_TYPE_MAP[registerState.type] : undefined;
     const posterImageUrl = registerState.imageUrls?.[0];
+    const displayImageUrl = registerState.imageUrls?.slice(1).filter(Boolean) ?? [];
 
     if (
       !type ||
@@ -238,6 +239,7 @@ export function ArtistNameSetup() {
     const requestBody: CreateDisplayRequestDto = {
       title: registerState.title.trim(),
       posterImageUrl,
+      ...(displayImageUrl.length > 0 ? { displayImageUrl } : {}),
       type,
       fields: registerState.field?.map((field) => DISPLAY_FIELD_MAP[field]).filter(Boolean) ?? [],
       region: getRegion(registerState.address),
