@@ -6,7 +6,6 @@ import { DeleteConfirmModal, LeaveConfirmModal, LoadingView } from '@/components
 import { ManageScreen } from '@/components/display-manage';
 import { useHideFooter } from '@/components/layout';
 import { useDeleteDisplay, useExitDisplay, useMyDisplays } from '@/hooks/queries/useMyDisplays';
-import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
@@ -16,7 +15,6 @@ export function MyExhibitionsPage() {
   useHideFooter();
 
   const navigate = useNavigate();
-  const flowBack = useFlowBack();
   const { data: myDisplays = [], isLoading } = useMyDisplays();
   const deleteDisplayMutation = useDeleteDisplay();
   const exitDisplayMutation = useExitDisplay();
@@ -61,7 +59,6 @@ export function MyExhibitionsPage() {
             });
           }
         }}
-        onBack={() => flowBack()}
         onDelete={(ex) => setDisplayToDelete(ex)}
         onLeave={(ex) => setDisplayToLeave(ex)}
         onEditArtistName={(ex) =>

@@ -506,12 +506,39 @@ export const displayHandlers = [
     ),
   ),
   ...paths('/api/v1/display-invitations/{invitationId}/accept').map((path) =>
-    http.post(path, ({ params }) => {
+    http.post(path, async ({ params, request }) => {
       const invitationId = toNumber(params.invitationId, 1);
       const invitation = mockDisplayInvitations.find((item) => item.invitationId === invitationId);
+      const body = await readJson<{ displayNickname?: string }>(request);
 
       if (invitation) {
         invitation.status = 'ACCEPTED';
+
+        /*
+         * 수락 시 전시 상세(teamMembers)에도 accepted=true로 반영해야 초대 수락 직후
+         * displayArtistName.edit 등 멤버 권한 체크가 통과합니다. 여기를 빼먹으면
+         * 팀원으로 수락했는데도 계속 403이 뜹니다.
+         */
+        const display = findDisplay(invitation.displayId);
+        const members = display.teamMembers ?? [];
+        const inviteeUserId = invitation.inviteeUserId;
+        const existingMember = members.find((member: any) => member.userId === inviteeUserId);
+
+        if (existingMember) {
+          existingMember.accepted = true;
+          if (body.displayNickname) existingMember.displayNickname = body.displayNickname;
+        } else {
+          display.teamMembers = [
+            ...members,
+            {
+              teamMemberId: Date.now(),
+              userId: inviteeUserId,
+              displayNickname: body.displayNickname ?? invitation.userNickname ?? '팀원',
+              role: 'TEAM_MEM',
+              accepted: true,
+            },
+          ];
+        }
       }
 
       return success('/api/v1/display-invitations/{invitationId}/accept', {
