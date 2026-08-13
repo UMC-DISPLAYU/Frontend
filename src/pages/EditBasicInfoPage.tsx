@@ -210,6 +210,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
                   <button
                     type="button"
                     onClick={handleClearInput}
+                    aria-label="프로필 명 지우기"
                     className="size-5 bg-box200 rounded-[10px] flex justify-center items-center cursor-pointer"
                   >
                     <X className="size-2.5 text-card translate-x-[0.5px]" strokeWidth={2} />
