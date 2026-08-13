@@ -61,22 +61,30 @@ export function TeamManage() {
   };
 
   /*
-   * 스웨거 TeamMemberResponse에는 이름/프로필 이미지/작가 인증 여부가 없어 displayNickname과 role만 사용합니다.
+   * 스웨거 TeamMemberResponse에는 이름/프로필 이미지가 없어 displayNickname과 role만 사용합니다.
    * 프로필 이미지가 없으므로 기본 프로필 아이콘이 표시됩니다.
    * 대표자 판정은 전시 상세의 ownerUserId와 대조합니다.
    */
   const ownerUserId = (display as { ownerUserId?: number } | undefined)?.ownerUserId;
-  const members: Member[] = (memberList?.members ?? []).map((member) => ({
-    id: String(member.teamMemberId),
-    name: member.displayNickname,
-    nickname: member.displayNickname,
-    status:
-      member.role === 'LEADER' || member.userId === ownerUserId
-        ? 'owner'
-        : member.accepted === false
-          ? 'pending'
-          : 'unverified',
-  }));
+  const members: Member[] = (memberList?.members ?? [])
+    .map((member) => {
+      const isPending = member.accepted === false;
+
+      return {
+        id: String(member.teamMemberId),
+        name: member.displayNickname,
+        nickname: isPending ? '아직 초대를 수락하지 않았어요' : member.displayNickname,
+        status:
+          member.role === 'LEADER' || member.userId === ownerUserId
+            ? 'owner'
+            : isPending
+              ? 'pending'
+              : member.artistVerified
+                ? 'member'
+                : 'unverified',
+      } satisfies Member;
+    })
+    .sort((a, b) => (a.status === 'owner' ? -1 : b.status === 'owner' ? 1 : 0));
 
   const [invitedUserIds, setInvitedUserIds] = useState<Set<number>>(new Set());
 
@@ -147,8 +155,8 @@ export function TeamManage() {
                     key={user.userId}
                     member={{
                       id: String(user.userId),
-                      name: user.name,
-                      nickname: user.nickname,
+                      name: user.nickname,
+                      nickname: '',
                       status: 'unverified',
                     }}
                     onInvite={() => handleInvite(user.userId)}
