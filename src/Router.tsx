@@ -165,11 +165,7 @@ export const router = createBrowserRouter([
           // 내 전시 관리 목록
           {
             path: 'my/exhibitions',
-            element: (
-              <ArtistPermissionGuard>
-                <MyExhibitionsPage />
-              </ArtistPermissionGuard>
-            ),
+            element: <MyExhibitionsPage />,
           },
 
           // 1. 전시 등록 플로우
