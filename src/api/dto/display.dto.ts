@@ -549,6 +549,8 @@ export interface MyDisplayInvitationDto {
   endDate: string;
   location: string;
   leaderName: string;
+  userNickname?: string;
+  schoolDepartmentName?: string;
   title: string;
   placeName: string;
   status?: string;

@@ -66,12 +66,14 @@ const displayInvitationItem = (displayId: number, invitationId = displayId) => {
     title: display.title,
     school: display.organization,
     department: display.department,
+    schoolDepartmentName: [display.organization, display.department].filter(Boolean).join(' '),
     startDate: display.startDate ?? display.startedAt,
     endDate: display.endDate ?? display.endedAt,
     location: 'SEOUL',
     placeName: display.placeName,
     thumbnailUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
-    leaderName: '고상준(sangjun24)',
+    leaderName: '고상준',
+    userNickname: 'sangjun24',
   };
 };
 
