@@ -1,3 +1,5 @@
+import { OptimizedImage } from '@/components/common/OptimizedImage';
+
 interface ArtworkCardProps {
   art: {
     id: string;
@@ -11,7 +13,12 @@ export function ArtworkCard({ art }: ArtworkCardProps) {
   return (
     <div className="h-[158px] w-[118px] shrink-0 overflow-hidden rounded-xl border border-line-soft bg-card">
       {art.image ? (
-        <img src={art.image} alt={art.title} className="block h-[98px] w-full object-cover" />
+        <OptimizedImage
+          src={art.image}
+          displayWidth={118}
+          alt={art.title}
+          className="block h-[98px] w-full object-cover"
+        />
       ) : (
         <div
           className="relative h-[98px]"
