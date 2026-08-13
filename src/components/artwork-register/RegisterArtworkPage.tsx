@@ -1,9 +1,12 @@
+import type { UseFormRegisterReturn } from 'react-hook-form';
+
 import { ImageUploader } from '@/components/common';
 import { BottomFixedBar } from '@/components/common';
 import { ChipGroup, RequiredLabel } from '@/components/ui';
 import { ARTWORK_FIELD_MAP } from '@/constants';
 import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
+import { sanitizeArtworkRegisterYearInput } from '@/pages/artwork-register/artworkRegister.schema';
 import { cn } from '@/utils/cn';
 
 import { UnderlineTextarea } from './ArtworkRegisterControls';
@@ -20,11 +23,15 @@ interface RegisterArtworkPageProps {
   point: string;
   artworkImages: ImageUploadItem[];
   processImages: ImageUploadItem[];
+  canProceed: boolean;
+  titleError?: string;
+  yearError?: string;
+  mediumError?: string;
+  yearInputProps: UseFormRegisterReturn<'year'>;
   onBack: () => void;
   onChangeTitle: (value: string) => void;
   onChangeDescription: (value: string) => void;
   onChangeField: (value: string) => void;
-  onChangeYear: (value: string) => void;
   onChangeMedium: (value: string) => void;
   onChangeSize: (value: string) => void;
   onChangePoint: (value: string) => void;
@@ -46,11 +53,15 @@ function RegisterArtworkPage({
   point,
   artworkImages,
   processImages,
+  canProceed,
+  titleError,
+  yearError,
+  mediumError,
+  yearInputProps,
   onBack,
   onChangeTitle,
   onChangeDescription,
   onChangeField,
-  onChangeYear,
   onChangeMedium,
   onChangeSize,
   onChangePoint,
@@ -60,12 +71,6 @@ function RegisterArtworkPage({
   onRemoveProcessImage,
   onNext,
 }: RegisterArtworkPageProps) {
-  const isNextEnabled =
-    title.trim().length > 0 &&
-    field.trim().length > 0 &&
-    year.trim().length > 0 &&
-    medium.trim().length > 0;
-
   return (
     <ArtworkRegisterLayout
       title={isEditMode ? '작품 정보 수정' : '전시작 등록'}
@@ -75,10 +80,10 @@ function RegisterArtworkPage({
           <button
             type="button"
             onClick={onNext}
-            disabled={!isNextEnabled}
+            disabled={!canProceed}
             className={cn(
               'typo-body-sm-bold h-11 w-full rounded-xl',
-              isNextEnabled ? 'bg-dark text-white' : 'bg-bt-gray text-faint',
+              canProceed ? 'bg-dark text-white' : 'bg-bt-gray text-faint',
             )}
           >
             다음
@@ -110,6 +115,7 @@ function RegisterArtworkPage({
             placeholder="작품명을 입력해주세요"
             className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
           />
+          {titleError && <p className="typo-body-xxs-regular text-error px-2">{titleError}</p>}
         </section>
 
         <section className="flex flex-col gap-3">
@@ -140,11 +146,21 @@ function RegisterArtworkPage({
             </RequiredLabel>
             <input
               id="artwork-year"
+              {...yearInputProps}
+              inputMode="numeric"
+              maxLength={4}
               value={year}
-              onChange={(e) => onChangeYear(e.target.value)}
-              placeholder="2026.09.22"
+              onBlur={(event) => {
+                void yearInputProps.onBlur(event);
+              }}
+              onChange={(event) => {
+                event.target.value = sanitizeArtworkRegisterYearInput(event.target.value);
+                void yearInputProps.onChange(event);
+              }}
+              placeholder="2026"
               className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
             />
+            {yearError && <p className="typo-body-xxs-regular text-error px-2">{yearError}</p>}
           </section>
 
           <section className="min-w-0 flex flex-col gap-3">
@@ -158,6 +174,7 @@ function RegisterArtworkPage({
               placeholder="아크릴, 캔버스"
               className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
             />
+            {mediumError && <p className="typo-body-xxs-regular text-error px-2">{mediumError}</p>}
           </section>
         </div>
 

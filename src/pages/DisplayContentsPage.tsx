@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import type { DisplayContentCategoryDto } from '@/api/dto/display.dto';
 import DUfontlogo from '@/assets/brand/DUfontlogo.svg';
 import { ErrorView, LoadingView } from '@/components/common';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { parseDisplayId } from '@/utils/parseDisplayId';
@@ -70,8 +71,9 @@ export function DisplayContentsPage() {
           <div className="mt-[17px] flex flex-col w-full gap-0 px-5">
             {selectedCategory.contents.map((item) => (
               <div key={item.contentId} className="w-full bg-box overflow-hidden">
-                <img
+                <OptimizedImage
                   src={item.imageUrl}
+                  displayWidth={360}
                   alt={selectedCategory.name}
                   className="w-full h-auto object-cover block"
                 />
@@ -126,8 +128,9 @@ export function DisplayContentsPage() {
                 {/* 좌측 카테고리 썸네일 카드 */}
                 <div className="w-[282px] h-[152px] relative rounded-xl overflow-hidden bg-box shadow-xs shrink-0">
                   {firstImg ? (
-                    <img
+                    <OptimizedImage
                       src={firstImg}
+                      displayWidth={282}
                       alt={category.name}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />

@@ -1,0 +1,1 @@
+export { PersonalArtworksRegister } from './PersonalArtworksRegister';

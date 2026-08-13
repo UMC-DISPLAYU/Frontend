@@ -93,7 +93,7 @@ export function TeamManage() {
   const isSearching = keyword.length > 0;
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
+    <div className="mx-auto min-h-dvh w-full max-w-md bg-page pb-safe-bottom">
       <ExhibitionHeader title="팀원 초대/관리" onBack={() => flowBack()} />
 
       <main className="px-5">

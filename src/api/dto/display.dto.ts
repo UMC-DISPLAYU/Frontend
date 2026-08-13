@@ -197,18 +197,30 @@ export interface DisplayContentCategoryDto {
 }
 
 export interface DisplayTeamMemberDto {
-  teamMemberId: number;
+  teamMemberId: number | null;
   userId: number;
   displayNickname: string;
   role: string;
   accepted: boolean;
+  loggedIn?: boolean;
+  artistVerified?: boolean;
 }
 
 export interface DisplayInvitationDto {
   invitationId: number;
-  inviterUserId: number;
-  inviteeUserId: number;
-  createdAt: string;
+  displayId: number;
+  title: string;
+  posterImageUrl?: string;
+  schoolDepartmentName?: string;
+  startedAt: string;
+  endedAt: string;
+  dayLeft?: number;
+  isArchived?: boolean;
+  /* 하위 호환용 - 추후 서버가 내려줄 수 있는 필드 */
+  inviterUserId?: number;
+  inviteeUserId?: number;
+  createdAt?: string;
+  status?: string;
 }
 
 export type GetDisplayDetailResponseDto = ApiResponseDto<DisplayDetailDto>;
@@ -326,7 +338,19 @@ export interface CreateDisplayReviewReplyRequestDto {
   images?: DisplayReviewImageRequestDto[];
 }
 
-export type CreateDisplayReviewReplyResponseDataDto = DisplayReviewReplyDto;
+/* 답글 생성 응답은 목록 항목(DisplayReviewReplyDto)과 모양이 달라, user 중첩 객체 대신
+ * userId/nickname이 평평하게 옵니다. likeCount/isLiked는 막 만든 답글이라 항상 0/false로
+ * 확정이라 응답에 없습니다. */
+export interface CreateDisplayReviewReplyResponseDataDto {
+  displayReviewReplyId: number;
+  createdAt: string;
+  content: string;
+  displayReviewId: number;
+  userId: number;
+  nickname: string;
+  isTeamMember: boolean;
+  images?: DisplayReviewReplyImageDto[];
+}
 
 export interface DeleteDisplayReviewReplyResponseDataDto {
   displayReviewReplyId: number;
@@ -379,9 +403,9 @@ export interface CreateDisplayRequestDto {
   latitude: number;
   longitude: number;
   roadAddress: string;
-  /* 서버 필수값입니다. 이 전시에서 쓸 표시명과 문의(Q&A) 계정입니다. */
+  /* 서버 필수값입니다. 이 전시에서 쓸 표시명입니다. */
   displayNickname: string;
-  qnaAccount: string;
+  qnaAccount?: string;
   schoolOrOrganization: string;
   departmentOrClub?: string;
   subtitle?: string;
@@ -461,11 +485,20 @@ export interface MyDisplayDto {
   department: string;
   placeName: string;
   postImageUrl: string;
+  isLeader?: boolean;
+  publishStatus?: 'PUBLISHED' | 'DRAFT';
+  displayNickname?: string;
+  artistName?: string;
 }
 
 export interface GetMyDisplaysResponseDataDto {
   createdDisplays: MyDisplayDto[];
   participatedDisplays: MyDisplayDto[];
+}
+
+export interface UpdateMyDisplayNicknameRequestDto {
+  displayId: number;
+  displayNickname: string;
 }
 
 export type ArtistDisplayDto = MyDisplayDto;
@@ -480,9 +513,28 @@ export interface InviteDisplayMemberRequestDto {
   role?: 'TEAM_MEM';
 }
 
+/* GET /display/{displayId}/members 응답의 팀원 항목. 참여/대기 팀원 모두 이 형태를 공유합니다. */
+export interface DisplayMemberEntryDto extends DisplayTeamMemberDto {
+  loggedIn: boolean;
+  artistVerified: boolean;
+}
+
+/* 서버가 실제로 내려주는 원본 응답 — 참여 팀원과 초대 대기 팀원이 배열로 분리되어 있습니다. */
+export interface DisplayMemberListRawResponseDataDto {
+  displayId: number;
+  memberAccept: DisplayMemberEntryDto[];
+  memberPending: DisplayMemberEntryDto[];
+}
+
+/*
+ * memberAccept + memberPending을 합친 members도 함께 내려줍니다.
+ * 기존 화면들이 accepted 플래그로 구분해 쓰던 통합 목록과의 호환을 위해서입니다.
+ */
 export interface DisplayMemberListResponseDataDto {
   displayId: number;
-  members: DisplayTeamMemberDto[];
+  members: DisplayMemberEntryDto[];
+  memberAccept: DisplayMemberEntryDto[];
+  memberPending: DisplayMemberEntryDto[];
 }
 
 export interface DisplayMemberInvitationResponseDataDto {
@@ -508,7 +560,7 @@ export interface DisableDisplayInvitationLinkResponseDataDto {
 }
 
 export interface MyDisplayInvitationListResponseDataDto {
-  invitations: DisplayInvitationDto[];
+  exhibitions: DisplayInvitationDto[];
 }
 
 export interface AcceptDisplayInvitationRequestDto {

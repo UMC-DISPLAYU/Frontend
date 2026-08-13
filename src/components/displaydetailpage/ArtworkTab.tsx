@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import type { DisplayArtworkDto } from '@/api/dto';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 
 type ArtworkCardProps = {
@@ -16,8 +17,9 @@ function ArtworkCard({ item }: ArtworkCardProps) {
       onClick={() => navigate(`/artwork/${item.artworkId}`)}
     >
       <div className="aspect-square w-full rounded-xl overflow-hidden bg-page border  border-line-soft">
-        <img
+        <OptimizedImage
           src={item.artworkImageUrl}
+          displayWidth={170}
           alt={item.artworkName}
           className="w-full h-full object-cover"
         />

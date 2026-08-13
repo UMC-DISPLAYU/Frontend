@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { MyArtworkFeelingDto, MyDisplayReviewDto } from '@/api/dto';
 import { ErrorView, LoadingView } from '@/components/common';
@@ -12,9 +13,10 @@ interface ReviewCardProps {
   title: string;
   content: string;
   createdAt: string;
+  onClick?: () => void;
 }
 
-function ReviewCard({ title, content, createdAt }: ReviewCardProps) {
+function ReviewCard({ title, content, createdAt, onClick }: ReviewCardProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -31,7 +33,12 @@ function ReviewCard({ title, content, createdAt }: ReviewCardProps) {
   };
 
   return (
-    <div className="w-full rounded-lg bg-card px-4 py-3.5 shadow-[8px_8px_18px_rgba(67,0,209,0.04)]">
+    <div
+      onClick={onClick}
+      className={`w-full rounded-lg bg-card px-4 py-3.5 shadow-[8px_8px_18px_rgba(67,0,209,0.04)] ${
+        onClick ? 'cursor-pointer hover:bg-box transition-colors' : ''
+      }`}
+    >
       <div className="flex flex-col gap-1">
         <p className="typo-body-sm-semibold text-link">{title}</p>
         <p className="typo-body-sm-regular text-main line-clamp-2">{content}</p>
@@ -49,6 +56,7 @@ function ReviewCard({ title, content, createdAt }: ReviewCardProps) {
 const TABS = ['전시', '작품'];
 
 export function MyReviewPage() {
+  const navigate = useNavigate();
   const flowBack = useFlowBack();
   const [activeTab, setActiveTab] = useState('전시');
 
@@ -135,19 +143,31 @@ export function MyReviewPage() {
                 title={review.displayName}
                 content={review.content}
                 createdAt={review.createdAt}
+                onClick={() => navigate(`/display/${review.displayId}`)}
               />
             ))}
           </div>
         ) : activeTab === '작품' && artworkFeelings.length > 0 ? (
           <div className="flex flex-col gap-4">
-            {artworkFeelings.map((feeling: MyArtworkFeelingDto, index: number) => (
-              <ReviewCard
-                key={`${feeling.artworkId}-${feeling.personalArtworkId}-${index}`}
-                title={feeling.artworkName}
-                content={feeling.content}
-                createdAt={feeling.createdAt}
-              />
-            ))}
+            {artworkFeelings.map((feeling: MyArtworkFeelingDto, index: number) => {
+              const handleNavigation = () => {
+                if (feeling.artworkId) {
+                  navigate(`/artwork/${feeling.artworkId}`);
+                } else if (feeling.personalArtworkId) {
+                  navigate(`/personal-artworks/${feeling.personalArtworkId}`);
+                }
+              };
+
+              return (
+                <ReviewCard
+                  key={`${feeling.artworkId}-${feeling.personalArtworkId}-${index}`}
+                  title={feeling.artworkName}
+                  content={feeling.content}
+                  createdAt={feeling.createdAt}
+                  onClick={handleNavigation}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">

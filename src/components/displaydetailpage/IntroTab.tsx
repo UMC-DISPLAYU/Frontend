@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto, DisplayDetailDto } from '@/api/dto/display.dto';
 import LocationMapPlaceholder from '@/assets/displaydetailpage/LocationMapPlaceholder.svg';
+import LocationPinIcon from '@/assets/displaydetailpage/LocationPinIcon.svg';
 import { cn } from '@/utils/cn';
 
 type Props = {
@@ -186,11 +187,23 @@ export function IntroTab({ display: ex }: Props) {
         <section className="px-5 mt-6 flex flex-col items-start gap-3">
           <h2 className="typo-body-xl-bold text-main">위치안내</h2>
           <div className="w-full flex flex-col overflow-hidden rounded-[14px] border border-[#e5e7eb]">
-            <img
-              src={LocationMapPlaceholder}
-              alt="위치 지도"
-              className="h-[140px] w-full shrink-0 self-stretch bg-[#eceff2] object-cover"
-            />
+            <div className="relative h-[140px] w-full shrink-0 self-stretch">
+              <img
+                src={LocationMapPlaceholder}
+                alt="위치 지도"
+                className="h-full w-full bg-[#eceff2] object-cover"
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#111] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.10),0_4px_6px_-4px_rgba(0,0,0,0.10)]">
+                  <img src={LocationPinIcon} alt="" className="size-4" />
+                </span>
+                <span className="flex max-w-[179px] min-w-0 items-center justify-center rounded-[10px] border border-[#e5e7eb] bg-white pt-[9px] pr-[10.68px] pb-[8px] pl-[11px] shadow-[0_4px_6px_-1px_rgba(0,0,0,0.10),0_2px_4px_-2px_rgba(0,0,0,0.10)]">
+                  <span className="truncate text-[11px] font-semibold leading-[16.5px] text-[#111]">
+                    {ex.location.placeName}
+                  </span>
+                </span>
+              </div>
+            </div>
             <div className="flex items-center justify-between gap-3 shrink-0 bg-white px-4 py-3.5">
               <div className="flex flex-col gap-0.5 min-w-0">
                 <p className="text-[#111] text-sm font-semibold leading-[21px] break-words">

@@ -24,6 +24,7 @@ import {
   useCreateArtworkQuestion,
   useCreateArtworkQuestionReply,
   useDeleteArtworkQuestion,
+  useDeleteArtworkQuestionReply,
 } from '@/hooks/queries/useArtworkQuestions';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
@@ -64,6 +65,7 @@ export function ArtworkDetailPage() {
   const createFeeling = useCreateArtworkFeeling();
   const createQuestion = useCreateArtworkQuestion();
   const deleteQuestion = useDeleteArtworkQuestion();
+  const deleteQuestionReply = useDeleteArtworkQuestionReply();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
 
   /* 감상 답글 대상 — 라운지/전시상세와 동일한 패턴(공용 BottomCommentBar가 씀) */
@@ -139,6 +141,7 @@ export function ArtworkDetailPage() {
       canReply: question.canReply,
       likeCount: question.likeCount,
       createdAt: question.createdAt,
+      images: question.images,
       user: question.user
         ? {
             userId: question.user.userId ?? 0,
@@ -156,6 +159,7 @@ export function ArtworkDetailPage() {
             nickname: question.reply.nickname ?? question.reply.creatorName,
             creatorId: question.reply.creatorId,
             creatorName: question.reply.creatorName,
+            images: question.reply.images,
           }
         : null,
       /* 본인 질문이면 시점과 무관하게 수정·삭제할 수 있습니다. */
@@ -163,7 +167,15 @@ export function ArtworkDetailPage() {
     }));
 
   /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
-  const handleSendQuestion = ({ content, isPrivate }: { content: string; isPrivate: boolean }) => {
+  const handleSendQuestion = ({
+    content,
+    isPrivate,
+    images,
+  }: {
+    content: string;
+    isPrivate: boolean;
+    images?: { imageUrl: string; width?: number; height?: number }[];
+  }) => {
     if (!content) return;
 
     if (questionReplyTarget) {
@@ -174,7 +186,7 @@ export function ArtworkDetailPage() {
       }
 
       createQuestionReply.mutate(
-        { artworkId, questionId: questionReplyTarget.questionId, body: { content } },
+        { artworkId, questionId: questionReplyTarget.questionId, body: { content, images } },
         { onSuccess: () => setQuestionReplyTarget(null) },
       );
       return;
@@ -186,7 +198,7 @@ export function ArtworkDetailPage() {
     }
 
     createQuestion.mutate(
-      { artworkId, body: { content, isPublic: !isPrivate } },
+      { artworkId, body: { content, isPublic: !isPrivate, images } },
       { onSuccess: () => setIsComposingQuestion(false) },
     );
   };
@@ -293,6 +305,9 @@ export function ArtworkDetailPage() {
           onSubmitQuestion={handleSendQuestion}
           isSubmittingQuestion={createQuestion.isPending || createQuestionReply.isPending}
           onDeleteQuestion={(questionId) => deleteQuestion.mutate({ artworkId, questionId })}
+          onDeleteReply={(questionId, questionReplyId) =>
+            deleteQuestionReply.mutate({ artworkId, questionId, questionReplyId })
+          }
         />
       )}
 

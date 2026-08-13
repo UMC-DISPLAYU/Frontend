@@ -1,4 +1,5 @@
 import { ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { MyArtworkQuestionDto } from '@/api/dto';
 import { ErrorView, LoadingView } from '@/components/common';
@@ -7,9 +8,10 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 
 interface QuestionCardProps {
   question: MyArtworkQuestionDto;
+  onClick?: () => void;
 }
 
-function QuestionCard({ question }: QuestionCardProps) {
+function QuestionCard({ question, onClick }: QuestionCardProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -26,7 +28,12 @@ function QuestionCard({ question }: QuestionCardProps) {
   };
 
   return (
-    <article className="w-full rounded-lg bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+    <article
+      onClick={onClick}
+      className={`w-full rounded-lg bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] ${
+        onClick ? 'cursor-pointer hover:bg-box transition-colors' : ''
+      }`}
+    >
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <h3 className="typo-body-sm-semibold text-link">{question.artworkName}</h3>
@@ -43,6 +50,7 @@ function QuestionCard({ question }: QuestionCardProps) {
 }
 
 export function MyQuestionsPage() {
+  const navigate = useNavigate();
   const flowBack = useFlowBack();
   const { data, isLoading, isError } = useMyArtworkQuestions({ size: 10 });
 
@@ -64,9 +72,17 @@ export function MyQuestionsPage() {
           <ErrorView fullScreen={false} message="질문을 불러오는 데 실패했습니다." />
         ) : questions.length > 0 ? (
           <div className="flex flex-col gap-3.5">
-            {questions.map((question, i) => (
-              <QuestionCard key={i} question={question} />
-            ))}
+            {questions.map((question, i) => {
+              const handleNavigation = () => {
+                if (question.artworkId) {
+                  navigate(`/artwork/${question.artworkId}`);
+                } else if (question.personalArtworkId) {
+                  navigate(`/personal-artworks/${question.personalArtworkId}`);
+                }
+              };
+
+              return <QuestionCard key={i} question={question} onClick={handleNavigation} />;
+            })}
           </div>
         ) : (
           <ErrorView fullScreen={false} message="등록된 질문이 없습니다." />

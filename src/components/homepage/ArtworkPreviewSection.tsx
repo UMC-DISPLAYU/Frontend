@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import type { ArtworkPreviewItemDto } from '@/api/dto';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { SectionHeader } from '@/components/homepage/SectionHeader';
 
 type Props = {
@@ -36,13 +37,12 @@ export function ArtworkPreviewSection({ items, onMoreClick }: Props) {
             to={`/artwork/${item.artworkId}`}
             className="relative shrink-0 w-34 h-55 rounded-xl overflow-hidden bg-box200 cursor-pointer hover:opacity-90 active:scale-95 transition-all block focus:outline-none focus-visible:ring-2 focus-visible:ring-main"
           >
-            {item.artworkImageUrl && (
-              <img
-                src={item.artworkImageUrl}
-                alt={item.artworkName}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            )}
+            <OptimizedImage
+              src={item.artworkImageUrl}
+              displayWidth={136}
+              alt={item.artworkName}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/15 to-transparent" />
 
             <div className="absolute left-3 right-3 bottom-3">

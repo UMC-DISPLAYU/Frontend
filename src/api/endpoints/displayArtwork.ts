@@ -13,6 +13,7 @@ import type {
   CreateExhibitionArtworkRequestDto,
   CreateExhibitionArtworkResponseDataDto,
   DeleteArtworkFeelingReplyResponseDataDto,
+  DeleteArtworkQuestionReplyResponseDataDto,
   DeleteArtworkQuestionResponseDataDto,
   DeleteArtworkResponseDataDto,
   GetArtworkDetailResponseDataDto,
@@ -124,12 +125,29 @@ export const createArtworkQuestionReply = async (
     body,
   });
 
+// DELETE /v1/artworks/:artworkId/questions/:questionId/reply/:questionReplyId
+export const deleteArtworkQuestionReply = async (
+  artworkId: number,
+  questionId: number,
+  questionReplyId: number,
+): Promise<DeleteArtworkQuestionReplyResponseDataDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/questions/${questionId}/reply/${questionReplyId}`, {
+    method: 'DELETE',
+  });
+
 // POST /v1/artworks/:artworkId/feelings/:feelingId/like
-export const toggleArtworkFeelingLike = async (
+export const likeArtworkFeeling = async (
   artworkId: number,
   feelingId: number,
 ): Promise<ArtworkFeelingLikeDto | null> =>
   apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/like`, { method: 'POST' });
+
+// DELETE /v1/artworks/:artworkId/feelings/:feelingId/like
+export const unlikeArtworkFeeling = async (
+  artworkId: number,
+  feelingId: number,
+): Promise<ArtworkFeelingLikeDto | null> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/like`, { method: 'DELETE' });
 
 // GET /v1/artworks/:artworkId/feelings/:feelingId/replies
 export const getArtworkFeelingReplies = async (
@@ -182,13 +200,23 @@ export const deleteArtworkFeelingReply = async (
   });
 
 // POST /v1/artworks/:artworkId/feelings/:feelingId/reply/:feelingReplyId/like
-export const toggleArtworkFeelingReplyLike = async (
+export const likeArtworkFeelingReply = async (
   artworkId: number,
   feelingId: number,
   feelingReplyId: number,
 ): Promise<ArtworkFeelingReplyLikeDto> =>
   apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply/${feelingReplyId}/like`, {
     method: 'POST',
+  });
+
+// DELETE /v1/artworks/:artworkId/feelings/:feelingId/reply/:feelingReplyId/like
+export const unlikeArtworkFeelingReply = async (
+  artworkId: number,
+  feelingId: number,
+  feelingReplyId: number,
+): Promise<ArtworkFeelingReplyLikeDto> =>
+  apiRequest(`/v1/artworks/${artworkId}/feelings/${feelingId}/reply/${feelingReplyId}/like`, {
+    method: 'DELETE',
   });
 
 // POST /v1/artworks/:artworkId/like

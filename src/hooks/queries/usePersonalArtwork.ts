@@ -1,6 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { PersonalArtworkRequestDto, PersonalArtworkResponseDataDto } from '@/api/dto';
+import type {
+  GetPersonalArtworkFeelingsResponseDataDto,
+  GetPersonalArtworkQuestionReplyResponseDataDto,
+  GetPersonalArtworkQuestionsResponseDataDto,
+  PersonalArtworkFeelingImageRequestDto,
+  PersonalArtworkFeelingReplyListResponseDataDto,
+  PersonalArtworkRequestDto,
+  PersonalArtworkResponseDataDto,
+} from '@/api/dto';
 import {
   createPersonalArtwork,
   createPersonalArtworkFeeling,
@@ -19,11 +27,13 @@ import {
   getPersonalArtworkQuestions,
   getPersonalArtworks,
   likePersonalArtwork,
-  togglePersonalArtworkFeelingLike,
-  togglePersonalArtworkFeelingReplyLike,
+  likePersonalArtworkFeeling,
+  likePersonalArtworkFeelingReply,
   togglePersonalArtworkQuestionLike,
   togglePersonalArtworkQuestionReplyLike,
   unlikePersonalArtwork,
+  unlikePersonalArtworkFeeling,
+  unlikePersonalArtworkFeelingReply,
   updatePersonalArtwork,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -111,6 +121,12 @@ const useInvalidatePersonalArtworkGuestbook = (personalArtworkId: number) => {
     queryClient.invalidateQueries({
       queryKey: [...queryKeys.personalArtworks.detail(personalArtworkId), 'questions'],
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.artworkFeelings.all,
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.artworkQuestions.all,
+    });
   };
 };
 
@@ -131,6 +147,7 @@ export const usePersonalArtworkQuestions = (personalArtworkId: number) =>
 export const usePersonalArtworkFeelingReplies = (
   personalArtworkId: number,
   personalFeelingId: number,
+  enabled = true,
 ) =>
   useQuery({
     queryKey: [
@@ -141,6 +158,7 @@ export const usePersonalArtworkFeelingReplies = (
     ],
     queryFn: () => getPersonalArtworkFeelingReplies(personalArtworkId, personalFeelingId),
     enabled:
+      enabled &&
       Number.isFinite(personalArtworkId) &&
       personalArtworkId > 0 &&
       Number.isFinite(personalFeelingId) &&
@@ -170,7 +188,13 @@ export const useCreatePersonalArtworkFeeling = (personalArtworkId: number) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: (content: string) => createPersonalArtworkFeeling(personalArtworkId, { content }),
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) => createPersonalArtworkFeeling(personalArtworkId, { content, images }),
     onSuccess: invalidate,
   });
 };
@@ -186,12 +210,45 @@ export const useDeletePersonalArtworkFeeling = (personalArtworkId: number) => {
 };
 
 export const useTogglePersonalArtworkFeelingLike = (personalArtworkId: number) => {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
+  const queryKey = [...queryKeys.personalArtworks.detail(personalArtworkId), 'feelings'];
 
   return useMutation({
-    mutationFn: (personalFeelingId: number) =>
-      togglePersonalArtworkFeelingLike(personalArtworkId, personalFeelingId),
-    onSuccess: invalidate,
+    mutationFn: ({ personalFeelingId, liked }: { personalFeelingId: number; liked: boolean }) =>
+      liked
+        ? unlikePersonalArtworkFeeling(personalArtworkId, personalFeelingId)
+        : likePersonalArtworkFeeling(personalArtworkId, personalFeelingId),
+    onMutate: async ({ personalFeelingId }) => {
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousData =
+        queryClient.getQueryData<GetPersonalArtworkFeelingsResponseDataDto>(queryKey);
+
+      queryClient.setQueryData<GetPersonalArtworkFeelingsResponseDataDto>(queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          feelings: old.feelings.map((feeling) =>
+            feeling.personalFeelingId === personalFeelingId
+              ? {
+                  ...feeling,
+                  isLiked: !feeling.isLiked,
+                  likeCount: Math.max((feeling.likeCount ?? 0) + (feeling.isLiked ? -1 : 1), 0),
+                }
+              : feeling,
+          ),
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousData !== undefined) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: invalidate,
   });
 };
 
@@ -203,8 +260,17 @@ export const useCreatePersonalArtworkFeelingReply = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (content: string) =>
-      createPersonalArtworkFeelingReply(personalArtworkId, personalFeelingId, { content }),
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) =>
+      createPersonalArtworkFeelingReply(personalArtworkId, personalFeelingId, {
+        content,
+        images,
+      }),
     onSuccess: () => {
       invalidate();
       queryClient.invalidateQueries({
@@ -252,23 +318,62 @@ export const useTogglePersonalArtworkFeelingReplyLike = (
   personalFeelingId: number,
 ) => {
   const queryClient = useQueryClient();
+  const queryKey = [
+    ...queryKeys.personalArtworks.detail(personalArtworkId),
+    'feelings',
+    personalFeelingId,
+    'replies',
+  ];
 
   return useMutation({
-    mutationFn: (personalFeelingReplyId: number) =>
-      togglePersonalArtworkFeelingReplyLike(
-        personalArtworkId,
-        personalFeelingId,
-        personalFeelingReplyId,
-      ),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: [
-          ...queryKeys.personalArtworks.detail(personalArtworkId),
-          'feelings',
-          personalFeelingId,
-          'replies',
-        ],
-      }),
+    mutationFn: ({
+      personalFeelingReplyId,
+      liked,
+    }: {
+      personalFeelingReplyId: number;
+      liked: boolean;
+    }) =>
+      liked
+        ? unlikePersonalArtworkFeelingReply(
+            personalArtworkId,
+            personalFeelingId,
+            personalFeelingReplyId,
+          )
+        : likePersonalArtworkFeelingReply(
+            personalArtworkId,
+            personalFeelingId,
+            personalFeelingReplyId,
+          ),
+    onMutate: async ({ personalFeelingReplyId }) => {
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousData =
+        queryClient.getQueryData<PersonalArtworkFeelingReplyListResponseDataDto>(queryKey);
+
+      queryClient.setQueryData<PersonalArtworkFeelingReplyListResponseDataDto>(queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          replies: old.replies.map((reply) =>
+            reply.personalFeelingReplyId === personalFeelingReplyId
+              ? {
+                  ...reply,
+                  isLiked: !reply.isLiked,
+                  likeCount: Math.max((reply.likeCount ?? 0) + (reply.isLiked ? -1 : 1), 0),
+                }
+              : reply,
+          ),
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousData !== undefined) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
 };
 
@@ -276,8 +381,15 @@ export const useCreatePersonalArtworkQuestion = (personalArtworkId: number) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: ({ content, isPublic }: { content: string; isPublic: boolean }) =>
-      createPersonalArtworkQuestion(personalArtworkId, { content, isPublic }),
+    mutationFn: ({
+      content,
+      isPublic,
+      images,
+    }: {
+      content: string;
+      isPublic: boolean;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) => createPersonalArtworkQuestion(personalArtworkId, { content, isPublic, images }),
     onSuccess: invalidate,
   });
 };
@@ -293,12 +405,43 @@ export const useDeletePersonalArtworkQuestion = (personalArtworkId: number) => {
 };
 
 export const useTogglePersonalArtworkQuestionLike = (personalArtworkId: number) => {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
+  const queryKey = [...queryKeys.personalArtworks.detail(personalArtworkId), 'questions'];
 
   return useMutation({
     mutationFn: (personalQuestionId: number) =>
       togglePersonalArtworkQuestionLike(personalArtworkId, personalQuestionId),
-    onSuccess: invalidate,
+    onMutate: async (personalQuestionId) => {
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousData =
+        queryClient.getQueryData<GetPersonalArtworkQuestionsResponseDataDto>(queryKey);
+
+      queryClient.setQueryData<GetPersonalArtworkQuestionsResponseDataDto>(queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          questions: old.questions.map((question) =>
+            question.personalQuestionId === personalQuestionId
+              ? {
+                  ...question,
+                  isLiked: !question.isLiked,
+                  likeCount: Math.max((question.likeCount ?? 0) + (question.isLiked ? -1 : 1), 0),
+                }
+              : question,
+          ),
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousData !== undefined) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: invalidate,
   });
 };
 
@@ -307,22 +450,20 @@ export const useCreatePersonalArtworkQuestionReply = (
   personalQuestionId: number,
 ) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
-  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (content: string) =>
-      createPersonalArtworkQuestionReply(personalArtworkId, personalQuestionId, { content }),
-    onSuccess: () => {
-      invalidate();
-      queryClient.invalidateQueries({
-        queryKey: [
-          ...queryKeys.personalArtworks.detail(personalArtworkId),
-          'questions',
-          personalQuestionId,
-          'reply',
-        ],
-      });
-    },
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) =>
+      createPersonalArtworkQuestionReply(personalArtworkId, personalQuestionId, {
+        content,
+        images,
+      }),
+    onSuccess: invalidate,
   });
 };
 
@@ -359,6 +500,12 @@ export const useTogglePersonalArtworkQuestionReplyLike = (
   personalQuestionId: number,
 ) => {
   const queryClient = useQueryClient();
+  const queryKey = [
+    ...queryKeys.personalArtworks.detail(personalArtworkId),
+    'questions',
+    personalQuestionId,
+    'reply',
+  ];
 
   return useMutation({
     mutationFn: (personalQuestionReplyId: number) =>
@@ -367,14 +514,29 @@ export const useTogglePersonalArtworkQuestionReplyLike = (
         personalQuestionId,
         personalQuestionReplyId,
       ),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: [
-          ...queryKeys.personalArtworks.detail(personalArtworkId),
-          'questions',
-          personalQuestionId,
-          'reply',
-        ],
-      }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousData =
+        queryClient.getQueryData<GetPersonalArtworkQuestionReplyResponseDataDto>(queryKey);
+
+      queryClient.setQueryData<GetPersonalArtworkQuestionReplyResponseDataDto>(queryKey, (old) =>
+        old
+          ? {
+              ...old,
+              isLiked: !old.isLiked,
+              likeCount: Math.max((old.likeCount ?? 0) + (old.isLiked ? -1 : 1), 0),
+            }
+          : old,
+      );
+
+      return { previousData };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousData !== undefined) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
 };

@@ -23,16 +23,6 @@ export function formatFullDate(dateStr: string): string {
 }
 
 /**
- * '2026.09.22' 처럼 입력된 값에서 연도만 추출
- * 연도를 읽을 수 없으면 올해를 반환
- */
-export function toProductionYear(value: string): number {
-  const year = Number(value.slice(0, 4));
-
-  return Number.isFinite(year) && year > 0 ? year : new Date().getFullYear();
-}
-
-/**
  * 서버가 타임존 표시(Z 또는 +09:00 등) 없이 UTC 시각을 그대로 내려주는 경우를 보정한다.
  * 타임존 표시가 이미 있으면 손대지 않는다 — 서버가 나중에 정상적으로 Z를 붙여 보내도
  * 이중 보정 없이 그대로 안전하게 동작한다.

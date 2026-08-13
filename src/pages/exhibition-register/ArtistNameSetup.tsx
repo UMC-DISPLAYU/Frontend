@@ -11,8 +11,12 @@ import { useFlowContext } from '@/components/guards/useFlowContext';
 import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
+import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useUpdateMyDisplayNickname } from '@/hooks/queries/useMyDisplays';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/useUserStore';
 
 import { type ArtistNameSetupFormValues, artistNameSetupSchema } from './exhibitionRegister.schema';
 
@@ -22,6 +26,10 @@ interface SummaryRowProps {
 }
 
 type ExhibitionRegisterState = {
+  id?: string | number;
+  displayId?: number;
+  isOwner?: boolean;
+  isLeader?: boolean;
   imageUrls?: string[];
   title?: string;
   subtitle?: string;
@@ -31,7 +39,9 @@ type ExhibitionRegisterState = {
   school?: string;
   department?: string;
   organizer?: string;
+  org?: string;
   period?: string;
+  role?: string;
   startDate?: string | null;
   endDate?: string | null;
   startTime?: string | null;
@@ -43,6 +53,7 @@ type ExhibitionRegisterState = {
   contact?: string;
   notice?: string;
   artistName?: string;
+  displayNickname?: string;
 };
 
 const getRegion = (address: string): CreateDisplayRequestDto['region'] => {
@@ -78,7 +89,6 @@ const hasCompleteRegisterDraft = (draft: ExhibitionRegisterState) =>
     draft.endTime &&
     draft.placeName &&
     draft.address &&
-    draft.contact?.trim() &&
     draft.latitude !== null &&
     draft.latitude !== undefined &&
     draft.longitude !== null &&
@@ -100,47 +110,104 @@ export function ArtistNameSetup() {
   const { completeFlow } = useFlowContext();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
+  const userMe = useAuthStore((s) => s.user);
+  const userStoreUserId = useUserStore((s) => s.userId);
+  const myUserId = userMe?.id ?? userStoreUserId;
+  const userStoreName = useUserStore((s) => s.displayArtistName || s.artistName);
+
+  const createDisplay = useCreateDisplay();
+  const updateNickname = useUpdateMyDisplayNickname();
+
   const shouldUseDraft = hasDraft && hasCompleteRegisterDraft(draft);
   const registerState = {
     ...(state ?? {}),
     ...(shouldUseDraft ? draft : {}),
   } as ExhibitionRegisterState;
-  const createDisplay = useCreateDisplay();
+
+  const isEditMode = Boolean(registerState.displayId || registerState.id) && !shouldUseDraft;
+  const displayId = Number(registerState.displayId || registerState.id || 0);
+
+  const { data: membersData } = useDisplayMembers(isEditMode ? displayId : 0);
+
+  const currentMember = membersData?.members?.find((m) =>
+    myUserId ? m.userId === myUserId : m.loggedIn === true,
+  );
+  const fetchedMemberNickname = currentMember?.displayNickname;
+
+  const isLeader = registerState.isLeader ?? registerState.isOwner ?? true;
+  const roleLabel = registerState.role ?? (isLeader ? '대표자' : '팀원');
 
   const info = {
     title: registerState.title ?? '',
-    org: registerState.school || registerState.organizer || '',
+    org:
+      registerState.org ||
+      [registerState.school, registerState.department || registerState.organizer]
+        .filter(Boolean)
+        .join(' ') ||
+      '',
     period:
       shouldUseDraft && draft.startDate && draft.endDate
         ? formatPeriodLabel(draft.startDate, draft.endDate)
         : (registerState.period ?? ''),
-    role: '대표자',
+    role: roleLabel,
   };
+
+  const initialArtistName =
+    fetchedMemberNickname ||
+    registerState.artistName ||
+    registerState.displayNickname ||
+    userStoreName ||
+    '';
 
   const {
     register,
     handleSubmit,
     control,
     getValues,
+    setValue,
     formState: { errors, isValid },
   } = useForm<ArtistNameSetupFormValues>({
     resolver: zodResolver(artistNameSetupSchema),
     mode: 'onChange',
     defaultValues: {
-      artistName: registerState.artistName ?? '',
+      artistName: initialArtistName,
     },
   });
   const artistName = useWatch({ control, name: 'artistName' }) ?? '';
 
+  useEffect(() => {
+    if (initialArtistName) {
+      setValue('artistName', initialArtistName, { shouldValidate: true });
+    }
+  }, [initialArtistName, setValue]);
+
   const saveCurrentDraft = () => {
-    updateDraft({ artistName: getValues('artistName') });
+    if (!isEditMode) {
+      updateDraft({ artistName: getValues('artistName') });
+    }
   };
 
   useEffect(() => {
-    updateDraft({ artistName });
-  }, [artistName, updateDraft]);
+    if (!isEditMode) {
+      updateDraft({ artistName });
+    }
+  }, [artistName, updateDraft, isEditMode]);
 
-  const goCreate = (data: ArtistNameSetupFormValues) => {
+  const onSubmit = (data: ArtistNameSetupFormValues) => {
+    const displayNickname = data.artistName.trim();
+
+    if (isEditMode) {
+      updateNickname.mutate(
+        { displayId, displayNickname },
+        {
+          onSuccess: () => {
+            navigate('/my/exhibitions');
+          },
+        },
+      );
+      return;
+    }
+
     const type = registerState.type ? DISPLAY_TYPE_MAP[registerState.type] : undefined;
     const posterImageUrl = registerState.imageUrls?.[0];
 
@@ -154,7 +221,6 @@ export function ArtistNameSetup() {
       !registerState.endTime ||
       !registerState.placeName ||
       !registerState.address ||
-      !registerState.contact?.trim() ||
       registerState.latitude === null ||
       registerState.latitude === undefined ||
       registerState.longitude === null ||
@@ -178,7 +244,7 @@ export function ArtistNameSetup() {
       latitude: registerState.latitude,
       longitude: registerState.longitude,
       roadAddress: registerState.address.trim(),
-      displayNickname: data.artistName.trim(),
+      displayNickname,
       qnaAccount: (registerState.contact ?? '').trim(),
       schoolOrOrganization: optionalText(registerState.school || registerState.organizer) ?? '',
       departmentOrClub: optionalText(registerState.department),
@@ -199,7 +265,7 @@ export function ArtistNameSetup() {
         navigate(`/exhibition/${display.displayId}/manage`, {
           state: {
             ...registerState,
-            artistName: data.artistName.trim(),
+            artistName: displayNickname,
             completedFlowBackIndex,
             displayId: display.displayId,
             posterImageUrl,
@@ -209,10 +275,12 @@ export function ArtistNameSetup() {
     });
   };
 
+  const isPending = createDisplay.isPending || updateNickname.isPending;
+
   return (
     <div className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page">
       <ExhibitionHeader
-        title="전시 작가명 설정"
+        title={isEditMode ? '전시 작가명 수정' : '전시 작가명 설정'}
         onBack={() => {
           saveCurrentDraft();
           flowBack();
@@ -222,7 +290,7 @@ export function ArtistNameSetup() {
       <main className="flex min-h-0 flex-1 overflow-hidden px-5">
         <form
           id="artist-name-setup-form"
-          onSubmit={handleSubmit(goCreate)}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex h-full flex-col gap-5"
         >
           {/* 안내 문구 */}
@@ -280,12 +348,14 @@ export function ArtistNameSetup() {
         </form>
       </main>
 
-      <BottomButton
-        form="artist-name-setup-form"
-        type="submit"
-        disabled={!isValid || createDisplay.isPending}
-      >
-        {createDisplay.isPending ? '전시 등록 중' : '전시 관리 페이지 만들기'}
+      <BottomButton form="artist-name-setup-form" type="submit" disabled={!isValid || isPending}>
+        {isPending
+          ? isEditMode
+            ? '수정 중'
+            : '전시 등록 중'
+          : isEditMode
+            ? '수정 완료'
+            : '전시 관리 페이지 만들기'}
       </BottomButton>
     </div>
   );

@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import { BottomFixedBar, ImageUploader } from '@/components/common';
@@ -13,8 +15,14 @@ import {
 import { useCreatePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { usePersonalArtworkPolicy } from '@/hooks/usePolicy';
-import { toProductionYear } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
+
+import {
+  type PersonalArtworkRegisterFormValues,
+  personalArtworkRegisterSchema,
+  sanitizePersonalArtworkYearInput,
+  toPersonalArtworkProductionYear,
+} from './personalArtworksRegister.schema';
 
 const INPUT_CLASS =
   'w-full px-3 py-2.5 bg-transparent border-b border-input-border typo-body-xs-regular text-main placeholder:text-input-placeholder outline-none';
@@ -39,29 +47,68 @@ export function PersonalArtworksRegister() {
     removeImage: removeProcessImage,
   } = processUpload;
   const [title, setTitle] = useState('');
+  const [isTitleTouched, setIsTitleTouched] = useState(false);
   const [intro, setIntro] = useState('');
   const [field, setField] = useState<string>('회화');
   const [year, setYear] = useState('');
+  const [isYearTouched, setIsYearTouched] = useState(false);
   const [material, setMaterial] = useState('');
+  const [isMaterialTouched, setIsMaterialTouched] = useState(false);
   const [size, setSize] = useState('');
   const [thoughts, setThoughts] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const {
+    formState: { errors },
+    register,
+    setValue,
+    trigger,
+  } = useForm<PersonalArtworkRegisterFormValues>({
+    resolver: zodResolver(personalArtworkRegisterSchema),
+    mode: 'onChange',
+    defaultValues: {
+      artworkImageCount: images.length,
+      title,
+      intro,
+      field,
+      year,
+      material,
+      size,
+      thoughts,
+    },
+  });
 
   const createPersonalArtwork = useCreatePersonalArtwork();
   /* 이미지 업로드는 mutation 시작 전에 실행되므로 제출 전 구간까지 함께 잠급니다. */
   const [isUploading, setIsUploading] = useState(false);
   const isSubmitting = isUploading || createPersonalArtwork.isPending;
 
+  const formValue = {
+    artworkImageCount: images.length,
+    title,
+    intro,
+    field,
+    year,
+    material,
+    size,
+    thoughts,
+  };
   const isFormValid =
-    canCreatePersonalArtwork &&
-    images.length > 0 &&
-    title.trim() !== '' &&
-    year.trim() !== '' &&
-    material.trim() !== '';
+    canCreatePersonalArtwork && personalArtworkRegisterSchema.safeParse(formValue).success;
+  const formError = personalArtworkRegisterSchema.safeParse(formValue).error;
+  const getFormError = (fieldName: keyof PersonalArtworkRegisterFormValues) =>
+    formError?.issues.find((issue) => issue.path[0] === fieldName)?.message;
+  const titleError = isTitleTouched ? getFormError('title') : undefined;
+  const yearError = isYearTouched ? getFormError('year') : undefined;
+  const materialError = isMaterialTouched ? getFormError('material') : undefined;
+
+  useEffect(() => {
+    register('year');
+  }, [register]);
 
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
-    if (!isFormValid || isSubmitting) return;
+    const parsed = personalArtworkRegisterSchema.safeParse(formValue);
+    if (!canCreatePersonalArtwork || !parsed.success || isSubmitting) return;
 
     setSubmitError(null);
 
@@ -100,7 +147,7 @@ export function PersonalArtworksRegister() {
         artworkName: title.trim(),
         content: intro.trim(),
         type: ARTWORK_FIELD_MAP[field] ?? ARTWORK_FIELD_MAP['기타'],
-        productionYear: toProductionYear(year),
+        productionYear: toPersonalArtworkProductionYear(year),
         materialMedia: material.trim(),
         size: size.trim(),
         point: thoughts.trim(),
@@ -144,10 +191,24 @@ export function PersonalArtworksRegister() {
             <input
               id="artwork-title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => setIsTitleTouched(true)}
+              onChange={(e) => {
+                setIsTitleTouched(true);
+                setValue('title', e.target.value, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+                setTitle(e.target.value);
+              }}
               placeholder="작품명을 입력해주세요"
               className={INPUT_CLASS}
             />
+            {(titleError ?? errors.title?.message) && (
+              <p className="typo-body-xxs-regular text-error px-2">
+                {titleError ?? errors.title?.message}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
@@ -186,11 +247,32 @@ export function PersonalArtworksRegister() {
             <input
               id="artwork-year"
               value={year}
+              inputMode="numeric"
               maxLength={4}
-              onChange={(e) => setYear(e.target.value)}
-              placeholder="YYYY"
+              onBlur={() => {
+                setIsYearTouched(true);
+                setValue('year', year, { shouldTouch: true, shouldValidate: true });
+                void trigger('year');
+              }}
+              onChange={(e) => {
+                const nextYear = sanitizePersonalArtworkYearInput(e.target.value);
+                setIsYearTouched(true);
+                setValue('year', nextYear, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+                void trigger('year');
+                setYear(nextYear);
+              }}
+              placeholder="2026"
               className={INPUT_CLASS}
             />
+            {(yearError ?? errors.year?.message) && (
+              <p className="typo-body-xxs-regular text-error px-2">
+                {yearError ?? errors.year?.message}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
@@ -200,10 +282,24 @@ export function PersonalArtworksRegister() {
             <input
               id="artwork-material"
               value={material}
-              onChange={(e) => setMaterial(e.target.value)}
+              onBlur={() => setIsMaterialTouched(true)}
+              onChange={(e) => {
+                setIsMaterialTouched(true);
+                setValue('material', e.target.value, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+                setMaterial(e.target.value);
+              }}
               placeholder="아크릴, 캔버스"
               className={INPUT_CLASS}
             />
+            {(materialError ?? errors.material?.message) && (
+              <p className="typo-body-xxs-regular text-error px-2">
+                {materialError ?? errors.material?.message}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">

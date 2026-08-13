@@ -64,7 +64,7 @@ function PolicyContent({ content }: { content: string }) {
 function PolicyDetail({ agreement, onBack }: { agreement: AgreementDto; onBack: () => void }) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
-      <header className="mt-14.5 flex items-center gap-3 px-5 pb-3 pt-4">
+      <header className="flex items-center gap-3 px-5 pt-4 pb-6">
         <button type="button" onClick={onBack} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
@@ -97,7 +97,7 @@ export function PolicyPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       {/* Header */}
-      <header className="mt-14.5 flex items-center gap-3 px-5 pb-3 pt-4">
+      <header className="flex items-center gap-3 px-5 pt-4 pb-6">
         <button type="button" onClick={() => flowBack()} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>

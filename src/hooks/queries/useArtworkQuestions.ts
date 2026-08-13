@@ -8,6 +8,7 @@ import {
   createArtworkQuestion,
   createArtworkQuestionReply,
   deleteArtworkQuestion,
+  deleteArtworkQuestionReply,
   getArtworkQuestions,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -37,6 +38,9 @@ export const useCreateArtworkQuestion = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkQuestions.all,
+      });
     },
   });
 };
@@ -47,6 +51,30 @@ export const useDeleteArtworkQuestion = () => {
   return useMutation({
     mutationFn: ({ artworkId, questionId }: { artworkId: number; questionId: number }) =>
       deleteArtworkQuestion(artworkId, questionId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkQuestions.all,
+      });
+    },
+  });
+};
+
+export const useDeleteArtworkQuestionReply = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      artworkId,
+      questionId,
+      questionReplyId,
+    }: {
+      artworkId: number;
+      questionId: number;
+      questionReplyId: number;
+    }) => deleteArtworkQuestionReply(artworkId, questionId, questionReplyId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
