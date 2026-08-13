@@ -5,7 +5,7 @@
 대학생의 전시 경험을 하나로 연결하는 플랫폼
 **DisplayU의 프론트엔드 웹입니다.**
 
-[서비스 바로가기](https://www.displayu.co.kr) · [Wiki](https://github.com/UMC-DISPLAYU/Frontend/wiki) · [Backend](https://github.com/UMC-DISPLAYU/Backend)
+[서비스 바로가기](https://www.displayu.co.kr) · [Backend](https://github.com/UMC-DISPLAYU/Backend)
 
 ## ✨ DisplayU
 
