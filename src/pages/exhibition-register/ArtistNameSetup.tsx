@@ -10,6 +10,7 @@ import { BottomButton } from '@/components/common';
 import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
+import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUpdateMyDisplayNickname } from '@/hooks/queries/useMyDisplays';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 import { useAuthStore } from '@/stores/authStore';
@@ -107,6 +108,8 @@ export function ArtistNameSetup() {
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
   const userMe = useAuthStore((s) => s.user);
+  const userStoreUserId = useUserStore((s) => s.userId);
+  const myUserId = userMe?.id ?? userStoreUserId;
   const userStoreName = useUserStore((s) => s.displayArtistName || s.artistName);
 
   const createDisplay = useCreateDisplay();
@@ -119,6 +122,14 @@ export function ArtistNameSetup() {
   } as ExhibitionRegisterState;
 
   const isEditMode = Boolean(registerState.displayId || registerState.id) && !shouldUseDraft;
+  const displayId = Number(registerState.displayId || registerState.id || 0);
+
+  const { data: membersData } = useDisplayMembers(isEditMode ? displayId : 0);
+
+  const currentMember = membersData?.members?.find((m) =>
+    myUserId ? m.userId === myUserId : m.loggedIn === true,
+  );
+  const fetchedMemberNickname = currentMember?.displayNickname;
 
   const isLeader = registerState.isLeader ?? registerState.isOwner ?? true;
   const roleLabel = registerState.role ?? (isLeader ? '대표자' : '팀원');
@@ -139,7 +150,11 @@ export function ArtistNameSetup() {
   };
 
   const initialArtistName =
-    registerState.artistName ?? registerState.displayNickname ?? (userStoreName || '');
+    fetchedMemberNickname ||
+    registerState.artistName ||
+    registerState.displayNickname ||
+    userStoreName ||
+    '';
 
   const {
     register,
@@ -158,10 +173,10 @@ export function ArtistNameSetup() {
   const artistName = useWatch({ control, name: 'artistName' }) ?? '';
 
   useEffect(() => {
-    if (initialArtistName && !getValues('artistName')) {
+    if (initialArtistName) {
       setValue('artistName', initialArtistName, { shouldValidate: true });
     }
-  }, [initialArtistName, getValues, setValue]);
+  }, [initialArtistName, setValue]);
 
   const saveCurrentDraft = () => {
     if (!isEditMode) {
@@ -179,11 +194,14 @@ export function ArtistNameSetup() {
     const displayNickname = data.artistName.trim();
 
     if (isEditMode) {
-      updateNickname.mutate(displayNickname, {
-        onSuccess: () => {
-          navigate('/my/exhibitions');
+      updateNickname.mutate(
+        { displayId, displayNickname },
+        {
+          onSuccess: () => {
+            navigate('/my/exhibitions');
+          },
         },
-      });
+      );
       return;
     }
 

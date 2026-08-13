@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { ArtistDisplayDto } from '@/api/dto';
+import type { ArtistDisplayDto, UpdateMyDisplayNicknameRequestDto } from '@/api/dto';
 import {
   deleteDisplay,
   getArtistDisplays,
@@ -76,9 +76,12 @@ export const useUpdateMyDisplayNickname = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (nickname: string) => updateMyDisplayNickname({ nickname }),
-    onSuccess: () => {
+    mutationFn: (body: UpdateMyDisplayNicknameRequestDto) => updateMyDisplayNickname(body),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.displayMembers.byDisplayId(variables.displayId),
+      });
     },
   });
 };

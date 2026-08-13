@@ -202,6 +202,8 @@ export interface DisplayTeamMemberDto {
   displayNickname: string;
   role: string;
   accepted: boolean;
+  loggedIn?: boolean;
+  artistVerified?: boolean;
 }
 
 export interface DisplayInvitationDto {
@@ -470,6 +472,11 @@ export interface MyDisplayDto {
 export interface GetMyDisplaysResponseDataDto {
   createdDisplays: MyDisplayDto[];
   participatedDisplays: MyDisplayDto[];
+}
+
+export interface UpdateMyDisplayNicknameRequestDto {
+  displayId: number;
+  displayNickname: string;
 }
 
 export type ArtistDisplayDto = MyDisplayDto;

@@ -1,3 +1,6 @@
+import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/useUserStore';
 import type { ExhibitionItem } from '@/types/mypage';
 
 export function ExhibitionMeta({
@@ -7,7 +10,22 @@ export function ExhibitionMeta({
   ex: ExhibitionItem;
   showBadge?: boolean;
 }) {
-  const roleLabel = ex.isLeader === true ? '대표자' : ex.isLeader === false ? '팀원' : null;
+  const userMe = useAuthStore((s) => s.user);
+  const userStoreUserId = useUserStore((s) => s.userId);
+  const myUserId = userMe?.id ?? userStoreUserId;
+
+  const displayId = ex.displayId || Number(ex.id) || 0;
+  const { data: membersData } = useDisplayMembers(showBadge && displayId > 0 ? displayId : 0);
+
+  const currentMember = membersData?.members?.find((m) =>
+    myUserId ? m.userId === myUserId : m.loggedIn === true,
+  );
+
+  const artistName = ex.artistName || currentMember?.displayNickname;
+
+  const roleBase = ex.isLeader === true ? '대표자' : ex.isLeader === false ? '팀원' : null;
+  const roleLabel = roleBase ? (artistName ? `${roleBase}(${artistName})` : roleBase) : null;
+
   const statusLabel =
     ex.publishStatus === 'PUBLISHED'
       ? '등록완료'
