@@ -17,15 +17,21 @@ type Props = {
 };
 
 export function ArtworkPreviewMoreView({ onClose }: Props) {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // 카테고리 칩 선택 값에 해당하는 API 파라미터 값 추출
-  const apiType = selectedCategory
-    ? CATEGORY_OPTIONS.find((opt) => opt.label === selectedCategory)?.value || undefined
-    : 'RECOMMEND';
+  // 카테고리 칩 선택 값들에 해당하는 API 파라미터 값 추출 (콤마로 구분된 문자열)
+  const selectedFieldValue =
+    selectedCategories.length > 0
+      ? selectedCategories
+          .map((label) => CATEGORY_OPTIONS.find((opt) => opt.label === label)?.value)
+          .filter((val): val is string => Boolean(val))
+          .join(',')
+      : undefined;
+
+  const queryParams = selectedFieldValue ? { field: selectedFieldValue } : { type: 'RECOMMEND' };
 
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isPending, isError } =
-    useInfiniteArtworkPreview({ type: apiType });
+    useInfiniteArtworkPreview(queryParams);
 
   const artworks = data?.pages.flatMap((page) => page.artworks) ?? [];
 
@@ -40,19 +46,21 @@ export function ArtworkPreviewMoreView({ onClose }: Props) {
     window.scrollTo(0, 0);
   }, []);
 
-  // 카테고리 단일 선택 토글 핸들러
+  // 카테고리 다중 선택 토글 핸들러
   const handleToggleCategory = (label: string) => {
-    setSelectedCategory((prev) => (prev === label ? null : label));
+    setSelectedCategories((prev) =>
+      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label],
+    );
   };
 
-  // 개별 카테고리 삭제
-  const handleRemoveCategory = () => {
-    setSelectedCategory(null);
+  // 개별 카테고리 태그 삭제
+  const handleRemoveCategory = (label: string) => {
+    setSelectedCategories((prev) => prev.filter((item) => item !== label));
   };
 
   // 전체 선택 해제 (초기화)
   const handleResetCategories = () => {
-    setSelectedCategory(null);
+    setSelectedCategories([]);
   };
 
   return (
@@ -80,7 +88,7 @@ export function ArtworkPreviewMoreView({ onClose }: Props) {
         {/* 칩 스크롤 영역 */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-none select-none">
           {CATEGORY_OPTIONS.map((opt) => {
-            const isSelected = selectedCategory === opt.label;
+            const isSelected = selectedCategories.includes(opt.label);
             return (
               <button
                 key={opt.label}
@@ -107,19 +115,22 @@ export function ArtworkPreviewMoreView({ onClose }: Props) {
         </div>
 
         {/* 선택된 필터 태그 & 초기화 버튼 */}
-        {selectedCategory && (
+        {selectedCategories.length > 0 && (
           <div className="w-full flex justify-between items-center select-none">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <button
-                type="button"
-                onClick={handleRemoveCategory}
-                className="flex items-center gap-1 cursor-pointer group"
-              >
-                <span className="typo-body-xs-regular text-sub700 group-hover:text-main">
-                  {selectedCategory}
-                </span>
-                <X className="size-3 text-sub700 group-hover:text-main" />
-              </button>
+              {selectedCategories.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleRemoveCategory(label)}
+                  className="flex items-center gap-1 cursor-pointer group"
+                >
+                  <span className="typo-body-xs-regular text-sub700 group-hover:text-main">
+                    {label}
+                  </span>
+                  <X className="size-3 text-sub700 group-hover:text-main" />
+                </button>
+              ))}
             </div>
 
             <button
