@@ -22,14 +22,22 @@ export function formatFullDate(dateStr: string): string {
   return `${year}.${month}.${day}`;
 }
 
+export function sanitizeProductionYearInput(value: string): string {
+  return value.replace(/\D/g, '').slice(0, 4);
+}
+
+export function isProductionYearValid(value: string): boolean {
+  if (!/^\d{4}$/.test(value)) return false;
+
+  const year = Number(value);
+  return year >= 1000 && year < 9999;
+}
+
 /**
- * '2026.09.22' 처럼 입력된 값에서 연도만 추출
- * 연도를 읽을 수 없으면 올해를 반환
+ * 제작연도 입력값을 숫자로 변환합니다. 호출 전 isProductionYearValid로 검증해야 합니다.
  */
 export function toProductionYear(value: string): number {
-  const year = Number(value.slice(0, 4));
-
-  return Number.isFinite(year) && year > 0 ? year : new Date().getFullYear();
+  return Number(value);
 }
 
 /**

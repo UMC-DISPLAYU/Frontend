@@ -5,6 +5,7 @@ import { ARTWORK_FIELD_MAP } from '@/constants';
 import { MAX_ARTWORK_PROGRESS_IMAGES, MAX_ARTWORK_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { ImageUploadItem } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
+import { isProductionYearValid, sanitizeProductionYearInput } from '@/utils/date';
 
 import { UnderlineTextarea } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
@@ -63,7 +64,7 @@ function RegisterArtworkPage({
   const isNextEnabled =
     title.trim().length > 0 &&
     field.trim().length > 0 &&
-    year.trim().length > 0 &&
+    isProductionYearValid(year) &&
     medium.trim().length > 0;
 
   return (
@@ -141,8 +142,10 @@ function RegisterArtworkPage({
             <input
               id="artwork-year"
               value={year}
-              onChange={(e) => onChangeYear(e.target.value)}
-              placeholder="2026.09.22"
+              inputMode="numeric"
+              maxLength={4}
+              onChange={(e) => onChangeYear(sanitizeProductionYearInput(e.target.value))}
+              placeholder="2026"
               className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
             />
           </section>
