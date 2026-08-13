@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -92,16 +92,67 @@ interface RejectModalProps {
 }
 
 function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
+  const descriptionId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    cancelButtonRef.current?.focus();
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40">
-      <div className="relative w-80 h-48 bg-neutral-50/40 rounded-[20px] shadow-[inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px] overflow-hidden">
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-label="초대 거절"
+      aria-describedby={descriptionId}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40"
+    >
+      <div
+        ref={dialogRef}
+        className="relative w-80 h-48 bg-neutral-50/40 rounded-[20px] shadow-[inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px] overflow-hidden"
+      >
         <div className="absolute inset-x-6 top-6 flex flex-col items-center gap-2">
           <h3 className="w-full text-center typo-body-xl-bold text-modal-title">
             초대를 거절할까요?
           </h3>
-          <p className="w-full text-center typo-body-sm-regular text-modal-desc">
+          <p id={descriptionId} className="w-full text-center typo-body-sm-regular text-modal-desc">
             거절하면 이 전시의 팀원으로 참여할 수 없어요.
             <br />
             다시 참여하려면 대표자가 다시 초대해야 해요.
@@ -116,6 +167,7 @@ function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
             <span className="typo-body-lg-regular text-modal-btn-hover-fg">확인</span>
           </button>
           <button
+            ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
             className="w-34 h-11 bg-modal-btn-bg rounded-full flex justify-center items-center gap-2.5"
