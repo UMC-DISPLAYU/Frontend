@@ -22,6 +22,7 @@ interface RegisterArtworkPageProps {
   artworkImages: ImageUploadItem[];
   processImages: ImageUploadItem[];
   canProceed: boolean;
+  yearError?: string;
   onBack: () => void;
   onChangeTitle: (value: string) => void;
   onChangeDescription: (value: string) => void;
@@ -49,6 +50,7 @@ function RegisterArtworkPage({
   artworkImages,
   processImages,
   canProceed,
+  yearError,
   onBack,
   onChangeTitle,
   onChangeDescription,
@@ -144,6 +146,7 @@ function RegisterArtworkPage({
               placeholder="2026"
               className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
             />
+            {yearError && <p className="typo-body-xxs-regular text-error px-2">{yearError}</p>}
           </section>
 
           <section className="min-w-0 flex flex-col gap-3">

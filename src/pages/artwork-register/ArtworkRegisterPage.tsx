@@ -113,6 +113,7 @@ function ArtworkRegisterPageContent() {
   const [medium, setMediumState] = useState(draft.medium);
   const [size, setSizeState] = useState(draft.size);
   const [point, setPointState] = useState(draft.point);
+  const [touchedFields, setTouchedFields] = useState({ year: false });
   /* userId가 있으면 디유 계정이 연결된 팀원, 없으면 직접 이름을 입력한 작가입니다. */
   const [collaborators, setCollaboratorsState] = useState<
     { id: string; name: string; account: string; userId?: number }[]
@@ -130,6 +131,11 @@ function ArtworkRegisterPageContent() {
     thoughts: point,
   };
   const canProceedBasic = artworkRegisterSchema.safeParse(basicFormValue).success;
+  const yearError = touchedFields.year
+    ? artworkRegisterSchema
+        .safeParse(basicFormValue)
+        .error?.issues.find((issue) => issue.path[0] === 'year')?.message
+    : undefined;
 
   const setStep = useCallback(
     (nextStep: RegisterStep, options: { replace?: boolean } = {}) => {
@@ -214,6 +220,7 @@ function ArtworkRegisterPageContent() {
 
   const setYear = useCallback(
     (value: string) => {
+      setTouchedFields((prev) => ({ ...prev, year: true }));
       setYearState(value);
       updateDraft({ year: value });
     },
@@ -870,6 +877,7 @@ function ArtworkRegisterPageContent() {
           artworkImages={artworkImages}
           processImages={processImages}
           canProceed={canProceedBasic}
+          yearError={yearError}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}
