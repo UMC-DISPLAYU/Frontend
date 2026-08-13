@@ -115,13 +115,14 @@ export function MyPage() {
 
   const { data: userData, isLoading: isUserLoading, error: userError } = useUserMe();
   const { handleShare: shareUtil } = useShare();
+  const isVerified = userData?.isVerified;
 
   // 작가 인증 상태가 실제로 바뀐 시점에만 뷰를 동기화 (수동으로 전환한 뷰를 리마운트 시 덮어쓰지 않기 위함)
   useEffect(() => {
-    if (userData) {
-      syncArtistViewWithVerification(userData.isVerified);
+    if (isVerified !== undefined) {
+      syncArtistViewWithVerification(isVerified);
     }
-  }, [userData?.isVerified, syncArtistViewWithVerification]);
+  }, [isVerified, syncArtistViewWithVerification]);
   const archivedExhibitionsQuery = useArchivedExhibitions();
   const archivedArtworksQuery = useInfiniteArchivedArtworks({ size: 20 });
   const archivedArtistsQuery = useArchivedArtists();

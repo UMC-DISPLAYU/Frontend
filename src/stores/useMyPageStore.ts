@@ -44,9 +44,14 @@ export const useMyPageStore = create<MyPageStore>((set) => ({
       if (state.lastSyncedIsVerified === isVerified) {
         return state;
       }
+      // 작가 뷰에는 'artist' 탭이 없으므로(MyPageHeader), 전환 시 다른 탭으로 되돌립니다.
+      const newActiveTab =
+        isVerified && state.activeTab === 'artist' ? 'exhibition' : state.activeTab;
+
       return {
         isArtistView: isVerified,
         lastSyncedIsVerified: isVerified,
+        activeTab: newActiveTab,
       };
     }),
 }));
