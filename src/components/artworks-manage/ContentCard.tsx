@@ -1,5 +1,6 @@
 import { MoreHorizontal } from 'lucide-react';
 
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import type { Content } from '@/types';
 import { cn } from '@/utils/cn';
@@ -9,7 +10,7 @@ function Thumbnail({ src }: { src?: string }) {
   return (
     <div className="size-20 shrink-0 overflow-hidden rounded-xl bg-box200">
       {src ? (
-        <img src={src} alt="" className="size-full object-cover" />
+        <OptimizedImage src={src} displayWidth={80} alt="" className="size-full object-cover" />
       ) : (
         <div className="grid size-full place-items-center bg-box200 p-3">
           <img src={FALLBACK_POSTER_IMAGE} alt="" className="w-full opacity-40" />
