@@ -346,14 +346,22 @@ export const displayHandlers = [
   ),
   ...paths('/api/v1/display/search').map((path) =>
     http.get(path, ({ request }) => {
-      const keyword = new URL(request.url).searchParams.get('searchWord') ?? '';
+      const searchParams = new URL(request.url).searchParams;
+      const keyword = searchParams.get('searchWord') ?? '';
+      const cursor = Number(searchParams.get('cursor') ?? 0);
+      const size = Number(searchParams.get('size') ?? 20);
       const exhibitions = listDisplays().filter(
         (display: any) => !keyword || display.title.includes(keyword),
       );
+      const nextCursor = cursor + size;
 
       return success('/api/v1/display/search', {
-        exhibitions,
-        pagination: { nextCursor: null, size: exhibitions.length, hasNext: false },
+        exhibitions: exhibitions.slice(cursor, nextCursor),
+        pagination: {
+          nextCursor: nextCursor < exhibitions.length ? nextCursor : null,
+          size,
+          hasNext: nextCursor < exhibitions.length,
+        },
       });
     }),
   ),

@@ -8,6 +8,7 @@ import filterIcon from '@/assets/search/filter.svg';
 import filterSelectedDotIcon from '@/assets/search/filter-selected-dot.svg';
 import { LoadingView } from '@/components/common';
 import { getFilterOptionValues } from '@/components/search/filter/filterOptions';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import {
   DEFAULT_FILTER_STATE,
@@ -21,14 +22,13 @@ import {
   type FilterState,
   type FilterTab,
 } from '../components/search';
-import { useSearchDisplays } from '../hooks/queries/useDisplayBrowse';
+import { useInfiniteSearchDisplays } from '../hooks/queries/useDisplayBrowse';
 import { type NearbyParams, useNearbyDisplays } from '../hooks/useNearbyDisplays';
 
 type ExploreTab = 'list' | 'map';
 
 const createSearchDisplayParams = (query: string, filters: FilterState) => {
-  const params: SearchDisplaysRequestDto = {
-    cursor: 0,
+  const params: Omit<SearchDisplaysRequestDto, 'cursor'> = {
     searchWord: query.trim() || null,
     size: 20,
   };
@@ -129,8 +129,15 @@ export function SearchPage() {
     [query, filters],
   );
 
-  const { data, isError, isLoading } = useSearchDisplays(searchDisplayParams);
-  const exhibitions = data?.exhibitions ?? [];
+  const { data, fetchNextPage, hasNextPage, isError, isFetchingNextPage, isLoading } =
+    useInfiniteSearchDisplays(searchDisplayParams);
+  const exhibitions = data?.pages.flatMap((page) => page.exhibitions) ?? [];
+  const triggerRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    rootMargin: '160px',
+  });
 
   const nearbyParamsWithSearch = useMemo(
     () => (nearbyParams ? { ...nearbyParams, searchWord: query.trim() || null } : null),
@@ -277,10 +284,16 @@ export function SearchPage() {
                 <p className="typo-body-lg-regular text-faint">결과가 없습니다</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-x-2.5 gap-y-5">
-                {exhibitions.map((exhibition) => (
-                  <ExhibitionCard exhibition={exhibition} key={exhibition.displayId} />
-                ))}
+              <div className="flex flex-col gap-5">
+                <div className="grid grid-cols-2 gap-x-2.5 gap-y-5">
+                  {exhibitions.map((exhibition) => (
+                    <ExhibitionCard exhibition={exhibition} key={exhibition.displayId} />
+                  ))}
+                </div>
+                <div ref={triggerRef} className="h-1" />
+                {isFetchingNextPage ? (
+                  <LoadingView fullScreen={false} message="전시를 더 불러오는 중..." />
+                ) : null}
               </div>
             )}
           </div>
