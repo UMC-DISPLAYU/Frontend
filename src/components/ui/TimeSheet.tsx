@@ -176,7 +176,13 @@ export function TimeSheet({
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="시간 선택" subtitle={subtitle ?? label}>
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title="시간 선택"
+      subtitle={subtitle ?? label}
+      keyboardAvoiding
+    >
       <div className="flex min-w-0 flex-col items-center gap-10 px-5 py-13">
         {/* 디지털 표시 — 탭해서 대상 전환 + 숫자 직접 입력 */}
         <div className="flex w-full min-w-0 flex-col items-center gap-3">
