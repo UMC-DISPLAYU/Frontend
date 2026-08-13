@@ -118,7 +118,7 @@ export function MyPageHeader({
               {profile.bio && <p className="typo-body-xs-regular text-sub700">{profile.bio}</p>}
               {profile.portfolioUrl && (
                 <a
-                  href={`https://${profile.portfolioUrl}`}
+                  href={profile.portfolioUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1 typo-body-xs-regular text-[#2563EB]"

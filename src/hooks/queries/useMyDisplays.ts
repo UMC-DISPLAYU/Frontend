@@ -7,8 +7,8 @@ import type { ExhibitionItem } from '@/types/mypage';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
 const formatDate = (date: string) => {
-  const [year, month, day] = date.split('-');
-  return year && month && day ? `${year}.${month}.${day}` : date;
+  const [, month, day] = date.split('-');
+  return month && day ? `${month}.${day}` : date;
 };
 
 const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): ExhibitionItem => ({
