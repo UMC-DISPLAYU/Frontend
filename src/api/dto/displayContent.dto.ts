@@ -2,7 +2,7 @@ export type ContentCategoryDto = {
   id?: number;
   categoryId?: number;
   name: string;
-  description: string;
+  description?: string | null;
   contentCount?: number;
   sortOrder?: number;
   thumbnailUrl?: string;
@@ -20,7 +20,7 @@ export type ContentImageDto = {
 
 export type CreateContentCategoryRequestDto = {
   name: string;
-  description: string;
+  description?: string;
 };
 
 export type CreateContentCategoryResponseDto = {
@@ -29,7 +29,7 @@ export type CreateContentCategoryResponseDto = {
 
 export type UpdateContentCategoryRequestDto = {
   name: string;
-  description: string;
+  description?: string;
 };
 
 /*

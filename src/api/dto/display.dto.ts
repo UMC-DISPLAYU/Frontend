@@ -379,9 +379,9 @@ export interface CreateDisplayRequestDto {
   latitude: number;
   longitude: number;
   roadAddress: string;
-  /* 서버 필수값입니다. 이 전시에서 쓸 표시명과 문의(Q&A) 계정입니다. */
+  /* 서버 필수값입니다. 이 전시에서 쓸 표시명입니다. */
   displayNickname: string;
-  qnaAccount: string;
+  qnaAccount?: string;
   schoolOrOrganization: string;
   departmentOrClub?: string;
   subtitle?: string;
