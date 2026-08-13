@@ -20,6 +20,8 @@ interface MemberRowProps {
 }
 
 export function MemberRow({ member, onInvite, inviteDisabled, inviteLabel }: MemberRowProps) {
+  const isOwner = member.status === 'owner';
+
   return (
     <li className="flex items-center gap-3 rounded-[20px] bg-card px-3 py-5">
       <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -32,15 +34,24 @@ export function MemberRow({ member, onInvite, inviteDisabled, inviteLabel }: Mem
           }}
         />
         <div className="flex min-w-0 flex-col gap-2">
-          <span className="typo-body-sm-bold truncate text-main">{member.name}</span>
-          <span className="typo-body-xs-regular truncate text-hint">{member.nickname}</span>
+          {isOwner ? (
+            <div className="inline-flex min-w-0 items-end gap-2">
+              <span className="typo-body-sm-bold truncate text-main">{member.name}</span>
+              <span className="typo-body-xs-regular shrink-0 text-link">대표자</span>
+            </div>
+          ) : (
+            <span className="typo-body-sm-bold truncate text-main">{member.name}</span>
+          )}
+          {member.nickname && (
+            <span className="typo-body-xs-regular truncate text-hint">{member.nickname}</span>
+          )}
         </div>
       </div>
       {onInvite && inviteLabel ? (
         <InviteButton label={inviteLabel} onClick={onInvite} disabled={inviteDisabled} />
-      ) : (
+      ) : !isOwner ? (
         <StatusBadge status={member.status} />
-      )}
+      ) : null}
     </li>
   );
 }
