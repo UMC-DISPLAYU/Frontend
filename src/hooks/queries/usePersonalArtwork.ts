@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { PersonalArtworkRequestDto, PersonalArtworkResponseDataDto } from '@/api/dto';
+import type {
+  PersonalArtworkFeelingImageRequestDto,
+  PersonalArtworkRequestDto,
+  PersonalArtworkResponseDataDto,
+} from '@/api/dto';
 import {
   createPersonalArtwork,
   createPersonalArtworkFeeling,
@@ -170,7 +174,13 @@ export const useCreatePersonalArtworkFeeling = (personalArtworkId: number) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: (content: string) => createPersonalArtworkFeeling(personalArtworkId, { content }),
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) => createPersonalArtworkFeeling(personalArtworkId, { content, images }),
     onSuccess: invalidate,
   });
 };
@@ -203,8 +213,17 @@ export const useCreatePersonalArtworkFeelingReply = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (content: string) =>
-      createPersonalArtworkFeelingReply(personalArtworkId, personalFeelingId, { content }),
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) =>
+      createPersonalArtworkFeelingReply(personalArtworkId, personalFeelingId, {
+        content,
+        images,
+      }),
     onSuccess: () => {
       invalidate();
       queryClient.invalidateQueries({

@@ -24,13 +24,13 @@ type Props = {
   coAuthors?: ArtworkCoAuthorDto[];
 };
 
-type ArtworkArtistRowProps = {
+export type ArtworkArtistRowProps = {
   userId?: number;
   /* 작품에 기록된 이름. 공동 작업자는 이 이름이 따로 없어 프로필명으로만 표시됩니다. */
   displayName: string;
 };
 
-function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
+export function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
   const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);

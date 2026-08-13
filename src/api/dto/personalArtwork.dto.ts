@@ -63,14 +63,22 @@ export interface CreatePersonalArtworkFeelingRequestDto {
   images?: PersonalArtworkFeelingImageRequestDto[];
 }
 
+/* 개인 작품 감상평/질문/답변에 공통으로 실려오는 작성자 정보. 작성자 계정이 삭제되면 null입니다. */
+export interface PersonalArtworkUserDto {
+  userId: number;
+  nickname: string;
+  profileImageUrl?: string | null;
+  isCreator: boolean;
+}
+
 export interface PersonalArtworkFeelingResponseDataDto {
   personalFeelingId: number;
   personalArtworkId?: number;
-  userId: number;
-  nickname?: string;
-  profileImageUrl?: string | null;
+  user: PersonalArtworkUserDto | null;
   content: string;
   createdAt: string;
+  isDeleted?: boolean;
+  isMine?: boolean;
   images: ImageResponseDto[];
   isLiked?: boolean;
   likeCount?: number;
@@ -89,15 +97,19 @@ export interface CreatePersonalArtworkQuestionRequestDto {
 export interface PersonalArtworkQuestionResponseDataDto {
   personalQuestionId: number;
   personalArtworkId?: number;
-  content: string;
+  content: string | null;
   isPublic: boolean;
+  /* 비공개 질문을 열람할 권한이 없으면 false — content/user 등이 함께 비어옵니다. */
+  accessible?: boolean;
+  isMine?: boolean;
+  canReply?: boolean;
   answerStatus: 'WAITING' | 'ANSWERED' | string;
   createdAt: string;
-  userId: number;
-  nickname?: string;
-  profileImageUrl?: string | null;
+  images?: ImageResponseDto[];
+  user: PersonalArtworkUserDto | null;
   isLiked?: boolean;
-  likeCount?: number;
+  likeCount?: number | null;
+  reply?: PersonalArtworkQuestionReplyResponseDataDto | null;
 }
 
 export interface GetPersonalArtworkQuestionsResponseDataDto {
@@ -106,18 +118,18 @@ export interface GetPersonalArtworkQuestionsResponseDataDto {
 
 export interface CreatePersonalArtworkReplyRequestDto {
   content: string;
+  images?: PersonalArtworkFeelingImageRequestDto[];
 }
 
 export interface PersonalArtworkFeelingReplyDto {
   personalFeelingReplyId: number;
   createdAt: string;
   content: string;
-  personalFeelingId: number;
-  userId: number;
-  nickname: string;
-  isCreator: boolean;
+  personalFeelingId?: number;
+  user: PersonalArtworkUserDto | null;
   isLiked?: boolean;
   likeCount?: number;
+  images?: ImageResponseDto[];
 }
 
 export interface PersonalArtworkFeelingReplyListResponseDataDto {
@@ -131,12 +143,14 @@ export interface PersonalArtworkQuestionReplyResponseDataDto {
   personalQuestionReplyId: number;
   createdAt: string;
   content: string;
-  personalQuestionId: number;
+  personalQuestionId?: number;
   userId: number;
   nickname: string;
   isCreator: boolean;
+  isMine?: boolean;
   isLiked?: boolean;
   likeCount?: number;
+  images?: ImageResponseDto[];
 }
 
 export type GetPersonalArtworkQuestionReplyResponseDataDto =
