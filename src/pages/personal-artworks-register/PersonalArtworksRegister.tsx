@@ -13,6 +13,7 @@ import {
 import { useCreatePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { usePersonalArtworkPolicy } from '@/hooks/usePolicy';
+import { useZodFieldError } from '@/hooks/useZodFieldError';
 import { hasPermission } from '@/utils/hasPermission';
 
 import {
@@ -50,7 +51,6 @@ export function PersonalArtworksRegister() {
   const [material, setMaterial] = useState('');
   const [size, setSize] = useState('');
   const [thoughts, setThoughts] = useState('');
-  const [touchedFields, setTouchedFields] = useState({ year: false });
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const createPersonalArtwork = useCreatePersonalArtwork();
@@ -70,11 +70,11 @@ export function PersonalArtworksRegister() {
   };
   const isFormValid =
     canCreatePersonalArtwork && personalArtworkRegisterSchema.safeParse(formValue).success;
-  const yearError = touchedFields.year
-    ? personalArtworkRegisterSchema
-        .safeParse(formValue)
-        .error?.issues.find((issue) => issue.path[0] === 'year')?.message
-    : undefined;
+  const { error: yearError, markTouched: markYearTouched } = useZodFieldError({
+    schema: personalArtworkRegisterSchema,
+    value: formValue,
+    field: 'year',
+  });
 
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
@@ -206,9 +206,9 @@ export function PersonalArtworksRegister() {
               value={year}
               inputMode="numeric"
               maxLength={4}
-              onBlur={() => setTouchedFields((prev) => ({ ...prev, year: true }))}
+              onBlur={markYearTouched}
               onChange={(e) => {
-                setTouchedFields((prev) => ({ ...prev, year: true }));
+                markYearTouched();
                 setYear(sanitizePersonalArtworkYearInput(e.target.value));
               }}
               placeholder="2026"

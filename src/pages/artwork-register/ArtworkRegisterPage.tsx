@@ -34,6 +34,7 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
+import { useZodFieldError } from '@/hooks/useZodFieldError';
 import { useUserStore } from '@/stores/useUserStore';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -113,7 +114,6 @@ function ArtworkRegisterPageContent() {
   const [medium, setMediumState] = useState(draft.medium);
   const [size, setSizeState] = useState(draft.size);
   const [point, setPointState] = useState(draft.point);
-  const [touchedFields, setTouchedFields] = useState({ year: false });
   /* userId가 있으면 디유 계정이 연결된 팀원, 없으면 직접 이름을 입력한 작가입니다. */
   const [collaborators, setCollaboratorsState] = useState<
     { id: string; name: string; account: string; userId?: number }[]
@@ -131,11 +131,11 @@ function ArtworkRegisterPageContent() {
     thoughts: point,
   };
   const canProceedBasic = artworkRegisterSchema.safeParse(basicFormValue).success;
-  const yearError = touchedFields.year
-    ? artworkRegisterSchema
-        .safeParse(basicFormValue)
-        .error?.issues.find((issue) => issue.path[0] === 'year')?.message
-    : undefined;
+  const { error: yearError, markTouched: markYearTouched } = useZodFieldError({
+    schema: artworkRegisterSchema,
+    value: basicFormValue,
+    field: 'year',
+  });
 
   const setStep = useCallback(
     (nextStep: RegisterStep, options: { replace?: boolean } = {}) => {
@@ -220,11 +220,11 @@ function ArtworkRegisterPageContent() {
 
   const setYear = useCallback(
     (value: string) => {
-      setTouchedFields((prev) => ({ ...prev, year: true }));
+      markYearTouched();
       setYearState(value);
       updateDraft({ year: value });
     },
-    [updateDraft],
+    [markYearTouched, updateDraft],
   );
 
   const setMedium = useCallback(
@@ -878,6 +878,7 @@ function ArtworkRegisterPageContent() {
           processImages={processImages}
           canProceed={canProceedBasic}
           yearError={yearError}
+          onBlurYear={markYearTouched}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}

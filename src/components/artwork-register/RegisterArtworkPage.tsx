@@ -23,6 +23,7 @@ interface RegisterArtworkPageProps {
   processImages: ImageUploadItem[];
   canProceed: boolean;
   yearError?: string;
+  onBlurYear?: () => void;
   onBack: () => void;
   onChangeTitle: (value: string) => void;
   onChangeDescription: (value: string) => void;
@@ -51,6 +52,7 @@ function RegisterArtworkPage({
   processImages,
   canProceed,
   yearError,
+  onBlurYear,
   onBack,
   onChangeTitle,
   onChangeDescription,
@@ -142,6 +144,7 @@ function RegisterArtworkPage({
               value={year}
               inputMode="numeric"
               maxLength={4}
+              onBlur={onBlurYear}
               onChange={(e) => onChangeYear(sanitizeArtworkRegisterYearInput(e.target.value))}
               placeholder="2026"
               className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
