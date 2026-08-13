@@ -221,16 +221,29 @@ export function MyPage() {
   }, [archivedArtworksQuery.data, userData?.id]);
 
   const myArtworks = useMemo<SavedArtworkItem[]>(() => {
-    const items = myArtworksQuery.data ?? [];
-    return items.map((item) => ({
-      id: String(item.personalArtworkId),
+    /* 개인 작품 목록 API는 artistName을 내려주지 않아 작가 프로필의 작가명을 대신 씁니다(본인 계정명 아님). */
+    const artistName =
+      myArtistProfileQuery.data?.artistName || userData?.nickname || userData?.name || '';
+    const personalItems: SavedArtworkItem[] = (myArtworksQuery.data ?? []).map((item) => ({
+      id: `personal-${item.personalArtworkId}`,
       artworkId: item.personalArtworkId,
       personalArtworkId: item.personalArtworkId,
       title: item.artworkName,
-      artist: userData?.nickname || userData?.name || '',
+      artist: artistName,
       thumbnail: item.thumbnailUrl ?? '',
     }));
-  }, [myArtworksQuery.data, userData]);
+    /* 전시에 등록한 작품도 함께 보여줘야 작가 프로필 작품 탭과 개수/목록이 일치합니다. */
+    const exhibitionItems: SavedArtworkItem[] = (myExhibitionArtworksQuery.data?.artworks ?? []).map(
+      (item) => ({
+        id: `exhibit-${item.artworkId}`,
+        artworkId: item.artworkId,
+        title: item.artworkName,
+        artist: item.artistName || artistName,
+        thumbnail: item.artworkImageUrl ?? '',
+      }),
+    );
+    return [...personalItems, ...exhibitionItems];
+  }, [myArtworksQuery.data, myExhibitionArtworksQuery.data, myArtistProfileQuery.data, userData]);
 
   const artists = useMemo<ArtistItem[]>(() => {
     const items = (archivedArtistsQuery.data?.pages.flatMap((page) => page.artists) ??
@@ -254,9 +267,12 @@ export function MyPage() {
         ? myDisplaysQuery
         : archivedExhibitionsQuery
       : activeTab === 'artwork'
-        ? // 가짜 컴포넌트 연결: 작가 뷰 작품 탭에서만 GET /artworks/me 결과를 사용합니다.
+        ? // 작가 뷰 작품 탭은 개인 작품 + 전시 등록 작품 두 요청을 함께 보여줍니다.
           isArtistView
-          ? myArtworksQuery
+          ? {
+              isLoading: myArtworksQuery.isLoading || myExhibitionArtworksQuery.isLoading,
+              error: myArtworksQuery.error || myExhibitionArtworksQuery.error,
+            }
           : archivedArtworksQuery
         : archivedArtistsQuery;
 
@@ -394,8 +410,8 @@ export function MyPage() {
                 onDeleteMemo={handleDeleteArtworkMemo}
                 onOpen={(artwork) =>
                   navigate(
-                    isArtistView
-                      ? `/personal-artworks/${artwork.artworkId ?? artwork.id}`
+                    artwork.personalArtworkId
+                      ? `/personal-artworks/${artwork.personalArtworkId}`
                       : `/artwork/${artwork.artworkId ?? artwork.id}`,
                   )
                 }
