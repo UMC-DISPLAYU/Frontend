@@ -18,6 +18,7 @@ import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useCreateDisplay, usePublishDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useDisplayPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { hasPermission } from '@/utils/hasPermission';
@@ -47,6 +48,7 @@ export function ExhibitionManage() {
   useHideFooter();
 
   const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const { displayId: paramDisplayId } = useParams();
   const { state } = useLocation();
 
@@ -151,7 +153,7 @@ export function ExhibitionManage() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <ExhibitionHeader title="전시관리" onBack={() => navigate(-1)} />
+      <ExhibitionHeader title="전시관리" onBack={() => flowBack()} />
 
       <main className="px-5 pb-bottom-bar-offset">
         <div className="flex flex-col gap-5">

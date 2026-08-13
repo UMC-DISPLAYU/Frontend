@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { Plus } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import type { PersonalArtworkQuestionResponseDataDto } from '@/api/dto';
 import type { ArtworkDetailTabKey } from '@/components/artworkdetailpage/ArtworkTabNav';
@@ -29,6 +29,7 @@ import {
   usePersonalArtworkQuestions,
 } from '@/hooks/queries/usePersonalArtwork';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { usePersonalFeelingPolicy, usePersonalQuestionPolicy } from '@/hooks/usePolicy';
 import { parseServerDate } from '@/utils/date';
@@ -39,7 +40,7 @@ function formatImageUrls(images: { imageUrl?: string }[] = []) {
 }
 
 export function PersonalArtworkDetailPage() {
-  const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const { personalArtworkId: idParam } = useParams<{ personalArtworkId: string }>();
   const personalArtworkId = Number(idParam ?? 0);
   const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>('intro');
@@ -95,7 +96,7 @@ export function PersonalArtworkDetailPage() {
       <ErrorView
         title="작품 정보를 찾을 수 없습니다"
         message="요청하신 작품 정보가 존재하지 않거나 삭제되었습니다."
-        onRetry={() => navigate(-1)}
+        onRetry={() => flowBack()}
       />
     );
   }
@@ -177,7 +178,7 @@ export function PersonalArtworkDetailPage() {
       <div className="fixed top-4 left-1/2 z-30 w-full max-w-md -translate-x-1/2 px-4 pointer-events-none">
         <BackButton
           id="personal-artwork-back-btn"
-          onClick={() => navigate(-1)}
+          onClick={() => flowBack()}
           className="pointer-events-auto"
         />
       </div>

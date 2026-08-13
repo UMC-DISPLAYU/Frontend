@@ -23,7 +23,9 @@ export function LogoutConfirmModal({ onConfirm, onCancel }: Props) {
     >
       <div className="relative w-80.5 h-48 -translate-y-30 bg-neutral-50/40 rounded-[20px] shadow-[inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px] overflow-hidden">
         <div className="absolute inset-x-6 top-6 flex flex-col items-center gap-2">
-          <h3 className="w-full text-center typo-body-xl-bold text-modal-title">로그아웃 할까요?</h3>
+          <h3 className="w-full text-center typo-body-xl-bold text-modal-title">
+            로그아웃 할까요?
+          </h3>
           <p id={descriptionId} className="w-full text-center typo-body-md-regular text-modal-desc">
             로그아웃 후에도 저장한 전시와 기록은
             <br />

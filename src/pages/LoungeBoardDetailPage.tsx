@@ -21,9 +21,11 @@ import {
   useLoungeComments,
 } from '@/hooks/queries/useLoungeComments';
 import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 export const LoungeBoardDetailPage = () => {
   const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const { category, id } = useParams<{ category: string; id: string }>();
   const isValidCategory = isLoungeCategoryKey(category);
   const postId = id ? Number(id) : NaN;
@@ -132,7 +134,7 @@ export const LoungeBoardDetailPage = () => {
           fullScreen={false}
           title="게시글을 찾을 수 없습니다"
           message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
-          onRetry={() => navigate(-1)}
+          onRetry={() => flowBack()}
         />
       ) : isLoading ? (
         <LoadingView fullScreen={false} />
@@ -151,9 +153,7 @@ export const LoungeBoardDetailPage = () => {
               <LoungeBoardPostDetail
                 post={post}
                 onEdit={() => navigate(`/lounge/${category}/${id}/edit`)}
-                onDelete={() =>
-                  deletePostMutation.mutate(postId, { onSuccess: () => navigate(-1) })
-                }
+                onDelete={() => deletePostMutation.mutate(postId, { onSuccess: () => flowBack() })}
               />
               <LoungeBoardActionBar
                 postId={postId}
@@ -214,7 +214,7 @@ export const LoungeBoardDetailPage = () => {
           fullScreen={false}
           title="게시글을 찾을 수 없습니다"
           message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
-          onRetry={() => navigate(-1)}
+          onRetry={() => flowBack()}
         />
       )}
     </div>

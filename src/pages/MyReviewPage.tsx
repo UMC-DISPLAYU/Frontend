@@ -7,6 +7,7 @@ import type { MyArtworkFeelingDto, MyDisplayReviewDto } from '@/api/dto';
 import { ErrorView, LoadingView } from '@/components/common';
 import { useMyArtworkFeelings } from '@/hooks/queries/useMyArtworkFeelings';
 import { useMyDisplayReviews } from '@/hooks/queries/useMyDisplayReviews';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 interface ReviewCardProps {
   title: string;
@@ -56,6 +57,7 @@ const TABS = ['전시', '작품'];
 
 export function MyReviewPage() {
   const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const [activeTab, setActiveTab] = useState('전시');
 
   const {
@@ -87,7 +89,7 @@ export function MyReviewPage() {
   return (
     <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
-        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
+        <button type="button" onClick={() => flowBack()} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <h1 className="typo-body-xl-bold text-main">내가 남긴 감상</h1>

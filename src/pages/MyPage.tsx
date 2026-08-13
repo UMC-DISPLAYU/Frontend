@@ -233,15 +233,15 @@ export function MyPage() {
       thumbnail: item.thumbnailUrl ?? '',
     }));
     /* 전시에 등록한 작품도 함께 보여줘야 작가 프로필 작품 탭과 개수/목록이 일치합니다. */
-    const exhibitionItems: SavedArtworkItem[] = (myExhibitionArtworksQuery.data?.artworks ?? []).map(
-      (item) => ({
-        id: `exhibit-${item.artworkId}`,
-        artworkId: item.artworkId,
-        title: item.artworkName,
-        artist: item.artistName || artistName,
-        thumbnail: item.artworkImageUrl ?? '',
-      }),
-    );
+    const exhibitionItems: SavedArtworkItem[] = (
+      myExhibitionArtworksQuery.data?.artworks ?? []
+    ).map((item) => ({
+      id: `exhibit-${item.artworkId}`,
+      artworkId: item.artworkId,
+      title: item.artworkName,
+      artist: item.artistName || artistName,
+      thumbnail: item.artworkImageUrl ?? '',
+    }));
     return [...personalItems, ...exhibitionItems];
   }, [myArtworksQuery.data, myExhibitionArtworksQuery.data, myArtistProfileQuery.data, userData]);
 

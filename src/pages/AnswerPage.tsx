@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { useReceivedArtworkQuestions } from '@/hooks/queries/useReceivedArtworkQuestions';
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 type TabKey = 'pending' | 'done';
 
@@ -116,7 +116,7 @@ function Tabs({ value, onChange }: TabsProps) {
 }
 
 export function AnswerPage() {
-  const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const [tab, setTab] = useState<TabKey>('done');
   const { data, isError, isLoading } = useReceivedArtworkQuestions({
     answerStatus: tab === 'pending' ? 'WAITING' : 'ANSWERED',
@@ -134,13 +134,13 @@ export function AnswerPage() {
   }));
 
   const handleDone = () => {
-    navigate(-1);
+    flowBack();
   };
 
   return (
     <div className="max-w-md mx-auto h-dvh bg-page flex flex-col overflow-hidden">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
-        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
+        <button type="button" onClick={() => flowBack()} aria-label="뒤로가기" className="-ml-1">
           <ChevronLeft className="size-7 text-main" strokeWidth={2} />
         </button>
         <h1 className="typo-body-xl-bold text-main">답변할 질문</h1>

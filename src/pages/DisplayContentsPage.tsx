@@ -1,17 +1,18 @@
 import { useState } from 'react';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto } from '@/api/dto/display.dto';
 import DUfontlogo from '@/assets/brand/DUfontlogo.svg';
 import { ErrorView, LoadingView } from '@/components/common';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayContentsPage() {
-  const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const { id } = useParams<{ id: string }>();
   const displayId = parseDisplayId(id);
 
@@ -28,7 +29,7 @@ export function DisplayContentsPage() {
       <ErrorView
         title="전시 정보를 찾을 수 없습니다"
         message="요청하신 전시 정보가 존재하지 않거나 삭제되었습니다."
-        onRetry={() => navigate(-1)}
+        onRetry={() => flowBack()}
       />
     );
   }
@@ -37,7 +38,7 @@ export function DisplayContentsPage() {
     if (selectedCategory) {
       setSelectedCategory(null);
     } else {
-      navigate(-1);
+      flowBack();
     }
   };
 

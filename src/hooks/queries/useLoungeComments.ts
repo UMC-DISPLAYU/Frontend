@@ -18,7 +18,9 @@ import { queryKeys } from '@/api/queryKeys';
 
 type LoungeCommentPage = { comments?: LoungeCommentDto[]; replies?: LoungeReplyDto[] };
 
-const toggleLoungeCommentLike = <T extends { loungeCommentId: number; isLiked: boolean; likeCount: number }>(
+const toggleLoungeCommentLike = <
+  T extends { loungeCommentId: number; isLiked: boolean; likeCount: number },
+>(
   items: T[] | undefined,
   commentId: number,
   liked: boolean,
@@ -86,7 +88,10 @@ export const useDeleteLoungeComment = () => {
   });
 };
 
-const useLikeLoungeCommentMutation = (liked: boolean, mutationFn: (commentId: number) => Promise<unknown>) => {
+const useLikeLoungeCommentMutation = (
+  liked: boolean,
+  mutationFn: (commentId: number) => Promise<unknown>,
+) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -102,17 +107,20 @@ const useLikeLoungeCommentMutation = (liked: boolean, mutationFn: (commentId: nu
         queryKey: targetKey,
       });
 
-      queryClient.setQueriesData<InfiniteData<LoungeCommentPage>>({ queryKey: targetKey }, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            comments: toggleLoungeCommentLike(page.comments, variables.commentId, liked),
-            replies: toggleLoungeCommentLike(page.replies, variables.commentId, liked),
-          })),
-        };
-      });
+      queryClient.setQueriesData<InfiniteData<LoungeCommentPage>>(
+        { queryKey: targetKey },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              comments: toggleLoungeCommentLike(page.comments, variables.commentId, liked),
+              replies: toggleLoungeCommentLike(page.replies, variables.commentId, liked),
+            })),
+          };
+        },
+      );
 
       return { previousQueries };
     },
@@ -136,4 +144,5 @@ const useLikeLoungeCommentMutation = (liked: boolean, mutationFn: (commentId: nu
 
 export const useLikeLoungeComment = () => useLikeLoungeCommentMutation(true, likeLoungeComment);
 
-export const useUnlikeLoungeComment = () => useLikeLoungeCommentMutation(false, unlikeLoungeComment);
+export const useUnlikeLoungeComment = () =>
+  useLikeLoungeCommentMutation(false, unlikeLoungeComment);

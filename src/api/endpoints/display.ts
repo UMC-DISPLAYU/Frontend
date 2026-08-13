@@ -166,9 +166,11 @@ export const disableDisplayInvitation = async (
 export const getDisplayMembers = async (
   displayId: number,
 ): Promise<DisplayMemberListResponseDataDto> => {
-  const { displayId: id, memberAccept, memberPending } = await apiRequest<
-    DisplayMemberListRawResponseDataDto
-  >(`/v1/display/${displayId}/members`);
+  const {
+    displayId: id,
+    memberAccept,
+    memberPending,
+  } = await apiRequest<DisplayMemberListRawResponseDataDto>(`/v1/display/${displayId}/members`);
 
   return {
     displayId: id,

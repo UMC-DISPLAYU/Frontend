@@ -8,6 +8,7 @@ import {
   useMyDisplayInvitations,
   useRejectDisplayInvitation,
 } from '@/hooks/queries/useDisplayInvitations';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import type { Invitation } from '@/types/invitation';
 import { cn } from '@/utils/cn';
 
@@ -212,6 +213,7 @@ function RejectModal({ isOpen, onConfirm, onCancel }: RejectModalProps) {
 
 export function InvitationRequestPage() {
   const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const [searchParams] = useSearchParams();
   const { data, isLoading, isError } = useMyDisplayInvitations();
   /* 초대 링크를 타고 들어왔다면 어떤 전시의 초대인지 표시해줍니다. */
@@ -252,12 +254,7 @@ export function InvitationRequestPage() {
     <>
       <div className="max-w-md mx-auto h-dvh bg-page flex flex-col">
         <header className="flex items-center gap-3 px-5 pt-4 pb-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            aria-label="뒤로가기"
-            className="-ml-1"
-          >
+          <button type="button" onClick={() => flowBack()} aria-label="뒤로가기" className="-ml-1">
             <ChevronLeft className="size-7 text-main" strokeWidth={2} />
           </button>
           <h1 className="typo-body-xl-bold text-main">초대 요청</h1>

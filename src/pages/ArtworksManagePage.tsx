@@ -9,6 +9,7 @@ import {
   WorkActionSheet,
 } from '@/components/artworks-manage';
 import { BottomFixedBar } from '@/components/common';
+import { useFlowContext } from '@/components/guards/useFlowContext';
 import { ExhibitionHeader } from '@/components/ui';
 import {
   useDeleteArtwork,
@@ -16,12 +17,15 @@ import {
   useUpdateArtworkOrder,
 } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useFlowBack } from '@/hooks/useFlowBack';
 // import { useArtworkPolicy } from '@/hooks/usePolicy';
 // import type { ArtworkPolicyResource } from '@/policies/util';
 import type { Work } from '@/types/artworkManage';
 
 export function ArtworksManagePage() {
   const navigate = useNavigate();
+  const flowBack = useFlowBack();
+  const { startFlow } = useFlowContext();
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
 
@@ -90,7 +94,12 @@ export function ArtworksManagePage() {
   };
 
   const handleBack = () => {
-    navigate(-1);
+    flowBack();
+  };
+
+  const handleAddArtwork = () => {
+    startFlow('artwork-register', window.history.state?.idx ?? null);
+    navigate(`/exhibition/${displayId}/artworks/add`);
   };
 
   return (
@@ -117,7 +126,7 @@ export function ArtworksManagePage() {
         <BottomFixedBar>
           <button
             type="button"
-            onClick={() => navigate(`/exhibition/${displayId}/artworks/add`)}
+            onClick={handleAddArtwork}
             className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
           >
             전시작 추가

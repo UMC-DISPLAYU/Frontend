@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import type { LoungePostSummaryDto } from '@/api/dto';
 import { ErrorView, LoadingView } from '@/components/common';
@@ -12,6 +12,7 @@ import {
   type LoungeCategoryKey,
 } from '@/constants/loungeCategories';
 import { useLoungePosts } from '@/hooks/queries/useLounge';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import type { LoungeBoardPost } from '@/types/exhibition';
 import { formatRelativeTime } from '@/utils/date';
 
@@ -30,7 +31,7 @@ const toBoardPost = (
 });
 
 export const LoungeBoardPage = () => {
-  const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const { category } = useParams<{ category: string }>();
   const isValidCategory = isLoungeCategoryKey(category);
   const apiCategory = isValidCategory ? LOUNGE_CATEGORY_API_VALUES[category] : undefined;
@@ -77,7 +78,7 @@ export const LoungeBoardPage = () => {
             fullScreen={false}
             title="존재하지 않는 게시판입니다"
             message="요청하신 라운지 게시판을 찾을 수 없습니다."
-            onRetry={() => navigate(-1)}
+            onRetry={() => flowBack()}
             retryLabel="돌아가기"
           />
         ) : isPending ? (
@@ -87,7 +88,7 @@ export const LoungeBoardPage = () => {
             fullScreen={false}
             title="게시글을 불러오지 못했습니다"
             message="잠시 후 다시 시도해주세요."
-            onRetry={() => navigate(-1)}
+            onRetry={() => flowBack()}
             retryLabel="돌아가기"
           />
         ) : posts.length > 0 ? (
@@ -103,7 +104,7 @@ export const LoungeBoardPage = () => {
             fullScreen={false}
             title="게시글이 없습니다"
             message="아직 등록된 게시글이 없어요."
-            onRetry={() => navigate(-1)}
+            onRetry={() => flowBack()}
             retryLabel="돌아가기"
           />
         )}

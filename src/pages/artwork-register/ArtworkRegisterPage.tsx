@@ -2,7 +2,7 @@ import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'rea
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { AddArtworkPage } from '@/components/artwork-register/AddArtworkPage';
 import type {
@@ -17,6 +17,7 @@ import { EnterArtistNamePage } from '@/components/artwork-register/EnterArtistNa
 import { RegisterArtworkPage } from '@/components/artwork-register/RegisterArtworkPage';
 import { RegisterCollaboratorsPage } from '@/components/artwork-register/RegisterCollaboratorsPage';
 import { SelectArtistPage } from '@/components/artwork-register/SelectArtistPage';
+import { useFlowContext } from '@/components/guards/useFlowContext';
 import { useHideFooter } from '@/components/layout';
 import {
   ARTWORK_FIELD_MAP,
@@ -34,6 +35,7 @@ import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/use
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
@@ -49,10 +51,6 @@ import {
 
 type RegisterStep = 'choice' | 'otherTeamAuthor' | 'otherAuthor' | 'basic' | 'participants';
 const DIRECT_INPUT_ACCOUNT = '직접입력';
-const REGISTER_STEPS = ['choice', 'otherTeamAuthor', 'otherAuthor', 'basic', 'participants'];
-
-const isRegisterStep = (value: string | null): value is RegisterStep =>
-  value !== null && REGISTER_STEPS.includes(value);
 
 const formatMonthDay = (date: string | undefined) => {
   if (!date) return '';
@@ -73,13 +71,25 @@ function ArtworkRegisterPageContent() {
 
   const { draft, updateDraft, resetDraft } = useArtworkRegisterDraft();
   const navigate = useNavigate();
+  const flowBack = useFlowBack();
+  const { completeFlow, completeStep } = useFlowContext();
+  const location = useLocation();
   const { displayId: paramDisplayId, artworkId: paramArtworkId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const displayId = Number(paramDisplayId ?? searchParams.get('displayId') ?? 0);
   const artworkId = Number(paramArtworkId ?? 0);
   const isEditMode = artworkId > 0;
-  const stepParam = searchParams.get('step');
-  const routeStep = isRegisterStep(stepParam) ? stepParam : null;
+  const routeStep = useMemo<RegisterStep | null>(() => {
+    const pathname = location.pathname;
+
+    if (pathname.includes('/artworks/add/choice')) return 'choice';
+    if (pathname.includes('/artworks/add/artist/direct')) return 'otherAuthor';
+    if (pathname.includes('/artworks/add/artist')) return 'otherTeamAuthor';
+    if (pathname.includes('/artworks/add/basic')) return 'basic';
+    if (pathname.includes('/artworks/add/participants')) return 'participants';
+
+    return null;
+  }, [location.pathname]);
 
   const { data: artworkDetail } = useArtworkDetail(artworkId);
 
@@ -197,22 +207,17 @@ function ArtworkRegisterPageContent() {
 
       if (isEditMode) return;
 
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
+      const stepPathMap: Record<RegisterStep, string> = {
+        choice: `/exhibition/${displayId}/artworks/add/choice`,
+        otherTeamAuthor: `/exhibition/${displayId}/artworks/add/artist`,
+        otherAuthor: `/exhibition/${displayId}/artworks/add/artist/direct`,
+        basic: `/exhibition/${displayId}/artworks/add/basic`,
+        participants: `/exhibition/${displayId}/artworks/add/participants`,
+      };
 
-          if (nextStep === 'choice') {
-            next.delete('step');
-          } else {
-            next.set('step', nextStep);
-          }
-
-          return next;
-        },
-        { replace: options.replace ?? true },
-      );
+      navigate(stepPathMap[nextStep], { replace: options.replace ?? true });
     },
-    [isEditMode, setSearchParams, updateDraft],
+    [displayId, isEditMode, navigate, updateDraft],
   );
 
   const setRegisterMode = useCallback(
@@ -647,11 +652,7 @@ function ArtworkRegisterPageContent() {
       setStep('choice', { replace: true });
       return;
     }
-    if (step === 'otherAuthor') {
-      setStep('choice', { replace: true });
-      return;
-    }
-    navigate(-1);
+    flowBack();
   };
 
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -779,6 +780,7 @@ function ArtworkRegisterPageContent() {
             qnaAssigneeOptions[0];
 
           resetDraft();
+          completeFlow();
           navigate(`/exhibition/${displayId}/complete`, {
             state: {
               type: 'artwork',
@@ -798,11 +800,13 @@ function ArtworkRegisterPageContent() {
 
   const handleChoiceNext = () => {
     if (registerMode === 'other') {
+      completeStep('artwork-choice');
       setOtherAuthorSource('team');
       setActiveSheet('otherAuthorMethod');
       return;
     }
 
+    completeStep('artwork-choice');
     setStep('basic');
   };
 
@@ -815,7 +819,7 @@ function ArtworkRegisterPageContent() {
   const selectDirectOtherAuthor = () => {
     setOtherAuthorSource('direct');
     setActiveSheet(null);
-    setStep('otherAuthor');
+    setStep('otherAuthor', { replace: false });
   };
 
   const submitTeamOtherAuthor = () => {
@@ -823,6 +827,7 @@ function ArtworkRegisterPageContent() {
 
     setOtherAuthorName(selectedOtherAuthor.name);
     setOtherAuthorSource('team');
+    completeStep('artwork-author');
     setStep('basic');
   };
 
@@ -832,6 +837,7 @@ function ArtworkRegisterPageContent() {
 
     setOtherAuthorName(trimmedAuthorName);
     setOtherAuthorSource('direct');
+    completeStep('artwork-author');
     setStep('basic');
   };
 
@@ -842,6 +848,7 @@ function ArtworkRegisterPageContent() {
 
     try {
       await syncImageDraft();
+      completeStep('artwork-basic');
       setStep('participants');
     } catch {
       setSubmitError('이미지 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');

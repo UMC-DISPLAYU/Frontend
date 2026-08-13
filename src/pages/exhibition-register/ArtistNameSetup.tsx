@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { CreateDisplayRequestDto } from '@/api/dto';
 import { BottomButton } from '@/components/common';
+import { useFlowContext } from '@/components/guards/useFlowContext';
 import { ExhibitionHeader } from '@/components/ui';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useCreateDisplay } from '@/hooks/queries/useDisplayBrowse';
@@ -14,6 +15,7 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUpdateMyDisplayNickname } from '@/hooks/queries/useMyDisplays';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
+import { useFlowBack } from '@/hooks/useFlowBack';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/useUserStore';
 
@@ -105,6 +107,8 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 
 export function ArtistNameSetup() {
   const navigate = useNavigate();
+  const flowBack = useFlowBack();
+  const { completeFlow } = useFlowContext();
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
   const { data: userMeData } = useUserMe();
@@ -260,11 +264,14 @@ export function ArtistNameSetup() {
 
     createDisplay.mutate(requestBody, {
       onSuccess: (display) => {
+        const completedFlowBackIndex = completeFlow();
+
         resetDraft();
         navigate(`/exhibition/${display.displayId}/manage`, {
           state: {
             ...registerState,
             artistName: displayNickname,
+            completedFlowBackIndex,
             displayId: display.displayId,
             posterImageUrl,
           },
@@ -281,7 +288,7 @@ export function ArtistNameSetup() {
         title={isEditMode ? '전시 작가명 수정' : '전시 작가명 설정'}
         onBack={() => {
           saveCurrentDraft();
-          navigate(-1);
+          flowBack();
         }}
       />
 

@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
+import { useFlowBack } from '@/hooks/useFlowBack';
 
 interface ExhibitionHeaderProps {
   title: string;
@@ -8,8 +9,8 @@ interface ExhibitionHeaderProps {
 }
 
 export function ExhibitionHeader({ title, onBack, centered = false }: ExhibitionHeaderProps) {
-  const navigate = useNavigate();
-  const handleBack = onBack || (() => navigate(-1));
+  const flowBack = useFlowBack();
+  const handleBack = onBack || flowBack;
 
   if (centered) {
     return (

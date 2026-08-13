@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
@@ -6,7 +6,11 @@ import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useAuthStore } from '@/stores/authStore';
 
-export function PrivateRoute({ children }: { children?: React.ReactNode }) {
+type AuthGuardProps = {
+  children?: ReactNode;
+};
+
+export function AuthGuard({ children }: AuthGuardProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const location = useLocation();
   const navigate = useNavigate();
