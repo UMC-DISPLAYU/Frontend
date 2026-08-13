@@ -2,6 +2,7 @@ import { Check, UserRound, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { BottomSheet, RequiredLabel } from '@/components/ui';
+import { ARTWORK_REGISTER_AUTHOR_NAME_MAX_LENGTH } from '@/pages/artwork-register/artworkRegister.schema';
 import { cn } from '@/utils/cn';
 
 export interface RegisterPerson {
@@ -311,6 +312,7 @@ export function DirectCollaboratorSheet({
           <input
             id={inputId}
             value={value}
+            maxLength={ARTWORK_REGISTER_AUTHOR_NAME_MAX_LENGTH}
             onChange={(e) => onChange(e.target.value)}
             className="typo-body-xs-regular mt-3 h-9 rounded-lg border border-input-border bg-card px-3 text-main outline-none focus:border-line-active"
           />

@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { ARTWORK_FIELD_MAP } from '@/constants';
 
+export const ARTWORK_REGISTER_AUTHOR_NAME_MAX_LENGTH = 255;
+
 export function sanitizeArtworkRegisterYearInput(value: string): string {
   return value.replace(/\D/g, '').slice(0, 4);
 }
