@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { AddArtworkPage } from '@/components/artwork-register/AddArtworkPage';
@@ -35,8 +37,15 @@ import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
-import { toProductionYear } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
+
+import {
+  type ArtworkRegisterFormValues,
+  artworkRegisterSchema,
+  artworkRegisterSubmitSchema,
+  sanitizeArtworkRegisterYearInput,
+  toArtworkRegisterProductionYear,
+} from './artworkRegister.schema';
 
 type RegisterStep = 'choice' | 'otherTeamAuthor' | 'otherAuthor' | 'basic' | 'participants';
 const DIRECT_INPUT_ACCOUNT = '직접입력';
@@ -102,10 +111,13 @@ function ArtworkRegisterPageContent() {
   );
   const [directCollaboratorName, setDirectCollaboratorName] = useState('');
   const [title, setTitleState] = useState(draft.title);
+  const [isTitleTouched, setIsTitleTouched] = useState(false);
   const [description, setDescriptionState] = useState(draft.description);
   const [field, setFieldState] = useState<string>(draft.field);
   const [year, setYearState] = useState(draft.year);
+  const [isYearTouched, setIsYearTouched] = useState(false);
   const [medium, setMediumState] = useState(draft.medium);
+  const [isMediumTouched, setIsMediumTouched] = useState(false);
   const [size, setSizeState] = useState(draft.size);
   const [point, setPointState] = useState(draft.point);
   /* userId가 있으면 디유 계정이 연결된 팀원, 없으면 직접 이름을 입력한 작가입니다. */
@@ -113,6 +125,70 @@ function ArtworkRegisterPageContent() {
     { id: string; name: string; account: string; userId?: number }[]
   >(draft.collaborators);
   const [qnaAssigneeIds, setQnaAssigneeIdsState] = useState<string[]>(draft.qnaAssigneeIds);
+
+  const {
+    formState: { errors },
+    register,
+    setValue,
+    trigger,
+  } = useForm<ArtworkRegisterFormValues>({
+    resolver: zodResolver(artworkRegisterSchema),
+    mode: 'onChange',
+    defaultValues: {
+      artworkImageCount: artworkImages.length,
+      title,
+      intro: description,
+      field,
+      year,
+      material: medium,
+      size,
+      thoughts: point,
+    },
+  });
+
+  const basicFormValue = {
+    artworkImageCount: artworkImages.length,
+    title,
+    intro: description,
+    field,
+    year,
+    material: medium,
+    size,
+    thoughts: point,
+  };
+  const canProceedBasic = artworkRegisterSchema.safeParse(basicFormValue).success;
+  const basicFormError = artworkRegisterSchema.safeParse(basicFormValue).error;
+  const getBasicFormError = (fieldName: keyof ArtworkRegisterFormValues) =>
+    basicFormError?.issues.find((issue) => issue.path[0] === fieldName)?.message;
+  const titleError = isTitleTouched ? getBasicFormError('title') : undefined;
+  const yearError = isYearTouched ? getBasicFormError('year') : undefined;
+  const mediumError = isMediumTouched ? getBasicFormError('material') : undefined;
+
+  useEffect(() => {
+    register('year');
+  }, [register]);
+
+  const yearInputProps = register('year', {
+    onBlur: () => {
+      setIsYearTouched(true);
+      void trigger('year');
+    },
+    onChange: (event: ChangeEvent<HTMLInputElement>) => {
+      const nextYear = sanitizeArtworkRegisterYearInput(event.target.value);
+      setIsYearTouched(true);
+      setValue('year', nextYear, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+      setYearState(nextYear);
+      updateDraft({ year: nextYear });
+    },
+  });
+
+  useEffect(() => {
+    setValue('artworkImageCount', artworkImages.length, { shouldValidate: true });
+  }, [artworkImages.length, setValue]);
 
   const setStep = useCallback(
     (nextStep: RegisterStep, options: { replace?: boolean } = {}) => {
@@ -173,58 +249,69 @@ function ArtworkRegisterPageContent() {
 
   const setTitle = useCallback(
     (value: string) => {
+      setIsTitleTouched(true);
+      setValue('title', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setTitleState(value);
       updateDraft({ title: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setDescription = useCallback(
     (value: string) => {
+      setValue('intro', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setDescriptionState(value);
       updateDraft({ description: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setField = useCallback(
     (value: string) => {
+      setValue('field', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setFieldState(value);
       updateDraft({ field: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setYear = useCallback(
     (value: string) => {
+      setIsYearTouched(true);
+      setValue('year', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+      void trigger('year');
       setYearState(value);
       updateDraft({ year: value });
     },
-    [updateDraft],
+    [setValue, trigger, updateDraft],
   );
 
   const setMedium = useCallback(
     (value: string) => {
+      setIsMediumTouched(true);
+      setValue('material', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setMediumState(value);
       updateDraft({ medium: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setSize = useCallback(
     (value: string) => {
+      setValue('size', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setSizeState(value);
       updateDraft({ size: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setPoint = useCallback(
     (value: string) => {
+      setValue('thoughts', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setPointState(value);
       updateDraft({ point: value });
     },
-    [updateDraft],
+    [setValue, updateDraft],
   );
 
   const setCollaborators = useCallback(
@@ -620,8 +707,14 @@ function ArtworkRegisterPageContent() {
       ),
     );
 
-    if (qaHandlerUserIds.length === 0) {
-      setSubmitError('Q&A 담당자를 선택해주세요.');
+    const submitResult = artworkRegisterSubmitSchema.safeParse({
+      ...basicFormValue,
+      artistName: displayAuthor.name,
+      qaHandlerUserIds,
+    });
+
+    if (!submitResult.success) {
+      setSubmitError(submitResult.error.issues[0]?.message ?? '작품 정보를 확인해주세요.');
       return;
     }
 
@@ -638,7 +731,7 @@ function ArtworkRegisterPageContent() {
         artworkName: title.trim(),
         content: description.trim(),
         type: artworkType,
-        productionYear: toProductionYear(year),
+        productionYear: toArtworkRegisterProductionYear(year),
         materialMedia: medium.trim(),
         size: size.trim(),
         point: point.trim(),
@@ -846,11 +939,15 @@ function ArtworkRegisterPageContent() {
           point={point}
           artworkImages={artworkImages}
           processImages={processImages}
+          canProceed={canProceedBasic}
+          titleError={titleError ?? errors.title?.message}
+          yearError={yearError ?? errors.year?.message}
+          mediumError={mediumError ?? errors.material?.message}
+          yearInputProps={yearInputProps}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}
           onChangeField={setField}
-          onChangeYear={setYear}
           onChangeMedium={setMedium}
           onChangeSize={setSize}
           onChangePoint={setPoint}

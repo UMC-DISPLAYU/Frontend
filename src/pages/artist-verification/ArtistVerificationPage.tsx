@@ -18,6 +18,7 @@ import {
   ARTIST_FIELD_MAP,
   type ArtistFieldCode,
   type ExhibitionField,
+  MAX_ARTIST_FIELDS,
 } from '@/constants/exhibition';
 import {
   useConfirmVerificationEmail,
@@ -125,6 +126,7 @@ export function ArtistVerificationPage() {
   const navigate = useNavigate();
   const [state, dispatch] = useReducer(verificationReducer, initialState);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [fieldError, setFieldError] = useState('');
   const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
   const [complete, setComplete] = useState(false);
 
@@ -339,7 +341,19 @@ export function ArtistVerificationPage() {
                   {errors.artistName.message}
                 </p>
               )}
-              <ArtistFieldSelector selectedFields={selectedFields} onChange={setSelectedFields} />
+              <ArtistFieldSelector
+                selectedFields={selectedFields}
+                onChange={(fields) => {
+                  setFieldError('');
+                  setSelectedFields(fields);
+                }}
+                onMaxSelectExceeded={() =>
+                  setFieldError(`분야는 최대 ${MAX_ARTIST_FIELDS}개까지만 선택할 수 있습니다.`)
+                }
+              />
+              {fieldError && (
+                <p className="mt-1 typo-body-xxs-regular text-error px-3">{fieldError}</p>
+              )}
             </>
           )}
         </form>

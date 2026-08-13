@@ -15,6 +15,7 @@ import {
   EXHIBITION_FIELD_LABELS,
   EXHIBITION_FIELDS,
   type ExhibitionField,
+  MAX_ARTIST_FIELDS,
 } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
@@ -80,6 +81,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
     artistProfile?.profileImageUrl ?? null,
   );
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [fieldError, setFieldError] = useState('');
   const updateMyArtistProfile = useUpdateMyArtistProfile();
   const uploadImage = useUploadImage();
 
@@ -235,12 +237,19 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
               labels={EXHIBITION_FIELD_LABELS}
               selected={selectedFields}
               onChange={(fields) => {
+                setFieldError('');
                 setValue('fields', fields, { shouldValidate: true });
               }}
+              maxSelect={MAX_ARTIST_FIELDS}
+              onMaxSelectExceeded={() =>
+                setFieldError(`분야는 최대 ${MAX_ARTIST_FIELDS}개까지만 선택할 수 있습니다.`)
+              }
               aria-label="전시분야"
             />
-            {errors.fields?.message && (
-              <span className="typo-body-xxs-regular text-error px-1">{errors.fields.message}</span>
+            {(fieldError || errors.fields?.message) && (
+              <span className="typo-body-xxs-regular text-error px-1">
+                {fieldError || errors.fields?.message}
+              </span>
             )}
           </div>
 
