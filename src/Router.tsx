@@ -1,6 +1,7 @@
-import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
+import { createBrowserRouter, LoaderFunctionArgs } from 'react-router-dom';
 
 import { PrivateRoute } from './components/auth/PrivateRoute';
+import { RootRedirect } from './components/auth/RootRedirect';
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
 import { ArtistVerificationPage } from './pages/artist-verification';
@@ -64,7 +65,7 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       // 🔓 공개 라우트 (비로그인 게스트 접근 가능)
-      { index: true, element: <Navigate to="/login" replace /> },
+      { index: true, element: <RootRedirect /> },
       { path: 'home', element: <Homepage /> },
       { path: 'search', element: <SearchPage /> },
       {
