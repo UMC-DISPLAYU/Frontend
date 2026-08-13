@@ -1,6 +1,12 @@
+import type { InfiniteData, QueryKey } from '@tanstack/react-query';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateLoungeCommentRequestDto, CursorPageRequestDto } from '@/api/dto';
+import type {
+  CreateLoungeCommentRequestDto,
+  CursorPageRequestDto,
+  LoungeCommentDto,
+  LoungeReplyDto,
+} from '@/api/dto';
 import {
   createLoungeComment,
   deleteLoungeComment,
@@ -9,6 +15,19 @@ import {
   unlikeLoungeComment,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+
+type LoungeCommentPage = { comments?: LoungeCommentDto[]; replies?: LoungeReplyDto[] };
+
+const toggleLoungeCommentLike = <T extends { loungeCommentId: number; isLiked: boolean; likeCount: number }>(
+  items: T[] | undefined,
+  commentId: number,
+  liked: boolean,
+) =>
+  items?.map((item) =>
+    item.loungeCommentId === commentId
+      ? { ...item, isLiked: liked, likeCount: Math.max(item.likeCount + (liked ? 1 : -1), 0) }
+      : item,
+  );
 
 export const useLoungeComments = (
   postId: number,
@@ -65,12 +84,42 @@ export const useDeleteLoungeComment = () => {
   });
 };
 
-export const useLikeLoungeComment = () => {
+const useLikeLoungeCommentMutation = (liked: boolean, mutationFn: (commentId: number) => Promise<unknown>) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: CommentMutationVariables) => likeLoungeComment(commentId),
-    onSuccess: (_, variables) => {
+    mutationFn: (variables: CommentMutationVariables) => mutationFn(variables.commentId),
+    onMutate: async (variables) => {
+      const targetKey: QueryKey = variables.parentCommentId
+        ? queryKeys.loungeComments.replyLists(variables.parentCommentId)
+        : queryKeys.loungeComments.listPrefix(variables.postId);
+
+      await queryClient.cancelQueries({ queryKey: targetKey });
+
+      const previousQueries = queryClient.getQueriesData<InfiniteData<LoungeCommentPage>>({
+        queryKey: targetKey,
+      });
+
+      queryClient.setQueriesData<InfiniteData<LoungeCommentPage>>({ queryKey: targetKey }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            comments: toggleLoungeCommentLike(page.comments, variables.commentId, liked),
+            replies: toggleLoungeCommentLike(page.replies, variables.commentId, liked),
+          })),
+        };
+      });
+
+      return { previousQueries };
+    },
+    onError: (_, __, context) => {
+      context?.previousQueries.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
       });
@@ -83,20 +132,6 @@ export const useLikeLoungeComment = () => {
   });
 };
 
-export const useUnlikeLoungeComment = () => {
-  const queryClient = useQueryClient();
+export const useLikeLoungeComment = () => useLikeLoungeCommentMutation(true, likeLoungeComment);
 
-  return useMutation({
-    mutationFn: ({ commentId }: CommentMutationVariables) => unlikeLoungeComment(commentId),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.loungeComments.listPrefix(variables.postId),
-      });
-      if (variables.parentCommentId) {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.loungeComments.replyLists(variables.parentCommentId),
-        });
-      }
-    },
-  });
-};
+export const useUnlikeLoungeComment = () => useLikeLoungeCommentMutation(false, unlikeLoungeComment);

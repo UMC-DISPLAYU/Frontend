@@ -99,7 +99,9 @@ export const useDeleteDisplayReviewReply = (displayId: number, displayReviewId: 
 };
 
 export const useToggleDisplayReviewReplyLike = (displayId: number, displayReviewId: number) => {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidateReplies(displayId, displayReviewId);
+  const queryKey = queryKeys.displays.reviewReplies(displayId, displayReviewId);
 
   return useMutation({
     mutationFn: ({
@@ -112,6 +114,41 @@ export const useToggleDisplayReviewReplyLike = (displayId: number, displayReview
       liked
         ? cancelDisplayReviewReplyLike(displayId, displayReviewId, displayReviewReplyId)
         : toggleDisplayReviewReplyLike(displayId, displayReviewId, displayReviewReplyId),
-    onSuccess: invalidate,
+    onMutate: async ({ displayReviewReplyId, liked }) => {
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousData =
+        queryClient.getQueryData<InfiniteData<GetDisplayReviewRepliesResponseDataDto>>(queryKey);
+
+      queryClient.setQueryData<InfiniteData<GetDisplayReviewRepliesResponseDataDto>>(
+        queryKey,
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              replies: page.replies.map((reply) =>
+                reply.displayReviewReplyId === displayReviewReplyId
+                  ? {
+                      ...reply,
+                      isLiked: !liked,
+                      likeCount: Math.max(reply.likeCount + (liked ? -1 : 1), 0),
+                    }
+                  : reply,
+              ),
+            })),
+          };
+        },
+      );
+
+      return { previousData };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousData !== undefined) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: invalidate,
   });
 };

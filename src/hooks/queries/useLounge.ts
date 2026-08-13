@@ -3,6 +3,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import type {
   CreateLoungePostRequestDto,
   GetLoungePostsRequestDto,
+  LoungePostDetailDto,
   UpdateLoungePostRequestDto,
 } from '@/api/dto';
 import {
@@ -85,7 +86,25 @@ export const useLikeLoungePost = () => {
 
   return useMutation({
     mutationFn: (postId: number) => likeLoungePost(postId),
-    onSuccess: (_, postId) => {
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
+
+      const previousPost = queryClient.getQueryData<LoungePostDetailDto>(
+        queryKeys.loungePosts.detail(postId),
+      );
+
+      queryClient.setQueryData<LoungePostDetailDto>(queryKeys.loungePosts.detail(postId), (old) =>
+        old ? { ...old, isLiked: true, likeCount: old.likeCount + 1 } : old,
+      );
+
+      return { previousPost };
+    },
+    onError: (_, postId, context) => {
+      if (context?.previousPost) {
+        queryClient.setQueryData(queryKeys.loungePosts.detail(postId), context.previousPost);
+      }
+    },
+    onSettled: (_, __, postId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
     },
@@ -97,7 +116,25 @@ export const useUnlikeLoungePost = () => {
 
   return useMutation({
     mutationFn: (postId: number) => unlikeLoungePost(postId),
-    onSuccess: (_, postId) => {
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
+
+      const previousPost = queryClient.getQueryData<LoungePostDetailDto>(
+        queryKeys.loungePosts.detail(postId),
+      );
+
+      queryClient.setQueryData<LoungePostDetailDto>(queryKeys.loungePosts.detail(postId), (old) =>
+        old ? { ...old, isLiked: false, likeCount: Math.max(old.likeCount - 1, 0) } : old,
+      );
+
+      return { previousPost };
+    },
+    onError: (_, postId, context) => {
+      if (context?.previousPost) {
+        queryClient.setQueryData(queryKeys.loungePosts.detail(postId), context.previousPost);
+      }
+    },
+    onSettled: (_, __, postId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
     },
@@ -109,7 +146,25 @@ export const useScrapLoungePost = () => {
 
   return useMutation({
     mutationFn: (postId: number) => scrapLoungePost(postId),
-    onSuccess: (_, postId) => {
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
+
+      const previousPost = queryClient.getQueryData<LoungePostDetailDto>(
+        queryKeys.loungePosts.detail(postId),
+      );
+
+      queryClient.setQueryData<LoungePostDetailDto>(queryKeys.loungePosts.detail(postId), (old) =>
+        old ? { ...old, isScrapped: true } : old,
+      );
+
+      return { previousPost };
+    },
+    onError: (_, postId, context) => {
+      if (context?.previousPost) {
+        queryClient.setQueryData(queryKeys.loungePosts.detail(postId), context.previousPost);
+      }
+    },
+    onSettled: (_, __, postId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
     },
@@ -121,7 +176,25 @@ export const useUnscrapLoungePost = () => {
 
   return useMutation({
     mutationFn: (postId: number) => unscrapLoungePost(postId),
-    onSuccess: (_, postId) => {
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
+
+      const previousPost = queryClient.getQueryData<LoungePostDetailDto>(
+        queryKeys.loungePosts.detail(postId),
+      );
+
+      queryClient.setQueryData<LoungePostDetailDto>(queryKeys.loungePosts.detail(postId), (old) =>
+        old ? { ...old, isScrapped: false } : old,
+      );
+
+      return { previousPost };
+    },
+    onError: (_, postId, context) => {
+      if (context?.previousPost) {
+        queryClient.setQueryData(queryKeys.loungePosts.detail(postId), context.previousPost);
+      }
+    },
+    onSettled: (_, __, postId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
     },
