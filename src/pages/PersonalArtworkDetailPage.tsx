@@ -116,7 +116,11 @@ export function PersonalArtworkDetailPage() {
     );
 
   /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
-  const handleSendQuestion = (payload: { content: string; isPrivate: boolean }) => {
+  const handleSendQuestion = (payload: {
+    content: string;
+    isPrivate: boolean;
+    images?: { imageUrl: string; width?: number; height?: number }[];
+  }) => {
     if (!payload.content) return;
 
     if (replyQuestion) {
@@ -125,7 +129,10 @@ export function PersonalArtworkDetailPage() {
         openLoginModal();
         return;
       }
-      createQuestionReply.mutate(payload.content, { onSuccess: () => setReplyQuestion(null) });
+      createQuestionReply.mutate(
+        { content: payload.content, images: payload.images },
+        { onSuccess: () => setReplyQuestion(null) },
+      );
       return;
     }
 
@@ -134,7 +141,7 @@ export function PersonalArtworkDetailPage() {
       return;
     }
     createQuestion.mutate(
-      { content: payload.content, isPublic: !payload.isPrivate },
+      { content: payload.content, isPublic: !payload.isPrivate, images: payload.images },
       { onSuccess: () => setIsComposingQuestion(false) },
     );
   };
@@ -252,7 +259,9 @@ export function PersonalArtworkDetailPage() {
                         prev?.personalQuestionId === question.personalQuestionId ? null : question,
                       )
                     }
-                    onSubmitReply={(content) => handleSendQuestion({ content, isPrivate: false })}
+                    onSubmitReply={(content, images) =>
+                      handleSendQuestion({ content, images, isPrivate: false })
+                    }
                     isSubmittingReply={createQuestionReply.isPending}
                   />
                 ))}

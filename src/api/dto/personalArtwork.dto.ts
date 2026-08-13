@@ -14,8 +14,7 @@ export interface PersonalArtworkRequestDto {
 export interface PersonalArtworkResponseDataDto {
   personalArtworkId: number;
   userId: number;
-  nickname?: string;
-  profileImageUrl?: string | null;
+  artistName?: string;
   artworkName: string;
   content?: string;
   type: string;
@@ -92,6 +91,7 @@ export interface GetPersonalArtworkFeelingsResponseDataDto {
 export interface CreatePersonalArtworkQuestionRequestDto {
   content: string;
   isPublic?: boolean;
+  images?: PersonalArtworkFeelingImageRequestDto[];
 }
 
 export interface PersonalArtworkQuestionResponseDataDto {

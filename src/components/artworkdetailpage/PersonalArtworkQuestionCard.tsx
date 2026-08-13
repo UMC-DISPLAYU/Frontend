@@ -7,10 +7,15 @@ import type {
   PersonalArtworkResponseDataDto,
 } from '@/api/dto';
 import { useDeletePersonalArtworkQuestion } from '@/hooks/queries/usePersonalArtwork';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
 import { formatRelativeTime } from '@/utils/date';
+import { readImageDimensions } from '@/utils/image';
 
 const QUESTION_MAX_LENGTH = 300;
+const QUESTION_MAX_IMAGES = 5;
+
+type ComposerImage = { imageUrl: string; width?: number; height?: number };
 
 /* 스크롤 대신 박스 자체가 늘어나도록 내용에 맞춰 textarea 높이를 맞춥니다. */
 function useAutoResizeTextarea(value: string) {
@@ -26,23 +31,106 @@ function useAutoResizeTextarea(value: string) {
   return ref;
 }
 
+/* 선택된 이미지 미리보기 줄. */
+function ImagePreviewRow({
+  images,
+  onRemove,
+}: {
+  images: { id: string; previewUrl: string }[];
+  onRemove: (id: string) => void;
+}) {
+  if (images.length === 0) return null;
+
+  return (
+    <div className="flex w-full items-center gap-2 overflow-x-auto">
+      {images.map((image) => (
+        <div key={image.id} className="relative size-16 shrink-0">
+          <img src={image.previewUrl} alt="" className="size-16 rounded-lg object-cover" />
+          <button
+            type="button"
+            onClick={() => onRemove(image.id)}
+            aria-label="이미지 삭제"
+            className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
+          >
+            <X size={12} className="text-white" strokeWidth={2.5} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* 원래 있던 "사진추가" 텍스트 버튼과 똑같은 자리에 놓는, 숨은 파일 입력을 여는 버튼. */
+function ImagePickButton({
+  onPick,
+  canAddMore,
+  disabled,
+}: {
+  onPick: (files: FileList) => void;
+  canAddMore: boolean;
+  disabled: boolean;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(event) => {
+          if (event.target.files?.length) onPick(event.target.files);
+          event.target.value = '';
+        }}
+        className="hidden"
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={!canAddMore || disabled}
+        className="typo-body-sm-regular text-faint underline disabled:opacity-50"
+      >
+        사진추가
+      </button>
+    </>
+  );
+}
+
 export function PersonalArtworkQuestionComposerCard({
   onClose,
   onSubmit,
   isSubmitting = false,
 }: {
   onClose: () => void;
-  onSubmit: (payload: { content: string; isPrivate: boolean }) => void;
+  onSubmit: (payload: { content: string; isPrivate: boolean; images: ComposerImage[] }) => void;
   isSubmitting?: boolean;
 }) {
   const [content, setContent] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const textareaRef = useAutoResizeTextarea(content);
+  const { images, addImages, removeImage, clearImages, uploadImages, canAddMore, isUploading } =
+    useImageUpload({ domain: 'personal-artwork-question', maxImages: QUESTION_MAX_IMAGES });
+  const isBusy = isSubmitting || isUploading;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmed = content.trim();
-    if (!trimmed || isSubmitting) return;
-    onSubmit({ content: trimmed, isPrivate });
+    if (!trimmed || isBusy) return;
+
+    const files = images.map((image) => image.file).filter((file): file is File => Boolean(file));
+    const dimensions =
+      files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
+    const imageUrls = images.length > 0 ? await uploadImages() : [];
+    const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
+      imageUrl,
+      width: dimensions[index]?.width,
+      height: dimensions[index]?.height,
+    }));
+
+    onSubmit({ content: trimmed, isPrivate, images: submitImages });
+    setContent('');
+    setIsPrivate(false);
+    clearImages();
   };
 
   return (
@@ -70,6 +158,8 @@ export function PersonalArtworkQuestionComposerCard({
           </span>
         </div>
 
+        <ImagePreviewRow images={images} onRemove={removeImage} />
+
         <div className="flex items-start justify-between self-stretch">
           <button
             type="button"
@@ -89,15 +179,13 @@ export function PersonalArtworkQuestionComposerCard({
               비공개
             </span>
           </button>
-          <button type="button" className="typo-body-sm-regular text-faint underline">
-            사진추가
-          </button>
+          <ImagePickButton onPick={addImages} canAddMore={canAddMore} disabled={isBusy} />
         </div>
 
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!content.trim() || isSubmitting}
+          disabled={!content.trim() || isBusy}
           className="flex h-11 w-full items-center justify-center gap-2.5 rounded-[52px] bg-box100 disabled:opacity-50"
         >
           <span className="text-[18px] leading-[140%] tracking-[-0.45px] text-main">확인</span>
@@ -113,7 +201,7 @@ type Props = {
   myUserId?: number;
   isReplyTarget: boolean;
   onReply: () => void;
-  onSubmitReply: (content: string) => void;
+  onSubmitReply: (content: string, images: ComposerImage[]) => void;
   isSubmittingReply?: boolean;
 };
 
@@ -130,6 +218,16 @@ export function PersonalArtworkQuestionCard({
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const replyTextareaRef = useAutoResizeTextarea(replyContent);
+  const {
+    images: replyImages,
+    addImages: addReplyImages,
+    removeImage: removeReplyImage,
+    clearImages: clearReplyImages,
+    uploadImages: uploadReplyImages,
+    canAddMore: canAddMoreReplyImages,
+    isUploading: isUploadingReplyImages,
+  } = useImageUpload({ domain: 'personal-artwork-question-reply', maxImages: QUESTION_MAX_IMAGES });
+  const isReplyBusy = isSubmittingReply || isUploadingReplyImages;
 
   /* 비공개 질문 열람 가능 여부·답변 권한은 서버가 계산해서 accessible/canReply로 내려줍니다. */
   const canView = question.accessible;
@@ -147,7 +245,10 @@ export function PersonalArtworkQuestionCard({
   const [prevIsReplyTarget, setPrevIsReplyTarget] = useState(isReplyTarget);
   if (isReplyTarget !== prevIsReplyTarget) {
     setPrevIsReplyTarget(isReplyTarget);
-    if (!isReplyTarget) setReplyContent('');
+    if (!isReplyTarget) {
+      setReplyContent('');
+      clearReplyImages();
+    }
   }
 
   /* 이 질문에 답변을 작성 중인지 — 답변 권한이 있는 사람(작품 주인)이 대상으로 선택했을 때. */
@@ -161,10 +262,25 @@ export function PersonalArtworkQuestionCard({
     setShowReplies((prev) => !prev);
   };
 
-  const handleSubmitReply = () => {
+  const handleSubmitReply = async () => {
     const trimmed = replyContent.trim();
-    if (!trimmed || isSubmittingReply) return;
-    onSubmitReply(trimmed);
+    if (!trimmed || isReplyBusy) return;
+
+    const files = replyImages
+      .map((image) => image.file)
+      .filter((file): file is File => Boolean(file));
+    const dimensions =
+      files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
+    const imageUrls = replyImages.length > 0 ? await uploadReplyImages() : [];
+    const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
+      imageUrl,
+      width: dimensions[index]?.width,
+      height: dimensions[index]?.height,
+    }));
+
+    onSubmitReply(trimmed, submitImages);
+    setReplyContent('');
+    clearReplyImages();
   };
 
   return (
@@ -187,6 +303,18 @@ export function PersonalArtworkQuestionCard({
             <p className="w-full typo-body-md-regular text-main wrap-break-word whitespace-pre-line">
               {question.content}
             </p>
+            {question.images && question.images.length > 0 && (
+              <div className="flex w-full items-center gap-1.5 overflow-x-auto">
+                {question.images.map((image, idx) => (
+                  <img
+                    key={idx}
+                    src={image.imageUrl}
+                    alt=""
+                    className="size-16 shrink-0 rounded-lg object-cover"
+                  />
+                ))}
+              </div>
+            )}
             <div className="flex items-start gap-2">
               <span className="typo-body-xs-regular text-sub600">{question.user?.nickname}</span>
               <span className="typo-body-xs-regular text-sub600">
@@ -207,7 +335,7 @@ export function PersonalArtworkQuestionCard({
               className="flex h-[52px] w-full items-center justify-between gap-0.5 px-4 pt-4 pb-2 cursor-pointer"
             >
               <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
-                {artwork.nickname}
+                {artwork.artistName}
               </span>
               <span className="flex shrink-0 items-center gap-0.5">
                 <span className="typo-body-xs-regular text-sub600 underline">답변대기</span>
@@ -225,10 +353,13 @@ export function PersonalArtworkQuestionCard({
                   rows={1}
                   className="typo-body-xs-regular min-h-[80px] w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint"
                 />
+                <ImagePreviewRow images={replyImages} onRemove={removeReplyImage} />
                 <div className="flex w-full items-center justify-between">
-                  <button type="button" className="typo-body-sm-regular text-faint underline">
-                    사진추가
-                  </button>
+                  <ImagePickButton
+                    onPick={addReplyImages}
+                    canAddMore={canAddMoreReplyImages}
+                    disabled={isReplyBusy}
+                  />
                   <span className="typo-body-xs-regular text-faint">
                     {replyContent.length}/{QUESTION_MAX_LENGTH}
                   </span>
@@ -237,7 +368,7 @@ export function PersonalArtworkQuestionCard({
               <button
                 type="button"
                 onClick={handleSubmitReply}
-                disabled={!replyContent.trim() || isSubmittingReply}
+                disabled={!replyContent.trim() || isReplyBusy}
                 className="flex h-11 w-full items-center justify-center gap-2.5 rounded-[52px] bg-box100 disabled:opacity-50"
               >
                 <span className="text-[18px] leading-[140%] tracking-[-0.45px] text-main">
@@ -254,7 +385,7 @@ export function PersonalArtworkQuestionCard({
               className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2 cursor-pointer"
             >
               <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
-                {artwork.nickname}
+                {artwork.artistName}
               </span>
               <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
               {showReplies && <ChevronUp size={13} className="shrink-0 text-sub600" />}
@@ -262,7 +393,7 @@ export function PersonalArtworkQuestionCard({
           ) : (
             <div className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2">
               <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
-                {artwork.nickname}
+                {artwork.artistName}
               </span>
               <span className="typo-body-xs-regular text-sub600">답변완료</span>
             </div>
@@ -302,6 +433,18 @@ export function PersonalArtworkQuestionCard({
                 <p className="typo-body-md-regular text-main wrap-break-word whitespace-pre-line">
                   {reply.content}
                 </p>
+                {reply.images && reply.images.length > 0 && (
+                  <div className="mt-1 flex w-full items-center gap-1.5 overflow-x-auto">
+                    {reply.images.map((image, idx) => (
+                      <img
+                        key={idx}
+                        src={image.imageUrl}
+                        alt=""
+                        className="size-16 shrink-0 rounded-lg object-cover"
+                      />
+                    ))}
+                  </div>
+                )}
                 <span className="typo-body-xs-regular mt-1 text-sub600">
                   {formatRelativeTime(reply.createdAt)}
                 </span>

@@ -311,8 +311,15 @@ export const useCreatePersonalArtworkQuestion = (personalArtworkId: number) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: ({ content, isPublic }: { content: string; isPublic: boolean }) =>
-      createPersonalArtworkQuestion(personalArtworkId, { content, isPublic }),
+    mutationFn: ({
+      content,
+      isPublic,
+      images,
+    }: {
+      content: string;
+      isPublic: boolean;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) => createPersonalArtworkQuestion(personalArtworkId, { content, isPublic, images }),
     onSuccess: invalidate,
   });
 };
@@ -344,8 +351,17 @@ export const useCreatePersonalArtworkQuestionReply = (
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: (content: string) =>
-      createPersonalArtworkQuestionReply(personalArtworkId, personalQuestionId, { content }),
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) =>
+      createPersonalArtworkQuestionReply(personalArtworkId, personalQuestionId, {
+        content,
+        images,
+      }),
     onSuccess: invalidate,
   });
 };

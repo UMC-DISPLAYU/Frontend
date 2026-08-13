@@ -26,7 +26,6 @@ export interface ArtworkGuestbookReplyDto {
   user?: ArtworkGuestbookUserDto;
   likeCount?: number;
   isLiked?: boolean;
-  /* 감상 답글에만 내려온다. */
   images?: ArtworkFeelingReplyImageDto[];
   /* 질문 답변(작가 답변)은 user 대신 이 필드들로 내려온다. */
   creatorId?: number;
@@ -203,6 +202,7 @@ export interface ArtworkQuestionDto {
   createdAt: string;
   displayArtworkId?: number;
   userId?: number;
+  images?: { imageUrl: string; width?: number; height?: number }[];
   user: ArtworkGuestbookUserDto | null;
   reply: ArtworkGuestbookReplyDto | null;
 }
@@ -264,6 +264,7 @@ export type GetReceivedArtworkQuestionsResponseDto =
 export interface CreateArtworkQuestionRequestDto {
   content: string;
   isPublic: boolean;
+  images?: ArtworkFeelingReplyImageRequestDto[];
 }
 
 export interface ArtworkQuestionRecordDto {
@@ -289,6 +290,7 @@ export type DeleteArtworkQuestionResponseDto = ApiResponseDto<DeleteArtworkQuest
 
 export interface CreateArtworkQuestionReplyRequestDto {
   content: string;
+  images?: ArtworkFeelingReplyImageRequestDto[];
 }
 
 export interface CreateArtworkQuestionReplyResponseDataDto {

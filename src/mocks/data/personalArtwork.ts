@@ -16,8 +16,7 @@ export const MOCK_PERSONAL_ARTWORKS: PersonalArtworkResponseDataDto[] = [
   {
     personalArtworkId: 1,
     userId: 1,
-    nickname: '디스플레이유',
-    profileImageUrl: null,
+    artistName: '디스플레이유',
     artworkName: '개인 작업 아카이브',
     content: '개인 작업의 제작 과정과 결과물을 정리한 아카이브입니다.',
     type: 'SCULPTURE',

@@ -78,7 +78,7 @@ export function PersonalArtworkMeta({ artwork }: Props) {
 
       {/* 작가명 + 작품 정보(분류·연도·크기·재료) */}
       <div className="flex flex-col items-start gap-2 mb-2.5">
-        <p className="typo-body-sm-regular text-main -mt-1.5">{artwork.nickname}</p>
+        <p className="typo-body-sm-regular text-main -mt-1.5">{artwork.artistName}</p>
         {infoParts.length > 0 && (
           <div className="flex items-center gap-1 self-stretch">
             {infoParts.map((part, idx) => (

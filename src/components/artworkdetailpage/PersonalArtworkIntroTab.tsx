@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight, ChevronUp } from 'lucide-react';
 
 import type { PersonalArtworkResponseDataDto } from '@/api/dto';
-import { ArtworkArtistRow } from '@/components/artworkdetailpage/ArtworkIntroTab';
 import { cn } from '@/utils/cn';
 
 type Props = {
@@ -115,11 +114,6 @@ export function PersonalArtworkIntroTab({ artwork }: Props) {
           <p className="typo-body-sm-regular text-main leading-relaxed">{artwork.point}</p>
         </section>
       )}
-
-      {/* 작가 정보 */}
-      <section className="flex flex-col">
-        <ArtworkArtistRow userId={artwork.userId} displayName={artwork.nickname || '작가 미상'} />
-      </section>
     </div>
   );
 }
