@@ -89,6 +89,6 @@ src/
 
 | 문서 | 내용 |
 | ---- | ---- |
-| [Code Convention](https://github.com/UMC-DISPLAYU/Frontend/blob/dev/docs/CODE_CONVENTION.md) | 전반적인 코드 컨벤션을 정리했습니다.
+| [Code Convention](https://github.com/UMC-DISPLAYU/Frontend/blob/develop/CONVENTION.md) | 전반적인 코드 컨벤션을 정리했습니다.
 
 **Made with passion by DisplayU Frontend Team**
