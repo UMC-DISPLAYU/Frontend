@@ -446,19 +446,27 @@ export function PersonalArtworkQuestionCard({
             <button
               type="button"
               onClick={handleFooterClick}
-              className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2 cursor-pointer"
+              className="flex w-full items-center justify-between border-t border-box200 p-4 cursor-pointer"
             >
-              <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
-                {artwork.artistName}
+              {/* 답변완료 접힌 상태에서는 이름을 숨기고, 펼쳤을 때만 실제 답변자(작가 또는 QA 담당자) 이름을 보여줍니다. */}
+              {showReplies ? (
+                <span className="shrink-0 truncate text-left typo-body-xs-regular text-link">
+                  {reply.nickname}
+                </span>
+              ) : (
+                <span />
+              )}
+              <span className="flex shrink-0 items-center gap-0.5">
+                <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
+                {showReplies ? (
+                  <ChevronUp size={13} className="shrink-0 text-sub600" />
+                ) : (
+                  <ChevronDown size={13} className="shrink-0 text-sub600" />
+                )}
               </span>
-              <span className="typo-body-xs-regular text-sub600 underline">답변완료</span>
-              {showReplies && <ChevronUp size={13} className="shrink-0 text-sub600" />}
             </button>
           ) : (
-            <div className="flex w-full items-center justify-end gap-0.5 border-t border-box200 px-4 pt-4 pb-2">
-              <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
-                {artwork.artistName}
-              </span>
+            <div className="flex w-full items-center justify-end border-t border-box200 p-4">
               <span className="typo-body-xs-regular text-sub600">답변완료</span>
             </div>
           )
@@ -482,7 +490,11 @@ export function PersonalArtworkQuestionCard({
                 className="flex items-center gap-0.5 cursor-pointer"
               >
                 <span className="typo-body-xs-regular text-sub600 underline">답변대기</span>
-                {showReplies && <ChevronDown size={13} className="shrink-0 text-sub600" />}
+                {showReplies ? (
+                  <ChevronUp size={13} className="shrink-0 text-sub600" />
+                ) : (
+                  <ChevronDown size={13} className="shrink-0 text-sub600" />
+                )}
               </button>
             ) : (
               <span className="typo-body-xs-regular text-sub600">답변대기</span>
@@ -491,7 +503,7 @@ export function PersonalArtworkQuestionCard({
         )}
 
         {showReplies && !isComposingReply && (
-          <div className="flex flex-col gap-1 px-4 pb-3.5">
+          <div className="flex flex-col items-start gap-1 px-4 pb-3.5">
             {reply ? (
               <>
                 <p className="typo-body-md-regular text-main wrap-break-word whitespace-pre-line">

@@ -35,8 +35,8 @@ export function parseServerDate(iso: string): Date {
 /**
  * 상대 시간 표시. 라운지/전시상세/작품상세 댓글·답글·후기·감상·질문에서 공통으로 쓴다.
  * - 0~1분: '방금 전'
- * - 2~59분: 'N분 전'
- * - 1~23시간: 'N시간 전'
+ * - 2~59분: 'N분전' (공백 없음)
+ * - 1~23시간: 'N시간전' (공백 없음)
  * - 24시간 이상: 'YYYY.MM.DD' (점 뒤 공백 없음, '며칠 전' 표현 없이 바로 날짜)
  */
 export function formatRelativeTime(createdAt: string): string {
@@ -45,10 +45,10 @@ export function formatRelativeTime(createdAt: string): string {
   const diffMinutes = Math.floor(diffMs / 60000);
 
   if (diffMinutes <= 1) return '방금 전';
-  if (diffMinutes < 60) return `${diffMinutes}분 전`;
+  if (diffMinutes < 60) return `${diffMinutes}분전`;
 
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  if (diffHours < 24) return `${diffHours}시간 전`;
+  if (diffHours < 24) return `${diffHours}시간전`;
 
   return formatFullDate(createdAt);
 }
