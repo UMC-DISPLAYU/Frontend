@@ -6,16 +6,16 @@ interface ArtistVerificationHeaderProps {
 
 export function ArtistVerificationHeader({ onBack }: ArtistVerificationHeaderProps) {
   return (
-    <header className="flex h-[34px] shrink-0 items-center">
+    <header className="flex items-center gap-3 pt-4 pb-6">
       <button
         type="button"
         onClick={onBack}
         aria-label="뒤로가기"
-        className="flex h-[34px] w-7 items-center justify-start"
+        className="-ml-1 flex items-center justify-start"
       >
-        <ChevronLeft className="size-[28px] text-logo" strokeWidth={2} />
+        <ChevronLeft className="size-7 text-main" strokeWidth={2} />
       </button>
-      <h1 className="ml-3 typo-body-xl-bold text-main">작가 인증</h1>
+      <h1 className="typo-body-xl-bold text-main">작가 인증</h1>
     </header>
   );
 }

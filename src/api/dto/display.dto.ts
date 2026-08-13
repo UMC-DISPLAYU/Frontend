@@ -202,13 +202,25 @@ export interface DisplayTeamMemberDto {
   displayNickname: string;
   role: string;
   accepted: boolean;
+  loggedIn?: boolean;
+  artistVerified?: boolean;
 }
 
 export interface DisplayInvitationDto {
   invitationId: number;
-  inviterUserId: number;
-  inviteeUserId: number;
-  createdAt: string;
+  displayId: number;
+  title: string;
+  posterImageUrl?: string;
+  schoolDepartmentName?: string;
+  startedAt: string;
+  endedAt: string;
+  dayLeft?: number;
+  isArchived?: boolean;
+  /* 하위 호환용 - 추후 서버가 내려줄 수 있는 필드 */
+  inviterUserId?: number;
+  inviteeUserId?: number;
+  createdAt?: string;
+  status?: string;
 }
 
 export type GetDisplayDetailResponseDto = ApiResponseDto<DisplayDetailDto>;
@@ -326,7 +338,19 @@ export interface CreateDisplayReviewReplyRequestDto {
   images?: DisplayReviewImageRequestDto[];
 }
 
-export type CreateDisplayReviewReplyResponseDataDto = DisplayReviewReplyDto;
+/* 답글 생성 응답은 목록 항목(DisplayReviewReplyDto)과 모양이 달라, user 중첩 객체 대신
+ * userId/nickname이 평평하게 옵니다. likeCount/isLiked는 막 만든 답글이라 항상 0/false로
+ * 확정이라 응답에 없습니다. */
+export interface CreateDisplayReviewReplyResponseDataDto {
+  displayReviewReplyId: number;
+  createdAt: string;
+  content: string;
+  displayReviewId: number;
+  userId: number;
+  nickname: string;
+  isTeamMember: boolean;
+  images?: DisplayReviewReplyImageDto[];
+}
 
 export interface DeleteDisplayReviewReplyResponseDataDto {
   displayReviewReplyId: number;
@@ -379,9 +403,9 @@ export interface CreateDisplayRequestDto {
   latitude: number;
   longitude: number;
   roadAddress: string;
-  /* 서버 필수값입니다. 이 전시에서 쓸 표시명과 문의(Q&A) 계정입니다. */
+  /* 서버 필수값입니다. 이 전시에서 쓸 표시명입니다. */
   displayNickname: string;
-  qnaAccount: string;
+  qnaAccount?: string;
   schoolOrOrganization: string;
   departmentOrClub?: string;
   subtitle?: string;
@@ -461,11 +485,20 @@ export interface MyDisplayDto {
   department: string;
   placeName: string;
   postImageUrl: string;
+  isLeader?: boolean;
+  publishStatus?: 'PUBLISHED' | 'DRAFT';
+  displayNickname?: string;
+  artistName?: string;
 }
 
 export interface GetMyDisplaysResponseDataDto {
   createdDisplays: MyDisplayDto[];
   participatedDisplays: MyDisplayDto[];
+}
+
+export interface UpdateMyDisplayNicknameRequestDto {
+  displayId: number;
+  displayNickname: string;
 }
 
 export type ArtistDisplayDto = MyDisplayDto;
@@ -508,7 +541,7 @@ export interface DisableDisplayInvitationLinkResponseDataDto {
 }
 
 export interface MyDisplayInvitationListResponseDataDto {
-  invitations: DisplayInvitationDto[];
+  exhibitions: DisplayInvitationDto[];
 }
 
 export interface AcceptDisplayInvitationRequestDto {

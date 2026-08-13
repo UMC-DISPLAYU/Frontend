@@ -38,6 +38,7 @@ import type {
   UpdateDisplayReservationRequestDto,
   UpdateDisplayReservationResponseDataDto,
   UpdateDisplayResponseDataDto,
+  UpdateMyDisplayNicknameRequestDto,
 } from '@/api/dto';
 
 import { apiRequest } from '../client';
@@ -79,6 +80,10 @@ export const getDisplayMap = async (
 // GET /v1/display/:displayId
 export const getDisplayDetail = async (displayId: number): Promise<DisplayDetailDto> =>
   apiRequest(`/v1/display/${displayId}`);
+
+// DELETE /v1/display/:displayId
+export const deleteDisplay = async (displayId: number): Promise<void> =>
+  apiRequest(`/v1/display/${displayId}`, { method: 'DELETE' });
 
 // POST /v1/display
 export const createDisplay = async (
@@ -132,8 +137,9 @@ export const getArtistDisplays = async (
 ): Promise<GetArtistDisplaysResponseDataDto> => apiRequest(`/v1/display/artists/${userId}`);
 
 // PATCH /v1/display/me/nickname
-export const updateMyDisplayNickname = async (body: { nickname: string }): Promise<unknown> =>
-  apiRequest('/v1/display/me/nickname', { method: 'PATCH', body });
+export const updateMyDisplayNickname = async (
+  body: UpdateMyDisplayNicknameRequestDto,
+): Promise<unknown> => apiRequest('/v1/display/me/nickname', { method: 'PATCH', body });
 
 // GET /v1/display/invitation/:token
 export const getDisplayInvitationByToken = async (token: string): Promise<DisplayDetailDto> =>
@@ -163,9 +169,9 @@ export const inviteDisplayMember = async (
 ): Promise<DisplayMemberInvitationResponseDataDto> =>
   apiRequest(`/v1/display-invitations/displays/${displayId}`, { method: 'POST', body });
 
-// GET /v1/display-invitations/me
+// GET /v1/display-invitations
 export const getMyDisplayInvitations = async (): Promise<MyDisplayInvitationListResponseDataDto> =>
-  apiRequest('/v1/display-invitations/me');
+  apiRequest('/v1/display-invitations');
 
 // POST /v1/display-invitations/:invitationId/accept
 export const acceptDisplayInvitation = async (

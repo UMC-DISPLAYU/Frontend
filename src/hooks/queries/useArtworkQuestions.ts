@@ -38,6 +38,9 @@ export const useCreateArtworkQuestion = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkQuestions.all,
+      });
     },
   });
 };
@@ -51,6 +54,9 @@ export const useDeleteArtworkQuestion = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkQuestions.all,
       });
     },
   });

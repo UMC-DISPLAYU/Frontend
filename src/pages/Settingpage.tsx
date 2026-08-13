@@ -24,7 +24,7 @@ export function SettingPage() {
   const { data: invitationsData } = useMyDisplayInvitations();
   const { data: questionsData } = useReceivedArtworkQuestions({ answerStatus: 'WAITING' });
 
-  const invitationCount = invitationsData?.invitations?.length ?? 0;
+  const invitationCount = invitationsData?.exhibitions?.length ?? 0;
   const pendingQuestionCount = questionsData?.questions?.length ?? 0;
 
   const handleLogout = () => {
@@ -55,7 +55,7 @@ export function SettingPage() {
     <div className="max-w-md mx-auto min-h-screen bg-page">
       <SettingHeader onBack={handleBack} />
 
-      <div className="flex flex-col gap-8 px-5 pb-10">
+      <div className="flex flex-col gap-6 px-5 pb-10">
         <SettingSection title="프로필 및 계정">
           <SettingRow
             title="기본 정보 수정"
@@ -137,7 +137,7 @@ export function SettingPage() {
           </button>
         </SettingSection>
 
-        <div className="mt-8 flex flex-col gap-3">
+        <div className="mt-18 flex flex-col gap-3">
           <button
             type="button"
             className="typo-body-md-semibold h-14 w-full rounded-2xl bg-card text-main"

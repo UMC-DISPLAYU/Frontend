@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { BottomSheet } from '@/components/ui/BottomSheet';
 
@@ -47,6 +47,7 @@ export function TimeSheet({
 
   /** 직접 입력 중인 숫자 버퍼 ("1" -> "18") */
   const bufferRef = useRef('');
+  const inputRef = useRef<HTMLInputElement>(null);
   const prevOpenRef = useRef(open);
 
   const enforceTimeOrder = (t: typeof time, activeField: Field) => {
@@ -74,9 +75,16 @@ export function TimeSheet({
       });
       setField('startHour');
       bufferRef.current = '';
+      inputRef.current?.focus({ preventScroll: true });
     }
     prevOpenRef.current = open;
   }, [open, value]);
+
+  useLayoutEffect(() => {
+    if (open) {
+      inputRef.current?.focus({ preventScroll: true });
+    }
+  }, [open]);
 
   const isHourField = field === 'startHour' || field === 'endHour';
 
@@ -99,12 +107,16 @@ export function TimeSheet({
     }
 
     const key = isHourField ? hourKey : minuteKey;
-    setTime((t) =>
-      enforceTimeOrder({ ...t, [key]: isHourField ? clampHour(n) : clampMinute(n) }, field),
-    );
+    const nextBuffer = bufferRef.current;
+
+    setTime((t) => {
+      const nextTime = { ...t, [key]: isHourField ? clampHour(n) : clampMinute(n) };
+
+      return nextBuffer.length === 2 ? enforceTimeOrder(nextTime, field) : nextTime;
+    });
 
     // 두 자리를 채웠으면 다음 필드로 자동 이동
-    if (bufferRef.current.length === 2) {
+    if (nextBuffer.length === 2) {
       bufferRef.current = '';
       setField((f) =>
         f === 'startHour'
@@ -141,6 +153,25 @@ export function TimeSheet({
     }
   };
 
+  const focusInput = () => {
+    inputRef.current?.focus();
+  };
+
+  const selectField = (nextField: Field) => {
+    bufferRef.current = '';
+    setField(nextField);
+    focusInput();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digit = e.currentTarget.value.replace(/\D/g, '').slice(-1);
+    e.currentTarget.value = '';
+
+    if (digit) {
+      commitDigit(digit);
+    }
+  };
+
   const label = `${pad(time.startHour)}:${pad(time.startMinute)} - ${pad(time.endHour)}:${pad(time.endMinute)}`;
 
   const confirm = () => {
@@ -149,32 +180,43 @@ export function TimeSheet({
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="시간 선택" subtitle={subtitle ?? label}>
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title="시간 선택"
+      subtitle={subtitle ?? label}
+      keyboardAvoiding
+    >
       <div className="flex min-w-0 flex-col items-center gap-10 px-5 py-13">
         {/* 디지털 표시 — 탭해서 대상 전환 + 숫자 직접 입력 */}
         <div className="flex w-full min-w-0 flex-col items-center gap-3">
           <div
             role="group"
             tabIndex={0}
+            onClick={focusInput}
             onKeyDown={handleKeyDown}
-            className="flex w-full min-w-0 items-center justify-center gap-[clamp(0.125rem,1.7vw,0.5rem)] outline-none"
+            className="relative flex w-full min-w-0 items-center justify-center gap-[clamp(0.125rem,1.7vw,0.5rem)] outline-none"
           >
+            <input
+              ref={inputRef}
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="off"
+              aria-label="운영시간 숫자 입력"
+              className="absolute left-1/2 top-1/2 size-px -translate-x-1/2 -translate-y-1/2 opacity-0"
+              onChange={handleInputChange}
+            />
             <Segment
               value={time.startHour}
               active={field === 'startHour'}
-              onSelect={() => {
-                bufferRef.current = '';
-                setField('startHour');
-              }}
+              onSelect={() => selectField('startHour')}
             />
             <Colon />
             <Segment
               value={time.startMinute}
               active={field === 'startMinute'}
-              onSelect={() => {
-                bufferRef.current = '';
-                setField('startMinute');
-              }}
+              onSelect={() => selectField('startMinute')}
             />
 
             <span className="px-0.5 text-[clamp(2rem,11vw,3rem)] leading-none text-main">-</span>
@@ -182,19 +224,13 @@ export function TimeSheet({
             <Segment
               value={time.endHour}
               active={field === 'endHour'}
-              onSelect={() => {
-                bufferRef.current = '';
-                setField('endHour');
-              }}
+              onSelect={() => selectField('endHour')}
             />
             <Colon />
             <Segment
               value={time.endMinute}
               active={field === 'endMinute'}
-              onSelect={() => {
-                bufferRef.current = '';
-                setField('endMinute');
-              }}
+              onSelect={() => selectField('endMinute')}
             />
           </div>
 

@@ -7,4 +7,6 @@ export const useMyDisplayReviews = (params?: { cursorId?: number; size?: number 
   useQuery({
     queryKey: [...queryKeys.displays.reviews(0), 'me', params],
     queryFn: () => getMyDisplayReviews(params),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });

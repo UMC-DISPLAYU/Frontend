@@ -4,6 +4,7 @@ export { BottomCommentBar } from './BottomCommentBar';
 export { BottomFixedBar } from './BottomFixedBar';
 export type { CommentData } from './comment';
 export { CommentItem } from './comment';
+export { DeleteConfirmModal } from './DeleteConfirmModal';
 export { ErrorView } from './ErrorView';
 export { ImageModal } from './ImageModal';
 export { ImageUploader } from './ImageUploader';

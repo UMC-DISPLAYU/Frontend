@@ -2,11 +2,7 @@ import { useState } from 'react';
 
 import { Plus } from 'lucide-react';
 
-import { BottomButton } from '@/components/common';
-import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
-import { cn } from '@/utils/cn';
-import { hasPermission } from '@/utils/hasPermission';
 
 import { Header, Screen } from './Common';
 import { ExhibitionCard } from './ExhibitionCard';
@@ -15,22 +11,20 @@ export function ManageScreen({
   exhibitions,
   onOpen,
   onBack,
-  onDone,
   onDelete,
+  onLeave,
   onEditArtistName,
   onRegister,
 }: {
   exhibitions: ExhibitionItem[];
   onOpen: (ex: ExhibitionItem) => void;
   onBack?: () => void;
-  onDone: () => void;
   onDelete: (ex: ExhibitionItem) => void;
+  onLeave: (ex: ExhibitionItem) => void;
   onEditArtistName: (ex: ExhibitionItem) => void;
   onRegister: () => void;
 }) {
   const [menuId, setMenuId] = useState<string | null>(null);
-  const displayCreatePolicy = useDisplayCreatePolicy();
-  const canCreateDisplay = hasPermission(displayCreatePolicy, 'create');
 
   return (
     <Screen>
@@ -49,7 +43,7 @@ export function ManageScreen({
             className="flex flex-col items-center gap-0.75 bg-transparent border-none p-0 cursor-pointer"
           >
             <div className="flex items-center justify-center overflow-hidden">
-              <Plus size={19} className="text-main" strokeWidth={2} />
+              <Plus size={25} className="text-main" strokeWidth={2} />
             </div>
             <span className="px-1.25 typo-body-xs-bold text-main leading-4">전시 추가</span>
           </button>
@@ -67,6 +61,10 @@ export function ManageScreen({
                 onDelete(ex);
                 setMenuId(null);
               }}
+              onLeave={() => {
+                onLeave(ex);
+                setMenuId(null);
+              }}
               onEditArtistName={() => {
                 onEditArtistName(ex);
                 setMenuId(null);
@@ -75,22 +73,7 @@ export function ManageScreen({
             />
           ))}
         </div>
-        {canCreateDisplay && (
-          <button
-            onClick={onRegister}
-            className={cn(
-              'typo-body-sm-regular w-full mt-3.5 p-4.5 rounded-xl border-none text-main cursor-pointer',
-              'flex items-center justify-center gap-2',
-              'bg-card',
-            )}
-          >
-            <Plus size={18} /> 전시 등록하기
-          </button>
-        )}
       </div>
-      <BottomButton type="button" onClick={onDone}>
-        완료
-      </BottomButton>
     </Screen>
   );
 }
