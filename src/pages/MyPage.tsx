@@ -220,35 +220,30 @@ export function MyPage() {
     }));
   }, [archivedArtworksQuery.data, userData?.id]);
 
-  const myPersonalArtworks = useMemo<SavedArtworkItem[]>(() => {
-    const items = myArtworksQuery.data ?? [];
-    return items.map((item) => ({
+  const myArtworks = useMemo<SavedArtworkItem[]>(() => {
+    /* 개인 작품 목록 API는 artistName을 내려주지 않아 작가 프로필의 작가명을 대신 씁니다(본인 계정명 아님). */
+    const artistName =
+      myArtistProfileQuery.data?.artistName || userData?.nickname || userData?.name || '';
+    const personalItems: SavedArtworkItem[] = (myArtworksQuery.data ?? []).map((item) => ({
       id: `personal-${item.personalArtworkId}`,
       artworkId: item.personalArtworkId,
       personalArtworkId: item.personalArtworkId,
       title: item.artworkName,
-      artist: userData?.nickname || userData?.name || '',
+      artist: artistName,
       thumbnail: item.thumbnailUrl ?? '',
     }));
-  }, [myArtworksQuery.data, userData]);
-
-  const myExhibitionArtworksList = useMemo<SavedArtworkItem[]>(() => {
-    const items = myExhibitionArtworksQuery.data?.artworks ?? [];
-    return items.map((item) => ({
-      id: `exhibition-${item.artworkId}`,
+    /* 전시에 등록한 작품도 함께 보여줘야 작가 프로필 작품 탭과 개수/목록이 일치합니다. */
+    const exhibitionItems: SavedArtworkItem[] = (
+      myExhibitionArtworksQuery.data?.artworks ?? []
+    ).map((item) => ({
+      id: `exhibit-${item.artworkId}`,
       artworkId: item.artworkId,
-      personalArtworkId: null,
       title: item.artworkName,
-      artist: item.artistName,
-      thumbnail: item.artworkImageUrl,
+      artist: item.artistName || artistName,
+      thumbnail: item.artworkImageUrl ?? '',
     }));
-  }, [myExhibitionArtworksQuery.data]);
-
-  /* 헤더 작품 수(개인 작품 + 전시 출품작 합산)와 실제로 보이는 목록을 일치시킵니다. */
-  const myArtworks = useMemo<SavedArtworkItem[]>(
-    () => [...myPersonalArtworks, ...myExhibitionArtworksList],
-    [myPersonalArtworks, myExhibitionArtworksList],
-  );
+    return [...personalItems, ...exhibitionItems];
+  }, [myArtworksQuery.data, myExhibitionArtworksQuery.data, myArtistProfileQuery.data, userData]);
 
   const artists = useMemo<ArtistItem[]>(() => {
     const items = (archivedArtistsQuery.data?.pages.flatMap((page) => page.artists) ??
@@ -272,7 +267,7 @@ export function MyPage() {
         ? myDisplaysQuery
         : archivedExhibitionsQuery
       : activeTab === 'artwork'
-        ? // 가짜 컴포넌트 연결: 작가 뷰 작품 탭에서만 GET /artworks/me, GET /artworks?userId= 결과를 사용합니다.
+        ? // 작가 뷰 작품 탭은 개인 작품 + 전시 등록 작품 두 요청을 함께 보여줍니다.
           isArtistView
           ? {
               isLoading: myArtworksQuery.isLoading || myExhibitionArtworksQuery.isLoading,
@@ -415,7 +410,7 @@ export function MyPage() {
                 onDeleteMemo={handleDeleteArtworkMemo}
                 onOpen={(artwork) =>
                   navigate(
-                    isArtistView && artwork.personalArtworkId
+                    artwork.personalArtworkId
                       ? `/personal-artworks/${artwork.personalArtworkId}`
                       : `/artwork/${artwork.artworkId ?? artwork.id}`,
                   )
