@@ -124,7 +124,9 @@ function ArtworkRegisterPageContent() {
 
   const {
     formState: { errors },
+    register,
     setValue,
+    trigger,
   } = useForm<ArtworkRegisterFormValues>({
     resolver: zodResolver(artworkRegisterSchema),
     mode: 'onChange',
@@ -151,6 +153,10 @@ function ArtworkRegisterPageContent() {
     thoughts: point,
   };
   const canProceedBasic = artworkRegisterSchema.safeParse(basicFormValue).success;
+
+  useEffect(() => {
+    register('year');
+  }, [register]);
 
   useEffect(() => {
     setValue('artworkImageCount', artworkImages.length, { shouldValidate: true });
@@ -243,10 +249,11 @@ function ArtworkRegisterPageContent() {
   const setYear = useCallback(
     (value: string) => {
       setValue('year', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+      void trigger('year');
       setYearState(value);
       updateDraft({ year: value });
     },
-    [setValue, updateDraft],
+    [setValue, trigger, updateDraft],
   );
 
   const setMedium = useCallback(
@@ -903,7 +910,10 @@ function ArtworkRegisterPageContent() {
           processImages={processImages}
           canProceed={canProceedBasic}
           yearError={errors.year?.message}
-          onBlurYear={() => setValue('year', year, { shouldTouch: true, shouldValidate: true })}
+          onBlurYear={() => {
+            setValue('year', year, { shouldTouch: true, shouldValidate: true });
+            void trigger('year');
+          }}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}

@@ -56,7 +56,9 @@ export function PersonalArtworksRegister() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     formState: { errors },
+    register,
     setValue,
+    trigger,
   } = useForm<PersonalArtworkRegisterFormValues>({
     resolver: zodResolver(personalArtworkRegisterSchema),
     mode: 'onChange',
@@ -89,6 +91,10 @@ export function PersonalArtworksRegister() {
   };
   const isFormValid =
     canCreatePersonalArtwork && personalArtworkRegisterSchema.safeParse(formValue).success;
+
+  useEffect(() => {
+    register('year');
+  }, [register]);
 
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
@@ -220,7 +226,10 @@ export function PersonalArtworksRegister() {
               value={year}
               inputMode="numeric"
               maxLength={4}
-              onBlur={() => setValue('year', year, { shouldTouch: true, shouldValidate: true })}
+              onBlur={() => {
+                setValue('year', year, { shouldTouch: true, shouldValidate: true });
+                void trigger('year');
+              }}
               onChange={(e) => {
                 const nextYear = sanitizePersonalArtworkYearInput(e.target.value);
                 setValue('year', nextYear, {
@@ -228,6 +237,7 @@ export function PersonalArtworksRegister() {
                   shouldTouch: true,
                   shouldValidate: true,
                 });
+                void trigger('year');
                 setYear(nextYear);
               }}
               placeholder="2026"
