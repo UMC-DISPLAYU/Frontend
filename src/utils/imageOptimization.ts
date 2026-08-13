@@ -10,6 +10,9 @@ const VERCEL_IMAGE_ENDPOINT = '/_vercel/image';
 const DEFAULT_QUALITY = 75;
 const DEFAULT_MAX_SCALE = 2.6;
 const MAX_REQUEST_WIDTH = 3840;
+const VERCEL_IMAGE_WIDTHS = [
+  16, 32, 48, 64, 96, 128, 256, 384, 640, 750, 828, 1080, 1200, 1920, 2048, 3840,
+];
 const OPTIMIZABLE_HOST_KEYWORDS = ['cloudfront.net', 'amazonaws.com'];
 const NON_OPTIMIZABLE_EXTENSIONS = /\.(svg|gif)(?:[?#].*)?$/i;
 const VERCEL_OPTIMIZATION_HOSTS = ['displayu.co.kr'];
@@ -32,7 +35,9 @@ const getRequestWidth = (displayWidth: number, maxScale = DEFAULT_MAX_SCALE) => 
     return undefined;
   }
 
-  return Math.min(Math.ceil(displayWidth * maxScale), MAX_REQUEST_WIDTH);
+  const scaledWidth = Math.min(Math.ceil(displayWidth * maxScale), MAX_REQUEST_WIDTH);
+
+  return VERCEL_IMAGE_WIDTHS.find((width) => width >= scaledWidth) ?? MAX_REQUEST_WIDTH;
 };
 
 const isHttpUrl = (url: string) => /^https?:\/\//i.test(url);

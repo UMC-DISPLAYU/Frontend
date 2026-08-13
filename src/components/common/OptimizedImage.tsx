@@ -14,15 +14,25 @@ export function OptimizedImage({
   format = 'webp',
   loading = 'lazy',
   decoding = 'async',
+  onError,
   ...props
 }: OptimizedImageProps) {
   if (!src) return null;
 
+  const optimizedSrc = optimizeImageUrl(src, displayWidth, format);
+
   return (
     <img
-      src={optimizeImageUrl(src, displayWidth, format)}
+      src={optimizedSrc}
       loading={loading}
       decoding={decoding}
+      onError={(event) => {
+        if (event.currentTarget.src !== src) {
+          event.currentTarget.src = src;
+        }
+
+        onError?.(event);
+      }}
       {...props}
     />
   );
