@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import { BottomFixedBar, ImageUploader } from '@/components/common';
@@ -13,10 +15,10 @@ import {
 import { useCreatePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { usePersonalArtworkPolicy } from '@/hooks/usePolicy';
-import { useZodFieldError } from '@/hooks/useZodFieldError';
 import { hasPermission } from '@/utils/hasPermission';
 
 import {
+  type PersonalArtworkRegisterFormValues,
   personalArtworkRegisterSchema,
   sanitizePersonalArtworkYearInput,
   toPersonalArtworkProductionYear,
@@ -52,6 +54,23 @@ export function PersonalArtworksRegister() {
   const [size, setSize] = useState('');
   const [thoughts, setThoughts] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const {
+    formState: { errors },
+    setValue,
+  } = useForm<PersonalArtworkRegisterFormValues>({
+    resolver: zodResolver(personalArtworkRegisterSchema),
+    mode: 'onChange',
+    defaultValues: {
+      artworkImageCount: images.length,
+      title,
+      intro,
+      field,
+      year,
+      material,
+      size,
+      thoughts,
+    },
+  });
 
   const createPersonalArtwork = useCreatePersonalArtwork();
   /* 이미지 업로드는 mutation 시작 전에 실행되므로 제출 전 구간까지 함께 잠급니다. */
@@ -70,11 +89,6 @@ export function PersonalArtworksRegister() {
   };
   const isFormValid =
     canCreatePersonalArtwork && personalArtworkRegisterSchema.safeParse(formValue).success;
-  const { error: yearError, markTouched: markYearTouched } = useZodFieldError({
-    schema: personalArtworkRegisterSchema,
-    value: formValue,
-    field: 'year',
-  });
 
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
@@ -206,15 +220,22 @@ export function PersonalArtworksRegister() {
               value={year}
               inputMode="numeric"
               maxLength={4}
-              onBlur={markYearTouched}
+              onBlur={() => setValue('year', year, { shouldTouch: true, shouldValidate: true })}
               onChange={(e) => {
-                markYearTouched();
-                setYear(sanitizePersonalArtworkYearInput(e.target.value));
+                const nextYear = sanitizePersonalArtworkYearInput(e.target.value);
+                setValue('year', nextYear, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                });
+                setYear(nextYear);
               }}
               placeholder="2026"
               className={INPUT_CLASS}
             />
-            {yearError && <p className="typo-body-xxs-regular text-error px-2">{yearError}</p>}
+            {errors.year && (
+              <p className="typo-body-xxs-regular text-error px-2">{errors.year.message}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
