@@ -12,6 +12,7 @@ const DEFAULT_MAX_SCALE = 2.6;
 const MAX_REQUEST_WIDTH = 3840;
 const OPTIMIZABLE_HOST_KEYWORDS = ['cloudfront.net', 'amazonaws.com'];
 const NON_OPTIMIZABLE_EXTENSIONS = /\.(svg|gif)(?:[?#].*)?$/i;
+const VERCEL_OPTIMIZATION_HOSTS = ['displayu.co.kr'];
 
 const canUseVercelImageOptimization = () => {
   if (typeof window === 'undefined') {
@@ -20,7 +21,10 @@ const canUseVercelImageOptimization = () => {
 
   const { hostname } = window.location;
 
-  return hostname.endsWith('.vercel.app') || hostname === 'displayu.co.kr';
+  return (
+    hostname.endsWith('.vercel.app') ||
+    VERCEL_OPTIMIZATION_HOSTS.some((host) => hostname === host || hostname.endsWith(`.${host}`))
+  );
 };
 
 const getRequestWidth = (displayWidth: number, maxScale = DEFAULT_MAX_SCALE) => {
