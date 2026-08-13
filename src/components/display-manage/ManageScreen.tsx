@@ -2,11 +2,7 @@ import { useState } from 'react';
 
 import { Plus } from 'lucide-react';
 
-import { BottomButton } from '@/components/common';
-import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
-import { cn } from '@/utils/cn';
-import { hasPermission } from '@/utils/hasPermission';
 
 import { Header, Screen } from './Common';
 import { ExhibitionCard } from './ExhibitionCard';
@@ -15,7 +11,6 @@ export function ManageScreen({
   exhibitions,
   onOpen,
   onBack,
-  onDone,
   onDelete,
   onLeave,
   onEditArtistName,
@@ -24,15 +19,12 @@ export function ManageScreen({
   exhibitions: ExhibitionItem[];
   onOpen: (ex: ExhibitionItem) => void;
   onBack?: () => void;
-  onDone: () => void;
   onDelete: (ex: ExhibitionItem) => void;
   onLeave: (ex: ExhibitionItem) => void;
   onEditArtistName: (ex: ExhibitionItem) => void;
   onRegister: () => void;
 }) {
   const [menuId, setMenuId] = useState<string | null>(null);
-  const displayCreatePolicy = useDisplayCreatePolicy();
-  const canCreateDisplay = hasPermission(displayCreatePolicy, 'create');
 
   return (
     <Screen>
@@ -81,22 +73,7 @@ export function ManageScreen({
             />
           ))}
         </div>
-        {canCreateDisplay && (
-          <button
-            onClick={onRegister}
-            className={cn(
-              'typo-body-sm-regular w-full mt-3.5 p-4.5 rounded-xl border-none text-main cursor-pointer',
-              'flex items-center justify-center gap-2',
-              'bg-card',
-            )}
-          >
-            <Plus size={18} /> 전시 등록하기
-          </button>
-        )}
       </div>
-      <BottomButton type="button" onClick={onDone}>
-        완료
-      </BottomButton>
     </Screen>
   );
 }
