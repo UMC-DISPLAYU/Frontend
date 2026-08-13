@@ -101,8 +101,16 @@ export const useToggleArtworkFeelingLike = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ artworkId, feelingId }: { artworkId: number; feelingId: number }) =>
-      toggleArtworkFeelingLike(artworkId, feelingId),
+    mutationFn: ({
+      artworkId,
+      feelingId,
+      liked,
+    }: {
+      artworkId: number;
+      feelingId: number;
+      liked: boolean;
+    }) =>
+      liked ? unlikeArtworkFeeling(artworkId, feelingId) : likeArtworkFeeling(artworkId, feelingId),
     onMutate: async ({ artworkId, feelingId }) => {
       const queryKey = queryKeys.artworkFeelings.list(artworkId);
       await queryClient.cancelQueries({ queryKey });
@@ -239,9 +247,11 @@ export const useToggleArtworkFeelingReplyLike = (artworkId: number, feelingId: n
   const queryKey = queryKeys.artworkFeelings.replies(artworkId, feelingId);
 
   return useMutation({
-    mutationFn: (feelingReplyId: number) =>
-      toggleArtworkFeelingReplyLike(artworkId, feelingId, feelingReplyId),
-    onMutate: async (feelingReplyId) => {
+    mutationFn: ({ feelingReplyId, liked }: { feelingReplyId: number; liked: boolean }) =>
+      liked
+        ? unlikeArtworkFeelingReply(artworkId, feelingId, feelingReplyId)
+        : likeArtworkFeelingReply(artworkId, feelingId, feelingReplyId),
+    onMutate: async ({ feelingReplyId }) => {
       await queryClient.cancelQueries({ queryKey });
 
       const previousData =

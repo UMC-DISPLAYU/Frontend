@@ -1,3 +1,4 @@
+export { ArtistVerificationModal } from './ArtistVerificationModal';
 export { AsyncBoundary, ErrorBoundary } from './AsyncBoundary';
 export { BottomButton } from './BottomButton';
 export { BottomCommentBar } from './BottomCommentBar';

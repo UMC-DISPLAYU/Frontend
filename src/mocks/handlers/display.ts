@@ -471,13 +471,7 @@ export const displayHandlers = [
     http.get(path, ({ params }) => {
       const displayId = toNumber(params.displayId, 101);
       const display = findDisplay(displayId);
-      const members = (display.teamMembers ?? []).map((member: any) => ({
-        loggedIn: true,
-        artistVerified: false,
-        ...member,
-      }));
-
-      const members = (display.teamMembers ?? []).length
+      const rawMembers = (display.teamMembers ?? []).length
         ? display.teamMembers
         : [
             {
@@ -490,6 +484,11 @@ export const displayHandlers = [
               role: display.isLeader ? 'TEAM_LEADER' : 'TEAM_MEM',
             },
           ];
+      const members = rawMembers.map((member: any) => ({
+        loggedIn: true,
+        artistVerified: false,
+        ...member,
+      }));
 
       return success('/api/v1/display/{displayId}/members', {
         displayId,
