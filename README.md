@@ -68,8 +68,6 @@ DisplayU는 대학생의 전시와 작품을 발견하고, 기록하고, 소통�
 https://www.displayu.co.kr
 ```
 
-환경 변수는 `.env.example`을 복사해 `.env.local`로 만든 뒤 값을 채워주세요.
-
 ## 📁 폴더 구조
 
 ```
