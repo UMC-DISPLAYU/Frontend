@@ -359,6 +359,8 @@ export const router = createBrowserRouter([
                   },
                   {
                     path: ':artworkId/edit',
+                    loader: validateNumericId('artworkId'),
+                    errorElement: <NotFound />,
                     element: (
                       <ArtworkPermissionGuard action="edit">
                         <ArtworkRegisterPage />
