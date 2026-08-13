@@ -8,9 +8,14 @@ import {
 interface ArtistFieldSelectorProps {
   selectedFields: string[];
   onChange: (fields: string[]) => void;
+  onMaxSelectExceeded?: () => void;
 }
 
-export function ArtistFieldSelector({ selectedFields, onChange }: ArtistFieldSelectorProps) {
+export function ArtistFieldSelector({
+  selectedFields,
+  onChange,
+  onMaxSelectExceeded,
+}: ArtistFieldSelectorProps) {
   return (
     <section className="mt-8">
       <RequiredLabel required>전시분야</RequiredLabel>
@@ -23,6 +28,7 @@ export function ArtistFieldSelector({ selectedFields, onChange }: ArtistFieldSel
         selected={selectedFields}
         onChange={onChange}
         maxSelect={MAX_ARTIST_FIELDS}
+        onMaxSelectExceeded={onMaxSelectExceeded}
         aria-label="전시분야"
         aria-describedby="artist-field-selector-help"
         className="mt-3 flex flex-wrap gap-2"

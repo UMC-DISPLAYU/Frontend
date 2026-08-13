@@ -10,6 +10,7 @@ interface ChipGroupProps {
   labels?: Record<string, string>;
   /* 선택 가능한 최대 개수입니다. 생략하면 제한 없이 고를 수 있습니다. */
   maxSelect?: number;
+  onMaxSelectExceeded?: () => void;
   'aria-label'?: string;
   'aria-describedby'?: string;
   className?: string;
@@ -26,6 +27,7 @@ export const ChipGroup = memo(function ChipGroup({
   onChange,
   labels,
   maxSelect,
+  onMaxSelectExceeded,
   'aria-label': ariaLabel,
   'aria-describedby': ariaDescribedBy,
   className = 'flex flex-wrap items-center gap-2',
@@ -44,11 +46,14 @@ export const ChipGroup = memo(function ChipGroup({
         return;
       }
 
-      if (maxSelect !== undefined && selected.length >= maxSelect) return;
+      if (maxSelect !== undefined && selected.length >= maxSelect) {
+        onMaxSelectExceeded?.();
+        return;
+      }
 
       onChange([...selected, option]);
     },
-    [isSingleSelect, maxSelect, onChange, selected],
+    [isSingleSelect, maxSelect, onChange, onMaxSelectExceeded, selected],
   );
 
   return (

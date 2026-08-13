@@ -37,7 +37,8 @@ export const exhibitionRegisterSchema = z
 
     field: z
       .array(z.enum(EXHIBITION_FIELDS))
-      .min(1, { message: '전시분야를 최소 1개 이상 선택해주세요.' }),
+      .min(1, { message: '전시분야를 최소 1개 이상 선택해주세요.' })
+      .max(3, { message: '전시분야는 최대 3개까지 선택할 수 있습니다.' }),
 
     school: z.string().trim().optional(),
     department: z.string().trim().optional(),
@@ -122,7 +123,7 @@ export const artistNameSetupSchema = z.object({
     .string()
     .trim()
     .min(1, { message: '작가명을 입력해주세요.' })
-    .max(50, { message: '작가명은 50자 이하로 입력해주세요.' }),
+    .max(255, { message: '작가명은 255자 이하로 입력해주세요.' }),
 });
 
 export type ArtistNameSetupFormValues = z.infer<typeof artistNameSetupSchema>;

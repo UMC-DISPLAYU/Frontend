@@ -1,0 +1,1 @@
+export { ArtworkRegisterPage } from './ArtworkRegisterPage';
