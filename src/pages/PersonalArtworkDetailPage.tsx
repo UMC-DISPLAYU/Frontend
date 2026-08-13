@@ -17,6 +17,7 @@ import { PersonalFeelingCommentItem } from '@/components/artworkdetailpage/Perso
 import { BottomCommentBar, ErrorView, LoadingView } from '@/components/common';
 import { BottomFixedBar } from '@/components/displaydetailpage';
 import { HeroSlider } from '@/components/displaydetailpage/HeroSlider';
+import { BackButton } from '@/components/ui/BackButton';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import {
   useCreatePersonalArtworkFeeling,
@@ -30,6 +31,7 @@ import {
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { usePersonalFeelingPolicy, usePersonalQuestionPolicy } from '@/hooks/usePolicy';
+import { parseServerDate } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
 function formatImageUrls(images: { imageUrl?: string }[] = []) {
@@ -102,15 +104,24 @@ export function PersonalArtworkDetailPage() {
   const artworkImages = artwork.images.filter((image) => image.imageType !== 'WORK_PROCESS');
   const heroImages = formatImageUrls(artworkImages);
   const displayHeroImages = heroImages.length > 0 ? heroImages : [FALLBACK_POSTER_IMAGE];
-  const feelingItems = feelings?.feelings;
-  const questionItems = questions?.questions;
+  /* 답글 없는 삭제된 감상은 목록에서 완전히 제외 (답글이 있으면 "삭제된 글입니다"로 표시) */
+  const feelingItems = feelings?.feelings.filter(
+    (feeling) => !(feeling.isDeleted && (feeling.replyCount ?? 0) === 0),
+  );
+  /* 새로 등록한 질문이 "+" 버튼과 같은 위치(맨 위)에 보이도록 최신순으로 정렬합니다. */
+  const questionItems = questions?.questions
+    .slice()
+    .sort(
+      (a, b) => parseServerDate(b.createdAt).getTime() - parseServerDate(a.createdAt).getTime(),
+    );
 
   /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
   const handleSendQuestion = (payload: { content: string; isPrivate: boolean }) => {
     if (!payload.content) return;
 
     if (replyQuestion) {
-      if (!hasPermission(questionPolicy, 'reply.create')) {
+      /* 답변 등록 가능 여부는 서버가 계산해서 canReply로 내려줍니다. */
+      if (!replyQuestion.canReply) {
         openLoginModal();
         return;
       }
@@ -156,8 +167,15 @@ export function PersonalArtworkDetailPage() {
 
   return (
     <div className="relative mx-auto min-h-dvh w-full max-w-md bg-page">
+      <div className="fixed top-4 left-1/2 z-30 w-full max-w-md -translate-x-1/2 px-4 pointer-events-none">
+        <BackButton
+          id="personal-artwork-back-btn"
+          onClick={() => navigate(-1)}
+          className="pointer-events-auto"
+        />
+      </div>
       {/* 히어로 이미지 */}
-      <HeroSlider images={displayHeroImages} onBack={() => navigate(-1)} />
+      <HeroSlider images={displayHeroImages} />
 
       {/* 작품 메타 (제목, 작가, 제작 정보) */}
       <PersonalArtworkMeta artwork={artwork} />
@@ -168,76 +186,83 @@ export function PersonalArtworkDetailPage() {
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && <PersonalArtworkIntroTab artwork={artwork} />}
 
-      {activeTab === 'review' && (
-        <div className="px-5 pt-4 pb-comment-bar-offset">
-          <div className="pb-4">
-            <h2 className="typo-body-xl-bold text-main">감상 후기</h2>
-          </div>
-          <div className="flex flex-col">
-            {feelingItems?.map((feeling) => (
-              <PersonalFeelingCommentItem
-                key={feeling.personalFeelingId}
-                personalArtworkId={personalArtworkId}
-                feeling={feeling}
-                artwork={artwork}
-                myUserId={myUserId}
-                activeReplyId={activeReplyId}
-                onReplyClick={handleFeelingReplyClick}
-              />
-            ))}
-          </div>
-          {!feelingItems?.length && (
-            <p className="typo-body-sm-regular text-faint text-center py-10">
-              아직 감상 후기가 없습니다.
-            </p>
+      {(activeTab === 'review' || activeTab === 'question') && (
+        <div className="min-h-150 pb-comment-bar-offset">
+          {activeTab === 'review' && (
+            <div className="px-5 pt-4">
+              <div className="pb-4">
+                <h2 className="typo-body-xl-bold text-main">감상 후기</h2>
+              </div>
+              <div className="flex flex-col">
+                {feelingItems?.map((feeling) => (
+                  <PersonalFeelingCommentItem
+                    key={feeling.personalFeelingId}
+                    personalArtworkId={personalArtworkId}
+                    feeling={feeling}
+                    artwork={artwork}
+                    myUserId={myUserId}
+                    activeReplyId={activeReplyId}
+                    onReplyClick={handleFeelingReplyClick}
+                  />
+                ))}
+              </div>
+              {!feelingItems?.length && (
+                <p className="typo-body-sm-regular text-faint text-center py-10">
+                  아직 감상 후기가 없습니다.
+                </p>
+              )}
+            </div>
           )}
-        </div>
-      )}
 
-      {activeTab === 'question' && (
-        <div className="pt-4 pb-comment-bar-offset">
-          <div className="flex items-center justify-between px-5 pb-3">
-            <h2 className="typo-body-xl-bold text-main">질문하기</h2>
-            <button
-              type="button"
-              aria-label="질문 작성"
-              onClick={() => {
-                setReplyQuestion(null);
-                setIsComposingQuestion(true);
-              }}
-              className="mr-[15px] cursor-pointer"
-            >
-              <Plus size={17} strokeWidth={2} className="text-main" />
-            </button>
-          </div>
-          <div className="flex flex-col">
-            {isComposingQuestion && (
-              <PersonalArtworkQuestionComposerCard
-                onClose={() => setIsComposingQuestion(false)}
-                onSubmit={handleSendQuestion}
-                isSubmitting={createQuestion.isPending}
-              />
-            )}
-            {questionItems?.map((question) => (
-              <PersonalArtworkQuestionCard
-                key={question.personalQuestionId}
-                question={question}
-                artwork={artwork}
-                isReplyTarget={replyQuestion?.personalQuestionId === question.personalQuestionId}
-                onReply={() =>
-                  setReplyQuestion((prev) =>
-                    prev?.personalQuestionId === question.personalQuestionId ? null : question,
-                  )
-                }
-                onSubmitReply={(content) => handleSendQuestion({ content, isPrivate: false })}
-                isSubmittingReply={createQuestionReply.isPending}
-              />
-            ))}
-          </div>
-          {!questionItems?.length && !isComposingQuestion && (
-            <p className="typo-body-sm-regular text-faint text-center px-5 py-10">
-              아직 질문이 없습니다.
-            </p>
+          {activeTab === 'question' && (
+            <div className="pt-4">
+              <div className="flex items-center justify-between px-5 pb-3">
+                <h2 className="typo-body-xl-bold text-main">질문하기</h2>
+                <button
+                  type="button"
+                  aria-label="질문 작성"
+                  onClick={() => {
+                    setReplyQuestion(null);
+                    setIsComposingQuestion(true);
+                  }}
+                  className="mr-[15px] cursor-pointer"
+                >
+                  <Plus size={17} strokeWidth={2} className="text-main" />
+                </button>
+              </div>
+              <div className="flex flex-col">
+                {isComposingQuestion && (
+                  <PersonalArtworkQuestionComposerCard
+                    onClose={() => setIsComposingQuestion(false)}
+                    onSubmit={handleSendQuestion}
+                    isSubmitting={createQuestion.isPending}
+                  />
+                )}
+                {questionItems?.map((question) => (
+                  <PersonalArtworkQuestionCard
+                    key={question.personalQuestionId}
+                    question={question}
+                    artwork={artwork}
+                    myUserId={myUserId}
+                    isReplyTarget={
+                      replyQuestion?.personalQuestionId === question.personalQuestionId
+                    }
+                    onReply={() =>
+                      setReplyQuestion((prev) =>
+                        prev?.personalQuestionId === question.personalQuestionId ? null : question,
+                      )
+                    }
+                    onSubmitReply={(content) => handleSendQuestion({ content, isPrivate: false })}
+                    isSubmittingReply={createQuestionReply.isPending}
+                  />
+                ))}
+              </div>
+              {!questionItems?.length && !isComposingQuestion && (
+                <p className="typo-body-sm-regular text-faint text-center px-5 py-10">
+                  아직 질문이 없습니다.
+                </p>
+              )}
+            </div>
           )}
         </div>
       )}

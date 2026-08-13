@@ -23,11 +23,13 @@ import {
   getPersonalArtworkQuestions,
   getPersonalArtworks,
   likePersonalArtwork,
-  togglePersonalArtworkFeelingLike,
-  togglePersonalArtworkFeelingReplyLike,
+  likePersonalArtworkFeeling,
+  likePersonalArtworkFeelingReply,
   togglePersonalArtworkQuestionLike,
   togglePersonalArtworkQuestionReplyLike,
   unlikePersonalArtwork,
+  unlikePersonalArtworkFeeling,
+  unlikePersonalArtworkFeelingReply,
   updatePersonalArtwork,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -199,8 +201,10 @@ export const useTogglePersonalArtworkFeelingLike = (personalArtworkId: number) =
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: (personalFeelingId: number) =>
-      togglePersonalArtworkFeelingLike(personalArtworkId, personalFeelingId),
+    mutationFn: ({ personalFeelingId, liked }: { personalFeelingId: number; liked: boolean }) =>
+      liked
+        ? unlikePersonalArtworkFeeling(personalArtworkId, personalFeelingId)
+        : likePersonalArtworkFeeling(personalArtworkId, personalFeelingId),
     onSuccess: invalidate,
   });
 };
@@ -273,12 +277,24 @@ export const useTogglePersonalArtworkFeelingReplyLike = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (personalFeelingReplyId: number) =>
-      togglePersonalArtworkFeelingReplyLike(
-        personalArtworkId,
-        personalFeelingId,
-        personalFeelingReplyId,
-      ),
+    mutationFn: ({
+      personalFeelingReplyId,
+      liked,
+    }: {
+      personalFeelingReplyId: number;
+      liked: boolean;
+    }) =>
+      liked
+        ? unlikePersonalArtworkFeelingReply(
+            personalArtworkId,
+            personalFeelingId,
+            personalFeelingReplyId,
+          )
+        : likePersonalArtworkFeelingReply(
+            personalArtworkId,
+            personalFeelingId,
+            personalFeelingReplyId,
+          ),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: [
@@ -326,22 +342,11 @@ export const useCreatePersonalArtworkQuestionReply = (
   personalQuestionId: number,
 ) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (content: string) =>
       createPersonalArtworkQuestionReply(personalArtworkId, personalQuestionId, { content }),
-    onSuccess: () => {
-      invalidate();
-      queryClient.invalidateQueries({
-        queryKey: [
-          ...queryKeys.personalArtworks.detail(personalArtworkId),
-          'questions',
-          personalQuestionId,
-          'reply',
-        ],
-      });
-    },
+    onSuccess: invalidate,
   });
 };
 

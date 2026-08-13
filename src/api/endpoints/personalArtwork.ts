@@ -85,12 +85,21 @@ export const deletePersonalArtworkFeeling = async (
   });
 
 // POST /v1/personal-artworks/:personalArtworkId/feelings/:personalFeelingId/like
-export const togglePersonalArtworkFeelingLike = async (
+export const likePersonalArtworkFeeling = async (
   personalArtworkId: number,
   personalFeelingId: number,
 ): Promise<PersonalArtworkFeelingLikeResponseDataDto> =>
   apiRequest(`/v1/personal-artworks/${personalArtworkId}/feelings/${personalFeelingId}/like`, {
     method: 'POST',
+  });
+
+// DELETE /v1/personal-artworks/:personalArtworkId/feelings/:personalFeelingId/like
+export const unlikePersonalArtworkFeeling = async (
+  personalArtworkId: number,
+  personalFeelingId: number,
+): Promise<PersonalArtworkFeelingLikeResponseDataDto> =>
+  apiRequest(`/v1/personal-artworks/${personalArtworkId}/feelings/${personalFeelingId}/like`, {
+    method: 'DELETE',
   });
 
 // GET /v1/personal-artworks/:personalArtworkId/feelings/:personalFeelingId/replies
@@ -126,7 +135,7 @@ export const deletePersonalArtworkFeelingReply = async (
   );
 
 // POST /v1/personal-artworks/:personalArtworkId/feelings/:personalFeelingId/reply/:personalFeelingReplyId/like
-export const togglePersonalArtworkFeelingReplyLike = async (
+export const likePersonalArtworkFeelingReply = async (
   personalArtworkId: number,
   personalFeelingId: number,
   personalFeelingReplyId: number,
@@ -134,6 +143,17 @@ export const togglePersonalArtworkFeelingReplyLike = async (
   apiRequest(
     `/v1/personal-artworks/${personalArtworkId}/feelings/${personalFeelingId}/reply/${personalFeelingReplyId}/like`,
     { method: 'POST' },
+  );
+
+// DELETE /v1/personal-artworks/:personalArtworkId/feelings/:personalFeelingId/reply/:personalFeelingReplyId/like
+export const unlikePersonalArtworkFeelingReply = async (
+  personalArtworkId: number,
+  personalFeelingId: number,
+  personalFeelingReplyId: number,
+): Promise<PersonalArtworkFeelingReplyLikeResponseDataDto> =>
+  apiRequest(
+    `/v1/personal-artworks/${personalArtworkId}/feelings/${personalFeelingId}/reply/${personalFeelingReplyId}/like`,
+    { method: 'DELETE' },
   );
 
 // GET /v1/personal-artworks/:personalArtworkId/questions

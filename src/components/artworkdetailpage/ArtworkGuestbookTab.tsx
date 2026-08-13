@@ -136,6 +136,9 @@ function QuestionCard({
               <span className="typo-body-xs-regular text-sub600">
                 {formatRelativeTime(question.createdAt)}
               </span>
+              {!question.isPublic && (
+                <span className="typo-body-xs-regular text-sub600">비공개</span>
+              )}
             </div>
           </div>
         )}

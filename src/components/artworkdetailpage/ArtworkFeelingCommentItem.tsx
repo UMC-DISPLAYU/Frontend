@@ -111,19 +111,32 @@ export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem
     [feeling, isMyFeeling, isModerator],
   );
 
+  /* CommentItem이 comment.isLiked를 보고 onLike/onUnlike 중 골라 호출하므로, 두 prop 모두
+   * 이 핸들러로 연결하고 여기서 현재 좋아요 상태를 직접 조회해 좋아요/취소 API를 나눠 부릅니다. */
+  const findIsLiked = useCallback(
+    (commentId: string, parentCommentId?: string) => {
+      if (parentCommentId) {
+        return replies.find((reply) => reply.id === commentId)?.isLiked ?? false;
+      }
+      return comment.isLiked ?? false;
+    },
+    [replies, comment.isLiked],
+  );
+
   const handleLike = useCallback(
     (commentId: string, parentCommentId?: string) => {
       if (!isLoggedIn) {
         openLoginModal();
         return;
       }
+      const liked = findIsLiked(commentId, parentCommentId);
       if (parentCommentId) {
-        likeReplyMutation.mutate(Number(commentId));
+        likeReplyMutation.mutate({ feelingReplyId: Number(commentId), liked });
       } else {
-        likeMutation.mutate({ artworkId, feelingId: Number(commentId) });
+        likeMutation.mutate({ artworkId, feelingId: Number(commentId), liked });
       }
     },
-    [isLoggedIn, openLoginModal, likeReplyMutation, likeMutation, artworkId],
+    [isLoggedIn, openLoginModal, likeReplyMutation, likeMutation, artworkId, findIsLiked],
   );
 
   const handleDelete = useCallback(

@@ -6,14 +6,9 @@ import type {
   PersonalArtworkQuestionResponseDataDto,
   PersonalArtworkResponseDataDto,
 } from '@/api/dto';
-import {
-  useDeletePersonalArtworkQuestion,
-  usePersonalArtworkQuestionReply,
-} from '@/hooks/queries/usePersonalArtwork';
-import { usePersonalQuestionPolicy } from '@/hooks/usePolicy';
+import { useDeletePersonalArtworkQuestion } from '@/hooks/queries/usePersonalArtwork';
 import { cn } from '@/utils/cn';
 import { formatRelativeTime } from '@/utils/date';
-import { hasPermission } from '@/utils/hasPermission';
 
 const QUESTION_MAX_LENGTH = 300;
 
@@ -115,6 +110,7 @@ export function PersonalArtworkQuestionComposerCard({
 type Props = {
   question: PersonalArtworkQuestionResponseDataDto;
   artwork: PersonalArtworkResponseDataDto;
+  myUserId?: number;
   isReplyTarget: boolean;
   onReply: () => void;
   onSubmitReply: (content: string) => void;
@@ -125,6 +121,7 @@ type Props = {
 export function PersonalArtworkQuestionCard({
   question,
   artwork,
+  myUserId,
   isReplyTarget,
   onReply,
   onSubmitReply,
@@ -134,16 +131,14 @@ export function PersonalArtworkQuestionCard({
   const [replyContent, setReplyContent] = useState('');
   const replyTextareaRef = useAutoResizeTextarea(replyContent);
 
-  const questionPolicy = usePersonalQuestionPolicy(question, artwork);
-  /* 비공개 질문 열람 가능 여부·삭제 권한은 서버 flag가 없어 정책 함수로 직접 계산합니다. */
-  const canView = hasPermission(questionPolicy, 'view');
-  const canDelete = hasPermission(questionPolicy, 'delete');
-  const canCreateReply = hasPermission(questionPolicy, 'reply.create');
+  /* 비공개 질문 열람 가능 여부·답변 권한은 서버가 계산해서 accessible/canReply로 내려줍니다. */
+  const canView = question.accessible;
+  const canCreateReply = question.canReply;
+  /* 본인 질문이면 삭제할 수 있습니다 — 단, 답변이 달리기 전까지만. */
+  const isMyQuestion = Boolean(myUserId) && question.user?.userId === myUserId;
+  const canDelete = isMyQuestion && !question.reply;
   const deleteQuestion = useDeletePersonalArtworkQuestion(artwork.personalArtworkId);
-  const { data: reply } = usePersonalArtworkQuestionReply(
-    artwork.personalArtworkId,
-    canView ? question.personalQuestionId : 0,
-  );
+  const reply = question.reply;
 
   /*
    * 답변할 질문이 없어졌으면(답변 등록 성공 등) 작성 중이던 입력값을 비웁니다.
@@ -197,6 +192,9 @@ export function PersonalArtworkQuestionCard({
               <span className="typo-body-xs-regular text-sub600">
                 {formatRelativeTime(question.createdAt)}
               </span>
+              {!question.isPublic && (
+                <span className="typo-body-xs-regular text-sub600">비공개</span>
+              )}
             </div>
           </div>
         )}
