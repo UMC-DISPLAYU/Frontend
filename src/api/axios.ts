@@ -72,12 +72,18 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config as typeof error.config & { _retry?: boolean };
     const data = error.response?.data;
 
-    // 401 에러이고 refresh 요청이 아니며, 아직 재시도하지 않은 경우 토큰 갱신 시도
+    /*
+     * 401 에러이고 refresh 요청이 아니며, 아직 재시도하지 않은 경우 토큰 갱신 시도.
+     * 단, 애초에 accessToken이 없던 요청(로그인한 적 없는 게스트)은 세션 만료가 아니므로
+     * refresh나 로그인 페이지 강제 이동 없이 그냥 에러로 흘려보냅니다 — 그래야 공개 페이지가
+     * 비로그인 상태에서도 로그인 화면으로 튕기지 않고 정상적으로 보여집니다.
+     */
     if (
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest.url?.includes('/v1/auth/refresh') &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      useAuthStore.getState().accessToken
     ) {
       if (!isRefreshing) {
         isRefreshing = true;

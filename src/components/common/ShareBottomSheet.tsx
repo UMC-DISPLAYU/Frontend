@@ -124,7 +124,9 @@ export function ShareBottomSheet({
         objectType: 'feed',
         content: {
           title,
-          description,
+          /* description은 undefined로 키만 남아 있으면 카카오 SDK가 유효성 검사에서
+           * "Illegal argument"로 거부해, 값이 없을 땐 키 자체를 안 넣습니다. */
+          ...(description ? { description } : {}),
           imageUrl: imageUrl || FALLBACK_SHARE_IMAGE,
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
