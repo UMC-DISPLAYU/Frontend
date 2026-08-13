@@ -197,7 +197,7 @@ export interface DisplayContentCategoryDto {
 }
 
 export interface DisplayTeamMemberDto {
-  teamMemberId: number;
+  teamMemberId: number | null;
   userId: number;
   displayNickname: string;
   role: string;
@@ -515,7 +515,8 @@ export interface InviteDisplayMemberRequestDto {
 
 export interface DisplayMemberListResponseDataDto {
   displayId: number;
-  members: DisplayTeamMemberDto[];
+  memberAccept: DisplayTeamMemberDto[];
+  memberPending: DisplayTeamMemberDto[];
 }
 
 export interface DisplayMemberInvitationResponseDataDto {
@@ -540,8 +541,21 @@ export interface DisableDisplayInvitationLinkResponseDataDto {
   invitationDisabledAt: string;
 }
 
+export interface MyDisplayInvitationDto {
+  invitationId: number;
+  displayId: number;
+  thumbnailUrl: string | null;
+  startDate: string;
+  endDate: string;
+  location: string;
+  leaderName: string;
+  title: string;
+  placeName: string;
+  status?: string;
+}
+
 export interface MyDisplayInvitationListResponseDataDto {
-  exhibitions: DisplayInvitationDto[];
+  invitations: MyDisplayInvitationDto[];
 }
 
 export interface AcceptDisplayInvitationRequestDto {

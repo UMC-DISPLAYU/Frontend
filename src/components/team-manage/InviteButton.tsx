@@ -1,5 +1,5 @@
 interface InviteButtonProps {
-  label: '초대' | '초대 대기' | '팀원';
+  label: '초대' | '초대 대기' | '초대완료' | '팀원';
   onClick: () => void;
   disabled?: boolean;
 }

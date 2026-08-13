@@ -5,7 +5,5 @@ export interface Invitation {
   title: string;
   department: string;
   period: string;
-  gallery: string;
-  inviter: string;
   posterUrl: string | null;
 }

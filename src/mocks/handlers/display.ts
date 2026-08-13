@@ -2,7 +2,7 @@
 import { http } from 'msw';
 
 import { mockDb, okStatus } from '@/mocks/data/repository';
-import { created, paths, readJson, success, toNumber } from '@/mocks/response';
+import { created, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const now = () => new Date().toISOString();
 
@@ -63,14 +63,15 @@ const displayInvitationItem = (displayId: number, invitationId = displayId) => {
     inviteeUserId: mockDb.me.userId,
     status: 'PENDING',
     createdAt: now(),
-    displayTitle: display.title,
+    title: display.title,
     school: display.organization,
     department: display.department,
     startDate: display.startDate ?? display.startedAt,
     endDate: display.endDate ?? display.endedAt,
+    location: 'SEOUL',
     placeName: display.placeName,
-    posterImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
-    inviterNickname: '고상준(sangjun24)',
+    thumbnailUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
+    leaderName: '고상준(sangjun24)',
   };
 };
 
@@ -321,6 +322,12 @@ export const displayHandlers = [
       }),
     ),
   ),
+  ...paths('/api/v1/display/{displayId}/exit').map((path) =>
+    http.delete(path, () => noContent('/api/v1/display/{displayId}/exit')),
+  ),
+  ...paths('/api/v1/display/{displayId}').map((path) =>
+    http.delete(path, () => noContent('/api/v1/display/{displayId}')),
+  ),
   ...paths('/api/v1/display/me/nickname').map((path) =>
     http.patch(path, async ({ request }) => {
       const body = await readJson<{ displayId?: number; displayNickname?: string }>(request);
@@ -355,6 +362,18 @@ export const displayHandlers = [
         displayDetailResponse(toNumber(params.displayId, 101)),
       ),
     ),
+  ),
+  ...paths('/api/v1/display/{displayId}/members').map((path) =>
+    http.get(path, ({ params }) => {
+      const displayId = toNumber(params.displayId, 101);
+      const display = findDisplay(displayId);
+      const members = display.teamMembers ?? [];
+      return success('/api/v1/display/{displayId}/members', {
+        displayId,
+        memberAccept: members.filter((m: any) => m.accepted !== false),
+        memberPending: members.filter((m: any) => m.accepted === false),
+      });
+    }),
   ),
   /*
    * 초대 링크 활성/비활성 상태는 전시 상세(invitationToken/invitationDisabledAt)로 판단하므로

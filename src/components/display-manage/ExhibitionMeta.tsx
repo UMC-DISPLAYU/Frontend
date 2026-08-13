@@ -1,4 +1,5 @@
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/useUserStore';
 import type { ExhibitionItem } from '@/types/mypage';
@@ -10,15 +11,16 @@ export function ExhibitionMeta({
   ex: ExhibitionItem;
   showBadge?: boolean;
 }) {
+  const { data: userMeData } = useUserMe();
   const userMe = useAuthStore((s) => s.user);
   const userStoreUserId = useUserStore((s) => s.userId);
-  const myUserId = userMe?.id ?? userStoreUserId;
+  const myUserId = userMeData?.id ?? userMe?.id ?? userStoreUserId;
 
   const displayId = ex.displayId || Number(ex.id) || 0;
   const { data: membersData } = useDisplayMembers(showBadge && displayId > 0 ? displayId : 0);
 
   const currentMember = membersData?.members?.find((m) =>
-    myUserId ? m.userId === myUserId : m.loggedIn === true,
+    myUserId != null && m.userId != null ? Number(m.userId) === Number(myUserId) : false,
   );
 
   const artistName = ex.artistName || currentMember?.displayNickname;

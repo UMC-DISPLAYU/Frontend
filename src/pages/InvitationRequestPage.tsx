@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import type { DisplayInvitationDto } from '@/api/dto';
+import type { MyDisplayInvitationDto } from '@/api/dto';
 import {
   useMyDisplayInvitations,
   useRejectDisplayInvitation,
@@ -18,16 +18,15 @@ const formatMonthDay = (date?: string) => {
   return month && day ? `${month}.${day}` : date;
 };
 
-const toInvitation = (item: DisplayInvitationDto): Invitation => ({
+const toInvitation = (item: MyDisplayInvitationDto): Invitation => ({
   id: String(item.invitationId),
   invitationId: item.invitationId,
   displayId: item.displayId,
   title: item.title,
-  department: item.schoolDepartmentName ?? '',
-  period: `${formatMonthDay(item.startedAt)} - ${formatMonthDay(item.endedAt)}`,
-  gallery: '',
-  inviter: '',
-  posterUrl: item.posterImageUrl ?? null,
+  department: item.placeName ?? '', // schoolDepartmentName -> placeName
+  period: `${formatMonthDay(item.startDate)} - ${formatMonthDay(item.endDate)}`,
+
+  posterUrl: item.thumbnailUrl ?? null,
 });
 
 interface InvitationCardProps {
@@ -59,9 +58,6 @@ function InvitationCard({ item, highlighted = false, onAccept, onReject }: Invit
             <span className="typo-body-xs-regular text-sub700">{item.department}</span>
             <span className="typo-body-xs-regular text-hint">{item.period}</span>
           </div>
-
-          {item.gallery && <span className="typo-body-xxs-regular text-faint">{item.gallery}</span>}
-          {item.inviter && <span className="typo-body-sm-regular text-sub600">{item.inviter}</span>}
         </div>
       </div>
 
@@ -140,7 +136,7 @@ export function InvitationRequestPage() {
   const rejectInvitation = useRejectDisplayInvitation();
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
-  const invitations = (data?.exhibitions ?? [])
+  const invitations = (data?.invitations ?? [])
     .filter((item) => item.status !== 'REJECTED')
     .map((item) => toInvitation(item));
 

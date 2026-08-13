@@ -16,7 +16,7 @@ interface MemberRowProps {
   /* 검색 결과처럼 초대할 수 있는 행에서만 넘깁니다. 없으면 상태 뱃지를 보여줍니다. */
   onInvite?: () => void;
   inviteDisabled?: boolean;
-  inviteLabel?: '초대' | '초대 대기' | '팀원';
+  inviteLabel?: '초대' | '초대 대기' | '초대완료' | '팀원';
 }
 
 export function MemberRow({ member, onInvite, inviteDisabled, inviteLabel }: MemberRowProps) {

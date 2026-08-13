@@ -11,7 +11,11 @@ import { queryKeys } from '@/api/queryKeys';
 export const useDisplayMembers = (displayId: number) =>
   useQuery({
     queryKey: queryKeys.displayMembers.byDisplayId(displayId),
-    queryFn: () => getDisplayMembers(displayId),
+    queryFn: async () => {
+      const data = await getDisplayMembers(displayId);
+      const members = [...(data.memberAccept ?? []), ...(data.memberPending ?? [])];
+      return { ...data, members };
+    },
     enabled: displayId > 0,
   });
 
