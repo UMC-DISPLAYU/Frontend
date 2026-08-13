@@ -197,7 +197,7 @@ export interface DisplayContentCategoryDto {
 }
 
 export interface DisplayTeamMemberDto {
-  teamMemberId: number;
+  teamMemberId: number | null;
   userId: number;
   displayNickname: string;
   role: string;
@@ -480,9 +480,28 @@ export interface InviteDisplayMemberRequestDto {
   role?: 'TEAM_MEM';
 }
 
+/* GET /display/{displayId}/members 응답의 팀원 항목. 참여/대기 팀원 모두 이 형태를 공유합니다. */
+export interface DisplayMemberEntryDto extends DisplayTeamMemberDto {
+  loggedIn: boolean;
+  artistVerified: boolean;
+}
+
+/* 서버가 실제로 내려주는 원본 응답 — 참여 팀원과 초대 대기 팀원이 배열로 분리되어 있습니다. */
+export interface DisplayMemberListRawResponseDataDto {
+  displayId: number;
+  memberAccept: DisplayMemberEntryDto[];
+  memberPending: DisplayMemberEntryDto[];
+}
+
+/*
+ * memberAccept + memberPending을 합친 members도 함께 내려줍니다.
+ * 기존 화면들이 accepted 플래그로 구분해 쓰던 통합 목록과의 호환을 위해서입니다.
+ */
 export interface DisplayMemberListResponseDataDto {
   displayId: number;
-  members: DisplayTeamMemberDto[];
+  members: DisplayMemberEntryDto[];
+  memberAccept: DisplayMemberEntryDto[];
+  memberPending: DisplayMemberEntryDto[];
 }
 
 export interface DisplayMemberInvitationResponseDataDto {

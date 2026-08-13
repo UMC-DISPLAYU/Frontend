@@ -460,10 +460,16 @@ export const displayHandlers = [
     http.get(path, ({ params }) => {
       const displayId = toNumber(params.displayId, 101);
       const display = findDisplay(displayId);
+      const members = (display.teamMembers ?? []).map((member: any) => ({
+        loggedIn: true,
+        artistVerified: false,
+        ...member,
+      }));
 
       return success('/api/v1/display/{displayId}/members', {
         displayId,
-        members: display.teamMembers ?? [],
+        memberAccept: members.filter((member: any) => member.accepted !== false),
+        memberPending: members.filter((member: any) => member.accepted === false),
       });
     }),
   ),
