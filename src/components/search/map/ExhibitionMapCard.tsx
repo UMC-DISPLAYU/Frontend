@@ -1,5 +1,6 @@
 import { Bookmark } from 'lucide-react';
 
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import {
   useArchivedExhibitions,
   useArchiveExhibition,
@@ -74,8 +75,9 @@ export function ExhibitionMapCard({
           <div className="flex flex-1 items-start gap-3 min-w-0 h-32">
             {/* 포스터 이미지 */}
             <div className="relative h-33 w-24 shrink-0 overflow-hidden rounded-xl bg-box200 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.04)]">
-              <img
+              <OptimizedImage
                 src={exhibition.posterImageUrl}
+                displayWidth={96}
                 alt={exhibition.title}
                 className="size-full object-cover"
               />

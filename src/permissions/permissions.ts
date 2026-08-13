@@ -151,8 +151,7 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
     policies.question.reply.create(toUser(a), toArtwork(a), toDisplay(a)),
   'question:reply.like': (a) => policies.question.reply.like(toUser(a)),
   'question:reply.unlike': (a) => policies.question.reply.unlike(toUser(a)),
-  'question:reply.delete': (a) =>
-    policies.question.reply.delete(toUser(a), toReply(a), toDisplay(a)),
+  'question:reply.delete': (a) => policies.question.reply.delete(toUser(a), toReply(a)),
 
   'feeling:create': (a) => policies.feeling.create(toUser(a)),
   'feeling:delete': (a) => policies.feeling.delete(toUser(a), toPost(a), toDisplay(a)),

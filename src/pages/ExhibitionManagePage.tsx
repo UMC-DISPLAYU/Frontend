@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ChevronRight, Info } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { BottomFixedBar } from '@/components/common';
+import { BottomFixedBar, PublishConfirmModal } from '@/components/common';
 import {
   ExhibitionCard,
   OutlineButton,
@@ -73,11 +73,10 @@ export function ExhibitionManage() {
 
   const createDisplayMutation = useCreateDisplay();
   const publishDisplayMutation = usePublishDisplay();
+  const [isPublishConfirmOpen, setIsPublishConfirmOpen] = useState(false);
 
-  /* 팀원 목록의 accepted로 참여팀원과 초대대기를 나눕니다. */
-  const teamMembers = memberList?.members ?? [];
-  const acceptedCount = teamMembers.filter((member) => member.accepted !== false).length;
-  const pendingCount = teamMembers.filter((member) => member.accepted === false).length;
+  const acceptedCount = memberList?.memberAccept.length ?? 0;
+  const pendingCount = memberList?.memberPending.length ?? 0;
 
   // 전시 콘텐츠(사진) 총 개수 계산
   const contentCount =
@@ -128,6 +127,25 @@ export function ExhibitionManage() {
   const goDisplayWork = () => {
     navigate(`/exhibition/${displayId}/work`, {
       state: { initialExhibition: workExhibition },
+    });
+  };
+
+  const handlePublish = () => {
+    setIsPublishConfirmOpen(false);
+    publishDisplayMutation.mutate(displayId, {
+      onSuccess: () => {
+        navigate(`/exhibition/${displayId}/complete`, {
+          state: {
+            title: exhibition.title,
+            school: source?.organization ?? state?.school,
+            department: source?.department ?? state?.department,
+            organizer: state?.organizer,
+            placeName: exhibition.place,
+            artworkVisibility,
+            contentVisibility,
+          },
+        });
+      },
     });
   };
 
@@ -203,65 +221,21 @@ export function ExhibitionManage() {
         <div className="flex gap-2.5">
           <button
             type="button"
-            disabled={createDisplayMutation.isPending}
-            className="typo-body-sm-bold h-11 w-24 shrink-0 rounded-xl bg-bt-gray text-main disabled:opacity-50"
-            onClick={() => {
-              if (!display) {
-                alert('전시 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-                return;
-              }
-              createDisplayMutation.mutate({
-                title: display.title,
-                posterImageUrl: display.images?.[0]?.imageUrl || '',
-                type: display.displayType || '',
-                fields: display.displayFields || [],
-                region: display.region || '',
-                startDate: display.period?.startDate || '',
-                endDate: display.period?.endDate || '',
-                openTime: display.period?.startTime || '10:00',
-                closeTime: display.period?.endTime || '18:00',
-                locationName: display.location?.placeName || '',
-                latitude: display.location?.latitude || 0,
-                longitude: display.location?.longitude || 0,
-                roadAddress: display.location?.roadAddress || '',
-                displayNickname: display.teamMembers?.[0]?.displayNickname || '',
-                qnaAccount: display.qnaAccount || '',
-                schoolOrOrganization: display.organization || '',
-                departmentOrClub: display.department ?? undefined,
-                subtitle: display.subtitle ?? undefined,
-                description: display.content ?? undefined,
-                precautions: display.note ?? undefined,
-              });
-            }}
-          >
-            임시저장
-          </button>
-          <button
-            type="button"
             disabled={publishDisplayMutation.isPending}
             className="typo-body-sm-bold h-11 flex-1 rounded-xl bg-dark text-white disabled:opacity-50"
-            onClick={() =>
-              publishDisplayMutation.mutate(displayId, {
-                onSuccess: () => {
-                  navigate(`/exhibition/${displayId}/complete`, {
-                    state: {
-                      title: exhibition.title,
-                      school: source?.organization ?? state?.school,
-                      department: source?.department ?? state?.department,
-                      organizer: state?.organizer,
-                      placeName: exhibition.place,
-                      artworkVisibility,
-                      contentVisibility,
-                    },
-                  });
-                },
-              })
-            }
+            onClick={() => setIsPublishConfirmOpen(true)}
           >
             등록하기
           </button>
         </div>
       </BottomFixedBar>
+
+      {isPublishConfirmOpen && (
+        <PublishConfirmModal
+          onConfirm={handlePublish}
+          onCancel={() => setIsPublishConfirmOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { ArtworkCoAuthorDto } from '@/api/dto';
 import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import {
   useArchiveArtist,
@@ -24,13 +25,13 @@ type Props = {
   coAuthors?: ArtworkCoAuthorDto[];
 };
 
-type ArtworkArtistRowProps = {
+export type ArtworkArtistRowProps = {
   userId?: number;
   /* 작품에 기록된 이름. 공동 작업자는 이 이름이 따로 없어 프로필명으로만 표시됩니다. */
   displayName: string;
 };
 
-function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
+export function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
   const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -82,8 +83,9 @@ function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps) {
         disabled={!userId || !profile}
         className="flex min-w-0 items-center gap-2 text-left disabled:cursor-default"
       >
-        <img
+        <OptimizedImage
           src={profile?.profileImageUrl || FALLBACK_PROFILE_IMAGE}
+          displayWidth={39}
           alt={primaryName}
           className="size-[39px] shrink-0 rounded-full object-cover"
           onError={(event) => {
@@ -212,9 +214,10 @@ export function ArtworkIntroTab({ artwork, artistUserId, coAuthors = [] }: Props
               style={{ scrollbarWidth: 'none' }}
             >
               {processImages.map((img, idx) => (
-                <img
+                <OptimizedImage
                   key={idx}
                   src={img.imageUrl}
+                  displayWidth={119}
                   alt={`작업과정 ${idx + 1}`}
                   className="h-[152px] w-[119px] shrink-0 rounded-[13px] bg-[rgba(161,156,156,0.5)] object-cover shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]"
                 />

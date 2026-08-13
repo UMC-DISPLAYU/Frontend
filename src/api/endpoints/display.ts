@@ -13,6 +13,7 @@ import type {
   DisplayLikeStatusResponseDataDto,
   DisplayListResponseDataDto,
   DisplayMemberInvitationResponseDataDto,
+  DisplayMemberListRawResponseDataDto,
   DisplayMemberListResponseDataDto,
   DisplayReviewLikeResponseDataDto,
   DisplayReviewReplyLikeResponseDataDto,
@@ -164,7 +165,18 @@ export const disableDisplayInvitation = async (
 // GET /v1/display/:displayId/members
 export const getDisplayMembers = async (
   displayId: number,
-): Promise<DisplayMemberListResponseDataDto> => apiRequest(`/v1/display/${displayId}/members`);
+): Promise<DisplayMemberListResponseDataDto> => {
+  const { displayId: id, memberAccept, memberPending } = await apiRequest<
+    DisplayMemberListRawResponseDataDto
+  >(`/v1/display/${displayId}/members`);
+
+  return {
+    displayId: id,
+    memberAccept,
+    memberPending,
+    members: [...memberAccept, ...memberPending],
+  };
+};
 
 // POST /v1/display-invitations/displays/:displayId
 export const inviteDisplayMember = async (

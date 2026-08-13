@@ -1,6 +1,7 @@
 import { BackButton } from '@/components/ui/BackButton';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
 import { cn } from '@/utils/cn';
+import { optimizeImageUrl } from '@/utils/imageOptimization';
 
 type Props = {
   images: string[];
@@ -29,7 +30,7 @@ export function HeroSlider({ images, onBack }: Props) {
         {images.map((src, idx) => (
           <div key={src || idx} className="relative h-full w-full shrink-0">
             <img
-              src={src}
+              src={optimizeImageUrl(src, 430)}
               alt={`전시 이미지 ${idx + 1}`}
               draggable={false}
               className="h-full w-full object-cover select-none"

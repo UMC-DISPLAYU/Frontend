@@ -239,8 +239,8 @@ const MATRIX: Record<string, Rule[]> = {
     { permission: 'question:reply.unlike', desc: '회원', allow: MEMBERS },
     {
       permission: 'question:reply.delete',
-      desc: '응답 쓴 사람 || (작가 인증 && 전시 소유자)',
-      allow: ['replyAuthor', 'displayOwner'],
+      desc: '응답 쓴 사람만',
+      allow: ['replyAuthor'],
     },
   ],
 
