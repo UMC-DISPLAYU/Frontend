@@ -852,7 +852,7 @@ function NicknameScreen({
 
 function DoneScreen({ onNext }: { onNext: () => void }) {
   return (
-    <main className="flex h-full flex-1 flex-col bg-[#f0f0f3] px-5 pb-10">
+    <main className="flex h-full flex-1 flex-col bg-page px-5 pb-10">
       <section className="flex min-h-0 flex-1 flex-col items-center justify-center gap-[10px] text-center">
         <div className="flex size-[76px] items-center justify-center rounded-full bg-[#e6e6ee]">
           <div className="flex size-12 items-center justify-center rounded-full bg-[#111]">

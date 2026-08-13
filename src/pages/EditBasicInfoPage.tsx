@@ -57,7 +57,7 @@ function ProfilePhotoField({
             <LoadingView fullScreen={false} message="" className="!bg-transparent" />
           </div>
         )}
-        <span className="absolute bottom-0 right-0 flex size-6 items-center justify-center overflow-hidden rounded-full bg-sub600">
+        <span className="absolute bottom-0 right-0 flex size-6 items-center justify-center overflow-hidden rounded-full bg-hint">
           <Plus className="text-white" strokeWidth={2} />
         </span>
       </button>
@@ -172,8 +172,8 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>
       </header>
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 pb-8">
-        <div className="mt-[24px] flex justify-center">
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 flex flex-col">
+        <div className="mt-6 flex justify-center">
           <ProfilePhotoField
             image={profileImage}
             onChange={handleProfileImageChange}
@@ -184,61 +184,62 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         <form
           id="edit-basic-info-form"
           onSubmit={handleSubmit(onFormSubmit)}
-          className="mt-[60px] flex flex-col gap-3"
+          className="mt-15 flex flex-col gap-3"
         >
           <label htmlFor="activityName" className="typo-body-sm-bold text-main">
             프로필 명
           </label>
-          <div className="border-b border-line flex justify-end items-start gap-3">
-            <div className="flex-1 h-9 px-3 py-2.5 flex justify-start items-center gap-2">
-              <input
-                id="activityName"
-                maxLength={15}
-                placeholder="프로필 명"
-                className="w-full typo-body-xs-regular text-main outline-none placeholder:text-hint bg-transparent"
-                {...register('nickname', {
-                  onChange: () => {
-                    setNicknameCheckResult(null);
-                    setCheckedNickname('');
-                  },
-                })}
-              />
-            </div>
-            <div className="h-9 flex justify-start items-center gap-2.5">
-              <div className="w-8 flex justify-start items-center gap-2.5">
-                {nickname && (
+          <div className="relative">
+            <div className="border-b border-line flex justify-end items-start gap-3">
+              <div className="flex-1 h-9 px-3 py-2.5 flex justify-start items-center gap-2">
+                <input
+                  id="activityName"
+                  maxLength={15}
+                  placeholder="프로필 명"
+                  className="w-full typo-body-xs-regular text-main outline-none placeholder:text-hint bg-transparent"
+                  {...register('nickname', {
+                    onChange: () => {
+                      setNicknameCheckResult(null);
+                      setCheckedNickname('');
+                    },
+                  })}
+                />
+              </div>
+              <div className="h-9 flex justify-start items-center gap-2.5">
+                <div className="w-8 flex justify-start items-center gap-2.5">
                   <button
                     type="button"
                     onClick={handleClearInput}
+                    aria-label="프로필 명 지우기"
                     className="size-5 bg-box200 rounded-[10px] flex justify-center items-center cursor-pointer"
                   >
                     <X className="size-2.5 text-card translate-x-[0.5px]" strokeWidth={2} />
                   </button>
-                )}
-                <div className="w-px h-4 bg-faint" />
+                  <div className="w-px h-4 bg-faint" />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDuplicateCheck}
+                  disabled={!isNicknameShapeValid || checkNickname.isPending}
+                  className="w-17 h-8 rounded-lg outline outline-1 outline-offset-[-1px] outline-sub600 disabled:opacity-40 flex items-center justify-center cursor-pointer"
+                >
+                  <span className="typo-body-xs-semibold text-main translate-y-px">중복 확인</span>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleDuplicateCheck}
-                disabled={!isNicknameShapeValid || checkNickname.isPending}
-                className="w-17 h-8 rounded-lg outline outline-1 outline-offset-[-1px] outline-sub600 disabled:opacity-40 flex items-center justify-center cursor-pointer"
+            </div>
+            {nicknameCheckResult && !isSameAsInitial && (
+              <div
+                className={cn(
+                  'absolute left-0 top-full mt-1.5 typo-body-xxs-regular',
+                  nicknameCheckResult === 'available' ? 'text-link' : 'text-error',
+                )}
               >
-                <span className="typo-body-xs-semibold text-main translate-y-px">중복 확인</span>
-              </button>
-            </div>
+                {nicknameCheckResult === 'available'
+                  ? '사용 가능한 닉네임이에요.'
+                  : '사용 불가한 닉네임이에요.'}
+              </div>
+            )}
           </div>
-          {nicknameCheckResult && !isSameAsInitial && (
-            <div
-              className={cn(
-                'self-stretch h-4 justify-start typo-body-xxs-regular',
-                nicknameCheckResult === 'available' ? 'text-link' : 'text-error',
-              )}
-            >
-              {nicknameCheckResult === 'available'
-                ? '사용 가능한 닉네임이에요.'
-                : '사용 불가한 닉네임이에요.'}
-            </div>
-          )}
 
           {/* 실시간 개별 조건 피드백 */}
           <div className="mt-12.5 flex flex-col gap-2">
@@ -285,7 +286,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
           </div>
         </form>
 
-        <div className="mt-8 flex items-start gap-1 rounded-2xl bg-card p-3.5">
+        <div className="mt-auto mb-7 flex items-start gap-1 rounded-2xl bg-card p-3.5">
           <Info className="size-3 shrink-0 text-faint" strokeWidth={1.5} />
           <p className="typo-body-xs-regular text-hint">
             활동명은 댓글, 질문, 라운지 등 서비스 활동에서 사용돼요.

@@ -83,7 +83,7 @@ export function ExhibitionMeta({ display: ex }: Props) {
   };
 
   return (
-    <section className="px-5 pt-6 pb-4 bg-[#f0f0f3]">
+    <section className="px-5 pt-6 pb-4 bg-page">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 flex flex-col gap-1.5">
           <h1 className="typo-body-xl-bold text-main">{ex.title}</h1>

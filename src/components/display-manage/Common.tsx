@@ -6,7 +6,7 @@ export function Screen({ children }: { children: React.ReactNode }) {
 
 export function Header({ title, onBack }: { title: string; onBack?: () => void }) {
   return (
-    <div className="flex items-center gap-3 px-5 pt-14.5 pb-3">
+    <div className="flex items-center gap-3 px-5 pt-4 pb-6">
       {onBack && (
         <button
           onClick={onBack}

@@ -58,8 +58,7 @@ export const policies = {
   },
 
   displayArtistName: {
-    edit: (user: User, display: DisplayPolicyResource) =>
-      isArtistVerified(user) && isDisplayMember(user, display),
+    edit: (user: User, display: DisplayPolicyResource) => isDisplayMember(user, display),
   },
 
   displayContent: {

@@ -14,6 +14,8 @@ export const useMyLoungePosts = ({ enabled = true }: Options = {}) =>
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
 export const useMyLoungeScraps = ({ enabled = true }: Options = {}) =>
@@ -23,6 +25,8 @@ export const useMyLoungeScraps = ({ enabled = true }: Options = {}) =>
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
 export const useMyLoungeComments = ({ enabled = true }: Options = {}) =>
@@ -32,4 +36,6 @@ export const useMyLoungeComments = ({ enabled = true }: Options = {}) =>
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });

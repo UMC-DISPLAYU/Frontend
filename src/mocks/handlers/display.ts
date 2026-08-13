@@ -49,6 +49,8 @@ const myDisplayItem = (display: any) => ({
   department: display.department,
   placeName: display.placeName,
   postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
+  displayNickname: display.displayNickname ?? display.artistName ?? '작가명',
+  artistName: display.displayNickname ?? display.artistName ?? '작가명',
 });
 
 const displayInvitationItem = (displayId: number, invitationId = displayId) => {
@@ -320,9 +322,18 @@ export const displayHandlers = [
     ),
   ),
   ...paths('/api/v1/display/me/nickname').map((path) =>
-    http.patch(path, async ({ request }) =>
-      success('/api/v1/display/me/nickname', await readJson(request)),
-    ),
+    http.patch(path, async ({ request }) => {
+      const body = await readJson<{ displayId?: number; displayNickname?: string }>(request);
+      if (body.displayId && body.displayNickname) {
+        const display = findDisplay(body.displayId);
+        display.displayNickname = body.displayNickname;
+        if (display.teamMembers) {
+          const member = display.teamMembers.find((m: any) => m.userId === mockDb.me.userId);
+          if (member) member.displayNickname = body.displayNickname;
+        }
+      }
+      return success('/api/v1/display/me/nickname', body);
+    }),
   ),
   ...paths('/api/v1/display/search').map((path) =>
     http.get(path, ({ request }) => {
@@ -461,9 +472,23 @@ export const displayHandlers = [
       const displayId = toNumber(params.displayId, 101);
       const display = findDisplay(displayId);
 
+      const members = (display.teamMembers ?? []).length
+        ? display.teamMembers
+        : [
+            {
+              teamMemberId: 150,
+              userId: mockDb.me.userId,
+              displayNickname: `${display.title}작가명`,
+              loggedIn: true,
+              artistVerified: true,
+              accepted: true,
+              role: display.isLeader ? 'TEAM_LEADER' : 'TEAM_MEM',
+            },
+          ];
+
       return success('/api/v1/display/{displayId}/members', {
         displayId,
-        members: display.teamMembers ?? [],
+        members,
       });
     }),
   ),

@@ -35,6 +35,7 @@ export const useCreateLoungeComment = () => {
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungeMe.all });
     },
   });
 };
@@ -61,6 +62,7 @@ export const useDeleteLoungeComment = () => {
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungeMe.all });
     },
   });
 };
