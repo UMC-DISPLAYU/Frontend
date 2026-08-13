@@ -30,8 +30,7 @@ export const useInfiniteSearchDisplays = (params: Omit<SearchDisplaysRequestDto,
         cursor: pageParam,
       }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage) =>
-      lastPage.pagination.hasNext ? lastPage.pagination.nextCursor : null,
+    getNextPageParam: (lastPage) => lastPage.pagination.nextCursor ?? null,
   });
 
 export const useDisplayMap = (params: GetDisplayMapRequestDto) =>

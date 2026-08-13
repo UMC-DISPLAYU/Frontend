@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Search, X } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
@@ -132,12 +132,34 @@ export function SearchPage() {
   const { data, fetchNextPage, hasNextPage, isError, isFetchingNextPage, isLoading } =
     useInfiniteSearchDisplays(searchDisplayParams);
   const exhibitions = data?.pages.flatMap((page) => page.exhibitions) ?? [];
+
+  const fetchNextSearchPage = useCallback(() => {
+    if (activeTab !== 'list' || !hasNextPage || isFetchingNextPage) return;
+    fetchNextPage();
+  }, [activeTab, fetchNextPage, hasNextPage, isFetchingNextPage]);
+
   const triggerRef = useInfiniteScroll({
     hasNextPage,
     isFetchingNextPage,
-    fetchNextPage,
-    rootMargin: '160px',
+    fetchNextPage: fetchNextSearchPage,
+    rootMargin: '480px',
   });
+
+  useEffect(() => {
+    if (activeTab !== 'list') return;
+
+    const handleScroll = () => {
+      const { clientHeight, scrollHeight, scrollTop } = document.documentElement;
+      if (scrollHeight - scrollTop - clientHeight < 480) {
+        fetchNextSearchPage();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeTab, fetchNextSearchPage, exhibitions.length]);
 
   const nearbyParamsWithSearch = useMemo(
     () => (nearbyParams ? { ...nearbyParams, searchWord: query.trim() || null } : null),

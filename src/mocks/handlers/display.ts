@@ -353,14 +353,20 @@ export const displayHandlers = [
       const exhibitions = listDisplays().filter(
         (display: any) => !keyword || display.title.includes(keyword),
       );
-      const nextCursor = cursor + size;
+      const startIndex =
+        cursor > 0
+          ? exhibitions.findIndex((display: any) => Number(display.displayId) > cursor)
+          : 0;
+      const safeStartIndex = startIndex === -1 ? exhibitions.length : startIndex;
+      const page = exhibitions.slice(safeStartIndex, safeStartIndex + size);
+      const hasNext = safeStartIndex + size < exhibitions.length;
 
       return success('/api/v1/display/search', {
-        exhibitions: exhibitions.slice(cursor, nextCursor),
+        exhibitions: page,
         pagination: {
-          nextCursor: nextCursor < exhibitions.length ? nextCursor : null,
+          nextCursor: hasNext ? (page.at(-1)?.displayId ?? null) : null,
           size,
-          hasNext: nextCursor < exhibitions.length,
+          hasNext,
         },
       });
     }),
