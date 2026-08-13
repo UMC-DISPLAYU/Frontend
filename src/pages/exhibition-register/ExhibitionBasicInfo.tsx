@@ -460,7 +460,7 @@ export function ExhibitionBasicInfo() {
             <Underline>
               <input
                 id="place-name"
-                placeholder="전시명을 입력해주세요"
+                placeholder="장소명을 입력해주세요"
                 className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
                 {...register('placeName')}
               />
