@@ -131,9 +131,16 @@ function RegisterArtworkPage({
           <RequiredLabel required>작품분야</RequiredLabel>
           <ChipGroup
             options={Object.keys(ARTWORK_FIELD_MAP)}
-            selected={field ? [field] : []}
-            onChange={(next) => onChangeField(next[0] ?? '')}
-            maxSelect={1}
+            selected={
+              field
+                ? field
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                : []
+            }
+            onChange={(next) => onChangeField(next.join(', '))}
+            maxSelect={2}
             aria-label="작품분야"
             className="flex flex-wrap gap-2"
           />

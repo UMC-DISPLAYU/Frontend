@@ -19,9 +19,20 @@ function isArtworkRegisterYearValid(value: string): boolean {
   return year >= 1000 && year < 9999;
 }
 
-const artworkFieldSchema = z.enum(Object.keys(ARTWORK_FIELD_MAP) as [string, ...string[]], {
-  message: '작품분야를 선택해주세요.',
-});
+const artworkFieldSchema = z.string().refine(
+  (val) => {
+    const selected = val
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return (
+      selected.length >= 1 &&
+      selected.length <= 2 &&
+      selected.every((item) => item in ARTWORK_FIELD_MAP)
+    );
+  },
+  { message: '작품분야를 선택해주세요.' },
+);
 
 export const artworkRegisterSchema = z.object({
   artworkImageCount: z.number().min(1, { message: '작품 이미지를 1개 이상 업로드해주세요.' }),
