@@ -5,6 +5,7 @@ import { AuthGuard } from './components/guards/AuthGuard';
 import {
   ArtistPermissionGuard,
   ArtworkPermissionGuard,
+  DisplayArtistNamePermissionGuard,
   DisplayContentPermissionGuard,
   DisplayCreatePermissionGuard,
   DisplayInvitationPermissionGuard,
@@ -266,6 +267,14 @@ export const router = createBrowserRouter([
                       <ExhibitionBasicInfo />
                     </GuardedFlowStep>
                   </DisplayPermissionGuard>
+                ),
+              },
+              {
+                path: 'edit/artist',
+                element: (
+                  <DisplayArtistNamePermissionGuard action="edit">
+                    <ArtistNameSetup />
+                  </DisplayArtistNamePermissionGuard>
                 ),
               },
               {
