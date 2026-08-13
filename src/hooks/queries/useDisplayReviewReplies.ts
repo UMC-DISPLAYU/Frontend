@@ -14,6 +14,8 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
+import { useUserMe } from './useUserProfile';
+
 const DEFAULT_SIZE = 10;
 
 export const useDisplayReviewReplies = (
@@ -56,14 +58,17 @@ const useInvalidateReplies = (displayId: number, displayReviewId: number) => {
 
 export const useCreateDisplayReviewReply = (displayId: number, displayReviewId: number) => {
   const queryClient = useQueryClient();
+  /* 답글 생성 응답엔 프로필 사진이 없어, 내 프로필 사진으로 채워 넣습니다. */
+  const { data: userMe } = useUserMe();
 
   return useMutation({
     mutationFn: (body: CreateDisplayReviewReplyRequestDto) =>
       createDisplayReviewReply(displayId, displayReviewId, body),
     /*
      * 답글은 오래된 순으로 쌓여서, 무효화 후 재조회하면 방금 쓴 답글이 다음 페이지로
-     * 밀려나 "더보기"를 눌러야만 보입니다. 생성 응답이 목록 항목과 동일한 모양이라
-     * 캐시에 곧바로 이어붙여 작성자 본인에게는 즉시 보이게 합니다.
+     * 밀려나 "더보기"를 눌러야만 보입니다. 생성 응답은 목록 항목(user 중첩 객체 등)과
+     * 모양이 달라, 새로 만든 답글이라는 사실로부터 확정되는 값으로 맞춰 캐시에 곧바로
+     * 이어붙입니다.
      */
     onSuccess: (newReply) => {
       queryClient.setQueryData<InfiniteData<GetDisplayReviewRepliesResponseDataDto>>(
@@ -71,10 +76,24 @@ export const useCreateDisplayReviewReply = (displayId: number, displayReviewId: 
         (old) => {
           if (!old || old.pages.length === 0) return old;
           const lastIndex = old.pages.length - 1;
+          const fullReply = {
+            displayReviewReplyId: newReply.displayReviewReplyId,
+            content: newReply.content,
+            createdAt: newReply.createdAt,
+            user: {
+              userId: newReply.userId,
+              nickname: newReply.nickname,
+              profileImageUrl: userMe?.profileImageUrl ?? null,
+            },
+            isTeamMember: newReply.isTeamMember,
+            likeCount: 0,
+            isLiked: false,
+            images: newReply.images,
+          };
           return {
             ...old,
             pages: old.pages.map((page, index) =>
-              index === lastIndex ? { ...page, replies: [...page.replies, newReply] } : page,
+              index === lastIndex ? { ...page, replies: [...page.replies, fullReply] } : page,
             ),
           };
         },

@@ -326,7 +326,19 @@ export interface CreateDisplayReviewReplyRequestDto {
   images?: DisplayReviewImageRequestDto[];
 }
 
-export type CreateDisplayReviewReplyResponseDataDto = DisplayReviewReplyDto;
+/* 답글 생성 응답은 목록 항목(DisplayReviewReplyDto)과 모양이 달라, user 중첩 객체 대신
+ * userId/nickname이 평평하게 옵니다. likeCount/isLiked는 막 만든 답글이라 항상 0/false로
+ * 확정이라 응답에 없습니다. */
+export interface CreateDisplayReviewReplyResponseDataDto {
+  displayReviewReplyId: number;
+  createdAt: string;
+  content: string;
+  displayReviewId: number;
+  userId: number;
+  nickname: string;
+  isTeamMember: boolean;
+  images?: DisplayReviewReplyImageDto[];
+}
 
 export interface DeleteDisplayReviewReplyResponseDataDto {
   displayReviewReplyId: number;
