@@ -53,7 +53,7 @@ const archivedArtworks = () => ({
       personalArtworkId: artwork.personalArtworkId,
       userId: artwork.userId,
       title: artwork.artworkName,
-      artist: artwork.nickname ?? '',
+      artist: artwork.artistName ?? '',
       thumbnailUrl: getFirstImageUrl(artwork),
       memo: artwork.memo ?? null,
       savedAt: '2026-08-03T00:00:00.000Z',

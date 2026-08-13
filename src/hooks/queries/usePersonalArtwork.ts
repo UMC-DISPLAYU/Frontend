@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { PersonalArtworkRequestDto, PersonalArtworkResponseDataDto } from '@/api/dto';
+import type {
+  PersonalArtworkFeelingImageRequestDto,
+  PersonalArtworkRequestDto,
+  PersonalArtworkResponseDataDto,
+} from '@/api/dto';
 import {
   createPersonalArtwork,
   createPersonalArtworkFeeling,
@@ -19,11 +23,13 @@ import {
   getPersonalArtworkQuestions,
   getPersonalArtworks,
   likePersonalArtwork,
-  togglePersonalArtworkFeelingLike,
-  togglePersonalArtworkFeelingReplyLike,
+  likePersonalArtworkFeeling,
+  likePersonalArtworkFeelingReply,
   togglePersonalArtworkQuestionLike,
   togglePersonalArtworkQuestionReplyLike,
   unlikePersonalArtwork,
+  unlikePersonalArtworkFeeling,
+  unlikePersonalArtworkFeelingReply,
   updatePersonalArtwork,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -137,6 +143,7 @@ export const usePersonalArtworkQuestions = (personalArtworkId: number) =>
 export const usePersonalArtworkFeelingReplies = (
   personalArtworkId: number,
   personalFeelingId: number,
+  enabled = true,
 ) =>
   useQuery({
     queryKey: [
@@ -147,6 +154,7 @@ export const usePersonalArtworkFeelingReplies = (
     ],
     queryFn: () => getPersonalArtworkFeelingReplies(personalArtworkId, personalFeelingId),
     enabled:
+      enabled &&
       Number.isFinite(personalArtworkId) &&
       personalArtworkId > 0 &&
       Number.isFinite(personalFeelingId) &&
@@ -176,7 +184,13 @@ export const useCreatePersonalArtworkFeeling = (personalArtworkId: number) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: (content: string) => createPersonalArtworkFeeling(personalArtworkId, { content }),
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) => createPersonalArtworkFeeling(personalArtworkId, { content, images }),
     onSuccess: invalidate,
   });
 };
@@ -195,8 +209,10 @@ export const useTogglePersonalArtworkFeelingLike = (personalArtworkId: number) =
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: (personalFeelingId: number) =>
-      togglePersonalArtworkFeelingLike(personalArtworkId, personalFeelingId),
+    mutationFn: ({ personalFeelingId, liked }: { personalFeelingId: number; liked: boolean }) =>
+      liked
+        ? unlikePersonalArtworkFeeling(personalArtworkId, personalFeelingId)
+        : likePersonalArtworkFeeling(personalArtworkId, personalFeelingId),
     onSuccess: invalidate,
   });
 };
@@ -209,8 +225,17 @@ export const useCreatePersonalArtworkFeelingReply = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (content: string) =>
-      createPersonalArtworkFeelingReply(personalArtworkId, personalFeelingId, { content }),
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) =>
+      createPersonalArtworkFeelingReply(personalArtworkId, personalFeelingId, {
+        content,
+        images,
+      }),
     onSuccess: () => {
       invalidate();
       queryClient.invalidateQueries({
@@ -260,12 +285,24 @@ export const useTogglePersonalArtworkFeelingReplyLike = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (personalFeelingReplyId: number) =>
-      togglePersonalArtworkFeelingReplyLike(
-        personalArtworkId,
-        personalFeelingId,
-        personalFeelingReplyId,
-      ),
+    mutationFn: ({
+      personalFeelingReplyId,
+      liked,
+    }: {
+      personalFeelingReplyId: number;
+      liked: boolean;
+    }) =>
+      liked
+        ? unlikePersonalArtworkFeelingReply(
+            personalArtworkId,
+            personalFeelingId,
+            personalFeelingReplyId,
+          )
+        : likePersonalArtworkFeelingReply(
+            personalArtworkId,
+            personalFeelingId,
+            personalFeelingReplyId,
+          ),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: [
@@ -282,8 +319,15 @@ export const useCreatePersonalArtworkQuestion = (personalArtworkId: number) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
 
   return useMutation({
-    mutationFn: ({ content, isPublic }: { content: string; isPublic: boolean }) =>
-      createPersonalArtworkQuestion(personalArtworkId, { content, isPublic }),
+    mutationFn: ({
+      content,
+      isPublic,
+      images,
+    }: {
+      content: string;
+      isPublic: boolean;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) => createPersonalArtworkQuestion(personalArtworkId, { content, isPublic, images }),
     onSuccess: invalidate,
   });
 };
@@ -313,22 +357,20 @@ export const useCreatePersonalArtworkQuestionReply = (
   personalQuestionId: number,
 ) => {
   const invalidate = useInvalidatePersonalArtworkGuestbook(personalArtworkId);
-  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (content: string) =>
-      createPersonalArtworkQuestionReply(personalArtworkId, personalQuestionId, { content }),
-    onSuccess: () => {
-      invalidate();
-      queryClient.invalidateQueries({
-        queryKey: [
-          ...queryKeys.personalArtworks.detail(personalArtworkId),
-          'questions',
-          personalQuestionId,
-          'reply',
-        ],
-      });
-    },
+    mutationFn: ({
+      content,
+      images,
+    }: {
+      content: string;
+      images?: PersonalArtworkFeelingImageRequestDto[];
+    }) =>
+      createPersonalArtworkQuestionReply(personalArtworkId, personalQuestionId, {
+        content,
+        images,
+      }),
+    onSuccess: invalidate,
   });
 };
 

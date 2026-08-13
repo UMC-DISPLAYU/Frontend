@@ -8,6 +8,7 @@ import {
   createArtworkQuestion,
   createArtworkQuestionReply,
   deleteArtworkQuestion,
+  deleteArtworkQuestionReply,
   getArtworkQuestions,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -56,6 +57,27 @@ export const useDeleteArtworkQuestion = () => {
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkQuestions.all,
+      });
+    },
+  });
+};
+
+export const useDeleteArtworkQuestionReply = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      artworkId,
+      questionId,
+      questionReplyId,
+    }: {
+      artworkId: number;
+      questionId: number;
+      questionReplyId: number;
+    }) => deleteArtworkQuestionReply(artworkId, questionId, questionReplyId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
       });
     },
   });

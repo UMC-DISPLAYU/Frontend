@@ -111,8 +111,8 @@ export const policies = {
           (isDisplayMember(user, display) && isQaHandler(user, artwork))),
       like: (user: User) => isLoggedIn(user),
       unlike: (user: User) => isLoggedIn(user),
-      delete: (user: User, reply: UserOwnedResource, display: DisplayPolicyResource) =>
-        canModerateDisplayPost(user, reply, display),
+      // 답변은 답변을 남긴 본인만 삭제할 수 있습니다.
+      delete: (user: User, reply: UserOwnedResource) => isOwner(user, reply),
     },
   },
 

@@ -168,6 +168,9 @@ export const useCreateArtworkFeelingReply = (artworkId: number, feelingId: numbe
         (old) => {
           if (!old || old.pages.length === 0) return old;
           const lastIndex = old.pages.length - 1;
+          /* 마지막으로 불러온 페이지 뒤에 아직 서버에 더 가져올 페이지가 남아있으면,
+           * 여기 이어붙였다가 다음 페이지를 커서로 조회할 때 항목이 중복될 수 있어 건너뜁니다. */
+          if (old.pages[lastIndex].hasNext) return old;
           const fullReply = {
             feelingReplyId: newReply.feelingReplyId,
             content: newReply.content,

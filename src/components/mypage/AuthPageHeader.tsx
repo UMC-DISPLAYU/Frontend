@@ -57,36 +57,30 @@ export function AuthPageHeader({
               event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
             }}
           />
-
-          <div>
-            <span className="w-fit inline-flex items-center ml-2.5 px-1.5 py-0.5 bg-[#DBEAFE] rounded-full">
-              <span className="text-line-active typo-body-xxs-regular uppercase">
-                작가 프로필
-              </span>
-             </span>
-
-
           <div className="flex-1 min-w-0 px-4 flex flex-col gap-1.5">
+            <span className="w-fit inline-flex items-center px-1.5 py-0.5 bg-sky-100 rounded-full">
+              <span className="text-line-active typo-body-xxs-regular uppercase">작가 프로필</span>
+            </span>
 
             <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-0.5">
-                  <div className="flex-1 w-42.5 flex flex-col">
-                    <div className="typo-body-xl-bold text-main truncate">{profile.name}</div>
-                    <div className="typo-body-xs-regular text-hint truncate">{profile.school}</div>
-                  </div>
+              <div className="flex items-center gap-0.5">
+                <div className="flex-1 w-42.5 flex flex-col">
+                  <div className="typo-body-xl-bold text-main truncate">{profile.name}</div>
+                  <div className="typo-body-xs-regular text-hint truncate">{profile.school}</div>
+                </div>
 
-                  <div className="flex items-center shrink-0">
-                    <div className="w-11.5 flex flex-col items-center">
-                      <span className="typo-body-xl-bold text-main">{profile.exhibitionCount}</span>
-                      <span className="typo-body-xs-regular text-faint">전시</span>
-                    </div>
-                    <div className="w-px h-7 bg-line" />
-                    <div className="w-11 flex flex-col items-center">
-                      <span className="typo-body-xl-bold text-main">{profile.artworkCount}</span>
-                      <span className="typo-body-xs-regular text-faint">작품</span>
-                    </div>
+                <div className="flex items-center shrink-0">
+                  <div className="w-11.5 flex flex-col items-center">
+                    <span className="typo-body-xl-bold text-main">{profile.exhibitionCount}</span>
+                    <span className="typo-body-xs-regular text-faint">전시</span>
+                  </div>
+                  <div className="w-px h-7 bg-line" />
+                  <div className="w-11 flex flex-col items-center">
+                    <span className="typo-body-xl-bold text-main">{profile.artworkCount}</span>
+                    <span className="typo-body-xs-regular text-faint">작품</span>
                   </div>
                 </div>
+              </div>
 
               {profile.fields.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1">
@@ -103,7 +97,6 @@ export function AuthPageHeader({
             </div>
           </div>
         </div>
-      </div>
 
         <div className="flex flex-col gap-2">
           <p className="typo-body-xs-regular text-sub700">{profile.bio}</p>
@@ -167,4 +160,3 @@ export function AuthPageHeader({
     </header>
   );
 }
-

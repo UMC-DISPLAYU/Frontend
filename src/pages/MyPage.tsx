@@ -168,7 +168,8 @@ export function MyPage() {
       exhibitionCount: formatCount(myDisplaysQuery.data?.length),
       /* 개인 작품 + 전시 내 작품을 실제로 합산한 값입니다. */
       artworkCount: formatCount(
-        (myArtworksQuery.data?.length ?? 0) + (myExhibitionArtworksQuery.data?.artworks.length ?? 0),
+        (myArtworksQuery.data?.length ?? 0) +
+          (myExhibitionArtworksQuery.data?.artworks.length ?? 0),
       ),
       bio: myArtistProfileQuery.data?.introduction ?? '',
       portfolioUrl:
