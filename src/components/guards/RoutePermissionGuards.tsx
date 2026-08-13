@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect } from 'react';
 
-import { Outlet, useParams } from 'react-router-dom';
+import { Navigate, Outlet, useParams } from 'react-router-dom';
 
 import { FlowProvider } from '@/contexts/flowContext';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
@@ -78,37 +78,74 @@ type FlowRouteProps = {
   children?: ReactNode;
 };
 
-function useDisplayPolicyResource(): DisplayPolicyResource | null {
+type ResourceQueryState<T> = {
+  resource: T | null;
+  isPending: boolean;
+  isError: boolean;
+};
+
+function GuardLoading() {
+  return (
+    <div className="mx-auto flex min-h-dvh w-full max-w-md items-center justify-center bg-page">
+      <span className="typo-body-sm-regular text-faint">불러오는 중</span>
+    </div>
+  );
+}
+
+function useDisplayPolicyResource(): ResourceQueryState<DisplayPolicyResource> {
   const { displayId: paramDisplayId } = useParams();
   const displayId = Number(paramDisplayId ?? 0);
-  const { data: display } = useDisplayDetail(displayId);
-  const { data: memberList } = useDisplayMembers(displayId);
+  const displayQuery = useDisplayDetail(displayId);
+  const memberQuery = useDisplayMembers(displayId);
+  const display = displayQuery.data;
+  const memberList = memberQuery.data;
 
-  if (!display) return null;
+  if (!display) {
+    return {
+      resource: null,
+      isPending: displayQuery.isPending || memberQuery.isPending,
+      isError: displayQuery.isError || memberQuery.isError,
+    };
+  }
 
   return {
-    ownerUserId: display.ownerUserId ?? 0,
-    teamMembers:
-      display.teamMembers ??
-      memberList?.members?.map((member) => ({
-        userId: member.userId,
-        accepted: member.accepted !== false,
-      })) ??
-      [],
+    resource: {
+      ownerUserId: display.ownerUserId ?? 0,
+      teamMembers:
+        display.teamMembers ??
+        memberList?.members?.map((member) => ({
+          userId: member.userId,
+          accepted: member.accepted !== false,
+        })) ??
+        [],
+    },
+    isPending: false,
+    isError: displayQuery.isError || memberQuery.isError,
   };
 }
 
-function useArtworkPolicyResource(): ArtworkPolicyResource | undefined {
+function useArtworkPolicyResource(): ResourceQueryState<ArtworkPolicyResource> {
   const { artworkId: paramArtworkId } = useParams();
   const artworkId = Number(paramArtworkId ?? 0);
-  const { data: artwork } = useArtworkDetail(artworkId);
+  const artworkQuery = useArtworkDetail(artworkId);
+  const artwork = artworkQuery.data;
 
-  if (!artwork) return undefined;
+  if (!artwork) {
+    return {
+      resource: null,
+      isPending: artworkQuery.isPending,
+      isError: artworkQuery.isError,
+    };
+  }
 
   return {
-    artistUserId: artwork.artistUserId ?? 0,
-    qaHandlers: artwork.qaHandlers,
-    coAuthors: artwork.coAuthors,
+    resource: {
+      artistUserId: artwork.artistUserId ?? 0,
+      qaHandlers: artwork.qaHandlers,
+      coAuthors: artwork.coAuthors,
+    },
+    isPending: false,
+    isError: artworkQuery.isError,
   };
 }
 
@@ -140,9 +177,10 @@ export function DisplayCreatePermissionGuard({
 
 export function DisplayPermissionGuard({ action, fallback = '/403', children }: DisplayGuardProps) {
   const display = useDisplayPolicyResource();
-  const policy = useDisplayPolicy(display ?? { ownerUserId: 0, teamMembers: [] });
+  const policy = useDisplayPolicy(display.resource ?? { ownerUserId: 0, teamMembers: [] });
 
-  if (!display) return null;
+  if (display.isPending) return <GuardLoading />;
+  if (display.isError || !display.resource) return <Navigate to={fallback} replace />;
 
   return (
     <PermissionGuard resource="display" action={action} fallback={fallback} policy={policy}>
@@ -157,9 +195,10 @@ export function DisplayContentPermissionGuard({
   children,
 }: DisplayContentGuardProps) {
   const display = useDisplayPolicyResource();
-  const policy = useDisplayContentPolicy(display ?? undefined);
+  const policy = useDisplayContentPolicy(display.resource ?? undefined);
 
-  if (!display) return null;
+  if (display.isPending) return <GuardLoading />;
+  if (display.isError || !display.resource) return <Navigate to={fallback} replace />;
 
   return (
     <PermissionGuard resource="displayContent" action={action} fallback={fallback} policy={policy}>
@@ -174,9 +213,12 @@ export function DisplayInvitationPermissionGuard({
   children,
 }: DisplayInvitationGuardProps) {
   const display = useDisplayPolicyResource();
-  const policy = useDisplayInvitationPolicy(display ?? { ownerUserId: 0, teamMembers: [] });
+  const policy = useDisplayInvitationPolicy(
+    display.resource ?? { ownerUserId: 0, teamMembers: [] },
+  );
 
-  if (!display) return null;
+  if (display.isPending) return <GuardLoading />;
+  if (display.isError || !display.resource) return <Navigate to={fallback} replace />;
 
   return (
     <PermissionGuard
@@ -210,9 +252,12 @@ export function DisplayArtistNamePermissionGuard({
   children,
 }: DisplayArtistNameGuardProps) {
   const display = useDisplayPolicyResource();
-  const policy = useDisplayArtistNamePolicy(display ?? { ownerUserId: 0, teamMembers: [] });
+  const policy = useDisplayArtistNamePolicy(
+    display.resource ?? { ownerUserId: 0, teamMembers: [] },
+  );
 
-  if (!display) return null;
+  if (display.isPending) return <GuardLoading />;
+  if (display.isError || !display.resource) return <Navigate to={fallback} replace />;
 
   return (
     <PermissionGuard
@@ -229,9 +274,12 @@ export function DisplayArtistNamePermissionGuard({
 export function ArtworkPermissionGuard({ action, fallback = '/403', children }: ArtworkGuardProps) {
   const display = useDisplayPolicyResource();
   const artwork = useArtworkPolicyResource();
-  const policy = useArtworkPolicy(display ?? undefined, artwork);
+  const policy = useArtworkPolicy(display.resource ?? undefined, artwork.resource ?? undefined);
 
-  if (!display || (action !== 'create' && !artwork)) return null;
+  if (display.isPending || (action !== 'create' && artwork.isPending)) return <GuardLoading />;
+  if (display.isError || !display.resource || (action !== 'create' && !artwork.resource)) {
+    return <Navigate to={fallback} replace />;
+  }
 
   return (
     <PermissionGuard resource="artwork" action={action} fallback={fallback} policy={policy}>
