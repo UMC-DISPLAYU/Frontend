@@ -151,7 +151,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
         artistName: data.artistName.trim(),
         introduction: data.introduction?.trim() ?? '',
         fields: fieldsToSend,
-        ...(isSubmittableUrl(trimmedExternalLink) ? { externalLink: trimmedExternalLink } : {}),
+        ...(trimmedExternalLink ? { externalLink: trimmedExternalLink } : {}),
         univName: school.trim(),
       },
       {

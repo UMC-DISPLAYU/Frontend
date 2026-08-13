@@ -5,6 +5,7 @@ import type {
   ArtworkFeelingReplyImageRequestDto,
   ArtworkFeelingReplyListResponseDataDto,
   CreateArtworkFeelingRequestDto,
+  GetArtworkFeelingsResponseDataDto,
   UpdateArtworkFeelingRequestDto,
 } from '@/api/dto';
 import {
@@ -110,7 +111,40 @@ export const useToggleArtworkFeelingLike = () => {
       liked: boolean;
     }) =>
       liked ? unlikeArtworkFeeling(artworkId, feelingId) : likeArtworkFeeling(artworkId, feelingId),
-    onSuccess: (_, variables) => {
+    onMutate: async ({ artworkId, feelingId }) => {
+      const queryKey = queryKeys.artworkFeelings.list(artworkId);
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousData =
+        queryClient.getQueryData<InfiniteData<GetArtworkFeelingsResponseDataDto>>(queryKey);
+
+      queryClient.setQueryData<InfiniteData<GetArtworkFeelingsResponseDataDto>>(queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            feelings: page.feelings.map((feeling) =>
+              feeling.feelingId === feelingId
+                ? {
+                    ...feeling,
+                    isLiked: !feeling.isLiked,
+                    likeCount: Math.max(feeling.likeCount + (feeling.isLiked ? -1 : 1), 0),
+                  }
+                : feeling,
+            ),
+          })),
+        };
+      });
+
+      return { previousData, queryKey };
+    },
+    onError: (_, __, context) => {
+      if (context && context.previousData !== undefined) {
+        queryClient.setQueryData(context.queryKey, context.previousData);
+      }
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkFeelings.list(variables.artworkId),
       });
@@ -211,13 +245,50 @@ export const useDeleteArtworkFeelingReply = (artworkId: number, feelingId: numbe
 };
 
 export const useToggleArtworkFeelingReplyLike = (artworkId: number, feelingId: number) => {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidateFeelingReplies(artworkId, feelingId);
+  const queryKey = queryKeys.artworkFeelings.replies(artworkId, feelingId);
 
   return useMutation({
     mutationFn: ({ feelingReplyId, liked }: { feelingReplyId: number; liked: boolean }) =>
       liked
         ? unlikeArtworkFeelingReply(artworkId, feelingId, feelingReplyId)
         : likeArtworkFeelingReply(artworkId, feelingId, feelingReplyId),
-    onSuccess: invalidate,
+    onMutate: async ({ feelingReplyId }) => {
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousData =
+        queryClient.getQueryData<InfiniteData<ArtworkFeelingReplyListResponseDataDto>>(queryKey);
+
+      queryClient.setQueryData<InfiniteData<ArtworkFeelingReplyListResponseDataDto>>(
+        queryKey,
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              replies: page.replies.map((reply) =>
+                reply.feelingReplyId === feelingReplyId
+                  ? {
+                      ...reply,
+                      isLiked: !reply.isLiked,
+                      likeCount: Math.max((reply.likeCount ?? 0) + (reply.isLiked ? -1 : 1), 0),
+                    }
+                  : reply,
+              ),
+            })),
+          };
+        },
+      );
+
+      return { previousData };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousData !== undefined) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: invalidate,
   });
 };

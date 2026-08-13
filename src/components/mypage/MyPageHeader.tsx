@@ -123,7 +123,7 @@ export function MyPageHeader({
               {profile.bio && <p className="typo-body-xs-regular text-sub700">{profile.bio}</p>}
               {profile.portfolioUrl && (
                 <a
-                  href={`https://${profile.portfolioUrl}`}
+                  href={profile.portfolioUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1 typo-body-xs-regular text-[#2563EB]"
@@ -173,7 +173,7 @@ export function MyPageHeader({
         <div className="px-5 py-4 flex flex-col gap-3.5">
           <div className="flex items-center gap-3">
             <OptimizedImage
-              className="size-22 rounded-full object-cover shrink-0"
+              className="size-22 rounded-full border-[2.67px] border-line object-cover shrink-0"
               src={profile.avatar || FALLBACK_PROFILE_IMAGE}
               displayWidth={88}
               alt={profile.name}
