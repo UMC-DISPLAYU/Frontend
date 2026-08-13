@@ -1,12 +1,13 @@
-import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
+import { createBrowserRouter, LoaderFunctionArgs } from 'react-router-dom';
 
 import { PrivateRoute } from './components/auth/PrivateRoute';
+import { RootRedirect } from './components/auth/RootRedirect';
 import { Layout } from './components/layout';
 import { AnswerPage } from './pages/AnswerPage';
 import { ArtistVerificationPage } from './pages/artist-verification';
 import { EditArtistProfilePage } from './pages/artist-verification';
+import { ArtworkRegisterPage } from './pages/artwork-register';
 import { ArtworkDetailPage } from './pages/ArtworkDetailPage';
-import { ArtworkRegisterPage } from './pages/ArtworkRegisterPage';
 import { ArtworksManagePage } from './pages/ArtworksManagePage';
 import { AuthPage } from './pages/AuthPage';
 import { DisplayAcceptPage } from './pages/DisplayAcceptPage';
@@ -39,8 +40,8 @@ import { MyQuestionsPage } from './pages/MyQuestionsPage';
 import { MyReviewPage } from './pages/MyReviewPage';
 import { NotFound } from './pages/NotFound';
 import { OnboardingPage } from './pages/onboarding';
+import { PersonalArtworksRegister } from './pages/personal-artworks-register';
 import { PersonalArtworkDetailPage } from './pages/PersonalArtworkDetailPage';
-import { PersonalArtworksRegister } from './pages/PersonalArtworksRegister';
 import { PolicyPage } from './pages/PolicyPage';
 import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
 import { SearchPage } from './pages/SearchPage';
@@ -64,7 +65,7 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       // 🔓 공개 라우트 (비로그인 게스트 접근 가능)
-      { index: true, element: <Navigate to="/login" replace /> },
+      { index: true, element: <RootRedirect /> },
       { path: 'home', element: <Homepage /> },
       { path: 'search', element: <SearchPage /> },
       {

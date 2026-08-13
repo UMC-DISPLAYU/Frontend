@@ -1,6 +1,7 @@
 import infoIcon from '@/assets/common/InfoIcon.svg';
 import { BottomFixedBar } from '@/components/common';
 import { RequiredLabel } from '@/components/ui';
+import { ARTWORK_REGISTER_AUTHOR_NAME_MAX_LENGTH } from '@/pages/artwork-register/artworkRegister.schema';
 import { cn } from '@/utils/cn';
 
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
@@ -55,6 +56,7 @@ function EnterArtistNamePage({
           <input
             id="other-author-name"
             value={otherAuthorName}
+            maxLength={ARTWORK_REGISTER_AUTHOR_NAME_MAX_LENGTH}
             onChange={(e) => onChangeOtherAuthorName(e.target.value)}
             placeholder="작가명을 입력해주세요"
             className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
