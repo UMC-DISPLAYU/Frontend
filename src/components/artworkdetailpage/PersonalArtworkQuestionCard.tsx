@@ -20,8 +20,10 @@ const QUESTION_MAX_IMAGES = 5;
 
 type ComposerImage = { imageUrl: string; width?: number; height?: number };
 
-/* 스크롤 대신 박스 자체가 늘어나도록 내용에 맞춰 textarea 높이를 맞춥니다. */
-function useAutoResizeTextarea(value: string) {
+/* 스크롤 대신 박스 자체가 늘어나도록 내용에 맞춰 textarea 높이를 맞춥니다.
+ * imagesLength도 함께 보고 있어야, 사진 추가/삭제로 min-height class가 바뀌는 순간에도
+ * (텍스트를 입력하기 전이라도) 즉시 높이를 다시 계산합니다. */
+function useAutoResizeTextarea(value: string, imagesLength: number) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ function useAutoResizeTextarea(value: string) {
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
-  }, [value]);
+  }, [value, imagesLength]);
 
   return ref;
 }
@@ -38,9 +40,11 @@ function useAutoResizeTextarea(value: string) {
 function ImagePreviewRow({
   images,
   onRemove,
+  disabled = false,
 }: {
   images: { id: string; previewUrl: string }[];
   onRemove: (id: string) => void;
+  disabled?: boolean;
 }) {
   if (images.length === 0) return null;
 
@@ -52,8 +56,9 @@ function ImagePreviewRow({
           <button
             type="button"
             onClick={() => onRemove(image.id)}
+            disabled={disabled}
             aria-label="이미지 삭제"
-            className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
+            className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main disabled:opacity-50"
           >
             <X size={12} className="text-white" strokeWidth={2.5} />
           </button>
@@ -106,34 +111,48 @@ export function PersonalArtworkQuestionComposerCard({
   isSubmitting = false,
 }: {
   onClose: () => void;
-  onSubmit: (payload: { content: string; isPrivate: boolean; images: ComposerImage[] }) => void;
+  onSubmit: (payload: {
+    content: string;
+    isPrivate: boolean;
+    images: ComposerImage[];
+  }) => Promise<void>;
   isSubmitting?: boolean;
 }) {
   const [content, setContent] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
-  const textareaRef = useAutoResizeTextarea(content);
   const { images, addImages, removeImage, clearImages, uploadImages, canAddMore, isUploading } =
     useImageUpload({ domain: 'personal-artwork-question', maxImages: QUESTION_MAX_IMAGES });
-  const isBusy = isSubmitting || isUploading;
+  const textareaRef = useAutoResizeTextarea(content, images.length);
+  /* isUploading은 실제 업로드 요청이 시작된 뒤에야 true가 되어, 그 전(이미지 크기 읽는 동안)
+   * 제출 버튼을 다시 누르면 중복 등록될 수 있습니다. 첫 await 전에 동기적으로 잠급니다. */
+  const [isPreparing, setIsPreparing] = useState(false);
+  const isBusy = isSubmitting || isUploading || isPreparing;
 
   const handleSubmit = async () => {
     const trimmed = content.trim();
     if (!trimmed || isBusy) return;
+    setIsPreparing(true);
 
-    const files = images.map((image) => image.file).filter((file): file is File => Boolean(file));
-    const dimensions =
-      files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
-    const imageUrls = images.length > 0 ? await uploadImages() : [];
-    const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
-      imageUrl,
-      width: dimensions[index]?.width,
-      height: dimensions[index]?.height,
-    }));
+    try {
+      const files = images.map((image) => image.file).filter((file): file is File => Boolean(file));
+      const dimensions =
+        files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
+      const imageUrls = images.length > 0 ? await uploadImages() : [];
+      const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
+        imageUrl,
+        width: dimensions[index]?.width,
+        height: dimensions[index]?.height,
+      }));
 
-    onSubmit({ content: trimmed, isPrivate, images: submitImages });
-    setContent('');
-    setIsPrivate(false);
-    clearImages();
+      await onSubmit({ content: trimmed, isPrivate, images: submitImages });
+      setContent('');
+      setIsPrivate(false);
+      clearImages();
+    } catch {
+      /* 등록 실패 시 작성 중이던 내용과 이미지를 유지합니다. */
+    } finally {
+      setIsPreparing(false);
+    }
   };
 
   return (
@@ -142,14 +161,20 @@ export function PersonalArtworkQuestionComposerCard({
         {/* 질문작성 / 닫기 */}
         <div className="flex items-center justify-between self-stretch">
           <span className="typo-body-sm-bold text-main">질문작성</span>
-          <button type="button" onClick={onClose} aria-label="닫기" className="cursor-pointer">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isBusy}
+            aria-label="닫기"
+            className="cursor-pointer disabled:opacity-50"
+          >
             <X size={20} strokeWidth={1.5} className="text-main" />
           </button>
         </div>
 
         <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
           <div className="flex w-full flex-col items-start gap-1 self-stretch">
-            <ImagePreviewRow images={images} onRemove={removeImage} />
+            <ImagePreviewRow images={images} onRemove={removeImage} disabled={isBusy} />
             <textarea
               ref={textareaRef}
               value={content}
@@ -209,7 +234,7 @@ type Props = {
   myUserId?: number;
   isReplyTarget: boolean;
   onReply: () => void;
-  onSubmitReply: (content: string, images: ComposerImage[]) => void;
+  onSubmitReply: (content: string, images: ComposerImage[]) => Promise<void>;
   isSubmittingReply?: boolean;
 };
 
@@ -225,7 +250,6 @@ export function PersonalArtworkQuestionCard({
 }: Props) {
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState('');
-  const replyTextareaRef = useAutoResizeTextarea(replyContent);
   const {
     images: replyImages,
     addImages: addReplyImages,
@@ -235,7 +259,11 @@ export function PersonalArtworkQuestionCard({
     canAddMore: canAddMoreReplyImages,
     isUploading: isUploadingReplyImages,
   } = useImageUpload({ domain: 'personal-artwork-question-reply', maxImages: QUESTION_MAX_IMAGES });
-  const isReplyBusy = isSubmittingReply || isUploadingReplyImages;
+  const replyTextareaRef = useAutoResizeTextarea(replyContent, replyImages.length);
+  /* isUploading은 실제 업로드 요청이 시작된 뒤에야 true가 되어, 그 전(이미지 크기 읽는 동안)
+   * 제출 버튼을 다시 누르면 중복 등록될 수 있습니다. 첫 await 전에 동기적으로 잠급니다. */
+  const [isReplyPreparing, setIsReplyPreparing] = useState(false);
+  const isReplyBusy = isSubmittingReply || isUploadingReplyImages || isReplyPreparing;
 
   /*
    * 비공개 질문 열람 가능 여부·답변 권한은 서버가 계산해서 accessible/canReply로 내려줍니다.
@@ -283,22 +311,29 @@ export function PersonalArtworkQuestionCard({
   const handleSubmitReply = async () => {
     const trimmed = replyContent.trim();
     if (!trimmed || isReplyBusy) return;
+    setIsReplyPreparing(true);
 
-    const files = replyImages
-      .map((image) => image.file)
-      .filter((file): file is File => Boolean(file));
-    const dimensions =
-      files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
-    const imageUrls = replyImages.length > 0 ? await uploadReplyImages() : [];
-    const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
-      imageUrl,
-      width: dimensions[index]?.width,
-      height: dimensions[index]?.height,
-    }));
+    try {
+      const files = replyImages
+        .map((image) => image.file)
+        .filter((file): file is File => Boolean(file));
+      const dimensions =
+        files.length > 0 ? await Promise.all(files.map((file) => readImageDimensions(file))) : [];
+      const imageUrls = replyImages.length > 0 ? await uploadReplyImages() : [];
+      const submitImages: ComposerImage[] = imageUrls.map((imageUrl, index) => ({
+        imageUrl,
+        width: dimensions[index]?.width,
+        height: dimensions[index]?.height,
+      }));
 
-    onSubmitReply(trimmed, submitImages);
-    setReplyContent('');
-    clearReplyImages();
+      await onSubmitReply(trimmed, submitImages);
+      setReplyContent('');
+      clearReplyImages();
+    } catch {
+      /* 등록 실패 시 작성 중이던 내용과 이미지를 유지합니다. */
+    } finally {
+      setIsReplyPreparing(false);
+    }
   };
 
   return (
@@ -350,7 +385,8 @@ export function PersonalArtworkQuestionCard({
             <button
               type="button"
               onClick={() => onReply()}
-              className="flex h-[52px] w-full items-center justify-between gap-0.5 px-4 pt-4 pb-2 cursor-pointer"
+              disabled={isReplyBusy}
+              className="flex h-[52px] w-full items-center justify-between gap-0.5 px-4 pt-4 pb-2 cursor-pointer disabled:opacity-50"
             >
               <span className="w-[271px] shrink-0 truncate text-left typo-body-xs-regular text-link">
                 {artwork.artistName}
@@ -364,7 +400,11 @@ export function PersonalArtworkQuestionCard({
             <div className="flex flex-col items-center gap-2 self-stretch px-4 pb-4">
               <div className="flex min-h-[105px] w-full flex-col items-start justify-between">
                 <div className="flex w-full flex-col items-start gap-3.5 self-stretch">
-                  <ImagePreviewRow images={replyImages} onRemove={removeReplyImage} />
+                  <ImagePreviewRow
+                    images={replyImages}
+                    onRemove={removeReplyImage}
+                    disabled={isReplyBusy}
+                  />
                   <textarea
                     ref={replyTextareaRef}
                     value={replyContent}

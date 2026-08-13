@@ -165,8 +165,11 @@ export function ArtworkDetailPage() {
       isMyQuestion: Boolean(myUserId) && question.user?.userId === myUserId,
     }));
 
-  /* 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다. */
-  const handleSendQuestion = ({
+  /*
+   * 답변 대상이 있으면 답변으로, 없으면 새 질문으로 등록합니다.
+   * 등록 카드가 요청 실패 시 작성 내용을 보존할 수 있도록 mutateAsync로 실패를 그대로 전파합니다.
+   */
+  const handleSendQuestion = async ({
     content,
     isPrivate,
     images,
@@ -184,10 +187,12 @@ export function ArtworkDetailPage() {
         return;
       }
 
-      createQuestionReply.mutate(
-        { artworkId, questionId: questionReplyTarget.questionId, body: { content, images } },
-        { onSuccess: () => setQuestionReplyTarget(null) },
-      );
+      await createQuestionReply.mutateAsync({
+        artworkId,
+        questionId: questionReplyTarget.questionId,
+        body: { content, images },
+      });
+      setQuestionReplyTarget(null);
       return;
     }
 
@@ -196,10 +201,11 @@ export function ArtworkDetailPage() {
       return;
     }
 
-    createQuestion.mutate(
-      { artworkId, body: { content, isPublic: !isPrivate, images } },
-      { onSuccess: () => setIsComposingQuestion(false) },
-    );
+    await createQuestion.mutateAsync({
+      artworkId,
+      body: { content, isPublic: !isPrivate, images },
+    });
+    setIsComposingQuestion(false);
   };
 
   if (isPending) {
