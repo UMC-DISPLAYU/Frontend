@@ -79,7 +79,7 @@ export function ArtworkArtistRow({ userId, displayName }: ArtworkArtistRowProps)
       <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <button
         type="button"
-        onClick={() => userId && profile && navigate(`/auth/${userId}`)}
+        onClick={() => userId && profile && navigate(`/artist/${userId}`)}
         disabled={!userId || !profile}
         className="flex min-w-0 items-center gap-2 text-left disabled:cursor-default"
       >
