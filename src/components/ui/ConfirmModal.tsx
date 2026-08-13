@@ -36,7 +36,7 @@ export function ConfirmModal({
       className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-900/40 px-10"
     >
       <div
-        className={`flex w-full max-w-80 flex-col overflow-hidden rounded-[20px] bg-neutral-50/20 p-5 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px] ${isVertical ? 'gap-7' : 'gap-5'}`}
+        className={`flex w-full max-w-80 flex-col overflow-hidden rounded-[20px] bg-neutral-50/70 p-5 shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] backdrop-blur-[10px] ${isVertical ? 'gap-7' : 'gap-5'}`}
       >
         <div className={`flex flex-col gap-2 ${isVertical ? 'text-center' : 'text-left'}`}>
           {title && <h2 className="typo-body-xl-bold text-main">{title}</h2>}
