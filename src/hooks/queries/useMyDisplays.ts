@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { ArtistDisplayDto } from '@/api/dto';
-import { deleteDisplay, getArtistDisplays, getMyDisplays } from '@/api/endpoints';
+import {
+  deleteDisplay,
+  getArtistDisplays,
+  getMyDisplays,
+  updateMyDisplayNickname,
+} from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import type { ExhibitionItem } from '@/types/mypage';
 import { getDisplayStatusLabel } from '@/utils/mypage';
@@ -15,8 +20,8 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   id: String(display.displayId),
   displayId: display.displayId,
   isOwner,
-  isLeader: display.isLeader,
-  publishedStatus: display.publishedStatus,
+  isLeader: display.isLeader ?? isOwner,
+  publishStatus: display.publishStatus ?? 'PUBLISHED',
   status: getDisplayStatusLabel(display.displayStatus),
   title: display.title,
   /* 학과·학회 등 소속 전시는 학교/기관명+세부소속을, 연합 전시는 주최/소속명만 저장하므로
@@ -25,6 +30,7 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   period: `${formatDate(display.startDate)} – ${formatDate(display.endDate)}`,
   place: display.placeName,
   thumbnail: display.postImageUrl,
+  artistName: display.displayNickname ?? display.artistName,
 });
 
 export const useMyDisplays = ({ enabled = true }: { enabled?: boolean } = {}) =>
@@ -60,6 +66,17 @@ export const useDeleteDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => deleteDisplay(displayId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
+    },
+  });
+};
+
+export const useUpdateMyDisplayNickname = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (nickname: string) => updateMyDisplayNickname({ nickname }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
     },

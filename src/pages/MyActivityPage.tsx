@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { useLocation } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { LoungePostSummaryDto } from '@/api/dto';
 import { ErrorView, LoadingView } from '@/components/common';
-import { LoungeBoardHeader, LoungeBoardPostCard } from '@/components/lounge-board';
+import { LoungeBoardPostCard } from '@/components/lounge-board';
 import { toLoungeCategoryKey } from '@/constants/loungeCategories';
 import {
   useMyLoungeComments,
@@ -48,6 +49,7 @@ const toBoardPost = (post: LoungePostSummaryDto): LoungeBoardPost | undefined =>
 };
 
 export function MyActivityPage() {
+  const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabKey>(() => getTabFromState(location.state));
 
@@ -95,7 +97,12 @@ export function MyActivityPage() {
 
   return (
     <div className="w-full max-w-md mx-auto h-dvh bg-page flex flex-col">
-      <LoungeBoardHeader title="내 활동" showWriteButton={false} className="px-5" />
+      <header className="flex items-center gap-3 px-5 pt-4 pb-3">
+        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로가기" className="-ml-1">
+          <ChevronLeft className="size-7 text-main" strokeWidth={2} />
+        </button>
+        <h1 className="typo-body-xl-bold text-main">내 라운지 활동</h1>
+      </header>
 
       <nav className="mt-[15.5px] px-5 border-b border-zinc-300 flex items-center">
         {TABS.map((tab) => {

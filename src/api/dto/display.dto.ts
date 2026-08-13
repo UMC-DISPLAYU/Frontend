@@ -462,7 +462,9 @@ export interface MyDisplayDto {
   placeName: string;
   postImageUrl: string;
   isLeader?: boolean;
-  publishedStatus?: 'PUBLISHED' | 'DRAFT';
+  publishStatus?: 'PUBLISHED' | 'DRAFT';
+  displayNickname?: string;
+  artistName?: string;
 }
 
 export interface GetMyDisplaysResponseDataDto {

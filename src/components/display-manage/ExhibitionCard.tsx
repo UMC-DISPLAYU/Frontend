@@ -56,7 +56,7 @@ export function ExhibitionCard({
         'bg-neutral-50 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]',
       )}
     >
-      <div className="flex items-center gap-3 h-20">
+      <div className="flex items-start gap-3">
         {/* 썸네일 80×80 */}
         <button type="button" onClick={onClick} className="shrink-0">
           <Poster src={ex.thumbnail} w={80} h={80} radius={12} />
@@ -66,7 +66,7 @@ export function ExhibitionCard({
         <button
           type="button"
           onClick={onClick}
-          className="flex min-w-0 flex-1 items-start gap-3 text-left h-full"
+          className="flex min-w-0 flex-1 items-start gap-3 text-left"
         >
           <ExhibitionMeta ex={ex} />
         </button>

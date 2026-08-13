@@ -7,4 +7,6 @@ export const useMyArtworkFeelings = (params?: { cursor?: string; size?: number }
   useQuery({
     queryKey: [...queryKeys.artworkFeelings.lists(), 'my', params],
     queryFn: () => getMyArtworkFeelings(params),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });

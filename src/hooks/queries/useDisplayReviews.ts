@@ -36,6 +36,7 @@ export const useCreateDisplayReview = (displayId: number) => {
         exact: true,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.all, 'reviews'] });
     },
   });
 };
@@ -51,6 +52,7 @@ export const useDeleteDisplayReview = (displayId: number) => {
         exact: true,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.all, 'reviews'] });
     },
   });
 };
