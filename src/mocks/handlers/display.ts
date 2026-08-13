@@ -224,7 +224,7 @@ export const displayHandlers = [
   ...paths('/api/v1/display/invitation/{token}').map((path) =>
     http.get(path, () => success('/api/v1/display/invitation/{token}', displayDetailResponse(101))),
   ),
-  /* 스웨거: POST는 좋아요 추가, PATCH는 좋아요 취소입니다. */
+  /* 스웨거: POST는 좋아요 추가, DELETE는 좋아요 취소입니다. */
   ...paths('/api/v1/display/like').map((path) =>
     http.post(path, async ({ request }) => {
       const body = await readJson<{ displayId?: number }>(request);
@@ -243,7 +243,7 @@ export const displayHandlers = [
     }),
   ),
   ...paths('/api/v1/display/like').map((path) =>
-    http.patch(path, async ({ request }) => {
+    http.delete(path, async ({ request }) => {
       const body = await readJson<{ displayId?: number }>(request);
       const display = findDisplay(Number(body.displayId ?? 101));
 
@@ -379,16 +379,19 @@ export const displayHandlers = [
       });
     }),
   ),
-  ...paths('/api/v1/display/{displayId}/invitation/disable').map((path) =>
-    http.patch(path, ({ params }) => {
+  ...paths('/api/v1/display/{displayId}/invitation').map((path) =>
+    http.patch(path, async ({ params, request }) => {
       const displayId = toNumber(params.displayId, 101);
       const display = findDisplay(displayId);
-      const invitationDisabledAt = now();
+      const body = await readJson<{ enabled?: boolean }>(request);
+      const invitationDisabledAt = body.enabled === false ? now() : null;
 
       display.invitationDisabledAt = invitationDisabledAt;
 
-      return success('/api/v1/display/{displayId}/invitation/disable', {
+      return success('/api/v1/display/{displayId}/invitation', {
         displayId,
+        enabled: body.enabled ?? false,
+        invitationUrl: display.invitationDisabledAt ? null : display.invitationToken,
         invitationDisabledAt,
       });
     }),

@@ -312,8 +312,9 @@ function QuestionCard({
                     onChange={(e) => setReplyContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
                     placeholder="답변을 작성해주세요"
                     rows={1}
+                    disabled={isReplyBusy}
                     className={cn(
-                      'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint',
+                      'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint disabled:opacity-50',
                       /* 사진이 추가된 만큼 textarea 최소 높이를 줄여, 사진 추가 전후로 박스 전체 높이가 그대로 유지되게 합니다. */
                       replyImages.length > 0 ? 'min-h-[2px]' : 'min-h-[80px]',
                     )}
@@ -529,8 +530,9 @@ function QuestionComposerCard({
               onChange={(e) => setContent(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
               placeholder="질문을 작성해주세요"
               rows={1}
+              disabled={isBusy}
               className={cn(
-                'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint',
+                'typo-body-xs-regular w-full resize-none overflow-hidden bg-transparent text-main outline-none placeholder:text-faint disabled:opacity-50',
                 /* 사진이 추가된 만큼 textarea 최소 높이를 줄여, 사진 추가 전후로 박스 전체 높이가 그대로 유지되게 합니다. */
                 images.length > 0 ? 'min-h-[12px]' : 'min-h-[80px]',
               )}
@@ -546,7 +548,8 @@ function QuestionComposerCard({
             type="button"
             onClick={() => setIsPrivate((prev) => !prev)}
             aria-pressed={isPrivate}
-            className="flex cursor-pointer items-center gap-1.5"
+            disabled={isBusy}
+            className="flex cursor-pointer items-center gap-1.5 disabled:opacity-50"
           >
             <span
               className={cn(

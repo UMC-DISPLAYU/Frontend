@@ -187,12 +187,19 @@ export function ArtworkDetailPage() {
         return;
       }
 
+      const targetQuestionId = questionReplyTarget.questionId;
       await createQuestionReply.mutateAsync({
         artworkId,
-        questionId: questionReplyTarget.questionId,
+        questionId: targetQuestionId,
         body: { content, images },
       });
-      setQuestionReplyTarget(null);
+      /*
+       * 이미지 업로드로 대기하는 동안 사용자가 다른 질문의 답변대기로 전환했을 수 있어,
+       * 완료 시점의 최신 상태를 확인해 같은 질문을 향하고 있을 때만 선택을 해제합니다.
+       */
+      setQuestionReplyTarget((current) =>
+        current?.questionId === targetQuestionId ? null : current,
+      );
       return;
     }
 

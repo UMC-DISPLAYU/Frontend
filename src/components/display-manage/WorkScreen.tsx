@@ -35,12 +35,15 @@ export function WorkScreen({
   onManageArtworks: () => void;
 }) {
   const navigate = useNavigate();
-  const { data: display } = useDisplayDetail(Number(ex.id));
+  /* ex.id는 저장한 전시 목록에서 archiveDisplayId일 수 있어, 실제 전시 식별자인 displayId를 우선 씁니다. */
+  const displayId = ex.displayId || Number(ex.id) || 0;
+  const { data: display } = useDisplayDetail(displayId);
   const displayContentPolicy = useDisplayContentPolicy(display);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
   const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
   const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
   const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
+  const canEditContent = hasPermission(displayContentPolicy, 'editContent');
   const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
   const canReorder = hasPermission(displayContentPolicy, 'reorder');
   const canManageDisplayContent =
@@ -48,6 +51,7 @@ export function WorkScreen({
     canEditCategory ||
     canDeleteCategory ||
     canCreateContent ||
+    canEditContent ||
     canDeleteContent ||
     canReorder;
   const artworkPolicy = useArtworkPolicy(display);
@@ -71,7 +75,7 @@ export function WorkScreen({
           <SectionTitle>전시콘텐츠</SectionTitle>
           {canManageDisplayContent && (
             <button
-              onClick={() => navigate('/display/contents-manage', { state: { displayId: ex.id } })}
+              onClick={() => navigate('/display/contents-manage', { state: { displayId } })}
               className="typo-body-xs-regular flex items-center gap-0.5 border-none bg-transparent text-hint cursor-pointer"
             >
               관리하기 <ChevronRight size={13} />
@@ -83,7 +87,7 @@ export function WorkScreen({
             <ContentRow
               key={r.id}
               row={r}
-              onClick={() => navigate(`/exhibition/${ex.id}/contents/${r.id}`)}
+              onClick={() => navigate(`/exhibition/${displayId}/contents/${r.id}`)}
             />
           ))}
         </div>
@@ -105,7 +109,7 @@ export function WorkScreen({
           {canCreateArtwork && (
             <button
               type="button"
-              onClick={() => navigate(`/artworks-register?displayId=${ex.id}`)}
+              onClick={() => navigate(`/artworks-register?displayId=${displayId}`)}
               className="flex h-[158px] w-[118px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
             >
               <Plus size={20} className="text-hint" />

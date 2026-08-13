@@ -132,11 +132,18 @@ export function PersonalArtworkDetailPage() {
         openLoginModal();
         return;
       }
+      const targetQuestionId = replyQuestion.personalQuestionId;
       await createQuestionReply.mutateAsync({
         content: payload.content,
         images: payload.images,
       });
-      setReplyQuestion(null);
+      /*
+       * 이미지 업로드로 대기하는 동안 사용자가 다른 질문의 답변대기로 전환했을 수 있어,
+       * 완료 시점의 최신 상태를 확인해 같은 질문을 향하고 있을 때만 선택을 해제합니다.
+       */
+      setReplyQuestion((current) =>
+        current?.personalQuestionId === targetQuestionId ? null : current,
+      );
       return;
     }
 
