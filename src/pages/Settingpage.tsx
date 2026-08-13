@@ -24,7 +24,7 @@ export function SettingPage() {
   const { data: invitationsData } = useMyDisplayInvitations();
   const { data: questionsData } = useReceivedArtworkQuestions({ answerStatus: 'WAITING' });
 
-  const invitationCount = invitationsData?.invitations?.length ?? 0;
+  const invitationCount = invitationsData?.exhibitions?.length ?? 0;
   const pendingQuestionCount = questionsData?.questions?.length ?? 0;
 
   const handleLogout = () => {
