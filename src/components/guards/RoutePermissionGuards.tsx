@@ -2,7 +2,7 @@ import { type ReactNode, useEffect } from 'react';
 
 import { Navigate, Outlet, useParams } from 'react-router-dom';
 
-import { FlowProvider } from '@/contexts/flowContext';
+import { FlowProvider } from '@/contexts/FlowContext';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';

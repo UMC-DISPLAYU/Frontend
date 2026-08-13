@@ -1,1 +1,1 @@
-export { useFlowContextValue as useFlowContext } from '@/contexts/flowContext';
+export { useFlowContextValue as useFlowContext } from '@/contexts/FlowContext';

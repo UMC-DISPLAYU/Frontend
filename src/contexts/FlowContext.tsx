@@ -1,18 +1,16 @@
 import {
   createContext,
-  createElement,
   type ReactNode,
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
 type FlowState = {
   completedSteps: string[];
   currentFlow: string;
-  entryHistoryIndex: number | null;
-  completedBackHistoryIndex: number | null;
 };
 
 type FlowContextValue = FlowState & {
@@ -35,41 +33,28 @@ export function FlowProvider({ children, initialFlow = '' }: FlowProviderProps) 
   const [state, setState] = useState<FlowState>({
     completedSteps: [],
     currentFlow: initialFlow,
-    entryHistoryIndex: null,
-    completedBackHistoryIndex: null,
   });
+  const entryHistoryIndexRef = useRef<number | null>(null);
+  const completedBackHistoryIndexRef = useRef<number | null>(null);
 
   const startFlow = useCallback((flowId: string, entryHistoryIndex: number | null = null) => {
+    entryHistoryIndexRef.current = entryHistoryIndex;
+    completedBackHistoryIndexRef.current = null;
+
     setState({
       completedSteps: [],
       currentFlow: flowId,
-      entryHistoryIndex,
-      completedBackHistoryIndex: null,
     });
   }, []);
 
   const completeFlow = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      completedBackHistoryIndex:
-        prev.entryHistoryIndex === null ? null : Math.max(prev.entryHistoryIndex - 1, 0),
-    }));
+    completedBackHistoryIndexRef.current =
+      entryHistoryIndexRef.current === null ? null : Math.max(entryHistoryIndexRef.current - 1, 0);
   }, []);
 
   const consumeCompletedFlowBackIndex = useCallback(() => {
-    let completedBackHistoryIndex: number | null = null;
-
-    setState((prev) => {
-      completedBackHistoryIndex = prev.completedBackHistoryIndex;
-
-      if (completedBackHistoryIndex === null) return prev;
-
-      return {
-        ...prev,
-        completedBackHistoryIndex: null,
-      };
-    });
-
+    const completedBackHistoryIndex = completedBackHistoryIndexRef.current;
+    completedBackHistoryIndexRef.current = null;
     return completedBackHistoryIndex;
   }, []);
 
@@ -85,11 +70,12 @@ export function FlowProvider({ children, initialFlow = '' }: FlowProviderProps) 
   }, []);
 
   const resetFlow = useCallback((flowId: string) => {
+    entryHistoryIndexRef.current = null;
+    completedBackHistoryIndexRef.current = null;
+
     setState({
       completedSteps: [],
       currentFlow: flowId,
-      entryHistoryIndex: null,
-      completedBackHistoryIndex: null,
     });
   }, []);
 
@@ -102,8 +88,6 @@ export function FlowProvider({ children, initialFlow = '' }: FlowProviderProps) 
     () => ({
       completedSteps: state.completedSteps,
       currentFlow: state.currentFlow,
-      entryHistoryIndex: state.entryHistoryIndex,
-      completedBackHistoryIndex: state.completedBackHistoryIndex,
       startFlow,
       completeFlow,
       consumeCompletedFlowBackIndex,
@@ -118,14 +102,12 @@ export function FlowProvider({ children, initialFlow = '' }: FlowProviderProps) 
       isStepCompleted,
       resetFlow,
       startFlow,
-      state.completedBackHistoryIndex,
       state.completedSteps,
       state.currentFlow,
-      state.entryHistoryIndex,
     ],
   );
 
-  return createElement(FlowContext.Provider, { value }, children);
+  return <FlowContext.Provider value={value}>{children}</FlowContext.Provider>;
 }
 
 export function useFlowContextValue() {
