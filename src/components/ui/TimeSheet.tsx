@@ -202,7 +202,6 @@ export function TimeSheet({
               aria-label="운영시간 숫자 입력"
               className="absolute left-1/2 top-1/2 size-px -translate-x-1/2 -translate-y-1/2 opacity-0"
               onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
             />
             <Segment
               value={time.startHour}
