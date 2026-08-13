@@ -104,22 +104,25 @@ const getImageUrl = (item: ImageLike, fallback = '') =>
 
 export function MyPage() {
   const navigate = useNavigate();
-  const { activeTab, isArtistView, isSettingsOpen, setIsSettingsOpen, toggleArtistView } =
-    useMyPageStore();
+  const {
+    activeTab,
+    isArtistView,
+    isSettingsOpen,
+    setIsSettingsOpen,
+    toggleArtistView,
+    syncArtistViewWithVerification,
+  } = useMyPageStore();
 
   const { data: userData, isLoading: isUserLoading, error: userError } = useUserMe();
   const { handleShare: shareUtil } = useShare();
+  const isVerified = userData?.isVerified;
 
-  // 작가 인증 여부에 따라 초기 뷰 설정
+  // 작가 인증 상태가 실제로 바뀐 시점에만 뷰를 동기화 (수동으로 전환한 뷰를 리마운트 시 덮어쓰지 않기 위함)
   useEffect(() => {
-    if (userData) {
-      const shouldShowArtistView = userData.isVerified;
-      if (shouldShowArtistView !== isArtistView) {
-        toggleArtistView();
-      }
+    if (isVerified !== undefined) {
+      syncArtistViewWithVerification(isVerified);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData?.isVerified]); // isArtistView, toggleArtistView는 의존성에서 제외 (무한 루프 방지)
+  }, [isVerified, syncArtistViewWithVerification]);
   const archivedExhibitionsQuery = useArchivedExhibitions();
   const archivedArtworksQuery = useInfiniteArchivedArtworks({ size: 20 });
   const archivedArtistsQuery = useArchivedArtists();
