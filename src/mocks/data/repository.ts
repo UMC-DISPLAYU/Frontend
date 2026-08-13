@@ -120,94 +120,101 @@ const displayToDetail = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
       sortOrder: imageIndex + 1,
     })),
   })),
-  artworks: display.artworkSection.artworks.map((artwork, index) => ({
+  artworks: display.artworkSection.artworks.map((artwork, index) => {
+    const artworkImageUrl = artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL;
+    return {
+      artworkId: artwork.artworkId,
+      displayId: artwork.displayId,
+      title: artwork.title,
+      artist: artwork.artist,
+      artistName: artwork.artist,
+      content: artwork.description,
+      description: artwork.description,
+      type: artwork.type,
+      productionYear: artwork.productionYear,
+      materialMedia: artwork.material,
+      material: artwork.material,
+      size: artwork.size,
+      point: artwork.point,
+      order: index + 1,
+      artworkImageUrl,
+      thumbnailUrl: artworkImageUrl,
+      imageUrl: artworkImageUrl,
+    };
+  }),
+});
+
+const artworkToDetail = (artwork: any) => {
+  const artworkImageUrl = artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL;
+  return {
     artworkId: artwork.artworkId,
+    id: artwork.artworkId,
     displayId: artwork.displayId,
     title: artwork.title,
+    artworkName: artwork.title,
     artist: artwork.artist,
     artistName: artwork.artist,
-    content: artwork.description,
+    /* 작가 프로필 조회와 작가 저장에 쓰는 계정 id. 작품별로 고정된 값을 부여합니다. */
+    artistUserId: 300 + (artwork.artworkId % 100),
+    artworkImageUrl,
+    imageWidth: 1600,
+    imageHeight: 1600,
+    exhibitionInfo: (() => {
+      const display = MOCK_DISPLAY_DETAILS.find((item) => item.displayId === artwork.displayId);
+      const formatPeriod = (start?: string, end?: string) =>
+        start && end ? `${start.split('-').join('.')} - ${end.split('-').join('.')}` : '';
+
+      return {
+        displayId: artwork.displayId,
+        exhibitionTitle: display?.title ?? '',
+        exhibitionThumbnailUrl: display?.posterSection?.images?.[0]?.imageUrl ?? '',
+        exhibitionOrganizer: display?.organization ?? '',
+        exhibitionPeriod: formatPeriod(display?.startedAt, display?.endedAt),
+        exhibitionLocation: display?.placeName ?? '',
+      };
+    })(),
+    /* 원본 mock의 소개/감상 포인트가 비어 있어 화면 확인용 문구를 채웁니다. */
+    content:
+      artwork.description ??
+      `${artwork.title}은(는) ${artwork.material ?? '다양한 재료'}로 작업한 ${artwork.productionYear ?? ''}년 작품입니다. 작가는 일상에서 마주친 장면을 다시 배치해 보는 사람마다 다른 이야기를 떠올리도록 했습니다.`,
     description: artwork.description,
     type: artwork.type,
     productionYear: artwork.productionYear,
     materialMedia: artwork.material,
     material: artwork.material,
     size: artwork.size,
-    point: artwork.point,
-    order: index + 1,
-    thumbnailUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
-    imageUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
-  })),
-});
-
-const artworkToDetail = (artwork: any) => ({
-  artworkId: artwork.artworkId,
-  id: artwork.artworkId,
-  displayId: artwork.displayId,
-  title: artwork.title,
-  artworkName: artwork.title,
-  artist: artwork.artist,
-  artistName: artwork.artist,
-  /* 작가 프로필 조회와 작가 저장에 쓰는 계정 id. 작품별로 고정된 값을 부여합니다. */
-  artistUserId: 300 + (artwork.artworkId % 100),
-  artworkImageUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
-  imageWidth: 1600,
-  imageHeight: 1600,
-  exhibitionInfo: (() => {
-    const display = MOCK_DISPLAY_DETAILS.find((item) => item.displayId === artwork.displayId);
-    const formatPeriod = (start?: string, end?: string) =>
-      start && end ? `${start.split('-').join('.')} - ${end.split('-').join('.')}` : '';
-
-    return {
-      displayId: artwork.displayId,
-      exhibitionTitle: display?.title ?? '',
-      exhibitionThumbnailUrl: display?.posterSection?.images?.[0]?.imageUrl ?? '',
-      exhibitionOrganizer: display?.organization ?? '',
-      exhibitionPeriod: formatPeriod(display?.startedAt, display?.endedAt),
-      exhibitionLocation: display?.placeName ?? '',
-    };
-  })(),
-  /* 원본 mock의 소개/감상 포인트가 비어 있어 화면 확인용 문구를 채웁니다. */
-  content:
-    artwork.description ??
-    `${artwork.title}은(는) ${artwork.material ?? '다양한 재료'}로 작업한 ${artwork.productionYear ?? ''}년 작품입니다. 작가는 일상에서 마주친 장면을 다시 배치해 보는 사람마다 다른 이야기를 떠올리도록 했습니다.`,
-  description: artwork.description,
-  type: artwork.type,
-  productionYear: artwork.productionYear,
-  materialMedia: artwork.material,
-  material: artwork.material,
-  size: artwork.size,
-  point: artwork.point ?? '재료의 질감과 형태가 만들어내는 균형을 눈여겨봐 주세요.',
-  liked: false,
-  /* 작품 상세 응답(ArtworkDetailResponse)이 내려주는 좋아요/저장 상태입니다. */
-  isLiked: false,
-  isArchived: false,
-  likeCount: 3,
-  thumbnailUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
-  /* 실제 API처럼 대표 이미지(ARTWORK, 첫 장이 썸네일)와 작업과정 이미지(WORK_PROCESS)를 한 배열에 담습니다. */
-  images: [
-    ...artwork.images.map((image: any, index: number) => ({
-      imageId: artwork.artworkId * 100 + index + 1,
-      artworkImageId: artwork.artworkId * 100 + index + 1,
-      imageUrl: image.imageUrl,
-      isThumbnail: index === 0,
-      imageType: 'ARTWORK',
-      width: 1600,
-      height: 1600,
-      sortOrder: index,
-    })),
-    ...(artwork.processImages ?? []).map((image: any, index: number) => ({
-      imageId: artwork.artworkId * 1000 + index + 1,
-      artworkImageId: artwork.artworkId * 1000 + index + 1,
-      imageUrl: image.imageUrl,
-      isThumbnail: false,
-      imageType: 'WORK_PROCESS',
-      width: 1600,
-      height: 1600,
-      sortOrder: index,
-    })),
-  ],
-});
+    point: artwork.point ?? '재료의 질감과 형태가 만들어내는 균형을 눈여겨봐 주세요.',
+    liked: false,
+    /* 작품 상세 응답(ArtworkDetailResponse)이 내려주는 좋아요/저장 상태입니다. */
+    isLiked: false,
+    isArchived: false,
+    likeCount: 3,
+    thumbnailUrl: artworkImageUrl,
+    /* 실제 API처럼 대표 이미지(ARTWORK, 첫 장이 썸네일)와 작업과정 이미지(WORK_PROCESS)를 한 배열에 담습니다. */
+    images: [
+      ...artwork.images.map((image: any, index: number) => ({
+        imageId: artwork.artworkId * 100 + index + 1,
+        artworkImageId: artwork.artworkId * 100 + index + 1,
+        imageUrl: image.imageUrl,
+        isThumbnail: index === 0,
+        imageType: 'ARTWORK',
+        width: 1600,
+        height: 1600,
+        sortOrder: index,
+      })),
+      ...(artwork.processImages ?? []).map((image: any, index: number) => ({
+        imageId: artwork.artworkId * 1000 + index + 1,
+        artworkImageId: artwork.artworkId * 1000 + index + 1,
+        imageUrl: image.imageUrl,
+        isThumbnail: false,
+        imageType: 'WORK_PROCESS',
+        width: 1600,
+        height: 1600,
+        sortOrder: index,
+      })),
+    ],
+  };
+};
 
 /*
  * 닉네임 검색(GET /users/search)과 팀원 초대 화면에서 사용하는 검색 대상 사용자입니다.
