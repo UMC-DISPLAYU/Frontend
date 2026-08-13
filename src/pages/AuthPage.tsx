@@ -164,7 +164,14 @@ export function AuthPage() {
           ) : (exhibitionsQuery.data ?? []).length > 0 ? (
             <div className="flex flex-col gap-4">
               {(exhibitionsQuery.data ?? []).map((item) => (
-                <ExhibitionCard key={item.id} item={item} isArtistView />
+                <ExhibitionCard
+                  key={item.id}
+                  item={item}
+                  isArtistView
+                  onOpen={(exhibition) =>
+                    navigate(`/display/${exhibition.displayId ?? exhibition.id}`)
+                  }
+                />
               ))}
             </div>
           ) : (
