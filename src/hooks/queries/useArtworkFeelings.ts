@@ -15,8 +15,10 @@ import {
   deleteArtworkFeelingReply,
   getArtworkFeelingReplies,
   getArtworkFeelings,
-  toggleArtworkFeelingLike,
-  toggleArtworkFeelingReplyLike,
+  likeArtworkFeeling,
+  likeArtworkFeelingReply,
+  unlikeArtworkFeeling,
+  unlikeArtworkFeelingReply,
   updateArtworkFeeling,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -47,6 +49,9 @@ export const useCreateArtworkFeeling = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkFeelings.list(variables.artworkId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkFeelings.all,
+      });
     },
   });
 };
@@ -68,6 +73,9 @@ export const useUpdateArtworkFeeling = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkFeelings.list(variables.artworkId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkFeelings.all,
+      });
     },
   });
 };
@@ -81,6 +89,9 @@ export const useDeleteArtworkFeeling = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkFeelings.list(variables.artworkId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkFeelings.all,
       });
     },
   });

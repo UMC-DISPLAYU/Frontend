@@ -11,26 +11,6 @@ import {
 import type { Invitation } from '@/types/invitation';
 import { cn } from '@/utils/cn';
 
-type InvitationApiItem = DisplayInvitationDto & {
-  displayId?: number;
-  displayTitle?: string;
-  title?: string;
-  school?: string;
-  organization?: string;
-  department?: string;
-  startDate?: string;
-  startedAt?: string;
-  endDate?: string;
-  endedAt?: string;
-  placeName?: string;
-  gallery?: string;
-  posterImageUrl?: string;
-  thumbnailUrl?: string;
-  inviterNickname?: string;
-  inviterName?: string;
-  status?: string;
-};
-
 const formatMonthDay = (date?: string) => {
   if (!date) return '-';
 
@@ -38,26 +18,17 @@ const formatMonthDay = (date?: string) => {
   return month && day ? `${month}.${day}` : date;
 };
 
-const toInvitation = (item: InvitationApiItem): Invitation => {
-  const title = item.displayTitle ?? item.title ?? '';
-  const school = item.school ?? item.organization ?? '';
-  const department = item.department ?? '';
-  const inviterName = item.inviterNickname ?? item.inviterName;
-
-  return {
-    id: String(item.invitationId),
-    invitationId: item.invitationId,
-    displayId: item.displayId,
-    title,
-    department: [school, department].filter(Boolean).join(' '),
-    period: `${formatMonthDay(item.startDate ?? item.startedAt)} - ${formatMonthDay(
-      item.endDate ?? item.endedAt,
-    )}`,
-    gallery: item.placeName ?? item.gallery ?? '',
-    inviter: inviterName ? `초대 · ${inviterName}` : '',
-    posterUrl: item.posterImageUrl ?? item.thumbnailUrl ?? null,
-  };
-};
+const toInvitation = (item: DisplayInvitationDto): Invitation => ({
+  id: String(item.invitationId),
+  invitationId: item.invitationId,
+  displayId: item.displayId,
+  title: item.title,
+  department: item.schoolDepartmentName ?? '',
+  period: `${formatMonthDay(item.startedAt)} - ${formatMonthDay(item.endedAt)}`,
+  gallery: '',
+  inviter: '',
+  posterUrl: item.posterImageUrl ?? null,
+});
 
 interface InvitationCardProps {
   item: Invitation;
@@ -89,8 +60,8 @@ function InvitationCard({ item, highlighted = false, onAccept, onReject }: Invit
             <span className="typo-body-xs-regular text-hint">{item.period}</span>
           </div>
 
-          <span className="typo-body-xxs-regular text-faint">{item.gallery}</span>
-          <span className="typo-body-sm-regular text-sub600">{item.inviter}</span>
+          {item.gallery && <span className="typo-body-xxs-regular text-faint">{item.gallery}</span>}
+          {item.inviter && <span className="typo-body-sm-regular text-sub600">{item.inviter}</span>}
         </div>
       </div>
 
@@ -166,9 +137,9 @@ export function InvitationRequestPage() {
   const rejectInvitation = useRejectDisplayInvitation();
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
-  const invitations = (data?.invitations ?? [])
-    .filter((item) => (item as InvitationApiItem).status !== 'REJECTED')
-    .map((item) => toInvitation(item as InvitationApiItem));
+  const invitations = (data?.exhibitions ?? [])
+    .filter((item) => item.status !== 'REJECTED')
+    .map((item) => toInvitation(item));
 
   const handleAccept = (item: Invitation) => {
     navigate(`/invitations/${item.id}/artist-name`, { state: { invitation: item } });

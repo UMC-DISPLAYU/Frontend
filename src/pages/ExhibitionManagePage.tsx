@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { ChevronRight, Info } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -59,6 +61,15 @@ export function ExhibitionManage() {
     },
   );
   const canEditDisplay = Boolean(display) && hasPermission(displayPolicy, 'edit');
+
+  useEffect(() => {
+    if (display && !canEditDisplay) {
+      navigate(`/exhibition/${displayId}/work`, {
+        replace: true,
+        state: { ...state, displayId },
+      });
+    }
+  }, [display, canEditDisplay, displayId, navigate, state]);
 
   const createDisplayMutation = useCreateDisplay();
   const publishDisplayMutation = usePublishDisplay();

@@ -52,6 +52,7 @@ export const useCreateLoungePost = () => {
     mutationFn: (body: CreateLoungePostRequestDto) => createLoungePost(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungeMe.all });
     },
   });
 };
@@ -65,6 +66,7 @@ export const useUpdateLoungePost = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(variables.postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungeMe.all });
     },
   });
 };
@@ -77,6 +79,7 @@ export const useDeleteLoungePost = () => {
     onSuccess: (_, postId) => {
       queryClient.removeQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungeMe.all });
     },
   });
 };
@@ -167,6 +170,7 @@ export const useScrapLoungePost = () => {
     onSettled: (_, __, postId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungeMe.all });
     },
   });
 };
@@ -197,6 +201,7 @@ export const useUnscrapLoungePost = () => {
     onSettled: (_, __, postId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.detail(postId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loungeMe.all });
     },
   });
 };

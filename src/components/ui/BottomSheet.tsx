@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { X } from 'lucide-react';
 
@@ -7,10 +7,20 @@ interface BottomSheetProps {
   onClose: () => void;
   title: string;
   subtitle?: string;
+  keyboardAvoiding?: boolean;
   children: React.ReactNode;
 }
 
-export function BottomSheet({ open, onClose, title, subtitle, children }: BottomSheetProps) {
+export function BottomSheet({
+  open,
+  onClose,
+  title,
+  subtitle,
+  keyboardAvoiding = false,
+  children,
+}: BottomSheetProps) {
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -22,6 +32,30 @@ export function BottomSheet({ open, onClose, title, subtitle, children }: Bottom
     };
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open || !keyboardAvoiding || !window.visualViewport) {
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    const updateKeyboardOffset = () => {
+      const offset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      setKeyboardOffset(offset);
+    };
+
+    const frame = requestAnimationFrame(updateKeyboardOffset);
+    viewport.addEventListener('resize', updateKeyboardOffset);
+    viewport.addEventListener('scroll', updateKeyboardOffset);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      viewport.removeEventListener('resize', updateKeyboardOffset);
+      viewport.removeEventListener('scroll', updateKeyboardOffset);
+    };
+  }, [open, keyboardAvoiding]);
+
+  const offset = open && keyboardAvoiding ? keyboardOffset : 0;
+
   if (!open) return null;
 
   return (
@@ -31,6 +65,10 @@ export function BottomSheet({ open, onClose, title, subtitle, children }: Bottom
     >
       <div
         className="flex max-h-[85dvh] w-full flex-col rounded-t-2xl bg-page pb-safe-bottom"
+        style={{
+          transform: offset ? `translateY(-${offset}px)` : undefined,
+          transition: 'transform 180ms ease-out',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between px-5 pb-2 pt-6">

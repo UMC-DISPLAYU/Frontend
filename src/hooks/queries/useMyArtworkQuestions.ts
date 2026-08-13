@@ -7,4 +7,6 @@ export const useMyArtworkQuestions = (params?: { cursor?: string; size?: number 
   useQuery({
     queryKey: [...queryKeys.artworkQuestions.lists(), 'me', params],
     queryFn: () => getMyArtworkQuestions(params),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });

@@ -118,6 +118,12 @@ const useInvalidatePersonalArtworkGuestbook = (personalArtworkId: number) => {
     queryClient.invalidateQueries({
       queryKey: [...queryKeys.personalArtworks.detail(personalArtworkId), 'questions'],
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.artworkFeelings.all,
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.artworkQuestions.all,
+    });
   };
 };
 

@@ -1,7 +1,7 @@
 import { MoreHorizontal } from 'lucide-react';
 
-import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useDisplayArtistNamePolicy, useDisplayPolicy } from '@/hooks/usePolicy';
+import { useAuthStore } from '@/stores/authStore';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
@@ -14,6 +14,7 @@ export function ExhibitionCard({
   menuOpen = false,
   onClick,
   onDelete,
+  onLeave,
   onEditArtistName,
   onToggleMenu,
 }: {
@@ -21,10 +22,11 @@ export function ExhibitionCard({
   menuOpen?: boolean;
   onClick: () => void;
   onDelete: () => void;
+  onLeave: () => void;
   onEditArtistName: () => void;
   onToggleMenu: () => void;
 }) {
-  const { data: userMe } = useUserMe();
+  const userMe = useAuthStore((state) => state.user);
 
   /*
    * 내 전시 목록 응답이 생성/참여를 구분해 주므로 전시 상세를 따로 조회하지 않습니다.
@@ -38,58 +40,82 @@ export function ExhibitionCard({
 
   const displayPolicy = useDisplayPolicy(policyDisplay);
   const displayArtistNamePolicy = useDisplayArtistNamePolicy(policyDisplay);
-  /*
-   * 전시 삭제 API가 아직 없어 메뉴에 노출하지 않습니다.
-   * 서버에 엔드포인트가 생기면 이 상수를 제거하고 정책 판정만 남기면 됩니다.
-   */
-  const IS_DISPLAY_DELETE_SUPPORTED = false;
-  const canDelete = IS_DISPLAY_DELETE_SUPPORTED && hasPermission(displayPolicy, 'delete');
+
+  const canDelete = hasPermission(displayPolicy, 'delete');
   const canEditArtistName = hasPermission(displayArtistNamePolicy, 'edit');
-  const canShowMenu = canEditArtistName || canDelete;
+
+  /* isLeader 값이 있으면 그걸 기준으로, 없으면 isOwner로 fallback */
+  const isLeader = ex.isLeader ?? ex.isOwner ?? false;
+
+  const canShowMenu = canEditArtistName || canDelete || !isLeader;
 
   return (
     <div
       className={cn(
-        'relative flex gap-3 w-full px-4 py-3.5 rounded-2xl border-none items-start overflow-visible',
-        'bg-box100 shadow-[8px_8px_18px_rgba(6,3,45,0.04),inset_1px_1px_4px_rgba(1,8,21,0.20),inset_-2px_-2px_2px_rgba(252,252,252,0.90)]',
+        'relative w-full px-4 py-3.5 rounded-2xl border-none overflow-visible',
+        'bg-neutral-50 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]',
       )}
     >
-      <button type="button" onClick={onClick} className="flex min-w-0 flex-1 gap-3 text-left">
-        <Poster src={ex.thumbnail} />
-        <ExhibitionMeta ex={ex} />
-      </button>
-      {canShowMenu && (
+      <div className="flex items-start gap-3">
+        {/* 썸네일 80×80 */}
+        <button type="button" onClick={onClick} className="shrink-0">
+          <Poster src={ex.thumbnail} w={80} h={80} radius={12} />
+        </button>
+
+        {/* 메타 정보 + 메뉴 버튼 */}
         <button
           type="button"
-          aria-label="전시 관리 메뉴"
-          onClick={(event) => {
-            event.stopPropagation();
-            onToggleMenu();
-          }}
-          className="mt-0.5 shrink-0 text-hint"
+          onClick={onClick}
+          className="flex min-w-0 flex-1 items-start gap-3 text-left"
         >
-          <MoreHorizontal className="size-5" />
+          <ExhibitionMeta ex={ex} />
         </button>
-      )}
 
+        {/* ... 메뉴 버튼 */}
+        {canShowMenu && (
+          <button
+            type="button"
+            aria-label="전시 관리 메뉴"
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleMenu();
+            }}
+            className="shrink-0 self-start text-neutral-500"
+          >
+            <MoreHorizontal className="size-5" />
+          </button>
+        )}
+      </div>
+
+      {/* 드롭다운 메뉴 */}
       {menuOpen && canShowMenu && (
-        <div className="absolute top-9 right-3 z-20 w-34 overflow-hidden rounded-lg bg-card shadow-[0px_4px_18px_rgba(6,3,45,0.12)]">
+        <div className="absolute top-9 right-3 z-20 flex w-34 flex-col overflow-hidden rounded-2xl bg-neutral-50 shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)] outline outline-1 outline-offset-[-1px] outline-stone-300">
           {canEditArtistName && (
             <button
               type="button"
               onClick={onEditArtistName}
-              className="typo-body-xs-regular w-full px-3 py-2.5 text-left text-main hover:bg-box"
+              className="flex h-10 w-full items-center justify-start px-3.5 typo-body-xs-regular text-main hover:bg-box"
             >
               전시 작가명 수정
             </button>
           )}
-          {canDelete && (
+          {isLeader ? (
+            canDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="flex h-10 w-full items-center justify-start border-t border-gray-200 px-3.5 typo-body-xs-regular text-error hover:bg-box"
+              >
+                삭제하기
+              </button>
+            )
+          ) : (
             <button
               type="button"
-              onClick={onDelete}
-              className="typo-body-xs-regular w-full px-3 py-2.5 text-left text-error hover:bg-box"
+              onClick={onLeave}
+              className="flex h-10 w-full items-center justify-start border-t border-gray-200 px-3.5 typo-body-xs-regular text-error hover:bg-box"
             >
-              삭제하기
+              전시 나가기
             </button>
           )}
         </div>
