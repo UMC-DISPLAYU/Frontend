@@ -21,9 +21,20 @@ export const personalArtworkRegisterSchema = z.object({
   artworkImageCount: z.number().min(1, { message: '작품 이미지를 1개 이상 업로드해주세요.' }),
   title: z.string().trim().min(1, { message: '작품명을 입력해주세요.' }),
   intro: z.string().trim().optional(),
-  field: z.enum(Object.keys(ARTWORK_FIELD_MAP) as [string, ...string[]], {
-    message: '작품분야를 선택해주세요.',
-  }),
+  field: z.string().refine(
+    (val) => {
+      const selected = val
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return (
+        selected.length >= 1 &&
+        selected.length <= 2 &&
+        selected.every((item) => item in ARTWORK_FIELD_MAP)
+      );
+    },
+    { message: '작품분야를 선택해주세요.' },
+  ),
   year: z.string().refine(isPersonalArtworkYearValid, {
     message: '제작연도는 4자리 숫자로 입력해주세요.',
   }),

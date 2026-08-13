@@ -262,11 +262,12 @@ export function ArtworkDetailPage() {
     isArchived: detail.isArchived ?? false,
   };
 
-  /* 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
-  const heroImages = (detail.images ?? [])
+  /* 히어로는 작품 이미지만 사용합니다(작업과정 이미지는 소개 탭에서 별도로 씁니다). 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
+  const artworkImages = (detail.images ?? []).filter((image) => image.imageType !== 'WORK_PROCESS');
+  const heroImages = artworkImages
     .map((image) => image.imageUrl)
     .filter((imageUrl): imageUrl is string => Boolean(imageUrl));
-  const thumbnailUrl = detail.images?.find((image) => image.isThumbnail)?.imageUrl;
+  const thumbnailUrl = artworkImages.find((image) => image.isThumbnail)?.imageUrl;
   const orderedHeroImages = thumbnailUrl
     ? [thumbnailUrl, ...heroImages.filter((imageUrl) => imageUrl !== thumbnailUrl)]
     : heroImages;

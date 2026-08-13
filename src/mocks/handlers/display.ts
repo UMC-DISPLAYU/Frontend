@@ -351,9 +351,47 @@ export const displayHandlers = [
       const cursor = Number(url.searchParams.get('cursor') ?? 0);
       const size = Number(url.searchParams.get('size') ?? 20);
 
-      const allExhibitions = listDisplays().filter(
-        (display: any) => !keyword || display.title.includes(keyword),
-      );
+      const getParams = (key: string) =>
+        url.searchParams
+          .getAll(key)
+          .flatMap((v) => v.split(','))
+          .map((v) => v.trim())
+          .filter(Boolean);
+
+      const fieldParams = getParams('field');
+      const statusParams = getParams('status');
+      const regionParams = getParams('region');
+      const typeParams = getParams('type');
+
+      const allExhibitions = listDisplays().filter((display: any) => {
+        const matchesKeyword =
+          !keyword ||
+          display.title?.includes(keyword) ||
+          display.schoolDepartmentName?.includes(keyword);
+
+        const matchesField =
+          fieldParams.length === 0 ||
+          fieldParams.some(
+            (f) =>
+              display.displayFields?.includes(f) ||
+              display.field === f ||
+              display.department?.includes(f),
+          );
+
+        const matchesStatus =
+          statusParams.length === 0 ||
+          statusParams.some((s) => display.status === s || display.exhibitionStatus === s);
+
+        const matchesRegion =
+          regionParams.length === 0 ||
+          regionParams.some((r) => display.region === r || display.locationRegion === r);
+
+        const matchesType =
+          typeParams.length === 0 ||
+          typeParams.some((t) => display.type === t || display.exhibitionType === t);
+
+        return matchesKeyword && matchesField && matchesStatus && matchesRegion && matchesType;
+      });
       const exhibitions = allExhibitions.slice(cursor, cursor + size);
       const nextCursor = cursor + size < allExhibitions.length ? cursor + size : null;
 

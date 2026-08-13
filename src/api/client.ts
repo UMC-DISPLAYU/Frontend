@@ -21,12 +21,31 @@ export const createQueryString = (query?: QueryParams): string => {
 
   const searchParams = new URLSearchParams();
 
-  Object.entries(query as Record<string, QueryValue>).forEach(([key, value]) => {
+  Object.entries(query as Record<string, unknown>).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '') {
       return;
     }
 
-    searchParams.set(key, String(value));
+    if (Array.isArray(value)) {
+      value.forEach((v) => {
+        if (v !== undefined && v !== null && v !== '') {
+          searchParams.append(key, String(v));
+        }
+      });
+    } else if (
+      typeof value === 'string' &&
+      value.includes(',') &&
+      ['field', 'status', 'region', 'type', 'fields'].includes(key)
+    ) {
+      value.split(',').forEach((v) => {
+        const trimmed = v.trim();
+        if (trimmed) {
+          searchParams.append(key, trimmed);
+        }
+      });
+    } else {
+      searchParams.set(key, String(value));
+    }
   });
 
   const queryString = searchParams.toString();
