@@ -136,8 +136,7 @@ export function ExhibitionBasicInfo() {
     getValues,
     setValue,
     reset,
-    trigger,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<ExhibitionBasicInfoFormValues>({
     resolver: zodResolver(exhibitionBasicInfoSchema),
     mode: 'onChange',
@@ -168,16 +167,6 @@ export function ExhibitionBasicInfo() {
         : ((restored.notice as string) ?? displayDetail?.note ?? ''),
     },
   });
-
-  /*
-   * mode: 'onChange'는 값이 바뀔 때만 재검증하고 마운트 시점엔 돌지 않아서,
-   * defaultValues가 이미 유효해도 사용자가 아무 필드나 건드리기 전까진 isValid가 false로 남는다.
-   * 마운트 시 한 번 직접 트리거해 초기 defaultValues 기준으로 isValid를 맞춰준다.
-   */
-  useEffect(() => {
-    trigger();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const notice = useWatch({ control, name: 'notice' }) ?? '';
   const [
@@ -251,10 +240,8 @@ export function ExhibitionBasicInfo() {
         contact: (restored.contact as string) ?? fetchedDetail.qnaAccount ?? '',
         notice: (restored.notice as string) ?? fetchedDetail.note ?? '',
       });
-      /* reset()도 isValid를 자동으로 재계산하지 않으므로 다시 트리거해준다. */
-      trigger();
     }
-  }, [displayId, state, fetchedDetail, restored, reset, shouldUseDraft, trigger]);
+  }, [displayId, state, fetchedDetail, restored, reset, shouldUseDraft]);
 
   useEffect(() => {
     if (displayId > 0) {
@@ -307,6 +294,19 @@ export function ExhibitionBasicInfo() {
       notice: values.notice ?? '',
     });
   };
+
+  const canSubmit = exhibitionBasicInfoSchema.safeParse({
+    startDate: watchedStartDate ?? '',
+    endDate: watchedEndDate ?? '',
+    startTime: watchedStartTime ?? '',
+    endTime: watchedEndTime ?? '',
+    placeName: watchedPlaceName ?? '',
+    address: watchedAddress ?? '',
+    latitude: watchedLatitude,
+    longitude: watchedLongitude,
+    contact: watchedContact ?? '',
+    notice: watchedNotice ?? '',
+  }).success;
 
   const handleAddressConfirm = (
     fullAddress: string,
@@ -562,7 +562,7 @@ export function ExhibitionBasicInfo() {
         <button
           form="exhibition-basic-info-form"
           type="submit"
-          disabled={!isValid || updateDisplay.isPending || isFetchingDetail}
+          disabled={!canSubmit || updateDisplay.isPending || isFetchingDetail}
           className="typo-body-sm-bold inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-dark py-3 text-card disabled:opacity-40"
         >
           {updateDisplay.isPending || isFetchingDetail

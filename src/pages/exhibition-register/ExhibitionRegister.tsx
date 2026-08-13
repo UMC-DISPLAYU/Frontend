@@ -355,6 +355,7 @@ export function ExhibitionRegister() {
                   labels={EXHIBITION_FIELD_LABELS}
                   selected={value}
                   onChange={onChange}
+                  maxSelect={3}
                   aria-label="전시분야"
                 />
               )}
