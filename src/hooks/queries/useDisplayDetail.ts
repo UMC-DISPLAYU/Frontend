@@ -31,7 +31,7 @@ export const useDisplayLikeStatus = (displayId: number) => {
 };
 
 /*
- * 스웨거 기준 POST는 좋아요 추가, PATCH는 좋아요 취소입니다.
+ * 스웨거 기준 POST는 좋아요 추가, DELETE는 좋아요 취소입니다.
  * 응답에는 likeCount만 담기므로 좋아요 여부는 요청 종류로 판단해 캐시에 반영합니다.
  */
 export const useToggleDisplayLike = () => {

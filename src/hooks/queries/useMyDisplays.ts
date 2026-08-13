@@ -94,6 +94,12 @@ export const useUpdateMyDisplayNickname = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.displayMembers.byDisplayId(variables.displayId),
       });
+      /*
+       * useDisplayDetail도 DisplayDetailDto.teamMembers로 같은 displayNickname을 담고 있고,
+       * 작품 상세 페이지의 작가명 표시가 여기서 조회한 값을 씁니다. 같이 무효화하지 않으면
+       * 이미 캐시된 화면에서 바뀐 작가명이 반영되지 않습니다.
+       */
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(variables.displayId) });
     },
   });
 };

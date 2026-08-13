@@ -68,6 +68,7 @@ export interface GetArtworkDetailResponseDataDto {
 export interface ArtworkDetailExhibitionInfoDto {
   displayId: number;
   exhibitionTitle: string;
+  exhibitionSubtitle: string | null;
   exhibitionThumbnailUrl: string;
   exhibitionOrganizer: string;
   exhibitionPeriod: string;

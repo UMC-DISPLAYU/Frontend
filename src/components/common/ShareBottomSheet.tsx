@@ -136,7 +136,8 @@ export function ShareBottomSheet({
         ],
       });
       onClose();
-    } catch {
+    } catch (err) {
+      console.error('Kakao share failed:', err);
       setErrorMessage('공유에 실패했어요');
     }
   };
