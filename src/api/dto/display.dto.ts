@@ -208,9 +208,19 @@ export interface DisplayTeamMemberDto {
 
 export interface DisplayInvitationDto {
   invitationId: number;
-  inviterUserId: number;
-  inviteeUserId: number;
-  createdAt: string;
+  displayId: number;
+  title: string;
+  posterImageUrl?: string;
+  schoolDepartmentName?: string;
+  startedAt: string;
+  endedAt: string;
+  dayLeft?: number;
+  isArchived?: boolean;
+  /* 하위 호환용 - 추후 서버가 내려줄 수 있는 필드 */
+  inviterUserId?: number;
+  inviteeUserId?: number;
+  createdAt?: string;
+  status?: string;
 }
 
 export type GetDisplayDetailResponseDto = ApiResponseDto<DisplayDetailDto>;
@@ -519,7 +529,7 @@ export interface DisableDisplayInvitationLinkResponseDataDto {
 }
 
 export interface MyDisplayInvitationListResponseDataDto {
-  invitations: DisplayInvitationDto[];
+  exhibitions: DisplayInvitationDto[];
 }
 
 export interface AcceptDisplayInvitationRequestDto {

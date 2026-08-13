@@ -169,9 +169,9 @@ export const inviteDisplayMember = async (
 ): Promise<DisplayMemberInvitationResponseDataDto> =>
   apiRequest(`/v1/display-invitations/displays/${displayId}`, { method: 'POST', body });
 
-// GET /v1/display-invitations/me
+// GET /v1/display-invitations
 export const getMyDisplayInvitations = async (): Promise<MyDisplayInvitationListResponseDataDto> =>
-  apiRequest('/v1/display-invitations/me');
+  apiRequest('/v1/display-invitations');
 
 // POST /v1/display-invitations/:invitationId/accept
 export const acceptDisplayInvitation = async (
