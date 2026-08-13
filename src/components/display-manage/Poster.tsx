@@ -1,3 +1,4 @@
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 
 export function Poster({
@@ -14,8 +15,9 @@ export function Poster({
   const isFallback = !src;
 
   return (
-    <img
+    <OptimizedImage
       src={isFallback ? FALLBACK_POSTER_IMAGE : src}
+      displayWidth={w}
       alt="poster"
       className={`shrink-0 shadow-[2px_4px_18px_rgba(6,3,45,0.06)] ${
         isFallback ? 'bg-box object-contain p-3' : 'object-cover'

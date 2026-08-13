@@ -1,4 +1,5 @@
 import type { DuPickDto } from '@/api/dto';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useSwipeSlider } from '@/hooks/useSwipeSlider';
 import type { DuPickItem } from '@/types/exhibition';
 import { cn } from '@/utils/cn';
@@ -50,8 +51,9 @@ function CardItem({ item, isActive }: CardProps) {
     <div className="relative w-full h-full rounded-xl overflow-hidden bg-box200 select-none transition-all duration-300 ease-out">
       {/* 배경 이미지 */}
       {item.bannerImageUrl ? (
-        <img
+        <OptimizedImage
           src={item.bannerImageUrl}
+          displayWidth={360}
           alt={title}
           draggable={false}
           className="absolute inset-0 h-full w-full object-cover object-center select-none"

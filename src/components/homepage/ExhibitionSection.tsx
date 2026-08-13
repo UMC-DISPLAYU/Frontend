@@ -2,6 +2,7 @@ import { Bookmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { HomeExhibitionDto } from '@/api/dto';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { SectionHeader } from '@/components/homepage/SectionHeader';
 import {
   useArchivedExhibitions,
@@ -47,9 +48,12 @@ function ExhibitionCard({
       }}
     >
       <div className="w-full aspect-3/4 rounded-xl shrink-0 overflow-hidden bg-box200 relative">
-        {item.posterImageUrl ? (
-          <img src={item.posterImageUrl} alt={item.title} className="w-full h-full object-cover" />
-        ) : null}
+        <OptimizedImage
+          src={item.posterImageUrl}
+          displayWidth={120}
+          alt={item.title}
+          className="w-full h-full object-cover"
+        />
         <button
           type="button"
           aria-label={isSaved ? '북마크 취소' : '북마크'}

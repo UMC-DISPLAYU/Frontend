@@ -1,7 +1,9 @@
+import { OptimizedImage } from '@/components/common/OptimizedImage';
+
 export function Thumbnail({ src, className = 'size-20' }: { src?: string; className?: string }) {
   return (
     <div className={`${className} shrink-0 overflow-hidden rounded-xl bg-box200`}>
-      {src && <img src={src} alt="" className="size-full object-cover" />}
+      <OptimizedImage src={src} displayWidth={100} alt="" className="size-full object-cover" />
     </div>
   );
 }
