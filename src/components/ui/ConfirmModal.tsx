@@ -22,6 +22,7 @@ export function ConfirmModal({
   const descriptionId = useId();
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const isVertical = layout === 'vertical';
+  const buttonSizeClass = isVertical ? 'w-[282px] flex-none self-center' : 'flex-1';
 
   useEffect(() => {
     cancelButtonRef.current?.focus();
@@ -51,7 +52,7 @@ export function ConfirmModal({
           <button
             type="button"
             onClick={onConfirm}
-            className="flex h-11 flex-1 items-center justify-center rounded-full bg-dark text-card typo-body-md-bold"
+            className={`flex h-11 items-center justify-center rounded-full bg-dark text-card typo-body-md-bold ${buttonSizeClass}`}
           >
             {confirmLabel}
           </button>
@@ -59,7 +60,7 @@ export function ConfirmModal({
             ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
-            className="flex h-11 flex-1 items-center justify-center rounded-full bg-bt-gray text-main typo-body-md-regular"
+            className={`flex h-11 items-center justify-center rounded-full bg-bt-gray text-main typo-body-md-regular ${buttonSizeClass}`}
           >
             {cancelLabel}
           </button>
