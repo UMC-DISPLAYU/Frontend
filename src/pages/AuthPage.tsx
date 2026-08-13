@@ -56,8 +56,14 @@ export function AuthPage() {
   const isSaved = Boolean(archivedArtistMatch);
   const isSavePending = archiveArtist.isPending || unarchiveArtist.isPending;
 
-  const personalArtworks = personalArtworksQuery.data ?? [];
-  const exhibitionArtworks = exhibitionArtworksQuery.data?.artworks ?? [];
+  const personalArtworks = useMemo(
+    () => personalArtworksQuery.data ?? [],
+    [personalArtworksQuery.data],
+  );
+  const exhibitionArtworks = useMemo(
+    () => exhibitionArtworksQuery.data?.artworks ?? [],
+    [exhibitionArtworksQuery.data],
+  );
 
   const profile = useMemo<ArtistProfile>(() => {
     const data = artistProfileQuery.data;
@@ -129,7 +135,7 @@ export function AuthPage() {
   }
 
   return (
-    <div className="w-96 mx-auto h-dvh bg-page flex flex-col">
+    <div className="w-96 mx-auto h-dvh bg-box100 flex flex-col">
       <LoginConfirmModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}

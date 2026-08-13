@@ -21,7 +21,7 @@ export function ContentEditSheet({
 }: ContentEditSheetProps) {
   const [title, setTitle] = useState(content.title);
   const [description, setDescription] = useState(content.description);
-  const canSave = title.trim().length > 0;
+  const canSave = title.trim().length > 0 && description.trim().length > 0;
 
   return (
     <BottomSheet

@@ -246,6 +246,7 @@ export function AddressSearchModal({ open, onClose, onConfirm }: AddressSearchMo
                       id="detail-address"
                       value={detailAddress}
                       onChange={(e) => setDetailAddress(e.target.value)}
+                      maxLength={30}
                       placeholder="동, 호수 등 상세주소 입력"
                       className="typo-body-xs-regular w-full bg-transparent text-main outline-none placeholder:text-input-placeholder"
                       autoFocus
