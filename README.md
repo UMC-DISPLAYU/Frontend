@@ -64,18 +64,8 @@ DisplayU는 대학생의 전시와 작품을 발견하고, 기록하고, 소통�
 ## 🚀 시작하기
 
 ```bash
-# 의존성 설치
-npm install
-
-# 개발 서버 실행
-npm run dev
-
-# 프로덕션 빌드
-npm run build
-
-# 린트 / 포맷
-npm run lint
-npm run format
+# 도메인으로 가기!
+https://www.displayu.co.kr
 ```
 
 환경 변수는 `.env.example`을 복사해 `.env.local`로 만든 뒤 값을 채워주세요.
