@@ -269,7 +269,7 @@ export function ArtistVerificationPage() {
 
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-page">
-      <main className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page px-5 pt-[58px]">
+      <main className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-page px-5">
         <ArtistVerificationHeader onBack={() => navigate(-1)} />
 
         <form

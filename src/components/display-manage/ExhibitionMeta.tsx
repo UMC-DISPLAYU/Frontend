@@ -1,44 +1,41 @@
 import type { ExhibitionItem } from '@/types/mypage';
 
-export function ExhibitionMeta({
-  ex,
-  showBadge = true,
-}: {
-  ex: ExhibitionItem;
-  showBadge?: boolean;
-}) {
+export function ExhibitionMeta({ ex }: { ex: ExhibitionItem }) {
+  /* 역할 레이블: isLeader 값 있으면 대표자/팀원, 없으면 공백 */
+  const roleLabel = ex.isLeader === true ? '대표자' : ex.isLeader === false ? '팀원' : null;
+
+  /* 발행 상태 레이블: publishedStatus 값 있으면 표시, 없으면 공백 */
+  const statusLabel =
+    ex.publishedStatus === 'PUBLISHED'
+      ? '등록완료'
+      : ex.publishedStatus === 'DRAFT'
+        ? '임시저장'
+        : null;
+
+  const isDraft = ex.publishedStatus === 'DRAFT';
+
   return (
-    <div className="flex-1 min-w-0 flex flex-col gap-3">
-      {showBadge && (
-        <span className="typo-body-xxs-regular inline-block text-white px-2 py-0.5 rounded mb-3">
-          {ex.status}
-        </span>
-      )}
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center">
-          <h3 className="typo-body-md-bold text-main">{ex.title}</h3>
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="flex flex-col gap-1">
-            <div className="flex flex-col">
-              <p className="typo-body-xs-regular text-gray-800">{ex.period}</p>
-            </div>
-            <div className="flex flex-col">
-              <p className="typo-body-xs-regular text-gray-800">{ex.place}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 h-4">
-            <div className="flex items-end gap-2 h-4 flex-1 min-w-0">
-              <p className="typo-body-xs-regular text-faint truncate">
-                <span className="text-faint">{ex.org}ㅣ</span>
-                <span className={ex.status === '임시저장' ? 'underline text-faint' : 'text-faint'}>
-                  {ex.status}
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="flex-1 min-w-0 flex flex-col gap-2">
+      {/* 제목 */}
+      <h3 className="typo-body-md-bold text-main leading-6 truncate">{ex.title}</h3>
+
+      {/* 날짜 · 장소 */}
+      <div className="flex flex-col gap-1">
+        <p className="typo-body-xs-regular text-neutral-800">{ex.period}</p>
+        <p className="typo-body-xs-regular text-neutral-800">{ex.place}</p>
       </div>
+
+      {/* 역할 | 상태 */}
+      {(roleLabel !== null || statusLabel !== null) && (
+        <div className="flex items-center h-4">
+          <p className="typo-body-xs-regular text-faint truncate">
+            {roleLabel && <span>{roleLabel}ㅣ</span>}
+            {statusLabel && (
+              <span className={isDraft ? 'underline text-faint' : 'text-faint'}>{statusLabel}</span>
+            )}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

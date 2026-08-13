@@ -17,6 +17,7 @@ export function ManageScreen({
   onBack,
   onDone,
   onDelete,
+  onLeave,
   onEditArtistName,
   onRegister,
 }: {
@@ -25,6 +26,7 @@ export function ManageScreen({
   onBack?: () => void;
   onDone: () => void;
   onDelete: (ex: ExhibitionItem) => void;
+  onLeave: (ex: ExhibitionItem) => void;
   onEditArtistName: (ex: ExhibitionItem) => void;
   onRegister: () => void;
 }) {
@@ -49,7 +51,7 @@ export function ManageScreen({
             className="flex flex-col items-center gap-0.75 bg-transparent border-none p-0 cursor-pointer"
           >
             <div className="flex items-center justify-center overflow-hidden">
-              <Plus size={19} className="text-main" strokeWidth={2} />
+              <Plus size={25} className="text-main" strokeWidth={2} />
             </div>
             <span className="px-1.25 typo-body-xs-bold text-main leading-4">전시 추가</span>
           </button>
@@ -65,6 +67,10 @@ export function ManageScreen({
               onClick={() => onOpen(ex)}
               onDelete={() => {
                 onDelete(ex);
+                setMenuId(null);
+              }}
+              onLeave={() => {
+                onLeave(ex);
                 setMenuId(null);
               }}
               onEditArtistName={() => {

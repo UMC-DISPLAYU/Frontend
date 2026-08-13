@@ -80,6 +80,10 @@ export const getDisplayMap = async (
 export const getDisplayDetail = async (displayId: number): Promise<DisplayDetailDto> =>
   apiRequest(`/v1/display/${displayId}`);
 
+// DELETE /v1/display/:displayId
+export const deleteDisplay = async (displayId: number): Promise<void> =>
+  apiRequest(`/v1/display/${displayId}`, { method: 'DELETE' });
+
 // POST /v1/display
 export const createDisplay = async (
   body: CreateDisplayRequestDto,

@@ -461,6 +461,8 @@ export interface MyDisplayDto {
   department: string;
   placeName: string;
   postImageUrl: string;
+  isLeader?: boolean;
+  publishedStatus?: 'PUBLISHED' | 'DRAFT';
 }
 
 export interface GetMyDisplaysResponseDataDto {
