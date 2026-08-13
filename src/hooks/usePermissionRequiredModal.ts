@@ -26,9 +26,11 @@ export function useArtistVerificationRequiredModal() {
 
   const artistVerificationModal = isOpen
     ? createElement(ConfirmModal, {
-        message: '전시를 등록하려면 작가 인증이 필요해요.&#10;학교 메일로 인증할까요?',
-        confirmLabel: '학교 메일로 인증하기',
+        title: '작가 인증이 필요해요',
+        message: '전시와 작품을 등록하려면\n학교 이메일 인증이 필요해요.',
+        confirmLabel: '학교 이메일로 인증하기',
         cancelLabel: '취소',
+        layout: 'vertical',
         onConfirm: () => {
           setIsOpen(false);
           navigate('/artist-verification');
