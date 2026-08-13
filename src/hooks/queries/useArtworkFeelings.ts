@@ -14,8 +14,10 @@ import {
   deleteArtworkFeelingReply,
   getArtworkFeelingReplies,
   getArtworkFeelings,
-  toggleArtworkFeelingLike,
-  toggleArtworkFeelingReplyLike,
+  likeArtworkFeeling,
+  likeArtworkFeelingReply,
+  unlikeArtworkFeeling,
+  unlikeArtworkFeelingReply,
   updateArtworkFeeling,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -98,8 +100,16 @@ export const useToggleArtworkFeelingLike = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ artworkId, feelingId }: { artworkId: number; feelingId: number }) =>
-      toggleArtworkFeelingLike(artworkId, feelingId),
+    mutationFn: ({
+      artworkId,
+      feelingId,
+      liked,
+    }: {
+      artworkId: number;
+      feelingId: number;
+      liked: boolean;
+    }) =>
+      liked ? unlikeArtworkFeeling(artworkId, feelingId) : likeArtworkFeeling(artworkId, feelingId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkFeelings.list(variables.artworkId),
@@ -201,8 +211,10 @@ export const useToggleArtworkFeelingReplyLike = (artworkId: number, feelingId: n
   const invalidate = useInvalidateFeelingReplies(artworkId, feelingId);
 
   return useMutation({
-    mutationFn: (feelingReplyId: number) =>
-      toggleArtworkFeelingReplyLike(artworkId, feelingId, feelingReplyId),
+    mutationFn: ({ feelingReplyId, liked }: { feelingReplyId: number; liked: boolean }) =>
+      liked
+        ? unlikeArtworkFeelingReply(artworkId, feelingId, feelingReplyId)
+        : likeArtworkFeelingReply(artworkId, feelingId, feelingReplyId),
     onSuccess: invalidate,
   });
 };

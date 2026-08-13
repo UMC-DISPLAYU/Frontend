@@ -67,11 +67,11 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
   const replies: CommentData[] = useMemo(
     () =>
       (repliesData?.pages.flatMap((p) => p.replies) ?? []).map((reply) => {
-        const isMyComment = Boolean(myUserId) && reply.user.userId === myUserId;
+        const isMyComment = Boolean(myUserId) && reply.user?.userId === myUserId;
         return {
           id: String(reply.displayReviewReplyId),
-          author: reply.user.nickname,
-          avatarUrl: reply.user.profileImageUrl,
+          author: reply.user?.nickname ?? '',
+          avatarUrl: reply.user?.profileImageUrl,
           time: formatRelativeTime(reply.createdAt),
           content: reply.content,
           likeCount: reply.likeCount,
