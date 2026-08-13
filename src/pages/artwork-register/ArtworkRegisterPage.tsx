@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -43,6 +43,7 @@ import {
   type ArtworkRegisterFormValues,
   artworkRegisterSchema,
   artworkRegisterSubmitSchema,
+  sanitizeArtworkRegisterYearInput,
   toArtworkRegisterProductionYear,
 } from './artworkRegister.schema';
 
@@ -110,10 +111,13 @@ function ArtworkRegisterPageContent() {
   );
   const [directCollaboratorName, setDirectCollaboratorName] = useState('');
   const [title, setTitleState] = useState(draft.title);
+  const [isTitleTouched, setIsTitleTouched] = useState(false);
   const [description, setDescriptionState] = useState(draft.description);
   const [field, setFieldState] = useState<string>(draft.field);
   const [year, setYearState] = useState(draft.year);
+  const [isYearTouched, setIsYearTouched] = useState(false);
   const [medium, setMediumState] = useState(draft.medium);
+  const [isMediumTouched, setIsMediumTouched] = useState(false);
   const [size, setSizeState] = useState(draft.size);
   const [point, setPointState] = useState(draft.point);
   /* userId가 있으면 디유 계정이 연결된 팀원, 없으면 직접 이름을 입력한 작가입니다. */
@@ -153,10 +157,34 @@ function ArtworkRegisterPageContent() {
     thoughts: point,
   };
   const canProceedBasic = artworkRegisterSchema.safeParse(basicFormValue).success;
+  const basicFormError = artworkRegisterSchema.safeParse(basicFormValue).error;
+  const getBasicFormError = (fieldName: keyof ArtworkRegisterFormValues) =>
+    basicFormError?.issues.find((issue) => issue.path[0] === fieldName)?.message;
+  const titleError = isTitleTouched ? getBasicFormError('title') : undefined;
+  const yearError = isYearTouched ? getBasicFormError('year') : undefined;
+  const mediumError = isMediumTouched ? getBasicFormError('material') : undefined;
 
   useEffect(() => {
     register('year');
   }, [register]);
+
+  const yearInputProps = register('year', {
+    onBlur: () => {
+      setIsYearTouched(true);
+      void trigger('year');
+    },
+    onChange: (event: ChangeEvent<HTMLInputElement>) => {
+      const nextYear = sanitizeArtworkRegisterYearInput(event.target.value);
+      setIsYearTouched(true);
+      setValue('year', nextYear, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+      setYearState(nextYear);
+      updateDraft({ year: nextYear });
+    },
+  });
 
   useEffect(() => {
     setValue('artworkImageCount', artworkImages.length, { shouldValidate: true });
@@ -221,6 +249,7 @@ function ArtworkRegisterPageContent() {
 
   const setTitle = useCallback(
     (value: string) => {
+      setIsTitleTouched(true);
       setValue('title', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setTitleState(value);
       updateDraft({ title: value });
@@ -248,6 +277,7 @@ function ArtworkRegisterPageContent() {
 
   const setYear = useCallback(
     (value: string) => {
+      setIsYearTouched(true);
       setValue('year', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       void trigger('year');
       setYearState(value);
@@ -258,6 +288,7 @@ function ArtworkRegisterPageContent() {
 
   const setMedium = useCallback(
     (value: string) => {
+      setIsMediumTouched(true);
       setValue('material', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       setMediumState(value);
       updateDraft({ medium: value });
@@ -909,16 +940,14 @@ function ArtworkRegisterPageContent() {
           artworkImages={artworkImages}
           processImages={processImages}
           canProceed={canProceedBasic}
-          yearError={errors.year?.message}
-          onBlurYear={() => {
-            setValue('year', year, { shouldTouch: true, shouldValidate: true });
-            void trigger('year');
-          }}
+          titleError={titleError ?? errors.title?.message}
+          yearError={yearError ?? errors.year?.message}
+          mediumError={mediumError ?? errors.material?.message}
+          yearInputProps={yearInputProps}
           onBack={handleBack}
           onChangeTitle={setTitle}
           onChangeDescription={setDescription}
           onChangeField={setField}
-          onChangeYear={setYear}
           onChangeMedium={setMedium}
           onChangeSize={setSize}
           onChangePoint={setPoint}

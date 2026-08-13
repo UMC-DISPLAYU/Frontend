@@ -1,3 +1,5 @@
+import type { UseFormRegisterReturn } from 'react-hook-form';
+
 import { ImageUploader } from '@/components/common';
 import { BottomFixedBar } from '@/components/common';
 import { ChipGroup, RequiredLabel } from '@/components/ui';
@@ -22,13 +24,14 @@ interface RegisterArtworkPageProps {
   artworkImages: ImageUploadItem[];
   processImages: ImageUploadItem[];
   canProceed: boolean;
+  titleError?: string;
   yearError?: string;
-  onBlurYear?: () => void;
+  mediumError?: string;
+  yearInputProps: UseFormRegisterReturn<'year'>;
   onBack: () => void;
   onChangeTitle: (value: string) => void;
   onChangeDescription: (value: string) => void;
   onChangeField: (value: string) => void;
-  onChangeYear: (value: string) => void;
   onChangeMedium: (value: string) => void;
   onChangeSize: (value: string) => void;
   onChangePoint: (value: string) => void;
@@ -51,13 +54,14 @@ function RegisterArtworkPage({
   artworkImages,
   processImages,
   canProceed,
+  titleError,
   yearError,
-  onBlurYear,
+  mediumError,
+  yearInputProps,
   onBack,
   onChangeTitle,
   onChangeDescription,
   onChangeField,
-  onChangeYear,
   onChangeMedium,
   onChangeSize,
   onChangePoint,
@@ -111,6 +115,7 @@ function RegisterArtworkPage({
             placeholder="작품명을 입력해주세요"
             className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
           />
+          {titleError && <p className="typo-body-xxs-regular text-error px-2">{titleError}</p>}
         </section>
 
         <section className="flex flex-col gap-3">
@@ -141,11 +146,17 @@ function RegisterArtworkPage({
             </RequiredLabel>
             <input
               id="artwork-year"
-              value={year}
+              {...yearInputProps}
               inputMode="numeric"
               maxLength={4}
-              onBlur={onBlurYear}
-              onChange={(e) => onChangeYear(sanitizeArtworkRegisterYearInput(e.target.value))}
+              value={year}
+              onBlur={(event) => {
+                void yearInputProps.onBlur(event);
+              }}
+              onChange={(event) => {
+                event.target.value = sanitizeArtworkRegisterYearInput(event.target.value);
+                void yearInputProps.onChange(event);
+              }}
               placeholder="2026"
               className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
             />
@@ -163,6 +174,7 @@ function RegisterArtworkPage({
               placeholder="아크릴, 캔버스"
               className="typo-body-xs-regular w-full border-b border-line bg-transparent px-3 py-2.5 text-main outline-none placeholder:text-faint"
             />
+            {mediumError && <p className="typo-body-xxs-regular text-error px-2">{mediumError}</p>}
           </section>
         </div>
 
