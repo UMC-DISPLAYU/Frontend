@@ -38,7 +38,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { hasPermission } from '@/utils/hasPermission';
 
 import {
-  artworkRegisterBasicSchema,
+  artworkRegisterSchema,
   artworkRegisterSubmitSchema,
   toArtworkRegisterProductionYear,
 } from './artworkRegister.schema';
@@ -120,15 +120,16 @@ function ArtworkRegisterPageContent() {
   const [qnaAssigneeIds, setQnaAssigneeIdsState] = useState<string[]>(draft.qnaAssigneeIds);
 
   const basicFormValue = {
+    artworkImageCount: artworkImages.length,
     title,
-    description,
+    intro: description,
     field,
     year,
-    medium,
+    material: medium,
     size,
-    point,
+    thoughts: point,
   };
-  const canProceedBasic = artworkRegisterBasicSchema.safeParse(basicFormValue).success;
+  const canProceedBasic = artworkRegisterSchema.safeParse(basicFormValue).success;
 
   const setStep = useCallback(
     (nextStep: RegisterStep, options: { replace?: boolean } = {}) => {
@@ -638,7 +639,6 @@ function ArtworkRegisterPageContent() {
 
     const submitResult = artworkRegisterSubmitSchema.safeParse({
       ...basicFormValue,
-      artworkImageCount: artworkImageUrls.length,
       artistName: displayAuthor.name,
       qaHandlerUserIds,
     });

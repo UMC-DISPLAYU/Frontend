@@ -23,22 +23,22 @@ const artworkFieldSchema = z.enum(Object.keys(ARTWORK_FIELD_MAP) as [string, ...
   message: '작품분야를 선택해주세요.',
 });
 
-export const artworkRegisterBasicSchema = z.object({
+export const artworkRegisterSchema = z.object({
+  artworkImageCount: z.number().min(1, { message: '작품 이미지를 1개 이상 업로드해주세요.' }),
   title: z.string().trim().min(1, { message: '작품명을 입력해주세요.' }),
-  description: z.string().trim().optional(),
+  intro: z.string().trim().optional(),
   field: artworkFieldSchema,
   year: z.string().refine(isArtworkRegisterYearValid, {
     message: '제작연도는 1000 이상 9999 미만의 숫자로 입력해주세요.',
   }),
-  medium: z.string().trim().min(1, { message: '재료/매체를 입력해주세요.' }),
+  material: z.string().trim().min(1, { message: '재료/매체를 입력해주세요.' }),
   size: z.string().trim().optional(),
-  point: z.string().trim().optional(),
+  thoughts: z.string().trim().optional(),
 });
 
-export const artworkRegisterSubmitSchema = artworkRegisterBasicSchema.extend({
-  artworkImageCount: z.number().min(1, { message: '작품 이미지를 1개 이상 업로드해주세요.' }),
+export const artworkRegisterSubmitSchema = artworkRegisterSchema.extend({
   artistName: z.string().trim().min(1, { message: '작가명을 입력해주세요.' }),
   qaHandlerUserIds: z.array(z.number()).min(1, { message: 'Q&A 담당자를 선택해주세요.' }),
 });
 
-export type ArtworkRegisterBasicFormValues = z.infer<typeof artworkRegisterBasicSchema>;
+export type ArtworkRegisterFormValues = z.infer<typeof artworkRegisterSchema>;
