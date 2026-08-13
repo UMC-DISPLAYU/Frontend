@@ -107,12 +107,16 @@ export function TimeSheet({
     }
 
     const key = isHourField ? hourKey : minuteKey;
-    setTime((t) =>
-      enforceTimeOrder({ ...t, [key]: isHourField ? clampHour(n) : clampMinute(n) }, field),
-    );
+    const nextBuffer = bufferRef.current;
+
+    setTime((t) => {
+      const nextTime = { ...t, [key]: isHourField ? clampHour(n) : clampMinute(n) };
+
+      return nextBuffer.length === 2 ? enforceTimeOrder(nextTime, field) : nextTime;
+    });
 
     // 두 자리를 채웠으면 다음 필드로 자동 이동
-    if (bufferRef.current.length === 2) {
+    if (nextBuffer.length === 2) {
       bufferRef.current = '';
       setField((f) =>
         f === 'startHour'
