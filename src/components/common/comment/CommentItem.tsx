@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 
 import { Heart } from 'lucide-react';
 
-import defaultProfileIcon from '@/assets/common/DefaultProfileIcon.svg';
+import defaultProfileIcon from '@/assets/common/DefaultProfileIcon.png';
 import { cn } from '@/utils/cn';
 
 import { ImageModal } from '../ImageModal';

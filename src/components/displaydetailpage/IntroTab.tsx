@@ -4,7 +4,7 @@ import { ChevronRight, ChevronUp, CircleAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto, DisplayDetailDto } from '@/api/dto/display.dto';
-import LocationMapPlaceholder from '@/assets/displaydetailpage/LocationMapPlaceholder.svg';
+import LocationMapPlaceholder from '@/assets/displaydetailpage/LocationMapPlaceholder.png';
 import LocationPinIcon from '@/assets/displaydetailpage/LocationPinIcon.svg';
 import { cn } from '@/utils/cn';
 

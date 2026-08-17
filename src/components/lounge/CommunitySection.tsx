@@ -1,8 +1,8 @@
 import { ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import loungeReviewThumbnail from '@/assets/lounge/LoungeReviewThumbnail.svg?inline';
-import loungeVenueThumbnail from '@/assets/lounge/LoungeVenueThumbnail.svg?inline';
+import loungeReviewThumbnail from '@/assets/lounge/LoungeReviewThumbnail.png';
+import loungeVenueThumbnail from '@/assets/lounge/LoungeVenueThumbnail.png';
 import {
   useArtistVerificationRequiredModal,
   useLoginRequiredModal,
