@@ -155,7 +155,10 @@ export function ExhibitionWorkPage() {
               전시에 참여한 작품을 등록하고 작가 정보를 연결할 수 있어요.
             </div>
 
-            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+            <div
+              className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: 'none' }}
+            >
               {canCreateArtwork && (
                 <button
                   type="button"
