@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { useFlowBack } from '@/hooks/useFlowBack';
 import type { ExhibitionItem } from '@/types/mypage';
 
 import { Header, Screen } from './Common';
@@ -15,6 +16,7 @@ export function ManageScreen({
   onLeave,
   onEditArtistName,
   onRegister,
+  onBack,
 }: {
   exhibitions: ExhibitionItem[];
   onOpen: (ex: ExhibitionItem) => void;
@@ -22,13 +24,17 @@ export function ManageScreen({
   onLeave: (ex: ExhibitionItem) => void;
   onEditArtistName: (ex: ExhibitionItem) => void;
   onRegister: () => void;
+  onBack?: () => void;
 }) {
   const navigate = useNavigate();
+  const flowBack = useFlowBack();
   const [menuId, setMenuId] = useState<string | null>(null);
+
+  const handleBack = onBack || flowBack;
 
   return (
     <Screen>
-      <Header title="내 전시 관리" onBack={() => navigate('/my')} />
+      <Header title="내 전시 관리" onBack={handleBack} />
       <div className="flex-1 overflow-y-auto px-5 pt-1.5 pb-4">
         {/* 전시 관리 섹션 헤더 */}
         <div className="flex items-end justify-between gap-10 mb-4">
