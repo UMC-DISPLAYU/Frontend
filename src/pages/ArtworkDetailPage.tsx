@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
@@ -37,10 +37,23 @@ import { hasPermission } from '@/utils/hasPermission';
 
 export function ArtworkDetailPage() {
   const flowBack = useFlowBack();
+  const location = useLocation();
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
+  const tabRef = useRef<HTMLDivElement>(null);
 
-  const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>('intro');
+  const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>(
+    (location.state as { initialTab?: ArtworkDetailTabKey } | null)?.initialTab ?? 'intro',
+  );
+
+  useEffect(() => {
+    if (location.state?.initialTab) {
+      const timer = setTimeout(() => {
+        tabRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const { data: userMe } = useUserMe();
   const myUserId = userMe?.id;
@@ -288,7 +301,9 @@ export function ArtworkDetailPage() {
       <ArtworkMeta artwork={artwork} />
 
       {/* 소개 / 방명록 / 질문 탭 */}
-      <ArtworkTabNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <div ref={tabRef}>
+        <ArtworkTabNav activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
 
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { useReceivedArtworkQuestions } from '@/hooks/queries/useReceivedArtworkQuestions';
@@ -10,6 +11,8 @@ type TabKey = 'pending' | 'done';
 
 interface Question {
   id: string;
+  artworkId: number | null;
+  personalArtworkId: number | null;
   exhibition: string;
   desc: string;
   user: string;
@@ -42,11 +45,23 @@ const getRelativeTime = (createdAt: string) => {
 
 interface QuestionCardProps {
   item: Question;
+  onClick?: () => void;
 }
 
-function QuestionCard({ item }: QuestionCardProps) {
+function QuestionCard({ item, onClick }: QuestionCardProps) {
   return (
-    <div className="flex flex-col gap-2.5 rounded-lg bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]">
+    <div
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className="flex flex-col gap-2.5 rounded-lg bg-card px-4 py-3.5 shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] cursor-pointer hover:bg-card/80 transition-colors"
+    >
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
@@ -116,6 +131,7 @@ function Tabs({ value, onChange }: TabsProps) {
 }
 
 export function AnswerPage() {
+  const navigate = useNavigate();
   const flowBack = useFlowBack();
   const [tab, setTab] = useState<TabKey>('pending');
   const { data, isError, isLoading } = useReceivedArtworkQuestions({
@@ -125,6 +141,8 @@ export function AnswerPage() {
 
   const items = questions.map<Question>((question) => ({
     id: String(question.questionId ?? question.personalQuestionId),
+    artworkId: question.artworkId,
+    personalArtworkId: question.personalArtworkId,
     exhibition: question.artworkName,
     desc: question.content,
     user: question.questionerNickname,
@@ -132,6 +150,16 @@ export function AnswerPage() {
     status: formatAnswerStatus(question.answerStatus),
     isOpen: question.isPublic,
   }));
+
+  const handleCardClick = (item: Question) => {
+    if (item.artworkId) {
+      navigate(`/artwork/${item.artworkId}`, { state: { initialTab: 'question' } });
+    } else if (item.personalArtworkId) {
+      navigate(`/personal-artworks/${item.personalArtworkId}`, {
+        state: { initialTab: 'question' },
+      });
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto h-dvh bg-page flex flex-col overflow-hidden">
@@ -156,7 +184,7 @@ export function AnswerPage() {
         ) : (
           <div className="flex flex-col gap-[10px]">
             {items.map((item) => (
-              <QuestionCard key={item.id} item={item} />
+              <QuestionCard key={item.id} item={item} onClick={() => handleCardClick(item)} />
             ))}
           </div>
         )}
