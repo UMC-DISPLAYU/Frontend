@@ -10,6 +10,8 @@ import { BottomFixedBar, ImageUploader } from '@/components/common';
 import { AffiliationInput } from '@/components/exhibition-register';
 import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
+  DISPLAY_FIELD_REVERSE_MAP,
+  DISPLAY_TYPE_REVERSE_MAP,
   EXHIBITION_FIELD_LABELS,
   EXHIBITION_FIELDS,
   EXHIBITION_TYPE_LABELS,
@@ -61,14 +63,14 @@ export function ExhibitionRegister() {
   const initialIntro = shouldUseDraft
     ? draft.intro
     : ((restored.intro as string) ?? displayDetail?.content ?? '');
-  const initialType = shouldUseDraft
-    ? draft.type
-    : ((restored.type as string) ?? displayDetail?.displayType ?? '');
+  const rawType = (restored.type as string) ?? displayDetail?.displayType ?? '';
+  const initialType = shouldUseDraft ? draft.type : (DISPLAY_TYPE_REVERSE_MAP[rawType] ?? rawType);
+  const rawFields = (restored.field as string[]) ?? displayDetail?.displayFields ?? [];
   const initialField = shouldUseDraft
     ? (draft.field as ExhibitionRegisterFormValues['field'])
-    : ((restored.field as ExhibitionRegisterFormValues['field']) ??
-      (displayDetail?.displayFields as ExhibitionRegisterFormValues['field']) ??
-      []);
+    : (rawFields.map(
+        (f) => DISPLAY_FIELD_REVERSE_MAP[f] ?? f,
+      ) as ExhibitionRegisterFormValues['field']);
   const initialSchool = shouldUseDraft
     ? draft.school
     : ((restored.school as string) ??
@@ -88,6 +90,7 @@ export function ExhibitionRegister() {
     control,
     setValue,
     reset,
+    trigger,
     formState: { errors, isValid, isSubmitted },
   } = useForm<ExhibitionRegisterFormValues>({
     resolver: zodResolver(exhibitionRegisterSchema),
@@ -130,11 +133,12 @@ export function ExhibitionRegister() {
       const restoredTitle = (restored.title as string) ?? fetchedDetail.title ?? '';
       const restoredSubtitle = (restored.subtitle as string) ?? fetchedDetail.subtitle ?? '';
       const restoredIntro = (restored.intro as string) ?? fetchedDetail.content ?? '';
-      const restoredType = (restored.type as string) ?? fetchedDetail.displayType ?? '';
-      const restoredField =
-        (restored.field as ExhibitionRegisterFormValues['field']) ??
-        (fetchedDetail.displayFields as ExhibitionRegisterFormValues['field']) ??
-        [];
+      const rawRestoredType = (restored.type as string) ?? fetchedDetail.displayType ?? '';
+      const restoredType = DISPLAY_TYPE_REVERSE_MAP[rawRestoredType] ?? rawRestoredType;
+      const rawRestoredFields = (restored.field as string[]) ?? fetchedDetail.displayFields ?? [];
+      const restoredField = rawRestoredFields.map(
+        (f) => DISPLAY_FIELD_REVERSE_MAP[f] ?? f,
+      ) as ExhibitionRegisterFormValues['field'];
       const restoredSchool =
         (restored.school as string) ??
         fetchedDetail.organization ??
@@ -159,6 +163,7 @@ export function ExhibitionRegister() {
         department: restoredDepartment,
         organizer: restoredOrganizer,
       });
+      trigger();
     }
   }, [displayId, state, fetchedDetail, restored, artistProfile, reset, shouldUseDraft]);
 
