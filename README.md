@@ -1,6 +1,6 @@
 # DISPLAYU FRONTEND
 
-![DisplayU Frontend banner](./docs/images/readme/banner.png)
+![DisplayU Frontend banner](docs/superpowers/images/readme/banner.png)
 
 대학생의 전시 경험을 하나로 연결하는 플랫폼
 **DisplayU의 프론트엔드 웹입니다.**

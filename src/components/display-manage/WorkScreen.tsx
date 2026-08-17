@@ -1,7 +1,8 @@
-import { ChevronRight, Info, Plus } from 'lucide-react';
+import { ChevronRight, Info, Plus, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
 import type { ExhibitionItem } from '@/types/mypage';
@@ -40,13 +41,17 @@ export function WorkScreen({
   /* ex.id는 저장한 전시 목록에서 archiveDisplayId일 수 있어, 실제 전시 식별자인 displayId를 우선 씁니다. */
   const displayId = ex.displayId || Number(ex.id) || 0;
   const { data: display } = useDisplayDetail(displayId);
+  const { data: userMe } = useUserMe();
   const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
+
+  const myTeamMember = display?.teamMembers?.find((member) => member.userId === userId);
+  const isTeamMember = !isOwner && Boolean(myTeamMember);
+  const isArtistVerified = userMe?.isVerified ?? false;
 
   const displayContentPolicy = useDisplayContentPolicy(display);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
   const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
   const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
-  const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
   const canEditContent = hasPermission(displayContentPolicy, 'editContent');
   const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
   const canReorder = hasPermission(displayContentPolicy, 'reorder');
@@ -54,7 +59,6 @@ export function WorkScreen({
     canCreateCategory ||
     canEditCategory ||
     canDeleteCategory ||
-    canCreateContent ||
     canEditContent ||
     canDeleteContent ||
     canReorder;
@@ -82,7 +86,6 @@ export function WorkScreen({
           <Poster src={ex.thumbnail} w={72} h={101} />
           <ExhibitionMeta ex={ex} showBadge={false} />
         </div>
-
         <div className="flex items-center justify-between mt-6 mb-1">
           <SectionTitle>전시콘텐츠</SectionTitle>
           {canManageDisplayContent && (

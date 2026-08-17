@@ -235,9 +235,9 @@ export const router = createBrowserRouter([
               {
                 path: 'work',
                 element: (
-                  <ArtworkPermissionGuard action="create">
+                  <DisplayPermissionGuard action="view">
                     <ExhibitionWorkPage />
-                  </ArtworkPermissionGuard>
+                  </DisplayPermissionGuard>
                 ),
               },
               {
@@ -299,7 +299,7 @@ export const router = createBrowserRouter([
               {
                 path: 'contents/:categoryId',
                 element: (
-                  <DisplayContentPermissionGuard action="editContent">
+                  <DisplayContentPermissionGuard action="createContent">
                     <InteriorPhotosPage />
                   </DisplayContentPermissionGuard>
                 ),

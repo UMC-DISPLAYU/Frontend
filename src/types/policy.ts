@@ -5,7 +5,7 @@ export interface User {
 
 export type PolicyActionMap = {
   artist: 'view';
-  display: 'create' | 'edit' | 'delete';
+  display: 'view' | 'create' | 'edit' | 'delete';
   displayArtistName: 'edit';
   displayContent:
     | 'createCategory'

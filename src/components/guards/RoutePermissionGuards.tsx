@@ -26,7 +26,7 @@ type GuardChildrenProps = {
 };
 
 type DisplayGuardProps = GuardChildrenProps & {
-  action: 'edit' | 'delete';
+  action: 'view' | 'edit' | 'delete';
   fallback?: string;
 };
 
