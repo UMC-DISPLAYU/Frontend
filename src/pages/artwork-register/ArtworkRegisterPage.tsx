@@ -412,6 +412,18 @@ function ArtworkRegisterPageContent() {
   const { data: memberList } = useDisplayMembers(displayId);
   const { data: artworkList } = useDisplayArtworks(displayId);
   const { data: display } = useDisplayDetail(displayId);
+  const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
+
+  useEffect(() => {
+    if (isEditMode || !display) return;
+
+    if (!isOwner && (step === 'choice' || step === 'otherTeamAuthor' || step === 'otherAuthor')) {
+      completeStep('artwork-choice');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRegisterMode('own');
+      setStep('basic', { replace: true });
+    }
+  }, [completeStep, display, isEditMode, isOwner, setRegisterMode, setStep, step]);
 
   /* 작가 인증 + 전시 소속인만 전시작을 등록할 수 있습니다. */
   const artworkPolicy = useArtworkPolicy(display);
@@ -638,6 +650,10 @@ function ArtworkRegisterPageContent() {
     }
     // For other steps in edit or create flow, keep existing navigation logic
     if (step === 'basic') {
+      if (!isOwner) {
+        flowBack();
+        return;
+      }
       setStep(
         registerMode === 'other'
           ? otherAuthorSource === 'team'
@@ -916,7 +932,7 @@ function ArtworkRegisterPageContent() {
 
   return (
     <>
-      {step === 'choice' && (
+      {step === 'choice' && isOwner && (
         <AddArtworkPage
           registerMode={registerMode}
           onBack={handleBack}

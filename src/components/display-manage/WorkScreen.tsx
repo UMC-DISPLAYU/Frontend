@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { useUserStore } from '@/stores/useUserStore';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
@@ -35,9 +36,12 @@ export function WorkScreen({
   onManageArtworks: () => void;
 }) {
   const navigate = useNavigate();
+  const userId = useUserStore((s) => s.userId);
   /* ex.id는 저장한 전시 목록에서 archiveDisplayId일 수 있어, 실제 전시 식별자인 displayId를 우선 씁니다. */
   const displayId = ex.displayId || Number(ex.id) || 0;
   const { data: display } = useDisplayDetail(displayId);
+  const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
+
   const displayContentPolicy = useDisplayContentPolicy(display);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
   const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
@@ -56,6 +60,14 @@ export function WorkScreen({
     canReorder;
   const artworkPolicy = useArtworkPolicy(display);
   const canCreateArtwork = hasPermission(artworkPolicy, 'create');
+
+  const handleAddArtwork = () => {
+    if (isOwner) {
+      navigate(`/exhibition/${displayId}/artworks/add`);
+    } else {
+      navigate(`/exhibition/${displayId}/artworks/add/basic`);
+    }
+  };
 
   return (
     <Screen>
@@ -109,7 +121,7 @@ export function WorkScreen({
           {canCreateArtwork && (
             <button
               type="button"
-              onClick={() => navigate(`/artworks-register?displayId=${displayId}`)}
+              onClick={handleAddArtwork}
               className="flex h-[158px] w-[118px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
             >
               <Plus size={20} className="text-hint" />

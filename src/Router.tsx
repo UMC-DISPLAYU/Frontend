@@ -92,7 +92,6 @@ const artworkRegisterFlowSteps = [
   {
     path: '/artworks/add/basic',
     step: 'artwork-basic',
-    required: ['artwork-choice'],
     fallback: '/artworks/add/choice',
   },
   {

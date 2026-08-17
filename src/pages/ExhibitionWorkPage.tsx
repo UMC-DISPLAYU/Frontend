@@ -13,6 +13,7 @@ import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { useUserStore } from '@/stores/useUserStore';
 import type { WorkData } from '@/types/exhibition';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
@@ -30,10 +31,14 @@ export function ExhibitionWorkPage() {
 
   const navigate = useNavigate();
   const flowBack = useFlowBack();
+  const userId = useUserStore((s) => s.userId);
 
   const exhibition = state?.initialExhibition;
   const { data: displayDetail, isPending, isError } = useDisplayDetail(Number(displayId));
   const { data: displayArtworks } = useDisplayArtworks(Number(displayId));
+
+  const isOwner =
+    typeof displayDetail?.ownerUserId === 'number' && displayDetail.ownerUserId === userId;
 
   const displayContentPolicy = useDisplayContentPolicy(displayDetail);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
@@ -51,6 +56,14 @@ export function ExhibitionWorkPage() {
     canReorder;
   const artworkPolicy = useArtworkPolicy(displayDetail);
   const canCreateArtwork = hasPermission(artworkPolicy, 'create');
+
+  const handleAddArtwork = () => {
+    if (isOwner) {
+      navigate(`/exhibition/${exItem.id}/artworks/add`);
+    } else {
+      navigate(`/exhibition/${exItem.id}/artworks/add/basic`);
+    }
+  };
 
   if (!exhibition && isPending) {
     return <LoadingView message="전시 정보를 불러오는 중..." />;
@@ -146,7 +159,7 @@ export function ExhibitionWorkPage() {
               {canCreateArtwork && (
                 <button
                   type="button"
-                  onClick={() => navigate(`/exhibition/${exItem.id}/artworks/add`)}
+                  onClick={handleAddArtwork}
                   className="flex h-39.5 w-29.5 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-none bg-box200 cursor-pointer"
                 >
                   <Plus size={20} className="text-hint" />
