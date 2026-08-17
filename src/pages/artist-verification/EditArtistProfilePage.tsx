@@ -5,7 +5,7 @@ import { ChevronLeft, Plus } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import type { ArtistProfileDto } from '@/api/dto';
-import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
+import defaultProfile from '@/assets/common/DefaultProfileIcon.png';
 import { BottomButton } from '@/components/common';
 import { ChipGroup } from '@/components/ui';
 import {

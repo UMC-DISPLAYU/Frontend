@@ -5,7 +5,7 @@ import { ChevronLeft, Info, Plus, X } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import type { UserProfileDto } from '@/api/dto';
-import defaultProfile from '@/assets/common/DefaultProfileIcon.svg';
+import defaultProfile from '@/assets/common/DefaultProfileIcon.png';
 import { BottomButton } from '@/components/common';
 import { LoadingView } from '@/components/common/LoadingView';
 import { useUploadImage } from '@/hooks/queries/useFile';

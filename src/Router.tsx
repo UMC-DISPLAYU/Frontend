@@ -1,6 +1,9 @@
+import { lazy, Suspense } from 'react';
+
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 
 import { RootRedirect } from './components/auth/RootRedirect';
+import { LoadingView } from './components/common';
 import { AuthGuard } from './components/guards/AuthGuard';
 import {
   ArtistPermissionGuard,
@@ -15,52 +18,133 @@ import {
   PersonalArtworkPermissionGuard,
 } from './components/guards/RoutePermissionGuards';
 import { Layout } from './components/layout';
-import { AnswerPage } from './pages/AnswerPage';
-import { ArtistVerificationPage } from './pages/artist-verification';
-import { EditArtistProfilePage } from './pages/artist-verification';
-import { ArtworkRegisterPage } from './pages/artwork-register';
-import { ArtworkDetailPage } from './pages/ArtworkDetailPage';
-import { ArtworksManagePage } from './pages/ArtworksManagePage';
-import { AuthPage } from './pages/AuthPage';
-import { DisplayAcceptPage } from './pages/DisplayAcceptPage';
-import { DisplayArtistNamePage } from './pages/DisplayArtistNamePage';
-import { DisplayContentsManagePage } from './pages/DisplayContentsManagePage';
-import { DisplayContentsPage } from './pages/DisplayContentsPage';
-import { DisplayDetailPage } from './pages/DisplayDetailPage';
-import { DisplayInvitationLinkPage } from './pages/DisplayInvitationLinkPage';
-import { EditBasicInfoPage } from './pages/EditBasicInfoPage';
-import {
-  ArtistNameSetup,
-  ExhibitionBasicInfo,
-  ExhibitionRegister,
-} from './pages/exhibition-register';
-import { ExhibitionRegisterDraftRoute } from './pages/exhibition-register/ExhibitionRegisterDraftRoute';
-import { ExhibitionManage } from './pages/ExhibitionManagePage';
-import { ExhibitionReviewWritePage } from './pages/ExhibitionReviewWritePage';
-import { ExhibitionWorkPage } from './pages/ExhibitionWorkPage';
-import { ForbiddenPage } from './pages/ForbiddenPage';
-import { Homepage } from './pages/Homepage';
-import { InteriorPhotosPage } from './pages/InteriorPhotosPage';
-import { InvitationRequestPage } from './pages/InvitationRequestPage';
-import { LoginPage } from './pages/LoginPage';
-import { LoungeBoardDetailPage } from './pages/LoungeBoardDetailPage';
-import { LoungeBoardPage } from './pages/LoungeBoardPage';
-import { LoungePage } from './pages/LoungePage';
-import { MyActivityPage } from './pages/MyActivityPage';
-import { MyExhibitionsPage } from './pages/MyExhibitionsPage';
-import { MyPage } from './pages/MyPage';
-import { MyQuestionsPage } from './pages/MyQuestionsPage';
-import { MyReviewPage } from './pages/MyReviewPage';
-import { NotFound } from './pages/NotFound';
-import { OnboardingPage } from './pages/onboarding';
-import { PersonalArtworksRegister } from './pages/personal-artworks-register';
-import { PersonalArtworkDetailPage } from './pages/PersonalArtworkDetailPage';
-import { PolicyPage } from './pages/PolicyPage';
-import { ExhibitionRegisterComplete } from './pages/RegisterCompletePage';
-import { SearchPage } from './pages/SearchPage';
-import { SettingPage } from './pages/Settingpage';
-import { TeamManage } from './pages/TeamManagePage';
-import { VisibilitySettings } from './pages/VisibilitySettingsPage';
+
+const lazyPage = <T extends Record<string, unknown>>(
+  importFn: () => Promise<T>,
+  exportName: keyof T,
+) => {
+  const LazyComponent = lazy(() =>
+    importFn().then((mod) => ({
+      default: mod[exportName] as unknown as React.ComponentType,
+    })),
+  );
+
+  const PageComponent = () => (
+    <Suspense fallback={<LoadingView />}>
+      <LazyComponent />
+    </Suspense>
+  );
+
+  PageComponent.displayName = `LazyPage(${String(exportName)})`;
+
+  return PageComponent;
+};
+
+// Lazy loaded page components
+const Homepage = lazyPage(() => import('./pages/Homepage'), 'Homepage');
+const SearchPage = lazyPage(() => import('./pages/SearchPage'), 'SearchPage');
+const AuthPage = lazyPage(() => import('./pages/AuthPage'), 'AuthPage');
+const DisplayDetailPage = lazyPage(() => import('./pages/DisplayDetailPage'), 'DisplayDetailPage');
+const ArtworkDetailPage = lazyPage(() => import('./pages/ArtworkDetailPage'), 'ArtworkDetailPage');
+const DisplayContentsPage = lazyPage(
+  () => import('./pages/DisplayContentsPage'),
+  'DisplayContentsPage',
+);
+const LoungePage = lazyPage(() => import('./pages/LoungePage'), 'LoungePage');
+const PersonalArtworkDetailPage = lazyPage(
+  () => import('./pages/PersonalArtworkDetailPage'),
+  'PersonalArtworkDetailPage',
+);
+const LoungeBoardPage = lazyPage(() => import('./pages/LoungeBoardPage'), 'LoungeBoardPage');
+const LoungeBoardDetailPage = lazyPage(
+  () => import('./pages/LoungeBoardDetailPage'),
+  'LoungeBoardDetailPage',
+);
+const PolicyPage = lazyPage(() => import('./pages/PolicyPage'), 'PolicyPage');
+const ForbiddenPage = lazyPage(() => import('./pages/ForbiddenPage'), 'ForbiddenPage');
+const MyPage = lazyPage(() => import('./pages/MyPage'), 'MyPage');
+const ArtistVerificationPage = lazyPage(
+  () => import('./pages/artist-verification'),
+  'ArtistVerificationPage',
+);
+const EditArtistProfilePage = lazyPage(
+  () => import('./pages/artist-verification'),
+  'EditArtistProfilePage',
+);
+const MyExhibitionsPage = lazyPage(() => import('./pages/MyExhibitionsPage'), 'MyExhibitionsPage');
+const ExhibitionRegister = lazyPage(
+  () => import('./pages/exhibition-register'),
+  'ExhibitionRegister',
+);
+const ExhibitionBasicInfo = lazyPage(
+  () => import('./pages/exhibition-register'),
+  'ExhibitionBasicInfo',
+);
+const ArtistNameSetup = lazyPage(() => import('./pages/exhibition-register'), 'ArtistNameSetup');
+const ExhibitionRegisterDraftRoute = lazyPage(
+  () => import('./pages/exhibition-register/ExhibitionRegisterDraftRoute'),
+  'ExhibitionRegisterDraftRoute',
+);
+const ExhibitionManage = lazyPage(() => import('./pages/ExhibitionManagePage'), 'ExhibitionManage');
+const ExhibitionReviewWritePage = lazyPage(
+  () => import('./pages/ExhibitionReviewWritePage'),
+  'ExhibitionReviewWritePage',
+);
+const ExhibitionWorkPage = lazyPage(
+  () => import('./pages/ExhibitionWorkPage'),
+  'ExhibitionWorkPage',
+);
+const DisplayArtistNamePage = lazyPage(
+  () => import('./pages/DisplayArtistNamePage'),
+  'DisplayArtistNamePage',
+);
+const DisplayContentsManagePage = lazyPage(
+  () => import('./pages/DisplayContentsManagePage'),
+  'DisplayContentsManagePage',
+);
+const ArtworksManagePage = lazyPage(
+  () => import('./pages/ArtworksManagePage'),
+  'ArtworksManagePage',
+);
+const ArtworkRegisterPage = lazyPage(
+  () => import('./pages/artwork-register'),
+  'ArtworkRegisterPage',
+);
+const InteriorPhotosPage = lazyPage(
+  () => import('./pages/InteriorPhotosPage'),
+  'InteriorPhotosPage',
+);
+const TeamManage = lazyPage(() => import('./pages/TeamManagePage'), 'TeamManage');
+const VisibilitySettings = lazyPage(
+  () => import('./pages/VisibilitySettingsPage'),
+  'VisibilitySettings',
+);
+const DisplayAcceptPage = lazyPage(() => import('./pages/DisplayAcceptPage'), 'DisplayAcceptPage');
+const SettingPage = lazyPage(() => import('./pages/Settingpage'), 'SettingPage');
+const EditBasicInfoPage = lazyPage(() => import('./pages/EditBasicInfoPage'), 'EditBasicInfoPage');
+const PersonalArtworksRegister = lazyPage(
+  () => import('./pages/personal-artworks-register'),
+  'PersonalArtworksRegister',
+);
+const AnswerPage = lazyPage(() => import('./pages/AnswerPage'), 'AnswerPage');
+const InvitationRequestPage = lazyPage(
+  () => import('./pages/InvitationRequestPage'),
+  'InvitationRequestPage',
+);
+const MyQuestionsPage = lazyPage(() => import('./pages/MyQuestionsPage'), 'MyQuestionsPage');
+const MyReviewPage = lazyPage(() => import('./pages/MyReviewPage'), 'MyReviewPage');
+const MyActivityPage = lazyPage(() => import('./pages/MyActivityPage'), 'MyActivityPage');
+const OnboardingPage = lazyPage(() => import('./pages/onboarding'), 'OnboardingPage');
+const LoginPage = lazyPage(() => import('./pages/LoginPage'), 'LoginPage');
+const DisplayInvitationLinkPage = lazyPage(
+  () => import('./pages/DisplayInvitationLinkPage'),
+  'DisplayInvitationLinkPage',
+);
+const ExhibitionRegisterComplete = lazyPage(
+  () => import('./pages/RegisterCompletePage'),
+  'ExhibitionRegisterComplete',
+);
+const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound');
 
 const validateNumericId =
   (paramName: string) =>
