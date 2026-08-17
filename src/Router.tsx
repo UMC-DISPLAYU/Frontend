@@ -377,9 +377,9 @@ export const router = createBrowserRouter([
               {
                 path: 'complete',
                 element: (
-                  <DisplayPermissionGuard action="edit">
+                  <ArtworkPermissionGuard action="create">
                     <ExhibitionRegisterComplete />
-                  </DisplayPermissionGuard>
+                  </ArtworkPermissionGuard>
                 ),
               },
             ],
