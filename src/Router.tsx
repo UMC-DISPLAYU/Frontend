@@ -92,7 +92,6 @@ const artworkRegisterFlowSteps = [
   {
     path: '/artworks/add/basic',
     step: 'artwork-basic',
-    required: ['artwork-choice'],
     fallback: '/artworks/add/choice',
   },
   {
@@ -378,9 +377,9 @@ export const router = createBrowserRouter([
               {
                 path: 'complete',
                 element: (
-                  <DisplayPermissionGuard action="edit">
+                  <ArtworkPermissionGuard action="create">
                     <ExhibitionRegisterComplete />
-                  </DisplayPermissionGuard>
+                  </ArtworkPermissionGuard>
                 ),
               },
             ],

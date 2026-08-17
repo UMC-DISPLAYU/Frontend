@@ -407,6 +407,7 @@ export interface CreateDisplayRequestDto {
   /* 서버 필수값입니다. 이 전시에서 쓸 표시명입니다. */
   displayNickname: string;
   qnaAccount?: string;
+  contract?: string;
   schoolOrOrganization: string;
   departmentOrClub?: string;
   subtitle?: string;

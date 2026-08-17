@@ -48,11 +48,17 @@ export function ArtworkPreviewMoreView({ onClose }: Props) {
     window.scrollTo(0, 0);
   }, []);
 
-  // 카테고리 다중 선택 토글 핸들러
+  // 카테고리 선택 토글 핸들러 (최대 2개까지 선택, 3번째 선택 시 1번째 필터 자동 취소)
   const handleToggleCategory = (label: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label],
-    );
+    setSelectedCategories((prev) => {
+      if (prev.includes(label)) {
+        return prev.filter((item) => item !== label);
+      }
+      if (prev.length >= 2) {
+        return [...prev.slice(1), label];
+      }
+      return [...prev, label];
+    });
   };
 
   // 개별 카테고리 태그 삭제

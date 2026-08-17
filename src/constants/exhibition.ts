@@ -41,7 +41,7 @@ export const DISPLAY_TYPE_MAP: Record<string, CreateDisplayRequestDto['type']> =
   '과제 전시': 'TASK',
   '학과·학회 전시': 'CLUB',
   '연합 전시': 'JOINT',
-  '소모임·동아리 전시': 'CLUB',
+  '소모임·동아리 전시': 'SMALL_GROUP',
   '기타 단체 전시': 'ETC',
 } satisfies Record<ExhibitionType, CreateDisplayRequestDto['type']>;
 

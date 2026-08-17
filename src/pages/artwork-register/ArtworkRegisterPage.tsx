@@ -412,6 +412,35 @@ function ArtworkRegisterPageContent() {
   const { data: memberList } = useDisplayMembers(displayId);
   const { data: artworkList } = useDisplayArtworks(displayId);
   const { data: display } = useDisplayDetail(displayId);
+  const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
+
+  useEffect(() => {
+    if (isEditMode || !display) return;
+
+    const currentStep = routeStep ?? step;
+    if (
+      !isOwner &&
+      (currentStep === 'choice' ||
+        currentStep === 'otherTeamAuthor' ||
+        currentStep === 'otherAuthor')
+    ) {
+      completeStep('artwork-choice');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRegisterModeState('own');
+      updateDraft({ registerMode: 'own', step: 'basic' });
+      navigate(`/exhibition/${displayId}/artworks/add/basic`, { replace: true });
+    }
+  }, [
+    completeStep,
+    display,
+    displayId,
+    isEditMode,
+    isOwner,
+    navigate,
+    routeStep,
+    step,
+    updateDraft,
+  ]);
 
   /* 작가 인증 + 전시 소속인만 전시작을 등록할 수 있습니다. */
   const artworkPolicy = useArtworkPolicy(display);
@@ -638,6 +667,10 @@ function ArtworkRegisterPageContent() {
     }
     // For other steps in edit or create flow, keep existing navigation logic
     if (step === 'basic') {
+      if (!isOwner) {
+        flowBack();
+        return;
+      }
       setStep(
         registerMode === 'other'
           ? otherAuthorSource === 'team'
@@ -789,6 +822,7 @@ function ArtworkRegisterPageContent() {
           resetDraft();
           completeFlow();
           navigate(`/exhibition/${displayId}/complete`, {
+            replace: true,
             state: {
               type: 'artwork',
               title: title.trim(),
@@ -916,7 +950,7 @@ function ArtworkRegisterPageContent() {
 
   return (
     <>
-      {step === 'choice' && (
+      {step === 'choice' && isOwner && (
         <AddArtworkPage
           registerMode={registerMode}
           onBack={handleBack}

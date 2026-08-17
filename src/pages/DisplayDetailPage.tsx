@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ErrorView, LoadingView } from '@/components/common';
 import {
@@ -22,9 +22,26 @@ import { parseDisplayId } from '@/utils/parseDisplayId';
 export function DisplayDetailPage() {
   const flowBack = useFlowBack();
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const displayId = parseDisplayId(id);
+  const tabNavRef = useRef<HTMLDivElement>(null);
 
-  const [activeTab, setActiveTab] = useState<DetailTabKey>('intro');
+  const tabParam = searchParams.get('tab') as DetailTabKey | null;
+  const [activeTabState, setActiveTabState] = useState<DetailTabKey>('intro');
+  const activeTab = tabParam ?? activeTabState;
+
+  const handleTabChange = (key: DetailTabKey) => {
+    setActiveTabState(key);
+    setSearchParams({ tab: key }, { replace: true });
+  };
+
+  useEffect(() => {
+    if (tabParam === 'artwork' || tabParam === 'review') {
+      setTimeout(() => {
+        tabNavRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [tabParam]);
 
   const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
 
@@ -55,7 +72,9 @@ export function DisplayDetailPage() {
       </div>
       <HeroSlider images={heroImages} />
       <ExhibitionMeta display={display} />
-      <DetailTabNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <div ref={tabNavRef} id="detail-tab-nav">
+        <DetailTabNav activeTab={activeTab} onTabChange={handleTabChange} />
+      </div>
       {/* 하단 전시 저장 바에 콘텐츠 마지막 부분이 가려지지 않도록 여백을 확보합니다. */}
       {activeTab === 'intro' && (
         <div className="pb-bottom-bar-offset">

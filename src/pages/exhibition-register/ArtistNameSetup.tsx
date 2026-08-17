@@ -64,12 +64,6 @@ const getRegion = (address: string): CreateDisplayRequestDto['region'] => {
   return 'OTHERS';
 };
 
-const optionalText = (value?: string | null) => {
-  const trimmed = value?.trim();
-
-  return trimmed ? trimmed : '';
-};
-
 const formatPeriodLabel = (startDate?: string | null, endDate?: string | null) => {
   if (!startDate || !endDate) {
     return '';
@@ -115,7 +109,6 @@ export function ArtistNameSetup() {
   const userMe = useAuthStore((s) => s.user);
   const userStoreUserId = useUserStore((s) => s.userId);
   const myUserId = userMeData?.id ?? userMe?.id ?? userStoreUserId;
-  const userStoreName = useUserStore((s) => s.displayArtistName || s.artistName);
 
   const createDisplay = useCreateDisplay();
   const updateNickname = useUpdateMyDisplayNickname();
@@ -156,12 +149,9 @@ export function ArtistNameSetup() {
     role: roleLabel,
   };
 
-  const initialArtistName =
-    fetchedMemberNickname ||
-    registerState.artistName ||
-    registerState.displayNickname ||
-    userStoreName ||
-    '';
+  const initialArtistName = isEditMode
+    ? fetchedMemberNickname || registerState.artistName || registerState.displayNickname || ''
+    : registerState.artistName || '';
 
   const {
     register,
@@ -169,7 +159,6 @@ export function ArtistNameSetup() {
     control,
     getValues,
     setValue,
-    reset,
     formState: { errors, isValid },
   } = useForm<ArtistNameSetupFormValues>({
     resolver: zodResolver(artistNameSetupSchema),
@@ -181,10 +170,10 @@ export function ArtistNameSetup() {
   const artistName = useWatch({ control, name: 'artistName' }) ?? '';
 
   useEffect(() => {
-    if (initialArtistName) {
-      setValue('artistName', initialArtistName, { shouldValidate: true });
+    if (isEditMode && fetchedMemberNickname) {
+      setValue('artistName', fetchedMemberNickname, { shouldValidate: true });
     }
-  }, [initialArtistName, setValue]);
+  }, [isEditMode, fetchedMemberNickname, setValue]);
 
   const saveCurrentDraft = () => {
     if (!isEditMode) {
@@ -213,7 +202,9 @@ export function ArtistNameSetup() {
       return;
     }
 
-    const type = registerState.type ? DISPLAY_TYPE_MAP[registerState.type] : undefined;
+    const type = registerState.type
+      ? (DISPLAY_TYPE_MAP[registerState.type] ?? registerState.type)
+      : undefined;
     const posterImageUrl = registerState.imageUrls?.[0];
     const displayImageUrl = registerState.imageUrls?.slice(1).filter(Boolean) ?? [];
 
@@ -236,31 +227,53 @@ export function ArtistNameSetup() {
       return;
     }
 
+    const mappedFields = (registerState.field ?? [])
+      .map((f) => DISPLAY_FIELD_MAP[f] ?? f)
+      .filter((f): f is string => Boolean(f));
+
+    const schoolOrOrg = (
+      registerState.school ||
+      registerState.organizer ||
+      registerState.department ||
+      registerState.title ||
+      '자율'
+    ).trim();
+
+    const formatTime = (timeStr: string) => {
+      const trimmed = timeStr.trim();
+      return trimmed.length > 5 ? trimmed.slice(0, 5) : trimmed;
+    };
+
     const requestBody: CreateDisplayRequestDto = {
       title: registerState.title.trim(),
       posterImageUrl,
-      ...(displayImageUrl.length > 0 ? { displayImageUrl } : {}),
+      ...(displayImageUrl.length > 0 ? { displayImageUrl: displayImageUrl.slice(0, 4) } : {}),
       type,
-      fields: registerState.field?.map((field) => DISPLAY_FIELD_MAP[field]).filter(Boolean) ?? [],
+      fields: mappedFields,
       region: getRegion(registerState.address),
       startDate: registerState.startDate,
       endDate: registerState.endDate,
-      openTime: registerState.startTime,
-      closeTime: registerState.endTime,
+      openTime: formatTime(registerState.startTime),
+      closeTime: formatTime(registerState.endTime),
       locationName: registerState.placeName.trim(),
-      latitude: registerState.latitude,
-      longitude: registerState.longitude,
+      latitude: Number(registerState.latitude),
+      longitude: Number(registerState.longitude),
       roadAddress: registerState.address.trim(),
-      displayNickname,
-      qnaAccount: (registerState.contact ?? '').trim(),
-      schoolOrOrganization: optionalText(registerState.school || registerState.organizer) ?? '',
-      departmentOrClub: optionalText(registerState.department),
-      subtitle: optionalText(registerState.subtitle),
-      description: optionalText(registerState.intro),
-      precautions: optionalText(registerState.notice),
+      displayNickname: displayNickname.trim(),
+      schoolOrOrganization: schoolOrOrg,
+      ...(registerState.department?.trim()
+        ? { departmentOrClub: registerState.department.trim() }
+        : {}),
+      ...(registerState.contact?.trim()
+        ? { qnaAccount: registerState.contact.trim(), contract: registerState.contact.trim() }
+        : {}),
+      ...(registerState.subtitle?.trim() ? { subtitle: registerState.subtitle.trim() } : {}),
+      ...(registerState.intro?.trim() ? { description: registerState.intro.trim() } : {}),
+      ...(registerState.notice?.trim() ? { precautions: registerState.notice.trim() } : {}),
     };
 
     if (requestBody.fields.length === 0) {
+      alert('전시 분야를 최소 1개 이상 선택해주세요.');
       return;
     }
 
@@ -278,6 +291,9 @@ export function ArtistNameSetup() {
             posterImageUrl,
           },
         });
+      },
+      onError: () => {
+        alert('전시 등록에 실패했어요. 입력 정보를 확인 후 다시 시도해주세요.');
       },
     });
   };
