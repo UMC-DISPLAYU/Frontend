@@ -117,14 +117,14 @@ function Tabs({ value, onChange }: TabsProps) {
 
 export function AnswerPage() {
   const flowBack = useFlowBack();
-  const [tab, setTab] = useState<TabKey>('done');
+  const [tab, setTab] = useState<TabKey>('pending');
   const { data, isError, isLoading } = useReceivedArtworkQuestions({
     answerStatus: tab === 'pending' ? 'WAITING' : 'ANSWERED',
   });
   const questions = data?.questions ?? [];
 
   const items = questions.map<Question>((question) => ({
-    id: String(question.questionId),
+    id: String(question.questionId ?? question.personalQuestionId),
     exhibition: question.artworkName,
     desc: question.content,
     user: question.questionerNickname,
@@ -132,10 +132,6 @@ export function AnswerPage() {
     status: formatAnswerStatus(question.answerStatus),
     isOpen: question.isPublic,
   }));
-
-  const handleDone = () => {
-    flowBack();
-  };
 
   return (
     <div className="max-w-md mx-auto h-dvh bg-page flex flex-col overflow-hidden">
@@ -165,16 +161,6 @@ export function AnswerPage() {
           </div>
         )}
       </section>
-
-      <div className="bg-gradient-to-b from-transparent via-page/75 to-page px-5 pb-2 pt-3">
-        <button
-          type="button"
-          onClick={handleDone}
-          className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-gray-200 py-3 typo-body-sm-bold text-main"
-        >
-          완료
-        </button>
-      </div>
     </div>
   );
 }
