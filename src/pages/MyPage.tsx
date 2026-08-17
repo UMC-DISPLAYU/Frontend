@@ -238,6 +238,7 @@ export function MyPage() {
     ).map((item) => ({
       id: `exhibit-${item.artworkId}`,
       artworkId: item.artworkId,
+      displayId: item.displayId,
       title: item.artworkName,
       artist: item.artistName || artistName,
       thumbnail: item.artworkImageUrl ?? '',

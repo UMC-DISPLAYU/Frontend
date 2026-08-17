@@ -1,8 +1,11 @@
 import { useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { Bookmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { getArtworkDetail } from '@/api/endpoints';
+import { queryKeys } from '@/api/queryKeys';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useDeletePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import type { SavedArtworkItem } from '@/types/mypage';
@@ -33,6 +36,7 @@ export function ArtworkCard({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const deletePersonalArtwork = useDeletePersonalArtwork();
 
   /* 카드 영역은 div라서 키보드로도 열 수 있도록 역할과 키 처리를 함께 부여합니다. */
@@ -54,9 +58,6 @@ export function ArtworkCard({
   const handleEdit = () => {
     if (item.personalArtworkId) {
       navigate(`/personal-artworks/register?id=${item.personalArtworkId}`);
-    } else if (item.artworkId) {
-      // 일반 전시 작품 수정 페이지로 이동
-      navigate(`/artwork/${item.artworkId}/edit`);
     }
   };
 
@@ -65,6 +66,27 @@ export function ArtworkCard({
       deletePersonalArtwork.mutate(item.personalArtworkId);
     }
   };
+
+  const handleGoWorkPage = async () => {
+    if (item.displayId) {
+      navigate(`/exhibition/${item.displayId}/work`);
+      return;
+    }
+
+    if (item.artworkId) {
+      const artwork = await queryClient.fetchQuery({
+        queryKey: queryKeys.displayArtworks.detail(item.artworkId),
+        queryFn: () => getArtworkDetail(item.artworkId as number),
+      });
+      const displayId = artwork.exhibitionInfo?.displayId;
+
+      if (displayId) {
+        navigate(`/exhibition/${displayId}/work`);
+      }
+    }
+  };
+
+  const isPersonalArtwork = Boolean(item.personalArtworkId);
 
   return (
     <article className="bg-card rounded-2xl shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)] flex flex-col relative">
@@ -83,7 +105,7 @@ export function ArtworkCard({
             </div>
           </div>
 
-          {showMenu && !!item.personalArtworkId && (
+          {showMenu && (isPersonalArtwork || !!item.artworkId) && (
             <>
               <ExhibitionMenuButton
                 onClick={(event) => {
@@ -102,32 +124,48 @@ export function ArtworkCard({
                   />
                   <div
                     onClick={(event) => event.stopPropagation()}
-                    className="absolute right-2 top-12 z-50 w-25 rounded-[14px] border border-[#C4C4C4] bg-[#FCFCFC] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)]"
+                    className="absolute right-2 top-12 z-50 w-36 rounded-[14px] border border-[#C4C4C4] bg-[#FCFCFC] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)]"
                     style={{ fontFamily: 'Pretendard' }}
                   >
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setIsMenuOpen(false);
-                        handleEdit();
-                      }}
-                      className="flex h-10 w-full items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#111]"
-                    >
-                      수정
-                    </button>
-                    <div className="border-t border-[#E9E9E9]" />
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setIsMenuOpen(false);
-                        setIsDeleteModalOpen(true);
-                      }}
-                      className="flex h-10 w-full items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#C32427]"
-                    >
-                      삭제
-                    </button>
+                    {isPersonalArtwork ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setIsMenuOpen(false);
+                            handleEdit();
+                          }}
+                          className="flex h-10 w-full items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#111]"
+                        >
+                          수정
+                        </button>
+                        <div className="border-t border-[#E9E9E9]" />
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setIsMenuOpen(false);
+                            setIsDeleteModalOpen(true);
+                          }}
+                          className="flex h-10 w-full items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#C32427]"
+                        >
+                          삭제
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setIsMenuOpen(false);
+                          handleGoWorkPage();
+                        }}
+                        className="flex h-10 w-full items-center pl-[14px] text-left text-[12px] leading-[140%] tracking-[-0.36px] text-[#111]"
+                      >
+                        작업 페이지 바로가기
+                      </button>
+                    )}
                   </div>
                 </>
               )}
