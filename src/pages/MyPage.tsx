@@ -397,6 +397,7 @@ export function MyPage() {
                 key={item.id}
                 item={item}
                 isArtistView={isArtistView}
+                showMenu={isArtistView}
                 onUnarchive={(artwork) => {
                   if (window.confirm('저장한 작품에서 삭제할까요?')) {
                     if (artwork.personalArtworkId) {

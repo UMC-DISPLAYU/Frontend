@@ -49,16 +49,21 @@ export const usePersonalArtwork = (personalArtworkId: number) =>
   useQuery({
     queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
     queryFn: () => getPersonalArtwork(personalArtworkId),
-    enabled: Number.isFinite(personalArtworkId),
+    enabled: Number.isFinite(personalArtworkId) && personalArtworkId > 0,
   });
+
+const invalidatePersonalArtworkLists = (queryClient: ReturnType<typeof useQueryClient>) => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.me() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
+};
 
 export const useCreatePersonalArtwork = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (body: PersonalArtworkRequestDto) => createPersonalArtwork(body),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() }),
+    onSuccess: () => invalidatePersonalArtworkLists(queryClient),
   });
 };
 
@@ -74,7 +79,7 @@ export const useUpdatePersonalArtwork = () => {
       body: Partial<PersonalArtworkRequestDto>;
     }) => updatePersonalArtwork(personalArtworkId, body),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() });
+      invalidatePersonalArtworkLists(queryClient);
       queryClient.invalidateQueries({
         queryKey: queryKeys.personalArtworks.detail(variables.personalArtworkId),
       });
@@ -88,7 +93,7 @@ export const useDeletePersonalArtwork = () => {
   return useMutation({
     mutationFn: (personalArtworkId: number) => deletePersonalArtwork(personalArtworkId),
     onSuccess: (_, personalArtworkId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() });
+      invalidatePersonalArtworkLists(queryClient);
       queryClient.removeQueries({
         queryKey: queryKeys.personalArtworks.detail(personalArtworkId),
       });
