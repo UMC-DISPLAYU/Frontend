@@ -11,6 +11,7 @@ import { AddressSearchModal } from '@/components/exhibition-basic-info';
 import { ExhibitionHeader } from '@/components/ui';
 import { CalenderSheet } from '@/components/ui/CalenderSheet';
 import { type TimeRangeValue, TimeSheet } from '@/components/ui/TimeSheet';
+import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
 import { useUpdateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
@@ -19,6 +20,7 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import {
   type ExhibitionBasicInfoFormValues,
   exhibitionBasicInfoSchema,
+  type ExhibitionRegisterFormValues,
 } from './exhibitionRegister.schema';
 
 interface DateValue {
@@ -71,6 +73,20 @@ export function ExhibitionBasicInfo() {
   const navigate = useNavigate();
   const flowBack = useFlowBack();
   const { state } = useLocation();
+  const locationState = useMemo(
+    () =>
+      (state ?? {}) as Partial<
+        ExhibitionRegisterFormValues &
+          ExhibitionBasicInfoFormValues & {
+            displayDetail: DisplayDetailDto;
+            imageUrls: string[];
+            intro: string;
+            periodValue: DateValue;
+            operatingHoursValue: TimeRangeValue;
+          }
+      >,
+    [state],
+  );
   const { draft, hasDraft, updateDraft } = useExhibitionRegisterDraft();
   const { displayId: paramDisplayId } = useParams();
   const displayId = Number(paramDisplayId ?? 0);
@@ -78,13 +94,13 @@ export function ExhibitionBasicInfo() {
   const updateDisplay = useUpdateDisplay(displayId);
 
   const { data: fetchedDetail, isPending: isDetailPending } = useDisplayDetail(displayId);
-  const isFetchingDetail = displayId > 0 && !state?.displayDetail && isDetailPending;
+  const isFetchingDetail = displayId > 0 && !locationState.displayDetail && isDetailPending;
 
   const restored = useMemo(() => {
-    return displayId > 0 && !state?.displayDetail ? {} : (state ?? {});
-  }, [displayId, state]);
+    return displayId > 0 && !locationState.displayDetail ? {} : locationState;
+  }, [displayId, locationState]);
 
-  const displayDetail = (state?.displayDetail as DisplayDetailDto) || fetchedDetail || null;
+  const displayDetail = locationState.displayDetail || fetchedDetail || null;
 
   const parseDate = (d?: string) => (d ? new Date(d) : new Date());
 
@@ -154,7 +170,9 @@ export function ExhibitionBasicInfo() {
       placeName: shouldUseDraft
         ? draft.placeName
         : ((restored.placeName as string) ?? displayDetail?.location?.placeName ?? ''),
-      address: shouldUseDraft ? draft.address : ((restored.address as string) ?? ''),
+      address: shouldUseDraft
+        ? draft.address
+        : ((restored.address as string) ?? displayDetail?.location?.roadAddress ?? ''),
       latitude: shouldUseDraft
         ? (draft.latitude ?? undefined)
         : ((restored.latitude as number) ?? displayDetail?.location?.latitude ?? undefined),
@@ -203,7 +221,7 @@ export function ExhibitionBasicInfo() {
       return;
     }
 
-    if (displayId > 0 && !state?.displayDetail && fetchedDetail) {
+    if (displayId > 0 && !locationState.displayDetail && fetchedDetail) {
       const restoredPeriod =
         (restored.periodValue as DateValue) ??
         (fetchedDetail.period
@@ -226,7 +244,8 @@ export function ExhibitionBasicInfo() {
             }
           : null);
 
-      const restoredAddress = (restored.address as string) ?? '';
+      const restoredAddress =
+        (restored.address as string) ?? fetchedDetail.location?.roadAddress ?? '';
 
       reset({
         startDate: restoredPeriod ? formatDate(restoredPeriod.start) : '',
@@ -325,13 +344,20 @@ export function ExhibitionBasicInfo() {
     if (displayId > 0) {
       updateDisplay.mutate(
         {
-          title: state?.title ?? fetchedDetail?.title ?? '',
-          subtitle: state?.subtitle ?? fetchedDetail?.subtitle ?? null,
-          description: state?.intro ?? fetchedDetail?.content ?? null,
-          type: state?.type ?? fetchedDetail?.displayType ?? 'PERSONAL',
-          fields: state?.field ?? fetchedDetail?.displayFields ?? [],
-          schoolOrOrganization: state?.school ?? fetchedDetail?.organization ?? '',
-          departmentOrClub: state?.department ?? fetchedDetail?.department ?? null,
+          title: locationState.title ?? fetchedDetail?.title ?? '',
+          subtitle: locationState.subtitle ?? fetchedDetail?.subtitle ?? null,
+          description: locationState.intro ?? fetchedDetail?.content ?? null,
+          type:
+            (locationState.type ? DISPLAY_TYPE_MAP[locationState.type] : undefined) ??
+            fetchedDetail?.displayType ??
+            'PERSONAL',
+          fields:
+            locationState.field?.map((f) => DISPLAY_FIELD_MAP[f]).filter(Boolean) ??
+            fetchedDetail?.displayFields ??
+            [],
+          schoolOrOrganization:
+            locationState.school || locationState.organizer || fetchedDetail?.organization || '',
+          departmentOrClub: locationState.department ?? fetchedDetail?.department ?? null,
           placeName: data.placeName.trim(),
           precautions: data.notice?.trim() || null,
           startDate: data.startDate,
@@ -339,7 +365,7 @@ export function ExhibitionBasicInfo() {
           openTime: data.startTime,
           closeTime: data.endTime,
           posterImageUrl:
-            state?.imageUrls?.[0] ?? fetchedDetail?.images?.[0]?.imageUrl ?? undefined,
+            locationState.imageUrls?.[0] ?? fetchedDetail?.images?.[0]?.imageUrl ?? undefined,
         },
         {
           onSuccess: () => navigate(`/exhibition/${displayId}/manage`, { replace: true }),

@@ -45,6 +45,19 @@ export const DISPLAY_TYPE_MAP: Record<string, CreateDisplayRequestDto['type']> =
   '기타 단체 전시': 'ETC',
 } satisfies Record<ExhibitionType, CreateDisplayRequestDto['type']>;
 
+export const DISPLAY_TYPE_REVERSE_MAP: Record<string, string> = {
+  GRADUATION: '졸업 전시',
+  TASK: '과제 전시',
+  ASSIGNMENTS: '과제 전시',
+  CLUB: '학과·학회 전시',
+  DEPARTMENTS: '학과·학회 전시',
+  SMALL_GROUP: '소모임·동아리 전시',
+  JOINT: '연합 전시',
+  INTER_GROUP: '연합 전시',
+  ETC: '기타 단체 전시',
+  OTHERS: '기타 단체 전시',
+};
+
 /*
  * 전시 등록은 작가 활동분야와 다른 enum을 씁니다.
  * 영상은 MEDIA로 보내야 하고 ILLUSTRATION은 서버에 없어 DESIGN으로 대체합니다.
@@ -55,14 +68,32 @@ export const DISPLAY_FIELD_MAP: Record<string, string> = {
   DESIGN: 'DESIGN',
   PHOTOGRAPHY: 'PHOTOGRAPHY',
   ARCHITECTURE: 'ARCHITECTURE',
+  VIDEO: 'MEDIA',
+  SCULPTURE: 'SCULPTURE',
+  FASHION: 'FASHION',
+  ILLUSTRATION: 'DESIGN',
+  CRAFT: 'CRAFT',
+  COMPLEX: 'COMPLEX',
+  ETC: 'ETC',
+} satisfies Record<ExhibitionField, string>;
+
+export const DISPLAY_FIELD_REVERSE_MAP: Record<string, ExhibitionField> = {
+  PAINTING: 'PAINTING',
+  DESIGN: 'DESIGN',
+  PHOTOGRAPHY: 'PHOTOGRAPHY',
+  ARCHITECTURE: 'ARCHITECTURE',
+  MEDIA: 'VIDEO',
   VIDEO: 'VIDEO',
   SCULPTURE: 'SCULPTURE',
   FASHION: 'FASHION',
-  ILLUSTRATION: 'INTERDISCIPLINARY',
-  CRAFT: 'CRAFTS',
+  INTERDISCIPLINARY: 'ILLUSTRATION',
+  ILLUSTRATION: 'ILLUSTRATION',
+  CRAFT: 'CRAFT',
+  CRAFTS: 'CRAFT',
   COMPLEX: 'COMPLEX',
-  ETC: 'OTHERS',
-} satisfies Record<ExhibitionField, string>;
+  ETC: 'ETC',
+  OTHERS: 'ETC',
+};
 
 export type ArtistFieldCode =
   | 'PAINTING'

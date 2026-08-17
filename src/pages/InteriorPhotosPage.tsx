@@ -263,7 +263,7 @@ function InteriorPhotos({
 
         {/* 액션 */}
         {!isReorderMode && canShowActions && (
-          <div className="flex gap-2 px-5">
+          <div className="mt-3.5 flex gap-2 px-5">
             <input
               ref={fileInputRef}
               type="file"
@@ -296,11 +296,11 @@ function InteriorPhotos({
 
         {/* 그리드 */}
         {photos.length === 0 ? (
-          <p className="typo-body-sm-regular px-5 text-hint">
+          <p className="typo-body-sm-regular mt-6 px-5 text-hint">
             아직 사진이 없어요. 사진 추가로 첫 장을 올려보세요.
           </p>
         ) : (
-          <ul className="grid grid-cols-3 gap-x-2.5 gap-y-3 px-5">
+          <ul className="mt-6 grid grid-cols-3 gap-x-2.5 gap-y-3 px-5">
             {photos.map((photo, index) => (
               <li
                 key={photo.id}
