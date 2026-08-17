@@ -100,6 +100,9 @@ export const useCreateArtworkQuestionReply = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.artworkQuestions.list(variables.artworkId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.artworkQuestions.all,
+      });
     },
   });
 };

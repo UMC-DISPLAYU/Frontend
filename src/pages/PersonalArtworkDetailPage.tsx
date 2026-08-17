@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Plus } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import type { PersonalArtworkQuestionResponseDataDto } from '@/api/dto';
 import type { ArtworkDetailTabKey } from '@/components/artworkdetailpage/ArtworkTabNav';
@@ -41,9 +41,23 @@ function formatImageUrls(images: { imageUrl?: string }[] = []) {
 
 export function PersonalArtworkDetailPage() {
   const flowBack = useFlowBack();
+  const location = useLocation();
   const { personalArtworkId: idParam } = useParams<{ personalArtworkId: string }>();
   const personalArtworkId = Number(idParam ?? 0);
-  const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>('intro');
+  const tabRef = useRef<HTMLDivElement>(null);
+
+  const [activeTab, setActiveTab] = useState<ArtworkDetailTabKey>(
+    (location.state as { initialTab?: ArtworkDetailTabKey } | null)?.initialTab ?? 'intro',
+  );
+
+  useEffect(() => {
+    if (location.state?.initialTab) {
+      const timer = setTimeout(() => {
+        tabRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   /* 감상 답글 대상 — 전시상세/작품상세와 동일한 패턴(공용 BottomCommentBar가 씀) */
   const [feelingReplyTarget, setFeelingReplyTarget] = useState<{
@@ -202,7 +216,9 @@ export function PersonalArtworkDetailPage() {
       <PersonalArtworkMeta artwork={artwork} />
 
       {/* 소개 / 방명록 / 질문 탭 */}
-      <ArtworkTabNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <div ref={tabRef}>
+        <ArtworkTabNav activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
 
       {/* 탭 콘텐츠 */}
       {activeTab === 'intro' && <PersonalArtworkIntroTab artwork={artwork} />}
