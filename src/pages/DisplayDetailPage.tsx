@@ -83,7 +83,7 @@ export function DisplayDetailPage() {
       )}
       {activeTab === 'artwork' && (
         <div className="pb-bottom-bar-offset">
-          <ArtworkTab displayId={display.displayId} />
+          <ArtworkTab displayId={display.displayId} teamMembers={display.teamMembers} />
         </div>
       )}
       {activeTab === 'review' && <ReviewTab display={display} displayId={display.displayId} />}

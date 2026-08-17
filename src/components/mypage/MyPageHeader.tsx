@@ -123,7 +123,7 @@ export function MyPageHeader({
                   className="flex items-center gap-1 typo-body-xs-regular text-[#2563EB]"
                 >
                   <ExternalLink className="size-4" />
-                  {profile.portfolioUrl}
+                  개인 포트폴리오
                 </a>
               )}
             </div>

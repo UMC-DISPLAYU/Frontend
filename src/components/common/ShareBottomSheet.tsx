@@ -135,7 +135,9 @@ export function ShareBottomSheet({
         objectType: 'feed',
         content: {
           title,
-          description,
+          /* description 키가 존재하면 카카오 SDK가 문자열 타입을 강제해서,
+           * 값이 없을 땐 undefined를 넣지 말고 키 자체를 빼야 합니다. */
+          ...(description ? { description } : {}),
           imageUrl: shareImageUrl,
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
