@@ -115,7 +115,6 @@ export function ArtistNameSetup() {
   const userMe = useAuthStore((s) => s.user);
   const userStoreUserId = useUserStore((s) => s.userId);
   const myUserId = userMeData?.id ?? userMe?.id ?? userStoreUserId;
-  const userStoreName = useUserStore((s) => s.displayArtistName || s.artistName);
 
   const createDisplay = useCreateDisplay();
   const updateNickname = useUpdateMyDisplayNickname();
@@ -156,12 +155,9 @@ export function ArtistNameSetup() {
     role: roleLabel,
   };
 
-  const initialArtistName =
-    fetchedMemberNickname ||
-    registerState.artistName ||
-    registerState.displayNickname ||
-    userStoreName ||
-    '';
+  const initialArtistName = isEditMode
+    ? fetchedMemberNickname || registerState.artistName || registerState.displayNickname || ''
+    : registerState.artistName || '';
 
   const {
     register,
@@ -181,10 +177,10 @@ export function ArtistNameSetup() {
   const artistName = useWatch({ control, name: 'artistName' }) ?? '';
 
   useEffect(() => {
-    if (initialArtistName) {
-      setValue('artistName', initialArtistName, { shouldValidate: true });
+    if (isEditMode && fetchedMemberNickname) {
+      setValue('artistName', fetchedMemberNickname, { shouldValidate: true });
     }
-  }, [initialArtistName, setValue]);
+  }, [isEditMode, fetchedMemberNickname, setValue]);
 
   const saveCurrentDraft = () => {
     if (!isEditMode) {
