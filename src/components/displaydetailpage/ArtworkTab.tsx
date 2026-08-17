@@ -1,15 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 
-import type { DisplayArtworkDto } from '@/api/dto';
+import type { DisplayArtworkDto, DisplayTeamMemberDto } from '@/api/dto';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { getExhibitionArtistName } from '@/utils/artist';
 
 type ArtworkCardProps = {
   item: DisplayArtworkDto;
+  teamMembers: DisplayTeamMemberDto[] | undefined;
 };
 
-function ArtworkCard({ item }: ArtworkCardProps) {
+function ArtworkCard({ item, teamMembers }: ArtworkCardProps) {
   const navigate = useNavigate();
+  const artistDisplayName = getExhibitionArtistName(item.artistName, item.artistUserId, teamMembers);
 
   return (
     <article
@@ -26,7 +29,7 @@ function ArtworkCard({ item }: ArtworkCardProps) {
       </div>
       <div className="pt-3 flex flex-col">
         <p className="typo-body-sm-bold truncate text-main">{item.artworkName}</p>
-        <p className="typo-body-xs-regular truncate text-main">{item.artistName}</p>
+        <p className="typo-body-xs-regular truncate text-main">{artistDisplayName}</p>
       </div>
     </article>
   );
@@ -34,9 +37,10 @@ function ArtworkCard({ item }: ArtworkCardProps) {
 
 type Props = {
   displayId: number;
+  teamMembers?: DisplayTeamMemberDto[];
 };
 
-export function ArtworkTab({ displayId }: Props) {
+export function ArtworkTab({ displayId, teamMembers }: Props) {
   const { data, isPending, isError } = useDisplayArtworks(displayId);
   const artworks = data?.artworks ?? [];
 
@@ -56,7 +60,7 @@ export function ArtworkTab({ displayId }: Props) {
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {artworks.map((item) => (
-            <ArtworkCard key={item.artworkId} item={item} />
+            <ArtworkCard key={item.artworkId} item={item} teamMembers={teamMembers} />
           ))}
         </div>
       )}

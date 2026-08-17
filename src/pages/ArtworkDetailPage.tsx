@@ -32,6 +32,7 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useFeelingPolicy, useFeelingReplyPolicy, useQuestionPolicy } from '@/hooks/usePolicy';
 import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
+import { getExhibitionArtistName } from '@/utils/artist';
 import { parseServerDate } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -230,14 +231,11 @@ export function ArtworkDetailPage() {
     );
   }
 
-  /*
-   * 작가명은 작품 등록 시점에 기록된 값(detail.artistName) 대신, 팀원이 그 전시에 참여할 때
-   * 정한 전시 작가명(teamMembers[].displayNickname)이 있으면 그걸 우선 보여줍니다.
-   * 초대받아 들어간 전시에서 원래 이름이 아니라 그 전시용 작가명이 나와야 하기 때문입니다.
-   */
-  const artistDisplayName =
-    display?.teamMembers?.find((member) => member.userId === detail.artistUserId)
-      ?.displayNickname || detail.artistName;
+  const artistDisplayName = getExhibitionArtistName(
+    detail.artistName,
+    detail.artistUserId,
+    display?.teamMembers,
+  );
 
   /* 화면이 쓰는 ArtworkDetail 형태로 변환합니다. */
   const artwork: ArtworkDetail = {
