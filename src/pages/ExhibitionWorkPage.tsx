@@ -1,4 +1,4 @@
-import { ChevronRight, Info, Plus } from 'lucide-react';
+import { ChevronRight, Info, Plus, ShieldCheck } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { ErrorView, LoadingView } from '@/components/common';
@@ -11,6 +11,7 @@ import { useHideFooter } from '@/components/layout';
 import { ExhibitionHeader } from '@/components/ui';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
@@ -36,24 +37,23 @@ export function ExhibitionWorkPage() {
   const exhibition = state?.initialExhibition;
   const { data: displayDetail, isPending, isError } = useDisplayDetail(Number(displayId));
   const { data: displayArtworks } = useDisplayArtworks(Number(displayId));
+  const { data: userMe } = useUserMe();
 
   const isOwner =
     typeof displayDetail?.ownerUserId === 'number' && displayDetail.ownerUserId === userId;
+
+  const myTeamMember = displayDetail?.teamMembers?.find((member) => member.userId === userId);
+  const isTeamMember = !isOwner && Boolean(myTeamMember);
+  const isArtistVerified = userMe?.isVerified ?? false;
 
   const displayContentPolicy = useDisplayContentPolicy(displayDetail);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
   const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
   const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
-  const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
   const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
   const canReorder = hasPermission(displayContentPolicy, 'reorder');
   const canManageDisplayContent =
-    canCreateCategory ||
-    canEditCategory ||
-    canDeleteCategory ||
-    canCreateContent ||
-    canDeleteContent ||
-    canReorder;
+    canCreateCategory || canEditCategory || canDeleteCategory || canDeleteContent || canReorder;
   const artworkPolicy = useArtworkPolicy(displayDetail);
   const canCreateArtwork = hasPermission(artworkPolicy, 'create');
 
@@ -117,6 +117,54 @@ export function ExhibitionWorkPage() {
             <Poster src={exItem.thumbnail} w={72} h={101} />
             <ExhibitionMeta ex={exItem} showBadge={false} />
           </div>
+
+          {isTeamMember &&
+            (isArtistVerified ? (
+              <div className="flex w-full flex-col items-start rounded-xl bg-card p-4 outline outline-1 -outline-offset-1 outline-input-soft-border">
+                <div className="flex w-full flex-col items-start gap-1">
+                  <div className="flex w-full items-start gap-1">
+                    <div className="typo-body-sm-bold flex-1 text-main">팀원으로 참여 중이에요</div>
+                    <div className="flex flex-col items-center rounded-sm bg-[#DBEAFE] px-2.5 py-1">
+                      <div className="typo-body-xs-regular text-center text-link">작가인증</div>
+                    </div>
+                  </div>
+                  <div className="typo-body-xs-regular w-full text-hint">
+                    전시 콘텐츠와 전시작을 등록할 수 있어요.
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex w-full flex-col items-start rounded-xl bg-card p-4 outline outline-1 -outline-offset-1 outline-input-soft-border">
+                <div className="flex w-full flex-col items-start gap-3">
+                  <div className="flex w-full flex-col items-start gap-1">
+                    <div className="flex w-full items-start gap-1">
+                      <div className="typo-body-sm-bold flex-1 text-main">
+                        팀원으로 참여 중이에요
+                      </div>
+                    </div>
+                    <div className="typo-body-xs-regular w-full text-hint">
+                      전시 콘텐츠와 전시작을 등록할 수 있어요.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/artist-verification')}
+                    className="flex w-full cursor-pointer items-center justify-between rounded-lg border-none bg-transparent px-3 py-2 outline outline-1 -outline-offset-1 outline-line-active"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <ShieldCheck size={13} className="text-link" />
+                      <span className="typo-body-xs-semibold text-link">
+                        작품 등록 시 작가 인증 필요
+                      </span>
+                    </span>
+                    <span className="flex items-center gap-0.5">
+                      <span className="typo-body-xs-semibold text-link">인증하기</span>
+                      <ChevronRight size={10} className="text-link" />
+                    </span>
+                  </button>
+                </div>
+              </div>
+            ))}
 
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">

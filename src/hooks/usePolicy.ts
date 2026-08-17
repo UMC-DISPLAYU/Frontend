@@ -57,6 +57,7 @@ export function useDisplayPolicy(display: DisplayPolicyResource): PolicyPermissi
 
   return useMemo(
     () => ({
+      view: () => policies.display.view(user, display),
       create: () => policies.display.create(user),
       edit: () => policies.display.edit(user, display),
       delete: () => policies.display.delete(user, display),

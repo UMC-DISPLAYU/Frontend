@@ -32,14 +32,21 @@ export function ExhibitionMeta({
   const isDraft = ex.publishStatus === 'DRAFT';
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col gap-1">
+    <div className="flex-1 min-w-0 flex flex-col gap-2.5">
       {/* 제목 */}
       <h3 className="typo-body-md-bold text-main leading-snug truncate">{ex.title}</h3>
 
-      {/* 날짜 · 장소 */}
-      <div className="flex flex-col typo-body-xs-regular text-neutral-800">
-        <p className="truncate">{ex.period}</p>
-        <p className="truncate">{ex.place}</p>
+      <div className="flex flex-col gap-4">
+        {/* 소속 · 날짜 */}
+        <div className="flex flex-col typo-body-xs-regular">
+          <p className="truncate text-neutral-800">{ex.org}</p>
+          <p className="truncate text-hint">{ex.period}</p>
+        </div>
+
+        {/* 장소 */}
+        {ex.place && (
+          <p className="truncate typo-body-xxs-regular text-faint">{ex.place}</p>
+        )}
       </div>
 
       {/* 역할 | 상태 */}

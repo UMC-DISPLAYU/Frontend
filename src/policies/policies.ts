@@ -52,6 +52,8 @@ export const policies = {
   },
 
   display: {
+    // 전시 작업 화면 열람은 작가 인증 여부와 무관하게 소유자/전시 소속인이면 가능
+    view: (user: User, display: DisplayPolicyResource) => isDisplayMember(user, display),
     create: (user: User) => isArtistVerified(user),
     edit: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
     delete: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
@@ -65,7 +67,8 @@ export const policies = {
     createCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
     editCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
     deleteCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
-    createContent: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
+    // 이미 만들어진 카테고리에 사진을 추가하는 건 작가 인증 여부와 무관하게 전시 소속인이면 가능
+    createContent: (user: User, display: DisplayPolicyResource) => isDisplayMember(user, display),
     editContent: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
     deleteContent: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
     reorder: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),

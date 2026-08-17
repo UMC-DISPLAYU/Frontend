@@ -26,7 +26,7 @@ type GuardChildrenProps = {
 };
 
 type DisplayGuardProps = GuardChildrenProps & {
-  action: 'edit' | 'delete';
+  action: 'view' | 'edit' | 'delete';
   fallback?: string;
 };
 
@@ -164,6 +164,7 @@ export function DisplayCreatePermissionGuard({
 }: GuardChildrenProps & { fallback?: string }) {
   const createPolicy = useDisplayCreatePolicy();
   const policy = {
+    view: () => false,
     create: createPolicy.create,
     edit: () => false,
     delete: () => false,
