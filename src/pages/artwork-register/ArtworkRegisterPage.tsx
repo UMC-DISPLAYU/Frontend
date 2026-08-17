@@ -417,13 +417,30 @@ function ArtworkRegisterPageContent() {
   useEffect(() => {
     if (isEditMode || !display) return;
 
-    if (!isOwner && (step === 'choice' || step === 'otherTeamAuthor' || step === 'otherAuthor')) {
+    const currentStep = routeStep ?? step;
+    if (
+      !isOwner &&
+      (currentStep === 'choice' ||
+        currentStep === 'otherTeamAuthor' ||
+        currentStep === 'otherAuthor')
+    ) {
       completeStep('artwork-choice');
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRegisterMode('own');
-      setStep('basic', { replace: true });
+      setRegisterModeState('own');
+      updateDraft({ registerMode: 'own', step: 'basic' });
+      navigate(`/exhibition/${displayId}/artworks/add/basic`, { replace: true });
     }
-  }, [completeStep, display, isEditMode, isOwner, setRegisterMode, setStep, step]);
+  }, [
+    completeStep,
+    display,
+    displayId,
+    isEditMode,
+    isOwner,
+    navigate,
+    routeStep,
+    step,
+    updateDraft,
+  ]);
 
   /* 작가 인증 + 전시 소속인만 전시작을 등록할 수 있습니다. */
   const artworkPolicy = useArtworkPolicy(display);
@@ -805,6 +822,7 @@ function ArtworkRegisterPageContent() {
           resetDraft();
           completeFlow();
           navigate(`/exhibition/${displayId}/complete`, {
+            replace: true,
             state: {
               type: 'artwork',
               title: title.trim(),
