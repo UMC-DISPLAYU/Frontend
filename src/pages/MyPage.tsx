@@ -123,9 +123,12 @@ export function MyPage() {
       syncArtistViewWithVerification(isVerified);
     }
   }, [isVerified, syncArtistViewWithVerification]);
-  const archivedExhibitionsQuery = useArchivedExhibitions();
-  const archivedArtworksQuery = useInfiniteArchivedArtworks({ size: 20 });
-  const archivedArtistsQuery = useArchivedArtists();
+  const archivedExhibitionsQuery = useArchivedExhibitions({ enabled: !isArtistView });
+  const archivedArtworksQuery = useInfiniteArchivedArtworks(
+    { size: 20 },
+    { enabled: !isArtistView },
+  );
+  const archivedArtistsQuery = useArchivedArtists({ enabled: !isArtistView });
   const myArtistProfileQuery = useMyArtistProfile({
     enabled: isArtistView,
   });

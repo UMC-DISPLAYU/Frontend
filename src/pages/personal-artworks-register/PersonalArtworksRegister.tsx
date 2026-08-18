@@ -239,7 +239,7 @@ export function PersonalArtworksRegister() {
       updatePersonalArtwork.mutate(
         { personalArtworkId, body },
         {
-          onSuccess: () => navigate(`/personal-artworks/${personalArtworkId}`),
+          onSuccess: () => navigate(`/personal-artworks/${personalArtworkId}`, { replace: true }),
           onError: () => setSubmitError('작품 수정에 실패했어요. 잠시 후 다시 시도해주세요.'),
         },
       );
