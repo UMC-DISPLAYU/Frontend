@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto } from '@/api/dto/display.dto';
 import DUfontlogo from '@/assets/brand/DUfontlogo.svg';
@@ -13,10 +13,18 @@ import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayContentsPage() {
   const flowBack = useFlowBack();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const displayId = parseDisplayId(id);
 
-  const [selectedCategory, setSelectedCategory] = useState<DisplayContentCategoryDto | null>(null);
+  const initialCategoryId =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'categoryId' in location.state &&
+    typeof location.state.categoryId === 'number'
+      ? location.state.categoryId
+      : null;
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(initialCategoryId);
 
   const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
 
@@ -34,9 +42,13 @@ export function DisplayContentsPage() {
     );
   }
 
+  const selectedCategory =
+    display.contentCategories.find((category) => category.categoryId === selectedCategoryId) ??
+    null;
+
   const handleBack = () => {
     if (selectedCategory) {
-      setSelectedCategory(null);
+      setSelectedCategoryId(null);
     } else {
       flowBack();
     }
@@ -121,7 +133,7 @@ export function DisplayContentsPage() {
               <button
                 key={category.categoryId}
                 type="button"
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => setSelectedCategoryId(category.categoryId)}
                 aria-label={`${category.name} 사진 보기`}
                 className="flex items-center justify-between cursor-pointer group w-full px-5 text-left"
               >
