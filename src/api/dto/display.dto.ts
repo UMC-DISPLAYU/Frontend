@@ -186,6 +186,7 @@ export interface DisplayContentDto {
   width: number;
   height: number;
   sortOrder: number;
+  userId: number;
 }
 
 export interface DisplayContentCategoryDto {

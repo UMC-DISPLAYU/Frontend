@@ -104,6 +104,7 @@ export function useDisplayCreatePolicy(): PermissionMap<'create'> {
 
 export function useDisplayContentPolicy(
   display?: DisplayPolicyResource,
+  content?: UserOwnedResource,
 ): PolicyPermissionMap<'displayContent'> {
   const user = useCurrentPolicyUser();
 
@@ -116,10 +117,11 @@ export function useDisplayContentPolicy(
         display ? policies.displayContent.deleteCategory(user, display) : false,
       createContent: () => (display ? policies.displayContent.createContent(user, display) : false),
       editContent: () => (display ? policies.displayContent.editContent(user, display) : false),
-      deleteContent: () => (display ? policies.displayContent.deleteContent(user, display) : false),
+      deleteContent: () =>
+        display ? policies.displayContent.deleteContent(user, display, content) : false,
       reorder: () => (display ? policies.displayContent.reorder(user, display) : false),
     }),
-    [user, display],
+    [user, display, content],
   );
 }
 

@@ -118,6 +118,7 @@ const displayToDetail = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
       width: 1600,
       height: 1600,
       sortOrder: imageIndex + 1,
+      userId: 1,
     })),
   })),
   artworks: display.artworkSection.artworks.map((artwork, index) => ({

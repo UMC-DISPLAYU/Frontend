@@ -21,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { X } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
+import type { DisplayDetailDto } from '@/api/dto';
 import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
 import { AlertModal, ExhibitionHeader } from '@/components/ui';
@@ -44,6 +45,7 @@ type Photo = {
   id: string | number;
   url: string;
   alt?: string;
+  userId?: number;
 };
 
 const getPhotoSortableId = (photo: Photo) => String(photo.id);
@@ -52,7 +54,7 @@ interface SortablePhotoItemProps {
   photo: Photo;
   index: number;
   isReorderMode: boolean;
-  canDeleteContent: boolean;
+  displayDetail: DisplayDetailDto;
   onRemove: (id: string | number) => void;
 }
 
@@ -60,13 +62,16 @@ function SortablePhotoItem({
   photo,
   index,
   isReorderMode,
-  canDeleteContent,
+  displayDetail,
   onRemove,
 }: SortablePhotoItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: getPhotoSortableId(photo),
     disabled: !isReorderMode,
   });
+
+  const displayContentPolicy = useDisplayContentPolicy(displayDetail, photo);
+  const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
 
   return (
     <li
@@ -150,6 +155,7 @@ export function InteriorPhotosPage() {
     category.contents.map((content) => ({
       id: content.contentId,
       url: content.imageUrl,
+      userId: content.userId,
     })) ?? [];
 
   return (
@@ -165,6 +171,7 @@ export function InteriorPhotosPage() {
         canDeleteContent={canDeleteContent}
         canReorder={canReorder}
         onBack={() => flowBack()}
+        displayDetail={displayDetail}
       />
     </div>
   );
@@ -180,6 +187,7 @@ interface InteriorPhotosProps {
   canDeleteContent: boolean;
   canReorder: boolean;
   onBack: () => void;
+  displayDetail: DisplayDetailDto;
 }
 
 function InteriorPhotos({
@@ -192,6 +200,7 @@ function InteriorPhotos({
   canDeleteContent,
   canReorder,
   onBack,
+  displayDetail,
 }: InteriorPhotosProps) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [isReorderMode, setIsReorderMode] = useState(false);
@@ -405,7 +414,7 @@ function InteriorPhotos({
                     photo={photo}
                     index={index}
                     isReorderMode={isReorderMode}
-                    canDeleteContent={canDeleteContent}
+                    displayDetail={displayDetail}
                     onRemove={handleRemove}
                   />
                 ))}

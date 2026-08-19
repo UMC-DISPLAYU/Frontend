@@ -70,7 +70,9 @@ export const policies = {
     // 이미 만들어진 카테고리에 사진을 추가하는 건 작가 인증 여부와 무관하게 전시 소속인이면 가능
     createContent: (user: User, display: DisplayPolicyResource) => isDisplayMember(user, display),
     editContent: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
-    deleteContent: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
+    deleteContent: (user: User, display: DisplayPolicyResource, content?: UserOwnedResource) =>
+      canManageDisplay(user, display) ||
+      (isDisplayMember(user, display) && content !== undefined && isOwner(user, content)),
     reorder: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
   },
 
