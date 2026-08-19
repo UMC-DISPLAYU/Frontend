@@ -11,6 +11,8 @@ interface ChipGroupProps {
   /* 선택 가능한 최대 개수입니다. 생략하면 제한 없이 고를 수 있습니다. */
   maxSelect?: number;
   onMaxSelectExceeded?: () => void;
+  /* 이 인덱스 다음 칩부터 새 줄에서 시작하도록 강제로 줄바꿈합니다. 특정 칩들을 항상 같은 줄에 묶고 싶을 때 씁니다. */
+  breakAfterIndex?: number;
   'aria-label'?: string;
   'aria-describedby'?: string;
   className?: string;
@@ -28,6 +30,7 @@ export const ChipGroup = memo(function ChipGroup({
   labels,
   maxSelect,
   onMaxSelectExceeded,
+  breakAfterIndex,
   'aria-label': ariaLabel,
   'aria-describedby': ariaDescribedBy,
   className = 'flex flex-wrap items-center gap-2',
@@ -56,6 +59,36 @@ export const ChipGroup = memo(function ChipGroup({
     [isSingleSelect, maxSelect, onChange, onMaxSelectExceeded, selected],
   );
 
+  const renderChip = (option: string) => (
+    <Chip
+      key={option}
+      label={labels?.[option] ?? option}
+      selected={selected.includes(option)}
+      onClick={() => handleClick(option)}
+      role={isSingleSelect ? 'radio' : 'checkbox'}
+    />
+  );
+
+  /* breakAfterIndex가 있으면 두 줄로 나눠, 각 줄 안에서만 자연스럽게 wrap되게 합니다.
+   * (하나의 flex-wrap 컨테이너에 빈 줄바꿈 스페이서를 넣으면 그 스페이서 앞뒤로 gap이
+   * 두 번 들어가 줄 간격이 두 배가 됩니다.) */
+  if (breakAfterIndex !== undefined) {
+    const firstRow = options.slice(0, breakAfterIndex + 1);
+    const secondRow = options.slice(breakAfterIndex + 1);
+
+    return (
+      <div
+        role={isSingleSelect ? 'radiogroup' : 'group'}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        className="flex flex-col gap-2"
+      >
+        <div className={className}>{firstRow.map(renderChip)}</div>
+        <div className={className}>{secondRow.map(renderChip)}</div>
+      </div>
+    );
+  }
+
   return (
     <div
       role={isSingleSelect ? 'radiogroup' : 'group'}
@@ -63,15 +96,7 @@ export const ChipGroup = memo(function ChipGroup({
       aria-describedby={ariaDescribedBy}
       className={className}
     >
-      {options.map((option) => (
-        <Chip
-          key={option}
-          label={labels?.[option] ?? option}
-          selected={selected.includes(option)}
-          onClick={() => handleClick(option)}
-          role={isSingleSelect ? 'radio' : 'checkbox'}
-        />
-      ))}
+      {options.map(renderChip)}
     </div>
   );
 });

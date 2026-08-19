@@ -111,6 +111,7 @@ export function IntroTab({ display: ex }: Props) {
               WebkitLineClamp: expanded ? 'unset' : 3,
               overflow: expanded ? 'visible' : 'hidden',
               textOverflow: 'ellipsis',
+              whiteSpace: 'pre-line',
             }}
           >
             {ex.content}

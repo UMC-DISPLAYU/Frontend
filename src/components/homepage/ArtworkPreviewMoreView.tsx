@@ -8,7 +8,7 @@ import { useInfiniteArtworkPreview } from '@/hooks/queries/useHome';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { cn } from '@/utils/cn';
 
-// 작품 전용 카테고리 필터 목록 (MEDIA, CRAFT, COMPLEX, ETC 등)
+// 작품 전용 카테고리 필터 목록 (MEDIA, CRAFT, ILLUSTRATION, ETC 등)
 const CATEGORY_OPTIONS = Object.entries(ARTWORK_FIELD_MAP).map(([label, value]) => ({
   label,
   value,
