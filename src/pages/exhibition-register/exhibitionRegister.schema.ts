@@ -49,7 +49,7 @@ export const exhibitionRegisterSchema = z
       data.type === '졸업 전시' ||
       data.type === '과제 전시' ||
       data.type === '학과·학회 전시' ||
-      data.type === '연합 전시';
+      data.type === '소모임·동아리 전시';
 
     if (isInstitution && !data.department) {
       ctx.addIssue({
@@ -59,7 +59,7 @@ export const exhibitionRegisterSchema = z
       });
     }
 
-    const isOrganization = data.type === '소모임·동아리 전시' || data.type === '기타 단체 전시';
+    const isOrganization = data.type === '연합 전시' || data.type === '기타 단체 전시';
 
     if (isOrganization && !data.organizer) {
       ctx.addIssue({
