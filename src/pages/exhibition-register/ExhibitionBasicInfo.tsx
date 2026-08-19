@@ -262,7 +262,15 @@ export function ExhibitionBasicInfo() {
         notice: (restored.notice as string) ?? fetchedDetail.note ?? '',
       });
     }
-  }, [displayId, state, fetchedDetail, restored, reset, shouldUseDraft]);
+  }, [
+    displayId,
+    state,
+    locationState.displayDetail,
+    fetchedDetail,
+    restored,
+    reset,
+    shouldUseDraft,
+  ]);
 
   useEffect(() => {
     if (displayId > 0) {

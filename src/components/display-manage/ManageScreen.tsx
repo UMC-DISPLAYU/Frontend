@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 import { useFlowBack } from '@/hooks/useFlowBack';
 import type { ExhibitionItem } from '@/types/mypage';
@@ -26,7 +25,6 @@ export function ManageScreen({
   onRegister: () => void;
   onBack?: () => void;
 }) {
-  const navigate = useNavigate();
   const flowBack = useFlowBack();
   const [menuId, setMenuId] = useState<string | null>(null);
 

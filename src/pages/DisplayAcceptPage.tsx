@@ -24,15 +24,12 @@ function SummaryRow({ label, value }: InfoRow) {
   );
 }
 
-const VERIFIED_CHECKLIST = ['전시 콘텐츠 추가', '전시작 등록', 'Q&A 담당자 지정 가능'];
-
 export function DisplayAcceptPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const state = location.state as { invitation?: Invitation; isVerified?: boolean } | null;
+  const state = location.state as { invitation?: Invitation } | null;
   const invitation = state?.invitation;
-  const isVerified = state?.isVerified ?? false;
 
   const [titleRow, departmentRow, periodRow, roleRow] = buildExhibitionInfo(invitation);
 
@@ -59,18 +56,18 @@ export function DisplayAcceptPage() {
           </div>
         </div>
 
-       <section className="mt-35 pb-15 flex flex-col gap-5 translate-x-2">
-        <div className="flex items-start gap-1.5 rounded-2xl px-4 py-3.5">
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            <SummaryRow {...titleRow} />
-            <SummaryRow {...departmentRow} />
+        <section className="mt-35 pb-15 flex flex-col gap-5 translate-x-2">
+          <div className="flex items-start gap-1.5 rounded-2xl px-4 py-3.5">
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <SummaryRow {...titleRow} />
+              <SummaryRow {...departmentRow} />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <SummaryRow {...periodRow} />
+              <SummaryRow {...roleRow} />
+            </div>
           </div>
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            <SummaryRow {...periodRow} />
-            <SummaryRow {...roleRow} />
-          </div>
-        </div>
-      </section>
+        </section>
       </div>
 
       <BottomButton type="button" onClick={handleGoManage}>

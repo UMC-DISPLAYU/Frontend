@@ -119,6 +119,7 @@ export function FlowProvider({
   return <FlowContext.Provider value={value}>{children}</FlowContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFlowContextValue() {
   const context = useContext(FlowContext);
 
@@ -129,6 +130,7 @@ export function useFlowContextValue() {
   return context;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useOptionalFlowContextValue() {
   return useContext(FlowContext);
 }

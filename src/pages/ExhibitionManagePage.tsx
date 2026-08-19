@@ -15,19 +15,13 @@ import { useHideFooter } from '@/components/layout';
 import { ExhibitionHeader } from '@/components/ui';
 import { type VisibilityType } from '@/constants/visibility';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
-import { useCreateDisplay, usePublishDisplay } from '@/hooks/queries/useDisplayBrowse';
+import { usePublishDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useDisplayPolicy } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { hasPermission } from '@/utils/hasPermission';
-
-const formatMonthDay = (date: string | undefined) => {
-  if (!date) return '';
-  const [, month, day] = date.split('-');
-  return month && day ? `${month}.${day}` : date;
-};
 
 const formatFullDate = (date: string | undefined) => {
   if (!date) return '';
@@ -85,7 +79,6 @@ export function ExhibitionManage() {
     }
   }, [display, canEditDisplay, displayId, navigate, state]);
 
-  const createDisplayMutation = useCreateDisplay();
   const publishDisplayMutation = usePublishDisplay();
   const [isPublishConfirmOpen, setIsPublishConfirmOpen] = useState(false);
 

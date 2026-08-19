@@ -146,21 +146,27 @@ const MATRIX: Record<string, Rule[]> = {
     { permission: 'display:delete', desc: '작가 인증 && 전시 소유자', allow: ['displayOwner'] },
   ],
 
-  displayContent: (
-    [
-      'createCategory',
-      'editCategory',
-      'deleteCategory',
-      'createContent',
-      'editContent',
-      'deleteContent',
-      'reorder',
-    ] as const
-  ).map((a) => ({
-    permission: `displayContent:${a}`,
-    desc: '작가 인증 && 전시 소유자',
-    allow: ['displayOwner' as RoleName],
-  })),
+  displayContent: [
+    ...(
+      [
+        'createCategory',
+        'editCategory',
+        'deleteCategory',
+        'editContent',
+        'deleteContent',
+        'reorder',
+      ] as const
+    ).map((a) => ({
+      permission: `displayContent:${a}`,
+      desc: '작가 인증 && 전시 소유자',
+      allow: ['displayOwner' as RoleName],
+    })),
+    {
+      permission: 'displayContent:createContent',
+      desc: '전시 소속인',
+      allow: DISPLAY_MEMBERS,
+    },
+  ],
 
   displayInvitation: [
     {

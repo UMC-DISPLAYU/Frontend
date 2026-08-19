@@ -150,6 +150,7 @@ export function ShareBottomSheet({
       });
       onClose();
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Kakao share failed:', err);
       setErrorMessage('공유에 실패했어요');
     }

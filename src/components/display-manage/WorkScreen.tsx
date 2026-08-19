@@ -1,8 +1,7 @@
-import { ChevronRight, Info, Plus, ShieldAlert } from 'lucide-react';
+import { ChevronRight, Info, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { useUserStore } from '@/stores/useUserStore';
 import type { ExhibitionItem } from '@/types/mypage';
@@ -41,12 +40,7 @@ export function WorkScreen({
   /* ex.id는 저장한 전시 목록에서 archiveDisplayId일 수 있어, 실제 전시 식별자인 displayId를 우선 씁니다. */
   const displayId = ex.displayId || Number(ex.id) || 0;
   const { data: display } = useDisplayDetail(displayId);
-  const { data: userMe } = useUserMe();
   const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
-
-  const myTeamMember = display?.teamMembers?.find((member) => member.userId === userId);
-  const isTeamMember = !isOwner && Boolean(myTeamMember);
-  const isArtistVerified = userMe?.isVerified ?? false;
 
   const displayContentPolicy = useDisplayContentPolicy(display);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');

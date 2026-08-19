@@ -61,14 +61,6 @@ exports[`권한 테이블 무결성 > 전체 역할 × 권한 결과 스냅샷 1
       "displayOwner",
     ],
     "condition": "작가 인증 && 전시 소유자",
-    "permission": "displayContent:createContent",
-    "when": null,
-  },
-  {
-    "allowed": [
-      "displayOwner",
-    ],
-    "condition": "작가 인증 && 전시 소유자",
     "permission": "displayContent:editContent",
     "when": null,
   },
@@ -86,6 +78,18 @@ exports[`권한 테이블 무결성 > 전체 역할 × 권한 결과 스냅샷 1
     ],
     "condition": "작가 인증 && 전시 소유자",
     "permission": "displayContent:reorder",
+    "when": null,
+  },
+  {
+    "allowed": [
+      "displayMember",
+      "displayOwner",
+      "qnaManager",
+      "artworkCreator",
+      "artworkCollaborator",
+    ],
+    "condition": "전시 소속인",
+    "permission": "displayContent:createContent",
     "when": null,
   },
   {
@@ -315,9 +319,8 @@ exports[`권한 테이블 무결성 > 전체 역할 × 권한 결과 스냅샷 1
   {
     "allowed": [
       "replyAuthor",
-      "displayOwner",
     ],
-    "condition": "응답 쓴 사람 || (작가 인증 && 전시 소유자)",
+    "condition": "응답 쓴 사람만",
     "permission": "question:reply.delete",
     "when": null,
   },
