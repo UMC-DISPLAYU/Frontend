@@ -21,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { X } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
+import type { DisplayDetailDto } from '@/api/dto';
 import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
 import { useHideFooter } from '@/components/layout';
 import { AlertModal, ExhibitionHeader } from '@/components/ui';
@@ -38,12 +39,15 @@ import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { policies } from '@/policies/policies';
+import { useAuthStore } from '@/stores/authStore';
 import { hasPermission } from '@/utils/hasPermission';
 
 type Photo = {
   id: string | number;
   url: string;
   alt?: string;
+  userId?: number;
 };
 
 const getPhotoSortableId = (photo: Photo) => String(photo.id);
@@ -52,7 +56,7 @@ interface SortablePhotoItemProps {
   photo: Photo;
   index: number;
   isReorderMode: boolean;
-  canDeleteContent: boolean;
+  displayDetail: DisplayDetailDto;
   onRemove: (id: string | number) => void;
 }
 
@@ -60,13 +64,16 @@ function SortablePhotoItem({
   photo,
   index,
   isReorderMode,
-  canDeleteContent,
+  displayDetail,
   onRemove,
 }: SortablePhotoItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: getPhotoSortableId(photo),
     disabled: !isReorderMode,
   });
+
+  const displayContentPolicy = useDisplayContentPolicy(displayDetail, photo);
+  const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
 
   return (
     <li
@@ -127,7 +134,6 @@ export function InteriorPhotosPage() {
   const displayContentPolicy = useDisplayContentPolicy(displayDetail);
 
   const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
-  const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
   const canReorder = hasPermission(displayContentPolicy, 'reorder');
 
   if (isLoading) {
@@ -150,6 +156,7 @@ export function InteriorPhotosPage() {
     category.contents.map((content) => ({
       id: content.contentId,
       url: content.imageUrl,
+      userId: content.userId,
     })) ?? [];
 
   return (
@@ -162,9 +169,9 @@ export function InteriorPhotosPage() {
         categoryId={categoryId}
         initialPhotos={initialPhotos}
         canCreateContent={canCreateContent}
-        canDeleteContent={canDeleteContent}
         canReorder={canReorder}
         onBack={() => flowBack()}
+        displayDetail={displayDetail}
       />
     </div>
   );
@@ -180,6 +187,7 @@ interface InteriorPhotosProps {
   canDeleteContent: boolean;
   canReorder: boolean;
   onBack: () => void;
+  displayDetail: DisplayDetailDto;
 }
 
 function InteriorPhotos({
@@ -189,15 +197,17 @@ function InteriorPhotos({
   categoryId,
   initialPhotos,
   canCreateContent,
-  canDeleteContent,
   canReorder,
   onBack,
-}: InteriorPhotosProps) {
+  displayDetail,
+}: Omit<InteriorPhotosProps, 'canDeleteContent'>) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savedOrderRef = useRef<Photo[]>(initialPhotos);
+
+  const user = useAuthStore((s) => s.user);
 
   const scope = { displayId, categoryId };
   const imageUpload = useImageUpload({ domain: 'display' });
@@ -273,6 +283,7 @@ function InteriorPhotos({
         id: res.contentId,
         url: uploadedUrls[index],
         alt: added[index]?.file.name,
+        userId: user?.id ?? undefined,
       }));
 
       setPhotos((prev) => [...prev, ...newPhotos]);
@@ -284,7 +295,21 @@ function InteriorPhotos({
   };
 
   const handleRemove = (id: string | number) => {
-    if (!canDeleteContent) return;
+    const targetPhoto = photos.find((p) => p.id === id);
+    if (!targetPhoto) return;
+
+    const policyUser = {
+      id: user?.id ?? null,
+      isArtistVerified: user?.isArtistVerified ?? false,
+    };
+
+    const hasDeletePermission = policies.displayContent.deleteContent(
+      policyUser,
+      displayDetail,
+      targetPhoto,
+    );
+
+    if (!hasDeletePermission) return;
 
     const previous = photos;
     const updated = previous.filter((p) => p.id !== id);
@@ -405,7 +430,7 @@ function InteriorPhotos({
                     photo={photo}
                     index={index}
                     isReorderMode={isReorderMode}
-                    canDeleteContent={canDeleteContent}
+                    displayDetail={displayDetail}
                     onRemove={handleRemove}
                   />
                 ))}

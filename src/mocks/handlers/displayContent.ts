@@ -61,6 +61,7 @@ export const displayContentHandlers = [
         width: body.width ?? 1600,
         height: body.height ?? 1600,
         sortOrder: (category?.contents.length ?? 0) + 1,
+        userId: mockDb.me.userId,
       };
       category?.contents.push(content);
 
