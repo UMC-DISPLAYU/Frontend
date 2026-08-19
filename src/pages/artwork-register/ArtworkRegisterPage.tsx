@@ -756,12 +756,16 @@ function ArtworkRegisterPageContent() {
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    const artworkType = selectedFieldLabels
-      .map((label) => ARTWORK_FIELD_MAP[label])
-      .filter((val): val is string => Boolean(val))
-      .join(',');
+    const artworkTypes = Array.from(
+      new Set(
+        selectedFieldLabels
+          .map((label) => ARTWORK_FIELD_MAP[label])
+          .filter((val): val is string => Boolean(val)),
+      ),
+    ).slice(0, 2);
+    const artworkType = artworkTypes[0] ?? ARTWORK_FIELD_MAP['기타'];
 
-    if (!artworkType) {
+    if (artworkTypes.length === 0) {
       setSubmitError('작품분야를 선택해주세요.');
       return;
     }
@@ -772,6 +776,7 @@ function ArtworkRegisterPageContent() {
         artworkName: title.trim(),
         content: description.trim(),
         type: artworkType,
+        types: artworkTypes.length > 0 ? artworkTypes : [artworkType],
         productionYear: toArtworkRegisterProductionYear(year),
         materialMedia: medium.trim(),
         size: size.trim(),
