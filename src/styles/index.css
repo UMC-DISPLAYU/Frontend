@@ -47,10 +47,3 @@
   }
 }
 
-/* iOS Safari input focus auto-zoom prevention */
-input,
-select,
-textarea {
-  font-size: 16px !important;
-}
-
