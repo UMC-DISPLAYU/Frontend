@@ -71,6 +71,7 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
         return {
           id: String(reply.displayReviewReplyId),
           author: reply.user?.nickname ?? '',
+          authorLabel: reply.isTeamMember ? '전시팀원' : undefined,
           avatarUrl: reply.user?.profileImageUrl,
           time: formatRelativeTime(reply.createdAt),
           content: reply.content,
