@@ -98,7 +98,7 @@ export function ExhibitionCard({
 
       {!isArtistView && (
         <MemoFooter
-          className="px-4 py-2"
+          className="mt-auto px-4 py-2"
           memo={item.memo}
           userId={item.userId}
           onSave={(memo) => onSaveMemo?.(item, memo)}
