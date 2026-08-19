@@ -19,7 +19,6 @@ export const EXHIBITION_FIELDS = [
   'FASHION',
   'ILLUSTRATION',
   'CRAFT',
-  'COMPLEX',
   'ETC',
 ] as const;
 
@@ -61,7 +60,7 @@ export const DISPLAY_TYPE_REVERSE_MAP: Record<string, string> = {
 /*
  * 전시 등록은 작가 활동분야와 다른 enum을 씁니다.
  * 영상은 MEDIA로 보내야 하고 ILLUSTRATION은 서버에 없어 DESIGN으로 대체합니다.
- * (서버 enum: PAINTING·DESIGN·PHOTOGRAPHY·ARCHITECTURE·MEDIA·CRAFT·SCULPTURE·FASHION·COMPLEX·ETC)
+ * (서버 enum: PAINTING·DESIGN·PHOTOGRAPHY·ARCHITECTURE·MEDIA·CRAFT·SCULPTURE·FASHION·ETC)
  */
 export const DISPLAY_FIELD_MAP: Record<string, string> = {
   PAINTING: 'PAINTING',
@@ -73,7 +72,6 @@ export const DISPLAY_FIELD_MAP: Record<string, string> = {
   FASHION: 'FASHION',
   ILLUSTRATION: 'DESIGN',
   CRAFT: 'CRAFT',
-  COMPLEX: 'COMPLEX',
   ETC: 'ETC',
 } satisfies Record<ExhibitionField, string>;
 
@@ -90,7 +88,6 @@ export const DISPLAY_FIELD_REVERSE_MAP: Record<string, ExhibitionField> = {
   ILLUSTRATION: 'ILLUSTRATION',
   CRAFT: 'CRAFT',
   CRAFTS: 'CRAFT',
-  COMPLEX: 'COMPLEX',
   ETC: 'ETC',
   OTHERS: 'ETC',
 };
@@ -105,7 +102,6 @@ export type ArtistFieldCode =
   | 'SCULPTURE'
   | 'FASHION'
   | 'ILLUSTRATION'
-  | 'COMPLEX'
   | 'ETC';
 
 export const ARTIST_FIELD_MAP: Record<ExhibitionField, ArtistFieldCode> = {
@@ -118,7 +114,6 @@ export const ARTIST_FIELD_MAP: Record<ExhibitionField, ArtistFieldCode> = {
   FASHION: 'FASHION',
   ILLUSTRATION: 'ILLUSTRATION',
   CRAFT: 'CRAFT',
-  COMPLEX: 'COMPLEX',
   ETC: 'ETC',
 };
 
@@ -132,7 +127,6 @@ export const EXHIBITION_FIELD_LABELS: Record<ExhibitionField, string> = {
   SCULPTURE: '조소',
   FASHION: '패션',
   ILLUSTRATION: '일러스트',
-  COMPLEX: '복합',
   ETC: '기타',
 };
 
@@ -146,7 +140,6 @@ export const ARTIST_FIELD_REVERSE_MAP: Record<ArtistFieldCode, ExhibitionField> 
   SCULPTURE: 'SCULPTURE',
   FASHION: 'FASHION',
   ILLUSTRATION: 'ILLUSTRATION',
-  COMPLEX: 'COMPLEX',
   ETC: 'ETC',
 };
 
