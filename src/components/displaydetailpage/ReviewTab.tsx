@@ -164,12 +164,22 @@ export function ReviewTab({ className, display, displayId }: Props) {
         replyingTo={replyState?.author}
         onCancelReply={clearReplyTarget}
         onSubmit={({ content, images }) => {
+          const finalContent = content.trim() || '.';
+          const formattedImages = images.map((img) => ({
+            imageUrl: img.imageUrl,
+            width: Math.round(img.width) || 0,
+            height: Math.round(img.height) || 0,
+          }));
+
           if (replyState) {
             if (!hasPermission(replyPolicy, 'reply.create')) {
               openLoginModal();
               return;
             }
-            createReply.mutate({ content, images }, { onSuccess: clearReplyTarget });
+            createReply.mutate(
+              { content: finalContent, images: formattedImages },
+              { onSuccess: clearReplyTarget },
+            );
             return;
           }
 
@@ -178,7 +188,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
             return;
           }
 
-          createReview.mutate({ content, images });
+          createReview.mutate({ content: finalContent, images: formattedImages });
         }}
       />
       {loginModal}

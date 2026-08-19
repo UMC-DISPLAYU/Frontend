@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom';
 
 import { X } from 'lucide-react';
 
-import kakaoShareIcon from '@/assets/common/KakaoShareIcon.svg';
-import urlCopyIcon from '@/assets/common/UrlCopyIcon.svg';
+import kakaoShareIcon from '@/assets/comment/KakaoShareIcon.svg';
+import urlCopyIcon from '@/assets/comment/UrlCopyIcon.svg';
 
 declare global {
   interface Window {

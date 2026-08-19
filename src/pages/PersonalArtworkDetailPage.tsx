@@ -182,14 +182,24 @@ export function PersonalArtworkDetailPage() {
     images: { imageUrl: string; width: number; height: number }[];
     isPrivate: boolean;
   }) => {
-    if (!content) return;
+    if (!content.trim() && images.length === 0) return;
+    const finalContent = content.trim() || '.';
+    const formattedImages = images.map((img, index) => ({
+      imageUrl: img.imageUrl,
+      width: Math.round(img.width) || 0,
+      height: Math.round(img.height) || 0,
+      sortOrder: index + 1,
+    }));
 
     if (feelingReplyTarget) {
       if (!hasPermission(feelingPolicy, 'reply.create')) {
         openLoginModal();
         return;
       }
-      createFeelingReply.mutate({ content, images }, { onSuccess: clearFeelingReplyTarget });
+      createFeelingReply.mutate(
+        { content: finalContent, images: formattedImages },
+        { onSuccess: clearFeelingReplyTarget },
+      );
       return;
     }
 
@@ -197,7 +207,7 @@ export function PersonalArtworkDetailPage() {
       openLoginModal();
       return;
     }
-    createFeeling.mutate({ content, images });
+    createFeeling.mutate({ content: finalContent, images: formattedImages });
   };
 
   return (
