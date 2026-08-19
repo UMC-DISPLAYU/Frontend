@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
@@ -28,9 +28,9 @@ import { useAuthStore } from '@/stores/authStore';
 import { hasPermission } from '@/utils/hasPermission';
 
 export const Homepage = () => {
-  const [isArtworkPreviewOpen, setIsArtworkPreviewOpen] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isArtworkPreviewOpen = searchParams.get('view') === 'artwork-preview';
   const accessToken = useAuthStore((state) => state.accessToken);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const { data: duPicksData } = useDuPicks();
@@ -96,7 +96,21 @@ export const Homepage = () => {
   }, [accessToken, setAccessToken]);
 
   if (isArtworkPreviewOpen) {
-    return <ArtworkPreviewMoreView onClose={() => setIsArtworkPreviewOpen(false)} />;
+    return (
+      <ArtworkPreviewMoreView
+        onClose={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.delete('view');
+              return next;
+            });
+          }
+        }}
+      />
+    );
   }
 
   return (
@@ -146,7 +160,13 @@ export const Homepage = () => {
       />
       <ArtworkPreviewSection
         items={artworkPreviewItems}
-        onMoreClick={() => setIsArtworkPreviewOpen(true)}
+        onMoreClick={() => {
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set('view', 'artwork-preview');
+            return next;
+          });
+        }}
       />
       <LoungeSection posts={loungePostsData?.posts ?? []} />
     </div>
