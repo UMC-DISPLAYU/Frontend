@@ -160,7 +160,7 @@ export function DisplayContentsManagePage() {
             <p className="typo-body-sm-regular pt-10 text-hint">아직 추가된 콘텐츠가 없어요.</p>
           ) : (
             contents.map((content) => (
-              <div key={content.id} className="relative pt-4">
+              <div key={content.id} className="relative">
                 <ContentCard
                   content={content}
                   dimmed={menuId !== null && menuId !== content.id}

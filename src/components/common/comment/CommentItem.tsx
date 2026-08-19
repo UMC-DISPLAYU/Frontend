@@ -132,7 +132,16 @@ export const CommentItem = memo(function CommentItem({
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-baseline gap-2 min-w-0">
-                <span className="typo-body-sm-bold text-main truncate">{comment.author}</span>
+                <span className="flex min-w-0 items-baseline gap-1">
+                  <span className="typo-body-sm-bold min-w-0 truncate text-main">
+                    {comment.author}
+                  </span>
+                  {comment.authorLabel && (
+                    <span className="typo-body-xs-regular shrink-0 text-hint">
+                      {comment.authorLabel}
+                    </span>
+                  )}
+                </span>
                 <span className="typo-body-xs-regular text-hint shrink-0">{comment.time}</span>
               </div>
               {likePosition === 'top-right' && !isDeleted && (

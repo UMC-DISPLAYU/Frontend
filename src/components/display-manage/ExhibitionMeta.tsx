@@ -32,35 +32,23 @@ export function ExhibitionMeta({
   const isDraft = ex.publishStatus === 'DRAFT';
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+    <div className="flex-1 min-w-0 flex flex-col gap-2">
       {/* 제목 */}
       <h3 className="typo-body-md-bold text-main leading-snug truncate">{ex.title}</h3>
 
-      <div className="flex flex-col gap-4">
-        {/* 소속 · 날짜 */}
-        <div className="flex flex-col typo-body-xs-regular">
-          <p className="truncate text-neutral-800">{ex.org}</p>
-          <p className="truncate text-hint">{ex.period}</p>
-        </div>
-
-        {/* 장소 */}
-        {ex.place && (
-          <p className="truncate typo-body-xxs-regular text-faint">{ex.place}</p>
-        )}
-      </div>
-
-      {/* 역할 | 상태 */}
-      {showBadge && (roleLabel !== null || statusLabel !== null) && (
-        <div className="flex items-center">
-          <p className="typo-body-xs-regular text-faint truncate">
+      <div className="flex flex-col gap-1">
+        {ex.period && <p className="typo-body-xs-regular truncate text-sub700">{ex.period}</p>}
+        {ex.place && <p className="typo-body-xs-regular truncate text-sub700">{ex.place}</p>}
+        {showBadge && (roleLabel !== null || statusLabel !== null) && (
+          <p className="typo-body-xs-regular truncate text-faint">
             {roleLabel && <span>{roleLabel}</span>}
             {roleLabel && statusLabel && <span> ㅣ </span>}
             {statusLabel && (
-              <span className={isDraft ? 'underline text-faint' : 'text-faint'}>{statusLabel}</span>
+              <span className={isDraft ? 'underline' : undefined}>{statusLabel}</span>
             )}
           </p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

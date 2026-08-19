@@ -157,9 +157,7 @@ export function MyPage() {
         ? myArtistProfileQuery.data?.artistName || userData?.nickname || userData?.name || '사용자'
         : userData?.nickname || userData?.name || '사용자',
       avatar: isArtistView
-        ? myArtistProfileQuery.data?.profileImageUrl ||
-          userData?.profileImageUrl ||
-          FALLBACK_PROFILE_IMAGE
+        ? myArtistProfileQuery.data?.profileImageUrl || FALLBACK_PROFILE_IMAGE
         : userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
       caption: '내가 저장한 작품 확인하기',
       isVerified: Boolean(userData?.isVerified),
@@ -257,7 +255,10 @@ export function MyPage() {
       artistId: item.artistId,
       artistUserId: item.artistUserId,
       name: item.artistName ?? item.nickname ?? '작가',
-      field: item.fields?.join(', ') ?? '',
+      field:
+        item.fields
+          ?.map((field) => EXHIBITION_FIELD_LABELS[field as ExhibitionField] ?? field)
+          .join(', ') ?? '',
       registeration: String(item.artworkCount ?? item.registeration ?? 0),
       exhibition: String(item.exhibitionCount ?? item.exhibition ?? 0),
       thumbnail: getImageUrl(item, FALLBACK_PROFILE_IMAGE),

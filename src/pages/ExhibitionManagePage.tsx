@@ -29,6 +29,18 @@ const formatMonthDay = (date: string | undefined) => {
   return month && day ? `${month}.${day}` : date;
 };
 
+const formatFullDate = (date: string | undefined) => {
+  if (!date) return '';
+  const [year, month, day] = date.split('-');
+  return year && month && day ? `${year}.${month}.${day}` : date;
+};
+
+const formatPeriod = (startDate: string | undefined, endDate: string | undefined) => {
+  const start = formatFullDate(startDate);
+  const end = formatFullDate(endDate);
+  return start && end ? `${start} - ${end}` : start || end;
+};
+
 /* 전시 상세 응답이 period/location 객체 또는 평평한 필드로 오는 두 형태를 모두 다룹니다. */
 type DisplaySource = {
   status?: string;
@@ -93,8 +105,8 @@ export function ExhibitionManage() {
   const endDate = source?.period?.endDate ?? source?.endDate;
 
   const period = source
-    ? `${formatMonthDay(startDate)} - ${formatMonthDay(endDate)}`
-    : (state?.period ?? '');
+    ? formatPeriod(startDate, endDate)
+    : (state?.period ?? formatPeriod(state?.startDate, state?.endDate));
 
   const exhibition = {
     id: String(displayId || ''),

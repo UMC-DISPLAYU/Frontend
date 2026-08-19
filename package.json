@@ -15,6 +15,9 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@fontsource/aldrich": "^5.2.7",
     "@hookform/resolvers": "^5.7.1",
     "@tanstack/react-query": "^5.101.3",

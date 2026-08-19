@@ -72,6 +72,10 @@ export function IntroTab({ display: ex }: Props) {
     navigate(`/display/${ex.displayId}/contents`);
   };
 
+  const handleGoToContentCategory = (categoryId: number) => {
+    navigate(`/display/${ex.displayId}/contents`, { state: { categoryId } });
+  };
+
   const organizer = [ex.organization, ex.department].filter(Boolean).join(' ');
 
   /*
@@ -150,7 +154,7 @@ export function IntroTab({ display: ex }: Props) {
               <button
                 key={category.categoryId}
                 type="button"
-                onClick={handleGoToContents}
+                onClick={() => handleGoToContentCategory(category.categoryId)}
                 aria-label={`${category.name} 콘텐츠 보기`}
                 className={cn(
                   'cursor-pointer',

@@ -321,93 +321,97 @@ export function PersonalArtworksRegister() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <RequiredLabel required>작품분야</RequiredLabel>
-            <ChipGroup
-              options={Object.keys(ARTWORK_FIELD_MAP)}
-              selected={
-                field
-                  ? field
-                      .split(',')
-                      .map((s) => s.trim())
-                      .filter(Boolean)
-                  : []
-              }
-              onChange={(next) => {
-                const nextStr = next.join(', ');
-                setValue('field', nextStr, {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-                setField(nextStr);
-              }}
-              maxSelect={2}
-              aria-label="작품분야"
-              className="flex flex-wrap gap-2"
-            />
-          </div>
+          {!isEditMode && (
+            <div className="flex flex-col gap-3">
+              <RequiredLabel required>작품분야</RequiredLabel>
+              <ChipGroup
+                options={Object.keys(ARTWORK_FIELD_MAP)}
+                selected={
+                  field
+                    ? field
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                    : []
+                }
+                onChange={(next) => {
+                  const nextStr = next.join(', ');
+                  setValue('field', nextStr, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                  setField(nextStr);
+                }}
+                maxSelect={2}
+                aria-label="작품분야"
+                className="flex flex-wrap gap-2"
+              />
+            </div>
+          )}
 
-          <div className="flex flex-col gap-3">
-            <RequiredLabel required htmlFor="artwork-year">
-              제작연도
-            </RequiredLabel>
-            <input
-              id="artwork-year"
-              value={year}
-              inputMode="numeric"
-              maxLength={4}
-              onBlur={() => {
-                setIsYearTouched(true);
-                setValue('year', year, { shouldTouch: true, shouldValidate: true });
-                void trigger('year');
-              }}
-              onChange={(e) => {
-                const nextYear = sanitizePersonalArtworkYearInput(e.target.value);
-                setIsYearTouched(true);
-                setValue('year', nextYear, {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-                void trigger('year');
-                setYear(nextYear);
-              }}
-              placeholder="2026"
-              className={INPUT_CLASS}
-            />
-            {(yearError ?? errors.year?.message) && (
-              <p className="typo-body-xxs-regular text-error px-2">
-                {yearError ?? errors.year?.message}
-              </p>
-            )}
-          </div>
+          <div className={isEditMode ? 'grid grid-cols-2 gap-6' : 'flex flex-col gap-6'}>
+            <div className="flex min-w-0 flex-col gap-3">
+              <RequiredLabel required htmlFor="artwork-year">
+                제작연도
+              </RequiredLabel>
+              <input
+                id="artwork-year"
+                value={year}
+                inputMode="numeric"
+                maxLength={4}
+                onBlur={() => {
+                  setIsYearTouched(true);
+                  setValue('year', year, { shouldTouch: true, shouldValidate: true });
+                  void trigger('year');
+                }}
+                onChange={(e) => {
+                  const nextYear = sanitizePersonalArtworkYearInput(e.target.value);
+                  setIsYearTouched(true);
+                  setValue('year', nextYear, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                  void trigger('year');
+                  setYear(nextYear);
+                }}
+                placeholder="2026"
+                className={INPUT_CLASS}
+              />
+              {(yearError ?? errors.year?.message) && (
+                <p className="typo-body-xxs-regular text-error px-2">
+                  {yearError ?? errors.year?.message}
+                </p>
+              )}
+            </div>
 
-          <div className="flex flex-col gap-3">
-            <RequiredLabel required htmlFor="artwork-material">
-              재료/매체
-            </RequiredLabel>
-            <input
-              id="artwork-material"
-              value={material}
-              onBlur={() => setIsMaterialTouched(true)}
-              onChange={(e) => {
-                setIsMaterialTouched(true);
-                setValue('material', e.target.value, {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-                setMaterial(e.target.value);
-              }}
-              placeholder="아크릴, 캔버스"
-              className={INPUT_CLASS}
-            />
-            {(materialError ?? errors.material?.message) && (
-              <p className="typo-body-xxs-regular text-error px-2">
-                {materialError ?? errors.material?.message}
-              </p>
-            )}
+            <div className="flex min-w-0 flex-col gap-3">
+              <RequiredLabel required htmlFor="artwork-material">
+                재료/매체
+              </RequiredLabel>
+              <input
+                id="artwork-material"
+                value={material}
+                onBlur={() => setIsMaterialTouched(true)}
+                onChange={(e) => {
+                  setIsMaterialTouched(true);
+                  setValue('material', e.target.value, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                  setMaterial(e.target.value);
+                }}
+                placeholder="아크릴, 캔버스"
+                className={INPUT_CLASS}
+              />
+              {(materialError ?? errors.material?.message) && (
+                <p className="typo-body-xxs-regular text-error px-2">
+                  {materialError ?? errors.material?.message}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-3">

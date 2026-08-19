@@ -73,6 +73,7 @@ export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem
           return {
             id: String(reply.feelingReplyId),
             author: reply.user?.nickname ?? '',
+            authorLabel: reply.user?.isCreator ? '작가' : undefined,
             avatarUrl: reply.user?.profileImageUrl,
             time: formatRelativeTime(reply.createdAt),
             content: reply.content,
@@ -95,6 +96,7 @@ export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem
     () => ({
       id: String(feeling.feelingId),
       author: feeling.user?.nickname ?? '',
+      authorLabel: feeling.user?.isCreator ? '작가' : undefined,
       avatarUrl: feeling.user?.profileImageUrl,
       time: formatRelativeTime(feeling.createdAt),
       content: feeling.content,

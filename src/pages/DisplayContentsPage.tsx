@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto } from '@/api/dto/display.dto';
 import DUfontlogo from '@/assets/brand/DUfontlogo.svg';
@@ -13,10 +13,18 @@ import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayContentsPage() {
   const flowBack = useFlowBack();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const displayId = parseDisplayId(id);
 
-  const [selectedCategory, setSelectedCategory] = useState<DisplayContentCategoryDto | null>(null);
+  const initialCategoryId =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'categoryId' in location.state &&
+    typeof location.state.categoryId === 'number'
+      ? location.state.categoryId
+      : null;
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(initialCategoryId);
 
   const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
 
@@ -34,9 +42,13 @@ export function DisplayContentsPage() {
     );
   }
 
+  const selectedCategory =
+    display.contentCategories.find((category) => category.categoryId === selectedCategoryId) ??
+    null;
+
   const handleBack = () => {
     if (selectedCategory) {
-      setSelectedCategory(null);
+      setSelectedCategoryId(null);
     } else {
       flowBack();
     }
@@ -45,7 +57,7 @@ export function DisplayContentsPage() {
   // 선택된 카테고리의 사진들을 아래로 나열하는 뷰
   if (selectedCategory) {
     return (
-      <div className="w-96 mx-auto min-h-dvh bg-page flex flex-col">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
         {/* 헤더 */}
         <header className="sticky top-0 z-20 bg-page relative flex items-center justify-center px-5 pt-3 pb-2">
           <button
@@ -68,12 +80,12 @@ export function DisplayContentsPage() {
             )}
           </div>
 
-          <div className="mt-[17px] flex flex-col w-full gap-0 px-5">
+          <div className="mt-[17px] flex w-full flex-col gap-0">
             {selectedCategory.contents.map((item) => (
               <div key={item.contentId} className="w-full bg-box overflow-hidden">
                 <OptimizedImage
                   src={item.imageUrl}
-                  displayWidth={360}
+                  displayWidth={448}
                   alt={selectedCategory.name}
                   className="w-full h-auto object-cover block"
                 />
@@ -121,7 +133,7 @@ export function DisplayContentsPage() {
               <button
                 key={category.categoryId}
                 type="button"
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => setSelectedCategoryId(category.categoryId)}
                 aria-label={`${category.name} 사진 보기`}
                 className="flex items-center justify-between cursor-pointer group w-full px-5 text-left"
               >

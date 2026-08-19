@@ -77,6 +77,7 @@ export const PersonalFeelingCommentItem = memo(function PersonalFeelingCommentIt
         return {
           id: String(reply.personalFeelingReplyId),
           author: reply.user?.nickname ?? '',
+          authorLabel: reply.user?.isCreator ? '작가' : undefined,
           avatarUrl: reply.user?.profileImageUrl,
           time: formatRelativeTime(reply.createdAt),
           content: reply.content,
@@ -98,6 +99,7 @@ export const PersonalFeelingCommentItem = memo(function PersonalFeelingCommentIt
     () => ({
       id: String(feeling.personalFeelingId),
       author: feeling.user?.nickname ?? '',
+      authorLabel: feeling.user?.isCreator ? '작가' : undefined,
       avatarUrl: feeling.user?.profileImageUrl,
       time: formatRelativeTime(feeling.createdAt),
       content: feeling.content,
