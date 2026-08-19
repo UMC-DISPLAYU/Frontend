@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight, ChevronUp } from 'lucide-react';
 
 import type { PersonalArtworkResponseDataDto } from '@/api/dto';
+import { ImageModal } from '@/components/common/ImageModal';
 import { cn } from '@/utils/cn';
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export function PersonalArtworkIntroTab({ artwork }: Props) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isContentClamped, setIsContentClamped] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
@@ -95,12 +97,19 @@ export function PersonalArtworkIntroTab({ artwork }: Props) {
               style={{ scrollbarWidth: 'none' }}
             >
               {processImages.map((img, idx) => (
-                <img
+                <button
                   key={idx}
-                  src={img.imageUrl}
-                  alt={`작업과정 ${idx + 1}`}
-                  className="h-[152px] w-[119px] shrink-0 rounded-[13px] bg-[rgba(161,156,156,0.5)] object-cover shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]"
-                />
+                  type="button"
+                  onClick={() => setSelectedImage(img.imageUrl)}
+                  aria-label={`작업과정 ${idx + 1} 크게 보기`}
+                  className="cursor-pointer focus:outline-none shrink-0"
+                >
+                  <img
+                    src={img.imageUrl}
+                    alt={`작업과정 ${idx + 1}`}
+                    className="h-[152px] w-[119px] shrink-0 rounded-[13px] bg-[rgba(161,156,156,0.5)] object-cover shadow-[8px_8px_18px_0px_rgba(67,0,209,0.04)]"
+                  />
+                </button>
               ))}
             </div>
           </div>
@@ -116,6 +125,12 @@ export function PersonalArtworkIntroTab({ artwork }: Props) {
           </p>
         </section>
       )}
+
+      <ImageModal
+        imageUrl={selectedImage}
+        isOpen={selectedImage !== null}
+        onClose={() => setSelectedImage(null)}
+      />
     </div>
   );
 }
