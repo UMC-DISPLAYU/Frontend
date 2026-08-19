@@ -1,5 +1,23 @@
 import { useRef, useState } from 'react';
 
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { X } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
@@ -27,6 +45,74 @@ type Photo = {
   url: string;
   alt?: string;
 };
+
+const getPhotoSortableId = (photo: Photo) => String(photo.id);
+
+interface SortablePhotoItemProps {
+  photo: Photo;
+  index: number;
+  isReorderMode: boolean;
+  canDeleteContent: boolean;
+  onRemove: (id: string | number) => void;
+}
+
+function SortablePhotoItem({
+  photo,
+  index,
+  isReorderMode,
+  canDeleteContent,
+  onRemove,
+}: SortablePhotoItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: getPhotoSortableId(photo),
+    disabled: !isReorderMode,
+  });
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        touchAction: isReorderMode ? 'none' : undefined,
+      }}
+      {...(isReorderMode ? attributes : {})}
+      {...(isReorderMode ? listeners : {})}
+      className={`relative aspect-114/144 ${
+        isReorderMode ? 'cursor-grab active:cursor-grabbing' : ''
+      } ${isDragging ? 'z-10 opacity-70' : ''}`}
+    >
+      <img
+        src={photo.url}
+        alt={photo.alt ?? `내부사진 ${index + 1}`}
+        className="size-full rounded-xl object-cover"
+      />
+
+      {index === 0 && (
+        <span className="typo-body-xs-regular absolute left-1.5 top-1.5 rounded-sm bg-dark px-1 py-0.5 text-white">
+          대표
+        </span>
+      )}
+
+      {!isReorderMode && canDeleteContent && (
+        <button
+          type="button"
+          onClick={() => onRemove(photo.id)}
+          aria-label={`내부사진 ${index + 1} 삭제`}
+          className="absolute right-1.5 top-1.5 flex size-5 items-center justify-center rounded-full bg-black/50 text-white"
+        >
+          <X className="size-2.5" strokeWidth={2.5} />
+        </button>
+      )}
+
+      {isReorderMode && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/30">
+          <span className="typo-body-sm-bold text-white">{index + 1}</span>
+        </div>
+      )}
+    </li>
+  );
+}
 
 export function InteriorPhotosPage() {
   useHideFooter();
@@ -109,7 +195,6 @@ function InteriorPhotos({
 }: InteriorPhotosProps) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [isReorderMode, setIsReorderMode] = useState(false);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savedOrderRef = useRef<Photo[]>(initialPhotos);
@@ -124,6 +209,23 @@ function InteriorPhotos({
   const isSavingOrder = reorderImages.isPending;
   const canShowActions = canCreateContent || canReorder;
   const shouldShowBottomBar = isReorderMode;
+  const sortablePhotoIds = photos.map(getPhotoSortableId);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 6,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 120,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const handleAddPhotos = () => {
     if (!canCreateContent) return;
@@ -205,7 +307,6 @@ function InteriorPhotos({
       return;
     }
 
-    setDraggedIndex(null);
     reorderImages.mutate(
       photos.map((photo) => Number(photo.id)),
       {
@@ -222,31 +323,21 @@ function InteriorPhotos({
     );
   };
 
-  const handleDragStart = (index: number) => {
-    if (!isReorderMode || !canReorder) return;
-    setDraggedIndex(index);
-  };
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!isReorderMode || !canReorder || !over || active.id === over.id) return;
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    if (!isReorderMode || !canReorder) return;
+    setPhotos((currentPhotos) => {
+      const oldIndex = currentPhotos.findIndex(
+        (photo) => getPhotoSortableId(photo) === String(active.id),
+      );
+      const newIndex = currentPhotos.findIndex(
+        (photo) => getPhotoSortableId(photo) === String(over.id),
+      );
 
-    e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
+      if (oldIndex < 0 || newIndex < 0) return currentPhotos;
 
-    const newPhotos = [...photos];
-    const draggedPhoto = newPhotos[draggedIndex];
-    newPhotos.splice(draggedIndex, 1);
-    newPhotos.splice(index, 0, draggedPhoto);
-
-    setPhotos(newPhotos);
-    setDraggedIndex(index);
-  };
-
-  const handleDragEnd = () => {
-    if (!isReorderMode || !canReorder) return;
-    if (draggedIndex === null) return;
-
-    setDraggedIndex(null);
+      return arrayMove(currentPhotos, oldIndex, newIndex);
+    });
   };
 
   return (
@@ -301,49 +392,26 @@ function InteriorPhotos({
             아직 사진이 없어요. 사진 추가로 첫 장을 올려보세요.
           </p>
         ) : (
-          <ul className="mt-6 grid grid-cols-3 gap-x-2.5 gap-y-3 px-5">
-            {photos.map((photo, index) => (
-              <li
-                key={photo.id}
-                draggable={isReorderMode}
-                onDragStart={() => handleDragStart(index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragEnd={handleDragEnd}
-                className={`relative aspect-114/144 ${
-                  isReorderMode ? 'cursor-move' : ''
-                } ${draggedIndex === index ? 'opacity-50' : ''}`}
-              >
-                <img
-                  src={photo.url}
-                  alt={photo.alt ?? `내부사진 ${index + 1}`}
-                  className="size-full rounded-xl object-cover"
-                />
-
-                {index === 0 && (
-                  <span className="typo-body-xs-regular absolute left-1.5 top-1.5 rounded-sm bg-dark px-1 py-0.5 text-white">
-                    대표
-                  </span>
-                )}
-
-                {!isReorderMode && canDeleteContent && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(photo.id)}
-                    aria-label={`내부사진 ${index + 1} 삭제`}
-                    className="absolute right-1.5 top-1.5 flex size-5 items-center justify-center rounded-full bg-black/50 text-white"
-                  >
-                    <X className="size-2.5" strokeWidth={2.5} />
-                  </button>
-                )}
-
-                {isReorderMode && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl">
-                    <span className="typo-body-sm-bold text-white">{index + 1}</span>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={sortablePhotoIds} strategy={rectSortingStrategy}>
+              <ul className="mt-6 grid grid-cols-3 gap-x-2.5 gap-y-3 px-5">
+                {photos.map((photo, index) => (
+                  <SortablePhotoItem
+                    key={photo.id}
+                    photo={photo}
+                    index={index}
+                    isReorderMode={isReorderMode}
+                    canDeleteContent={canDeleteContent}
+                    onRemove={handleRemove}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
         )}
       </main>
 
