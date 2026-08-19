@@ -12,8 +12,8 @@ export const ARTWORK_FIELD_MAP: Record<string, string> = {
   영상: 'MEDIA',
   조소: 'SCULPTURE',
   패션: 'FASHION',
+  일러스트: 'ILLUSTRATION',
   공예: 'CRAFT',
-  복합: 'COMPLEX',
   기타: 'ETC',
 };
 

@@ -177,7 +177,7 @@ export function ArtworkIntroTab({ artwork, artistUserId, coAuthors = [] }: Props
           <p
             ref={contentRef}
             className={cn(
-              'typo-body-sm-regular text-main leading-relaxed',
+              'typo-body-sm-regular text-main leading-relaxed whitespace-pre-line',
               !isExpanded && 'line-clamp-3',
             )}
           >
@@ -231,7 +231,9 @@ export function ArtworkIntroTab({ artwork, artistUserId, coAuthors = [] }: Props
       {artwork.point && (
         <section className="px-5 pt-5 pb-5">
           <h2 className="typo-body-xl-bold text-main mb-3">감상 포인트</h2>
-          <p className="typo-body-sm-regular text-main leading-relaxed">{artwork.point}</p>
+          <p className="typo-body-sm-regular text-main leading-relaxed whitespace-pre-line">
+            {artwork.point}
+          </p>
         </section>
       )}
 

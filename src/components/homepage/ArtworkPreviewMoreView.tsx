@@ -8,7 +8,6 @@ import { useInfiniteArtworkPreview } from '@/hooks/queries/useHome';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { cn } from '@/utils/cn';
 
-// 작품 전용 카테고리 필터 목록 (MEDIA, CRAFT, COMPLEX, ETC 등)
 const CATEGORY_OPTIONS = Object.entries(ARTWORK_FIELD_MAP).map(([label, value]) => ({
   label,
   value,
@@ -21,7 +20,6 @@ type Props = {
 export function ArtworkPreviewMoreView({ onClose }: Props) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // 카테고리 칩 선택 값들에 해당하는 API 파라미터 값 추출 (콤마로 구분된 문자열)
   const selectedFieldValue =
     selectedCategories.length > 0
       ? selectedCategories
@@ -43,12 +41,10 @@ export function ArtworkPreviewMoreView({ onClose }: Props) {
     fetchNextPage,
   });
 
-  // 마운트 시 최상단으로 자동 스크롤
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // 카테고리 선택 토글 핸들러 (최대 2개까지 선택, 3번째 선택 시 1번째 필터 자동 취소)
   const handleToggleCategory = (label: string) => {
     setSelectedCategories((prev) => {
       if (prev.includes(label)) {
@@ -61,19 +57,17 @@ export function ArtworkPreviewMoreView({ onClose }: Props) {
     });
   };
 
-  // 개별 카테고리 태그 삭제
+
   const handleRemoveCategory = (label: string) => {
     setSelectedCategories((prev) => prev.filter((item) => item !== label));
   };
 
-  // 전체 선택 해제 (초기화)
   const handleResetCategories = () => {
     setSelectedCategories([]);
   };
 
   return (
     <div className="w-full max-w-md mx-auto bg-page min-h-dvh overflow-x-hidden pt-4 pb-4">
-      {/* 상단 네비게이션 & 헤더 */}
       <div className="px-5 mb-4">
         {onClose && (
           <button
@@ -93,7 +87,6 @@ export function ArtworkPreviewMoreView({ onClose }: Props) {
 
       {/* 전시분야 카테고리 칩 필터 섹션 */}
       <div className="px-5 mb-4 flex flex-col gap-2.5">
-        {/* 칩 스크롤 영역 */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-none select-none">
           {CATEGORY_OPTIONS.map((opt) => {
             const isSelected = selectedCategories.includes(opt.label);

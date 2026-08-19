@@ -141,8 +141,9 @@ function RegisterArtworkPage({
             }
             onChange={(next) => onChangeField(next.join(', '))}
             maxSelect={2}
+            breakAfterIndex={Object.keys(ARTWORK_FIELD_MAP).length - 4}
             aria-label="작품분야"
-            className="flex flex-wrap gap-2"
+            className="flex flex-wrap items-center gap-2"
           />
         </section>
 
