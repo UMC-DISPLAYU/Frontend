@@ -350,7 +350,7 @@ export function PersonalArtworksRegister() {
             </div>
           )}
 
-          <div className={isEditMode ? 'grid grid-cols-2 gap-6' : 'flex flex-col gap-6'}>
+          <div className="grid grid-cols-2 gap-6">
             <div className="flex min-w-0 flex-col gap-3">
               <RequiredLabel required htmlFor="artwork-year">
                 제작연도
