@@ -81,7 +81,7 @@ export function ArtworkCard({
 
       {!isArtistView && (
         <MemoFooter
-          className="px-2.5 py-2"
+          className="mt-auto px-2.5 py-2"
           memo={item.memo}
           userId={item.userId}
           onSave={(memo) => onSaveMemo?.(item, memo)}

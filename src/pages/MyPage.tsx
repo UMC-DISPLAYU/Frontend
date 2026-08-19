@@ -213,7 +213,7 @@ export function MyPage() {
       artworkId: item.artworkId,
       personalArtworkId: item.personalArtworkId,
       userId: item.userId ?? userData?.id,
-      title: item.artworkName ?? item.title ?? item.artworkTitle ?? '작품',
+      title: item.artworkName ?? item.title ?? item.artworkTitle ?? '',
       artist: item.artist ?? item.artistName ?? '',
       thumbnail: getImageUrl(item),
       memo: item.memo ?? undefined,
