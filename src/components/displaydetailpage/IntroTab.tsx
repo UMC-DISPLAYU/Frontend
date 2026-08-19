@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { ChevronRight, ChevronUp, CircleAlert } from 'lucide-react';
+import { ChevronRight, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { DisplayContentCategoryDto, DisplayDetailDto } from '@/api/dto/display.dto';
@@ -175,14 +175,7 @@ export function IntroTab({ display: ex }: Props) {
       {ex.note && (
         <section className="px-5 mt-6">
           <h2 className="typo-body-xl-bold text-main mb-3">유의사항</h2>
-          <ul className="flex flex-col gap-1.5">
-            {ex.note.split('\n').map((line, idx) => (
-              <li key={idx} className="flex items-start gap-2 typo-body-sm-regular text-sub600">
-                <CircleAlert size={14} className="text-sub600 shrink-0 mt-0.5" />
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="typo-body-sm-regular text-sub600 whitespace-pre-wrap">{ex.note}</p>
         </section>
       )}
 
