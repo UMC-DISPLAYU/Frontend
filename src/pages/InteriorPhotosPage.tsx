@@ -134,7 +134,6 @@ export function InteriorPhotosPage() {
   const displayContentPolicy = useDisplayContentPolicy(displayDetail);
 
   const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
-  const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
   const canReorder = hasPermission(displayContentPolicy, 'reorder');
 
   if (isLoading) {
