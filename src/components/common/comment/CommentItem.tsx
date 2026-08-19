@@ -165,24 +165,46 @@ export const CommentItem = memo(function CommentItem({
             </div>
 
             <div className="mt-1 flex flex-col gap-1">
-              {!isDeleted && comment.images && comment.images.length > 0 && (
-                <div className="flex gap-1 overflow-x-auto scrollbar-none">
-                  {comment.images.map((url) => (
+              {!isDeleted &&
+                comment.images &&
+                comment.images.length > 0 &&
+                (comment.images.length === 1 ? (
+                  <div className="py-1">
                     <button
-                      key={url}
                       type="button"
-                      className="w-[106px] h-[129px] shrink-0 rounded-sm bg-gray-300 bg-cover bg-center cursor-pointer"
-                      style={{ backgroundImage: `url(${url})` }}
-                      onClick={() => setSelectedImage(url)}
+                      onClick={() => setSelectedImage(comment.images![0])}
+                      className="block max-w-[190px] cursor-pointer text-left focus:outline-none"
                       aria-label="이미지 크게 보기"
-                    />
-                  ))}
-                </div>
-              )}
+                    >
+                      <img
+                        src={comment.images[0]}
+                        alt="댓글 이미지"
+                        className="max-h-[220px] max-w-full w-auto h-auto object-contain rounded-lg"
+                      />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-1 overflow-x-auto scrollbar-none">
+                    {comment.images.map((url) => (
+                      <button
+                        key={url}
+                        type="button"
+                        className="w-[106px] h-[129px] shrink-0 rounded-sm bg-gray-300 bg-cover bg-center cursor-pointer"
+                        style={{ backgroundImage: `url(${url})` }}
+                        onClick={() => setSelectedImage(url)}
+                        aria-label="이미지 크게 보기"
+                      />
+                    ))}
+                  </div>
+                ))}
 
-              <p className="typo-body-sm-regular text-sub600">
-                {isDeleted ? '삭제된 글입니다.' : comment.content}
-              </p>
+              {isDeleted ? (
+                <p className="typo-body-sm-regular text-sub600">삭제된 글입니다.</p>
+              ) : comment.content &&
+                comment.content.trim().length > 0 &&
+                comment.content.trim() !== '.' ? (
+                <p className="typo-body-sm-regular text-sub600">{comment.content}</p>
+              ) : null}
             </div>
 
             <div className="mt-3 flex items-center justify-between gap-2">

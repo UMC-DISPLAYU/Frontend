@@ -368,13 +368,21 @@ export function ArtworkDetailPage() {
           replyingTo={feelingReplyTarget?.author}
           onCancelReply={clearFeelingReplyTarget}
           onSubmit={({ content, images }) => {
+            const finalContent = content.trim() || '.';
+            const formattedImages = images.map((img, index) => ({
+              imageUrl: img.imageUrl,
+              width: Math.round(img.width) || 0,
+              height: Math.round(img.height) || 0,
+              sortOrder: index + 1,
+            }));
+
             if (feelingReplyTarget) {
               if (!hasPermission(feelingReplyPolicy, 'reply.create')) {
                 openLoginModal();
                 return;
               }
               createFeelingReply.mutate(
-                { content, images },
+                { content: finalContent, images: formattedImages },
                 { onSuccess: clearFeelingReplyTarget },
               );
               return;
@@ -385,7 +393,10 @@ export function ArtworkDetailPage() {
               return;
             }
 
-            createFeeling.mutate({ artworkId, body: { content, images } });
+            createFeeling.mutate({
+              artworkId,
+              body: { content: finalContent, images: formattedImages },
+            });
           }}
         />
       ) : null}
