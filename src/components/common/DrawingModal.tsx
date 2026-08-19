@@ -273,7 +273,7 @@ function DrawingCanvasInner({ onClose, onSubmit, isSubmitting = false }: Omit<Pr
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col justify-between bg-white/75 backdrop-blur-md select-none touch-none animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex flex-col justify-between bg-white/65 backdrop-blur-sm select-none touch-none animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-label="그림 그리기"
@@ -294,7 +294,7 @@ function DrawingCanvasInner({ onClose, onSubmit, isSubmitting = false }: Omit<Pr
       </div>
 
       {/* 하단 컨트롤 바 */}
-      <div className="px-6 pt-3 pb-8 pb-safe-bottom flex items-center justify-between shrink-0">
+      <div className="px-6 pt-3 pb-8 border-t border-line pb-safe-bottom flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           {/* 닫기 버튼 */}
           <button
