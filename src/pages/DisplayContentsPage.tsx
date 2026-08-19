@@ -45,7 +45,7 @@ export function DisplayContentsPage() {
   // 선택된 카테고리의 사진들을 아래로 나열하는 뷰
   if (selectedCategory) {
     return (
-      <div className="w-96 mx-auto min-h-dvh bg-page flex flex-col">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
         {/* 헤더 */}
         <header className="sticky top-0 z-20 bg-page relative flex items-center justify-center px-5 pt-3 pb-2">
           <button
@@ -68,12 +68,12 @@ export function DisplayContentsPage() {
             )}
           </div>
 
-          <div className="mt-[17px] flex flex-col w-full gap-0 px-5">
+          <div className="mt-[17px] flex w-full flex-col gap-0">
             {selectedCategory.contents.map((item) => (
               <div key={item.contentId} className="w-full bg-box overflow-hidden">
                 <OptimizedImage
                   src={item.imageUrl}
-                  displayWidth={360}
+                  displayWidth={448}
                   alt={selectedCategory.name}
                   className="w-full h-auto object-cover block"
                 />
