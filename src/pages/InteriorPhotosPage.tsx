@@ -39,6 +39,8 @@ import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { policies } from '@/policies/policies';
+import { useAuthStore } from '@/stores/authStore';
 import { hasPermission } from '@/utils/hasPermission';
 
 type Photo = {
@@ -168,7 +170,6 @@ export function InteriorPhotosPage() {
         categoryId={categoryId}
         initialPhotos={initialPhotos}
         canCreateContent={canCreateContent}
-        canDeleteContent={canDeleteContent}
         canReorder={canReorder}
         onBack={() => flowBack()}
         displayDetail={displayDetail}
@@ -197,16 +198,17 @@ function InteriorPhotos({
   categoryId,
   initialPhotos,
   canCreateContent,
-  canDeleteContent,
   canReorder,
   onBack,
   displayDetail,
-}: InteriorPhotosProps) {
+}: Omit<InteriorPhotosProps, 'canDeleteContent'>) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savedOrderRef = useRef<Photo[]>(initialPhotos);
+
+  const user = useAuthStore((s) => s.user);
 
   const scope = { displayId, categoryId };
   const imageUpload = useImageUpload({ domain: 'display' });
@@ -282,6 +284,7 @@ function InteriorPhotos({
         id: res.contentId,
         url: uploadedUrls[index],
         alt: added[index]?.file.name,
+        userId: user?.id ?? undefined,
       }));
 
       setPhotos((prev) => [...prev, ...newPhotos]);
@@ -293,7 +296,21 @@ function InteriorPhotos({
   };
 
   const handleRemove = (id: string | number) => {
-    if (!canDeleteContent) return;
+    const targetPhoto = photos.find((p) => p.id === id);
+    if (!targetPhoto) return;
+
+    const policyUser = {
+      id: user?.id ?? null,
+      isArtistVerified: user?.isArtistVerified ?? false,
+    };
+
+    const hasDeletePermission = policies.displayContent.deleteContent(
+      policyUser,
+      displayDetail,
+      targetPhoto,
+    );
+
+    if (!hasDeletePermission) return;
 
     const previous = photos;
     const updated = previous.filter((p) => p.id !== id);
