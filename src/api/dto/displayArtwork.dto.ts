@@ -357,6 +357,7 @@ export interface CreateExhibitionArtworkRequestDto {
   artworkName: string;
   content: string;
   type: string;
+  types?: string[];
   productionYear: number;
   materialMedia: string;
   size: string;
@@ -375,6 +376,7 @@ export interface CreateExhibitionArtworkResponseDataDto {
   artworkName: string;
   content: string;
   type: string;
+  types?: string[];
   productionYear: number;
   materialMedia: string;
   size: string;
