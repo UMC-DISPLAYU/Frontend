@@ -58,7 +58,7 @@ export function DisplayContentsPage() {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
         {/* 헤더 */}
-        <header className="sticky top-0 z-20 bg-page relative flex items-center justify-center px-5 pt-3 pb-2">
+        <header className="top-0 z-20 bg-page relative flex items-center justify-center px-5 pt-3 pb-2">
           <button
             type="button"
             onClick={handleBack}
@@ -85,6 +85,7 @@ export function DisplayContentsPage() {
                 <OptimizedImage
                   src={item.imageUrl}
                   displayWidth={448}
+                  format="original"
                   alt={selectedCategory.name}
                   className="w-full h-auto object-cover block"
                 />
