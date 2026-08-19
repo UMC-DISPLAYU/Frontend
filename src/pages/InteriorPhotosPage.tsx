@@ -71,6 +71,7 @@ export function InteriorPhotosPage() {
       <InteriorPhotos
         key={categoryId}
         title={category.name}
+        description={category.description ?? ''}
         displayId={displayId}
         categoryId={categoryId}
         initialPhotos={initialPhotos}
@@ -85,6 +86,7 @@ export function InteriorPhotosPage() {
 
 interface InteriorPhotosProps {
   title: string;
+  description: string;
   displayId: number;
   categoryId: number;
   initialPhotos: Photo[];
@@ -96,6 +98,7 @@ interface InteriorPhotosProps {
 
 function InteriorPhotos({
   title,
+  description,
   displayId,
   categoryId,
   initialPhotos,
@@ -253,9 +256,7 @@ function InteriorPhotos({
       <main className={shouldShowBottomBar ? 'pb-bottom-bar-offset' : undefined}>
         {/* 안내 */}
         <div className="px-5 flex flex-col gap-1">
-          <p className="typo-body-md-regular text-main">
-            전시 공간과 현장 분위기를 담는 공유 앨범이에요.
-          </p>
+          <p className="typo-body-md-regular text-main">{description}</p>
           <p className="typo-body-md-regular text-faint">
             사진 {photos.length} / {MAX_CONTENT_IMAGES}
           </p>
