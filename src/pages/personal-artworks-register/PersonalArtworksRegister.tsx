@@ -2,17 +2,22 @@ import { useEffect, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { BottomFixedBar, ImageUploader } from '@/components/common';
 import { ChipGroup, ExhibitionHeader, RequiredLabel } from '@/components/ui';
 import {
   ARTWORK_FIELD_MAP,
+  ARTWORK_TYPE_LABEL_MAP,
   DEFAULT_ARTWORK_IMAGE_HEIGHT,
   DEFAULT_ARTWORK_IMAGE_WIDTH,
   MAX_PERSONAL_ARTWORK_IMAGES,
 } from '@/constants';
-import { useCreatePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
+import {
+  useCreatePersonalArtwork,
+  usePersonalArtwork,
+  useUpdatePersonalArtwork,
+} from '@/hooks/queries/usePersonalArtwork';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { usePersonalArtworkPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
@@ -29,8 +34,14 @@ const INPUT_CLASS =
 
 export function PersonalArtworksRegister() {
   const navigate = useNavigate();
-  const personalArtworkPolicy = usePersonalArtworkPolicy();
-  const canCreatePersonalArtwork = hasPermission(personalArtworkPolicy, 'create');
+  const [searchParams] = useSearchParams();
+  const personalArtworkId = Number(searchParams.get('id') ?? 0);
+  const isEditMode = Number.isFinite(personalArtworkId) && personalArtworkId > 0;
+  const { data: personalArtwork } = usePersonalArtwork(personalArtworkId);
+  const personalArtworkPolicy = usePersonalArtworkPolicy(personalArtwork);
+  const canSubmitPersonalArtwork = isEditMode
+    ? Boolean(personalArtwork) && hasPermission(personalArtworkPolicy, 'edit')
+    : hasPermission(personalArtworkPolicy, 'create');
 
   const artworkUpload = useImageUpload({
     domain: 'artwork',
@@ -56,6 +67,8 @@ export function PersonalArtworksRegister() {
   const [isMaterialTouched, setIsMaterialTouched] = useState(false);
   const [size, setSize] = useState('');
   const [thoughts, setThoughts] = useState('');
+  const [initialArtworkImages, setInitialArtworkImages] = useState<string[]>([]);
+  const [initialProcessImages, setInitialProcessImages] = useState<string[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     formState: { errors },
@@ -78,12 +91,15 @@ export function PersonalArtworksRegister() {
   });
 
   const createPersonalArtwork = useCreatePersonalArtwork();
+  const updatePersonalArtwork = useUpdatePersonalArtwork();
   /* 이미지 업로드는 mutation 시작 전에 실행되므로 제출 전 구간까지 함께 잠급니다. */
   const [isUploading, setIsUploading] = useState(false);
-  const isSubmitting = isUploading || createPersonalArtwork.isPending;
+  const isSubmitting =
+    isUploading || createPersonalArtwork.isPending || updatePersonalArtwork.isPending;
+  const artworkImageCount = initialArtworkImages.length + images.length;
 
   const formValue = {
-    artworkImageCount: images.length,
+    artworkImageCount,
     title,
     intro,
     field,
@@ -93,7 +109,7 @@ export function PersonalArtworksRegister() {
     thoughts,
   };
   const isFormValid =
-    canCreatePersonalArtwork && personalArtworkRegisterSchema.safeParse(formValue).success;
+    canSubmitPersonalArtwork && personalArtworkRegisterSchema.safeParse(formValue).success;
   const formError = personalArtworkRegisterSchema.safeParse(formValue).error;
   const getFormError = (fieldName: keyof PersonalArtworkRegisterFormValues) =>
     formError?.issues.find((issue) => issue.path[0] === fieldName)?.message;
@@ -105,10 +121,53 @@ export function PersonalArtworksRegister() {
     register('year');
   }, [register]);
 
+  useEffect(() => {
+    if (!isEditMode || !personalArtwork) return;
+
+    const artworkImages = personalArtwork.images
+      .filter((image) => image.imageType !== 'WORK_PROCESS')
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((image) => image.imageUrl);
+    const processImages = personalArtwork.images
+      .filter((image) => image.imageType === 'WORK_PROCESS')
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((image) => image.imageUrl);
+    const artworkTypeValues =
+      personalArtwork.types && personalArtwork.types.length > 0
+        ? personalArtwork.types
+        : personalArtwork.type.split(',');
+    const fieldLabels = artworkTypeValues
+      .map((type) => ARTWORK_TYPE_LABEL_MAP[type.trim()])
+      .filter((label): label is string => Boolean(label));
+    const nextField = fieldLabels.length > 0 ? fieldLabels.join(', ') : '기타';
+    const nextYear = String(personalArtwork.productionYear || '');
+
+    // 수정 모드에서는 서버 응답을 등록 폼 상태로 한 번 옮겨 담습니다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setInitialArtworkImages(artworkImages);
+    setInitialProcessImages(processImages);
+    setTitle(personalArtwork.artworkName ?? '');
+    setIntro(personalArtwork.content ?? '');
+    setField(nextField);
+    setYear(nextYear);
+    setMaterial(personalArtwork.materialMedia ?? '');
+    setSize(personalArtwork.size ?? '');
+    setThoughts(personalArtwork.point ?? '');
+
+    setValue('artworkImageCount', artworkImages.length, { shouldValidate: true });
+    setValue('title', personalArtwork.artworkName ?? '', { shouldValidate: true });
+    setValue('intro', personalArtwork.content ?? '', { shouldValidate: true });
+    setValue('field', nextField, { shouldValidate: true });
+    setValue('year', nextYear, { shouldValidate: true });
+    setValue('material', personalArtwork.materialMedia ?? '', { shouldValidate: true });
+    setValue('size', personalArtwork.size ?? '', { shouldValidate: true });
+    setValue('thoughts', personalArtwork.point ?? '', { shouldValidate: true });
+  }, [isEditMode, personalArtwork, setValue]);
+
   /* 이미지를 업로드한 뒤 작품을 등록합니다. */
   const handleSubmit = async () => {
     const parsed = personalArtworkRegisterSchema.safeParse(formValue);
-    if (!canCreatePersonalArtwork || !parsed.success || isSubmitting) return;
+    if (!canSubmitPersonalArtwork || !parsed.success || isSubmitting) return;
 
     setSubmitError(null);
 
@@ -146,50 +205,74 @@ export function PersonalArtworksRegister() {
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    const artworkType =
-      selectedFieldLabels
-        .map((label) => ARTWORK_FIELD_MAP[label])
-        .filter((val): val is string => Boolean(val))
-        .join(',') || ARTWORK_FIELD_MAP['기타'];
+    const artworkTypes = Array.from(
+      new Set(
+        selectedFieldLabels
+          .map((label) => ARTWORK_FIELD_MAP[label])
+          .filter((val): val is string => Boolean(val)),
+      ),
+    ).slice(0, 2);
+    const artworkType = artworkTypes[0] ?? ARTWORK_FIELD_MAP['기타'];
 
-    createPersonalArtwork.mutate(
-      {
-        artworkName: title.trim(),
-        content: intro.trim(),
-        type: artworkType,
-        productionYear: toPersonalArtworkProductionYear(year),
-        materialMedia: material.trim(),
-        size: size.trim(),
-        point: thoughts.trim(),
-        images: [
-          ...artworkImageUrls.map((url, index) => toImage(url, index, 'ARTWORK')),
-          ...processImageUrls.map((url, index) => toImage(url, index, 'WORK_PROCESS')),
-        ],
-      },
-      {
-        onSuccess: () =>
-          navigate('/personal-artworks/complete', {
-            state: { type: 'personalArtwork' },
-          }),
-        onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
-      },
-    );
+    const body = {
+      artworkName: title.trim(),
+      content: intro.trim(),
+      type: artworkType,
+      types: artworkTypes.length > 0 ? artworkTypes : [artworkType],
+      productionYear: toPersonalArtworkProductionYear(year),
+      materialMedia: material.trim(),
+      size: size.trim(),
+      point: thoughts.trim(),
+      images: [
+        ...initialArtworkImages.map((url, index) => toImage(url, index, 'ARTWORK')),
+        ...artworkImageUrls.map((url, index) =>
+          toImage(url, initialArtworkImages.length + index, 'ARTWORK'),
+        ),
+        ...initialProcessImages.map((url, index) => toImage(url, index, 'WORK_PROCESS')),
+        ...processImageUrls.map((url, index) =>
+          toImage(url, initialProcessImages.length + index, 'WORK_PROCESS'),
+        ),
+      ],
+    };
+
+    if (isEditMode) {
+      updatePersonalArtwork.mutate(
+        { personalArtworkId, body },
+        {
+          onSuccess: () => navigate(`/personal-artworks/${personalArtworkId}`, { replace: true }),
+          onError: () => setSubmitError('작품 수정에 실패했어요. 잠시 후 다시 시도해주세요.'),
+        },
+      );
+      return;
+    }
+
+    createPersonalArtwork.mutate(body, {
+      onSuccess: () =>
+        navigate('/personal-artworks/complete', {
+          state: { type: 'personalArtwork' },
+        }),
+      onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
+    });
   };
 
   return (
     <div className="mx-auto min-h-dvh w-96 bg-page">
-      <ExhibitionHeader title="작품 등록" />
+      <ExhibitionHeader title={isEditMode ? '작품 수정' : '작품 등록'} />
 
       <main>
         <div className="flex flex-col gap-6 px-5 pb-bottom-bar-offset">
           <div className="self-stretch flex justify-center">
             <ImageUploader
               images={images}
+              initialImages={initialArtworkImages}
               maxImages={MAX_PERSONAL_ARTWORK_IMAGES}
               padded
               className="[justify-content:safe_center]"
               onAddImages={addImages}
               onRemoveImage={removeImage}
+              onRemoveInitialImage={(url) =>
+                setInitialArtworkImages((prev) => prev.filter((imageUrl) => imageUrl !== url))
+              }
               emptyLabel="이미지 업로드"
             />
           </div>
@@ -342,9 +425,13 @@ export function PersonalArtworksRegister() {
             <RequiredLabel>작품과정</RequiredLabel>
             <ImageUploader
               images={processImages}
+              initialImages={initialProcessImages}
               maxImages={MAX_PERSONAL_ARTWORK_IMAGES}
               onAddImages={addProcessImages}
               onRemoveImage={removeProcessImage}
+              onRemoveInitialImage={(url) =>
+                setInitialProcessImages((prev) => prev.filter((imageUrl) => imageUrl !== url))
+              }
               emptyLabel="작업과정 업로드"
             />
           </div>
@@ -378,7 +465,7 @@ export function PersonalArtworksRegister() {
           onClick={handleSubmit}
           className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5 disabled:opacity-40"
         >
-          {isSubmitting ? '등록 중' : '완료'}
+          {isSubmitting ? (isEditMode ? '수정 중' : '등록 중') : '완료'}
         </button>
       </BottomFixedBar>
     </div>

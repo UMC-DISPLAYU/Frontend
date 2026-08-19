@@ -32,17 +32,18 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
-export const useArchivedExhibitions = () => {
+export const useArchivedExhibitions = ({ enabled = true }: { enabled?: boolean } = {}) => {
   const accessToken = useAuthStore((state) => state.accessToken);
   return useQuery({
     queryKey: queryKeys.archives.displays.list(),
     queryFn: getArchivedExhibitions,
-    enabled: !!accessToken,
+    enabled: enabled && !!accessToken,
   });
 };
 
 export const useInfiniteArchivedArtworks = (
   params: Omit<GetArchivedArtworksRequestDto, 'cursorId'> & { size: number },
+  { enabled = true }: { enabled?: boolean } = {},
 ) => {
   const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -56,18 +57,18 @@ export const useInfiniteArchivedArtworks = (
     initialPageParam: null as ArchiveArtworkCursorDto | null,
     getNextPageParam: (lastPage) =>
       lastPage.hasNext ? (lastPage.nextCursorId ?? lastPage.nextCursor ?? null) : null,
-    enabled: !!accessToken,
+    enabled: enabled && !!accessToken,
   });
 };
 
-export const useArchivedArtists = () => {
+export const useArchivedArtists = ({ enabled = true }: { enabled?: boolean } = {}) => {
   const accessToken = useAuthStore((state) => state.accessToken);
   return useInfiniteQuery({
     queryKey: queryKeys.archives.artists.list(),
     queryFn: ({ pageParam }) => getArchivedArtists({ cursorId: pageParam ?? undefined }),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
-    enabled: !!accessToken,
+    enabled: enabled && !!accessToken,
   });
 };
 

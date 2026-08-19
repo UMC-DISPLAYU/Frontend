@@ -435,6 +435,7 @@ export type GetArtworkPreviewResponseDto = ApiResponseDto<GetArtworkPreviewRespo
 
 export interface DisplayArtworkDto {
   artworkId: number;
+  displayId?: number;
   artworkName: string;
   artistName: string;
   artistUserId?: number;

@@ -24,6 +24,7 @@ export interface SavedArtworkItem {
   archiveWorkId?: number;
   artworkId?: number | null;
   personalArtworkId?: number | null;
+  displayId?: number | null;
   userId?: number;
   title: string;
   artist: string;

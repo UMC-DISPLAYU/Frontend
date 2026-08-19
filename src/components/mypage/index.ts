@@ -1,7 +1,9 @@
 export { ArtistCard } from './ArtistCard';
 export { ArtworkCard } from './ArtworkCard';
+export { ArtworkDeleteConfirmModal } from './ArtworkDeleteConfirmModal';
 export { AuthPageHeader } from './AuthPageHeader';
 export { ExhibitionCard } from './ExhibitionCard';
+export { ExhibitionMenuButton } from './ExhibitionMenuButton';
 export { MemoFooter } from './MemoFooter';
 export { MyPageHeader } from './MyPageHeader';
 export { SettingsSheet } from './SettingsSheet';

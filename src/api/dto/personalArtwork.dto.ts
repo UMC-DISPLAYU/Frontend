@@ -4,6 +4,7 @@ export interface PersonalArtworkRequestDto {
   artworkName: string;
   content?: string;
   type: string;
+  types?: string[];
   productionYear: number;
   materialMedia: string;
   size?: string;
@@ -18,6 +19,7 @@ export interface PersonalArtworkResponseDataDto {
   artworkName: string;
   content?: string;
   type: string;
+  types?: string[];
   productionYear: number;
   materialMedia: string;
   size?: string;

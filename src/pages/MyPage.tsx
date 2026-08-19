@@ -123,9 +123,12 @@ export function MyPage() {
       syncArtistViewWithVerification(isVerified);
     }
   }, [isVerified, syncArtistViewWithVerification]);
-  const archivedExhibitionsQuery = useArchivedExhibitions();
-  const archivedArtworksQuery = useInfiniteArchivedArtworks({ size: 20 });
-  const archivedArtistsQuery = useArchivedArtists();
+  const archivedExhibitionsQuery = useArchivedExhibitions({ enabled: !isArtistView });
+  const archivedArtworksQuery = useInfiniteArchivedArtworks(
+    { size: 20 },
+    { enabled: !isArtistView },
+  );
+  const archivedArtistsQuery = useArchivedArtists({ enabled: !isArtistView });
   const myArtistProfileQuery = useMyArtistProfile({
     enabled: isArtistView,
   });
@@ -238,6 +241,7 @@ export function MyPage() {
     ).map((item) => ({
       id: `exhibit-${item.artworkId}`,
       artworkId: item.artworkId,
+      displayId: item.displayId,
       title: item.artworkName,
       artist: item.artistName || artistName,
       thumbnail: item.artworkImageUrl ?? '',
@@ -397,6 +401,7 @@ export function MyPage() {
                 key={item.id}
                 item={item}
                 isArtistView={isArtistView}
+                showMenu={isArtistView}
                 onUnarchive={(artwork) => {
                   if (window.confirm('저장한 작품에서 삭제할까요?')) {
                     if (artwork.personalArtworkId) {
