@@ -2,7 +2,6 @@ import type { ApiResponseDto } from '@/api/dto';
 
 import { axiosInstance } from './axios';
 
-type QueryValue = string | number | boolean | null | undefined;
 type QueryParams = object;
 
 interface ApiRequestOptions<TBody> {

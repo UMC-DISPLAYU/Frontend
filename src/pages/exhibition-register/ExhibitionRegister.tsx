@@ -165,7 +165,7 @@ export function ExhibitionRegister() {
       });
       trigger();
     }
-  }, [displayId, state, fetchedDetail, restored, artistProfile, reset, shouldUseDraft]);
+  }, [displayId, state, fetchedDetail, restored, artistProfile, reset, shouldUseDraft, trigger]);
 
   useEffect(() => {
     if (displayId > 0) {
