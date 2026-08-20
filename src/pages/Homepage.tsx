@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
@@ -61,6 +61,8 @@ const duPickHtmlById: Record<string, string> = {
   '3': '/dupick/dupick3.html',
 };
 
+const homeArtworkPreviewParams = { type: 'RECOMMEND' as const, page: 0, size: 10 };
+
 interface SelectedDuPick {
   id: string;
   title: string;
@@ -71,6 +73,7 @@ export const Homepage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDuPick, setSelectedDuPick] = useState<SelectedDuPick | null>(null);
   const [isDuPickClosing, setIsDuPickClosing] = useState(false);
+  const duPickCloseTimeoutRef = useRef<number | null>(null);
   const isArtworkPreviewOpen = searchParams.get('view') === 'artwork-preview';
   const accessToken = useAuthStore((state) => state.accessToken);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
@@ -102,10 +105,13 @@ export const Homepage = () => {
   };
 
   const closeDuPick = () => {
+    if (isDuPickClosing) return;
+
     setIsDuPickClosing(true);
-    window.setTimeout(() => {
+    duPickCloseTimeoutRef.current = window.setTimeout(() => {
       setSelectedDuPick(null);
       setIsDuPickClosing(false);
+      duPickCloseTimeoutRef.current = null;
     }, 300);
   };
 
@@ -122,10 +128,23 @@ export const Homepage = () => {
 
   useEffect(() => {
     if (accessToken) {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.displays.graduation({ size: 3 }) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.displays.closingSoon({ size: 3 }) });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.displayArtworks.preview(homeArtworkPreviewParams),
+      });
       void queryClient.invalidateQueries({ queryKey: queryKeys.archives.all });
     }
   }, [accessToken, queryClient]);
+
+  useEffect(
+    () => () => {
+      if (duPickCloseTimeoutRef.current) {
+        window.clearTimeout(duPickCloseTimeoutRef.current);
+      }
+    },
+    [],
+  );
 
   // OAuth 콜백 이후 refreshToken 쿠키만 있고 accessToken이 없는 상태(기존 회원)일 수 있어서,
   // 홈 진입 시 accessToken이 없으면 1회 재발급을 시도한다.
@@ -199,6 +218,10 @@ export const Homepage = () => {
         items={staticDuPicks}
         onItemClick={(item) => {
           const id = 'duPickId' in item ? item.duPickId : item.id;
+          if (duPickCloseTimeoutRef.current) {
+            window.clearTimeout(duPickCloseTimeoutRef.current);
+            duPickCloseTimeoutRef.current = null;
+          }
           setIsDuPickClosing(false);
           setSelectedDuPick({ id: String(id), title: item.title });
         }}
@@ -226,6 +249,7 @@ export const Homepage = () => {
       <LoungeSection posts={loungePostsData?.posts ?? []} />
       {selectedDuPick?.id && duPickHtmlById[String(selectedDuPick.id)] && (
         <DuPickHtmlView
+          key={selectedDuPick.id}
           htmlSrc={duPickHtmlById[String(selectedDuPick.id)]}
           title={selectedDuPick.title}
           isClosing={isDuPickClosing}

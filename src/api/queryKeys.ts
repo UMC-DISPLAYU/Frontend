@@ -2,7 +2,6 @@ import type { CursorPageRequestDto } from '@/api/dto';
 import type {
   GetClosingSoonDisplaysRequestDto,
   GetDisplayMapRequestDto,
-  GetDuPicksRequestDto,
   SearchDisplaysRequestDto,
 } from '@/api/dto/display.dto';
 import type { GetArtworkPreviewRequestDto } from '@/api/dto/displayArtwork.dto';
@@ -52,8 +51,6 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'closing-soon', params ?? {}] as const,
     graduation: (params?: { size?: number }) =>
       [...queryKeys.displays.lists(), 'graduation', params ?? {}] as const,
-    duPicks: (params?: GetDuPicksRequestDto) =>
-      [...queryKeys.displays.lists(), 'du-picks', params ?? {}] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
     likeStatus: (displayId: number) =>
