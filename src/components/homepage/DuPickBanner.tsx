@@ -24,6 +24,7 @@ interface CardProps {
 interface Props {
   items: BannerItem[];
   className?: string;
+  onItemClick?: (item: BannerItem) => void;
 }
 
 // ─── 헬퍼
@@ -111,7 +112,7 @@ function CardItem({ item, isActive }: CardProps) {
 
 // ─── DuPickBanner (메인 캐러셀 컴포넌트) ───────────────────────────────────────
 
-export function DuPickBanner({ items, className }: Props) {
+export function DuPickBanner({ items, className, onItemClick }: Props) {
   const { activeIndex, setActiveIndex, dragOffset, isDragging, handlers } = useSwipeSlider({
     itemCount: items.length,
   });
@@ -181,9 +182,24 @@ export function DuPickBanner({ items, className }: Props) {
           return (
             <div
               key={key}
+              role={diff === 0 && onItemClick ? 'button' : undefined}
+              tabIndex={diff === 0 && onItemClick ? 0 : undefined}
+              onClick={() => {
+                if (diff === 0 && !isDragging) {
+                  onItemClick?.(item);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (diff !== 0 || !onItemClick) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onItemClick(item);
+                }
+              }}
               className={cn(
                 'absolute flex w-[calc(100%-2.3rem)] items-center justify-center',
                 diff === 0 ? 'z-10' : 'z-0',
+                diff === 0 && onItemClick ? 'cursor-pointer' : '',
                 isDragging ? 'transition-none' : 'transition-all duration-300 ease-out',
               )}
               style={{
