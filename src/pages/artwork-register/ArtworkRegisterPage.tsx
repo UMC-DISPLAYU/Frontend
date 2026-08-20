@@ -31,7 +31,11 @@ import {
   type ArtworkRegisterMode,
 } from '@/contexts/artworkRegisterDraftState';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
-import { useCreateDisplayArtwork, useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import {
+  useCreateDisplayArtwork,
+  useDisplayArtworks,
+  useUpdateDisplayArtwork,
+} from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
@@ -114,8 +118,12 @@ function ArtworkRegisterPageContent() {
     maxImages: MAX_ARTWORK_PROGRESS_IMAGES,
   });
   const createArtwork = useCreateDisplayArtwork(displayId);
+  const updateArtwork = useUpdateDisplayArtwork(displayId);
   const isSubmitting =
-    artworkUpload.isUploading || processUpload.isUploading || createArtwork.isPending;
+    artworkUpload.isUploading ||
+    processUpload.isUploading ||
+    createArtwork.isPending ||
+    updateArtwork.isPending;
   const artworkImages = artworkUpload.images;
   const processImages = processUpload.images;
   const setUploadedArtworkImages = artworkUpload.setUploadedImages;
@@ -474,8 +482,9 @@ function ArtworkRegisterPageContent() {
   ]);
 
   /* 작가 인증 + 전시 소속인만 전시작을 등록할 수 있습니다. */
-  const artworkPolicy = useArtworkPolicy(display);
+  const artworkPolicy = useArtworkPolicy(display, artworkDetail);
   const canCreateArtwork = hasPermission(artworkPolicy, 'create');
+  const canEditArtwork = hasPermission(artworkPolicy, 'edit');
 
   const exhibition = useMemo(
     () => ({
@@ -738,13 +747,10 @@ function ArtworkRegisterPageContent() {
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
-    if (isEditMode) {
-      navigate(`/exhibition/${displayId}/artworks`, { replace: true });
-      return;
-    }
+    const hasSubmitPermission = isEditMode ? canEditArtwork : canCreateArtwork;
 
-    if (!canCreateArtwork) {
-      setSubmitError('작품을 등록할 권한이 없어요.');
+    if (!hasSubmitPermission) {
+      setSubmitError(isEditMode ? '작품을 수정할 권한이 없어요.' : '작품을 등록할 권한이 없어요.');
       return;
     }
 
@@ -801,78 +807,91 @@ function ArtworkRegisterPageContent() {
       return;
     }
 
-    createArtwork.mutate(
-      {
-        displayId,
-        artworkName: title.trim(),
-        content: description.trim(),
-        type: artworkType,
-        types: artworkTypes.length > 0 ? artworkTypes : [artworkType],
-        productionYear: toArtworkRegisterProductionYear(year),
-        materialMedia: medium.trim(),
-        size: size.trim(),
-        point: point.trim(),
-        /*
-         * 작품 이미지와 작업과정 이미지를 imageType으로 구분해 보냅니다.
-         * 서버가 width/height를 @Positive 원시 int로 받아 0이나 누락은 거절되어 고정값을 씁니다.
-         */
-        images: [
-          ...artworkImageUrls.map((imageUrl, index) => ({
-            imageUrl,
-            /* 대표 이미지는 작품 이미지 중 첫 장만 지정합니다. */
-            isThumbnail: index === 0,
-            imageType: 'ARTWORK',
-            width: DEFAULT_ARTWORK_IMAGE_WIDTH,
-            height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
-            sortOrder: index + 1,
-          })),
-          ...processImageUrls.map((imageUrl, index) => ({
-            imageUrl,
-            isThumbnail: false,
-            imageType: 'WORK_PROCESS',
-            width: DEFAULT_ARTWORK_IMAGE_WIDTH,
-            height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
-            sortOrder: index + 1,
-          })),
-        ],
-        artistName: displayAuthor.name.trim(),
-        artistUserId,
-        /* 계정이 연결된 팀원은 userIds로, 직접 입력한 작가는 rawNames로 보냅니다. */
-        coAuthors: {
-          userIds: collaborators
-            .map((person) => person.userId)
-            .filter((coAuthorUserId) => coAuthorUserId !== userId)
-            .filter((userId): userId is number => typeof userId === 'number'),
-          rawNames: collaborators
-            .filter((person) => typeof person.userId !== 'number')
-            .map((person) => person.name),
-        },
-        qaHandlerUserIds,
+    const artworkPayload = {
+      displayId,
+      artworkName: title.trim(),
+      content: description.trim(),
+      type: artworkType,
+      types: artworkTypes.length > 0 ? artworkTypes : [artworkType],
+      productionYear: toArtworkRegisterProductionYear(year),
+      materialMedia: medium.trim(),
+      size: size.trim(),
+      point: point.trim(),
+      /*
+       * 작품 이미지와 작업과정 이미지를 imageType으로 구분해 보냅니다.
+       * 서버가 width/height를 @Positive 원시 int로 받아 0이나 누락은 거절되어 고정값을 씁니다.
+       */
+      images: [
+        ...artworkImageUrls.map((imageUrl, index) => ({
+          imageUrl,
+          /* 대표 이미지는 작품 이미지 중 첫 장만 지정합니다. */
+          isThumbnail: index === 0,
+          imageType: 'ARTWORK',
+          width: DEFAULT_ARTWORK_IMAGE_WIDTH,
+          height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
+          sortOrder: index + 1,
+        })),
+        ...processImageUrls.map((imageUrl, index) => ({
+          imageUrl,
+          isThumbnail: false,
+          imageType: 'WORK_PROCESS',
+          width: DEFAULT_ARTWORK_IMAGE_WIDTH,
+          height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
+          sortOrder: index + 1,
+        })),
+      ],
+      artistName: displayAuthor.name.trim(),
+      artistUserId,
+      /* 계정이 연결된 팀원은 userIds로, 직접 입력한 작가는 rawNames로 보냅니다. */
+      coAuthors: {
+        userIds: collaborators
+          .map((person) => person.userId)
+          .filter((coAuthorUserId) => coAuthorUserId !== userId)
+          .filter((userId): userId is number => typeof userId === 'number'),
+        rawNames: collaborators
+          .filter((person) => typeof person.userId !== 'number')
+          .map((person) => person.name),
       },
-      {
-        onSuccess: () => {
-          const primaryQnaAssignee =
-            qnaAssigneeOptions.find((person) => person.id === effectiveQnaAssigneeIds[0]) ??
-            qnaAssigneeOptions[0];
+      qaHandlerUserIds,
+    };
 
-          resetDraft();
-          completeFlow();
-          navigate(`/exhibition/${displayId}/complete`, {
-            replace: true,
-            state: {
-              type: 'artwork',
-              title: title.trim(),
-              artistName: displayAuthor.name.trim(),
-              registrantName: myDisplayNickname || accountId,
-              registrantAccount: accountId,
-              qnaAssigneeName: primaryQnaAssignee?.name,
-              qnaAssigneeAccount: primaryQnaAssignee?.account,
-            },
-          });
+    if (isEditMode) {
+      updateArtwork.mutate(
+        { artworkId, body: artworkPayload },
+        {
+          onSuccess: () => {
+            resetDraft();
+            navigate(`/exhibition/${displayId}/artworks`, { replace: true });
+          },
+          onError: () => setSubmitError('작품 수정에 실패했어요. 잠시 후 다시 시도해주세요.'),
         },
-        onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
+      );
+      return;
+    }
+
+    createArtwork.mutate(artworkPayload, {
+      onSuccess: () => {
+        const primaryQnaAssignee =
+          qnaAssigneeOptions.find((person) => person.id === effectiveQnaAssigneeIds[0]) ??
+          qnaAssigneeOptions[0];
+
+        resetDraft();
+        completeFlow();
+        navigate(`/exhibition/${displayId}/complete`, {
+          replace: true,
+          state: {
+            type: 'artwork',
+            title: title.trim(),
+            artistName: displayAuthor.name.trim(),
+            registrantName: myDisplayNickname || accountId,
+            registrantAccount: accountId,
+            qnaAssigneeName: primaryQnaAssignee?.name,
+            qnaAssigneeAccount: primaryQnaAssignee?.account,
+          },
+        });
       },
-    );
+      onError: () => setSubmitError('작품 등록에 실패했어요. 잠시 후 다시 시도해주세요.'),
+    });
   };
 
   const handleChoiceNext = () => {

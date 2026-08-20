@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateExhibitionArtworkRequestDto } from '@/api/dto';
+import type {
+  CreateExhibitionArtworkRequestDto,
+  UpdateExhibitionArtworkRequestDto,
+} from '@/api/dto';
 import {
   createExhibitionArtwork,
   deleteArtwork,
   getArtistArtworks,
   getDisplayArtworks,
   updateArtworkOrder,
+  updateExhibitionArtwork,
 } from '@/api/endpoints';
 import { getPersonalArtworks } from '@/api/endpoints/personalArtwork';
 import { queryKeys } from '@/api/queryKeys';
@@ -39,6 +43,28 @@ export const useCreateDisplayArtwork = (displayId: number) => {
     mutationFn: (body: CreateExhibitionArtworkRequestDto) =>
       createExhibitionArtwork(displayId, body),
     onSuccess: invalidate,
+  });
+};
+
+// PATCH /v1/artworks/:artworkId
+export const useUpdateDisplayArtwork = (displayId: number) => {
+  const queryClient = useQueryClient();
+  const invalidate = useInvalidateDisplayArtworks(displayId);
+
+  return useMutation({
+    mutationFn: ({
+      artworkId,
+      body,
+    }: {
+      artworkId: number;
+      body: UpdateExhibitionArtworkRequestDto;
+    }) => updateExhibitionArtwork(artworkId, body),
+    onSuccess: (_, variables) => {
+      invalidate();
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.displayArtworks.detail(variables.artworkId),
+      });
+    },
   });
 };
 

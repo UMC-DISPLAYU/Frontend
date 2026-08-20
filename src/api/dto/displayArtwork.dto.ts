@@ -370,6 +370,8 @@ export interface CreateExhibitionArtworkRequestDto {
   qaHandlerUserIds: number[];
 }
 
+export type UpdateExhibitionArtworkRequestDto = Partial<CreateExhibitionArtworkRequestDto>;
+
 export interface CreateExhibitionArtworkResponseDataDto {
   artworkId: number;
   displayId: number;
