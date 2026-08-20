@@ -2,7 +2,6 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 
 import type {
   CreateDisplayRequestDto,
-  DisplayListResponseDataDto,
   GetDisplayMapRequestDto,
   SearchDisplaysRequestDto,
   UpdateDisplayRequestDto,
@@ -22,67 +21,15 @@ export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
     queryFn: () => searchDisplays(params),
   });
 
-const splitFilterValues = (value?: string | null) =>
-  value
-    ?.split(',')
-    .map((item) => item.trim())
-    .filter(Boolean) ?? [];
-
-const mergeDisplaySearchResults = (
-  responses: DisplayListResponseDataDto[],
-  size: number,
-): DisplayListResponseDataDto => {
-  const displayMap = new Map<number, DisplayListResponseDataDto['exhibitions'][number]>();
-
-  responses.forEach((response) => {
-    response.exhibitions.forEach((exhibition) => {
-      if (!displayMap.has(exhibition.displayId)) {
-        displayMap.set(exhibition.displayId, exhibition);
-      }
-    });
-  });
-
-  const exhibitions = Array.from(displayMap.values());
-  const hasNext = responses.some((response) => response.pagination?.hasNext);
-
-  return {
-    exhibitions,
-    pagination: {
-      hasNext,
-      nextCursor: hasNext ? size : null,
-      size: exhibitions.length,
-    },
-  };
-};
-
 export const useInfiniteSearchDisplays = (params: Omit<SearchDisplaysRequestDto, 'cursor'>) =>
   useInfiniteQuery({
     queryKey: queryKeys.displays.search(params as SearchDisplaysRequestDto),
-    queryFn: async ({ pageParam = 0 }) => {
-      const size = params.size ?? 20;
-      const fields = splitFilterValues(params.field);
-
-      if (fields.length > 1) {
-        const responses = await Promise.all(
-          fields.map((field) =>
-            searchDisplays({
-              ...params,
-              cursor: pageParam,
-              field,
-              size,
-            }),
-          ),
-        );
-
-        return mergeDisplaySearchResults(responses, Number(pageParam) + size);
-      }
-
-      return searchDisplays({
+    queryFn: ({ pageParam = 0 }) =>
+      searchDisplays({
         ...params,
         cursor: pageParam,
-        size,
-      });
-    },
+        size: params.size ?? 20,
+      }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage.pagination?.hasNext && lastPage.pagination?.nextCursor !== null
