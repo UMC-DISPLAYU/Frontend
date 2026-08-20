@@ -157,6 +157,9 @@ export function SearchPage() {
       if (value === '전체') {
         return { ...prev, [tab]: [] };
       }
+      if (tab === '전시분야') {
+        return { ...prev, [tab]: current.includes(value) ? [] : [value] };
+      }
       const updated = current.includes(value)
         ? current.filter((v) => v !== value)
         : [...current, value];
