@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
@@ -7,14 +7,17 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { refreshToken } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import displayuLogo from '@/assets/brand/DUfontlogo.svg';
+import duPick1 from '@/assets/dupick/dupick1.png';
+import duPick2 from '@/assets/dupick/dupick2.png';
+import duPick3 from '@/assets/dupick/dupick3.png';
 import { ArtworkPreviewMoreView } from '@/components/homepage/ArtworkPreviewMoreView';
 import { ArtworkPreviewSection } from '@/components/homepage/ArtworkPreviewSection';
 import { DuPickBanner } from '@/components/homepage/DuPickBanner';
+import { DuPickHtmlView } from '@/components/homepage/DuPickHtmlView';
 import { ExhibitionSection } from '@/components/homepage/ExhibitionSection';
 import { LoungeSection } from '@/components/homepage/LoungeSection';
 import {
   useClosingSoonDisplays,
-  useDuPicks,
   useGraduationDisplays,
   useHomeArtworkPreview,
   useHomeLoungePosts,
@@ -25,15 +28,52 @@ import {
 } from '@/hooks/usePermissionRequiredModal';
 import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import { useAuthStore } from '@/stores/authStore';
+import type { DuPickItem } from '@/types/exhibition';
 import { hasPermission } from '@/utils/hasPermission';
+
+const staticDuPicks: DuPickItem[] = [
+  {
+    id: 1,
+    title: '정해진 형태에서 벗어나는 법',
+    date: '디유대학교 공간디자인 학생들이 다시 정의한 공간의 경계',
+    location: '',
+    bannerImageUrl: duPick1,
+  },
+  {
+    id: 2,
+    title: '잘 만든 것보다, 내가 만든 것',
+    date: '평가받기 위한 작업과 내가 정말 만들고 싶은 것 사이에서',
+    location: '',
+    bannerImageUrl: duPick2,
+  },
+  {
+    id: 3,
+    title: '디유를 만든 사람들의 이야기',
+    date: '디유가 지금의 모습이 되기까지의 과정',
+    location: '',
+    bannerImageUrl: duPick3,
+  },
+];
+
+const duPickHtmlById: Record<string, string> = {
+  '1': '/dupick/dupick1.html',
+  '2': '/dupick/dupick2.html',
+  '3': '/dupick/dupick3.html',
+};
+
+interface SelectedDuPick {
+  id: string;
+  title: string;
+}
 
 export const Homepage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedDuPick, setSelectedDuPick] = useState<SelectedDuPick | null>(null);
+  const [isDuPickClosing, setIsDuPickClosing] = useState(false);
   const isArtworkPreviewOpen = searchParams.get('view') === 'artwork-preview';
   const accessToken = useAuthStore((state) => state.accessToken);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
-  const { data: duPicksData } = useDuPicks();
   const { data: graduationExhibitions = [] } = useGraduationDisplays();
   const { data: closingSoonData } = useClosingSoonDisplays({ size: 3 });
   const { data: artworkPreviewData } = useHomeArtworkPreview();
@@ -59,6 +99,14 @@ export const Homepage = () => {
     }
 
     openLoginModal();
+  };
+
+  const closeDuPick = () => {
+    setIsDuPickClosing(true);
+    window.setTimeout(() => {
+      setSelectedDuPick(null);
+      setIsDuPickClosing(false);
+    }, 300);
   };
 
   useEffect(() => {
@@ -147,7 +195,14 @@ export const Homepage = () => {
         </button>
       </div>
 
-      <DuPickBanner items={duPicksData?.duPicks ?? []} />
+      <DuPickBanner
+        items={staticDuPicks}
+        onItemClick={(item) => {
+          const id = 'duPickId' in item ? item.duPickId : item.id;
+          setIsDuPickClosing(false);
+          setSelectedDuPick({ id: String(id), title: item.title });
+        }}
+      />
       <ExhibitionSection
         title="졸업전시"
         items={graduationExhibitions}
@@ -169,6 +224,14 @@ export const Homepage = () => {
         }}
       />
       <LoungeSection posts={loungePostsData?.posts ?? []} />
+      {selectedDuPick?.id && duPickHtmlById[String(selectedDuPick.id)] && (
+        <DuPickHtmlView
+          htmlSrc={duPickHtmlById[String(selectedDuPick.id)]}
+          title={selectedDuPick.title}
+          isClosing={isDuPickClosing}
+          onBack={closeDuPick}
+        />
+      )}
     </div>
   );
 };

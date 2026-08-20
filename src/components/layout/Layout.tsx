@@ -18,6 +18,7 @@ export function Layout() {
   const location = useLocation();
   const matches = useMatches();
   const [manualFooterHidden, setManualFooterHidden] = useState(false);
+  const [manualNavbarHidden, setManualNavbarHidden] = useState(false);
 
   /* 로그인 상태일 때 계정 정보를 userStore에 sync합니다. */
   const { data: userMe } = useUserMe();
@@ -55,7 +56,8 @@ export function Layout() {
       exactNavbarPaths.some((path) => location.pathname === path)) &&
     !hideNavbarPaths.some((path) => location.pathname.startsWith(path)) &&
     !isLoungeWritePath &&
-    !isRouteHandleNavbarHidden;
+    !isRouteHandleNavbarHidden &&
+    !manualNavbarHidden;
 
   // 하단 푸터(FNB) 표시 여부
   const isPathFooterShown =
@@ -72,6 +74,8 @@ export function Layout() {
       value={{
         isFooterHidden: !shouldShowFooter,
         setFooterHidden: setManualFooterHidden,
+        isNavbarHidden: !shouldShowNavbar,
+        setNavbarHidden: setManualNavbarHidden,
       }}
     >
       <div className="flex min-h-dvh flex-col justify-between">
