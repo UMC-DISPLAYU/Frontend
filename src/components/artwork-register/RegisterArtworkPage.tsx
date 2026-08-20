@@ -198,7 +198,7 @@ function RegisterArtworkPage({
         </section>
 
         <section className="flex flex-col gap-3">
-          <RequiredLabel>작품과정</RequiredLabel>
+          <RequiredLabel>작업과정</RequiredLabel>
           <ImageUploader
             images={processImages}
             maxImages={MAX_ARTWORK_PROGRESS_IMAGES}

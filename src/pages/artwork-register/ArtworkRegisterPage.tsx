@@ -58,6 +58,20 @@ const formatMonthDay = (date: string | undefined) => {
   return month && day ? `${month}.${day}` : date;
 };
 
+const getSortedImageUrls = (
+  images: { imageUrl: string; imageType?: string; sortOrder?: number }[] | undefined,
+  imageType: 'ARTWORK' | 'WORK_PROCESS',
+) =>
+  (images ?? [])
+    .filter((image) =>
+      imageType === 'WORK_PROCESS'
+        ? image.imageType === 'WORK_PROCESS'
+        : image.imageType !== 'WORK_PROCESS',
+    )
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((image) => image.imageUrl)
+    .filter(Boolean);
+
 export function ArtworkRegisterPage() {
   return (
     <ArtworkRegisterDraftProvider>
@@ -346,16 +360,20 @@ function ArtworkRegisterPageContent() {
   );
 
   useEffect(() => {
+    if (isEditMode) return;
+
     if (artworkImages.length === 0 && draft.artworkImageUrls.length > 0) {
       setUploadedArtworkImages(draft.artworkImageUrls);
     }
-  }, [artworkImages.length, setUploadedArtworkImages, draft.artworkImageUrls]);
+  }, [isEditMode, artworkImages.length, setUploadedArtworkImages, draft.artworkImageUrls]);
 
   useEffect(() => {
+    if (isEditMode) return;
+
     if (processImages.length === 0 && draft.processImageUrls.length > 0) {
       setUploadedProcessImages(draft.processImageUrls);
     }
-  }, [processImages.length, setUploadedProcessImages, draft.processImageUrls]);
+  }, [isEditMode, processImages.length, setUploadedProcessImages, draft.processImageUrls]);
 
   useEffect(() => {
     if (isEditMode) return;
@@ -390,6 +408,17 @@ function ArtworkRegisterPageContent() {
     setSize(artworkDetail.size || '');
 
     setPoint(artworkDetail.point || '');
+
+    const artworkImageUrls = getSortedImageUrls(artworkDetail.images, 'ARTWORK');
+    const processImageUrls = getSortedImageUrls(artworkDetail.images, 'WORK_PROCESS');
+
+    if (artworkImageUrls.length > 0) {
+      setUploadedArtworkImages(artworkImageUrls);
+    }
+
+    if (processImageUrls.length > 0) {
+      setUploadedProcessImages(processImageUrls);
+    }
   }, [
     isEditMode,
     artworkDetail,
@@ -399,6 +428,8 @@ function ArtworkRegisterPageContent() {
     setPoint,
     setSize,
     setTitle,
+    setUploadedArtworkImages,
+    setUploadedProcessImages,
     setYear,
   ]);
 
