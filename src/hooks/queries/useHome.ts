@@ -4,7 +4,6 @@ import type { GetArtworkPreviewRequestDto, GetClosingSoonDisplaysRequestDto } fr
 import {
   getArtworkPreview,
   getClosingSoonDisplays,
-  getDuPicks,
   getGraduationDisplays,
   getLoungePosts,
 } from '@/api/endpoints';
@@ -12,7 +11,6 @@ import { queryKeys } from '@/api/queryKeys';
 
 const graduationDisplaysParams = { size: 3 };
 const closingSoonDisplaysParams = { size: 3 };
-const duPicksParams = { size: 4 };
 const artworkPreviewParams = { type: 'RECOMMEND' as const, page: 0, size: 10 };
 const loungePostsParams = { size: 3 };
 
@@ -24,11 +22,6 @@ const graduationDisplaysQuery = () => ({
 const closingSoonDisplaysQuery = (params: GetClosingSoonDisplaysRequestDto = {}) => ({
   queryKey: queryKeys.displays.closingSoon(params),
   queryFn: () => getClosingSoonDisplays(params),
-});
-
-const duPicksQuery = () => ({
-  queryKey: queryKeys.displays.duPicks(duPicksParams),
-  queryFn: () => getDuPicks(duPicksParams),
 });
 
 const homeArtworkPreviewQuery = () => ({
@@ -45,8 +38,6 @@ export const useGraduationDisplays = () => useQuery(graduationDisplaysQuery());
 
 export const useClosingSoonDisplays = (params: GetClosingSoonDisplaysRequestDto = {}) =>
   useQuery(closingSoonDisplaysQuery(params));
-
-export const useDuPicks = () => useQuery(duPicksQuery());
 
 export const useHomeArtworkPreview = () => useQuery(homeArtworkPreviewQuery());
 
