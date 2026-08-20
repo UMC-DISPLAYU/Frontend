@@ -2,15 +2,10 @@ import { useMemo, useState } from 'react';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import {
-  DeleteConfirmDialog,
-  ManageScreen,
-  OrderScreen,
-  WorkActionSheet,
-} from '@/components/artworks-manage';
+import { ManageScreen, OrderScreen, WorkActionSheet } from '@/components/artworks-manage';
 import { BottomFixedBar } from '@/components/common';
 import { useFlowContext } from '@/components/guards/useFlowContext';
-import { ExhibitionHeader } from '@/components/ui';
+import { ConfirmModal, ExhibitionHeader } from '@/components/ui';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
@@ -164,7 +159,14 @@ export function ArtworksManagePage() {
       )}
 
       {confirming && (
-        <DeleteConfirmDialog onCancel={() => setConfirming(false)} onConfirm={handleDelete} />
+        <ConfirmModal
+          title="작품을 삭제할까요?"
+          message={'삭제한 작품은 복구할 수 없어요.\n정말 삭제하시겠어요?'}
+          confirmLabel="삭제하기"
+          layout="vertical"
+          onCancel={() => setConfirming(false)}
+          onConfirm={handleDelete}
+        />
       )}
     </div>
   );
