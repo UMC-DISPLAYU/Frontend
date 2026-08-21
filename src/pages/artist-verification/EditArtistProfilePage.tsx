@@ -200,16 +200,16 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
             )}
           </div>
 
-          {/* 전시소개 */}
+          {/* 작가소개 */}
           <div className="flex flex-col gap-3">
             <label htmlFor="introduction" className="typo-body-sm-bold text-main">
-              전시소개
+              작가소개
             </label>
             <div className="border-b border-line bg-page px-3 py-2.5">
               <textarea
                 id="introduction"
                 maxLength={INTRO_MAX}
-                placeholder="전시에 대해 소개해주세요"
+                placeholder="작가에 대해 소개해주세요"
                 rows={4}
                 className="w-full resize-none  typo-body-xs-regular text-main outline-none placeholder:text-faint"
                 {...register('introduction', {
