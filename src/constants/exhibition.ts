@@ -60,7 +60,7 @@ export const DISPLAY_TYPE_REVERSE_MAP: Record<string, string> = {
 /*
  * 전시 등록은 작가 활동분야와 다른 enum을 씁니다.
  * 영상은 MEDIA로 보내야 하고 ILLUSTRATION은 서버에 없어 DESIGN으로 대체합니다.
- * (서버 enum: PAINTING·DESIGN·PHOTOGRAPHY·ARCHITECTURE·MEDIA·CRAFT·SCULPTURE·FASHION·ETC)
+ * (서버 enum: PAINTING·DESIGN·PHOTOGRAPHY·ARCHITECTURE·MEDIA·CRAFTS·SCULPTURE·FASHION·OTHERS)
  */
 export const DISPLAY_FIELD_MAP: Record<string, string> = {
   PAINTING: 'PAINTING',
@@ -71,7 +71,7 @@ export const DISPLAY_FIELD_MAP: Record<string, string> = {
   SCULPTURE: 'SCULPTURE',
   FASHION: 'FASHION',
   ILLUSTRATION: 'DESIGN',
-  CRAFT: 'CRAFT',
+  CRAFT: 'CRAFTS',
   ETC: 'OTHERS',
 } satisfies Record<ExhibitionField, string>;
 
