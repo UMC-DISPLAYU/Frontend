@@ -37,9 +37,9 @@ export type ExhibitionField = (typeof EXHIBITION_FIELDS)[number];
 
 export const DISPLAY_TYPE_MAP: Record<string, CreateDisplayRequestDto['type']> = {
   '졸업 전시': 'GRADUATION',
-  '과제 전시': 'TASK',
-  '학과·학회 전시': 'CLUB',
-  '연합 전시': 'JOINT',
+  '과제 전시': 'ASSIGNMENTS',
+  '학과·학회 전시': 'DEPARTMENTS',
+  '연합 전시': 'INTER_GROUP',
   '소모임·동아리 전시': 'SMALL_GROUP',
   '기타 단체 전시': 'OTHERS',
 } satisfies Record<ExhibitionType, CreateDisplayRequestDto['type']>;
