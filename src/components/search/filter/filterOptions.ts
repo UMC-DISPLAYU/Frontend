@@ -27,7 +27,7 @@ export const FILTER_CONFIG: Record<FilterTab, FilterConfig> = {
       { label: '조소', value: 'SCULPTURE' },
       { label: '패션', value: 'FASHION' },
       { label: '일러스트', value: 'INTERDISCIPLINARY' },
-      { label: '공예', value: 'CRAFTS' },
+      { label: '공예', value: 'CRAFT' },
       { label: '기타', value: 'OTHERS' },
     ],
   },
