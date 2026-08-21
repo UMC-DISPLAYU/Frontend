@@ -31,11 +31,7 @@ export const createQueryString = (query?: QueryParams): string => {
           searchParams.append(key, String(v));
         }
       });
-    } else if (
-      typeof value === 'string' &&
-      value.includes(',') &&
-      ['field', 'status', 'region', 'type', 'fields'].includes(key)
-    ) {
+    } else if (typeof value === 'string' && value.includes(',') && ['fields'].includes(key)) {
       value.split(',').forEach((v) => {
         const trimmed = v.trim();
         if (trimmed) {

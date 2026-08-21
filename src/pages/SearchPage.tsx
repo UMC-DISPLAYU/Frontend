@@ -7,7 +7,7 @@ import type { SearchDisplaysRequestDto } from '@/api/dto';
 import filterIcon from '@/assets/search/filter.svg';
 import filterSelectedDotIcon from '@/assets/search/filter-selected-dot.svg';
 import { LoadingView } from '@/components/common';
-import { getFilterOptionValues } from '@/components/search/filter/filterOptions';
+import { getFilterOptionValue } from '@/components/search/filter/filterOptions';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import {
@@ -33,12 +33,30 @@ const createSearchDisplayParams = (query: string, filters: FilterState) => {
     size: 20,
   };
 
-  (Object.entries(filters) as Array<[FilterTab, string[]]>).forEach(([tab, labels]) => {
+  (Object.entries(filters) as Array<[FilterTab, string | null]>).forEach(([tab, label]) => {
     const config = FILTER_CONFIG[tab];
-    params[config.param] = getFilterOptionValues(config, labels);
+    params[config.param] = getFilterOptionValue(config, label);
   });
 
   return params;
+};
+
+const normalizeFilterValue = (value: string | string[] | null | undefined) => {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+};
+
+const mergeFilters = (filters?: Partial<Record<FilterTab, string | string[] | null>>) => {
+  const base: FilterState = { ...DEFAULT_FILTER_STATE };
+  if (!filters) return base;
+
+  (Object.entries(filters) as Array<[FilterTab, string | string[] | null | undefined]>).forEach(
+    ([tab, value]) => {
+      base[tab] = normalizeFilterValue(value);
+    },
+  );
+
+  return base;
 };
 
 export function SearchPage() {
@@ -98,26 +116,27 @@ export function SearchPage() {
     );
   };
 
-  const stateFilters = (location.state as { filters?: Partial<FilterState> })?.filters;
+  const stateFilters = (
+    location.state as { filters?: Partial<Record<FilterTab, string | string[] | null>> }
+  )?.filters;
   const targetFiltersKey = `${paramType ?? ''}_${paramStatus ?? ''}_${JSON.stringify(stateFilters ?? {})}`;
 
   const [prevKey, setPrevKey] = useState(targetFiltersKey);
   const [filters, setFilters] = useState<FilterState>(() => {
-    const base: FilterState = { ...DEFAULT_FILTER_STATE };
-    if (stateFilters) return { ...base, ...stateFilters };
-    if (paramType) base['전시유형'] = [paramType];
-    if (paramStatus) base['전시상태'] = [paramStatus];
+    const base = mergeFilters(stateFilters);
+    if (paramType) base['전시유형'] = paramType;
+    if (paramStatus) base['전시상태'] = paramStatus;
     return base;
   });
 
   if (prevKey !== targetFiltersKey) {
     setPrevKey(targetFiltersKey);
-    const base: FilterState = { ...DEFAULT_FILTER_STATE };
+    const base = mergeFilters(stateFilters);
     if (stateFilters) {
-      setFilters({ ...base, ...stateFilters });
+      setFilters(base);
     } else {
-      if (paramType) base['전시유형'] = [paramType];
-      if (paramStatus) base['전시상태'] = [paramStatus];
+      if (paramType) base['전시유형'] = paramType;
+      if (paramStatus) base['전시상태'] = paramStatus;
       setFilters(base);
     }
   }
@@ -147,23 +166,16 @@ export function SearchPage() {
   const { data: nearbyData } = useNearbyDisplays(nearbyParamsWithSearch);
   const nearbyExhibitions = nearbyData ?? [];
 
-  const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string[]]>).flatMap(
-    ([tab, values]) => (values ?? []).map((val) => ({ tab, value: val })),
-  );
+  const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string | null]>)
+    .filter((entry): entry is [FilterTab, string] => Boolean(entry[1]))
+    .map(([tab, value]) => ({ tab, value }));
 
   const updateFilter = (tab: FilterTab, value: string) => {
     setFilters((prev) => {
-      const current = prev[tab] ?? [];
       if (value === '전체') {
-        return { ...prev, [tab]: [] };
+        return { ...prev, [tab]: null };
       }
-      if (tab === '전시분야') {
-        return { ...prev, [tab]: current.includes(value) ? [] : [value] };
-      }
-      const updated = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      return { ...prev, [tab]: updated };
+      return { ...prev, [tab]: prev[tab] === value ? null : value };
     });
   };
 
@@ -250,7 +262,7 @@ export function SearchPage() {
                   key={field}
                   label={field}
                   onClick={() => updateFilter('전시분야', field)}
-                  selected={(filters['전시분야'] ?? []).includes(field)}
+                  selected={filters['전시분야'] === field}
                 />
               ))}
             </div>

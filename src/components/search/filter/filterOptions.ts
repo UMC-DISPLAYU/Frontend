@@ -76,16 +76,13 @@ export const FILTER_TAB_OPTIONS: Record<FilterTab, string[]> = {
 };
 
 export const DEFAULT_FILTER_STATE: FilterState = {
-  전시분야: [],
-  전시상태: [],
-  전시유형: [],
-  지역: [],
+  전시분야: null,
+  전시상태: null,
+  전시유형: null,
+  지역: null,
 };
 
-export const getFilterOptionValues = ({ options }: FilterConfig, labels: string[]) => {
-  if (!labels || labels.length === 0) return null;
-  const values = labels
-    .map((label) => options.find((option) => option.label === label)?.value)
-    .filter((v): v is string => Boolean(v));
-  return values.length > 0 ? values.join(',') : null;
+export const getFilterOptionValue = ({ options }: FilterConfig, label: string | null) => {
+  if (!label) return null;
+  return options.find((option) => option.label === label)?.value ?? null;
 };
