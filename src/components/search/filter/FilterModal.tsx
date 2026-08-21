@@ -24,9 +24,9 @@ export function FilterModal({
   onReset,
   onResetAndApply,
 }: FilterModalProps) {
-  const activeEntries = (Object.entries(filters) as Array<[FilterTab, string[]]>).flatMap(
-    ([tab, values]) => (values ?? []).map((val) => ({ tab, value: val })),
-  );
+  const activeEntries = (Object.entries(filters) as Array<[FilterTab, string | null]>)
+    .filter((entry): entry is [FilterTab, string] => Boolean(entry[1]))
+    .map(([tab, value]) => ({ tab, value }));
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,8 +99,8 @@ export function FilterModal({
                 {FILTER_TAB_OPTIONS[tab].map((option) => {
                   const isOptionSelected =
                     option === '전체'
-                      ? (filters[tab] ?? []).length === 0 || (filters[tab] ?? []).includes('전체')
-                      : (filters[tab] ?? []).includes(option);
+                      ? filters[tab] === null || filters[tab] === '전체'
+                      : filters[tab] === option;
 
                   return (
                     <FilterChip
