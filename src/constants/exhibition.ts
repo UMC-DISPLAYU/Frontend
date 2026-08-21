@@ -41,7 +41,7 @@ export const DISPLAY_TYPE_MAP: Record<string, CreateDisplayRequestDto['type']> =
   '학과·학회 전시': 'CLUB',
   '연합 전시': 'JOINT',
   '소모임·동아리 전시': 'SMALL_GROUP',
-  '기타 단체 전시': 'ETC',
+  '기타 단체 전시': 'OTHERS',
 } satisfies Record<ExhibitionType, CreateDisplayRequestDto['type']>;
 
 export const DISPLAY_TYPE_REVERSE_MAP: Record<string, string> = {
@@ -72,7 +72,7 @@ export const DISPLAY_FIELD_MAP: Record<string, string> = {
   FASHION: 'FASHION',
   ILLUSTRATION: 'DESIGN',
   CRAFT: 'CRAFT',
-  ETC: 'ETC',
+  ETC: 'OTHERS',
 } satisfies Record<ExhibitionField, string>;
 
 export const DISPLAY_FIELD_REVERSE_MAP: Record<string, ExhibitionField> = {
