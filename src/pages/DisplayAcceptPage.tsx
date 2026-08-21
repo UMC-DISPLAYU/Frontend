@@ -5,6 +5,10 @@ import { BottomButton } from '@/components/common';
 import type { Invitation } from '@/types/invitation';
 
 type InfoRow = { label: string; value: string };
+type InvitationCompleteLocationState = {
+  invitation?: Invitation;
+  invitationFlowBackIndex?: number | null;
+};
 
 function buildExhibitionInfo(invitation?: Invitation): InfoRow[] {
   return [
@@ -28,13 +32,16 @@ export function DisplayAcceptPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const state = location.state as { invitation?: Invitation } | null;
+  const state = location.state as InvitationCompleteLocationState | null;
   const invitation = state?.invitation;
 
   const [titleRow, departmentRow, periodRow, roleRow] = buildExhibitionInfo(invitation);
 
   const handleGoManage = () => {
-    navigate('/my/exhibitions');
+    navigate('/my/exhibitions', {
+      replace: true,
+      state: { completedFlowBackIndex: state?.invitationFlowBackIndex ?? null },
+    });
   };
 
   return (

@@ -9,6 +9,10 @@ import {
 import type { Invitation } from '@/types/invitation';
 
 type InfoRow = { label: string; value: string };
+type InvitationFlowLocationState = {
+  invitation?: Invitation;
+  invitationFlowBackIndex?: number | null;
+};
 
 function buildExhibitionInfo(invitation?: Invitation): InfoRow[] {
   return [
@@ -26,7 +30,8 @@ export function DisplayArtistNamePage() {
   const acceptInvitation = useAcceptDisplayInvitation();
   const { data: invitationsData } = useMyDisplayInvitations();
 
-  const stateInvitation = (location.state as { invitation?: Invitation } | null)?.invitation;
+  const locationState = location.state as InvitationFlowLocationState | null;
+  const stateInvitation = locationState?.invitation;
 
   const fetchedDto = invitationsData?.invitations?.find(
     (item) => String(item.invitationId) === id || String(item.displayId) === id,
@@ -71,7 +76,12 @@ export function DisplayArtistNamePage() {
 
           const targetId = invitation?.id || id || String(invitationId);
           navigate(`/invitations/${targetId}/complete`, {
-            state: { invitation, artistName: displayNickname, isVerified },
+            state: {
+              invitation,
+              artistName: displayNickname,
+              isVerified,
+              invitationFlowBackIndex: locationState?.invitationFlowBackIndex ?? null,
+            },
           });
         },
         onError: (error) => {

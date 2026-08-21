@@ -226,7 +226,13 @@ export function InvitationRequestPage() {
     .map((item) => toInvitation(item));
 
   const handleAccept = (item: Invitation) => {
-    navigate(`/invitations/${item.id}/artist-name`, { state: { invitation: item } });
+    const currentHistoryIndex = window.history.state?.idx;
+    const invitationFlowBackIndex =
+      typeof currentHistoryIndex === 'number' ? Math.max(currentHistoryIndex - 1, 0) : null;
+
+    navigate(`/invitations/${item.id}/artist-name`, {
+      state: { invitation: item, invitationFlowBackIndex },
+    });
   };
 
   const handleReject = (item: Invitation) => {
