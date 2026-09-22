@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 
 import type { ApiResponseDto } from '@/api/dto';
 import { useAuthStore } from '@/stores/authStore';
+import { savePendingRedirect } from '@/utils/pendingRedirect';
 
 export class ApiError extends Error {
   code?: string;
@@ -39,17 +40,7 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
-
-const onRefreshed = (token: string) => {
-  refreshSubscribers.forEach((callback) => callback(token));
-  refreshSubscribers = [];
-};
-
-const addRefreshSubscriber = (callback: (token: string) => void) => {
-  refreshSubscribers.push(callback);
-};
+let refreshPromise: Promise<string> | null = null;
 
 axiosInstance.interceptors.response.use(
   (response) => {
@@ -79,54 +70,31 @@ axiosInstance.interceptors.response.use(
       !originalRequest.url?.includes('/v1/auth/refresh') &&
       !originalRequest._retry
     ) {
-      if (!isRefreshing) {
-        isRefreshing = true;
+      originalRequest._retry = true;
+      refreshPromise ??= axiosInstance
+        .post<ApiResponseDto<{ accessToken: string }>>('/v1/auth/refresh')
+        .then((response) => {
+          const token = response.data.success?.data?.accessToken;
+          if (!token) throw new Error('Failed to refresh access token');
 
-        try {
-          const response =
-            await axiosInstance.post<ApiResponseDto<{ accessToken: string }>>('/v1/auth/refresh');
-
-          const newAccessToken = response.data?.success?.data?.accessToken;
-
-          if (!newAccessToken) {
-            throw new Error('Failed to refresh access token');
-          }
-
-          useAuthStore.getState().setAccessToken(newAccessToken);
-          isRefreshing = false;
-          onRefreshed(newAccessToken);
-
-          // 원래 요청 재시도 (재시도 플래그 설정)
-          originalRequest._retry = true;
-          if (originalRequest.headers) {
-            originalRequest.headers.set('Authorization', `Bearer ${newAccessToken}`);
-          }
-          return axiosInstance(originalRequest);
-        } catch (refreshError) {
-          isRefreshing = false;
+          useAuthStore.getState().setAccessToken(token);
+          return token;
+        })
+        .catch((refreshError) => {
           useAuthStore.getState().clearAccessToken();
-          refreshSubscribers = [];
           if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-            import('@/utils/pendingRedirect').then(({ savePendingRedirect }) => {
-              savePendingRedirect(window.location.pathname + window.location.search);
-              window.location.replace('/login');
-            });
-          } else {
-            return Promise.reject(refreshError);
+            savePendingRedirect(window.location.pathname + window.location.search);
+            window.location.replace('/login');
           }
-        }
-      }
-
-      // 이미 갱신 중이면 대기 (재시도 플래그 설정)
-      return new Promise((resolve) => {
-        addRefreshSubscriber((token: string) => {
-          originalRequest._retry = true;
-          if (originalRequest.headers) {
-            originalRequest.headers.set('Authorization', `Bearer ${token}`);
-          }
-          resolve(axiosInstance(originalRequest));
+          throw refreshError;
+        })
+        .finally(() => {
+          refreshPromise = null;
         });
-      });
+
+      const token = await refreshPromise;
+      originalRequest.headers.set('Authorization', `Bearer ${token}`);
+      return axiosInstance(originalRequest);
     }
 
     if (data?.resultType === 'FAIL') {
