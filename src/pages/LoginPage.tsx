@@ -229,7 +229,7 @@ export function LoginPage() {
           } catch {
             //
           }
-          useAuthStore.getState().clearAuth();
+          useAuthStore.getState().clearAccessToken();
           navigate('/home');
         }}
         onKakao={() => {

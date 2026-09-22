@@ -32,13 +32,10 @@ export const useGoogleAuthorizationUrl = () =>
   });
 
 export const useLogout = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (body: LogoutRequestDto) => logout(body),
     onSettled: () => {
       useAuthStore.getState().clearAccessToken();
-      queryClient.clear();
     },
   });
 };

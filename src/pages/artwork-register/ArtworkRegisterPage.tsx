@@ -38,6 +38,7 @@ import {
 } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -445,8 +446,9 @@ function ArtworkRegisterPageContent() {
    * 전시 팀원 목록. 초대를 수락한 팀원만 작가로 지정할 수 있습니다.
    * 스웨거 TeamMemberResponse에는 작가 인증 여부가 없어 초대 수락 여부로 대신 판정합니다.
    */
-  const userId = useUserStore((s) => s.userId);
-  const accountId = useUserStore((s) => s.accountId);
+  const { data: userMe } = useUserMe();
+  const userId = userMe?.id ?? null;
+  const accountId = userMe?.nickname ?? '';
   const setDisplayArtistName = useUserStore((s) => s.setDisplayArtistName);
   const { data: memberList } = useDisplayMembers(displayId);
   const { data: artworkList } = useDisplayArtworks(displayId);
