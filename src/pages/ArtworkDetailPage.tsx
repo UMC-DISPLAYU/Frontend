@@ -34,6 +34,7 @@ import { useFeelingPolicy, useFeelingReplyPolicy, useQuestionPolicy } from '@/ho
 import type { ArtworkDetail, GuestbookQuestion } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
 import { parseServerDate } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
 export function ArtworkDetailPage() {
@@ -59,7 +60,7 @@ export function ArtworkDetailPage() {
   const { data: userMe } = useUserMe();
   const myUserId = userMe?.id;
 
-  const { data: detail, isPending, isError } = useArtworkDetail(artworkId);
+  const { data: detail, isPending, error, refetch } = useArtworkDetail(artworkId);
   const {
     data: feelingsData,
     hasNextPage: hasMoreFeelings,
@@ -230,16 +231,26 @@ export function ArtworkDetailPage() {
     setIsComposingQuestion(false);
   };
 
-  if (isPending) {
+  if (isPending && Number.isFinite(artworkId) && artworkId > 0) {
     return <LoadingView message="작품 정보를 불러오는 중..." />;
   }
 
-  if (isError || !detail) {
+  if (error || !detail) {
     return (
       <ErrorView
-        title="작품 정보를 찾을 수 없습니다"
-        message="요청하신 작품 정보가 존재하지 않거나 삭제되었습니다."
-        onRetry={() => flowBack()}
+        message={
+          error
+            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
+            : '작품 정보를 찾을 수 없습니다'
+        }
+        onRetry={
+          error
+            ? () => {
+                void refetch();
+              }
+            : () => flowBack()
+        }
+        retryLabel={error ? '다시 시도' : '뒤로가기'}
       />
     );
   }

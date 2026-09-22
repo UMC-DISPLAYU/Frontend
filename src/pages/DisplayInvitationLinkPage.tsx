@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { Navigate, useParams } from 'react-router-dom';
 
+import { ApiError } from '@/api/apiError';
 import { getDisplayInvitationByToken } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+import { ErrorView } from '@/components/common/ErrorView';
 import { useReserveRedirectAfterLogin } from '@/hooks/usePendingRedirect';
 import { useAuthStore } from '@/stores/authStore';
+import { getErrorMessage } from '@/utils/error';
 
 /* 초대 링크로 들어온 전시를 목록에서 찾을 수 있도록 displayId를 붙입니다. */
 const toInvitationListPath = (displayId?: number) =>
@@ -19,7 +22,7 @@ export function DisplayInvitationLinkPage() {
   const { token = '' } = useParams();
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.displayInvitations.byToken(token),
     queryFn: () => getDisplayInvitationByToken(token),
     enabled: token.length > 0,
@@ -41,7 +44,29 @@ export function DisplayInvitationLinkPage() {
     );
   }
 
-  if (isError) {
+  if (
+    error &&
+    !(
+      error instanceof ApiError &&
+      [
+        'INVALID_DISPLAY_INVITATION_TOKEN',
+        'DISPLAY_INVITATION_DISABLED',
+        'DISPLAY_INVITATION_NOT_ISSUED',
+      ].includes(error.code ?? '') &&
+      (error.status ?? 0) < 500
+    )
+  ) {
+    return (
+      <ErrorView
+        message={getErrorMessage(error, '초대 링크를 확인하지 못했어요. 다시 시도해주세요.')}
+        onRetry={() => {
+          void refetch();
+        }}
+      />
+    );
+  }
+
+  if (error) {
     return (
       <div className="w-96 mx-auto h-dvh bg-page flex flex-col items-center justify-center gap-2 px-5">
         <p className="typo-body-md-bold text-main">유효하지 않은 초대 링크예요</p>
