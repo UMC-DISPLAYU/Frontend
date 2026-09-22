@@ -100,7 +100,7 @@ export function BottomCommentBar({
   }, [isAttachMenuOpen]);
 
   const pickImages = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files?.length) addImages(event.target.files);
+    if (!submittingRef.current && event.target.files?.length) addImages(event.target.files);
     // 같은 파일을 다시 선택할 수 있도록 값을 비웁니다.
     event.target.value = '';
   };
@@ -252,6 +252,7 @@ export function BottomCommentBar({
             type="file"
             accept="image/*"
             multiple
+            disabled={isBusy}
             onChange={pickImages}
             className="hidden"
           />
@@ -264,6 +265,7 @@ export function BottomCommentBar({
             >
               <button
                 type="button"
+                disabled={isBusy}
                 onClick={handleSelectPhoto}
                 className="w-16 flex items-center justify-start gap-2 hover:opacity-75 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
               >
@@ -273,6 +275,7 @@ export function BottomCommentBar({
 
               <button
                 type="button"
+                disabled={isBusy}
                 onClick={handleSelectDrawing}
                 className="w-16 flex items-center justify-start gap-2 hover:opacity-75 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
               >
