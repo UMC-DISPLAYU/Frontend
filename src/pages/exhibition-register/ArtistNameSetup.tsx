@@ -16,8 +16,6 @@ import { useUpdateMyDisplayNickname } from '@/hooks/queries/useMyDisplays';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 import { useFlowBack } from '@/hooks/useFlowBack';
-import { useAuthStore } from '@/stores/authStore';
-import { useUserStore } from '@/stores/useUserStore';
 
 import { type ArtistNameSetupFormValues, artistNameSetupSchema } from './exhibitionRegister.schema';
 
@@ -106,9 +104,7 @@ export function ArtistNameSetup() {
   const { state } = useLocation();
   const { draft, hasDraft, updateDraft, resetDraft } = useExhibitionRegisterDraft();
   const { data: userMeData } = useUserMe();
-  const userMe = useAuthStore((s) => s.user);
-  const userStoreUserId = useUserStore((s) => s.userId);
-  const myUserId = userMeData?.id ?? userMe?.id ?? userStoreUserId;
+  const myUserId = userMeData?.id;
 
   const createDisplay = useCreateDisplay();
   const updateNickname = useUpdateMyDisplayNickname();

@@ -1,7 +1,7 @@
 import { MoreHorizontal } from 'lucide-react';
 
 import { useDisplayArtistNamePolicy, useDisplayPolicy } from '@/hooks/usePolicy';
-import { useAuthStore } from '@/stores/authStore';
+import { useCurrentPolicyUser } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
@@ -26,7 +26,7 @@ export function ExhibitionCard({
   onEditArtistName: () => void;
   onToggleMenu: () => void;
 }) {
-  const userMe = useAuthStore((state) => state.user);
+  const userMe = useCurrentPolicyUser();
 
   /*
    * 내 전시 목록 응답이 생성/참여를 구분해 주므로 전시 상세를 따로 조회하지 않습니다.

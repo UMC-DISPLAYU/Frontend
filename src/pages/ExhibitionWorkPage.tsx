@@ -14,7 +14,6 @@ import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtworkPolicy, useDisplayContentPolicy } from '@/hooks/usePolicy';
-import { useUserStore } from '@/stores/useUserStore';
 import type { WorkData } from '@/types/exhibition';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
@@ -32,12 +31,12 @@ export function ExhibitionWorkPage() {
 
   const navigate = useNavigate();
   const flowBack = useFlowBack();
-  const userId = useUserStore((s) => s.userId);
 
   const exhibition = state?.initialExhibition;
   const { data: displayDetail, isPending, isError } = useDisplayDetail(Number(displayId));
   const { data: displayArtworks } = useDisplayArtworks(Number(displayId));
   const { data: userMe } = useUserMe();
+  const userId = userMe?.id;
 
   const isOwner =
     typeof displayDetail?.ownerUserId === 'number' && displayDetail.ownerUserId === userId;

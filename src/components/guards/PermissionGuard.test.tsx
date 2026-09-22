@@ -1,14 +1,29 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { LoadingView } from '@/components/common/LoadingView';
 import type { PermissionMap } from '@/types/policy';
 
 import { PermissionGuard } from './PermissionGuard';
 
 const mocks = vi.hoisted(() => ({
+  accessToken: null as string | null,
+  isPending: false,
   locationState: undefined as unknown,
   artistPolicy: { view: () => true } as PermissionMap<'view'>,
   openArtistVerificationModal: vi.fn(),
 }));
+
+vi.mock('@/stores/authStore', () => ({
+  useAuthStore: (selector: (state: typeof mocks) => unknown) => selector(mocks),
+}));
+vi.mock('@/hooks/queries/useUserProfile', () => ({
+  useUserMe: () => ({ isPending: mocks.isPending }),
+}));
+beforeEach(() => {
+  mocks.accessToken = null;
+  mocks.isPending = false;
+  mocks.openArtistVerificationModal.mockClear();
+});
 
 vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react')>();
@@ -49,6 +64,18 @@ function artworkPolicy(
 }
 
 describe('PermissionGuard', () => {
+  it.each(['artist', 'artwork'] as const)(
+    '%s: 로그인 사용자 조회 중에는 권한을 거부하지 않는다',
+    (resource) => {
+      mocks.accessToken = 'token';
+      mocks.isPending = true;
+      mocks.artistPolicy = { view: () => false };
+      const element = PermissionGuard({ resource, action: 'view' as never, children: <div /> });
+      expect(element.type).toBe(LoadingView);
+      expect(mocks.openArtistVerificationModal).not.toHaveBeenCalled();
+    },
+  );
+
   it('권한이 있으면 children을 렌더링한다', () => {
     mocks.locationState = undefined;
 

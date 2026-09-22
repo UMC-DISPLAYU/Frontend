@@ -1,4 +1,5 @@
 import { BottomButton } from '@/components/common';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useUserStore } from '@/stores/useUserStore';
 
 import { ChoiceCard } from './ArtworkRegisterControls';
@@ -18,7 +19,8 @@ function AddArtworkPage({
   onNext,
 }: AddArtworkPageProps) {
   const displayArtistName = useUserStore((s) => s.displayArtistName);
-  const accountId = useUserStore((s) => s.accountId);
+  const { data: userMe } = useUserMe();
+  const accountId = userMe?.nickname ?? '';
 
   return (
     <ArtworkRegisterLayout

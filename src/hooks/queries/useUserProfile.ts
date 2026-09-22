@@ -25,11 +25,13 @@ import { useAuthStore } from '@/stores/authStore';
 export const useUserMe = (options: { enabled?: boolean } = {}) => {
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: queryKeys.users.me(),
     queryFn: getUserMe,
     enabled: !!accessToken && (options.enabled ?? true),
   });
+
+  return { ...query, data: accessToken ? query.data : undefined };
 };
 
 export const useCheckNickname = () =>
@@ -37,12 +39,14 @@ export const useCheckNickname = () =>
     mutationFn: (params: CheckNicknameRequestDto) => checkNickname(params),
   });
 
-export const useMyArtistProfile = ({ enabled = true }: { enabled?: boolean } = {}) =>
-  useQuery({
+export const useMyArtistProfile = ({ enabled = true }: { enabled?: boolean } = {}) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  return useQuery({
     queryKey: queryKeys.users.artistProfile(),
     queryFn: getMyArtistProfile,
-    enabled,
+    enabled: !!accessToken && enabled,
   });
+};
 
 export const useUserArtistProfile = (userId: number) =>
   useQuery({
@@ -91,30 +95,18 @@ export const useCreateMyArtistProfile = () => {
 
   return useMutation({
     mutationFn: (body: CreateArtistProfileRequestDto) => createMyArtistProfile(body),
-    onSuccess: (artistProfile) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
-
-      const storedUser = useAuthStore.getState().user;
-
-      if (!storedUser) return;
-
-      useAuthStore.getState().setUser({
-        ...storedUser,
-        isArtistVerified: artistProfile.isVerified,
-      });
     },
   });
 };
 
 export const useDeleteUserMe = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: deleteUserMe,
     onSuccess: () => {
       useAuthStore.getState().clearAccessToken();
-      queryClient.clear();
     },
   });
 };
