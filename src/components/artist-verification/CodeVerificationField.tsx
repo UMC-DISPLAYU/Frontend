@@ -53,12 +53,6 @@ export function CodeVerificationField({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleResend = () => {
-    setTimeLeft(VERIFICATION_TIMEOUT_SECONDS);
-    setIsExpired(false);
-    onResend();
-  };
-
   return (
     <ArtistVerificationField label="인증번호" htmlFor="verification-code" className="mt-4">
       <div className="flex gap-2">
@@ -88,7 +82,7 @@ export function CodeVerificationField({
         <button
           type="button"
           onClick={onConfirm}
-          disabled={isConfirming || isExpired}
+          disabled={disabled || isConfirming || isResending || isExpired}
           className="h-10 w-[84px] shrink-0 rounded-xl bg-bt-black typo-body-sm-regular text-white disabled:bg-gray-300"
         >
           {isConfirming ? '확인중' : '인증 확인'}
@@ -103,8 +97,8 @@ export function CodeVerificationField({
       ) : null}
       <button
         type="button"
-        onClick={handleResend}
-        disabled={isResending}
+        onClick={onResend}
+        disabled={disabled || isResending || isConfirming}
         className="mt-1 typo-body-xxs-regular text-faint underline"
       >
         {isResending ? '재발송 중' : '인증번호 재발송'}
