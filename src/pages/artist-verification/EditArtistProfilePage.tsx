@@ -87,6 +87,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [fieldError, setFieldError] = useState('');
   const [submitError, setSubmitError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const savingRef = useRef(false);
   const updateMyArtistProfile = useUpdateMyArtistProfile();
   const uploadImage = useUploadImage();
@@ -96,7 +97,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
     handleSubmit,
     control,
     setValue,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isValid },
   } = useForm<EditArtistProfileFormValues>({
     resolver: zodResolver(editArtistProfileSchema),
     mode: 'onChange',
@@ -124,6 +125,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   }, [profileImage]);
 
   const handleProfileImageChange = (file: File) => {
+    if (savingRef.current) return;
     setProfileImage((prev) => {
       if (prev?.startsWith('blob:')) {
         URL.revokeObjectURL(prev);
@@ -137,6 +139,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
   const onFormSubmit = async (data: EditArtistProfileFormValues) => {
     if (!canSubmit || savingRef.current) return;
     savingRef.current = true;
+    setIsSaving(true);
     setSubmitError('');
     try {
       const uploadedProfileImageUrl = profileImageFile
@@ -166,6 +169,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
       setSubmitError(getErrorMessage(error, '작가 프로필을 저장하지 못했어요. 다시 시도해주세요.'));
     } finally {
       savingRef.current = false;
+      setIsSaving(false);
     }
   };
 
@@ -183,7 +187,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           <ProfilePhotoField
             image={profileImage}
             onChange={handleProfileImageChange}
-            disabled={isSubmitting}
+            disabled={isSaving}
           />
         </div>
 
@@ -192,7 +196,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           onSubmit={(event) => handleSubmit(onFormSubmit)(event)}
           className="mt-12 flex flex-col gap-5"
         >
-          <fieldset disabled={isSubmitting} className="contents">
+          <fieldset disabled={isSaving} className="contents">
             {/* 활동명 */}
             <div className="flex flex-col gap-3">
               <label htmlFor="artistName" className="typo-body-sm-bold text-main">
@@ -310,12 +314,8 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile?: ArtistProfil
           {submitError}
         </p>
       )}
-      <BottomButton
-        form="edit-artist-profile-form"
-        type="submit"
-        disabled={!canSubmit || isSubmitting}
-      >
-        {isSubmitting ? '저장 중' : '완료'}
+      <BottomButton form="edit-artist-profile-form" type="submit" disabled={!canSubmit || isSaving}>
+        {isSaving ? '저장 중' : '완료'}
       </BottomButton>
     </div>
   );

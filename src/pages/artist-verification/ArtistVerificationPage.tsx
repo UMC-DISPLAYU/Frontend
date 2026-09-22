@@ -48,6 +48,7 @@ export function ArtistVerificationPage() {
   const [fieldError, setFieldError] = useState('');
   const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const savingRef = useRef(false);
   const [complete, setComplete] = useState(false);
 
@@ -61,7 +62,7 @@ export function ArtistVerificationPage() {
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ArtistVerificationFormValues>({
     resolver: zodResolver(artistVerificationSchema),
     mode: 'onChange',
@@ -181,6 +182,7 @@ export function ArtistVerificationPage() {
 
       if (!canSubmit || activityFields.length === 0 || savingRef.current) return;
       savingRef.current = true;
+      setIsSaving(true);
       setSubmitError('');
       try {
         await createMyArtistProfile.mutateAsync({
@@ -194,6 +196,7 @@ export function ArtistVerificationPage() {
         );
       } finally {
         savingRef.current = false;
+        setIsSaving(false);
       }
     },
     [canSubmit, selectedFields, createMyArtistProfile],
@@ -218,7 +221,7 @@ export function ArtistVerificationPage() {
           onSubmit={(event) => handleSubmit(handleComplete)(event)}
           className="min-h-0 flex-1 overflow-y-auto pb-6 pt-5"
         >
-          <fieldset disabled={isSubmitting} className="contents">
+          <fieldset disabled={isSaving} className="contents">
             <h2 className="typo-body-xl-bold text-main">작가 인증 정보를 입력해주세요</h2>
 
             <fieldset
@@ -319,9 +322,9 @@ export function ArtistVerificationPage() {
         <ArtistVerificationBottomButton
           form="artist-verification-form"
           type="submit"
-          disabled={!canSubmit || isSubmitting}
+          disabled={!canSubmit || isSaving}
         >
-          {isSubmitting ? '저장 중' : '인증확인'}
+          {isSaving ? '저장 중' : '인증확인'}
         </ArtistVerificationBottomButton>
       </main>
     </div>
