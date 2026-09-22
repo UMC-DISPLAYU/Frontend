@@ -2,6 +2,7 @@ import { QueryClient } from '@tanstack/react-query';
 
 import { ApiError, SessionChangedError } from '@/api/apiError';
 import { useAuthStore } from '@/stores/authStore';
+import { isRequestCanceled } from '@/utils/error';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,7 +12,7 @@ export const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: (failureCount, error) => {
-        if (failureCount >= 1) {
+        if (isRequestCanceled(error) || failureCount >= 1) {
           return false;
         }
 

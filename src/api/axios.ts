@@ -40,11 +40,11 @@ axiosInstance.interceptors.response.use(
     const data = response.data as ApiResponseDto<unknown>;
 
     //백엔드 쪽에서 2xx 응답을 보내면서 resultType이 FAIL인 경우가 있음. 이 경우 에러를 throw하도록 처리
-    if (data.resultType === 'FAIL') {
+    if (data?.resultType === 'FAIL') {
       return Promise.reject(
-        new ApiError(data.error.message, {
-          code: data.error.code,
-          details: data.error.details,
+        new ApiError(data.error?.message || 'API request failed', {
+          code: data.error?.code,
+          details: data.error?.details,
           status: response.status,
         }),
       );
@@ -53,6 +53,8 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   async (error: AxiosError<ApiResponseDto<unknown>>) => {
+    if (axios.isCancel(error)) throw error;
+
     const originalRequest = error.config as SessionRequestConfig | undefined;
     const data = error.response?.data;
 
@@ -105,10 +107,11 @@ axiosInstance.interceptors.response.use(
 
     if (data?.resultType === 'FAIL') {
       return Promise.reject(
-        new ApiError(data.error.message, {
-          code: data.error.code,
-          details: data.error.details,
+        new ApiError(data.error?.message || 'API request failed', {
+          code: data.error?.code,
+          details: data.error?.details,
           status: error.response?.status,
+          transportCode: error.code,
         }),
       );
     }
@@ -116,6 +119,7 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(
       new ApiError(error.message || 'API request failed', {
         status: error.response?.status,
+        transportCode: error.code,
       }),
     );
   },

@@ -1,6 +1,6 @@
 import type { ApiResponseDto } from '@/api/dto';
 
-import { axiosInstance } from './axios';
+import { ApiError, axiosInstance } from './axios';
 
 type QueryParams = object;
 
@@ -68,12 +68,13 @@ export const apiRequest = async <TData, TBody = unknown>(
   });
   const data = response.data;
 
-  if (data?.resultType === 'FAIL') {
-    throw new Error(data.error.message);
-  }
-
-  if (!data) {
-    throw new Error('API request failed');
+  if (
+    data?.resultType !== 'SUCCESS' ||
+    !data.success ||
+    typeof data.success !== 'object' ||
+    !('data' in data.success)
+  ) {
+    throw new ApiError('Invalid API response', { status: response.status });
   }
 
   return data.success.data;
