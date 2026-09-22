@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useState } from 'react';
+import { useCallback, useReducer, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
@@ -28,7 +28,7 @@ import {
 } from '@/hooks/queries/useSchoolEmailVerification';
 import { useCreateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
-import { isRequestCanceled } from '@/utils/error';
+import { getErrorMessage, isRequestCanceled } from '@/utils/error';
 
 import {
   type ArtistVerificationFormValues,
@@ -47,6 +47,9 @@ export function ArtistVerificationPage() {
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [fieldError, setFieldError] = useState('');
   const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const savingRef = useRef(false);
   const [complete, setComplete] = useState(false);
 
   const schoolQuery = useSearchSchools(state.school);
@@ -172,26 +175,31 @@ export function ArtistVerificationPage() {
   }, [state.email, state.code, confirmVerificationEmail]);
 
   const handleComplete = useCallback(
-    (data: ArtistVerificationFormValues) => {
+    async (data: ArtistVerificationFormValues) => {
       const activityFields = selectedFields
         .map((field) => ARTIST_FIELD_MAP[field as ExhibitionField])
         .filter((field): field is ArtistFieldCode => Boolean(field));
 
-      if (activityFields.length === 0) return;
-
-      createMyArtistProfile.mutate(
-        {
+      if (!canSubmit || activityFields.length === 0 || savingRef.current) return;
+      savingRef.current = true;
+      setIsSaving(true);
+      setSubmitError('');
+      try {
+        await createMyArtistProfile.mutateAsync({
           artistName: data.artistName.trim(),
           activityFields,
-        },
-        {
-          onSuccess: () => {
-            setComplete(true);
-          },
-        },
-      );
+        });
+        setComplete(true);
+      } catch (error) {
+        setSubmitError(
+          getErrorMessage(error, '작가 프로필을 저장하지 못했어요. 다시 시도해주세요.'),
+        );
+      } finally {
+        savingRef.current = false;
+        setIsSaving(false);
+      }
     },
-    [selectedFields, createMyArtistProfile],
+    [canSubmit, selectedFields, createMyArtistProfile],
   );
 
   const handleSelectSchool = useCallback((value: string) => {
@@ -210,106 +218,113 @@ export function ArtistVerificationPage() {
 
         <form
           id="artist-verification-form"
-          onSubmit={handleSubmit(handleComplete)}
+          onSubmit={(event) => handleSubmit(handleComplete)(event)}
           className="min-h-0 flex-1 overflow-y-auto pb-6 pt-5"
         >
-          <h2 className="typo-body-xl-bold text-main">작가 인증 정보를 입력해주세요</h2>
+          <fieldset disabled={isSaving} className="contents">
+            <h2 className="typo-body-xl-bold text-main">작가 인증 정보를 입력해주세요</h2>
 
-          <fieldset
-            disabled={
-              sendVerificationEmail.isPending ||
-              resendVerificationEmail.isPending ||
-              confirmVerificationEmail.isPending
-            }
-            className="contents"
-          >
-            <div className="mt-5">
-              <SchoolSearchField
-                value={state.school}
-                onChange={(value) => dispatch({ type: 'SET_SCHOOL', payload: value })}
-                suggestions={schoolQuery.data ?? []}
-                showSuggestions={showSchoolSuggestions}
-                onFocus={() => setShowSchoolSuggestions(true)}
-                onBlur={() => {
-                  window.setTimeout(() => setShowSchoolSuggestions(false), 120);
-                }}
-                onSelect={handleSelectSchool}
-                isLoading={schoolQuery.isLoading}
-              />
-            </div>
-
-            <EmailVerificationField
-              value={state.email}
-              onChange={(value) => dispatch({ type: 'SET_EMAIL', payload: value })}
-              onSend={handleSendMail}
-              sent={isEmailStepCompleted}
-              error={state.failedStep === 'email' ? (state.errorMessage ?? undefined) : undefined}
-              isSending={sendVerificationEmail.isPending}
-            />
-
-            {isEmailStepCompleted && (
-              <>
-                <CodeVerificationField
-                  key={state.emailGeneration}
-                  value={state.code}
-                  onChange={(value) => dispatch({ type: 'SET_CODE', payload: value })}
-                  onConfirm={handleConfirmCode}
-                  onResend={handleResendMail}
-                  confirmed={isCodeStepCompleted}
-                  disabled={isCodeStepCompleted}
-                  error={
-                    state.failedStep === 'code' ? (state.errorMessage ?? undefined) : undefined
-                  }
-                  isConfirming={confirmVerificationEmail.isPending}
-                  isResending={resendVerificationEmail.isPending}
+            <fieldset
+              disabled={
+                sendVerificationEmail.isPending ||
+                resendVerificationEmail.isPending ||
+                confirmVerificationEmail.isPending
+              }
+              className="contents"
+            >
+              <div className="mt-5">
+                <SchoolSearchField
+                  value={state.school}
+                  onChange={(value) => dispatch({ type: 'SET_SCHOOL', payload: value })}
+                  suggestions={schoolQuery.data ?? []}
+                  showSuggestions={showSchoolSuggestions}
+                  onFocus={() => setShowSchoolSuggestions(true)}
+                  onBlur={() => {
+                    window.setTimeout(() => setShowSchoolSuggestions(false), 120);
+                  }}
+                  onSelect={handleSelectSchool}
+                  isLoading={schoolQuery.isLoading}
                 />
+              </div>
+
+              <EmailVerificationField
+                value={state.email}
+                onChange={(value) => dispatch({ type: 'SET_EMAIL', payload: value })}
+                onSend={handleSendMail}
+                sent={isEmailStepCompleted}
+                error={state.failedStep === 'email' ? (state.errorMessage ?? undefined) : undefined}
+                isSending={sendVerificationEmail.isPending}
+              />
+
+              {isEmailStepCompleted && (
+                <>
+                  <CodeVerificationField
+                    key={state.emailGeneration}
+                    value={state.code}
+                    onChange={(value) => dispatch({ type: 'SET_CODE', payload: value })}
+                    onConfirm={handleConfirmCode}
+                    onResend={handleResendMail}
+                    confirmed={isCodeStepCompleted}
+                    disabled={isCodeStepCompleted}
+                    error={
+                      state.failedStep === 'code' ? (state.errorMessage ?? undefined) : undefined
+                    }
+                    isConfirming={confirmVerificationEmail.isPending}
+                    isResending={resendVerificationEmail.isPending}
+                  />
+                </>
+              )}
+            </fieldset>
+
+            {isCodeStepCompleted && (
+              <>
+                {(() => {
+                  const { onChange: regOnChange, onBlur, ref, name } = register('artistName');
+                  return (
+                    <ArtistProfileSection
+                      value={artistName}
+                      error={Boolean(errors.artistName)}
+                      name={name}
+                      onBlur={onBlur}
+                      ref={ref}
+                      registerOnChange={regOnChange}
+                    />
+                  );
+                })()}
+                {errors.artistName?.message && (
+                  <p className="mt-1 typo-body-xxs-regular text-error px-3">
+                    {errors.artistName.message}
+                  </p>
+                )}
+                <ArtistFieldSelector
+                  selectedFields={selectedFields}
+                  onChange={(fields) => {
+                    setFieldError('');
+                    setSelectedFields(fields);
+                  }}
+                  onMaxSelectExceeded={() =>
+                    setFieldError(`분야는 최대 ${MAX_ARTIST_FIELDS}개까지만 선택할 수 있습니다.`)
+                  }
+                />
+                {fieldError && (
+                  <p className="mt-1 typo-body-xxs-regular text-error px-3">{fieldError}</p>
+                )}
               </>
             )}
           </fieldset>
-
-          {isCodeStepCompleted && (
-            <>
-              {(() => {
-                const { onChange: regOnChange, onBlur, ref, name } = register('artistName');
-                return (
-                  <ArtistProfileSection
-                    value={artistName}
-                    error={Boolean(errors.artistName)}
-                    name={name}
-                    onBlur={onBlur}
-                    ref={ref}
-                    registerOnChange={regOnChange}
-                  />
-                );
-              })()}
-              {errors.artistName?.message && (
-                <p className="mt-1 typo-body-xxs-regular text-error px-3">
-                  {errors.artistName.message}
-                </p>
-              )}
-              <ArtistFieldSelector
-                selectedFields={selectedFields}
-                onChange={(fields) => {
-                  setFieldError('');
-                  setSelectedFields(fields);
-                }}
-                onMaxSelectExceeded={() =>
-                  setFieldError(`분야는 최대 ${MAX_ARTIST_FIELDS}개까지만 선택할 수 있습니다.`)
-                }
-              />
-              {fieldError && (
-                <p className="mt-1 typo-body-xxs-regular text-error px-3">{fieldError}</p>
-              )}
-            </>
-          )}
         </form>
 
+        {submitError && (
+          <p role="alert" className="mt-2 typo-body-xs-regular text-error">
+            {submitError}
+          </p>
+        )}
         <ArtistVerificationBottomButton
           form="artist-verification-form"
           type="submit"
-          disabled={!canSubmit || createMyArtistProfile.isPending}
+          disabled={!canSubmit || isSaving}
         >
-          인증확인
+          {isSaving ? '저장 중' : '인증확인'}
         </ArtistVerificationBottomButton>
       </main>
     </div>
