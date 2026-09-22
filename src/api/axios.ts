@@ -4,22 +4,9 @@ import type { ApiResponseDto } from '@/api/dto';
 import { useAuthStore } from '@/stores/authStore';
 import { savePendingRedirect } from '@/utils/pendingRedirect';
 
-export class ApiError extends Error {
-  code?: string;
-  details?: string | null;
-  status?: number;
+import { ApiError } from './apiError';
 
-  constructor(
-    message: string,
-    options: { code?: string; details?: string | null; status?: number } = {},
-  ) {
-    super(message);
-    this.name = 'ApiError';
-    this.code = options.code;
-    this.details = options.details;
-    this.status = options.status;
-  }
-}
+export { ApiError } from './apiError';
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
