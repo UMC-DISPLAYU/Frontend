@@ -8,7 +8,7 @@ export interface ApiMetaDto {
 export interface ApiErrorDto {
   code: string;
   message: string;
-  details: string | null;
+  details: unknown;
 }
 
 //성공 응답 구조

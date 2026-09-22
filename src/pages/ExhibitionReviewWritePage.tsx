@@ -93,7 +93,7 @@ export function ExhibitionReviewWritePage() {
       setIsSubmitted(true);
     } catch (error) {
       const message = getErrorMessage(error, '알 수 없는 오류가 발생했습니다.');
-      setSubmitError(`${isEditMode ? '수정' : '등록'}에 실패했습니다. (${message})`);
+      if (message) setSubmitError(`${isEditMode ? '수정' : '등록'}에 실패했습니다. (${message})`);
     } finally {
       isSubmittingRef.current = false;
     }
