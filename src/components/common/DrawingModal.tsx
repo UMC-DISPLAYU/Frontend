@@ -20,9 +20,15 @@ type Props = {
   onClose: () => void;
   onSubmit: (file: File, dimensions: { width: number; height: number }) => Promise<void> | void;
   isSubmitting?: boolean;
+  error?: string;
 };
 
-function DrawingCanvasInner({ onClose, onSubmit, isSubmitting = false }: Omit<Props, 'isOpen'>) {
+function DrawingCanvasInner({
+  onClose,
+  onSubmit,
+  isSubmitting = false,
+  error,
+}: Omit<Props, 'isOpen'>) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const currentStrokeRef = useRef<Stroke | null>(null);
@@ -293,6 +299,12 @@ function DrawingCanvasInner({ onClose, onSubmit, isSubmitting = false }: Omit<Pr
         />
       </div>
 
+      {error && (
+        <p role="alert" className="px-6 typo-body-xs-regular text-error">
+          {error}
+        </p>
+      )}
+
       {/* 하단 컨트롤 바 */}
       <div className="px-6 pt-3 pb-8 border-t border-line pb-safe-bottom flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
@@ -338,8 +350,15 @@ function DrawingCanvasInner({ onClose, onSubmit, isSubmitting = false }: Omit<Pr
   );
 }
 
-export function DrawingModal({ isOpen, onClose, onSubmit, isSubmitting = false }: Props) {
+export function DrawingModal({ isOpen, onClose, onSubmit, isSubmitting = false, error }: Props) {
   if (!isOpen) return null;
 
-  return <DrawingCanvasInner onClose={onClose} onSubmit={onSubmit} isSubmitting={isSubmitting} />;
+  return (
+    <DrawingCanvasInner
+      onClose={onClose}
+      onSubmit={onSubmit}
+      isSubmitting={isSubmitting}
+      error={error}
+    />
+  );
 }

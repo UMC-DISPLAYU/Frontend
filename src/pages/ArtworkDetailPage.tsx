@@ -367,7 +367,7 @@ export function ArtworkDetailPage() {
           isSubmitting={feelingReplyTarget ? createFeelingReply.isPending : createFeeling.isPending}
           replyingTo={feelingReplyTarget?.author}
           onCancelReply={clearFeelingReplyTarget}
-          onSubmit={({ content, images }) => {
+          onSubmit={async ({ content, images }) => {
             const finalContent = content.trim() || '.';
             const formattedImages = images.map((img, index) => ({
               imageUrl: img.imageUrl,
@@ -379,9 +379,9 @@ export function ArtworkDetailPage() {
             if (feelingReplyTarget) {
               if (!hasPermission(feelingReplyPolicy, 'reply.create')) {
                 openLoginModal();
-                return;
+                return false;
               }
-              createFeelingReply.mutate(
+              await createFeelingReply.mutateAsync(
                 { content: finalContent, images: formattedImages },
                 { onSuccess: clearFeelingReplyTarget },
               );
@@ -390,10 +390,10 @@ export function ArtworkDetailPage() {
 
             if (!hasPermission(feelingPolicy, 'create')) {
               openLoginModal();
-              return;
+              return false;
             }
 
-            createFeeling.mutate({
+            await createFeeling.mutateAsync({
               artworkId,
               body: { content: finalContent, images: formattedImages },
             });

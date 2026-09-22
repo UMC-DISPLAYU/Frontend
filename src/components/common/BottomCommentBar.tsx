@@ -10,18 +10,19 @@ import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
+import { getErrorMessage } from '@/utils/error';
 import { readImageDimensions } from '@/utils/image';
 
 export type BottomCommentBarImage = { imageUrl: string; width: number; height: number };
 
 type Props = {
   placeholder?: string;
-  /* 업로드가 끝난 이미지와 함께 입력한 내용을 전달합니다. */
+  /* 저장 완료까지 기다립니다. 권한 확인 등으로 저장하지 않았다면 false를 반환합니다. */
   onSubmit: (payload: {
     content: string;
     images: BottomCommentBarImage[];
     isPrivate: boolean;
-  }) => void;
+  }) => Promise<void | boolean>;
   isSubmitting?: boolean;
   /* 이미지 업로드 도메인. 지정하지 않으면 이미지 첨부 없이 텍스트만 입력받습니다. */
   imageDomain?: string;
@@ -49,7 +50,8 @@ export function BottomCommentBar({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
-  const [isDrawingSubmitting, setIsDrawingSubmitting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [content, setContent] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
 
@@ -57,6 +59,7 @@ export function BottomCommentBar({
   const inputRef = useRef<HTMLInputElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const attachButtonRef = useRef<HTMLButtonElement>(null);
+  const submittingRef = useRef(false);
 
   const { images, addImages, removeImage, clearImages, uploadImages, uploadImage, isUploading } =
     useImageUpload({
@@ -64,7 +67,7 @@ export function BottomCommentBar({
       maxImages,
     });
 
-  const isBusy = isSubmitting || isUploading || isDrawingSubmitting;
+  const isBusy = isSubmitting || isUploading || isSaving;
   const canSubmit = (content.trim().length > 0 || images.length > 0) && !isBusy;
 
   /* 답글달기를 누르면 입력창에 바로 포커스를 줘서 이어서 타이핑할 수 있게 합니다. */
@@ -108,7 +111,10 @@ export function BottomCommentBar({
       return;
     }
 
-    if (!canSubmit) return;
+    if (!canSubmit || submittingRef.current) return;
+    submittingRef.current = true;
+    setIsSaving(true);
+    setSubmitError('');
 
     try {
       const files = images.map((image) => image.file).filter((file): file is File => Boolean(file));
@@ -121,12 +127,18 @@ export function BottomCommentBar({
         height: dimensions[index].height,
       }));
 
-      onSubmit({ content: content.trim(), images: submitImages, isPrivate });
+      if ((await onSubmit({ content: content.trim(), images: submitImages, isPrivate })) === false)
+        return;
       setContent('');
       setIsPrivate(false);
       clearImages();
-    } catch {
-      /* 업로드 실패 시 입력 내용을 유지합니다. */
+    } catch (error) {
+      setSubmitError(
+        getErrorMessage(error, '등록하지 못했어요. 작성 내용을 확인하고 다시 시도해주세요.'),
+      );
+    } finally {
+      submittingRef.current = false;
+      setIsSaving(false);
     }
   };
 
@@ -139,14 +151,15 @@ export function BottomCommentBar({
   /* 드로잉 캔버스에서 전송 버튼을 눌렀을 때 */
   const handleDrawingSubmit = async (file: File, dimensions: { width: number; height: number }) => {
     if (!accessToken) {
-      setIsDrawingOpen(false);
       setIsLoginModalOpen(true);
       return;
     }
 
-    if (!imageDomain) return;
+    if (!imageDomain || isBusy || submittingRef.current) return;
 
-    setIsDrawingSubmitting(true);
+    submittingRef.current = true;
+    setIsSaving(true);
+    setSubmitError('');
     try {
       const uploadedUrl = await uploadImage(file, { domain: imageDomain });
       const submitImages: BottomCommentBarImage[] = [
@@ -157,15 +170,17 @@ export function BottomCommentBar({
         },
       ];
 
-      onSubmit({ content: content.trim(), images: submitImages, isPrivate });
+      if ((await onSubmit({ content: content.trim(), images: submitImages, isPrivate })) === false)
+        return;
       setContent('');
       setIsPrivate(false);
       clearImages();
       setIsDrawingOpen(false);
-    } catch {
-      /* 업로드 실패 시 드로잉 모달 유지 */
+    } catch (error) {
+      setSubmitError(getErrorMessage(error, '그림을 등록하지 못했어요. 다시 시도해주세요.'));
     } finally {
-      setIsDrawingSubmitting(false);
+      submittingRef.current = false;
+      setIsSaving(false);
     }
   };
 
@@ -197,6 +212,7 @@ export function BottomCommentBar({
         <button
           type="button"
           onClick={() => setIsPrivate((prev) => !prev)}
+          disabled={isBusy}
           aria-pressed={isPrivate}
           className="flex shrink-0 cursor-pointer items-center gap-1.5 text-hint hover:text-main"
         >
@@ -215,6 +231,7 @@ export function BottomCommentBar({
       <input
         ref={inputRef}
         value={content}
+        disabled={isBusy}
         onFocus={(e) => {
           if (!accessToken) {
             e.target.blur();
@@ -312,6 +329,7 @@ export function BottomCommentBar({
               <button
                 type="button"
                 onClick={onCancelReply}
+                disabled={isBusy}
                 aria-label="답글 취소"
                 className="typo-body-xs-regular text-faint cursor-pointer"
               >
@@ -333,6 +351,7 @@ export function BottomCommentBar({
                     <button
                       type="button"
                       onClick={() => removeImage(image.id)}
+                      disabled={isBusy}
                       aria-label="이미지 삭제"
                       className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
                     >
@@ -346,15 +365,23 @@ export function BottomCommentBar({
           ) : (
             <div className="flex items-center gap-2 rounded-xl bg-box200 p-3">{inputRow}</div>
           )}
+          {submitError && !isDrawingOpen && (
+            <p role="alert" className="mt-2 typo-body-xs-regular text-error">
+              {submitError}
+            </p>
+          )}
         </div>
       </div>
 
       {/* 손글씨 / 그림 그리기 모달 */}
       <DrawingModal
         isOpen={isDrawingOpen}
-        onClose={() => setIsDrawingOpen(false)}
+        onClose={() => {
+          if (!submittingRef.current) setIsDrawingOpen(false);
+        }}
         onSubmit={handleDrawingSubmit}
-        isSubmitting={isDrawingSubmitting}
+        isSubmitting={isBusy}
+        error={submitError}
       />
     </>
   );
