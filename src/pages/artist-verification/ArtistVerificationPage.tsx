@@ -28,7 +28,7 @@ import {
 } from '@/hooks/queries/useSchoolEmailVerification';
 import { useCreateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isRequestCanceled } from '@/utils/error';
 
 import {
   type ArtistVerificationFormValues,
@@ -180,6 +180,7 @@ export function ArtistVerificationPage() {
           dispatch({ type: 'COMPLETE_STEP', payload: 'email' });
         },
         onError: (error) => {
+          if (isRequestCanceled(error)) return;
           dispatch({
             type: 'FAIL_STEP',
             payload: {
@@ -208,6 +209,7 @@ export function ArtistVerificationPage() {
           dispatch({ type: 'COMPLETE_STEP', payload: 'email' });
         },
         onError: (error) => {
+          if (isRequestCanceled(error)) return;
           dispatch({
             type: 'FAIL_STEP',
             payload: {
