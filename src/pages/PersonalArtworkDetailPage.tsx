@@ -174,7 +174,7 @@ export function PersonalArtworkDetailPage() {
     setIsComposingQuestion(false);
   };
 
-  const handleSend = ({
+  const handleSend = async ({
     content,
     images,
   }: {
@@ -182,7 +182,7 @@ export function PersonalArtworkDetailPage() {
     images: { imageUrl: string; width: number; height: number }[];
     isPrivate: boolean;
   }) => {
-    if (!content.trim() && images.length === 0) return;
+    if (!content.trim() && images.length === 0) return false;
     const finalContent = content.trim() || '.';
     const formattedImages = images.map((img, index) => ({
       imageUrl: img.imageUrl,
@@ -194,9 +194,9 @@ export function PersonalArtworkDetailPage() {
     if (feelingReplyTarget) {
       if (!hasPermission(feelingPolicy, 'reply.create')) {
         openLoginModal();
-        return;
+        return false;
       }
-      createFeelingReply.mutate(
+      await createFeelingReply.mutateAsync(
         { content: finalContent, images: formattedImages },
         { onSuccess: clearFeelingReplyTarget },
       );
@@ -205,9 +205,9 @@ export function PersonalArtworkDetailPage() {
 
     if (!hasPermission(feelingPolicy, 'create')) {
       openLoginModal();
-      return;
+      return false;
     }
-    createFeeling.mutate({ content: finalContent, images: formattedImages });
+    await createFeeling.mutateAsync({ content: finalContent, images: formattedImages });
   };
 
   return (
