@@ -83,6 +83,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   >(null);
   const [checkedNickname, setCheckedNickname] = useState('');
   const [submitError, setSubmitError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const savingRef = useRef(false);
   const updateUserMe = useUpdateUserMe();
   const uploadImage = useUploadImage();
@@ -95,7 +96,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
     setValue,
     setError,
     clearErrors,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<OnboardingNicknameFormValues>({
     resolver: zodResolver(onboardingNicknameSchema),
     mode: 'onChange',
@@ -152,6 +153,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   }, [profileImage]);
 
   const handleProfileImageChange = (file: File) => {
+    if (savingRef.current) return;
     setProfileImage((prev) => {
       if (prev?.startsWith('blob:')) {
         URL.revokeObjectURL(prev);
@@ -165,6 +167,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const onFormSubmit = async (data: OnboardingNicknameFormValues) => {
     if (!canSubmit || savingRef.current) return;
     savingRef.current = true;
+    setIsSaving(true);
     setSubmitError('');
     clearErrors('nickname');
     try {
@@ -192,6 +195,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
       }
     } finally {
       savingRef.current = false;
+      setIsSaving(false);
     }
   };
 
@@ -209,7 +213,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
           <ProfilePhotoField
             image={profileImage}
             onChange={handleProfileImageChange}
-            isUploading={isSubmitting || uploadImage.isPending}
+            isUploading={isSaving || uploadImage.isPending}
           />
         </div>
 
@@ -218,7 +222,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
           onSubmit={(event) => handleSubmit(onFormSubmit)(event)}
           className="mt-15 flex flex-col gap-3"
         >
-          <fieldset disabled={isSubmitting} className="contents">
+          <fieldset disabled={isSaving} className="contents">
             <label htmlFor="activityName" className="typo-body-sm-bold text-main">
               프로필 명
             </label>
@@ -339,8 +343,8 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
           {submitError}
         </p>
       )}
-      <BottomButton form="edit-basic-info-form" type="submit" disabled={!canSubmit || isSubmitting}>
-        {isSubmitting ? '저장 중' : '완료'}
+      <BottomButton form="edit-basic-info-form" type="submit" disabled={!canSubmit || isSaving}>
+        {isSaving ? '저장 중' : '완료'}
       </BottomButton>
     </div>
   );

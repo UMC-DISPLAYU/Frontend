@@ -171,6 +171,9 @@ it('연속 제출을 한 번만 저장하고 실패 후 잠금을 해제한다',
   const pending = submit(values);
   await submit(values);
   expect(h.save).toHaveBeenCalledTimes(1);
+  expect(render(EditBasicInfoPage).find((node) => node.type === 'fieldset')!.props.disabled).toBe(
+    true,
+  );
   reject(failure);
   await pending;
   await form(render(EditBasicInfoPage))(values);
