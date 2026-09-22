@@ -18,7 +18,6 @@ import { RegisterArtworkPage } from '@/components/artwork-register/RegisterArtwo
 import { RegisterCollaboratorsPage } from '@/components/artwork-register/RegisterCollaboratorsPage';
 import { SelectArtistPage } from '@/components/artwork-register/SelectArtistPage';
 import { useFlowContext } from '@/components/guards/useFlowContext';
-import { useHideFooter } from '@/components/layout';
 import {
   ARTWORK_FIELD_MAP,
   DEFAULT_ARTWORK_IMAGE_HEIGHT,
@@ -85,8 +84,6 @@ export function ArtworkRegisterPage() {
 }
 
 function ArtworkRegisterPageContent() {
-  useHideFooter();
-
   const { draft, updateDraft, resetDraft } = useArtworkRegisterDraft();
   const navigate = useNavigate();
   const flowBack = useFlowBack();

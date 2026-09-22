@@ -11,7 +11,6 @@ import {
   StatPill,
   VisibilitySection,
 } from '@/components/exhibition-manage';
-import { useHideFooter } from '@/components/layout';
 import { ExhibitionHeader } from '@/components/ui';
 import { type VisibilityType } from '@/constants/visibility';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
@@ -51,8 +50,6 @@ type DisplaySource = {
 };
 
 export function ExhibitionManage() {
-  useHideFooter();
-
   const navigate = useNavigate();
   const flowBack = useFlowBack();
   const { displayId: paramDisplayId } = useParams();

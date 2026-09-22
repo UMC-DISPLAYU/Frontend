@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { DeleteConfirmModal, LeaveConfirmModal, LoadingView } from '@/components/common';
 import { ManageScreen } from '@/components/display-manage';
-import { useHideFooter } from '@/components/layout';
 import { useDeleteDisplay, useExitDisplay, useMyDisplays } from '@/hooks/queries/useMyDisplays';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
@@ -12,8 +11,6 @@ import type { ExhibitionItem } from '@/types/mypage';
 import { hasPermission } from '@/utils/hasPermission';
 
 export function MyExhibitionsPage() {
-  useHideFooter();
-
   const navigate = useNavigate();
   const { data: myDisplays = [], isLoading } = useMyDisplays();
   const deleteDisplayMutation = useDeleteDisplay();

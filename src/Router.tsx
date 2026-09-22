@@ -186,6 +186,13 @@ const artworkRegisterFlowSteps = [
   },
 ];
 
+// Router가 허용하는 대소문자·끝 슬래시에서도 기존 표시 조건을 유지합니다.
+const showHomeChrome = (pathname: string) => pathname.startsWith('/home');
+const showLoungeNavbar = (pathname: string) =>
+  pathname.startsWith('/lounge') &&
+  !pathname.startsWith('/lounge/my-questions') &&
+  !/^\/lounge\/[^/]+\/post$/.test(pathname);
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -193,8 +200,16 @@ export const router = createBrowserRouter([
     children: [
       // 🔓 공개 라우트 (비로그인 게스트 접근 가능)
       { index: true, element: <RootRedirect /> },
-      { path: 'home', element: <Homepage /> },
-      { path: 'search', element: <SearchPage /> },
+      {
+        path: 'home',
+        element: <Homepage />,
+        handle: { showNavbar: showHomeChrome, showFooter: showHomeChrome },
+      },
+      {
+        path: 'search',
+        element: <SearchPage />,
+        handle: { showNavbar: (pathname: string) => pathname.startsWith('/search') },
+      },
       {
         path: 'artist/:userId',
         loader: validateNumericId('userId'),
@@ -220,7 +235,11 @@ export const router = createBrowserRouter([
         errorElement: <NotFound />,
         element: <DisplayContentsPage />,
       },
-      { path: 'lounge', element: <LoungePage /> },
+      {
+        path: 'lounge',
+        element: <LoungePage />,
+        handle: { showNavbar: showLoungeNavbar },
+      },
       /* 개인 작품 상세는 비회원도 열람할 수 있습니다. */
       {
         path: 'personal-artworks/:personalArtworkId',
@@ -228,13 +247,16 @@ export const router = createBrowserRouter([
         errorElement: <NotFound />,
         element: <PersonalArtworkDetailPage />,
       },
-      { path: 'lounge/:category', element: <LoungeBoardPage /> },
+      {
+        path: 'lounge/:category',
+        element: <LoungeBoardPage />,
+        handle: { showNavbar: showLoungeNavbar },
+      },
       {
         path: 'lounge/:category/:id',
         loader: validateNumericId('id'),
         errorElement: <NotFound />,
         element: <LoungeBoardDetailPage />,
-        handle: { hideNavbar: true },
       },
       { path: 'policy', element: <PolicyPage /> },
       { path: '403', element: <ForbiddenPage /> },
@@ -243,7 +265,11 @@ export const router = createBrowserRouter([
       {
         element: <AuthGuard />,
         children: [
-          { path: 'my', element: <MyPage /> },
+          {
+            path: 'my',
+            element: <MyPage />,
+            handle: { showNavbar: (pathname: string) => pathname === '/my' },
+          },
           { path: 'artist-verification', element: <ArtistVerificationPage /> },
 
           // 내 전시 관리 목록
@@ -508,12 +534,19 @@ export const router = createBrowserRouter([
           { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },
           { path: 'my-review', element: <MyReviewPage /> },
           { path: 'my-questions', element: <MyQuestionsPage /> },
-          { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },
-          { path: 'lounge/my-activity', element: <MyActivityPage /> },
+          {
+            path: 'lounge/:category/post',
+            element: <ExhibitionReviewWritePage />,
+            handle: { showNavbar: showLoungeNavbar },
+          },
+          {
+            path: 'lounge/my-activity',
+            element: <MyActivityPage />,
+            handle: { showNavbar: showLoungeNavbar },
+          },
           {
             path: 'lounge/:category/:id/edit',
             element: <ExhibitionReviewWritePage />,
-            handle: { hideNavbar: true, hideFooter: true },
           },
         ],
       },

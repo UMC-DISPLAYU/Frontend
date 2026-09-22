@@ -11,8 +11,10 @@ import { FNB } from './FNB';
 import { FooterContext } from './FooterContext';
 import { Navbar } from './Navbar';
 
-// FNB(푸터) 노출 경로 화이트리스트 (필요 시 배열에 경로 추가)
-const FNB_SHOW_PATHS = ['/home'];
+type LayoutHandle = {
+  showNavbar?: (pathname: string) => boolean;
+  showFooter?: (pathname: string) => boolean;
+};
 
 export function Layout() {
   const location = useLocation();
@@ -39,35 +41,13 @@ export function Layout() {
     });
   }, [location.pathname]);
 
-  // 라운지 글쓰기 페이지 (/lounge/:category/post)
-  const isLoungeWritePath = /^\/lounge\/[^/]+\/post$/.test(location.pathname);
-
-  // 하단 네비게이션 바(Navbar) 표시 여부 (홈, 검색, 라운지, 마이)
-  const showNavbarPaths = ['/home', '/search', '/lounge'];
-  const exactNavbarPaths = ['/my'];
-  const hideNavbarPaths = ['/lounge/my-questions'];
-
-  const isRouteHandleNavbarHidden = matches.some(
-    (match) => (match.handle as { hideNavbar?: boolean })?.hideNavbar,
-  );
-
+  // 기본은 숨김이며, 표시할 페이지의 route handle에서만 활성화합니다.
   const shouldShowNavbar =
-    (showNavbarPaths.some((path) => location.pathname.startsWith(path)) ||
-      exactNavbarPaths.some((path) => location.pathname === path)) &&
-    !hideNavbarPaths.some((path) => location.pathname.startsWith(path)) &&
-    !isLoungeWritePath &&
-    !isRouteHandleNavbarHidden &&
-    !manualNavbarHidden;
-
-  // 하단 푸터(FNB) 표시 여부
-  const isPathFooterShown =
-    FNB_SHOW_PATHS.some((path) => location.pathname.startsWith(path)) && !isLoungeWritePath;
-
-  const isRouteHandleFooterHidden = matches.some(
-    (match) => (match.handle as { hideFooter?: boolean })?.hideFooter,
-  );
-
-  const shouldShowFooter = isPathFooterShown && !manualFooterHidden && !isRouteHandleFooterHidden;
+    !manualNavbarHidden &&
+    matches.some((match) => (match.handle as LayoutHandle)?.showNavbar?.(location.pathname));
+  const shouldShowFooter =
+    !manualFooterHidden &&
+    matches.some((match) => (match.handle as LayoutHandle)?.showFooter?.(location.pathname));
 
   return (
     <FooterContext.Provider

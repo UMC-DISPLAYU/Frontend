@@ -10,7 +10,6 @@ import {
   ContentEditSheet,
 } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
-import { useHideFooter } from '@/components/layout';
 import { ExhibitionHeader } from '@/components/ui';
 import {
   useCreateContentCategory,
@@ -24,8 +23,6 @@ import { type Content, EMPTY_CONTENT } from '@/types';
 import { hasPermission } from '@/utils/hasPermission';
 
 export function DisplayContentsManagePage() {
-  useHideFooter();
-
   const navigate = useNavigate();
   const flowBack = useFlowBack();
   const { displayId: paramDisplayId } = useParams();

@@ -7,7 +7,6 @@ import { SectionTitle } from '@/components/display-manage/Common';
 import { ContentRow } from '@/components/display-manage/ContentRow';
 import { ExhibitionMeta } from '@/components/display-manage/ExhibitionMeta';
 import { Poster } from '@/components/display-manage/Poster';
-import { useHideFooter } from '@/components/layout';
 import { ExhibitionHeader } from '@/components/ui';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
@@ -25,8 +24,6 @@ type LocationState = {
 };
 
 export function ExhibitionWorkPage() {
-  useHideFooter();
-
   const { displayId } = useParams();
   const { state } = useLocation() as { state: LocationState | null };
 

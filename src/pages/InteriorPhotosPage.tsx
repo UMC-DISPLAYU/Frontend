@@ -23,7 +23,6 @@ import { useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
-import { useHideFooter } from '@/components/layout';
 import { AlertModal, ExhibitionHeader } from '@/components/ui';
 import {
   DEFAULT_CONTENT_IMAGE_HEIGHT,
@@ -122,8 +121,6 @@ function SortablePhotoItem({
 }
 
 export function InteriorPhotosPage() {
-  useHideFooter();
-
   const flowBack = useFlowBack();
   const { displayId: paramDisplayId, categoryId: paramCategoryId } = useParams();
 
