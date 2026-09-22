@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { Check, ChevronDown, ChevronUp, Lock, X } from 'lucide-react';
 
@@ -10,100 +10,18 @@ import {
   useDeletePersonalArtworkQuestion,
   useDeletePersonalArtworkQuestionReply,
 } from '@/hooks/queries/usePersonalArtwork';
+import { useAutoResizeTextarea } from '@/hooks/useAutoResizeTextarea';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/utils/cn';
 import { formatRelativeTime } from '@/utils/date';
 import { readImageDimensions } from '@/utils/image';
 
+import { ImagePickButton, ImagePreviewRow } from './QuestionImageControls';
+
 const QUESTION_MAX_LENGTH = 300;
 const QUESTION_MAX_IMAGES = 5;
 
 type ComposerImage = { imageUrl: string; width?: number; height?: number };
-
-/* 스크롤 대신 박스 자체가 늘어나도록 내용에 맞춰 textarea 높이를 맞춥니다.
- * imagesLength도 함께 보고 있어야, 사진 추가/삭제로 min-height class가 바뀌는 순간에도
- * (텍스트를 입력하기 전이라도) 즉시 높이를 다시 계산합니다. */
-function useAutoResizeTextarea(value: string, imagesLength: number) {
-  const ref = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }, [value, imagesLength]);
-
-  return ref;
-}
-
-/* 선택된 이미지 미리보기 줄. */
-function ImagePreviewRow({
-  images,
-  onRemove,
-  disabled = false,
-}: {
-  images: { id: string; previewUrl: string }[];
-  onRemove: (id: string) => void;
-  disabled?: boolean;
-}) {
-  if (images.length === 0) return null;
-
-  return (
-    <div className="flex w-full items-center gap-2 self-stretch overflow-x-auto pt-1.5 pr-1.5">
-      {images.map((image) => (
-        <div key={image.id} className="relative size-16 shrink-0 self-stretch">
-          <img src={image.previewUrl} alt="" className="size-16 rounded-lg object-cover" />
-          <button
-            type="button"
-            onClick={() => onRemove(image.id)}
-            disabled={disabled}
-            aria-label="이미지 삭제"
-            className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main disabled:opacity-50"
-          >
-            <X size={12} className="text-white" strokeWidth={2.5} />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* 원래 있던 "사진추가" 텍스트 버튼과 똑같은 자리에 놓는, 숨은 파일 입력을 여는 버튼. */
-function ImagePickButton({
-  onPick,
-  canAddMore,
-  disabled,
-}: {
-  onPick: (files: FileList) => void;
-  canAddMore: boolean;
-  disabled: boolean;
-}) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  return (
-    <>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={(event) => {
-          if (event.target.files?.length) onPick(event.target.files);
-          event.target.value = '';
-        }}
-        className="hidden"
-      />
-      <button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={!canAddMore || disabled}
-        className="typo-body-sm-regular text-faint underline disabled:opacity-50"
-      >
-        사진추가
-      </button>
-    </>
-  );
-}
 
 export function PersonalArtworkQuestionComposerCard({
   onClose,
