@@ -22,6 +22,7 @@ import {
 } from '@/hooks/queries/useLoungeComments';
 import { useCreateLoungeReply } from '@/hooks/queries/useLoungeReplies';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { getErrorMessage } from '@/utils/error';
 
 export const LoungeBoardDetailPage = () => {
   const navigate = useNavigate();
@@ -33,12 +34,15 @@ export const LoungeBoardDetailPage = () => {
   const {
     data: post,
     isPending: isPostPending,
-    isError: isPostError,
+    error: postError,
+    refetch: refetchPost,
   } = useLoungePostDetail(postId);
   const {
     data: commentsData,
     isPending: isCommentsPending,
     isError: isCommentsError,
+    error: commentsError,
+    isFetchNextPageError: isCommentsNextPageError,
     refetch: refetchComments,
     hasNextPage: hasMoreComments,
     fetchNextPage: fetchMoreComments,
@@ -92,7 +96,12 @@ export const LoungeBoardDetailPage = () => {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMoreComments && !isFetchingMoreComments) {
+        if (
+          entries[0].isIntersecting &&
+          hasMoreComments &&
+          !isFetchingMoreComments &&
+          !isCommentsError
+        ) {
           fetchMoreComments();
         }
       },
@@ -103,11 +112,10 @@ export const LoungeBoardDetailPage = () => {
     return () => {
       observer.disconnect();
     };
-  }, [hasMoreComments, isFetchingMoreComments, fetchMoreComments]);
+  }, [hasMoreComments, isFetchingMoreComments, fetchMoreComments, isCommentsError]);
 
   const postCategoryKey = post ? toLoungeCategoryKey(post.category) : undefined;
   const isValidPost = isValidCategory && !!post && postCategoryKey === category;
-  const isLoading = isPostPending || isCommentsPending;
 
   const visibleComments = commentsData
     ? commentsData.pages
@@ -129,22 +137,24 @@ export const LoungeBoardDetailPage = () => {
         className="px-5"
       />
 
-      {!isValidCategory || isPostError ? (
+      {!isValidCategory || !Number.isFinite(postId) || postId <= 0 ? (
         <ErrorView
           fullScreen={false}
           title="게시글을 찾을 수 없습니다"
           message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
           onRetry={() => flowBack()}
+          retryLabel="뒤로가기"
         />
-      ) : isLoading ? (
-        <LoadingView fullScreen={false} />
-      ) : isValidPost && isCommentsError ? (
+      ) : postError ? (
         <ErrorView
           fullScreen={false}
-          title="댓글을 불러오지 못했습니다"
-          message="잠시 후 다시 시도해주세요."
-          onRetry={() => refetchComments()}
+          message={getErrorMessage(postError, '게시글을 불러오지 못했어요.')}
+          onRetry={() => {
+            void refetchPost();
+          }}
         />
+      ) : isPostPending ? (
+        <LoadingView fullScreen={false} />
       ) : isValidPost && post ? (
         <>
           <main className="flex-1 min-h-0 overflow-y-auto scrollbar-none px-5 pt-5 pb-80 flex flex-col gap-7">
@@ -165,6 +175,10 @@ export const LoungeBoardDetailPage = () => {
             </article>
 
             {/* 댓글 정보 섹션 */}
+            {isCommentsPending && (
+              <LoadingView fullScreen={false} message="댓글을 불러오는 중..." />
+            )}
+
             {visibleComments.length > 0 && (
               <section className="w-full flex flex-col">
                 {visibleComments.map(({ comment, isDeleted }) => (
@@ -185,6 +199,15 @@ export const LoungeBoardDetailPage = () => {
                   </div>
                 )}
               </section>
+            )}
+            {isCommentsError && (
+              <ErrorView
+                fullScreen={false}
+                message={getErrorMessage(commentsError, '댓글을 불러오지 못했어요.')}
+                onRetry={() => {
+                  void (isCommentsNextPageError ? fetchMoreComments() : refetchComments());
+                }}
+              />
             )}
           </main>
 
@@ -220,6 +243,7 @@ export const LoungeBoardDetailPage = () => {
           title="게시글을 찾을 수 없습니다"
           message="요청하신 게시글이 존재하지 않거나 삭제되었습니다."
           onRetry={() => flowBack()}
+          retryLabel="뒤로가기"
         />
       )}
     </div>

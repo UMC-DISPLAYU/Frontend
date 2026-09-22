@@ -33,6 +33,7 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { usePersonalFeelingPolicy, usePersonalQuestionPolicy } from '@/hooks/usePolicy';
 import { parseServerDate } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
 function formatImageUrls(images: { imageUrl?: string }[] = []) {
@@ -84,7 +85,7 @@ export function PersonalArtworkDetailPage() {
   /* 질문 탭 진입 시 입력창을 바로 띄우지 않고, "+" 클릭 시에만 새 질문 작성 모드로 엽니다. */
   const [isComposingQuestion, setIsComposingQuestion] = useState(false);
 
-  const { data: artwork, isPending, isError } = usePersonalArtwork(personalArtworkId);
+  const { data: artwork, isPending, error, refetch } = usePersonalArtwork(personalArtworkId);
   const { data: feelings } = usePersonalArtworkFeelings(personalArtworkId);
   const { data: questions } = usePersonalArtworkQuestions(personalArtworkId);
   const { data: userMe } = useUserMe();
@@ -104,13 +105,24 @@ export function PersonalArtworkDetailPage() {
     replyQuestion?.personalQuestionId ?? 0,
   );
 
-  if (isPending) return <LoadingView message="작품 정보를 불러오는 중..." />;
-  if (isError || !artwork) {
+  if (isPending && Number.isFinite(personalArtworkId) && personalArtworkId > 0)
+    return <LoadingView message="작품 정보를 불러오는 중..." />;
+  if (error || !artwork) {
     return (
       <ErrorView
-        title="작품 정보를 찾을 수 없습니다"
-        message="요청하신 작품 정보가 존재하지 않거나 삭제되었습니다."
-        onRetry={() => flowBack()}
+        message={
+          error
+            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
+            : '작품 정보를 찾을 수 없습니다'
+        }
+        onRetry={
+          error
+            ? () => {
+                void refetch();
+              }
+            : () => flowBack()
+        }
+        retryLabel={error ? '다시 시도' : '뒤로가기'}
       />
     );
   }
