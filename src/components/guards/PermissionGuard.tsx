@@ -2,12 +2,14 @@ import { type ReactNode, useEffect } from 'react';
 
 import { Navigate, useLocation } from 'react-router-dom';
 
+import { ErrorView } from '@/components/common/ErrorView';
 import { LoadingView } from '@/components/common/LoadingView';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
 import { useAuthStore } from '@/stores/authStore';
 import type { PermissionMap, PolicyAction, PolicyResource } from '@/types/policy';
+import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
 type LocationStateRequirement = string | string[];
@@ -41,7 +43,7 @@ export function PermissionGuard<Resource extends PolicyResource>({
 }: PermissionGuardProps<Resource>) {
   const location = useLocation();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { isPending } = useUserMe();
+  const { isPending, error, refetch } = useUserMe();
   const waitingForUser = !!accessToken && isPending;
   const artistPolicy = useArtistPolicy();
   const { artistVerificationModal, openArtistVerificationModal } =
@@ -53,7 +55,7 @@ export function PermissionGuard<Resource extends PolicyResource>({
     ? hasPermission(resolvedPolicy as PermissionMap, action as keyof PermissionMap)
     : false;
   const shouldShowArtistModal =
-    !waitingForUser && resource === 'artist' && action === 'view' && !canEnter;
+    !waitingForUser && !error && resource === 'artist' && action === 'view' && !canEnter;
 
   useEffect(() => {
     if (shouldShowArtistModal) {
@@ -62,6 +64,15 @@ export function PermissionGuard<Resource extends PolicyResource>({
   }, [openArtistVerificationModal, shouldShowArtistModal]);
 
   if (waitingForUser) return <LoadingView />;
+  if (accessToken && error)
+    return (
+      <ErrorView
+        message={getErrorMessage(error, '사용자 정보를 확인하지 못했어요. 다시 시도해주세요.')}
+        onRetry={() => {
+          void refetch();
+        }}
+      />
+    );
 
   if (!satisfiesState) {
     return <Navigate to={fallback} replace />;

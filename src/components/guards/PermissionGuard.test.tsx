@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/api/apiError';
+import { ErrorView } from '@/components/common/ErrorView';
 import { LoadingView } from '@/components/common/LoadingView';
 import type { PermissionMap } from '@/types/policy';
 
@@ -8,6 +10,8 @@ import { PermissionGuard } from './PermissionGuard';
 const mocks = vi.hoisted(() => ({
   accessToken: null as string | null,
   isPending: false,
+  error: null as Error | null,
+  refetch: vi.fn(),
   locationState: undefined as unknown,
   artistPolicy: { view: () => true } as PermissionMap<'view'>,
   openArtistVerificationModal: vi.fn(),
@@ -17,11 +21,13 @@ vi.mock('@/stores/authStore', () => ({
   useAuthStore: (selector: (state: typeof mocks) => unknown) => selector(mocks),
 }));
 vi.mock('@/hooks/queries/useUserProfile', () => ({
-  useUserMe: () => ({ isPending: mocks.isPending }),
+  useUserMe: () => ({ isPending: mocks.isPending, error: mocks.error, refetch: mocks.refetch }),
 }));
 beforeEach(() => {
   mocks.accessToken = null;
   mocks.isPending = false;
+  mocks.error = null;
+  mocks.refetch.mockClear();
   mocks.openArtistVerificationModal.mockClear();
 });
 
@@ -64,6 +70,16 @@ function artworkPolicy(
 }
 
 describe('PermissionGuard', () => {
+  it('사용자 조회 장애는 인증/권한 부족으로 처리하지 않고 재조회한다', () => {
+    mocks.accessToken = 'token';
+    mocks.error = new ApiError('internal', { status: 500 });
+    const element = PermissionGuard({ resource: 'artist', action: 'view', children: <div /> });
+    expect(element.type).toBe(ErrorView);
+    expect(element.props.message).toContain('서버');
+    expect(mocks.openArtistVerificationModal).not.toHaveBeenCalled();
+    element.props.onRetry();
+    expect(mocks.refetch).toHaveBeenCalledTimes(1);
+  });
   it.each(['artist', 'artwork'] as const)(
     '%s: 로그인 사용자 조회 중에는 권한을 거부하지 않는다',
     (resource) => {
