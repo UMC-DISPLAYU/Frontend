@@ -1,25 +1,12 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 import type { ApiResponseDto } from '@/api/dto';
 import { useAuthStore } from '@/stores/authStore';
 import { savePendingRedirect } from '@/utils/pendingRedirect';
 
-export class ApiError extends Error {
-  code?: string;
-  details?: string | null;
-  status?: number;
+import { ApiError, SessionChangedError } from './apiError';
 
-  constructor(
-    message: string,
-    options: { code?: string; details?: string | null; status?: number } = {},
-  ) {
-    super(message);
-    this.name = 'ApiError';
-    this.code = options.code;
-    this.details = options.details;
-    this.status = options.status;
-  }
-}
+export { ApiError } from './apiError';
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -27,10 +14,16 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-axiosInstance.interceptors.request.use((config) => {
+type SessionRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+  _sessionVersion?: number;
+};
+
+axiosInstance.interceptors.request.use((config: SessionRequestConfig) => {
   config.headers.set('Accept', 'application/json');
 
-  const accessToken = useAuthStore.getState().accessToken;
+  const { accessToken, sessionVersion } = useAuthStore.getState();
+  config._sessionVersion ??= sessionVersion;
   const isSignupRequest = config.url?.includes('/v1/auth/signup');
 
   if (accessToken && !isSignupRequest && !config.headers.has('Authorization')) {
@@ -40,7 +33,7 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-let refreshPromise: Promise<string> | null = null;
+let refresh: { sessionVersion: number; promise: Promise<string> } | null = null;
 
 axiosInstance.interceptors.response.use(
   (response) => {
@@ -60,7 +53,7 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   async (error: AxiosError<ApiResponseDto<unknown>>) => {
-    const originalRequest = error.config as typeof error.config & { _retry?: boolean };
+    const originalRequest = error.config as SessionRequestConfig | undefined;
     const data = error.response?.data;
 
     // 401 에러이고 refresh 요청이 아니며, 아직 재시도하지 않은 경우 토큰 갱신 시도
@@ -70,29 +63,42 @@ axiosInstance.interceptors.response.use(
       !originalRequest.url?.includes('/v1/auth/refresh') &&
       !originalRequest._retry
     ) {
+      const sessionVersion = originalRequest._sessionVersion;
+      if (sessionVersion !== useAuthStore.getState().sessionVersion) {
+        throw new SessionChangedError();
+      }
       originalRequest._retry = true;
-      refreshPromise ??= axiosInstance
-        .post<ApiResponseDto<{ accessToken: string }>>('/v1/auth/refresh')
-        .then((response) => {
-          const token = response.data.success?.data?.accessToken;
-          if (!token) throw new Error('Failed to refresh access token');
+      if (refresh?.sessionVersion !== sessionVersion) {
+        const promise = axiosInstance
+          .post<ApiResponseDto<{ accessToken: string }>>('/v1/auth/refresh')
+          .then((response) => {
+            const token = response.data.success?.data?.accessToken;
+            if (!token) throw new Error('Failed to refresh access token');
+            if (useAuthStore.getState().sessionVersion !== sessionVersion) {
+              throw new SessionChangedError();
+            }
+            useAuthStore.getState().refreshAccessToken(token);
+            return token;
+          })
+          .catch((refreshError) => {
+            if (useAuthStore.getState().sessionVersion !== sessionVersion) throw refreshError;
+            useAuthStore.getState().clearAccessToken();
+            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+              savePendingRedirect(window.location.pathname + window.location.search);
+              window.location.replace('/login');
+            }
+            throw refreshError;
+          })
+          .finally(() => {
+            if (refresh?.sessionVersion === sessionVersion) refresh = null;
+          });
+        refresh = { sessionVersion, promise };
+      }
 
-          useAuthStore.getState().setAccessToken(token);
-          return token;
-        })
-        .catch((refreshError) => {
-          useAuthStore.getState().clearAccessToken();
-          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-            savePendingRedirect(window.location.pathname + window.location.search);
-            window.location.replace('/login');
-          }
-          throw refreshError;
-        })
-        .finally(() => {
-          refreshPromise = null;
-        });
-
-      const token = await refreshPromise;
+      const token = await refresh.promise;
+      if (useAuthStore.getState().sessionVersion !== sessionVersion) {
+        throw new SessionChangedError();
+      }
       originalRequest.headers.set('Authorization', `Bearer ${token}`);
       return axiosInstance(originalRequest);
     }

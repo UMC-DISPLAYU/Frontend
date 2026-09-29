@@ -2,6 +2,8 @@ import { type ReactNode, useEffect } from 'react';
 
 import { Navigate, useLocation } from 'react-router-dom';
 
+import { LoadingView } from '@/components/common/LoadingView';
+import { useIsUserMePending } from '@/hooks/queries/useUserProfile';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
 import type { PermissionMap, PolicyAction, PolicyResource } from '@/types/policy';
@@ -37,6 +39,7 @@ export function PermissionGuard<Resource extends PolicyResource>({
   children,
 }: PermissionGuardProps<Resource>) {
   const location = useLocation();
+  const waitingForUser = useIsUserMePending();
   const artistPolicy = useArtistPolicy();
   const { artistVerificationModal, openArtistVerificationModal } =
     useArtistVerificationRequiredModal();
@@ -46,13 +49,16 @@ export function PermissionGuard<Resource extends PolicyResource>({
   const canEnter = resolvedPolicy
     ? hasPermission(resolvedPolicy as PermissionMap, action as keyof PermissionMap)
     : false;
-  const shouldShowArtistModal = resource === 'artist' && action === 'view' && !canEnter;
+  const shouldShowArtistModal =
+    !waitingForUser && resource === 'artist' && action === 'view' && !canEnter;
 
   useEffect(() => {
     if (shouldShowArtistModal) {
       openArtistVerificationModal();
     }
   }, [openArtistVerificationModal, shouldShowArtistModal]);
+
+  if (waitingForUser) return <LoadingView />;
 
   if (!satisfiesState) {
     return <Navigate to={fallback} replace />;

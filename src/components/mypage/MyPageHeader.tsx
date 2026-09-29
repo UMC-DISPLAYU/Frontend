@@ -5,9 +5,8 @@ import Share from '@/assets/mypage/share.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { useArtistPolicy, usePersonalArtworkPolicy } from '@/hooks/usePolicy';
-import type { UserProfile } from '@/hooks/useUserProfile';
 import { useMyPageStore } from '@/stores/useMyPageStore';
-import type { TabKey } from '@/types/mypage';
+import type { TabKey, UserProfile } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
 
