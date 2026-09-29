@@ -1,11 +1,11 @@
 import { BottomButton } from '@/components/common';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
-import { useUserStore } from '@/stores/useUserStore';
 
 import { ChoiceCard } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
 
 interface AddArtworkPageProps {
+  displayArtistName: string;
+  accountId: string;
   registerMode: 'own' | 'other';
   onBack: () => void;
   onChangeRegisterMode: (mode: 'own' | 'other') => void;
@@ -13,15 +13,13 @@ interface AddArtworkPageProps {
 }
 
 function AddArtworkPage({
+  displayArtistName,
+  accountId,
   registerMode,
   onBack,
   onChangeRegisterMode,
   onNext,
 }: AddArtworkPageProps) {
-  const displayArtistName = useUserStore((s) => s.displayArtistName);
-  const { data: userMe } = useUserMe();
-  const accountId = userMe?.nickname ?? '';
-
   return (
     <ArtworkRegisterLayout
       title="전시작 추가"

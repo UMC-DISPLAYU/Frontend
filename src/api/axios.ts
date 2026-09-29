@@ -4,7 +4,7 @@ import type { ApiResponseDto } from '@/api/dto';
 import { useAuthStore } from '@/stores/authStore';
 import { savePendingRedirect } from '@/utils/pendingRedirect';
 
-import { ApiError } from './apiError';
+import { ApiError, SessionChangedError } from './apiError';
 
 export { ApiError } from './apiError';
 
@@ -65,7 +65,7 @@ axiosInstance.interceptors.response.use(
     ) {
       const sessionVersion = originalRequest._sessionVersion;
       if (sessionVersion !== useAuthStore.getState().sessionVersion) {
-        throw new Error('Authentication session changed');
+        throw new SessionChangedError();
       }
       originalRequest._retry = true;
       if (refresh?.sessionVersion !== sessionVersion) {
@@ -75,7 +75,7 @@ axiosInstance.interceptors.response.use(
             const token = response.data.success?.data?.accessToken;
             if (!token) throw new Error('Failed to refresh access token');
             if (useAuthStore.getState().sessionVersion !== sessionVersion) {
-              throw new Error('Authentication session changed');
+              throw new SessionChangedError();
             }
             useAuthStore.getState().refreshAccessToken(token);
             return token;
@@ -97,7 +97,7 @@ axiosInstance.interceptors.response.use(
 
       const token = await refresh.promise;
       if (useAuthStore.getState().sessionVersion !== sessionVersion) {
-        throw new Error('Authentication session changed');
+        throw new SessionChangedError();
       }
       originalRequest.headers.set('Authorization', `Bearer ${token}`);
       return axiosInstance(originalRequest);

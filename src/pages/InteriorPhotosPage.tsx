@@ -38,8 +38,7 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { useDisplayContentPolicy } from '@/hooks/usePolicy';
-import { useCurrentPolicyUser } from '@/hooks/usePolicy';
+import { useCurrentPolicyUser, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { policies } from '@/policies/policies';
 import { hasPermission } from '@/utils/hasPermission';
 

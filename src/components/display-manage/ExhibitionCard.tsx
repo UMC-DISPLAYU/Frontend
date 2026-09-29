@@ -1,7 +1,10 @@
 import { MoreHorizontal } from 'lucide-react';
 
-import { useDisplayArtistNamePolicy, useDisplayPolicy } from '@/hooks/usePolicy';
-import { useCurrentPolicyUser } from '@/hooks/usePolicy';
+import {
+  useCurrentPolicyUser,
+  useDisplayArtistNamePolicy,
+  useDisplayPolicy,
+} from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
