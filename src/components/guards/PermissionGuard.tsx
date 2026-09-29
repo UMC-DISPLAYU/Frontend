@@ -3,10 +3,9 @@ import { type ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { LoadingView } from '@/components/common/LoadingView';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useIsUserMePending } from '@/hooks/queries/useUserProfile';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
-import { useAuthStore } from '@/stores/authStore';
 import type { PermissionMap, PolicyAction, PolicyResource } from '@/types/policy';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -40,9 +39,7 @@ export function PermissionGuard<Resource extends PolicyResource>({
   children,
 }: PermissionGuardProps<Resource>) {
   const location = useLocation();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const { isPending } = useUserMe();
-  const waitingForUser = !!accessToken && isPending;
+  const waitingForUser = useIsUserMePending();
   const artistPolicy = useArtistPolicy();
   const { artistVerificationModal, openArtistVerificationModal } =
     useArtistVerificationRequiredModal();

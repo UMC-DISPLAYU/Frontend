@@ -43,7 +43,6 @@ import { useArtworkRegisterDraft } from '@/hooks/useArtworkRegisterDraft';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
-import { useUserStore } from '@/stores/useUserStore';
 import { hasPermission } from '@/utils/hasPermission';
 
 import {
@@ -449,7 +448,6 @@ function ArtworkRegisterPageContent() {
   const { data: userMe } = useUserMe();
   const userId = userMe?.id ?? null;
   const accountId = userMe?.nickname ?? '';
-  const setDisplayArtistName = useUserStore((s) => s.setDisplayArtistName);
   const { data: memberList } = useDisplayMembers(displayId);
   const { data: artworkList } = useDisplayArtworks(displayId);
   const { data: display } = useDisplayDetail(displayId);
@@ -572,10 +570,6 @@ function ArtworkRegisterPageContent() {
       tag: '대표자',
     };
   }, [accountId, display?.ownerUserId, memberList, myDisplayNickname, userId]);
-
-  useEffect(() => {
-    setDisplayArtistName(myDisplayNickname || accountId);
-  }, [accountId, myDisplayNickname, setDisplayArtistName]);
 
   const displayAuthor = useMemo(() => {
     /* 본인 등록은 로그인 사용자를, 팀원 선택은 해당 팀원의 계정을 작가로 연결합니다. */
@@ -1009,6 +1003,8 @@ function ArtworkRegisterPageContent() {
     <>
       {step === 'choice' && isOwner && (
         <AddArtworkPage
+          displayArtistName={myDisplayNickname || accountId}
+          accountId={accountId}
           registerMode={registerMode}
           onBack={handleBack}
           onChangeRegisterMode={setRegisterMode}

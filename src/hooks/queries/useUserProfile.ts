@@ -25,13 +25,19 @@ import { useAuthStore } from '@/stores/authStore';
 export const useUserMe = (options: { enabled?: boolean } = {}) => {
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  const query = useQuery({
+  return useQuery({
     queryKey: queryKeys.users.me(),
     queryFn: getUserMe,
     enabled: !!accessToken && (options.enabled ?? true),
   });
+};
 
-  return { ...query, data: accessToken ? query.data : undefined };
+/* 로그인 상태에서 사용자 정보를 아직 받지 못했는지 여부입니다. 권한 판단 전에 대기할 때 씁니다. */
+export const useIsUserMePending = () => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { isPending } = useUserMe();
+
+  return !!accessToken && isPending;
 };
 
 export const useCheckNickname = () =>

@@ -13,11 +13,8 @@ const mocks = vi.hoisted(() => ({
   openArtistVerificationModal: vi.fn(),
 }));
 
-vi.mock('@/stores/authStore', () => ({
-  useAuthStore: (selector: (state: typeof mocks) => unknown) => selector(mocks),
-}));
 vi.mock('@/hooks/queries/useUserProfile', () => ({
-  useUserMe: () => ({ isPending: mocks.isPending }),
+  useIsUserMePending: () => !!mocks.accessToken && mocks.isPending,
 }));
 beforeEach(() => {
   mocks.accessToken = null;

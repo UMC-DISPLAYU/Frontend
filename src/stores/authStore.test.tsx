@@ -9,7 +9,6 @@ import { useCurrentPolicyUser } from '@/hooks/usePolicy';
 import { queryClient } from '@/queryClient';
 
 import { useAuthStore } from './authStore';
-import { useUserStore } from './useUserStore';
 
 const storage = vi.hoisted(() => {
   const items = new Map<string, string>();
@@ -72,28 +71,24 @@ beforeEach(() => {
 });
 
 describe('사용자 세션과 Query 캐시', () => {
-  it('새 로그인과 로그아웃은 이전 계정 캐시와 전시 작가명을 비운다', () => {
+  it('새 로그인과 로그아웃은 이전 계정 캐시를 비운다', () => {
     useAuthStore.getState().setAccessToken('account-a');
     queryClient.setQueryData(queryKeys.users.me(), me);
     queryClient.setQueryData(['private-data'], ['account-a']);
-    useUserStore.getState().setDisplayArtistName('이전 전시 작가');
 
     useAuthStore.getState().setAccessToken('account-b');
     expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
-    expect(useUserStore.getState().displayArtistName).toBe('');
     queryClient.setQueryData(queryKeys.users.me(), { ...me, id: 2 });
     useAuthStore.getState().clearAccessToken();
     expect(useAuthStore.getState().accessToken).toBeNull();
     expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
   });
 
-  it('같은 세션의 토큰 갱신은 캐시와 작성 중인 전시 작가명을 유지한다', () => {
+  it('같은 세션의 토큰 갱신은 캐시를 유지한다', () => {
     useAuthStore.getState().setAccessToken('old-token');
     queryClient.setQueryData(queryKeys.users.me(), me);
-    useUserStore.getState().setDisplayArtistName('전시 작가');
     useAuthStore.getState().refreshAccessToken('new-token');
     expect(queryClient.getQueryData(queryKeys.users.me())).toEqual(me);
-    expect(useUserStore.getState().displayArtistName).toBe('전시 작가');
     expect(useAuthStore.getState().accessToken).toBe('new-token');
   });
 
@@ -140,7 +135,6 @@ describe('사용자 세션과 Query 캐시', () => {
     queryClient.setQueryData(queryKeys.users.me(), { ...me, isVerified: true });
     expect(renderUser()).toContain('1:true');
     useAuthStore.getState().clearAccessToken();
-    queryClient.setQueryData(queryKeys.users.me(), { ...me, isVerified: true });
     expect(renderUser()).toContain('guest:false');
   });
 });
