@@ -8,7 +8,10 @@ import { ApiError, axiosInstance } from './axios';
 import { apiRequest } from './client';
 
 vi.mock('@/stores/authStore', () => ({
-  useAuthStore: { getState: () => ({ accessToken: null, sessionVersion: 0 }) },
+  useAuthStore: {
+    getState: () => ({ accessToken: null, sessionVersion: 0 }),
+    subscribe: vi.fn(),
+  },
 }));
 const adapter = axiosInstance.defaults.adapter;
 afterEach(() => {
