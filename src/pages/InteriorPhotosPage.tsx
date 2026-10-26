@@ -38,9 +38,8 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { useCurrentPolicyUser, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { policies } from '@/policies/policies';
-import { useAuthStore } from '@/stores/authStore';
 import { hasPermission } from '@/utils/hasPermission';
 
 type Photo = {
@@ -207,7 +206,7 @@ function InteriorPhotos({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savedOrderRef = useRef<Photo[]>(initialPhotos);
 
-  const user = useAuthStore((s) => s.user);
+  const user = useCurrentPolicyUser();
 
   const scope = { displayId, categoryId };
   const imageUpload = useImageUpload({ domain: 'display' });

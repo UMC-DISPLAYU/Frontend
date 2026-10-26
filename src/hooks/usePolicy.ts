@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import type {
   ArtworkFeelingDto,
@@ -23,33 +23,15 @@ import type {
   DisplayPolicyResource,
   UserOwnedResource,
 } from '@/policies/util';
-import { useAuthStore } from '@/stores/authStore';
 import type { PermissionMap, PolicyAction, PolicyPermissionMap, User } from '@/types/policy';
 
-//매 권한 로직 훅을 호출할 때 마다, 사용자 속성을 가져옴
-function useCurrentPolicyUser(): User {
-  const guest: User = {
-    id: null,
-    isArtistVerified: false,
-  };
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const storedUser = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
+export function useCurrentPolicyUser(): User {
+  const { data: me } = useUserMe();
 
-  const { data: me } = useUserMe({ enabled: Boolean(accessToken) });
-
-  useEffect(() => {
-    if (!accessToken || !me) return;
-
-    setUser({
-      id: me.id,
-      isArtistVerified: me.isVerified,
-    });
-  }, [accessToken, me, setUser]);
-
-  if (!accessToken) return guest;
-
-  return storedUser ?? guest;
+  return useMemo(
+    () => ({ id: me?.id ?? null, isArtistVerified: me?.isVerified ?? false }),
+    [me?.id, me?.isVerified],
+  );
 }
 
 export function useDisplayPolicy(display: DisplayPolicyResource): PolicyPermissionMap<'display'> {

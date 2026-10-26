@@ -4,8 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axiosInstance } from './axios';
 
 const auth = vi.hoisted(() => ({
-  accessToken: 'old-token',
-  setAccessToken: vi.fn(),
+  accessToken: 'old-token' as string | null,
+  sessionVersion: 0,
+  refreshAccessToken: vi.fn(),
   clearAccessToken: vi.fn(),
 }));
 
@@ -33,6 +34,14 @@ describe('토큰 갱신 요청 공유', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     auth.accessToken = 'old-token';
+    auth.sessionVersion = 0;
+    auth.refreshAccessToken.mockImplementation((token: string) => {
+      auth.accessToken = token;
+    });
+    auth.clearAccessToken.mockImplementation(() => {
+      auth.accessToken = null;
+      auth.sessionVersion++;
+    });
   });
 
   afterEach(() => {
@@ -86,7 +95,7 @@ describe('토큰 갱신 요청 공유', () => {
       );
       expect(refreshCalls).toBe(1);
       if (outcome === 'success') {
-        expect(auth.setAccessToken).toHaveBeenCalledWith('new-token');
+        expect(auth.refreshAccessToken).toHaveBeenCalledWith('new-token');
         expect(replace).not.toHaveBeenCalled();
       } else {
         expect(auth.clearAccessToken).toHaveBeenCalledTimes(1);
@@ -94,6 +103,43 @@ describe('토큰 갱신 요청 공유', () => {
         expect(replace).toHaveBeenCalledOnce();
         expect(replace).toHaveBeenCalledWith('/login');
       }
+    },
+  );
+
+  it.each(['late-401', 'refresh-success', 'refresh-failure'])(
+    '세션 변경 뒤 도착한 %s 응답은 새 로그인 상태를 변경하지 않는다',
+    async (outcome) => {
+      let release!: () => void;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let initialCalls = 0;
+      let refreshCalls = 0;
+      axiosInstance.defaults.adapter = async (config) => {
+        if (config.url === '/v1/auth/refresh') {
+          refreshCalls++;
+          await gate;
+          if (outcome === 'refresh-failure') throw unauthorized(config, 500);
+          return response(config, 200, {
+            resultType: 'SUCCESS',
+            success: { data: { accessToken: 'stale-token' } },
+          });
+        }
+        initialCalls++;
+        if (outcome === 'late-401') await gate;
+        throw unauthorized(config);
+      };
+      const pending = Promise.allSettled([axiosInstance.get('/private')]);
+      await vi.waitFor(() => expect(outcome === 'late-401' ? initialCalls : refreshCalls).toBe(1));
+      auth.accessToken = 'other-account';
+      auth.sessionVersion++;
+      release();
+      expect((await pending)[0].status).toBe('rejected');
+      expect(auth.accessToken).toBe('other-account');
+      expect(auth.refreshAccessToken).not.toHaveBeenCalled();
+      expect(auth.clearAccessToken).not.toHaveBeenCalled();
+      expect(initialCalls).toBe(1);
+      expect(refreshCalls).toBe(outcome === 'late-401' ? 0 : 1);
     },
   );
 

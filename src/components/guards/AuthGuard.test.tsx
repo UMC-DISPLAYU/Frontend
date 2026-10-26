@@ -1,9 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { LoadingView } from '@/components/common/LoadingView';
+
 import { AuthGuard } from './AuthGuard';
 
 const mocks = vi.hoisted(() => ({
   accessToken: null as string | null,
+  isUserPending: false,
   location: { pathname: '/private' },
   navigate: vi.fn(),
 }));
@@ -11,6 +14,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/stores/authStore', () => ({
   useAuthStore: (selector: (state: { accessToken: string | null }) => unknown) =>
     selector({ accessToken: mocks.accessToken }),
+}));
+
+vi.mock('@/hooks/queries/useUserProfile', () => ({
+  useIsUserMePending: () => mocks.isUserPending,
 }));
 
 vi.mock('@/hooks/useFlowBack', () => ({
@@ -69,6 +76,16 @@ describe('AuthGuard', () => {
 
     expect(element.type).toBeTypeOf('function');
     expect(element.type()).toEqual(<div data-testid="outlet" />);
+  });
+
+  it('로그인 사용자 정보를 받는 중에는 children 대신 로딩 화면을 렌더링한다', () => {
+    mocks.accessToken = 'access-token';
+    mocks.isUserPending = true;
+
+    const element = AuthGuard({ children: <div>Protected Content</div> });
+
+    expect(element.type).toBe(LoadingView);
+    mocks.isUserPending = false;
   });
 
   it('accessToken이 없으면 로그인 확인 모달을 렌더링한다', () => {

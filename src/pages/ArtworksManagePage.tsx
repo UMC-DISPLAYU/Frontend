@@ -12,8 +12,8 @@ import {
   useUpdateArtworkOrder,
 } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
-import { useUserStore } from '@/stores/useUserStore';
 // import { useArtworkPolicy } from '@/hooks/usePolicy';
 // import type { ArtworkPolicyResource } from '@/policies/util';
 import type { Work } from '@/types/artworkManage';
@@ -24,7 +24,8 @@ export function ArtworksManagePage() {
   const { startFlow } = useFlowContext();
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
-  const userId = useUserStore((s) => s.userId);
+  const { data: userMe } = useUserMe();
+  const userId = userMe?.id;
 
   // 중첩 라우트의 displayId를 최우선으로 사용하고 없으면 쿼리 스트링에서 가져옵니다.
   const displayId = Number(paramDisplayId ?? searchParams.get('displayId') ?? 0);

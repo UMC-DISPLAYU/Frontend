@@ -55,3 +55,15 @@ export interface ArtistProfile {
   bio: string;
   portfolioUrl: string;
 }
+
+export interface UserProfile {
+  name: string;
+  avatar: string;
+  school?: string;
+  fields?: string[];
+  exhibitionCount?: string;
+  artworkCount?: string;
+  bio?: string;
+  portfolioUrl?: string;
+  caption?: string;
+}

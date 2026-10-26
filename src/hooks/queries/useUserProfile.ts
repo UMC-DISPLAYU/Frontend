@@ -32,17 +32,27 @@ export const useUserMe = (options: { enabled?: boolean } = {}) => {
   });
 };
 
+/* 로그인 상태에서 사용자 정보를 아직 받지 못했는지 여부입니다. 권한 판단 전에 대기할 때 씁니다. */
+export const useIsUserMePending = () => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { isPending } = useUserMe();
+
+  return !!accessToken && isPending;
+};
+
 export const useCheckNickname = () =>
   useMutation({
     mutationFn: (params: CheckNicknameRequestDto) => checkNickname(params),
   });
 
-export const useMyArtistProfile = ({ enabled = true }: { enabled?: boolean } = {}) =>
-  useQuery({
+export const useMyArtistProfile = ({ enabled = true }: { enabled?: boolean } = {}) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  return useQuery({
     queryKey: queryKeys.users.artistProfile(),
     queryFn: getMyArtistProfile,
-    enabled,
+    enabled: !!accessToken && enabled,
   });
+};
 
 export const useUserArtistProfile = (userId: number) =>
   useQuery({
@@ -91,30 +101,18 @@ export const useCreateMyArtistProfile = () => {
 
   return useMutation({
     mutationFn: (body: CreateArtistProfileRequestDto) => createMyArtistProfile(body),
-    onSuccess: (artistProfile) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
-
-      const storedUser = useAuthStore.getState().user;
-
-      if (!storedUser) return;
-
-      useAuthStore.getState().setUser({
-        ...storedUser,
-        isArtistVerified: artistProfile.isVerified,
-      });
     },
   });
 };
 
 export const useDeleteUserMe = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: deleteUserMe,
     onSuccess: () => {
       useAuthStore.getState().clearAccessToken();
-      queryClient.clear();
     },
   });
 };
