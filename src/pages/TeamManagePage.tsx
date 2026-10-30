@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import SearchIcon from '@/assets/exhibition-register/search.svg';
+import { ErrorView, LoadingView } from '@/components/common';
 import { InviteLinkSection, type Member, MemberRow } from '@/components/team-manage';
 import { ExhibitionHeader } from '@/components/ui';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
@@ -15,6 +16,7 @@ import {
 import { useUserSearch } from '@/hooks/queries/useUserSearch';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useDisplayInvitationPolicy } from '@/hooks/usePolicy';
+import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
 /*
@@ -33,7 +35,12 @@ export function TeamManage() {
 
   const { data: display } = useDisplayDetail(displayId);
   const { data: memberList, isLoading: membersLoading } = useDisplayMembers(displayId);
-  const { data: searchResults = [], isFetching: searching } = useUserSearch(keyword);
+  const {
+    data: searchResults = [],
+    isFetching: searching,
+    error: searchError,
+    refetch: retrySearch,
+  } = useUserSearch(keyword);
   const displayInvitationPolicy = useDisplayInvitationPolicy(
     display ?? {
       ownerUserId: 0,
@@ -145,32 +152,46 @@ export function TeamManage() {
         {canCreateInvitation && isSearching ? (
           <div className="mt-6 flex flex-col gap-3">
             <span className="typo-body-sm-bold text-main">검색 결과</span>
-            <ul className="flex flex-col gap-2.5">
-              {searchResults.map((user) => {
-                const isMember = memberUserIds.has(user.userId);
-                const isPendingOrInvited =
-                  pendingUserIds.has(user.userId) || invitedUserIds.has(user.userId);
+            {searching ? (
+              <LoadingView fullScreen={false} message="검색 중..." />
+            ) : searchError ? (
+              <ErrorView
+                fullScreen={false}
+                message={getErrorMessage(searchError, '사용자를 검색하지 못했어요.')}
+                onRetry={() => {
+                  void retrySearch();
+                }}
+              />
+            ) : (
+              <>
+                <ul className="flex flex-col gap-2.5">
+                  {searchResults.map((user) => {
+                    const isMember = memberUserIds.has(user.userId);
+                    const isPendingOrInvited =
+                      pendingUserIds.has(user.userId) || invitedUserIds.has(user.userId);
 
-                return (
-                  <MemberRow
-                    key={user.userId}
-                    member={{
-                      id: String(user.userId),
-                      name: user.nickname,
-                      nickname: '',
-                      status: 'unverified',
-                    }}
-                    onInvite={() => handleInvite(user.userId)}
-                    inviteDisabled={isMember || isPendingOrInvited || invite.isPending}
-                    inviteLabel={isMember ? '팀원' : isPendingOrInvited ? '초대완료' : '초대'}
-                  />
-                );
-              })}
-            </ul>
-            {!searching && searchResults.length === 0 && (
-              <p className="typo-body-xs-regular py-8 text-center text-faint">
-                검색 결과가 없어요.
-              </p>
+                    return (
+                      <MemberRow
+                        key={user.userId}
+                        member={{
+                          id: String(user.userId),
+                          name: user.nickname,
+                          nickname: '',
+                          status: 'unverified',
+                        }}
+                        onInvite={() => handleInvite(user.userId)}
+                        inviteDisabled={isMember || isPendingOrInvited || invite.isPending}
+                        inviteLabel={isMember ? '팀원' : isPendingOrInvited ? '초대완료' : '초대'}
+                      />
+                    );
+                  })}
+                </ul>
+                {searchResults.length === 0 && (
+                  <p className="typo-body-xs-regular py-8 text-center text-faint">
+                    검색 결과가 없어요.
+                  </p>
+                )}
+              </>
             )}
           </div>
         ) : (
