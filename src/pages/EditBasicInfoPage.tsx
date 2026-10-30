@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronLeft, Info, Plus, X } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 
+import { ApiError } from '@/api/apiError';
 import type { UserProfileDto } from '@/api/dto';
 import defaultProfile from '@/assets/common/DefaultProfileIcon.png';
 import { BottomButton } from '@/components/common';
@@ -20,6 +21,7 @@ import {
   onboardingNicknameSchema,
 } from '@/pages/onboarding/onboarding.schema';
 import { cn } from '@/utils/cn';
+import { getErrorMessage } from '@/utils/error';
 
 function ProfilePhotoField({
   image,
@@ -80,11 +82,22 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
     'available' | 'unavailable' | null
   >(null);
   const [checkedNickname, setCheckedNickname] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const savingRef = useRef(false);
   const updateUserMe = useUpdateUserMe();
   const uploadImage = useUploadImage();
   const checkNickname = useCheckNickname();
 
-  const { register, handleSubmit, control, setValue } = useForm<OnboardingNicknameFormValues>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = useForm<OnboardingNicknameFormValues>({
     resolver: zodResolver(onboardingNicknameSchema),
     mode: 'onChange',
     defaultValues: {
@@ -107,12 +120,19 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   const handleDuplicateCheck = () => {
     if (!isNicknameShapeValid || checkNickname.isPending) return;
 
+    setSubmitError('');
+    clearErrors('nickname');
     checkNickname.mutate(
       { nickname: nickname.trim() },
       {
         onSuccess: (data) => {
           setCheckedNickname(nickname);
           setNicknameCheckResult(data.isAvailable ? 'available' : 'unavailable');
+        },
+        onError: (error) => {
+          setSubmitError(
+            getErrorMessage(error, '닉네임 중복 확인에 실패했어요. 다시 시도해주세요.'),
+          );
         },
       },
     );
@@ -133,6 +153,7 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   }, [profileImage]);
 
   const handleProfileImageChange = (file: File) => {
+    if (savingRef.current) return;
     setProfileImage((prev) => {
       if (prev?.startsWith('blob:')) {
         URL.revokeObjectURL(prev);
@@ -144,23 +165,38 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   };
 
   const onFormSubmit = async (data: OnboardingNicknameFormValues) => {
-    if (!canSubmit) return;
-
-    const uploadedProfileImageUrl = profileImageFile
-      ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
-      : profileImage;
-
-    updateUserMe.mutate(
-      {
+    if (!canSubmit || savingRef.current) return;
+    savingRef.current = true;
+    setIsSaving(true);
+    setSubmitError('');
+    clearErrors('nickname');
+    try {
+      const uploadedProfileImageUrl = profileImageFile
+        ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
+        : profileImage;
+      await updateUserMe.mutateAsync({
         nickname: data.nickname.trim(),
         ...(uploadedProfileImageUrl ? { profileImageUrl: uploadedProfileImageUrl } : {}),
-      },
-      {
-        onSuccess: () => {
-          flowBack();
-        },
-      },
-    );
+      });
+      flowBack();
+    } catch (error) {
+      if (
+        error instanceof ApiError &&
+        ['DUPLICATE_NICKNAME', 'INVALID_NICKNAME_FORMAT'].includes(error.code ?? '')
+      ) {
+        setNicknameCheckResult(null);
+        setCheckedNickname('');
+        setError('nickname', {
+          type: 'server',
+          message: getErrorMessage(error, '닉네임을 확인해주세요.'),
+        });
+      } else {
+        setSubmitError(getErrorMessage(error, '프로필을 저장하지 못했어요. 다시 시도해주세요.'));
+      }
+    } finally {
+      savingRef.current = false;
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -177,113 +213,121 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
           <ProfilePhotoField
             image={profileImage}
             onChange={handleProfileImageChange}
-            isUploading={uploadImage.isPending}
+            isUploading={isSaving || uploadImage.isPending}
           />
         </div>
 
         <form
           id="edit-basic-info-form"
-          onSubmit={handleSubmit(onFormSubmit)}
+          onSubmit={(event) => handleSubmit(onFormSubmit)(event)}
           className="mt-15 flex flex-col gap-3"
         >
-          <label htmlFor="activityName" className="typo-body-sm-bold text-main">
-            프로필 명
-          </label>
-          <div className="relative">
-            <div className="border-b border-line flex justify-end items-start gap-3">
-              <div className="flex-1 h-9 px-3 py-2.5 flex justify-start items-center gap-2">
-                <input
-                  id="activityName"
-                  maxLength={15}
-                  placeholder="프로필 명"
-                  className="w-full typo-body-xs-regular text-main outline-none placeholder:text-hint bg-transparent"
-                  {...register('nickname', {
-                    onChange: () => {
-                      setNicknameCheckResult(null);
-                      setCheckedNickname('');
-                    },
-                  })}
-                />
-              </div>
-              <div className="h-9 flex justify-start items-center gap-2.5">
-                <div className="w-8 flex justify-start items-center gap-2.5">
+          <fieldset disabled={isSaving} className="contents">
+            <label htmlFor="activityName" className="typo-body-sm-bold text-main">
+              프로필 명
+            </label>
+            <div className="relative">
+              <div className="border-b border-line flex justify-end items-start gap-3">
+                <div className="flex-1 h-9 px-3 py-2.5 flex justify-start items-center gap-2">
+                  <input
+                    id="activityName"
+                    maxLength={15}
+                    placeholder="프로필 명"
+                    className="w-full typo-body-xs-regular text-main outline-none placeholder:text-hint bg-transparent"
+                    {...register('nickname', {
+                      onChange: () => {
+                        clearErrors('nickname');
+                        setNicknameCheckResult(null);
+                        setCheckedNickname('');
+                      },
+                    })}
+                  />
+                </div>
+                <div className="h-9 flex justify-start items-center gap-2.5">
+                  <div className="w-8 flex justify-start items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={handleClearInput}
+                      aria-label="프로필 명 지우기"
+                      className="size-5 bg-box200 rounded-[10px] flex justify-center items-center cursor-pointer"
+                    >
+                      <X className="size-2.5 text-card translate-x-[0.5px]" strokeWidth={2} />
+                    </button>
+                    <div className="w-px h-4 bg-faint" />
+                  </div>
                   <button
                     type="button"
-                    onClick={handleClearInput}
-                    aria-label="프로필 명 지우기"
-                    className="size-5 bg-box200 rounded-[10px] flex justify-center items-center cursor-pointer"
+                    onClick={handleDuplicateCheck}
+                    disabled={!isNicknameShapeValid || checkNickname.isPending}
+                    className="w-17 h-8 rounded-lg outline outline-1 outline-offset-[-1px] outline-sub600 disabled:opacity-40 flex items-center justify-center cursor-pointer"
                   >
-                    <X className="size-2.5 text-card translate-x-[0.5px]" strokeWidth={2} />
+                    <span className="typo-body-xs-semibold text-main translate-y-px">
+                      중복 확인
+                    </span>
                   </button>
-                  <div className="w-px h-4 bg-faint" />
                 </div>
-                <button
-                  type="button"
-                  onClick={handleDuplicateCheck}
-                  disabled={!isNicknameShapeValid || checkNickname.isPending}
-                  className="w-17 h-8 rounded-lg outline outline-1 outline-offset-[-1px] outline-sub600 disabled:opacity-40 flex items-center justify-center cursor-pointer"
-                >
-                  <span className="typo-body-xs-semibold text-main translate-y-px">중복 확인</span>
-                </button>
               </div>
+              {(errors.nickname?.message || (nicknameCheckResult && !isSameAsInitial)) && (
+                <div
+                  className={cn(
+                    'absolute left-0 top-full mt-1.5 typo-body-xxs-regular',
+                    !errors.nickname && nicknameCheckResult === 'available'
+                      ? 'text-link'
+                      : 'text-error',
+                  )}
+                >
+                  {errors.nickname?.message ||
+                    (nicknameCheckResult === 'available'
+                      ? '사용 가능한 닉네임이에요.'
+                      : '사용 불가한 닉네임이에요.')}
+                </div>
+              )}
             </div>
-            {nicknameCheckResult && !isSameAsInitial && (
+
+            {/* 실시간 개별 조건 피드백 */}
+            <div className="mt-12.5 flex flex-col gap-2">
               <div
                 className={cn(
-                  'absolute left-0 top-full mt-1.5 typo-body-xxs-regular',
-                  nicknameCheckResult === 'available' ? 'text-link' : 'text-error',
+                  'typo-body-xs-regular',
+                  nickname.length > 0 && alphaNumericKoSchema.safeParse(nickname).success
+                    ? 'text-sub600'
+                    : 'text-faint',
                 )}
               >
-                {nicknameCheckResult === 'available'
-                  ? '사용 가능한 닉네임이에요.'
-                  : '사용 불가한 닉네임이에요.'}
+                한글 · 영문 · 숫자
               </div>
-            )}
-          </div>
-
-          {/* 실시간 개별 조건 피드백 */}
-          <div className="mt-12.5 flex flex-col gap-2">
-            <div
-              className={cn(
-                'typo-body-xs-regular',
-                nickname.length > 0 && alphaNumericKoSchema.safeParse(nickname).success
-                  ? 'text-sub600'
-                  : 'text-faint',
-              )}
-            >
-              한글 · 영문 · 숫자
+              <div
+                className={cn(
+                  'typo-body-xs-regular',
+                  nickname.length > 0 && nicknameLengthSchema.safeParse(nickname).success
+                    ? 'text-sub600'
+                    : 'text-faint',
+                )}
+              >
+                2 ~ 15자
+              </div>
+              <div
+                className={cn(
+                  'typo-body-xs-regular',
+                  nickname.length > 0 && noSpecialCharSchema.safeParse(nickname).success
+                    ? 'text-sub600'
+                    : 'text-faint',
+                )}
+              >
+                특수문자 불가
+              </div>
+              <div
+                className={cn(
+                  'typo-body-xs-regular',
+                  nickname.length > 0 && noSpaceSchema.safeParse(nickname).success
+                    ? 'text-sub600'
+                    : 'text-faint',
+                )}
+              >
+                공백 불가
+              </div>
             </div>
-            <div
-              className={cn(
-                'typo-body-xs-regular',
-                nickname.length > 0 && nicknameLengthSchema.safeParse(nickname).success
-                  ? 'text-sub600'
-                  : 'text-faint',
-              )}
-            >
-              2 ~ 15자
-            </div>
-            <div
-              className={cn(
-                'typo-body-xs-regular',
-                nickname.length > 0 && noSpecialCharSchema.safeParse(nickname).success
-                  ? 'text-sub600'
-                  : 'text-faint',
-              )}
-            >
-              특수문자 불가
-            </div>
-            <div
-              className={cn(
-                'typo-body-xs-regular',
-                nickname.length > 0 && noSpaceSchema.safeParse(nickname).success
-                  ? 'text-sub600'
-                  : 'text-faint',
-              )}
-            >
-              공백 불가
-            </div>
-          </div>
+          </fieldset>
         </form>
 
         <div className="mt-auto mb-7 flex items-start gap-1 rounded-2xl bg-card p-3.5">
@@ -294,8 +338,13 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
         </div>
       </main>
 
-      <BottomButton form="edit-basic-info-form" type="submit" disabled={!canSubmit}>
-        {updateUserMe.isPending ? '저장 중' : '완료'}
+      {submitError && (
+        <p role="alert" className="mx-5 mt-2 typo-body-xs-regular text-error">
+          {submitError}
+        </p>
+      )}
+      <BottomButton form="edit-basic-info-form" type="submit" disabled={!canSubmit || isSaving}>
+        {isSaving ? '저장 중' : '완료'}
       </BottomButton>
     </div>
   );
