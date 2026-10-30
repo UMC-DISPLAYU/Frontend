@@ -6,9 +6,10 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import type { SearchDisplaysRequestDto } from '@/api/dto';
 import filterIcon from '@/assets/search/filter.svg';
 import filterSelectedDotIcon from '@/assets/search/filter-selected-dot.svg';
-import { LoadingView } from '@/components/common';
+import { ErrorView, LoadingView } from '@/components/common';
 import { getFilterOptionValue } from '@/components/search/filter/filterOptions';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { getErrorMessage } from '@/utils/error';
 
 import {
   DEFAULT_FILTER_STATE,
@@ -148,13 +149,22 @@ export function SearchPage() {
     [query, filters],
   );
 
-  const { data, isError, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useInfiniteSearchDisplays(searchDisplayParams);
+  const {
+    data,
+    isError,
+    error,
+    refetch,
+    isFetchNextPageError,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteSearchDisplays(searchDisplayParams);
 
   const exhibitions = useMemo(() => data?.pages.flatMap((page) => page.exhibitions) ?? [], [data]);
 
   const triggerRef = useInfiniteScroll({
-    hasNextPage,
+    hasNextPage: hasNextPage && !isError,
     isFetchingNextPage,
     fetchNextPage,
   });
@@ -163,7 +173,12 @@ export function SearchPage() {
     () => (nearbyParams ? { ...nearbyParams, searchWord: query.trim() || null } : null),
     [nearbyParams, query],
   );
-  const { data: nearbyData } = useNearbyDisplays(nearbyParamsWithSearch);
+  const {
+    data: nearbyData,
+    error: nearbyError,
+    isLoading: nearbyLoading,
+    refetch: refetchNearby,
+  } = useNearbyDisplays(nearbyParamsWithSearch);
   const nearbyExhibitions = nearbyData ?? [];
 
   const activeFilterEntries = (Object.entries(filters) as Array<[FilterTab, string | null]>)
@@ -295,7 +310,15 @@ export function SearchPage() {
           <div className="flex flex-1 flex-col px-5 pt-4 pb-24">
             {isLoading ? (
               <LoadingView fullScreen={false} message="전시를 검색하는 중..." />
-            ) : isError || exhibitions.length === 0 ? (
+            ) : isError && exhibitions.length === 0 ? (
+              <ErrorView
+                fullScreen={false}
+                message={getErrorMessage(error, '전시를 검색하지 못했어요.')}
+                onRetry={() => {
+                  void refetch();
+                }}
+              />
+            ) : exhibitions.length === 0 ? (
               <div className="flex flex-1 justify-center pt-36 text-center">
                 <p className="typo-body-lg-regular text-faint">결과가 없습니다</p>
               </div>
@@ -306,6 +329,15 @@ export function SearchPage() {
                     <ExhibitionCard exhibition={exhibition} key={exhibition.displayId} />
                   ))}
                 </div>
+                {isError && (
+                  <ErrorView
+                    fullScreen={false}
+                    message={getErrorMessage(error, '전시를 더 불러오지 못했어요.')}
+                    onRetry={() => {
+                      void (isFetchNextPageError ? fetchNextPage() : refetch());
+                    }}
+                  />
+                )}
                 <div ref={triggerRef} className="h-4" />
                 {isFetchingNextPage ? (
                   <div className="py-4 text-center typo-body-xs-regular text-hint">
@@ -318,10 +350,23 @@ export function SearchPage() {
         </div>
       ) : (
         <div className="flex-1 bg-page px-5 pt-4 pb-24">
-          {nearbyExhibitions.length === 0 ? (
-            <p className="flex items-center justify-center py-16 text-center typo-body-md-regular text-faint">
-              이 지역에 전시가 없습니다
-            </p>
+          {nearbyError && (
+            <ErrorView
+              fullScreen={false}
+              message={getErrorMessage(nearbyError, '주변 전시를 불러오지 못했어요.')}
+              onRetry={() => {
+                void refetchNearby();
+              }}
+            />
+          )}
+          {nearbyLoading || !nearbyParamsWithSearch ? (
+            <LoadingView fullScreen={false} message="주변 전시를 불러오는 중..." />
+          ) : nearbyExhibitions.length === 0 ? (
+            !nearbyError && (
+              <p className="flex items-center justify-center py-16 text-center typo-body-md-regular text-faint">
+                이 지역에 전시가 없습니다
+              </p>
+            )
           ) : (
             <div className="flex flex-col gap-3">
               {(selectedMapId

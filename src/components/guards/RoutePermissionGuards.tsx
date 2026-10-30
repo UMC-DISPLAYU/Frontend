@@ -1,7 +1,9 @@
 import { type ReactNode, useEffect, useState } from 'react';
 
-import { Navigate, Outlet, useParams } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router-dom';
 
+import { ApiError } from '@/api/apiError';
+import { ErrorView } from '@/components/common/ErrorView';
 import { FlowProvider } from '@/contexts/FlowContext';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
@@ -16,6 +18,7 @@ import {
   usePersonalArtworkPolicy,
 } from '@/hooks/usePolicy';
 import type { ArtworkPolicyResource, DisplayPolicyResource } from '@/policies/util';
+import { getErrorMessage } from '@/utils/error';
 
 import { FlowGuard, type FlowStepDefinition } from './FlowGuard';
 import { PermissionGuard } from './PermissionGuard';
@@ -82,7 +85,8 @@ type FlowRouteProps = {
 type ResourceQueryState<T> = {
   resource: T | null;
   isPending: boolean;
-  isError: boolean;
+  error: unknown;
+  refetch?: () => unknown;
 };
 
 function GuardLoading() {
@@ -93,60 +97,68 @@ function GuardLoading() {
   );
 }
 
+function ResourceError({ error, refetch }: Pick<ResourceQueryState<unknown>, 'error' | 'refetch'>) {
+  return (
+    <ErrorView
+      message={getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')}
+      onRetry={refetch}
+    />
+  );
+}
+
 function useDisplayPolicyResource(): ResourceQueryState<DisplayPolicyResource> {
   const { displayId: paramDisplayId } = useParams();
   const displayId = Number(paramDisplayId ?? 0);
+  const valid = Number.isFinite(displayId) && displayId > 0;
   const displayQuery = useDisplayDetail(displayId);
-  const memberQuery = useDisplayMembers(displayId);
   const display = displayQuery.data;
-  const memberList = memberQuery.data;
-
-  if (!display) {
-    return {
-      resource: null,
-      isPending: displayQuery.isPending || memberQuery.isPending,
-      isError: displayQuery.isError || memberQuery.isError,
-    };
-  }
+  const needsMembers = !!display && !display.teamMembers;
+  const memberQuery = useDisplayMembers(needsMembers && valid ? displayId : 0);
 
   return {
-    resource: {
-      ownerUserId: display.ownerUserId ?? 0,
-      teamMembers:
-        display.teamMembers ??
-        memberList?.members?.map((member) => ({
-          userId: member.userId,
-          accepted: member.accepted !== false,
-        })) ??
-        [],
-    },
-    isPending: false,
-    isError: displayQuery.isError || memberQuery.isError,
+    resource: display
+      ? {
+          ownerUserId: display.ownerUserId ?? 0,
+          teamMembers:
+            display.teamMembers ??
+            memberQuery.data?.members?.map((member) => ({
+              userId: member.userId,
+              accepted: member.accepted !== false,
+            })) ??
+            [],
+        }
+      : null,
+    isPending: valid && (displayQuery.isPending || (needsMembers && memberQuery.isPending)),
+    error: !valid
+      ? new ApiError('전시 정보를 찾을 수 없습니다', { status: 404 })
+      : displayQuery.error || (needsMembers ? memberQuery.error : null),
+    refetch: valid
+      ? () =>
+          Promise.all([displayQuery.refetch(), ...(needsMembers ? [memberQuery.refetch()] : [])])
+      : undefined,
   };
 }
 
 function useArtworkPolicyResource(): ResourceQueryState<ArtworkPolicyResource> {
   const { artworkId: paramArtworkId } = useParams();
   const artworkId = Number(paramArtworkId ?? 0);
+  const valid = Number.isFinite(artworkId) && artworkId > 0;
   const artworkQuery = useArtworkDetail(artworkId);
   const artwork = artworkQuery.data;
 
-  if (!artwork) {
-    return {
-      resource: null,
-      isPending: artworkQuery.isPending,
-      isError: artworkQuery.isError,
-    };
-  }
-
   return {
-    resource: {
-      artistUserId: artwork.artistUserId ?? 0,
-      qaHandlers: artwork.qaHandlers,
-      coAuthors: artwork.coAuthors,
-    },
-    isPending: false,
-    isError: artworkQuery.isError,
+    resource: artwork
+      ? {
+          artistUserId: artwork.artistUserId ?? 0,
+          qaHandlers: artwork.qaHandlers,
+          coAuthors: artwork.coAuthors,
+        }
+      : null,
+    isPending: valid && artworkQuery.isPending,
+    error: valid
+      ? artworkQuery.error
+      : new ApiError('작품 정보를 찾을 수 없습니다', { status: 404 }),
+    refetch: valid ? () => artworkQuery.refetch() : undefined,
   };
 }
 
@@ -181,8 +193,9 @@ export function DisplayPermissionGuard({ action, fallback = '/403', children }: 
   const display = useDisplayPolicyResource();
   const policy = useDisplayPolicy(display.resource ?? { ownerUserId: 0, teamMembers: [] });
 
+  if (display.error) return <ResourceError {...display} />;
   if (display.isPending) return <GuardLoading />;
-  if (display.isError || !display.resource) return <Navigate to={fallback} replace />;
+  if (!display.resource) return <ResourceError {...display} />;
 
   return (
     <PermissionGuard resource="display" action={action} fallback={fallback} policy={policy}>
@@ -199,8 +212,9 @@ export function DisplayContentPermissionGuard({
   const display = useDisplayPolicyResource();
   const policy = useDisplayContentPolicy(display.resource ?? undefined);
 
+  if (display.error) return <ResourceError {...display} />;
   if (display.isPending) return <GuardLoading />;
-  if (display.isError || !display.resource) return <Navigate to={fallback} replace />;
+  if (!display.resource) return <ResourceError {...display} />;
 
   return (
     <PermissionGuard resource="displayContent" action={action} fallback={fallback} policy={policy}>
@@ -219,8 +233,9 @@ export function DisplayInvitationPermissionGuard({
     display.resource ?? { ownerUserId: 0, teamMembers: [] },
   );
 
+  if (display.error) return <ResourceError {...display} />;
   if (display.isPending) return <GuardLoading />;
-  if (display.isError || !display.resource) return <Navigate to={fallback} replace />;
+  if (!display.resource) return <ResourceError {...display} />;
 
   return (
     <PermissionGuard
@@ -258,8 +273,9 @@ export function DisplayArtistNamePermissionGuard({
     display.resource ?? { ownerUserId: 0, teamMembers: [] },
   );
 
+  if (display.error) return <ResourceError {...display} />;
   if (display.isPending) return <GuardLoading />;
-  if (display.isError || !display.resource) return <Navigate to={fallback} replace />;
+  if (!display.resource) return <ResourceError {...display} />;
 
   return (
     <PermissionGuard
@@ -278,10 +294,11 @@ export function ArtworkPermissionGuard({ action, fallback = '/403', children }: 
   const artwork = useArtworkPolicyResource();
   const policy = useArtworkPolicy(display.resource ?? undefined, artwork.resource ?? undefined);
 
+  if (display.error) return <ResourceError {...display} />;
+  if (action !== 'create' && artwork.error) return <ResourceError {...artwork} />;
   if (display.isPending || (action !== 'create' && artwork.isPending)) return <GuardLoading />;
-  if (display.isError || !display.resource || (action !== 'create' && !artwork.resource)) {
-    return <Navigate to={fallback} replace />;
-  }
+  if (!display.resource) return <ResourceError {...display} />;
+  if (action !== 'create' && !artwork.resource) return <ResourceError {...artwork} />;
 
   return (
     <PermissionGuard resource="artwork" action={action} fallback={fallback} policy={policy}>

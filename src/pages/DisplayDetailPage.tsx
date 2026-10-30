@@ -17,6 +17,7 @@ import { BackButton } from '@/components/ui/BackButton';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import type { DetailTabKey } from '@/types/exhibition';
+import { getErrorMessage } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayDetailPage() {
@@ -43,18 +44,28 @@ export function DisplayDetailPage() {
     }
   }, [tabParam]);
 
-  const { data: display, isPending, isError } = useDisplayDetail(displayId ?? 0);
+  const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
 
-  if (isPending) {
+  if (isPending && displayId !== null) {
     return <LoadingView message="전시 정보를 불러오는 중..." />;
   }
 
-  if (isError || !display || displayId === null) {
+  if (error || !display || displayId === null) {
     return (
       <ErrorView
-        title="전시 정보를 찾을 수 없습니다"
-        message="요청하신 전시 정보가 존재하지 않거나 삭제되었습니다."
-        onRetry={() => flowBack()}
+        message={
+          error
+            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
+            : '전시 정보를 찾을 수 없습니다'
+        }
+        onRetry={
+          error
+            ? () => {
+                void refetch();
+              }
+            : () => flowBack()
+        }
+        retryLabel={error ? '다시 시도' : '뒤로가기'}
       />
     );
   }
