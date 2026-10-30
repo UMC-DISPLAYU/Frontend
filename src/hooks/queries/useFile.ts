@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
+import { ApiError } from '@/api/apiError';
 import type { CreatePresignedUrlRequestDto, PresignedContentTypeDto } from '@/api/dto';
 import { createPresignedUrl, uploadFileToPresignedUrl } from '@/api/endpoints';
 
@@ -23,7 +24,9 @@ export const useUploadImage = () =>
   useMutation({
     mutationFn: async ({ file, domain }: { file: File; domain: string }) => {
       if (!isAllowedImageContentType(file.type)) {
-        throw new Error(`지원하지 않는 이미지 형식입니다. (${file.type || '알 수 없는 형식'})`);
+        throw new ApiError(`지원하지 않는 이미지 형식입니다. (${file.type || '알 수 없는 형식'})`, {
+          code: 'UNSUPPORTED_IMAGE_TYPE',
+        });
       }
 
       const { uploadUrl, fileUrl } = await createPresignedUrl({
