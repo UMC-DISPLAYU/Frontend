@@ -196,11 +196,11 @@ export const LoungeBoardDetailPage = () => {
             }
             replyingTo={replyState?.author}
             onCancelReply={clearReplyTarget}
-            onSubmit={({ content, images }) => {
+            onSubmit={async ({ content, images }) => {
               const finalContent = content.trim() || '.';
               const imageUrls = images.map((image) => image.imageUrl);
               if (replyState) {
-                createReplyMutation.mutate(
+                await createReplyMutation.mutateAsync(
                   {
                     postId,
                     commentId: replyState.commentId,
@@ -210,7 +210,10 @@ export const LoungeBoardDetailPage = () => {
                 );
                 return;
               }
-              createCommentMutation.mutate({ postId, body: { content: finalContent, imageUrls } });
+              await createCommentMutation.mutateAsync({
+                postId,
+                body: { content: finalContent, imageUrls },
+              });
             }}
           />
         </>

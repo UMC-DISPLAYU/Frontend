@@ -163,7 +163,7 @@ export function ReviewTab({ className, display, displayId }: Props) {
         isSubmitting={replyState ? createReply.isPending : createReview.isPending}
         replyingTo={replyState?.author}
         onCancelReply={clearReplyTarget}
-        onSubmit={({ content, images }) => {
+        onSubmit={async ({ content, images }) => {
           const finalContent = content.trim() || '.';
           const formattedImages = images.map((img) => ({
             imageUrl: img.imageUrl,
@@ -174,9 +174,9 @@ export function ReviewTab({ className, display, displayId }: Props) {
           if (replyState) {
             if (!hasPermission(replyPolicy, 'reply.create')) {
               openLoginModal();
-              return;
+              return false;
             }
-            createReply.mutate(
+            await createReply.mutateAsync(
               { content: finalContent, images: formattedImages },
               { onSuccess: clearReplyTarget },
             );
@@ -185,10 +185,10 @@ export function ReviewTab({ className, display, displayId }: Props) {
 
           if (!hasPermission(reviewPolicy, 'create')) {
             openLoginModal();
-            return;
+            return false;
           }
 
-          createReview.mutate({ content: finalContent, images: formattedImages });
+          await createReview.mutateAsync({ content: finalContent, images: formattedImages });
         }}
       />
       {loginModal}
