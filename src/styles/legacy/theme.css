@@ -28,7 +28,9 @@
   --color-faint: var(--fg-faint);
   --color-white: var(--fg-white);
   --color-link: var(--fg-link);
-  --color-error: var(--fg-error);
+  /* --color-error 는 새 토큰 text-error·border-error 와 이름이 겹쳐 삭제했다.
+     그 줄이 함께 만들던 bg-error(설정 배지, SettingRow)가 사라지지 않도록 배경만 남긴다. */
+  --background-color-error: var(--fg-error);
 
   /* Filter */
   --color-filter-border-off: var(--filter-border-off);

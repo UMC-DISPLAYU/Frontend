@@ -1,0 +1,84 @@
+/**
+ * 시멘틱 토큰 — 원시 값에 "역할"을 붙인다. 피그마 `semantic` 컬렉션과 1:1로 맞춘다.
+ *
+ * 피그마 이름 `color/text/primary` → `--semantic-color-text-primary`
+ * 피그마 이름의 오타는 바른 철자로 옮긴다(teritary·taritary → tertiary).
+ *
+ * 컴포넌트는 이 변수를 직접 쓰지 않고, theme.css 가 노출하는 유틸리티를 쓴다.
+ */
+:root {
+  /* Text */
+  --semantic-color-text-primary: var(--primitive-color-zinc-900);
+  --semantic-color-text-secondary: var(--primitive-color-zinc-700);
+  --semantic-color-text-tertiary: var(--primitive-color-zinc-500);
+  --semantic-color-text-quaternary: var(--primitive-color-zinc-50);
+  --semantic-color-text-interactive-primary: var(--primitive-color-primary-900);
+  --semantic-color-text-interactive-primary-hover: var(--primitive-color-primary-600);
+  --semantic-color-text-interactive-primary-press: var(--primitive-color-primary-700);
+  --semantic-color-text-interactive-selected: var(--primitive-color-primary-900);
+  --semantic-color-text-interactive-inverse: var(--primitive-color-base-white);
+  --semantic-color-text-error: var(--primitive-color-red-500);
+  --semantic-color-text-success: var(--primitive-color-green-500);
+  --semantic-color-text-warning: var(--primitive-color-yellow-500);
+  --semantic-color-text-info: var(--primitive-color-blue-500);
+  --semantic-color-text-disable: var(--primitive-color-zinc-300);
+
+  /* Background — 피그마 `bg/primary - white` → primary-white */
+  --semantic-color-bg-primary-white: var(--primitive-color-base-white);
+  --semantic-color-bg-primary-black: var(--primitive-color-primary-950);
+  --semantic-color-bg-primary-400: var(--primitive-color-primary-400);
+  --semantic-color-bg-secondary: var(--primitive-color-zinc-100);
+  --semantic-color-bg-tertiary: var(--primitive-color-zinc-200);
+  --semantic-color-bg-interactive-primary: var(--primitive-color-primary-900);
+  --semantic-color-bg-interactive-primary-hover: var(--primitive-color-primary-600);
+  --semantic-color-bg-interactive-primary-press: var(--primitive-color-primary-700);
+  --semantic-color-bg-interactive-selected: var(--primitive-color-primary-900);
+  --semantic-color-bg-interactive-inverse: var(--primitive-color-base-white);
+  --semantic-color-bg-error-subtle: var(--primitive-color-red-100);
+  --semantic-color-bg-success-subtle: var(--primitive-color-green-100);
+  --semantic-color-bg-info-subtle: var(--primitive-color-blue-100);
+  --semantic-color-bg-warning-subtle: var(--primitive-color-yellow-100);
+  --semantic-color-bg-disable: var(--primitive-color-zinc-100);
+  --semantic-color-bg-notice: var(--primitive-color-red-500);
+
+  /* Icon */
+  --semantic-color-icon-primary: var(--primitive-color-zinc-900);
+  --semantic-color-icon-secondary: var(--primitive-color-zinc-800);
+  --semantic-color-icon-tertiary: var(--primitive-color-zinc-500);
+  --semantic-color-icon-interactive-primary: var(--primitive-color-primary-900);
+  --semantic-color-icon-interactive-primary-hover: var(--primitive-color-primary-600);
+  --semantic-color-icon-interactive-primary-press: var(--primitive-color-primary-700);
+  --semantic-color-icon-interactive-selected: var(--primitive-color-primary-900);
+  --semantic-color-icon-interactive-inverse: var(--primitive-color-base-white);
+  --semantic-color-icon-subtle: var(--primitive-color-red-500);
+  --semantic-color-icon-success-subtle: var(--primitive-color-green-500);
+  --semantic-color-icon-info: var(--primitive-color-blue-500);
+  --semantic-color-icon-warning: var(--primitive-color-yellow-500);
+  --semantic-color-icon-disable: var(--primitive-color-zinc-300);
+  --semantic-color-icon-white: var(--primitive-color-zinc-50);
+
+  /* Border */
+  --semantic-color-border-primary: var(--primitive-color-zinc-300);
+  --semantic-color-border-secondary: var(--primitive-color-zinc-700);
+  --semantic-color-border-interactive-primary: var(--primitive-color-primary-900);
+  --semantic-color-border-interactive-primary-hover: var(--primitive-color-primary-600);
+  --semantic-color-border-interactive-primary-press: var(--primitive-color-primary-700);
+  --semantic-color-border-interactive-selected: var(--primitive-color-primary-900);
+  --semantic-color-border-interactive-inverse: var(--primitive-color-base-white);
+  --semantic-color-border-error: var(--primitive-color-red-500);
+  --semantic-color-border-success: var(--primitive-color-green-500);
+  --semantic-color-border-warning: var(--primitive-color-yellow-500);
+  --semantic-color-border-info: var(--primitive-color-blue-500);
+  --semantic-color-border-disable: var(--primitive-color-zinc-300);
+
+  /* Radius */
+  --semantic-radius-0: var(--primitive-unit-0);
+  --semantic-radius-4: var(--primitive-unit-4);
+  --semantic-radius-6: var(--primitive-unit-6);
+  --semantic-radius-8: var(--primitive-unit-8);
+  --semantic-radius-12: var(--primitive-unit-12);
+  --semantic-radius-16: var(--primitive-unit-16);
+  --semantic-radius-20: var(--primitive-unit-20);
+  --semantic-radius-24: var(--primitive-unit-24);
+  --semantic-radius-circle: 9999px;
+}

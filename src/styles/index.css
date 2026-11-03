@@ -6,6 +6,10 @@
 @import './legacy/semantic.css';
 @import './legacy/theme.css';
 @import './legacy/typography.css';
+@import './tokens/primitive.css';
+@import './tokens/semantic.css';
+@import './tokens/theme.css';
+@import './tokens/typography.css';
 
 /* Custom Loader */
 .loader {

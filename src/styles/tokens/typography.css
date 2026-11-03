@@ -1,0 +1,178 @@
+/**
+ * 타이포그래피 유틸리티. 피그마 텍스트 스타일과 1:1로 맞춘다.
+ *
+ * 피그마 이름 `typography/body/lg/bold` → `typography-body-lg-bold`
+ * 행간(140%)·자간(-3%)은 피그마에서 변수가 아니라 텍스트 스타일에만 있어 값을 직접 둔다.
+ *
+ * @utility 로 선언해 Tailwind utilities 레이어에 들어간다.
+ * 일반 .class 로 두면 레이어 밖이 되어 Tailwind 유틸리티보다 항상 세진다.
+ */
+
+@utility typography-title-xs {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-20);
+  font-weight: var(--primitive-typography-font-weight-700);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-title-sm {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-24);
+  font-weight: var(--primitive-typography-font-weight-700);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-title-md {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-28);
+  font-weight: var(--primitive-typography-font-weight-700);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-title-lg {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-32);
+  font-weight: var(--primitive-typography-font-weight-700);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-title-xl {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-36);
+  font-weight: var(--primitive-typography-font-weight-700);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-sm-semibold {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-10);
+  font-weight: var(--primitive-typography-font-weight-600);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-sm-medium {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-10);
+  font-weight: var(--primitive-typography-font-weight-500);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-sm-regular {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-10);
+  font-weight: var(--primitive-typography-font-weight-400);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-md-semibold {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-12);
+  font-weight: var(--primitive-typography-font-weight-600);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-md-medium {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-12);
+  font-weight: var(--primitive-typography-font-weight-500);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+/* 피그마 body/md/regular 스타일이 Medium(500)으로 정의돼 있어 그대로 따른다 */
+@utility typography-body-md-regular {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-12);
+  font-weight: var(--primitive-typography-font-weight-500);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-lg-bold {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-14);
+  font-weight: var(--primitive-typography-font-weight-700);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-lg-semibold {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-14);
+  font-weight: var(--primitive-typography-font-weight-600);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-lg-medium {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-14);
+  font-weight: var(--primitive-typography-font-weight-500);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-lg-regular {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-14);
+  font-weight: var(--primitive-typography-font-weight-400);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-xl-semibold {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-16);
+  font-weight: var(--primitive-typography-font-weight-600);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-xl-medium {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-16);
+  font-weight: var(--primitive-typography-font-weight-500);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-xl-regular {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-16);
+  font-weight: var(--primitive-typography-font-weight-400);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-xxl-semibold {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-18);
+  font-weight: var(--primitive-typography-font-weight-600);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-xxl-medium {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-18);
+  font-weight: var(--primitive-typography-font-weight-500);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}
+
+@utility typography-body-xxl-regular {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-18);
+  font-weight: var(--primitive-typography-font-weight-400);
+  line-height: 140%;
+  letter-spacing: -0.03em;
+}

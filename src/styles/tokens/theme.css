@@ -1,0 +1,94 @@
+/**
+ * 시멘틱 토큰을 Tailwind 유틸리티로 노출한다.
+ * 컴포넌트는 여기서 만들어지는 이름만 쓴다 — 원시 토큰과 hex 는 컴포넌트에 두지 않는다.
+ *
+ * 색은 --color-* 대신 속성별 네임스페이스에 넣는다.
+ * 그래야 피그마의 text/primary, bg/…, border/primary 가 각각 다른 값을 가질 수 있다.
+ *   --text-color-primary        → text-primary
+ *   --background-color-…        → bg-…
+ *   --border-color-primary      → border-primary
+ * 아이콘은 currentColor 로 그려지므로 text- 네임스페이스에 icon- 을 붙여 둔다(text-icon-primary).
+ */
+@theme inline {
+  /* Text */
+  --text-color-primary: var(--semantic-color-text-primary);
+  --text-color-secondary: var(--semantic-color-text-secondary);
+  --text-color-tertiary: var(--semantic-color-text-tertiary);
+  --text-color-quaternary: var(--semantic-color-text-quaternary);
+  --text-color-interactive-primary: var(--semantic-color-text-interactive-primary);
+  --text-color-interactive-primary-hover: var(--semantic-color-text-interactive-primary-hover);
+  --text-color-interactive-primary-press: var(--semantic-color-text-interactive-primary-press);
+  --text-color-interactive-selected: var(--semantic-color-text-interactive-selected);
+  --text-color-interactive-inverse: var(--semantic-color-text-interactive-inverse);
+  --text-color-error: var(--semantic-color-text-error);
+  --text-color-success: var(--semantic-color-text-success);
+  --text-color-warning: var(--semantic-color-text-warning);
+  --text-color-info: var(--semantic-color-text-info);
+  --text-color-disable: var(--semantic-color-text-disable);
+
+  /* Background */
+  --background-color-primary-white: var(--semantic-color-bg-primary-white);
+  --background-color-primary-black: var(--semantic-color-bg-primary-black);
+  --background-color-primary-400: var(--semantic-color-bg-primary-400);
+  --background-color-secondary: var(--semantic-color-bg-secondary);
+  --background-color-tertiary: var(--semantic-color-bg-tertiary);
+  --background-color-interactive-primary: var(--semantic-color-bg-interactive-primary);
+  --background-color-interactive-primary-hover: var(--semantic-color-bg-interactive-primary-hover);
+  --background-color-interactive-primary-press: var(--semantic-color-bg-interactive-primary-press);
+  --background-color-interactive-selected: var(--semantic-color-bg-interactive-selected);
+  --background-color-interactive-inverse: var(--semantic-color-bg-interactive-inverse);
+  --background-color-error-subtle: var(--semantic-color-bg-error-subtle);
+  --background-color-success-subtle: var(--semantic-color-bg-success-subtle);
+  --background-color-info-subtle: var(--semantic-color-bg-info-subtle);
+  --background-color-warning-subtle: var(--semantic-color-bg-warning-subtle);
+  --background-color-disable: var(--semantic-color-bg-disable);
+  --background-color-notice: var(--semantic-color-bg-notice);
+
+  /* Icon */
+  --text-color-icon-primary: var(--semantic-color-icon-primary);
+  --text-color-icon-secondary: var(--semantic-color-icon-secondary);
+  --text-color-icon-tertiary: var(--semantic-color-icon-tertiary);
+  --text-color-icon-interactive-primary: var(--semantic-color-icon-interactive-primary);
+  --text-color-icon-interactive-primary-hover: var(--semantic-color-icon-interactive-primary-hover);
+  --text-color-icon-interactive-primary-press: var(--semantic-color-icon-interactive-primary-press);
+  --text-color-icon-interactive-selected: var(--semantic-color-icon-interactive-selected);
+  --text-color-icon-interactive-inverse: var(--semantic-color-icon-interactive-inverse);
+  --text-color-icon-subtle: var(--semantic-color-icon-subtle);
+  --text-color-icon-success-subtle: var(--semantic-color-icon-success-subtle);
+  --text-color-icon-info: var(--semantic-color-icon-info);
+  --text-color-icon-warning: var(--semantic-color-icon-warning);
+  --text-color-icon-disable: var(--semantic-color-icon-disable);
+  --text-color-icon-white: var(--semantic-color-icon-white);
+
+  /* Border */
+  --border-color-primary: var(--semantic-color-border-primary);
+  --border-color-secondary: var(--semantic-color-border-secondary);
+  --border-color-interactive-primary: var(--semantic-color-border-interactive-primary);
+  --border-color-interactive-primary-hover: var(--semantic-color-border-interactive-primary-hover);
+  --border-color-interactive-primary-press: var(--semantic-color-border-interactive-primary-press);
+  --border-color-interactive-selected: var(--semantic-color-border-interactive-selected);
+  --border-color-interactive-inverse: var(--semantic-color-border-interactive-inverse);
+  --border-color-error: var(--semantic-color-border-error);
+  --border-color-success: var(--semantic-color-border-success);
+  --border-color-warning: var(--semantic-color-border-warning);
+  --border-color-info: var(--semantic-color-border-info);
+  --border-color-disable: var(--semantic-color-border-disable);
+
+  /* Radius */
+  --radius-0: var(--semantic-radius-0);
+  --radius-4: var(--semantic-radius-4);
+  --radius-6: var(--semantic-radius-6);
+  --radius-8: var(--semantic-radius-8);
+  --radius-12: var(--semantic-radius-12);
+  --radius-16: var(--semantic-radius-16);
+  --radius-20: var(--semantic-radius-20);
+  --radius-24: var(--semantic-radius-24);
+  --radius-circle: var(--semantic-radius-circle);
+
+  /* Shadow — 피그마에는 변수가 아니라 이펙트 스타일(shadow/*)로만 있어 값을 여기 둔다 */
+  --shadow-xs: 0 2px 5px 0 rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 3px 10px 0 rgb(0 0 0 / 0.12);
+  --shadow-md: 0 4px 15px 1px rgb(0 0 0 / 0.15);
+  --shadow-lg: 0 5px 50px 0 rgb(0 0 0 / 0.07);
+  --shadow-card: 0 4px 12px 0 rgb(0 0 0 / 0.04);
+}
