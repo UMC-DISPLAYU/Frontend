@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @import 'pretendard/dist/web/static/pretendard-dynamic-subset.css';
 @import '@fontsource/aldrich';
+/* legacy: 기존 화면용. 새 페이지로 교체된 뒤 폴더째 삭제한다 */
+@import './legacy/primitive.css';
+@import './legacy/semantic.css';
+@import './legacy/theme.css';
+@import './legacy/typography.css';
 @import './tokens/primitive.css';
 @import './tokens/semantic.css';
 @import './tokens/theme.css';

@@ -1,65 +1,130 @@
 /**
- * 원시 토큰 — 값이 정의되는 유일한 곳.
+ * 원시 토큰 — 값이 정의되는 유일한 곳. 피그마 `primitive` 컬렉션과 1:1로 맞춘다.
  *
- * 접두어가 --color-* 가 아니라 --palette-* 인 이유:
- * Tailwind v4는 --color-* 를 자기 팔레트 네임스페이스로 쓴다.
- * --color-gray-900 으로 두면 Tailwind 기본 gray-900 과 이름이 충돌해
- * 로드 순서에 따라 승자가 바뀐다. 네임스페이스를 분리해 충돌을 없앤다.
+ * 피그마 이름 `color/zinc/900` → `--primitive-color-zinc-900`
+ *
+ * 접두어가 --color-* 가 아니라 --primitive-* 인 이유:
+ * Tailwind v4는 --color-* 를 자기 팔레트 네임스페이스로 쓴다. 원시 토큰은
+ * 유틸리티로 노출하지 않고, semantic 토큰을 거쳐서만 쓴다.
  *
  * 이 파일의 값은 디자이너가 정의한 것이다. 임의로 늘리지 않는다.
  */
 :root {
-  /* Brand */
-  --palette-blue: #2483c3;
-  --palette-red: #c32427;
-  --palette-bg: #f0f0f3;
-  --palette-navy: #06032d;
+  /* Base */
+  --primitive-color-base-black: #000000;
+  --primitive-color-base-white: #ffffff;
 
-  /* token */
-  --palette-token: #e6e6ee;
-  --palette-token-100: #ececf2;
-  --palette-token-200: #d7d7df;
+  /* Primary — 피그마 정의상 zinc와 같은 값이다(950만 다름) */
+  --primitive-color-primary-50: #fafafa;
+  --primitive-color-primary-100: #f4f4f5;
+  --primitive-color-primary-200: #f0f0f3;
+  --primitive-color-primary-300: #d4d4d8;
+  --primitive-color-primary-400: #9f9fa9;
+  --primitive-color-primary-500: #71717b;
+  --primitive-color-primary-600: #52525c;
+  --primitive-color-primary-700: #3f3f47;
+  --primitive-color-primary-800: #27272a;
+  --primitive-color-primary-900: #18181b;
+  --primitive-color-primary-950: #000000;
 
-  /* Gray */
-  --palette-gray-white: #fcfcfc;
-  --palette-gray-70: #f5f5f5;
-  --palette-gray-100: #e9e9e9;
-  --palette-gray-150: #e5e5e5;
-  --palette-gray-200: #d9d9d9;
-  --palette-gray-300: #c4c4c4;
-  --palette-gray-400: #9d9d9d;
-  --palette-gray-500: #767676;
-  --palette-gray-600: #555555;
-  --palette-gray-700: #505050;
-  --palette-gray-800: #262626;
-  --palette-gray-black: #111111;
+  /* Zinc */
+  --primitive-color-zinc-50: #fafafa;
+  --primitive-color-zinc-100: #f4f4f5;
+  --primitive-color-zinc-200: #f0f0f3;
+  --primitive-color-zinc-300: #d4d4d8;
+  --primitive-color-zinc-400: #9f9fa9;
+  --primitive-color-zinc-500: #71717b;
+  --primitive-color-zinc-600: #52525c;
+  --primitive-color-zinc-700: #3f3f47;
+  --primitive-color-zinc-800: #27272a;
+  --primitive-color-zinc-900: #18181b;
+  --primitive-color-zinc-950: #09090b;
 
-  /* Status */
-  --palette-green-500: #22c55e;
-  --palette-green-50: #f0fdf4;
+  /* Red */
+  --primitive-color-red-50: #fef2f2;
+  --primitive-color-red-100: #ffe2e2;
+  --primitive-color-red-200: #ffc9c9;
+  --primitive-color-red-300: #ffa2a2;
+  --primitive-color-red-400: #ff6467;
+  --primitive-color-red-500: #fb2c36;
+  --primitive-color-red-600: #e7000b;
+  --primitive-color-red-700: #c10007;
+  --primitive-color-red-800: #9f0712;
+  --primitive-color-red-900: #82181a;
+  --primitive-color-red-950: #460809;
+
+  /* Blue */
+  --primitive-color-blue-50: #eff6ff;
+  --primitive-color-blue-100: #dbeafe;
+  --primitive-color-blue-200: #bedbff;
+  --primitive-color-blue-300: #8ec5ff;
+  --primitive-color-blue-400: #51a2ff;
+  --primitive-color-blue-500: #2b7fff;
+  --primitive-color-blue-600: #155dfc;
+  --primitive-color-blue-700: #1447e6;
+  --primitive-color-blue-800: #193cb8;
+  --primitive-color-blue-900: #1c398e;
+  --primitive-color-blue-950: #162456;
+
+  /* Green */
+  --primitive-color-green-50: #f0fdf4;
+  --primitive-color-green-100: #dcfce7;
+  --primitive-color-green-200: #b9f8cf;
+  --primitive-color-green-300: #7bf1a8;
+  --primitive-color-green-400: #05df72;
+  --primitive-color-green-500: #00c950;
+  --primitive-color-green-600: #00a63e;
+  --primitive-color-green-700: #008236;
+  --primitive-color-green-800: #016630;
+  --primitive-color-green-900: #0d542b;
+  --primitive-color-green-950: #032e15;
+
+  /* Yellow */
+  --primitive-color-yellow-50: #fefce8;
+  --primitive-color-yellow-100: #fef9c2;
+  --primitive-color-yellow-200: #fff085;
+  --primitive-color-yellow-300: #ffdf20;
+  --primitive-color-yellow-400: #fdc700;
+  --primitive-color-yellow-500: #f0b100;
+  --primitive-color-yellow-600: #d08700;
+  --primitive-color-yellow-700: #a65f00;
+  --primitive-color-yellow-800: #894b00;
+  --primitive-color-yellow-900: #733e0a;
+  --primitive-color-yellow-950: #432004;
 
   /* Typography */
-  --font-family-heading: 'Aldrich', sans-serif;
-  --font-family-body: 'Pretendard', system-ui, sans-serif;
+  --primitive-typography-font-family-typeface-1: 'Pretendard', system-ui, sans-serif;
+  --primitive-typography-font-family-typeface-2: 'Aldrich', sans-serif;
 
-  --font-size-heading-3xl: 32px;
-  --font-size-heading-2xl: 24px;
-  --font-size-heading-xl: 20px;
+  --primitive-typography-font-weight-400: 400;
+  --primitive-typography-font-weight-500: 500;
+  --primitive-typography-font-weight-600: 600;
+  --primitive-typography-font-weight-700: 700;
 
-  --font-size-body-3xl: 30px;
-  --font-size-body-2xl: 24px;
-  --font-size-body-xl: 20px;
-  --font-size-body-lg: 18px;
-  --font-size-body-md: 16px;
-  --font-size-body-sm: 14px;
-  --font-size-body-xs: 12px;
-  --font-size-body-xxs: 10px;
-
-  --font-weight-regular: 400;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-
-  --letter-spacing-tight: -0.03em;
-  --line-height-heading: 130%;
-  --line-height-body: 140%;
+  /* Unit — radius·글자 크기가 참조한다. 간격은 Tailwind 기본 스케일(p-4 = 16px)을 쓴다 */
+  --primitive-unit-0: 0px;
+  --primitive-unit-2: 2px;
+  --primitive-unit-4: 4px;
+  --primitive-unit-6: 6px;
+  --primitive-unit-8: 8px;
+  --primitive-unit-10: 10px;
+  --primitive-unit-12: 12px;
+  --primitive-unit-14: 14px;
+  --primitive-unit-16: 16px;
+  --primitive-unit-18: 18px;
+  --primitive-unit-20: 20px;
+  --primitive-unit-24: 24px;
+  --primitive-unit-28: 28px;
+  --primitive-unit-32: 32px;
+  --primitive-unit-36: 36px;
+  --primitive-unit-40: 40px;
+  --primitive-unit-44: 44px;
+  --primitive-unit-48: 48px;
+  --primitive-unit-56: 56px;
+  --primitive-unit-64: 64px;
+  --primitive-unit-80: 80px;
+  --primitive-unit-96: 96px;
+  --primitive-unit-112: 112px;
+  --primitive-unit-128: 128px;
+  --primitive-unit-144: 144px;
 }

@@ -1,0 +1,85 @@
+/**
+ * 시멘틱 토큰을 Tailwind 유틸리티로 노출한다.
+ * 컴포넌트는 여기서 만들어지는 이름만 쓴다 — 원시 토큰과 hex 는 컴포넌트에 두지 않는다.
+ *
+ * Tailwind v4 는 --color-x 하나로 bg-x / text-x / border-x 를 전부 만든다.
+ * 그래서 이름에 용도를 남겨, 잘못된 조합이 이름만 봐도 어색하게 보이도록 한다.
+ *   bg-card   text-main   border-line   (O)
+ *   bg-main   text-card                 (X)
+ */
+@theme inline {
+  /* Background */
+  --color-page: var(--bg-page);
+  --color-card: var(--bg-card);
+  --color-box: var(--bg-box);
+  --color-box100: var(--bg-box100);
+  --color-box200: var(--bg-box200);
+  --color-dark: var(--bg-dark);
+  --color-heart: var(--bg-heart);
+  --color-bookmark: var(--bg-bookmark);
+  --color-logo: var(--bg-logo);
+  --color-fnb: var(--bg-fnb);
+
+  /* Foreground (text + icon) */
+  --color-main: var(--fg-main);
+  --color-sub600: var(--fg-sub600);
+  --color-sub700: var(--fg-sub700);
+  --color-hint: var(--fg-hint);
+  --color-faint: var(--fg-faint);
+  --color-white: var(--fg-white);
+  --color-link: var(--fg-link);
+  /* --color-error 는 새 토큰 text-error·border-error 와 이름이 겹쳐 삭제했다.
+     그 줄이 함께 만들던 bg-error(설정 배지, SettingRow)가 사라지지 않도록 배경만 남긴다. */
+  --background-color-error: var(--fg-error);
+
+  /* Filter */
+  --color-filter-border-off: var(--filter-border-off);
+  --color-filter-border-on: var(--filter-border-on);
+  --color-filter-text-off: var(--filter-text-off);
+  --color-filter-text-on: var(--filter-text-on);
+
+  /* Navbar */
+  --color-navbar-fg: var(--navbar-fg);
+
+  /* Input — Default (기본형) */
+  --color-input-border: var(--input-border);
+  --color-input-placeholder: var(--input-placeholder);
+
+  /* Input — Soft (연한 박스형) */
+  --color-input-soft-bg: var(--input-soft-bg);
+  --color-input-soft-border: var(--input-soft-border);
+  --color-input-soft-placeholder: var(--input-soft-placeholder);
+
+  /* Modal */
+  --color-modal-title: var(--modal-title);
+  --color-modal-desc: var(--modal-desc);
+  --color-modal-btn-bg: var(--modal-btn-bg);
+  --color-modal-btn-fg: var(--modal-btn-fg);
+  --color-modal-btn-hover-bg: var(--modal-btn-hover-bg);
+  --color-modal-btn-hover-fg: var(--modal-btn-hover-fg);
+
+  /* Tag */
+  --color-tag-bg: var(--tag-bg);
+  --color-tag-fg: var(--tag-fg);
+
+  /* Button */
+  --color-bt-gray: var(--bt-gray);
+  --color-bt-black: var(--bt-black);
+  --color-bt-border: var(--bt-border);
+
+  /* Border */
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-line-active: var(--line-active);
+
+  /* Layout */
+  --spacing-safe-bottom: var(--safe-bottom);
+  --spacing-bottom-bar-offset: var(--bottom-bar-offset);
+  --spacing-comment-bar-offset: var(--comment-bar-offset);
+
+  /* 디자인 토큰 수정하다가 발견했는데 --color-scrim 가 semantic에 정의가 되지 않아서 그냥 삭제했습니다 */
+
+  /* Calendar */
+  --color-cal-active: var(--cal-active);
+  --color-cal-edge: var(--cal-edge);
+}

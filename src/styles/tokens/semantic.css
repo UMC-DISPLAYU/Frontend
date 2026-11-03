@@ -1,83 +1,84 @@
 /**
- * 시멘틱 토큰 — 원시 값에 "역할"을 붙인다.
+ * 시멘틱 토큰 — 원시 값에 "역할"을 붙인다. 피그마 `semantic` 컬렉션과 1:1로 맞춘다.
  *
- * 새 이름을 만드는 기준은 하나뿐이다:
- *   "이 토큰만 따로 바뀌는 일이 현실적으로 있나?"
- * 없으면 만들지 않고 기존 축을 그대로 쓴다.
- * 화면 이름(mypage, exhibition ...)은 여기 들어오지 않는다.
+ * 피그마 이름 `color/text/primary` → `--semantic-color-text-primary`
+ * 피그마 이름의 오타는 바른 철자로 옮긴다(teritary·taritary → tertiary).
+ *
+ * 컴포넌트는 이 변수를 직접 쓰지 않고, theme.css 가 노출하는 유틸리티를 쓴다.
  */
 :root {
-  /* Background */
-  --bg-page: var(--palette-bg);
-  --bg-card: var(--palette-gray-white);
-  --bg-box: var(--palette-token);
-  --bg-box100: var(--palette-token-100);
-  --bg-box200: var(--palette-token-200);
-  --bg-dark: var(--palette-gray-black);
-  --bg-heart: var(--palette-red);
-  --bg-bookmark: var(--palette-gray-300);
-  --bg-logo: var(--palette-navy);
-  --bg-fnb: var(--palette-gray-200);
+  /* Text */
+  --semantic-color-text-primary: var(--primitive-color-zinc-900);
+  --semantic-color-text-secondary: var(--primitive-color-zinc-700);
+  --semantic-color-text-tertiary: var(--primitive-color-zinc-500);
+  --semantic-color-text-quaternary: var(--primitive-color-zinc-50);
+  --semantic-color-text-interactive-primary: var(--primitive-color-primary-900);
+  --semantic-color-text-interactive-primary-hover: var(--primitive-color-primary-600);
+  --semantic-color-text-interactive-primary-press: var(--primitive-color-primary-700);
+  --semantic-color-text-interactive-selected: var(--primitive-color-primary-900);
+  --semantic-color-text-interactive-inverse: var(--primitive-color-base-white);
+  --semantic-color-text-error: var(--primitive-color-red-500);
+  --semantic-color-text-success: var(--primitive-color-green-500);
+  --semantic-color-text-warning: var(--primitive-color-yellow-500);
+  --semantic-color-text-info: var(--primitive-color-blue-500);
+  --semantic-color-text-disable: var(--primitive-color-zinc-300);
 
-  /* Foreground — 텍스트와 아이콘이 같은 스케일을 공유한다 */
-  --fg-main: var(--palette-gray-black);
-  --fg-sub600: var(--palette-gray-600);
-  --fg-sub700: var(--palette-gray-700);
-  --fg-hint: var(--palette-gray-500);
-  --fg-faint: var(--palette-gray-400);
-  --fg-white: var(--palette-gray-white);
-  --fg-link: var(--palette-blue);
-  --fg-error: var(--palette-red);
+  /* Background — 피그마 `bg/primary - white` → primary-white */
+  --semantic-color-bg-primary-white: var(--primitive-color-base-white);
+  --semantic-color-bg-primary-black: var(--primitive-color-primary-950);
+  --semantic-color-bg-primary-400: var(--primitive-color-primary-400);
+  --semantic-color-bg-secondary: var(--primitive-color-zinc-100);
+  --semantic-color-bg-tertiary: var(--primitive-color-zinc-200);
+  --semantic-color-bg-interactive-primary: var(--primitive-color-primary-900);
+  --semantic-color-bg-interactive-primary-hover: var(--primitive-color-primary-600);
+  --semantic-color-bg-interactive-primary-press: var(--primitive-color-primary-700);
+  --semantic-color-bg-interactive-selected: var(--primitive-color-primary-900);
+  --semantic-color-bg-interactive-inverse: var(--primitive-color-base-white);
+  --semantic-color-bg-error-subtle: var(--primitive-color-red-100);
+  --semantic-color-bg-success-subtle: var(--primitive-color-green-100);
+  --semantic-color-bg-info-subtle: var(--primitive-color-blue-100);
+  --semantic-color-bg-warning-subtle: var(--primitive-color-yellow-100);
+  --semantic-color-bg-disable: var(--primitive-color-zinc-100);
+  --semantic-color-bg-notice: var(--primitive-color-red-500);
 
-  /* Filter */
-  --filter-border-off: var(--palette-gray-300);
-  --filter-border-on: var(--palette-gray-black);
-  --filter-text-off: var(--palette-gray-600);
-  --filter-text-on: var(--palette-gray-black);
-
-  /* Navbar */
-  --navbar-fg: var(--palette-gray-150);
-
-  /* Input — Default (기본형) */
-  --input-border: var(--palette-gray-300);
-  --input-placeholder: var(--palette-gray-400);
-
-  /* Input — Soft (연한 박스형) */
-  --input-soft-bg: var(--palette-gray-70);
-  --input-soft-border: var(--palette-gray-100);
-  --input-soft-placeholder: var(--palette-gray-300);
-
-  /* Modal */
-  --modal-title: var(--palette-gray-black);
-  --modal-desc: var(--palette-gray-600);
-  --modal-btn-bg: var(--palette-gray-400);
-  --modal-btn-fg: var(--palette-gray-black);
-  --modal-btn-hover-bg: var(--palette-gray-black);
-  --modal-btn-hover-fg: var(--palette-gray-white);
-
-  /* Tag */
-  --tag-bg: var(--palette-token-200);
-  --tag-fg: var(--palette-gray-black);
-
-  /* Button */
-  --bt-gray: var(--palette-gray-200);
-  --bt-black: var(--palette-gray-black);
-  --bt-border: var(--palette-gray-100);
+  /* Icon */
+  --semantic-color-icon-primary: var(--primitive-color-zinc-900);
+  --semantic-color-icon-secondary: var(--primitive-color-zinc-800);
+  --semantic-color-icon-tertiary: var(--primitive-color-zinc-500);
+  --semantic-color-icon-interactive-primary: var(--primitive-color-primary-900);
+  --semantic-color-icon-interactive-primary-hover: var(--primitive-color-primary-600);
+  --semantic-color-icon-interactive-primary-press: var(--primitive-color-primary-700);
+  --semantic-color-icon-interactive-selected: var(--primitive-color-primary-900);
+  --semantic-color-icon-interactive-inverse: var(--primitive-color-base-white);
+  --semantic-color-icon-subtle: var(--primitive-color-red-500);
+  --semantic-color-icon-success-subtle: var(--primitive-color-green-500);
+  --semantic-color-icon-info: var(--primitive-color-blue-500);
+  --semantic-color-icon-warning: var(--primitive-color-yellow-500);
+  --semantic-color-icon-disable: var(--primitive-color-zinc-300);
+  --semantic-color-icon-white: var(--primitive-color-zinc-50);
 
   /* Border */
-  --line: var(--palette-gray-300);
-  --line-soft: var(--palette-gray-200);
-  --line-active: var(--palette-blue);
+  --semantic-color-border-primary: var(--primitive-color-zinc-300);
+  --semantic-color-border-secondary: var(--primitive-color-zinc-700);
+  --semantic-color-border-interactive-primary: var(--primitive-color-primary-900);
+  --semantic-color-border-interactive-primary-hover: var(--primitive-color-primary-600);
+  --semantic-color-border-interactive-primary-press: var(--primitive-color-primary-700);
+  --semantic-color-border-interactive-selected: var(--primitive-color-primary-900);
+  --semantic-color-border-interactive-inverse: var(--primitive-color-base-white);
+  --semantic-color-border-error: var(--primitive-color-red-500);
+  --semantic-color-border-success: var(--primitive-color-green-500);
+  --semantic-color-border-warning: var(--primitive-color-yellow-500);
+  --semantic-color-border-info: var(--primitive-color-blue-500);
+  --semantic-color-border-disable: var(--primitive-color-zinc-300);
 
-  /* Layout */
-  --safe-area-bottom: env(safe-area-inset-bottom);
-  --safe-bottom: calc(max(20px, 10px + var(--safe-area-bottom)));
-  --bottom-bar-offset: 112px;
-  --comment-bar-offset: 200px;
-
-  /* 캘린더에서 필요한 색상입니다! primitive에 적용하지 않은 건 피그마 상 디자인 토큰이 정의되지 않아
-  일단 semantic에 하드코딩하는 방식으로 진행했습니다 */
-  /* Calendar */
-  --cal-active: #707070;
-  --cal-edge: #333333;
+  /* Radius */
+  --semantic-radius-0: var(--primitive-unit-0);
+  --semantic-radius-4: var(--primitive-unit-4);
+  --semantic-radius-6: var(--primitive-unit-6);
+  --semantic-radius-8: var(--primitive-unit-8);
+  --semantic-radius-12: var(--primitive-unit-12);
+  --semantic-radius-16: var(--primitive-unit-16);
+  --semantic-radius-20: var(--primitive-unit-20);
+  --semantic-radius-24: var(--primitive-unit-24);
+  --semantic-radius-circle: 9999px;
 }
