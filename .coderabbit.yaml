@@ -1,13 +1,193 @@
 language: ko-KR
+
 reviews:
   profile: chill # chill = 덜 깐깐, assertive = 더 깐깐
   high_level_summary: true
   review_status: true
+  request_changes_workflow: false
   auto_review:
     enabled: true
     drafts: false
     base_branches:
       - main
       - develop
+
+  path_instructions:
+    - path: 'src/**/*.{ts,tsx}'
+      instructions: |
+        React 18 + TypeScript + Vite 웹 앱이다. 라우팅은 `react-router-dom` v7(`src/Router.tsx`), 서버 상태는 TanStack Query,
+        클라이언트 상태는 zustand, 스타일은 Tailwind CSS v4, 폼은 `react-hook-form` + `zod`를 사용한다.
+        팀 규칙은 `CONVENTION.md`, AI 작업 규칙(디자인 토큰 · legacy 처리 등)은 `AGENTS.md`를 참고해줘. 아래 기준으로 검토하되, 모든 항목을 채우려 하지 말고 실제 위험이 있는 변경에 집중해줘.
+        테스트 파일(`*.test.*`, `*.spec.*`)에는 2번(디자인 토큰) · 3번(React 및 UI) · 5번(모듈화)은 적용하지 마. 나머지 항목과 테스트 지침은 적용해줘.
+
+        1. **리뷰 결과 정리 방식**
+        - 발견사항은 Critical > High > Medium > Low > Suggestion 순서로 정리해줘.
+        - Critical: XSS 등 보안 취약점, 토큰 · 개인정보 노출, 인증 · 권한 우회, 화면 전체가 깨지는(흰 화면) 확실한 런타임 오류.
+        - High: 런타임 예외 가능성, 권한 · 가드 누락, 잘못된 데이터 표시 · 저장, 캐시 불일치(수정 후 화면 미갱신), 메모리 누수, 심각한 성능 저하, legacy 토큰 규칙 위반 중 2번 · `src/styles/legacy/**` 지침에서 High로 정한 항목.
+        - Medium: 디자인 토큰 미사용, 공용 컴포넌트 미사용(중복 구현), 단일 책임 위반, 유지보수성 저하, 테스트 누락, 경계값 오류 가능성, 불필요한 리렌더링, 구조상 개선이 필요한 문제.
+        - Low: 네이밍, 가독성, 작은 중복, 사소한 스타일 문제.
+        - Suggestion: 당장 수정하지 않아도 되지만 장기적으로 품질을 높이는 개선 제안.
+        - 각 리뷰 코멘트는 `[심각도] 제목` 형식으로 시작하고, 영향 범위와 수정 방향을 함께 제시해줘.
+        - 같은 성격의 문제가 여러 개 있으면 대표 위치와 공통 해결 방향만 제시해줘.
+        - 머지 전에 고쳐야 할 문제와 참고 수준의 문제를 명확히 구분해줘. 문제가 없는 항목은 억지로 코멘트하지 마.
+        - 도구가 처리하는 문제는 지적하지 마. CI(`pr-check.yml`)의 ESLint · `tsc -b`가 import 순서 · 파일 네이밍 · 타입 오류를, pre-commit의 Prettier(lint-staged)가 포맷을 맡는다.
+
+        2. **디자인 토큰 사용**
+        디자인 토큰은 두 종류다. 기존(legacy) 토큰과 기존 화면은 새 토큰으로 만든 페이지로 교체된 뒤 삭제될 예정이다.
+        - 새 토큰: `src/styles/tokens/` (피그마 기준, primitive → semantic 2단). 앞으로 쓰는 유일한 토큰이다.
+        - legacy 토큰: `src/styles/legacy/` (삭제 예정). 새 코드에서 쓰지 않는다.
+        - 토큰 이름은 디자인 작업에 따라 바뀔 수 있으니, 리뷰할 때마다 `src/styles/tokens/`와 `src/styles/legacy/`의 현재 정의를 읽고 판단해줘. 제안할 때는 실제로 있는 새 토큰 이름만 제안해줘.
+
+        **legacy 토큰 사용 (High)**
+        - 새 페이지 · 새 컴포넌트에서 `src/styles/legacy/`에 정의된 클래스나 CSS 변수를 쓰면 `[High] legacy 토큰 사용`으로 지적해줘. legacy를 삭제하는 순간 빌드 오류 없이 스타일만 깨진다.
+        - 같은 역할의 새 토큰이 있으면 그 이름을, 없으면 "legacy 값을 가져와 `src/styles/tokens/`에 새 토큰으로 추가한 뒤 사용"하라고 제안해줘.
+        - 예외: 기존 화면(legacy 토큰으로 만든 기존 페이지 · 컴포넌트) 파일을 고치는 PR에서는 그 파일 안의 legacy 사용을 지적하지 마. 기존 화면은 새 페이지로 통째로 교체할 때까지 legacy를 유지한다. 단, 기존 화면에 새로 추가한 컴포넌트 파일은 새 컴포넌트로 본다.
+        - 새 페이지가 내부에서 legacy 토큰을 쓰는 기존 공용 컴포넌트를 import해 재사용하는 것은 지적하지 마. 재사용은 허용되고, 금지 대상은 새 코드에 legacy 클래스 · 변수를 직접 쓰는 것이다.
+
+        **직접 값 사용 (Medium)**
+        - 변경된 코드에서 아래 값이 새로 쓰이면 `[Medium] 디자인 토큰 미사용`으로 지적해줘. 맞는 새 토큰이 없다고 직접 값을 쓰지 말고, legacy에서 값을 가져와 새 토큰으로 추가하는 것이 규칙이다. (기존 코드에 남아 있는 사례는 지적하지 마.)
+          - `text-[#...]`, `bg-[#...]`, `border-[#...]` 같은 hex 임의값, `style={{ color: ... }}` 같은 인라인 색상
+          - `text-[14px]`처럼 타이포그래피 토큰으로 대체 가능한 글자 크기 직접 지정
+          - Tailwind 기본 스케일로 표현 가능한 `p-[16px]`, `gap-[8px]` 같은 임의 간격 (`1px` 구분선, 레이아웃 고정 크기는 예외)
+        - 토큰을 이름의 용도대로 쓰는지 확인해줘. (예: 배경용 토큰을 글자색에, 글자용 토큰을 배경에 쓰지 않음)
+        - 조건부 클래스는 문자열 연결 대신 `cn()`(`src/utils/cn.ts`)을 사용하는지 확인해줘.
+
+        3. **React 및 UI**
+        - `useEffect` · `useMemo` · `useCallback`의 의존성 배열이 의도와 맞는지, 오래된 값(stale closure)을 참조하지 않는지 확인해줘.
+        - `useEffect`에서 등록한 타이머 · 이벤트 리스너 · 구독을 cleanup에서 해제하는지 확인해줘.
+        - props나 Query 데이터로 계산 가능한 값을 `useState`에 복사하거나 `useEffect`로 동기화하고 있지 않은지 확인해줘.
+        - 리스트 렌더링에 index가 아닌 안정적인 `key`를 사용하는지 확인해줘.
+        - 큰 원본 이미지를 그대로 로드하지 않는지, 공용 이미지 컴포넌트가 있으면 그것을 사용하는지 확인해줘.
+        - 로딩 · 에러 · 빈 상태를 처리했는지, 공용 상태 화면 컴포넌트가 있으면 재사용하는지 확인해줘.
+        - 화면에 보이는 문구가 한국어로 자연스러운지 확인해줘.
+        - 접근성: 클릭 가능한 요소가 `div onClick`이 아닌 `button` · `Link`인지, 아이콘 버튼에 `aria-label`, 이미지에 `alt`가 있는지 확인해줘.
+        - 모바일 웹 기준으로 터치 영역, safe area(하단 고정 UI), iOS Safari 동작(입력창 확대, 100vh)에 문제가 없는지 확인해줘.
+
+        4. **아키텍처 및 구조**
+        - 데이터 흐름이 `pages` → `components` → `hooks/queries` → `api/endpoints` → `apiRequest`(`src/api/client.ts`) → `axiosInstance`를 따르는지 확인해줘.
+        - 페이지 · 컴포넌트에서 `axios`나 `axiosInstance`를 직접 호출하지 않고 `src/api/endpoints`와 Query 훅을 거치는지, endpoint 함수도 `axiosInstance` 대신 `apiRequest`를 쓰는지 확인해줘.
+        - 요청 · 응답 타입은 `src/api/dto`에 두고, 화면에서 DTO를 가공해야 하면 훅이나 유틸에서 변환하는지 확인해줘.
+        - Query key는 `src/api/queryKeys.ts`의 key에서 파생하는지 확인해줘. (`[...queryKeys.x.detail(id), 'feelings']`처럼 확장하는 것은 괜찮고, `['foo', id]`처럼 처음부터 문자열로 만든 key는 지적) `queryKeys.ts`에 새로 추가한 key는 도메인의 `all` key에서 파생해 상위 key로 한 번에 invalidate할 수 있는지 확인해줘.
+        - 새 파일이 같은 종류의 기존 파일과 같은 위치(`src` 아래 기존 폴더 구조)에 있는지 확인해줘. 기존 폴더에 맞는 파일이면 위치를 지적하지 마.
+        - `default export` 대신 named export와 barrel(`index.ts`)을 사용하는지, import에 `@/` 별칭을 쓰는지 확인해줘.
+        - 새 라이브러리가 추가되었다면 꼭 필요한지, 기존 의존성이나 브라우저 기본 기능으로 대체할 수 없는지 확인해줘.
+
+        5. **모듈화 및 단일 책임**
+        - 이 항목은 이번 PR에서 추가 · 변경된 코드만 지적해줘. 기존 코드에 남아 있는 사례는 지적하지 마.
+        - **공용 컴포넌트 · 훅 재사용**: 이미 있는 공용 요소를 쓰지 않고 같은 UI · 로직을 개별 구현했다면 `[Medium] 공용 컴포넌트 미사용`으로 지적하고, 대신 쓸 컴포넌트 · 훅 이름을 제시해줘.
+          - 공용 요소는 디자인 개편으로 자주 바뀌므로 목록을 가정하지 말고, 리뷰할 때마다 아래 위치의 현재 파일을 확인해서 실제로 있는 것만 제안해줘.
+          - UI 컴포넌트(모달 · 시트 · 버튼 · 입력 · 상태 화면 등): `src/components/ui`, `src/components/common`
+          - 훅: `src/hooks` / 유틸: `src/utils`
+          - 비슷한 공용 요소가 없으면 억지로 제안하지 마.
+        - 공용 컴포넌트가 요구사항에 조금 안 맞는다고 복사해서 새로 만들었다면, props(variant 등)를 확장하는 방향을 제안해줘. 반대로 한 화면에서만 쓰는 옵션이 공용 컴포넌트에 계속 쌓여 비대해지는 것도 지적해줘.
+        - 같은 이름 · 비슷한 역할의 컴포넌트가 여러 기능 폴더에 새로 생겼거나, 같은 마크업 · 로직이 두 곳 이상 복사되었다면 공용 컴포넌트 · 훅 · 유틸로 추출을 제안해줘. 반대로 한 곳에서만 쓰는 코드를 미리 공용화 · 추상화한 과한 설계는 `[Low]`로 지적해줘.
+        - **단일 책임**: 컴포넌트 하나가 데이터 요청 · 상태 관리 · 비즈니스 로직 · 렌더링을 모두 떠안고 있지 않은지 확인해줘.
+          - 데이터 요청과 가공은 `hooks/queries`나 커스텀 훅으로, 순수 계산은 `utils`로, 화면은 props를 받아 그리는 컴포넌트로 나누는 방향을 제안해줘.
+          - 하나의 컴포넌트 · 훅 · 함수가 서로 다른 이유로 바뀌는 여러 역할(예: 폼 검증 + 이미지 업로드 + 라우팅 + 모달 제어)을 하고 있으면 분리 지점을 구체적으로 제시해줘.
+          - 이번 변경으로 파일이 300줄을 넘거나, 이미 300줄이 넘는 파일에 새 책임이 추가되면 분리 방향을 `[Suggestion]`으로 제안해줘. 줄 수만으로 지적하지 말고 실제로 섞인 책임을 근거로 들어줘.
+        - **모듈 경계**: 기능 폴더(`components/<기능명>`)가 다른 기능 폴더의 내부 파일을 직접 import하지 않는지 확인해줘. 함께 쓰는 코드라면 공용 폴더로 옮기는 것을 제안해줘. 순환 import가 생기지 않는지도 확인해줘.
+        - 공용 컴포넌트(`components/ui`, `components/common`)가 API 호출이나 특정 Query 훅 같은 도메인 로직에 의존하지 않고 props로 데이터를 받는지 확인해줘.
+
+        6. **서버 상태 및 비동기**
+        - 서버 데이터를 zustand나 Context에 복사해 두지 않고 Query 캐시를 단일 기준으로 쓰는지 확인해줘. 사용자 정보 · 권한도 Query 캐시 기준이다.
+        - mutation 이후 관련 Query를 올바른 key로 invalidate · 갱신하는지, 목록과 상세가 함께 갱신되는지 확인해줘.
+        - `enabled` 조건 없이 필요한 값(id 등)이 없는 상태로 요청이 나가지 않는지 확인해줘.
+        - 낙관적 업데이트를 했다면 실패 시 롤백하는지 확인해줘.
+        - 빠르게 연속 요청할 때 응답 순서가 뒤바뀌는 문제(race condition)나 중복 제출이 없는지 확인해줘. 버튼은 요청 중 비활성화하는지 확인해줘.
+        - 무한 스크롤 · 페이지네이션이 커서 기반 API와 맞게 구현되었는지, 다음 페이지를 중복 요청하지 않는지 확인해줘.
+
+        7. **인증 및 권한**
+        - 보호가 필요한 라우트가 `AuthGuard`, `RoutePermissionGuards` 안에 있는지 확인해줘.
+        - 권한 판단을 화면에서 직접 조건문으로 만들지 않고 `src/policies` · `usePolicy` 훅 · `hasPermission`을 사용하는지 확인해줘.
+        - 버튼을 숨기는 것만으로 권한 처리를 끝내지 않았는지, 직접 URL로 접근해도 막히는지 확인해줘.
+        - 토큰 · 세션 처리(`src/api/axios.ts`, `src/stores/authStore.ts`) 변경 시 토큰 갱신, 세션 변경, 로그아웃 흐름이 깨지지 않는지 확인해줘.
+        - 로그인 후 이동(pending redirect) 경로가 외부 URL로 이동하지 않는지(open redirect) 확인해줘.
+
+        8. **폼 및 입력**
+        - 폼은 `react-hook-form` + `zod` 스키마(`*.schema.ts`)를 사용하는지, 검증 메시지가 한국어인지 확인해줘.
+        - 서버 제약(글자 수, 필수값, 파일 크기 · 개수)과 클라이언트 검증이 일치하는지 확인해줘.
+        - 작성 중 이탈 시 데이터 유실 방지(이탈 확인 모달, draft 저장)가 필요한 화면인지 확인해줘.
+        - 이미지 업로드 시 리사이즈 · 압축, 타입 · 크기 제한, 실패 · 취소 처리를 했는지 확인해줘.
+
+        9. **예외 처리**
+        - API 오류는 `ApiError`와 `getErrorMessage`(`src/utils/error.ts`)로 처리하고, 사용자에게 적절한 안내를 보여주는지 확인해줘.
+        - 2xx 응답이지만 `resultType: 'FAIL'`인 경우는 `axiosInstance`가 `ApiError`로 바꿔 던지므로, 화면 · 훅에서 `resultType`을 다시 검사하지 않고 일반 오류 처리로 다루는지 확인해줘.
+        - 요청 취소(`isRequestCanceled`)를 오류로 취급해 불필요한 에러 화면을 띄우지 않는지 확인해줘.
+        - 예외를 삼키고(`catch` 후 무시) 넘어가는 곳이 없는지 확인해줘.
+
+        10. **보안**
+        - `dangerouslySetInnerHTML`을 쓴다면 sanitize했는지, `iframe`은 신뢰할 수 있는 출처만 쓰는지 확인해줘.
+        - `target="_blank"` 링크에 `rel="noopener noreferrer"`가 있는지 확인해줘.
+        - `VITE_` 환경변수는 빌드 결과에 그대로 노출되므로, 새로 추가한 `VITE_` 변수에 비밀 키를 넣지 않았는지 확인해줘. 카카오 JavaScript 키(`VITE_KAKAO_MAP_KEY`)처럼 도메인 제한을 전제로 클라이언트에 노출하는 키는 예외다.
+        - 토큰, 사용자 이메일 · 위치 같은 민감 정보가 코드에 하드코딩되거나 `console.log`에 남지 않는지 확인해줘.
+        - 다른 사용자의 데이터를 수정 · 삭제하는 요청이 권한 확인 없이 노출되지 않는지 확인해줘.
+
+        11. **테스트**
+        - 권한 정책(`src/policies`, `src/permissions`), 가드, 인증 · 토큰 처리, 복잡한 유틸 로직을 바꿨다면 Vitest 테스트가 있는지, 경계값을 포함하는지 확인해줘.
+        - 테스트가 실제 서버 · 네트워크에 의존하지 않는지(현재 테스트는 `vi.mock`으로 모듈을 대체한다), 실행 순서에 의존하지 않는지 확인해줘.
+        - CI는 테스트를 실행하지 않으므로, 테스트를 추가 · 수정한 PR이면 PR 본문의 테스트 결과 항목에 `pnpm test` 실행 결과가 있는지 확인해줘.
+        - API 스펙을 바꿨다면 `src/mocks`의 핸들러 · 목 데이터도 함께 갱신했는지 확인해줘.
+
+    - path: 'src/styles/tokens/**'
+      instructions: |
+        피그마 기준 새 디자인 토큰 정의 파일이다. 여기서는 hex, px 같은 직접 값을 정의하는 것이 정상이다.
+        - primitive(값) → semantic(용도) 2단 구조를 지키는지, 값은 primitive에만 있는지 확인해줘.
+        - 새 토큰이 legacy 변수(`src/styles/legacy/`에 정의된 `var(--...)`)를 참조하면 `[High]`로 지적해줘. legacy에서 가져올 때는 변수 참조가 아니라 값을 복사해야 한다.
+        - 피그마에 없어 legacy에서 가져온 토큰이 legacy 이름을 그대로 쓰지 않고, 새 토큰의 이름 규칙에 맞는지 확인해줘. (피그마 이름이 우연히 legacy와 같은 경우는 legacy 쪽을 삭제하는 것이 규칙이므로 지적하지 마.)
+        - 이미 있는 새 토큰과 같은 값 · 용도의 토큰이 중복으로 추가되지 않는지 확인해줘.
+        - 토큰 이름이나 값을 바꿨다면 기존 사용처가 깨지지 않는지 확인해줘.
+
+    - path: 'src/styles/legacy/**'
+      instructions: |
+        삭제 예정인 legacy 디자인 토큰이다. 허용되는 변경은 (1) 기존 토큰 파일을 이 폴더로 옮기는 최초 이전, (2) 새 토큰과 이름(클래스 또는 CSS 변수)이 같은 토큰의 삭제뿐이다.
+        - 그 밖의 변경(토큰 추가, 값 · 이름 변경, 이름이 겹치지 않는 토큰의 삭제)은 `[High] legacy 토큰 파일 수정`으로 지적하고, 필요한 토큰은 `src/styles/tokens/`에 새 토큰으로 추가하라고 제안해줘. 이름이 겹치지 않는 토큰을 지우면 기존 화면 스타일이 빌드 오류 없이 깨진다.
+        - 삭제는 값이 달라도 허용된다. 사용처는 그대로 둔 채 기존 화면이 새 토큰 값으로 바뀌므로, 모양이 바뀌는 것 자체는 지적하지 마.
+        - 삭제가 있으면 요약 코멘트 하나로 영향을 고지해줘: 삭제한 토큰(legacy 값 → 새 값), 그 토큰을 `var(--...)`로 참조해 함께 바뀌는 다른 legacy 토큰, 영향받는 기존 화면 파일과 개수.
+        - PR 본문의 "🗑️ 삭제한 legacy 토큰" 섹션을 위 결과와 대조해줘. 섹션이나 "기존 화면이 달라질 수 있다"는 경고가 없거나 빠진 토큰 · 화면이 있으면 `[High]`로 알려줘.
+        - legacy 전체를 삭제하는 PR이면, 남아 있는 legacy 클래스 · 변수 사용처가 없는지 확인해줘.
+
+    - path: 'src/api/**'
+      instructions: |
+        - DTO 타입이 백엔드 응답 형식(`ApiResponseDto`)과 맞는지, `any`나 과한 optional로 타입을 흐리지 않는지 확인해줘.
+        - endpoint 함수가 요청 취소를 위한 `signal`을 전달할 수 있는지 확인해줘.
+
+    - path: 'src/{policies,permissions}/**'
+      instructions: |
+        ABAC 권한 정책이다.
+        - 정책 변경이 의도한 역할(비로그인, 일반 사용자, 작가 인증, 전시 소유자 · 멤버, 작성자)에만 영향을 주는지 확인해줘.
+        - `permissions.spec.ts` 스냅샷이 바뀌었다면 PR 설명에 바뀐 권한이 명시되어 있는지 확인해줘.
+
+    - path: 'src/mocks/**'
+      instructions: |
+        MSW 목 핸들러 · 데이터다.
+        - 목 응답 형식이 `src/api/dto` 타입과 일치하는지 확인해줘.
+        - 실제 개인정보(실명, 연락처, 이메일)가 목 데이터에 들어가지 않았는지 확인해줘.
+
+    - path: '**/*.{test,spec}.{ts,tsx}'
+      instructions: |
+        - 구현 세부사항이 아닌 동작을 검증하는지, 경계값 · 실패 케이스를 포함하는지 확인해줘.
+        - 테스트 간 상태(zustand store, Query 캐시, mock)가 초기화되는지 확인해줘.
+
+    - path: 'package.json'
+      instructions: |
+        - 패키지 매니저는 `pnpm`이다. lockfile 불일치는 CI의 `pnpm install --frozen-lockfile`이 잡으므로 지적하지 마.
+        - 새 의존성이 꼭 필요한지, 런타임 의존성과 개발 의존성(`devDependencies`)이 올바르게 구분되었는지 확인해줘.
+
+    - path: '.github/**'
+      instructions: |
+        - 워크플로 `permissions`가 최소 권한인지, 비밀 값이 `secrets`로만 사용되고 로그에 출력되지 않는지 확인해줘.
+
+  path_filters:
+    - '!dist/**'
+    - '!node_modules/**'
+    - '!pnpm-lock.yaml'
+    - '!public/mockServiceWorker.js'
+    - '!public/dupick/**'
+    - '!**/*.png'
+    - '!**/*.jpg'
+    - '!**/*.jpeg'
+    - '!**/*.webp'
+    - '!**/*.gif'
+
 chat:
   auto_reply: true
