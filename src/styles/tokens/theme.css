@@ -25,6 +25,8 @@
   --text-color-warning: var(--semantic-color-text-warning);
   --text-color-info: var(--semantic-color-text-info);
   --text-color-disable: var(--semantic-color-text-disable);
+  /* 피그마가 비선택 탭·드롭다운 글씨에 시멘틱이 아닌 primitive color/primary/400을 직접 쓴다 */
+  --text-color-primary-400: var(--primitive-color-primary-400);
 
   /* Background */
   --background-color-primary-white: var(--semantic-color-bg-primary-white);
@@ -73,6 +75,8 @@
   --border-color-warning: var(--semantic-color-border-warning);
   --border-color-info: var(--semantic-color-border-info);
   --border-color-disable: var(--semantic-color-border-disable);
+  /* 피그마가 드롭다운·필터 칩 외곽선에 icon/tertiary를 쓰는데 같은 값의 border 토큰이 없다 */
+  --border-color-icon-tertiary: var(--semantic-color-icon-tertiary);
 
   /* Radius */
   --radius-0: var(--semantic-radius-0);
