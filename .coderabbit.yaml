@@ -191,3 +191,10 @@ reviews:
 
 chat:
   auto_reply: true
+
+knowledge_base:
+  code_guidelines:
+    filePatterns:
+      # 문자열로만 적으면 docs/ 폴더에만 적용되므로 applyTo로 src에 연결한다
+      - files: 'docs/ui-policy.md'
+        applyTo: 'src/**/*.{ts,tsx,css}'
