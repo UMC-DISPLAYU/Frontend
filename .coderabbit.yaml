@@ -61,7 +61,7 @@ reviews:
         - 로딩 · 에러 · 빈 상태를 처리했는지, 공용 상태 화면 컴포넌트가 있으면 재사용하는지 확인해줘.
         - 화면에 보이는 문구가 한국어로 자연스러운지 확인해줘.
         - 접근성: 클릭 가능한 요소가 `div onClick`이 아닌 `button` · `Link`인지, 아이콘 버튼에 `aria-label`, 이미지에 `alt`가 있는지 확인해줘.
-        - 모바일 웹 기준으로 터치 영역, safe area(하단 고정 UI), iOS Safari 동작(입력창 확대, 100vh)에 문제가 없는지 확인해줘.
+        - 반응형 · 인터랙션은 `docs/ui-policy.md` 정책을 기준으로 확인해줘. (브레이크포인트, 컨테이너 최대 너비, safe area, `dvh`, 터치 영역, 오버레이, 모바일 hover 미적용 등) 문서에 없는 세부 사항은 지적하지 마.
 
         4. **아키텍처 및 구조**
         - 데이터 흐름이 `pages` → `components` → `hooks/queries` → `api/endpoints` → `apiRequest`(`src/api/client.ts`) → `axiosInstance`를 따르는지 확인해줘.
@@ -191,3 +191,10 @@ reviews:
 
 chat:
   auto_reply: true
+
+knowledge_base:
+  code_guidelines:
+    filePatterns:
+      # 문자열로만 적으면 docs/ 폴더에만 적용되므로 applyTo로 src에 연결한다
+      - files: 'docs/ui-policy.md'
+        applyTo: 'src/**/*.{ts,tsx,css}'

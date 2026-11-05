@@ -5,13 +5,14 @@
 
 ## 프로젝트 맥락
 
-- React 18 + TypeScript + Vite 기반 **모바일 웹** 프론트엔드다. 패키지 매니저는 `pnpm`.
+- React 18 + TypeScript + Vite 기반 **반응형 웹**(모바일 · 태블릿 · 데스크톱) 프론트엔드다. 패키지 매니저는 `pnpm`.
 - 라우팅: `react-router-dom` v7, 라우트 정의는 `src/Router.tsx`.
 - 스타일: Tailwind CSS v4. 클래스 조합은 `cn()`(`src/utils/cn.ts`)을 사용한다. 토큰 규칙은 아래 "스타일 (디자인 토큰)"을 따른다.
 - import 경로는 `@/` 별칭(`src/*`)을 사용한다.
 - 팀 협업 규칙(커밋·브랜치·네이밍·export)은 `CONVENTION.md`를 따른다. commitlint, husky, ESLint가 강제하므로 우회하지 않는다.
 - 팀 코드 리뷰 기준은 `.coderabbit.yaml`의 `path_instructions`에 있다. 대부분 이 파일과 같은 내용이고, React 리뷰 관점(의존성 배열, cleanup, key, race condition 등)이 필요할 때 참고한다.
 - 권한 매트릭스(리소스 × 액션 × 역할)는 `docs/README.md`(GitBook)에 있다.
+- 반응형 · 인터랙션 정책(브레이크포인트, 컨테이너, safe area, 터치 영역, 모션, 오버레이 등)은 `docs/ui-policy.md`(GitBook)에 있다. UI를 만들거나 고칠 때 먼저 읽고, 문서에 없는 세부 사항은 [프로토타입](https://displayu-demo.vercel.app/)을 따른다.
 
 ### 환경 변수
 
