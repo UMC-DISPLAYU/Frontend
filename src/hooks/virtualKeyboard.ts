@@ -8,7 +8,7 @@ const KEYBOARD_INSET_CSS_VAR = '--semantic-layout-keyboard-inset';
 
 // 브라우저 툴바 · 반올림 오차로 생기는 작은 차이는 키보드로 보지 않는다
 const KEYBOARD_INSET_NOISE = 40;
-// Android(interactive-widget=resizes-content)는 레이아웃이 줄어 inset 이 0 이 되므로, 높이 감소량으로 열림을 판단한다
+// 일부 Android 브라우저(Chrome 108 미만 등)는 키보드가 열리면 레이아웃 자체가 줄어 inset 이 0 이 되므로, 높이 감소량으로 열림을 판단한다
 const KEYBOARD_MIN_HEIGHT = 120;
 const FOCUS_SCROLL_MARGIN = 16;
 // 키보드가 올라오는 애니메이션과 브라우저 기본 스크롤이 끝난 뒤에 보정한다

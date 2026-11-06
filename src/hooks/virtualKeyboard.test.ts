@@ -24,7 +24,7 @@ describe('computeKeyboardInset', () => {
     );
   });
 
-  it('Android(resizes-content): 레이아웃도 같이 줄면 0', () => {
+  it('레이아웃도 같이 줄어드는 브라우저(구버전 Android Chrome 등)는 0', () => {
     expect(computeKeyboardInset({ ...base, layoutHeight: 464, viewportHeight: 464 })).toBe(0);
   });
 
