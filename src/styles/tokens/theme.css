@@ -43,6 +43,7 @@
   --background-color-warning-subtle: var(--semantic-color-bg-warning-subtle);
   --background-color-disable: var(--semantic-color-bg-disable);
   --background-color-notice: var(--semantic-color-bg-notice);
+  --background-color-dim: var(--semantic-color-bg-dim);
 
   /* Icon */
   --text-color-icon-primary: var(--semantic-color-icon-primary);
@@ -59,6 +60,11 @@
   --text-color-icon-warning: var(--semantic-color-icon-warning);
   --text-color-icon-disable: var(--semantic-color-icon-disable);
   --text-color-icon-white: var(--semantic-color-icon-white);
+
+  /* Focus — 키보드 이동 시 테두리(focus-visible:outline-2 outline-focus). 피그마 변수가 아니라 프로토타입 기준이다.
+     어두운 배경(냅바 알약 등) 위에서는 outline-focus-inverse 를 쓴다 */
+  --outline-color-focus: var(--semantic-color-text-primary);
+  --outline-color-focus-inverse: var(--semantic-color-text-quaternary);
 
   /* Border */
   --border-color-primary: var(--semantic-color-border-primary);
@@ -91,4 +97,110 @@
   --shadow-md: 0 4px 15px 1px rgb(0 0 0 / 0.15);
   --shadow-lg: 0 5px 50px 0 rgb(0 0 0 / 0.07);
   --shadow-card: 0 4px 12px 0 rgb(0 0 0 / 0.04);
+
+  /*
+   * Breakpoint — tablet: · desktop: variant. 768 ~ 899px 은 데스크톱 레이아웃을 따르므로
+   * 레이아웃 전환은 대부분 tablet: 에서 하고, desktop: 은 여백 · 열 수 같은 세부 조정에만 쓴다.
+   * Tailwind 기본 브레이크포인트가 rem 이라 정렬이 어긋나지 않게 rem 으로 둔다(48rem = 768px, 56.25rem = 900px).
+   */
+  --breakpoint-tablet: 48rem;
+  --breakpoint-desktop: 56.25rem;
+
+  /* Layout — max-w-form · max-w-list, px-gutter, pt-safe-area-top, pb-safe-area-bottom,
+     h-navbar-height, pb-navbar-clearance · bottom-navbar-clearance, bottom-keyboard-inset */
+  --container-form: var(--semantic-layout-container-form);
+  --container-list: var(--semantic-layout-container-list);
+  --spacing-gutter: var(--semantic-layout-gutter);
+  --spacing-safe-area-top: var(--semantic-layout-safe-area-top);
+  --spacing-safe-area-bottom: var(--semantic-layout-safe-area-bottom);
+  --spacing-navbar-height: var(--semantic-layout-navbar-height);
+  --spacing-navbar-clearance: var(--semantic-layout-navbar-clearance);
+  --spacing-keyboard-inset: var(--semantic-layout-keyboard-inset);
+
+  /* Motion — duration-fast · duration-base · duration-slow, ease-standard */
+  --transition-duration-fast: var(--semantic-motion-duration-fast);
+  --transition-duration-base: var(--semantic-motion-duration-base);
+  --transition-duration-slow: var(--semantic-motion-duration-slow);
+  --ease-standard: var(--semantic-motion-easing-standard);
+
+  /* Animation — 들어올 때는 both(지연 중에도 시작 프레임 유지), 나갈 때는 forwards(끝 프레임 유지) */
+  --animate-fade-in: fade-in var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) both;
+  --animate-fade-out: fade-out var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) forwards;
+  --animate-sheet-in: sheet-in var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) both;
+  --animate-sheet-out: sheet-out var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) forwards;
+  --animate-modal-in: modal-in var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) both;
+  --animate-modal-out: modal-out var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) forwards;
+  --animate-toast-in: toast-in var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) both;
+  --animate-toast-out: toast-out var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) forwards;
+  --animate-rise: rise var(--semantic-motion-duration-slow) var(--semantic-motion-easing-standard)
+    both;
+  /* shimmer 는 반복 루프라 전환용 시간 토큰(fast · base · slow) 대신 1.5s 를 쓴다 */
+  --animate-shimmer: shimmer 1.5s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+  @keyframes modal-out {
+    to {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 150% 0;
+    }
+    to {
+      background-position: -50% 0;
+    }
+  }
 }

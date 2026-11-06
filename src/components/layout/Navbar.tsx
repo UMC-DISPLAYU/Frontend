@@ -12,8 +12,7 @@ import searchIcon from '@/assets/nav/SearchIcon.svg';
 import searchIconActive from '@/assets/nav/SearchIconActive.svg';
 import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useAuthStore } from '@/stores/authStore';
-
-import { cn } from '../../utils/cn';
+import { cn } from '@/utils/cn';
 
 type NavId = 'home' | 'lounge' | 'my' | 'search';
 
@@ -59,49 +58,54 @@ export function Navbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   return (
-    <div className="relative w-full max-w-md px-2 sm:px-5 py-1.5">
+    <nav
+      aria-label="하단 메뉴"
+      className="pointer-events-none fixed inset-x-0 bottom-safe-area-bottom z-50 flex justify-center px-5"
+    >
       <LoginConfirmModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         redirectPath="/my"
       />
-      <div className="absolute inset-0 rounded-[250px] bg-[rgba(182,178,178,0.6)] backdrop-blur-[10px] shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-2px_-2px_4px_-2px_rgba(241,241,241,0.60),inset_2px_2px_4px_-2px_rgba(255,255,255,1.00)] pointer-events-none" />
-      <div className="relative z-10 flex items-center justify-center">
-        {NAV_ITEMS.map(({ activeIcon, icon, id, label, path }) => {
-          return (
-            <NavLink
-              key={id}
-              end={path === '/home'}
-              className="w-20 h-14 inline-flex flex-col items-center justify-center cursor-pointer rounded-3xl border-0 bg-transparent outline-none transition-transform duration-150 active:scale-95 focus-visible:ring-2 focus-visible:ring-white"
-              to={path}
-              onClick={(e) => {
-                if (path === '/my' && !accessToken) {
-                  e.preventDefault();
-                  setIsLoginModalOpen(true);
-                }
-              }}
-            >
-              {({ isActive }) => (
-                <div className="h-10 flex flex-col items-center justify-start gap-1">
-                  <img
-                    alt=""
-                    className="size-5 transition-transform duration-200"
-                    src={isActive ? activeIcon : icon}
-                  />
-                  <span
-                    className={cn(
-                      'whitespace-nowrap transition-colors duration-150 typo-body-xs-regular text-navbar-fg',
-                      isActive && 'typo-body-xs-bold',
-                    )}
-                  >
-                    {label}
-                  </span>
-                </div>
-              )}
-            </NavLink>
-          );
-        })}
+      <div className="pointer-events-auto relative h-navbar-height w-[362px] max-w-full px-2">
+        <div className="absolute inset-0 rounded-[250px] bg-[rgba(182,178,178,0.6)] backdrop-blur-[10px] shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-2px_-2px_4px_-2px_rgba(241,241,241,0.60),inset_2px_2px_4px_-2px_rgba(255,255,255,1.00)] pointer-events-none" />
+        <div className="relative z-10 flex h-full items-center justify-center">
+          {NAV_ITEMS.map(({ activeIcon, icon, id, label, path }) => {
+            return (
+              <NavLink
+                key={id}
+                end={path === '/home'}
+                className="w-20 h-14 inline-flex flex-col items-center justify-center cursor-pointer rounded-3xl border-0 bg-transparent outline-none transition-transform duration-150 active:scale-95 focus-visible:ring-2 focus-visible:ring-white"
+                to={path}
+                onClick={(e) => {
+                  if (path === '/my' && !accessToken) {
+                    e.preventDefault();
+                    setIsLoginModalOpen(true);
+                  }
+                }}
+              >
+                {({ isActive }) => (
+                  <div className="h-10 flex flex-col items-center justify-start gap-1">
+                    <img
+                      alt=""
+                      className="size-5 transition-transform duration-200"
+                      src={isActive ? activeIcon : icon}
+                    />
+                    <span
+                      className={cn(
+                        'whitespace-nowrap transition-colors duration-150 typo-body-xs-regular text-navbar-fg',
+                        isActive && 'typo-body-xs-bold',
+                      )}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </nav>
   );
 }

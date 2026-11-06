@@ -53,6 +53,10 @@ export function MyActivityPage() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabKey>(() => getTabFromState(location.state));
 
+  // ⚠️ 이 화면에 새 Overlay(@/components/ui)를 붙이면 비정상 작동할 수 있다.
+  // Overlay는 열고 닫을 때 같은 URL로 history 기록을 쌓아 location.key 가 바뀌므로,
+  // 아래 동기화가 실행돼 사용자가 고른 탭이 state 값(없으면 첫 탭)으로 돌아간다.
+  // Overlay를 붙일 때는 pathname 기준으로 바꾼다.
   // 같은 경로로 다시 navigate하면 컴포넌트가 리마운트되지 않으므로,
   // location.key(내비게이션마다 고유)가 바뀌면 렌더링 중 탭을 다시 동기화한다.
   const [syncedKey, setSyncedKey] = useState(location.key);

@@ -48,6 +48,10 @@ export function ArtworkDetailPage() {
     (location.state as { initialTab?: ArtworkDetailTabKey } | null)?.initialTab ?? 'intro',
   );
 
+  // ⚠️ 이 화면에 새 Overlay(@/components/ui)를 붙이면 비정상 작동할 수 있다.
+  // Overlay는 열고 닫을 때 location.state 를 바꾸므로(initialTab 은 남는다),
+  // 오버레이를 여닫을 때마다 이 effect 가 다시 돌아 탭 위치로 스크롤된다.
+  // Overlay를 붙일 때는 pathname 기준으로 바꾼다.
   useEffect(() => {
     if (location.state?.initialTab) {
       const timer = setTimeout(() => {
