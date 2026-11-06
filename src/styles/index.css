@@ -52,6 +52,43 @@
   }
 }
 
+/* 스켈레톤: 실제 콘텐츠와 같은 크기 · 모서리를 붙여 쓴다(예: skeleton-shimmer aspect-3/4 rounded-12) */
+@utility skeleton-shimmer {
+  background-color: var(--semantic-color-bg-secondary);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--semantic-color-bg-primary-white) 70%, transparent) 50%,
+    transparent 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+
+  /* 동작 줄이기에서는 하이라이트가 한쪽 끝에 멈춰 보이지 않게 단색으로 둔다 */
+  @media (prefers-reduced-motion: reduce) {
+    background-image: none;
+  }
+}
+
+/*
+ * 동작 줄이기: 모든 애니메이션 · 전환을 즉시 끝낸다.
+ * animation: none 대신 시간을 0에 가깝게 줄여 animationend · transitionend 가 계속 발생하게 한다
+ * (오버레이 닫힘처럼 이 이벤트를 기다려 언마운트하는 코드가 멈추지 않도록).
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* iOS Safari input focus auto-zoom prevention (16px + scale + layout compensation) */
 input,
 select,
