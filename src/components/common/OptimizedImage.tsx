@@ -46,7 +46,8 @@ export function OptimizedImage({
   const optimizedSrc = optimizeImageUrl(src, displayWidth, format);
 
   const handleError = (event: SyntheticEvent<HTMLImageElement, Event>) => {
-    if (event.currentTarget.src !== src) {
+    // currentTarget.src 는 절대 URL 로 정규화돼 상대 경로 src 와 늘 달라지므로 속성값으로 비교한다
+    if (event.currentTarget.getAttribute('src') !== src) {
       event.currentTarget.src = src;
     } else if (skeleton) {
       setLoadState({ src, status: 'error', instant: false });
