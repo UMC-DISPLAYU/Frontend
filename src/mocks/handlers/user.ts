@@ -1,7 +1,8 @@
-import { http } from 'msw';
+import { delay, http } from 'msw';
 
 import { mockDb } from '@/mocks/data/repository';
-import { noContent, paths, readJson, success } from '@/mocks/response';
+import { fail, noContent, paths, readJson, success } from '@/mocks/response';
+import { MOCK_DELAY_MS, MOCK_NICKNAMES } from '@/mocks/scenario';
 
 /* 작품에 부여한 artistUserId(300번대)로 조회하면 해당 작품의 작가 정보를 돌려줍니다. */
 const findArtworkArtist = (userId: number) =>
@@ -50,13 +51,22 @@ export const userHandlers = [
     }),
   ),
   ...paths('/api/v1/users/nickname/check').map((path) =>
-    http.get(path, ({ request }) => {
+    http.get(path, async ({ request }) => {
       const nickname = new URL(request.url).searchParams.get('nickname') ?? '';
 
+      if (nickname === MOCK_NICKNAMES.checkSlow) await delay(MOCK_DELAY_MS);
+      if (nickname === MOCK_NICKNAMES.checkFail) {
+        return fail('/api/v1/users/nickname/check', 500, {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: '닉네임 중복 확인에 실패했습니다.',
+        });
+      }
+
+      const isAvailable = nickname !== MOCK_NICKNAMES.duplicate;
       return success('/api/v1/users/nickname/check', {
         nickname,
-        available: nickname !== '중복닉네임',
-        isAvailable: nickname !== '중복닉네임',
+        available: isAvailable,
+        isAvailable,
       });
     }),
   ),

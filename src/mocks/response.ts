@@ -24,6 +24,17 @@ export const created = <TData>(path: string, data: TData) =>
 
 export const noContent = (path: string) => success(path, null);
 
+export const fail = (path: string, status: number, error: { code: string; message: string }) =>
+  HttpResponse.json<ApiResponseDto<never>>(
+    {
+      resultType: 'FAIL',
+      success: null,
+      error: { ...error, details: null },
+      meta: { path, timestamp: new Date().toISOString() },
+    },
+    { status },
+  );
+
 export const readJson = async <TBody>(request: Request): Promise<Partial<TBody>> => {
   try {
     return (await request.json()) as Partial<TBody>;
