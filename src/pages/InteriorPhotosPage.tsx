@@ -18,18 +18,28 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { X } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { BottomFixedBar, ErrorView, LoadingView } from '@/components/common';
-import { useHideFooter } from '@/components/layout';
-import { AlertModal, ExhibitionHeader } from '@/components/ui';
+import PhotoAddIcon from '@/assets/exhibition-work/photo-add.svg';
+import PhotoDeleteIcon from '@/assets/exhibition-work/photo-delete.svg';
+import PhotoNoticeIcon from '@/assets/exhibition-work/photo-notice.svg';
+import PhotoNumberBackground from '@/assets/exhibition-work/photo-number.svg';
+import { contentEditSchema, type ContentEditValues } from '@/components/artworks-manage';
+import { BottomFixedBar, ErrorView } from '@/components/common';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { WorkHeader } from '@/components/exhibition-work';
+import { PageContainer, useHideFooter } from '@/components/layout';
+import { Skeleton, SkeletonList } from '@/components/ui';
 import {
   DEFAULT_CONTENT_IMAGE_HEIGHT,
   DEFAULT_CONTENT_IMAGE_WIDTH,
   MAX_CONTENT_IMAGES,
 } from '@/constants';
+import { CONTENT_DESCRIPTION_MAX_LENGTH } from '@/constants/artworkManage';
+import { useUpdateContentCategory } from '@/hooks/queries/useContentCategories';
 import {
   useCreateContentImage,
   useDeleteContentImage,
@@ -40,7 +50,11 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useCurrentPolicyUser, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { policies } from '@/policies/policies';
+import { toast } from '@/stores/toastStore';
+import { cn } from '@/utils/cn';
+import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
+import { staggerStyle } from '@/utils/stagger';
 
 type Photo = {
   id: string | number;
@@ -50,11 +64,15 @@ type Photo = {
 };
 
 const getPhotoSortableId = (photo: Photo) => String(photo.id);
+const buttonClass =
+  'cursor-pointer transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable';
 
 interface SortablePhotoItemProps {
   photo: Photo;
   index: number;
-  isReorderMode: boolean;
+  isEditing: boolean;
+  canReorder: boolean;
+  disabled: boolean;
   displayDetail: DisplayDetailDto;
   onRemove: (id: string | number) => void;
 }
@@ -62,59 +80,75 @@ interface SortablePhotoItemProps {
 function SortablePhotoItem({
   photo,
   index,
-  isReorderMode,
+  isEditing,
+  canReorder,
+  disabled,
   displayDetail,
   onRemove,
 }: SortablePhotoItemProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: getPhotoSortableId(photo),
-    disabled: !isReorderMode,
+    disabled: !isEditing || !canReorder || disabled,
   });
-
   const displayContentPolicy = useDisplayContentPolicy(displayDetail, photo);
   const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
 
   return (
     <li
       ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        touchAction: isReorderMode ? 'none' : undefined,
-      }}
-      {...(isReorderMode ? attributes : {})}
-      {...(isReorderMode ? listeners : {})}
-      className={`relative aspect-114/144 ${
-        isReorderMode ? 'cursor-grab active:cursor-grabbing' : ''
-      } ${isDragging ? 'z-10 opacity-70' : ''}`}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn('relative aspect-square min-w-0', isDragging && 'z-10 opacity-70')}
     >
-      <img
-        src={photo.url}
-        alt={photo.alt ?? `내부사진 ${index + 1}`}
-        className="size-full rounded-xl object-cover"
-      />
-
-      {index === 0 && (
-        <span className="typo-body-xs-regular absolute left-1.5 top-1.5 rounded-sm bg-dark px-1 py-0.5 text-white">
-          대표
-        </span>
-      )}
-
-      {!isReorderMode && canDeleteContent && (
-        <button
-          type="button"
-          onClick={() => onRemove(photo.id)}
-          aria-label={`내부사진 ${index + 1} 삭제`}
-          className="absolute right-1.5 top-1.5 flex size-5 items-center justify-center rounded-full bg-black/50 text-white"
-        >
-          <X className="size-2.5" strokeWidth={2.5} />
-        </button>
-      )}
-
-      {isReorderMode && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/30">
-          <span className="typo-body-sm-bold text-white">{index + 1}</span>
-        </div>
+      <div className="animate-rise" style={staggerStyle(index)}>
+        <OptimizedImage
+          src={photo.url}
+          alt={photo.alt ?? `섹션 사진 ${index + 1}`}
+          displayWidth={208}
+          skeleton
+          frameClassName="aspect-square w-full rounded-12"
+        />
+      </div>
+      {isEditing && (
+        <>
+          <button
+            ref={setActivatorNodeRef}
+            type="button"
+            {...attributes}
+            {...listeners}
+            aria-label={`사진 ${index + 1} 순서 이동`}
+            disabled={!canReorder || disabled}
+            className={cn(
+              buttonClass,
+              'absolute -left-0.5 top-0 flex size-11 touch-none items-center justify-center rounded-12 text-interactive-inverse focus-visible:outline-focus-inverse disabled:bg-transparent disabled:text-interactive-inverse',
+              canReorder && 'cursor-grab active:cursor-grabbing',
+            )}
+          >
+            <img src={PhotoNumberBackground} alt="" className="translate-x-0.5" />
+            <span className="typography-body-xl-medium absolute translate-x-0.5">{index + 1}</span>
+          </button>
+          {canDeleteContent && (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => onRemove(photo.id)}
+              aria-label={`사진 ${index + 1} 삭제`}
+              className={cn(
+                buttonClass,
+                'absolute -right-0.5 top-0 flex size-11 items-center justify-center rounded-12 hover:bg-dim focus-visible:outline-focus-inverse disabled:bg-transparent disabled:opacity-40',
+              )}
+            >
+              <img src={PhotoDeleteIcon} alt="" className="-translate-x-0.5" />
+            </button>
+          )}
+        </>
       )}
     </li>
   );
@@ -122,57 +156,57 @@ function SortablePhotoItem({
 
 export function InteriorPhotosPage() {
   useHideFooter();
-
   const flowBack = useFlowBack();
   const { displayId: paramDisplayId, categoryId: paramCategoryId } = useParams();
-
   const displayId = Number(paramDisplayId ?? 0);
   const categoryId = Number(paramCategoryId ?? 0);
-
-  const { data: displayDetail, isLoading, error } = useDisplayDetail(displayId);
+  const { data: displayDetail, isPending, error } = useDisplayDetail(displayId);
   const displayContentPolicy = useDisplayContentPolicy(displayDetail);
 
-  const canCreateContent = hasPermission(displayContentPolicy, 'createContent');
-  const canReorder = hasPermission(displayContentPolicy, 'reorder');
-
-  if (isLoading) {
-    return <LoadingView message="내부 사진을 불러오는 중..." />;
-  }
-
-  if (error || !displayDetail) {
-    return <ErrorView message="전시 정보를 찾을 수 없습니다." onRetry={() => flowBack()} />;
-  }
-
-  const category = displayDetail.contentCategories?.find((cat) => cat.categoryId === categoryId);
-
-  if (!category) {
+  if (isPending) {
     return (
-      <ErrorView message="해당 콘텐츠 카테고리를 찾을 수 없습니다." onRetry={() => flowBack()} />
+      <PageContainer variant="form" className="bg-primary-white">
+        <WorkHeader title="섹션 편집" onBack={flowBack} />
+        <main aria-label="섹션을 불러오는 중" aria-busy="true" className="space-y-6 py-5">
+          <Skeleton className="h-20 w-full rounded-12" />
+          <Skeleton className="h-44 w-full rounded-12" />
+          <div className="grid grid-cols-3 gap-2.5">
+            <SkeletonList count={6}>
+              {() => <Skeleton className="aspect-square rounded-12" />}
+            </SkeletonList>
+          </div>
+        </main>
+      </PageContainer>
     );
   }
 
-  const initialPhotos =
-    category.contents.map((content) => ({
-      id: content.contentId,
-      url: content.imageUrl,
-      userId: content.userId,
-    })) ?? [];
+  if (error || !displayDetail) {
+    return <ErrorView message="전시 정보를 찾을 수 없습니다." onRetry={flowBack} />;
+  }
+
+  const category = displayDetail.contentCategories?.find((cat) => cat.categoryId === categoryId);
+  if (!category) {
+    return <ErrorView message="해당 섹션을 찾을 수 없습니다." onRetry={flowBack} />;
+  }
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <InteriorPhotos
-        key={categoryId}
-        title={category.name}
-        description={category.description ?? ''}
-        displayId={displayId}
-        categoryId={categoryId}
-        initialPhotos={initialPhotos}
-        canCreateContent={canCreateContent}
-        canReorder={canReorder}
-        onBack={() => flowBack()}
-        displayDetail={displayDetail}
-      />
-    </div>
+    <InteriorPhotos
+      key={categoryId}
+      title={category.name}
+      description={category.description ?? ''}
+      displayId={displayId}
+      categoryId={categoryId}
+      initialPhotos={category.contents.map((content) => ({
+        id: content.contentId,
+        url: content.imageUrl,
+        userId: content.userId,
+      }))}
+      canEditCategory={hasPermission(displayContentPolicy, 'editCategory')}
+      canCreateContent={hasPermission(displayContentPolicy, 'createContent')}
+      canReorder={hasPermission(displayContentPolicy, 'reorder')}
+      onBack={flowBack}
+      displayDetail={displayDetail}
+    />
   );
 }
 
@@ -182,8 +216,8 @@ interface InteriorPhotosProps {
   displayId: number;
   categoryId: number;
   initialPhotos: Photo[];
+  canEditCategory: boolean;
   canCreateContent: boolean;
-  canDeleteContent: boolean;
   canReorder: boolean;
   onBack: () => void;
   displayDetail: DisplayDetailDto;
@@ -195,76 +229,89 @@ function InteriorPhotos({
   displayId,
   categoryId,
   initialPhotos,
+  canEditCategory,
   canCreateContent,
   canReorder,
   onBack,
   displayDetail,
-}: Omit<InteriorPhotosProps, 'canDeleteContent'>) {
+}: InteriorPhotosProps) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
-  const [isReorderMode, setIsReorderMode] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isEditingPhotos, setIsEditingPhotos] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savedOrderRef = useRef<Photo[]>(initialPhotos);
-
+  const savingDetailsRef = useRef(false);
+  const photoActionRef = useRef(false);
   const user = useCurrentPolicyUser();
-
   const scope = { displayId, categoryId };
   const imageUpload = useImageUpload({ domain: 'display' });
   const createImage = useCreateContentImage(scope);
   const reorderImages = useReorderContentImages(scope);
   const deleteImage = useDeleteContentImage(scope);
-
+  const updateCategory = useUpdateContentCategory(displayId);
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    setError,
+    formState: { errors, isDirty, isSubmitting },
+  } = useForm<ContentEditValues>({
+    resolver: zodResolver(contentEditSchema),
+    defaultValues: { title, description },
+  });
+  const currentDescription = useWatch({ control, name: 'description' }) ?? '';
   const isBusy = imageUpload.isUploading || createImage.isPending;
   const isSavingOrder = reorderImages.isPending;
-  const canShowActions = canCreateContent || canReorder;
-  const shouldShowBottomBar = isReorderMode;
-  const sortablePhotoIds = photos.map(getPhotoSortableId);
+  const isPhotoActionPending = isBusy || isSavingOrder || deleteImage.isPending;
+  const policyUser = {
+    id: user?.id ?? null,
+    isArtistVerified: user?.isArtistVerified ?? false,
+  };
+  const canEditPhotos =
+    canReorder ||
+    photos.some((photo) => policies.displayContent.deleteContent(policyUser, displayDetail, photo));
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 6,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 120,
-        tolerance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  const handleAddPhotos = () => {
-    if (!canCreateContent) return;
-    fileInputRef.current?.click();
+  const saveDetails = async (values: ContentEditValues) => {
+    if (!canEditCategory || savingDetailsRef.current) return;
+    savingDetailsRef.current = true;
+    try {
+      await updateCategory.mutateAsync({
+        categoryId,
+        body: { name: values.title, description: values.description },
+      });
+      reset(values);
+      toast('섹션 정보를 저장했어요');
+    } catch (error) {
+      setError('root', {
+        message: getErrorMessage(error, '섹션 정보를 저장하지 못했어요. 다시 시도해주세요.'),
+      });
+    } finally {
+      savingDetailsRef.current = false;
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!canCreateContent) return;
-
+    if (!canCreateContent || photoActionRef.current || isPhotoActionPending) return;
     const files = e.target.files;
     if (!files) return;
-
     const remainingSlots = Math.max(MAX_CONTENT_IMAGES - photos.length, 0);
     const filesToAdd = Array.from(files).slice(0, remainingSlots);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-
+    if (fileInputRef.current) fileInputRef.current.value = '';
     if (filesToAdd.length === 0) return;
 
+    photoActionRef.current = true;
+    setActionError(null);
     const added = imageUpload.addImages(filesToAdd);
-
     try {
       const uploadedUrls = await Promise.all(
         added.map((image) => {
-          if (!image.file) {
-            throw new Error('업로드할 이미지 파일이 없습니다.');
-          }
-
+          if (!image.file) throw new Error('업로드할 이미지 파일이 없습니다.');
           return imageUpload.uploadImage(image.file);
         }),
       );
@@ -277,79 +324,87 @@ function InteriorPhotos({
           }),
         ),
       );
-
       const newPhotos: Photo[] = created.map((res, index) => ({
         id: res.contentId,
         url: uploadedUrls[index],
         alt: added[index]?.file.name,
         userId: user?.id ?? undefined,
       }));
-
-      setPhotos((prev) => [...prev, ...newPhotos]);
-    } catch {
-      setUploadError('사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
+      setPhotos((previous) => [...previous, ...newPhotos]);
+    } catch (error) {
+      setActionError(
+        getErrorMessage(error, '사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.'),
+      );
     } finally {
       imageUpload.clearImages();
+      photoActionRef.current = false;
     }
   };
 
   const handleRemove = (id: string | number) => {
-    const targetPhoto = photos.find((p) => p.id === id);
-    if (!targetPhoto) return;
+    if (photoActionRef.current || isPhotoActionPending) return;
+    const targetPhoto = photos.find((photo) => photo.id === id);
+    if (
+      !targetPhoto ||
+      !policies.displayContent.deleteContent(policyUser, displayDetail, targetPhoto)
+    ) {
+      return;
+    }
 
-    const policyUser = {
-      id: user?.id ?? null,
-      isArtistVerified: user?.isArtistVerified ?? false,
-    };
-
-    const hasDeletePermission = policies.displayContent.deleteContent(
-      policyUser,
-      displayDetail,
-      targetPhoto,
-    );
-
-    if (!hasDeletePermission) return;
-
+    photoActionRef.current = true;
+    setActionError(null);
     const previous = photos;
-    const updated = previous.filter((p) => p.id !== id);
-
-    setPhotos(updated);
-
+    setPhotos(previous.filter((photo) => photo.id !== id));
     deleteImage.mutate(Number(id), {
-      onError: () => {
+      onSuccess: () => {
+        savedOrderRef.current = savedOrderRef.current.filter((photo) => photo.id !== id);
+        photoActionRef.current = false;
+      },
+      onError: (error) => {
         setPhotos(previous);
+        setActionError(getErrorMessage(error, '사진을 삭제하지 못했어요. 다시 시도해주세요.'));
+        photoActionRef.current = false;
       },
     });
   };
 
-  const handleReorder = () => {
-    if (!canReorder || isSavingOrder) return;
-
-    if (!isReorderMode) {
+  const handlePhotoEdit = () => {
+    if (photoActionRef.current || isPhotoActionPending) return;
+    if (!isEditingPhotos) {
+      if (!canEditPhotos) return;
       savedOrderRef.current = photos;
-      setIsReorderMode(true);
+      setIsEditingPhotos(true);
+      return;
+    }
+    if (!canReorder || photos.length === 0) {
+      setIsEditingPhotos(false);
       return;
     }
 
+    photoActionRef.current = true;
     reorderImages.mutate(
       photos.map((photo) => Number(photo.id)),
       {
         onSuccess: () => {
           savedOrderRef.current = photos;
-          setIsReorderMode(false);
+          setIsEditingPhotos(false);
+          photoActionRef.current = false;
         },
-        onError: () => {
+        onError: (error) => {
           setPhotos(savedOrderRef.current);
-          setIsReorderMode(false);
-          setUploadError('사진 순서 저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+          setIsEditingPhotos(false);
+          setActionError(
+            getErrorMessage(error, '사진 순서 저장에 실패했어요. 잠시 후 다시 시도해주세요.'),
+          );
+          photoActionRef.current = false;
         },
       },
     );
   };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!isReorderMode || !canReorder || !over || active.id === over.id) return;
-
+    if (!isEditingPhotos || !canReorder || photoActionRef.current || !over || active.id === over.id)
+      return;
     setPhotos((currentPhotos) => {
       const oldIndex = currentPhotos.findIndex(
         (photo) => getPhotoSortableId(photo) === String(active.id),
@@ -357,78 +412,160 @@ function InteriorPhotos({
       const newIndex = currentPhotos.findIndex(
         (photo) => getPhotoSortableId(photo) === String(over.id),
       );
-
-      if (oldIndex < 0 || newIndex < 0) return currentPhotos;
-
-      return arrayMove(currentPhotos, oldIndex, newIndex);
+      return oldIndex < 0 || newIndex < 0
+        ? currentPhotos
+        : arrayMove(currentPhotos, oldIndex, newIndex);
     });
   };
 
   return (
-    <div className="bg-page">
-      <ExhibitionHeader title={title} onBack={onBack} />
-
-      <main className={shouldShowBottomBar ? 'pb-bottom-bar-offset' : undefined}>
-        {/* 안내 */}
-        <div className="px-5 flex flex-col gap-1">
-          <p className="typo-body-md-regular text-main">{description}</p>
-          <p className="typo-body-md-regular text-faint">
-            사진 {photos.length} / {MAX_CONTENT_IMAGES}
-          </p>
-        </div>
-
-        {/* 액션 */}
-        {!isReorderMode && canShowActions && (
-          <div className="mt-3.5 flex gap-2 px-5">
+    <PageContainer variant="form" className="bg-primary-white pb-10 text-primary">
+      <WorkHeader title="섹션 편집" onBack={onBack} />
+      <main className="pt-5">
+        <form
+          id="section-details"
+          onSubmit={(event) => handleSubmit(saveDetails)(event)}
+          className="space-y-6"
+          noValidate
+        >
+          <div className="space-y-2">
+            <label htmlFor="section-name" className="typography-body-lg-semibold">
+              섹션 제목{' '}
+              <span className="text-error" aria-hidden="true">
+                *
+              </span>
+            </label>
             <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileChange}
-              className="hidden"
+              {...register('title')}
+              id="section-name"
+              readOnly={!canEditCategory || isSubmitting}
+              required
+              aria-invalid={Boolean(errors.title)}
+              aria-describedby={errors.title ? 'section-name-error' : undefined}
+              placeholder="섹션 제목을 입력해주세요"
+              className="typography-body-xl-regular min-h-11 w-full border-b border-primary bg-transparent py-3 text-primary placeholder:text-tertiary focus-visible:outline-2 focus-visible:outline-focus"
             />
-            {canCreateContent && (
-              <button
-                type="button"
-                onClick={handleAddPhotos}
-                disabled={photos.length >= MAX_CONTENT_IMAGES || isBusy}
-                className="typo-body-sm-bold flex h-11 flex-1 items-center justify-center rounded-xl bg-bt-black text-white disabled:opacity-40"
+            {errors.title && (
+              <p
+                id="section-name-error"
+                role="alert"
+                className="typography-body-md-medium text-error"
               >
-                {isBusy ? '업로드 중' : '사진 추가'}
-              </button>
+                {errors.title.message}
+              </p>
             )}
-            {canReorder && (
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="section-description" className="typography-body-lg-semibold">
+              섹션 설명 <span className="typography-body-md-medium text-tertiary">· 선택</span>
+            </label>
+            <textarea
+              {...register('description')}
+              id="section-description"
+              readOnly={!canEditCategory || isSubmitting}
+              maxLength={CONTENT_DESCRIPTION_MAX_LENGTH}
+              rows={4}
+              aria-invalid={Boolean(errors.description)}
+              aria-describedby={
+                errors.description ? 'section-description-error' : 'section-description-count'
+              }
+              placeholder="섹션 설명을 입력해주세요"
+              className="typography-body-xl-regular block min-h-32 w-full resize-y rounded-12 border border-primary bg-transparent p-4 text-primary placeholder:text-tertiary focus-visible:outline-2 focus-visible:outline-focus"
+            />
+            <p
+              id="section-description-count"
+              className="typography-body-md-medium text-right text-tertiary"
+            >
+              {currentDescription.length} / {CONTENT_DESCRIPTION_MAX_LENGTH}
+            </p>
+            {errors.description && (
+              <p
+                id="section-description-error"
+                role="alert"
+                className="typography-body-md-medium text-error"
+              >
+                {errors.description.message}
+              </p>
+            )}
+          </div>
+          {errors.root && (
+            <p role="alert" className="typography-body-lg-regular text-error">
+              {errors.root.message}
+            </p>
+          )}
+        </form>
+
+        <section aria-label="섹션 사진" className="mt-3">
+          <div className="mb-3 flex min-h-11 items-center justify-between gap-2">
+            {isEditingPhotos ? (
+              <p className="typography-body-md-medium text-secondary">
+                {canReorder
+                  ? '순서는 완료하면 저장돼요. 삭제는 바로 반영돼요.'
+                  : '삭제는 바로 반영돼요.'}
+              </p>
+            ) : (
+              <h2 className="typography-body-lg-semibold">
+                사진 {photos.length}/{MAX_CONTENT_IMAGES}
+              </h2>
+            )}
+            {(canEditPhotos || isEditingPhotos) && (photos.length > 0 || isEditingPhotos) && (
               <button
                 type="button"
-                onClick={handleReorder}
-                className="typo-body-sm-bold h-11 shrink-0 rounded-xl bg-card px-4 text-sub700"
+                disabled={isPhotoActionPending}
+                onClick={handlePhotoEdit}
+                className={cn(
+                  buttonClass,
+                  'typography-body-md-semibold -mr-2 min-h-11 min-w-11 shrink-0 rounded-8 px-2 hover:bg-secondary',
+                  isEditingPhotos && 'typography-body-lg-semibold',
+                )}
               >
-                순서 편집
+                {isSavingOrder ? '저장 중' : isEditingPhotos ? '완료' : '편집'}
               </button>
             )}
           </div>
-        )}
-
-        {/* 그리드 */}
-        {photos.length === 0 ? (
-          <p className="typo-body-sm-regular mt-6 px-5 text-hint">
-            아직 사진이 없어요. 사진 추가로 첫 장을 올려보세요.
-          </p>
-        ) : (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            onChange={handleFileChange}
+            className="hidden"
+            aria-label="섹션 사진 추가"
+          />
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
-            <SortableContext items={sortablePhotoIds} strategy={rectSortingStrategy}>
-              <ul className="mt-6 grid grid-cols-3 gap-x-2.5 gap-y-3 px-5">
+            <SortableContext items={photos.map(getPhotoSortableId)} strategy={rectSortingStrategy}>
+              <ul className="grid grid-cols-3 gap-2.5">
+                {!isEditingPhotos && canCreateContent && (
+                  <li className="aspect-square">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (canCreateContent && !isPhotoActionPending)
+                          fileInputRef.current?.click();
+                      }}
+                      disabled={photos.length >= MAX_CONTENT_IMAGES || isPhotoActionPending}
+                      className={cn(
+                        buttonClass,
+                        'typography-body-md-medium flex size-full flex-col items-center justify-center gap-0.5 rounded-12 border border-primary hover:bg-secondary',
+                      )}
+                    >
+                      <img src={PhotoAddIcon} alt="" />
+                      {isBusy ? '업로드 중' : '사진추가'}
+                    </button>
+                  </li>
+                )}
                 {photos.map((photo, index) => (
                   <SortablePhotoItem
                     key={photo.id}
                     photo={photo}
                     index={index}
-                    isReorderMode={isReorderMode}
+                    isEditing={isEditingPhotos}
+                    canReorder={canReorder}
+                    disabled={isPhotoActionPending}
                     displayDetail={displayDetail}
                     onRemove={handleRemove}
                   />
@@ -436,22 +573,37 @@ function InteriorPhotos({
               </ul>
             </SortableContext>
           </DndContext>
-        )}
+          {photos.length === 0 && !canCreateContent && (
+            <p className="typography-body-lg-regular py-6 text-secondary">
+              아직 등록된 사진이 없어요.
+            </p>
+          )}
+          {actionError && (
+            <div
+              role="alert"
+              className="mt-6 flex items-start gap-2 rounded-12 bg-secondary px-5 py-4"
+            >
+              <img src={PhotoNoticeIcon} alt="" className="shrink-0" />
+              <p className="typography-body-lg-regular text-secondary">{actionError}</p>
+            </div>
+          )}
+        </section>
       </main>
-
-      {shouldShowBottomBar && (
-        <BottomFixedBar>
+      {canEditCategory && isDirty && (
+        <BottomFixedBar container="form">
           <button
-            type="button"
-            onClick={handleReorder}
-            disabled={isSavingOrder}
-            className="typo-body-sm-bold h-11 w-full rounded-xl bg-bt-black text-white disabled:opacity-40"
+            form="section-details"
+            type="submit"
+            disabled={isSubmitting || updateCategory.isPending}
+            className={cn(
+              buttonClass,
+              'typography-body-lg-semibold min-h-11 w-full rounded-12 bg-interactive-primary px-4 text-interactive-inverse hover:bg-interactive-primary-hover active:bg-interactive-primary-press',
+            )}
           >
-            {isSavingOrder ? '저장 중' : '편집 완료'}
+            {isSubmitting ? '저장 중' : '섹션 정보 저장'}
           </button>
         </BottomFixedBar>
       )}
-      {uploadError && <AlertModal message={uploadError} onConfirm={() => setUploadError(null)} />}
-    </div>
+    </PageContainer>
   );
 }
