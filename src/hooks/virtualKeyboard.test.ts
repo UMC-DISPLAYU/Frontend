@@ -1,10 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   computeFocusScrollDelta,
   computeKeyboardInset,
   detectKeyboardOpen,
+  getBottomObstructionHeight,
   isTextEditableElement,
+  removeBottomObstruction,
+  setBottomObstruction,
+  subscribeBottomObstruction,
 } from './virtualKeyboard';
 
 describe('computeKeyboardInset', () => {
@@ -114,5 +118,39 @@ describe('isTextEditableElement', () => {
     );
     expect(isTextEditableElement(el({ tagName: 'TEXTAREA', disabled: true }))).toBe(false);
     expect(isTextEditableElement(el({ tagName: 'BUTTON' }))).toBe(false);
+  });
+});
+
+describe('하단 고정 요소 높이', () => {
+  it('등록된 요소가 없으면 0', () => {
+    expect(getBottomObstructionHeight()).toBe(0);
+  });
+
+  it('여러 개면 가장 높은 값, 지우면 남은 값으로 돌아가고 바뀔 때마다 알린다', () => {
+    // 테스트 환경(node)에는 DOM이 없어 scroll-padding 을 적는 documentElement.style 만 흉내 낸다
+    vi.stubGlobal('document', {
+      documentElement: { style: { scrollPaddingBottom: '', removeProperty: vi.fn() } },
+    });
+    const listener = vi.fn();
+    const unsubscribe = subscribeBottomObstruction(listener);
+    const bar = {} as HTMLElement;
+    const button = {} as HTMLElement;
+
+    setBottomObstruction(bar, 72);
+    setBottomObstruction(button, 96);
+    expect(getBottomObstructionHeight()).toBe(96);
+
+    removeBottomObstruction(button);
+    expect(getBottomObstructionHeight()).toBe(72);
+
+    removeBottomObstruction(bar);
+    expect(getBottomObstructionHeight()).toBe(0);
+    expect(listener).toHaveBeenCalledTimes(4);
+
+    unsubscribe();
+    setBottomObstruction(bar, 72);
+    expect(listener).toHaveBeenCalledTimes(4);
+    removeBottomObstruction(bar);
+    vi.unstubAllGlobals();
   });
 });
