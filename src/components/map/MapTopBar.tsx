@@ -64,13 +64,16 @@ export function MapTopBar({
         </button>
         <form role="search" onSubmit={handleSubmit} className="relative h-11 min-w-0 flex-1">
           {/* 전역 input 축소 규칙(iOS 확대 방지)은 16px 글자만 필요하므로 크기 보정은 풀어 둔다.
-              확정된 검색어가 바뀌면 입력값을 다시 맞추려고 key로 리셋한다 */}
+              입력 중에 검색이 풀려도 포커스·키보드가 유지되도록 key로 다시 그리지 않는다 */}
           <input
-            key={query}
             type="search"
             name="q"
             aria-label="전시 검색어"
             defaultValue={query}
+            onChange={(event) => {
+              // 직접 지워서 비우면 돋보기를 누르지 않아도 검색을 푼다(X와 같이 지도는 그대로)
+              if (query && !event.target.value.trim()) onClearSearch();
+            }}
             placeholder="어떤 전시를 찾고 있나요?"
             autoComplete="off"
             enterKeyHint="search"
