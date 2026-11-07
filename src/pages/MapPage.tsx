@@ -1,7 +1,7 @@
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useKakaoLoader } from 'react-kakao-maps-sdk';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import {
   fitTo,
@@ -403,15 +403,7 @@ export function MapPage() {
       />
 
       <MapSheet
-        title={
-          selected && isPinMode ? (
-            <Link to={`/display/${selected.exhibition.id}`} className="truncate">
-              {selected.exhibition.title}
-            </Link>
-          ) : (
-            `이 지역 전시 ${inView.length}개`
-          )
-        }
+        title={selected && isPinMode ? '선택한 전시' : `이 지역 전시 ${inView.length}개`}
         isFull={snap === 'full'}
         isDragging={sheetDrag.isDragging}
         isPanelFolded={isFolded}
