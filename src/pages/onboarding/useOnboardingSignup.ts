@@ -5,9 +5,9 @@ import type { TermState } from '@/components/onboarding';
 import { useAgreements } from '@/hooks/queries/useAgreements';
 import { useSignup } from '@/hooks/queries/useAuth';
 import { useAuthStore } from '@/stores/authStore';
-import { getErrorMessage } from '@/utils/error';
 
 import { buildSignupAgreements, hasRequiredTerms } from './signupAgreements';
+import { getSignupErrorMessage } from './signupError';
 
 export function useOnboardingSignup(terms: TermState) {
   const [error, setError] = useState('');
@@ -46,7 +46,7 @@ export function useOnboardingSignup(terms: TermState) {
       return true;
     } catch (err) {
       if (!(err instanceof SessionChangedError)) {
-        setError(getErrorMessage(err, '가입 완료에 실패했어요.'));
+        setError(getSignupErrorMessage(err));
       }
       return false;
     }
