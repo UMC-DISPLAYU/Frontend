@@ -106,10 +106,12 @@ export const agreementHandlers = paths('/api/v1/agreements').map((path) =>
   http.get(path, async () => {
     if (hasMockScenario('agreements-slow')) await delay(MOCK_DELAY_MS);
     if (hasMockScenario('agreements-fail')) {
-      return fail('/api/v1/agreements', 500, {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: '약관 목록을 불러오지 못했습니다.',
-      });
+      return fail(
+        '/api/v1/agreements',
+        500,
+        'INTERNAL_SERVER_ERROR',
+        '약관 목록을 불러오지 못했습니다.',
+      );
     }
     if (hasMockScenario('agreements-empty')) return success('/api/v1/agreements', []);
 

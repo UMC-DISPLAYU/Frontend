@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 
+import { useBottomObstructionHeight } from '@/hooks/useVirtualKeyboard';
 import { removeToast, useToastStore } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
@@ -11,6 +12,9 @@ interface ToasterProps {
 /** toast() 로 띄운 토스트를 그린다. 앱에 한 번만 둔다(Layout) */
 export function Toaster({ hasNavbar }: ToasterProps) {
   const current = useToastStore((state) => state.toast);
+  // 하단 고정 버튼 · 바가 있으면 그 위에 띄운다(프로토타입의 하단 버튼 화면 토스트 위치).
+  // 고정 바도 bottom-keyboard-inset 기준이라 키보드가 열려도 같은 간격을 유지한다
+  const bottomObstructionHeight = useBottomObstructionHeight();
 
   // 알림 영역(aria-live)은 문구가 바뀌기 전부터 있어야 스크린리더가 읽으므로 항상 그려 둔다
   return createPortal(
@@ -23,8 +27,10 @@ export function Toaster({ hasNavbar }: ToasterProps) {
       <div
         className={cn(
           'flex justify-center px-gutter',
-          hasNavbar ? 'pb-navbar-clearance' : 'pb-safe-area-bottom',
+          bottomObstructionHeight === 0 &&
+            (hasNavbar ? 'pb-navbar-clearance' : 'pb-safe-area-bottom'),
         )}
+        style={bottomObstructionHeight > 0 ? { paddingBottom: bottomObstructionHeight } : undefined}
       >
         {current && (
           <p

@@ -35,16 +35,20 @@ export const authHandlers = [
 
       if (body.nickname === MOCK_NICKNAMES.signupSlow) await delay(MOCK_DELAY_MS);
       if (body.nickname === MOCK_NICKNAMES.signupDuplicate) {
-        return fail('/api/v1/auth/signup', 409, {
-          code: 'USER_NICKNAME_DUPLICATED',
-          message: '이미 사용 중인 닉네임이에요.',
-        });
+        return fail(
+          '/api/v1/auth/signup',
+          409,
+          'USER_NICKNAME_DUPLICATED',
+          '이미 사용 중인 닉네임이에요.',
+        );
       }
       if (body.nickname === MOCK_NICKNAMES.signupFail) {
-        return fail('/api/v1/auth/signup', 500, {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: '회원가입 처리 중 오류가 발생했습니다.',
-        });
+        return fail(
+          '/api/v1/auth/signup',
+          500,
+          'INTERNAL_SERVER_ERROR',
+          '회원가입 처리 중 오류가 발생했습니다.',
+        );
       }
 
       return created('/api/v1/auth/signup', {

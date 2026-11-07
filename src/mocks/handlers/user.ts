@@ -56,10 +56,12 @@ export const userHandlers = [
 
       if (nickname === MOCK_NICKNAMES.checkSlow) await delay(MOCK_DELAY_MS);
       if (nickname === MOCK_NICKNAMES.checkFail) {
-        return fail('/api/v1/users/nickname/check', 500, {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: '닉네임 중복 확인에 실패했습니다.',
-        });
+        return fail(
+          '/api/v1/users/nickname/check',
+          500,
+          'INTERNAL_SERVER_ERROR',
+          '닉네임 중복 확인에 실패했습니다.',
+        );
       }
 
       const isAvailable = nickname !== MOCK_NICKNAMES.duplicate;
@@ -88,24 +90,6 @@ export const userHandlers = [
       success('/api/v1/users/{userId}/artist-profile', userArtistProfile(Number(params.userId))),
     ),
   ),
-  ...paths('/api/v1/users/me/verification/email/send').map((path) =>
-    http.post(path, () => noContent('/api/v1/users/me/verification/email/send')),
-  ),
-  ...paths('/api/v1/users/me/verification/email/confirm').map((path) =>
-    http.post(path, async ({ request }) => {
-      const body = await readJson<{ schoolEmail?: string }>(request);
-      mockDb.me.schoolEmail = body.schoolEmail ?? mockDb.me.schoolEmail;
-      mockDb.me.isEmailVerified = true;
-
-      return success('/api/v1/users/me/verification/email/confirm', {
-        schoolEmail: mockDb.me.schoolEmail,
-        isVerified: true,
-      });
-    }),
-  ),
-  ...paths('/api/v1/users/me/verification/email/resend').map((path) =>
-    http.post(path, () => noContent('/api/v1/users/me/verification/email/resend')),
-  ),
   /*
    * 스웨거 기준: 닉네임 부분 일치, 영문 대소문자 무시, 앞뒤 공백 제거,
    * 닉네임 → userId 오름차순 정렬, 최대 20명.
@@ -132,16 +116,6 @@ export const userHandlers = [
         .slice(0, 20);
 
       return success('/api/v1/users/search', users);
-    }),
-  ),
-  ...paths('/api/v1/schools').map((path) =>
-    http.get(path, ({ request }) => {
-      const keyword = new URL(request.url).searchParams.get('keyword') ?? '';
-      const schools = ['홍익대학교', '중앙대학교', '서울대학교', '이화여자대학교', '국민대학교']
-        .filter((name) => !keyword || name.includes(keyword))
-        .map((name, index) => ({ schoolId: index + 1, id: index + 1, name }));
-
-      return success('/api/v1/schools', { schools });
     }),
   ),
 ];
