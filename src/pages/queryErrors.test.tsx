@@ -8,7 +8,7 @@ import { ErrorView } from '@/components/common/ErrorView';
 
 import { DisplayDetailPage } from './DisplayDetailPage';
 import { DisplayInvitationLinkPage } from './DisplayInvitationLinkPage';
-import { SearchPage } from './SearchPage';
+import { ExplorePage } from './ExplorePage';
 
 const h = vi.hoisted(() => ({
   token: 'token' as string | null,
@@ -47,7 +47,6 @@ vi.mock('@tanstack/react-query', async (original) => ({
 }));
 vi.mock('@/hooks/queries/useDisplayDetail', () => ({ useDisplayDetail: () => h.query }));
 vi.mock('@/hooks/queries/useDisplayBrowse', () => ({ useInfiniteSearchDisplays: () => h.query }));
-vi.mock('@/hooks/useNearbyDisplays', () => ({ useNearbyDisplays: () => ({ data: [] }) }));
 vi.mock('@/hooks/useInfiniteScroll', () => ({ useInfiniteScroll: h.scroll }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.back }));
 vi.mock('@/hooks/usePendingRedirect', () => ({ useReserveRedirectAfterLogin: vi.fn() }));
@@ -66,13 +65,16 @@ vi.mock('@/components/displaydetailpage', () => ({
   IntroTab: () => null,
   ReviewTab: () => null,
 }));
-vi.mock('@/components/search', async () => ({
-  ...(await import('@/components/search/filter/filterOptions')),
-  ExhibitionCard: () => <div>기존 전시 카드</div>,
-  ExhibitionMap: () => null,
-  ExhibitionMapCard: () => null,
-  FilterChip: () => null,
-  FilterModal: () => null,
+vi.mock('@/components/explore', async () => ({
+  ...(await import('@/components/explore/exploreOptions')),
+  ...(await import('@/components/explore/useExploreFilters')),
+  ExploreFieldTabs: () => null,
+  useExploreLike: () => ({ toggle: vi.fn(), isPendingFor: () => false, loginModal: null }),
+}));
+vi.mock('@/components/ui', () => ({
+  Dropdown: () => null,
+  PosterCard: () => <div>기존 전시 카드</div>,
+  SegmentToggle: () => null,
 }));
 const nodes = (node: ReactNode): ReactElement<Record<string, unknown>>[] =>
   Children.toArray(node).flatMap((child) =>
@@ -100,18 +102,18 @@ beforeEach(() => {
 it('검색 장애는 빈 결과가 아니며 재시도 성공 시 빈 결과/목록을 표시한다', () => {
   h.query.error = new ApiError('server', { status: 500 });
   h.query.isError = true;
-  let tree = SearchPage();
+  let tree = ExplorePage();
   expect(renderToStaticMarkup(tree)).toContain('서버');
-  expect(renderToStaticMarkup(tree)).not.toContain('결과가 없습니다');
+  expect(renderToStaticMarkup(tree)).not.toContain('검색 결과가 없어요');
   retry(tree);
   expect(h.query.refetch).toHaveBeenCalledTimes(1);
   h.query.error = null;
   h.query.isError = false;
   h.query.data = { pages: [{ exhibitions: [] }] };
-  tree = SearchPage();
-  expect(renderToStaticMarkup(tree)).toContain('결과가 없습니다');
+  tree = ExplorePage();
+  expect(renderToStaticMarkup(tree)).toContain('검색 결과가 없어요');
   h.query.data = { pages: [{ exhibitions: [{ displayId: 1 }] }] };
-  expect(renderToStaticMarkup(SearchPage())).toContain('기존 전시 카드');
+  expect(renderToStaticMarkup(ExplorePage())).toContain('기존 전시 카드');
 });
 
 it('추가 페이지 실패는 기존 카드를 유지하고 추가 페이지만 다시 요청한다', () => {
@@ -119,7 +121,7 @@ it('추가 페이지 실패는 기존 카드를 유지하고 추가 페이지만
   h.query.error = new ApiError('network', { transportCode: 'ERR_NETWORK' });
   h.query.isError = true;
   h.query.isFetchNextPageError = true;
-  const tree = SearchPage();
+  const tree = ExplorePage();
   const html = renderToStaticMarkup(tree);
   expect(html).toContain('기존 전시 카드');
   expect(html).toContain('네트워크');

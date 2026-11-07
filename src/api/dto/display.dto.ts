@@ -68,6 +68,9 @@ export interface DisplayListItemDto {
   dayLeft?: number;
   isArchived: boolean;
   schoolDepartmentName?: string;
+  /* 탐색 카드 좋아요용. 백엔드 검색 응답에 아직 없어 목 데이터에만 있습니다. */
+  likeCount?: number;
+  isLiked?: boolean;
 }
 
 export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {

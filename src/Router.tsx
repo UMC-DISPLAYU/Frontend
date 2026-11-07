@@ -42,7 +42,7 @@ const lazyPage = <T extends Record<string, unknown>>(
 
 // Lazy loaded page components
 const Homepage = lazyPage(() => import('./pages/Homepage'), 'Homepage');
-const SearchPage = lazyPage(() => import('./pages/SearchPage'), 'SearchPage');
+const ExplorePage = lazyPage(() => import('./pages/ExplorePage'), 'ExplorePage');
 const MapPage = lazyPage(() => import('./pages/MapPage'), 'MapPage');
 const AuthPage = lazyPage(() => import('./pages/AuthPage'), 'AuthPage');
 const DisplayDetailPage = lazyPage(() => import('./pages/DisplayDetailPage'), 'DisplayDetailPage');
@@ -196,7 +196,7 @@ export const router = createBrowserRouter([
           // 🔓 공개 라우트 (비로그인 게스트 접근 가능)
           { index: true, element: <RootRedirect /> },
           { path: 'home', element: <Homepage /> },
-          { path: 'search', element: <SearchPage /> },
+          { path: 'search', element: <ExplorePage /> },
           {
             path: 'artist/:userId',
             loader: validateNumericId('userId'),

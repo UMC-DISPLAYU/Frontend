@@ -83,6 +83,7 @@ const displayToListItem = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   posterImageUrl: display.posterSection.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
   thumbnailUrl: display.posterSection.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
   likeCount: 12 + display.displayId,
+  isLiked: false,
   liked: false,
   archived: false,
   isArchived: false,
