@@ -129,12 +129,12 @@ function SortablePhotoItem({
             disabled={!canReorder || disabled}
             className={cn(
               buttonClass,
-              'absolute -left-0.5 top-0 flex size-11 touch-none items-center justify-center rounded-12 text-interactive-inverse focus-visible:outline-focus-inverse disabled:bg-transparent disabled:text-interactive-inverse',
-              canReorder && 'cursor-grab active:cursor-grabbing',
+              'absolute inset-0 size-full rounded-12 text-interactive-inverse focus-visible:outline-focus-inverse disabled:bg-transparent disabled:text-interactive-inverse',
+              canReorder && !disabled && 'touch-none cursor-grab active:cursor-grabbing',
             )}
           >
-            <img src={PhotoNumberBackground} alt="" className="translate-x-0.5" />
-            <span className="typography-body-md-semibold absolute translate-x-0.5">
+            <img src={PhotoNumberBackground} alt="" className="absolute left-1.5 top-1.5" />
+            <span className="typography-body-md-semibold absolute left-1.5 top-1.5 grid size-8 place-items-center">
               {index + 1}
             </span>
           </button>
@@ -245,7 +245,6 @@ function InteriorPhotos({
   const [rejectedPhotoCount, setRejectedPhotoCount] = useState(0);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const savedOrderRef = useRef<Photo[]>(initialPhotos);
   const savingDetailsRef = useRef(false);
   const photoActionRef = useRef(false);
   const user = useCurrentPolicyUser();
@@ -374,7 +373,6 @@ function InteriorPhotos({
     setPhotos(previous.filter((photo) => photo.id !== id));
     deleteImage.mutate(Number(id), {
       onSuccess: () => {
-        savedOrderRef.current = savedOrderRef.current.filter((photo) => photo.id !== id);
         photoActionRef.current = false;
       },
       onError: (error) => {
@@ -387,29 +385,37 @@ function InteriorPhotos({
 
   const handlePhotoEdit = () => {
     if (photoActionRef.current || isPhotoActionPending) return;
-    if (!isEditingPhotos) {
-      if (!canEditPhotos) return;
-      savedOrderRef.current = photos;
-      setIsEditingPhotos(true);
-      return;
-    }
-    if (!canReorder || photos.length === 0) {
-      setIsEditingPhotos(false);
-      return;
-    }
+    if (!isEditingPhotos && !canEditPhotos) return;
+    setIsEditingPhotos(!isEditingPhotos);
+  };
 
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (
+      !isEditingPhotos ||
+      !canReorder ||
+      photoActionRef.current ||
+      isPhotoActionPending ||
+      !over
+    ) {
+      return;
+    }
+    const oldIndex = photos.findIndex((photo) => getPhotoSortableId(photo) === String(active.id));
+    const newIndex = photos.findIndex((photo) => getPhotoSortableId(photo) === String(over.id));
+    if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return;
+
+    const previous = photos;
+    const reordered = arrayMove(photos, oldIndex, newIndex);
     photoActionRef.current = true;
+    setActionError(null);
+    setPhotos(reordered);
     reorderImages.mutate(
-      photos.map((photo) => Number(photo.id)),
+      reordered.map((photo) => Number(photo.id)),
       {
         onSuccess: () => {
-          savedOrderRef.current = photos;
-          setIsEditingPhotos(false);
           photoActionRef.current = false;
         },
         onError: (error) => {
-          setPhotos(savedOrderRef.current);
-          setIsEditingPhotos(false);
+          setPhotos(previous);
           setActionError(
             getErrorMessage(error, '사진 순서 저장에 실패했어요. 잠시 후 다시 시도해주세요.'),
           );
@@ -417,22 +423,6 @@ function InteriorPhotos({
         },
       },
     );
-  };
-
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!isEditingPhotos || !canReorder || photoActionRef.current || !over || active.id === over.id)
-      return;
-    setPhotos((currentPhotos) => {
-      const oldIndex = currentPhotos.findIndex(
-        (photo) => getPhotoSortableId(photo) === String(active.id),
-      );
-      const newIndex = currentPhotos.findIndex(
-        (photo) => getPhotoSortableId(photo) === String(over.id),
-      );
-      return oldIndex < 0 || newIndex < 0
-        ? currentPhotos
-        : arrayMove(currentPhotos, oldIndex, newIndex);
-    });
   };
 
   return (

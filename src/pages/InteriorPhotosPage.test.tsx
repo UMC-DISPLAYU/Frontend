@@ -16,6 +16,7 @@ const h = vi.hoisted(() => ({
   save: vi.fn(),
   remove: vi.fn(),
   reorder: vi.fn(),
+  reorderPending: false,
   create: vi.fn(),
   upload: vi.fn(),
   addImages: vi.fn(),
@@ -106,7 +107,7 @@ vi.mock('@/hooks/queries/useContentCategories', () => ({
 vi.mock('@/hooks/queries/useContentImages', () => ({
   useCreateContentImage: () => ({ mutateAsync: h.create, isPending: false }),
   useDeleteContentImage: () => ({ mutate: h.remove, isPending: false }),
-  useReorderContentImages: () => ({ mutate: h.reorder, isPending: false }),
+  useReorderContentImages: () => ({ mutate: h.reorder, isPending: h.reorderPending }),
 }));
 vi.mock('@/hooks/useImageUpload', () => ({
   useImageUpload: () => ({
@@ -145,6 +146,12 @@ const click = (tree: Element[], label: string) => {
 };
 const photos = (tree: Element[]) => tree.filter((node) => 'photo' in node.props);
 const photoIds = () => photos(render()).map((node) => (node.props.photo as { id: number }).id);
+const drag = (activeId: string, overId: string | null, tree = render()) => {
+  (tree.find((node) => 'onDragEnd' in node.props)!.props.onDragEnd as (event: unknown) => void)({
+    active: { id: activeId },
+    over: overId === null ? null : { id: overId },
+  });
+};
 const alertText = () =>
   render()
     .filter((node) => node.props.role === 'alert')
@@ -168,6 +175,7 @@ const failure = new ApiError('server', { status: 500 });
 beforeEach(() => {
   h.states = [];
   h.refs = [];
+  h.reorderPending = false;
   h.user = { id: 1, isArtistVerified: true };
   h.contents = [1, 2, 3].map((id) => ({
     contentId: id,
@@ -181,20 +189,96 @@ beforeEach(() => {
   h.addImages.mockImplementation((files: File[]) => files.map((file) => ({ file })));
 });
 
-it('삭제한 사진은 순서 저장에 실패해도 되살리지 않고 나머지 순서를 복구한다', () => {
+it('순서 변경은 즉시 한 번 저장하고 완료는 편집 모드만 닫는다', () => {
+  click(render(), '편집');
+  click(render(), '완료');
+  expect(h.reorder).not.toHaveBeenCalled();
+
+  click(render(), '편집');
+  drag('3', '1');
+  expect(photoIds()).toEqual([3, 1, 2]);
+  expect(h.reorder).toHaveBeenCalledTimes(1);
+  expect(h.reorder).toHaveBeenCalledWith([3, 1, 2], expect.any(Object));
+  h.reorder.mock.calls[0][1].onSuccess();
+  expect(photos(render()).every((node) => node.props.isEditing === true)).toBe(true);
+
+  click(render(), '완료');
+  expect(h.reorder).toHaveBeenCalledTimes(1);
+  expect(photos(render()).every((node) => node.props.isEditing === false)).toBe(true);
+});
+
+it('저장 실패는 직전 저장 순서로 복구하고 편집을 유지해 다시 이동할 수 있다', () => {
+  click(render(), '편집');
+  drag('3', '1');
+  h.reorder.mock.calls[0][1].onSuccess();
+  drag('2', '3');
+  expect(photoIds()).toEqual([2, 3, 1]);
+  expect(h.reorder).toHaveBeenLastCalledWith([2, 3, 1], expect.any(Object));
+
+  h.reorder.mock.calls[1][1].onError(failure);
+  expect(photoIds()).toEqual([3, 1, 2]);
+  expect(photos(render()).every((node) => node.props.isEditing === true)).toBe(true);
+  expect(alertText()).toContain('서버');
+
+  drag('2', '3');
+  expect(h.reorder).toHaveBeenCalledTimes(3);
+  expect(h.reorder).toHaveBeenLastCalledWith([2, 3, 1], expect.any(Object));
+});
+
+it('저장 중 연속 드래그와 완료는 무시하고 저장이 끝나면 다음 순서를 저장한다', () => {
+  click(render(), '편집');
+  const tree = render();
+  drag('3', '1', tree);
+  drag('2', '1', tree);
+  expect(h.reorder).toHaveBeenCalledTimes(1);
+  expect(photoIds()).toEqual([3, 1, 2]);
+
+  h.reorderPending = true;
+  drag('1', '3');
+  const pendingTree = render();
+  const done = pendingTree.find(
+    (node) => node.type === 'button' && node.props.children === '저장 중',
+  )!;
+  expect(done.props.disabled).toBe(true);
+  click(pendingTree, '저장 중');
+  expect(
+    photos(render()).every((node) => node.props.isEditing === true && node.props.disabled === true),
+  ).toBe(true);
+  expect(photoIds()).toEqual([3, 1, 2]);
+  expect(h.reorder).toHaveBeenCalledTimes(1);
+
+  h.reorder.mock.calls[0][1].onSuccess();
+  h.reorderPending = false;
+  drag('1', '3');
+  expect(photoIds()).toEqual([1, 3, 2]);
+  expect(h.reorder).toHaveBeenCalledTimes(2);
+  expect(h.reorder).toHaveBeenLastCalledWith([1, 3, 2], expect.any(Object));
+});
+
+it.each([
+  { label: '편집 모드가 아님', editing: false, active: '3', over: '1' },
+  { label: '동일 사진', editing: true, active: '1', over: '1' },
+  { label: '놓은 대상 없음', editing: true, active: '1', over: null },
+  { label: '이동할 사진 없음', editing: true, active: 'missing', over: '1' },
+  { label: '놓은 사진 없음', editing: true, active: '1', over: 'missing' },
+])('$label: 순서를 바꾸거나 저장하지 않는다', ({ editing, active, over }) => {
+  if (editing) click(render(), '편집');
+  drag(active, over);
+  expect(photoIds()).toEqual([1, 2, 3]);
+  expect(h.reorder).not.toHaveBeenCalled();
+});
+
+it('삭제한 사진은 즉시 순서 저장에 실패해도 되살리지 않는다', () => {
   click(render(), '편집');
   remove(2);
   h.remove.mock.calls[0][1].onSuccess();
-  const tree = render();
-  (tree.find((node) => 'onDragEnd' in node.props)!.props.onDragEnd as (event: unknown) => void)({
-    active: { id: '3' },
-    over: { id: '1' },
-  });
+  drag('3', '1');
   expect(photoIds()).toEqual([3, 1]);
-  click(render(), '완료');
+  expect(h.reorder).toHaveBeenCalledTimes(1);
   expect(h.reorder.mock.calls[0][0]).toEqual([3, 1]);
   h.reorder.mock.calls[0][1].onError(failure);
   expect(photoIds()).toEqual([1, 3]);
+  expect(photos(render()).every((node) => node.props.isEditing === true)).toBe(true);
   expect(render().some((node) => node.props.role === 'alert')).toBe(true);
 });
 
@@ -203,6 +287,9 @@ it('팀원은 자기 사진만 삭제하고 완료 시 순서 API를 호출하�
   let tree = render();
   expect(tree.find((node) => node.props.id === 'section-name')!.props.readOnly).toBe(true);
   click(tree, '편집');
+  drag('3', '1');
+  expect(photoIds()).toEqual([1, 2, 3]);
+  expect(h.reorder).not.toHaveBeenCalled();
   remove(1);
   expect(h.remove).not.toHaveBeenCalled();
   remove(2);
