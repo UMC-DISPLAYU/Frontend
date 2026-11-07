@@ -25,8 +25,8 @@ export function BottomButton({
     <div
       ref={wrapperRef}
       className={cn(
-        'sticky bottom-keyboard-inset z-10 mt-auto shrink-0 bg-page',
-        inPageContainer && 'pt-5',
+        'sticky bottom-keyboard-inset z-10 mt-auto shrink-0',
+        inPageContainer ? 'bg-inherit pt-5' : 'bg-page',
       )}
     >
       <div

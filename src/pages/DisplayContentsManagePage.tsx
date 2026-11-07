@@ -1,29 +1,29 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
-import { Plus } from 'lucide-react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import SectionPlusIcon from '@/assets/exhibition-work/SectionPlusIcon.svg';
 import {
-  CardPopover,
   ContentCard,
   ContentDeleteConfirmDialog,
   ContentEditSheet,
 } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
+import { ExhibitionWorkLayout } from '@/components/exhibition-work';
 import { useHideFooter } from '@/components/layout';
-import { ExhibitionHeader } from '@/components/ui';
 import {
   useCreateContentCategory,
   useDeleteContentCategory,
-  useUpdateContentCategory,
 } from '@/hooks/queries/useContentCategories';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { type Content, EMPTY_CONTENT } from '@/types';
+import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
+import { staggerStyle } from '@/utils/stagger';
 
-export function DisplayContentsManagePage() {
+export function DisplayContentsManagePage({ embedded = false }: { embedded?: boolean } = {}) {
   useHideFooter();
 
   const navigate = useNavigate();
@@ -31,13 +31,11 @@ export function DisplayContentsManagePage() {
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
   const { state } = useLocation();
-
   const rawDisplayId =
     paramDisplayId ?? searchParams.get('displayId') ?? state?.displayId ?? state?.id;
   const displayId = rawDisplayId ? Number(rawDisplayId) : 0;
   const isValidDisplayId = Number.isFinite(displayId) && displayId > 0;
 
-  // API에서 전시 상세 정보 가져오기 (0이면 enabled: false)
   const { data: displayDetail, isLoading, isError } = useDisplayDetail(displayId);
   const displayContentPolicy = useDisplayContentPolicy(displayDetail);
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
@@ -45,18 +43,16 @@ export function DisplayContentsManagePage() {
   const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
   const canShowCategoryMenu = canEditCategory || canDeleteCategory;
 
-  // 콘텐츠 카테고리 생성/수정/삭제
   const createMutation = useCreateContentCategory(displayId);
-  const updateMutation = useUpdateContentCategory(displayId);
   const deleteMutation = useDeleteContentCategory(displayId);
 
-  const [menuId, setMenuId] = useState<number | null>(null);
-  const [editing, setEditing] = useState<Content | null>(null);
-  const [creating, setCreating] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [deleting, setDeleting] = useState<Content | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // API 데이터를 Content 형식으로 변환
   const contents: Content[] =
     displayDetail?.contentCategories?.map((cat) => ({
       id: cat.categoryId,
@@ -65,41 +61,33 @@ export function DisplayContentsManagePage() {
       photoCount: cat.contents.length,
       thumbnail: cat.contents[0]?.imageUrl,
     })) ?? [];
-
-  // 바깥 클릭/스크롤 시 팝오버 닫기
-  useEffect(() => {
-    if (menuId === null) return;
-    const close = () => setMenuId(null);
-    window.addEventListener('pointerdown', close);
-    const el = listRef.current;
-    el?.addEventListener('scroll', close);
-    return () => {
-      window.removeEventListener('pointerdown', close);
-      el?.removeEventListener('scroll', close);
-    };
-  }, [menuId]);
-
-  const handleSave = (patch: { title: string; description: string }) => {
-    if (!editing) return;
-    updateMutation.mutate(
-      {
-        categoryId: editing.id,
-        body: { name: patch.title, description: patch.description },
-      },
-      { onSuccess: () => setEditing(null) },
-    );
+  const isEditingList = editMode && contents.length > 0 && canShowCategoryMenu;
+  const closeEditor = () => setCreateOpen(false);
+  const openEditor = () => {
+    setSaveError(null);
+    setCreateOpen(true);
   };
 
-  const handleCreate = (patch: { title: string; description: string }) => {
-    createMutation.mutate(
-      { name: patch.title, description: patch.description },
-      { onSuccess: () => setCreating(false) },
-    );
+  const handleSave = (patch: { title: string; description: string }) => {
+    if (createMutation.isPending) return;
+    setSaveError(null);
+    const body = { name: patch.title, description: patch.description };
+    const onError = (error: unknown) =>
+      setSaveError(getErrorMessage(error, '섹션 정보를 저장하지 못했어요. 다시 시도해주세요.'));
+    createMutation.mutate(body, { onSuccess: closeEditor, onError });
   };
 
   const handleDelete = () => {
-    if (!deleting) return;
-    deleteMutation.mutate(deleting.id, { onSuccess: () => setDeleting(null) });
+    if (!deleting || deleteMutation.isPending) return;
+    setDeleteError(null);
+    deleteMutation.mutate(deleting.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        if (contents.length === 1) setEditMode(false);
+      },
+      onError: (error) =>
+        setDeleteError(getErrorMessage(error, '섹션을 삭제하지 못했어요. 다시 시도해주세요.')),
+    });
   };
 
   if (!isValidDisplayId) {
@@ -112,9 +100,7 @@ export function DisplayContentsManagePage() {
     );
   }
 
-  if (isLoading) {
-    return <LoadingView message="전시 콘텐츠를 불러오는 중..." />;
-  }
+  if (isLoading) return <LoadingView message="전시 콘텐츠를 불러오는 중..." />;
 
   if (isError || !displayDetail) {
     return (
@@ -126,87 +112,83 @@ export function DisplayContentsManagePage() {
     );
   }
 
-  return (
-    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <ExhibitionHeader title="전시 콘텐츠 관리" onBack={() => flowBack()} />
-
-      {/* 메인 스크롤 영역 */}
-      <main ref={listRef}>
-        {/* 제목 + 설명 */}
-        <div className="flex items-end justify-between gap-6 px-5 pb-3">
-          <div className="flex flex-col gap-1">
-            <p className="typo-body-md-bold text-main">전시 콘텐츠 관리</p>
-            <p className="typo-body-xs-regular text-sub600">
-              대표자는 전시 성격에 맞게 콘텐츠를 관리할 수 있어요
+  const panel = (
+    <>
+      {contents.length > 0 && (
+        <div className="flex min-h-11 items-center justify-between gap-2">
+          {isEditingList ? (
+            <p className="typography-body-md-medium text-secondary">
+              순서 변경과 삭제는 자동으로 저장돼요
             </p>
-          </div>
-          {canCreateCategory && (
+          ) : (
+            <p className="typography-body-lg-semibold text-primary">섹션 {contents.length}</p>
+          )}
+          {canShowCategoryMenu && (
             <button
               type="button"
-              onClick={() => setCreating(true)}
-              className="flex flex-col items-center gap-0.75 border-none bg-transparent cursor-pointer"
+              onClick={() => setEditMode((previous) => !previous)}
+              aria-pressed={isEditingList}
+              className="typography-body-md-semibold -mr-3 flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-12 px-3 text-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
             >
-              <span className="grid size-6 place-items-center">
-                <Plus className="size-5 text-main" strokeWidth={2} />
-              </span>
-              <span className="typo-body-xs-bold whitespace-nowrap text-main">콘텐츠 추가</span>
+              {isEditingList ? '완료' : '편집'}
             </button>
           )}
         </div>
+      )}
+      <div>
+        {contents.map((content, index) => (
+          <div key={content.id} className="animate-rise" style={staggerStyle(index)}>
+            <ContentCard
+              content={content}
+              editing={isEditingList}
+              onClick={() => navigate(`/exhibition/${displayId}/contents/${content.id}`)}
+              onDelete={
+                canDeleteCategory
+                  ? () => {
+                      setDeleting(content);
+                      setDeleteError(null);
+                      setDeleteOpen(true);
+                    }
+                  : undefined
+              }
+            />
+          </div>
+        ))}
+      </div>
+      {canCreateCategory && !isEditingList && (
+        <button
+          type="button"
+          onClick={openEditor}
+          className="typography-body-lg-semibold mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+        >
+          <img src={SectionPlusIcon} alt="" />
+          섹션 추가
+        </button>
+      )}
+      <ContentEditSheet
+        content={EMPTY_CONTENT}
+        open={createOpen}
+        mode="create"
+        isSaving={createMutation.isPending}
+        errorMessage={saveError}
+        onClose={closeEditor}
+        onSave={handleSave}
+      />
+      <ContentDeleteConfirmDialog
+        open={deleteOpen}
+        isDeleting={deleteMutation.isPending}
+        errorMessage={deleteError}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleDelete}
+      />
+    </>
+  );
 
-        {/* 목록 */}
-        <div className="flex flex-col gap-3 px-5">
-          {contents.length === 0 ? (
-            <p className="typo-body-sm-regular pt-10 text-hint">아직 추가된 콘텐츠가 없어요.</p>
-          ) : (
-            contents.map((content) => (
-              <div key={content.id} className="relative">
-                <ContentCard
-                  content={content}
-                  dimmed={menuId !== null && menuId !== content.id}
-                  showMore={canShowCategoryMenu}
-                  onClick={() => navigate(`/exhibition/${displayId}/contents/${content.id}`)}
-                  onMore={(e) => {
-                    e.stopPropagation();
-                    setMenuId((prev) => (prev === content.id ? null : content.id));
-                  }}
-                />
-                {menuId === content.id && (
-                  <div className="absolute right-3 top-15 z-20">
-                    <CardPopover
-                      canEdit={canEditCategory}
-                      canDelete={canDeleteCategory}
-                      onEdit={() => {
-                        setEditing(content);
-                        setMenuId(null);
-                      }}
-                      onDelete={() => {
-                        setDeleting(content);
-                        setMenuId(null);
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      </main>
-
-      {editing && (
-        <ContentEditSheet content={editing} onClose={() => setEditing(null)} onSave={handleSave} />
-      )}
-      {creating && (
-        <ContentEditSheet
-          content={EMPTY_CONTENT}
-          mode="create"
-          onClose={() => setCreating(false)}
-          onSave={handleCreate}
-        />
-      )}
-      {deleting && (
-        <ContentDeleteConfirmDialog onCancel={() => setDeleting(null)} onConfirm={handleDelete} />
-      )}
-    </div>
+  return embedded ? (
+    panel
+  ) : (
+    <ExhibitionWorkLayout display={displayDetail} activeTab="contents" onBack={() => flowBack()}>
+      {panel}
+    </ExhibitionWorkLayout>
   );
 }

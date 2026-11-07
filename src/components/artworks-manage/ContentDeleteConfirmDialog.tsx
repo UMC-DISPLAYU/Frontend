@@ -1,93 +1,66 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+
+import { Overlay } from '@/components/ui';
 
 interface ContentDeleteConfirmDialogProps {
+  open: boolean;
+  isDeleting?: boolean;
+  errorMessage?: string | null;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
 export function ContentDeleteConfirmDialog({
+  open,
+  isDeleting = false,
+  errorMessage,
   onCancel,
   onConfirm,
 }: ContentDeleteConfirmDialogProps) {
-  const titleId = 'content-delete-confirm-title';
-  const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onCancel();
-        return;
-      }
-
-      if (event.key !== 'Tab') return;
-
-      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      if (!focusable?.length) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    const previouslyFocused =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    cancelButtonRef.current?.focus();
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      previouslyFocused?.focus();
-    };
-  }, [onCancel]);
-
   return (
-    <div
-      className="fixed inset-0 z-30 grid place-items-center bg-main/35 px-5"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      onClick={onCancel}
-    >
-      <div
-        ref={dialogRef}
-        className="w-80 rounded-[20px] bg-card/50 p-6 backdrop-blur-[10px]"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <h2 id={titleId} className="typo-body-xl-bold text-center text-main">
-          콘텐츠를 삭제할까요?
-        </h2>
-        <p className="typo-body-md-regular mt-2 text-center text-sub600">
-          삭제한 콘텐츠는 전시에서 제거되며,
-          <br />
-          복구할 수 없어요.
-        </p>
-        <div className="mt-6 flex gap-2.5">
+    <Overlay
+      open={open}
+      onClose={onCancel}
+      title="섹션을 삭제할까요?"
+      description="섹션에 등록된 사진도 함께 삭제돼요"
+      role="alertdialog"
+      size="sm"
+      presentation="modal"
+      className="max-w-80.5"
+      showCloseButton={false}
+      initialFocusRef={cancelButtonRef}
+      footer={
+        <div className="flex gap-2">
           <button
             ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
-            className="typo-body-xl-regular h-11 flex-1 rounded-full bg-bt-gray text-main"
+            className="typography-body-lg-semibold h-11 flex-1 rounded-12 bg-secondary text-primary transition duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
           >
             취소
           </button>
           <button
             type="button"
+            disabled={isDeleting}
             onClick={onConfirm}
-            className="typo-body-xl-regular h-11 flex-1 rounded-full bg-faint text-main"
+            className="typography-body-lg-semibold h-11 flex-1 rounded-12 bg-notice text-interactive-inverse transition duration-fast ease-standard hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable disabled:active:scale-100"
           >
-            확인
+            {isDeleting ? '삭제 중…' : '삭제하기'}
           </button>
         </div>
+      }
+    >
+      <div className="flex flex-col gap-1 rounded-8 bg-error-subtle p-3">
+        <p className="typography-body-md-semibold text-error">삭제 안내</p>
+        <p className="typography-body-md-medium text-secondary">삭제된 섹션은 복구할 수 없어요</p>
+        {errorMessage && (
+          <p role="alert" className="typography-body-md-medium text-error">
+            {errorMessage}
+          </p>
+        )}
       </div>
-    </div>
+    </Overlay>
   );
 }

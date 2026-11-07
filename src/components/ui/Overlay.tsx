@@ -21,8 +21,10 @@ export interface OverlayProps {
   children?: ReactNode;
   /** 본문 아래 고정 영역(버튼 등). 스크롤되지 않는다 */
   footer?: ReactNode;
-  /** 태블릿 이상 가운데 모달 폭. sm 320px(확인 · 안내), md 480px(입력 · 목록) */
+  /** 가운데 모달 폭. sm 320px(확인 · 안내), md 480px(입력 · 목록) */
   size?: 'sm' | 'md';
+  /** modal 은 모바일에서도 중앙 모달로 표시한다. 기본은 모바일 시트 · 태블릿 이상 모달 */
+  presentation?: 'responsive' | 'modal';
   showCloseButton?: boolean;
   /** 열릴 때 먼저 포커스할 요소. 없으면 패널에 포커스한다(입력창 자동 포커스는 모바일 키보드를 띄운다) */
   initialFocusRef?: RefObject<HTMLElement | null>;
@@ -32,7 +34,7 @@ export interface OverlayProps {
 }
 
 /**
- * 반응형 오버레이. 768px 미만은 바텀시트, 이상은 가운데 모달.
+ * 기본은 768px 미만 바텀시트, 이상 가운데 모달. presentation="modal"로 중앙 표시를 고정한다.
  * 열려 있는 동안 뒤 페이지 스크롤을 잠그고, 배경 탭 · ESC · 뒤로가기로 닫힌다.
  */
 export function Overlay({
@@ -43,6 +45,7 @@ export function Overlay({
   children,
   footer,
   size = 'md',
+  presentation = 'responsive',
   showCloseButton = true,
   initialFocusRef,
   role = 'dialog',
@@ -51,6 +54,7 @@ export function Overlay({
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLElement>(null);
+  const isModal = presentation === 'modal';
 
   const { isMounted, isExiting, onAnimationEnd } = usePresence(open);
   const { requestClose, isTopmost } = useOverlayHistory(open, onClose);
@@ -91,7 +95,14 @@ export function Overlay({
           isExiting ? 'animate-fade-out' : 'animate-fade-in',
         )}
       />
-      <div className="pointer-events-none relative flex min-h-0 flex-1 flex-col justify-end pt-10 tablet:items-center tablet:justify-center tablet:p-gutter">
+      <div
+        className={cn(
+          'pointer-events-none relative flex min-h-0 flex-1 flex-col',
+          isModal
+            ? 'items-center justify-center p-gutter'
+            : 'justify-end pt-10 tablet:items-center tablet:justify-center tablet:p-gutter',
+        )}
+      >
         <section
           ref={panelRef}
           role={role}
@@ -102,19 +113,35 @@ export function Overlay({
           onAnimationEnd={onAnimationEnd}
           className={cn(
             'pointer-events-auto flex max-h-full min-h-0 w-full flex-col bg-primary-white text-primary outline-none',
-            'rounded-t-20 pb-safe-area-bottom tablet:rounded-20 tablet:pb-5 tablet:shadow-lg',
-            size === 'sm' ? 'tablet:max-w-80' : 'tablet:max-w-120',
-            isExiting
-              ? 'animate-sheet-out tablet:animate-modal-out'
-              : 'animate-sheet-in tablet:animate-modal-in',
+            isModal
+              ? 'rounded-20 pb-5 shadow-lg'
+              : 'rounded-t-20 pb-safe-area-bottom tablet:rounded-20 tablet:pb-5 tablet:shadow-lg',
+            isModal
+              ? size === 'sm'
+                ? 'max-w-80'
+                : 'max-w-120'
+              : size === 'sm'
+                ? 'tablet:max-w-80'
+                : 'tablet:max-w-120',
+            isModal
+              ? isExiting
+                ? 'animate-modal-out'
+                : 'animate-modal-in'
+              : isExiting
+                ? 'animate-sheet-out tablet:animate-modal-out'
+                : 'animate-sheet-in tablet:animate-modal-in',
             className,
           )}
         >
+          {!isModal && (
+            <div
+              aria-hidden="true"
+              className="mx-auto mt-3 h-1 w-9 shrink-0 rounded-circle bg-tertiary tablet:hidden"
+            />
+          )}
           <div
-            aria-hidden="true"
-            className="mx-auto mt-3 h-1 w-9 shrink-0 rounded-circle bg-tertiary tablet:hidden"
-          />
-          <div className="flex shrink-0 items-start gap-2 px-5 pt-5 tablet:pt-6">
+            className={cn('flex shrink-0 items-start gap-2 px-5 pt-5', !isModal && 'tablet:pt-6')}
+          >
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <h2 id={titleId} className="typography-title-xs break-keep text-primary">
                 {title}

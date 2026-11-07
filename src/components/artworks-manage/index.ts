@@ -1,6 +1,7 @@
 export { CardPopover } from './CardPopover';
 export { ContentCard } from './ContentCard';
 export { ContentDeleteConfirmDialog } from './ContentDeleteConfirmDialog';
+export { contentEditSchema, type ContentEditValues } from './contentEdit.schema';
 export { ContentEditSheet } from './ContentEditSheet';
 export { ManageScreen } from './ManageScreen';
 export { OrderScreen } from './OrderScreen';
