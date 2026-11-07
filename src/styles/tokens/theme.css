@@ -43,6 +43,8 @@
   --background-color-warning-subtle: var(--semantic-color-bg-warning-subtle);
   --background-color-disable: var(--semantic-color-bg-disable);
   --background-color-notice: var(--semantic-color-bg-notice);
+  /* 피그마에는 변수가 아니라 페인트 스타일(Gray Scale/50)로만 있고 legacy에도 없어 값을 여기 둔다 */
+  --background-color-gray-scale-50: #f9f9f9;
 
   /* Icon */
   --text-color-icon-primary: var(--semantic-color-icon-primary);
