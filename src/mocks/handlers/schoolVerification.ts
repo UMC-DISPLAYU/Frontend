@@ -15,6 +15,7 @@ import { fail, noContent, paths, readJson, success } from '@/mocks/response';
  * - 아이디가 duplicate 인 이메일(duplicate@hongik.ac.kr)은 이미 다른 계정이 인증한 이메일로 처리합니다.
  * - 같은 이메일로 10초 안에 다시 보내면 쿨다운, 인증번호를 5번 틀리면 횟수 초과,
  *   발송 후 5분이 지나면 만료됩니다.
+ * - 인증 대기는 하나만 기억합니다. 다른 이메일로 보내면 이전 이메일의 인증번호는 확인할 수 없습니다.
  */
 export const MOCK_VERIFICATION_CODE = '123456';
 

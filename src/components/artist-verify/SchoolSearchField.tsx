@@ -61,11 +61,15 @@ export function SchoolSearchField({
             role="listbox"
           >
             {isLoading ? (
-              <li className={`${listItemClass} text-tertiary`}>검색 중...</li>
+              <li className={`${listItemClass} text-tertiary`} role="none">
+                검색 중...
+              </li>
             ) : suggestions.length > 0 ? (
               suggestions.map((school) => (
-                <li aria-selected={school.name === value} key={school.name} role="option">
+                // option 안에 버튼을 넣으면 스크린리더가 버튼을 무시할 수 있어 버튼 자체를 option 으로 둔다
+                <li key={school.name} role="none">
                   <button
+                    aria-selected={school.name === value}
                     className={`${listItemClass} cursor-pointer text-primary`}
                     onClick={() => {
                       setIsOpen(false);
@@ -73,6 +77,7 @@ export function SchoolSearchField({
                     }}
                     // 버튼이 포커스를 가져가면 input blur로 목록이 먼저 닫혀 클릭이 무시된다
                     onMouseDown={(event) => event.preventDefault()}
+                    role="option"
                     type="button"
                   >
                     {school.name}
@@ -80,7 +85,9 @@ export function SchoolSearchField({
                 </li>
               ))
             ) : (
-              <li className={`${listItemClass} text-tertiary`}>검색 결과가 없어요</li>
+              <li className={`${listItemClass} text-tertiary`} role="none">
+                검색 결과가 없어요
+              </li>
             )}
           </ul>
         ) : null}

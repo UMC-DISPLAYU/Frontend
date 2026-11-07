@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   computeFocusScrollDelta,
@@ -122,6 +122,13 @@ describe('isTextEditableElement', () => {
 });
 
 describe('하단 고정 요소 높이', () => {
+  // 중간에 실패해도 가짜 document 와 등록 상태가 다음 테스트에 남지 않게 정리한다
+  const cleanups: (() => void)[] = [];
+  afterEach(() => {
+    cleanups.splice(0).forEach((cleanup) => cleanup());
+    vi.unstubAllGlobals();
+  });
+
   it('등록된 요소가 없으면 0', () => {
     expect(getBottomObstructionHeight()).toBe(0);
   });
@@ -135,6 +142,11 @@ describe('하단 고정 요소 높이', () => {
     const unsubscribe = subscribeBottomObstruction(listener);
     const bar = {} as HTMLElement;
     const button = {} as HTMLElement;
+    cleanups.push(
+      unsubscribe,
+      () => removeBottomObstruction(bar),
+      () => removeBottomObstruction(button),
+    );
 
     setBottomObstruction(bar, 72);
     setBottomObstruction(button, 96);
@@ -150,7 +162,5 @@ describe('하단 고정 요소 높이', () => {
     unsubscribe();
     setBottomObstruction(bar, 72);
     expect(listener).toHaveBeenCalledTimes(4);
-    removeBottomObstruction(bar);
-    vi.unstubAllGlobals();
   });
 });

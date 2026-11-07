@@ -53,6 +53,8 @@ export function useArtistVerifyFlow() {
   const [selectedFields, setSelectedFields] = useState<ExhibitionField[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const savingRef = useRef(false);
+  // 버튼이 비활성화되기 전에 연속으로 눌린 메일 발송 · 인증 확인 요청을 막는다
+  const verifyingRef = useRef(false);
 
   const schoolQuery = useSearchSchools(state.school);
   const sendMail = useSendVerificationEmail();
@@ -84,10 +86,14 @@ export function useArtistVerifyFlow() {
   );
 
   const requestMail = (mutation: typeof sendMail, successToast?: string) => {
-    if (!canSendMail) return;
+    if (!canSendMail || verifyingRef.current) return;
+    verifyingRef.current = true;
     mutation.mutate(
       { schoolEmail: state.email.trim(), univName: state.school.trim() },
       {
+        onSettled: () => {
+          verifyingRef.current = false;
+        },
         onSuccess: () => {
           dispatch({ type: 'COMPLETE_STEP', payload: 'email' });
           if (successToast) toast(successToast);
@@ -111,11 +117,15 @@ export function useArtistVerifyFlow() {
 
   const confirmVerificationCode = () => {
     const verificationCode = state.code.trim();
-    if (verificationCode.length !== 6) return;
+    if (verificationCode.length !== 6 || verifyingRef.current) return;
+    verifyingRef.current = true;
 
     confirmCode.mutate(
       { schoolEmail: state.email.trim(), verificationCode },
       {
+        onSettled: () => {
+          verifyingRef.current = false;
+        },
         onSuccess: () => dispatch({ type: 'COMPLETE_STEP', payload: 'code' }),
         onError: (error) => {
           if (isRequestCanceled(error)) return;
