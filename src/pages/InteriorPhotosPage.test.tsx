@@ -125,6 +125,14 @@ const nodes = (node: ReactNode): Element[] =>
       ? [child, ...nodes(child.props.children as ReactNode)]
       : [],
   );
+const textContent = (node: ReactNode): string =>
+  Children.toArray(node)
+    .map((child) =>
+      isValidElement<Record<string, unknown>>(child)
+        ? textContent(child.props.children as ReactNode)
+        : String(child),
+    )
+    .join('');
 const render = () => {
   h.si = 0;
   h.ri = 0;
@@ -137,6 +145,15 @@ const click = (tree: Element[], label: string) => {
 };
 const photos = (tree: Element[]) => tree.filter((node) => 'photo' in node.props);
 const photoIds = () => photos(render()).map((node) => (node.props.photo as { id: number }).id);
+const alertText = () =>
+  render()
+    .filter((node) => node.props.role === 'alert')
+    .map(textContent)
+    .join('\n');
+const selectFiles = (files: { name: string; type: string; size: number }[]) => {
+  const input = render().find((node) => node.props.type === 'file')!;
+  return (input.props.onChange as (event: unknown) => Promise<void>)({ target: { files } });
+};
 const remove = (id: number) => {
   const photo = photos(render()).find((node) => (node.props.photo as { id: number }).id === id)!;
   (photo.props.onRemove as (id: number) => void)(id);
@@ -253,11 +270,115 @@ it('사진 20장 상한과 기존 업로드 요청을 유지한다', async () =>
   const input = render().find((node) => node.props.type === 'file')!;
   expect(input.props.accept).toBe('image/jpeg,image/png,image/webp,image/gif');
   const files = [
-    { name: 'one.png', type: 'image/png' },
-    { name: 'two.png', type: 'image/png' },
+    { name: 'one.png', type: 'image/png', size: 1024 },
+    { name: 'two.png', type: 'image/png', size: 1024 },
   ];
   await (input.props.onChange as (event: unknown) => Promise<void>)({ target: { files } });
   expect(h.addImages).toHaveBeenCalledWith([files[0]]);
   expect(h.create).toHaveBeenCalledWith({ imageUrl: '/new-photo.jpg', width: 800, height: 600 });
   expect(photoIds()).toHaveLength(20);
+});
+
+it('기존 네 이미지 형식과 20MB 이하를 허용하고 초과·미지원 형식은 한 장씩 집계한다', async () => {
+  const maxBytes = 20 * 1024 * 1024;
+  const validFiles = [
+    { name: 'boundary.jpg', type: 'image/jpeg', size: maxBytes },
+    { name: 'under.png', type: 'image/png', size: maxBytes - 1 },
+    { name: 'small.webp', type: 'image/webp', size: 1024 },
+    { name: 'small.gif', type: 'image/gif', size: 1024 },
+  ];
+  await selectFiles([
+    ...validFiles,
+    { name: 'over.png', type: 'image/png', size: maxBytes + 1 },
+    { name: 'vector.svg', type: 'image/svg+xml', size: maxBytes + 1 },
+    { name: 'unknown.jpg', type: '', size: 1024 },
+  ]);
+  expect(h.addImages).toHaveBeenCalledWith(validFiles);
+  expect(h.upload).toHaveBeenCalledTimes(4);
+  expect(h.create).toHaveBeenCalledTimes(4);
+  expect(alertText()).toContain('3장은 올리지 못했어요');
+  expect(alertText()).toContain('지원하지 않는 형식이거나 20MB를 넘는 파일이에요');
+});
+
+it('전부 잘못된 파일이면 요청하지 않고 다음 정상 선택에서 이전 안내를 지운다', async () => {
+  await selectFiles([
+    { name: 'unsupported.heic', type: 'image/heic', size: 1024 },
+    { name: 'too-large.jpg', type: 'image/jpeg', size: 20 * 1024 * 1024 + 1 },
+  ]);
+  expect(h.addImages).not.toHaveBeenCalled();
+  expect(h.upload).not.toHaveBeenCalled();
+  expect(h.create).not.toHaveBeenCalled();
+  expect(alertText()).toContain('2장은 올리지 못했어요');
+  await selectFiles([{ name: 'valid.jpg', type: 'image/jpeg', size: 1024 }]);
+  expect(h.create).toHaveBeenCalledTimes(1);
+  expect(alertText()).toBe('');
+});
+
+it('지원하지 않는 파일이 남은 사진 한 칸을 차지하지 않는다', async () => {
+  h.contents = Array.from({ length: 19 }, (_, index) => ({
+    contentId: index + 1,
+    imageUrl: `/photo-${index}.jpg`,
+    userId: 1,
+  }));
+  const validFile = { name: 'valid.jpg', type: 'image/jpeg', size: 1024 };
+  await selectFiles([
+    { name: 'unsupported.heic', type: 'image/heic', size: 1024 },
+    validFile,
+    { name: 'over-count.jpg', type: 'image/jpeg', size: 1024 },
+  ]);
+  expect(h.addImages).toHaveBeenCalledWith([validFile]);
+  expect(photoIds()).toHaveLength(20);
+  expect(alertText()).toContain('1장은 올리지 못했어요');
+});
+
+it('업로드와 등록의 부분 실패를 집계하면서 성공한 사진을 선택 순서대로 남긴다', async () => {
+  const networkError = new ApiError('network', { transportCode: 'ERR_NETWORK' });
+  h.upload.mockImplementation(async (file: File) => {
+    if (file.name === 'upload-fail.png') throw networkError;
+    return `/${file.name}`;
+  });
+  h.create.mockImplementation(async ({ imageUrl }: { imageUrl: string }) => {
+    if (imageUrl === '/create-fail.png') throw failure;
+    return { contentId: imageUrl === '/first.png' ? 11 : 14 };
+  });
+  await selectFiles(
+    ['first.png', 'upload-fail.png', 'create-fail.png', 'last.png'].map((name) => ({
+      name,
+      type: 'image/png',
+      size: 1024,
+    })),
+  );
+  expect(h.upload).toHaveBeenCalledTimes(4);
+  expect(h.create).toHaveBeenCalledTimes(3);
+  expect(photoIds()).toEqual([1, 2, 3, 11, 14]);
+  expect(alertText()).toContain('2장은 올리지 못했어요');
+  expect(alertText()).toContain('네트워크 연결을 확인해주세요.');
+  expect(alertText()).not.toContain('지원하지 않는 형식');
+});
+
+it('한 요청이 먼저 실패해도 모든 파일 처리가 끝날 때까지 중복 업로드를 막는다', async () => {
+  let finishUpload!: (url: string) => void;
+  h.upload.mockRejectedValueOnce(failure).mockImplementationOnce(
+    () =>
+      new Promise<string>((resolve) => {
+        finishUpload = resolve;
+      }),
+  );
+  const pending = selectFiles([
+    { name: 'fail.png', type: 'image/png', size: 1024 },
+    { name: 'pending.png', type: 'image/png', size: 1024 },
+  ]);
+  await Promise.resolve();
+  await selectFiles([{ name: 'duplicate.png', type: 'image/png', size: 1024 }]);
+  expect(h.upload).toHaveBeenCalledTimes(2);
+  const uploadButton = render().find(
+    (node) => node.type === 'button' && textContent(node).includes('업로드 중'),
+  );
+  expect(uploadButton?.props.disabled).toBe(true);
+  finishUpload('/pending.png');
+  await pending;
+  expect(photoIds()).toEqual([1, 2, 3, 21]);
+  expect(
+    render().some((node) => node.type === 'button' && textContent(node).includes('업로드 중')),
+  ).toBe(false);
 });

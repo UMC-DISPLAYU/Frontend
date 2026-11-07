@@ -64,6 +64,8 @@ type Photo = {
 };
 
 const getPhotoSortableId = (photo: Photo) => String(photo.id);
+const SUPPORTED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_PHOTO_FILE_SIZE = 20 * 1024 * 1024;
 const buttonClass =
   'cursor-pointer transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable';
 
@@ -132,7 +134,9 @@ function SortablePhotoItem({
             )}
           >
             <img src={PhotoNumberBackground} alt="" className="translate-x-0.5" />
-            <span className="typography-body-xl-medium absolute translate-x-0.5">{index + 1}</span>
+            <span className="typography-body-md-semibold absolute translate-x-0.5">
+              {index + 1}
+            </span>
           </button>
           {canDeleteContent && (
             <button
@@ -238,6 +242,8 @@ function InteriorPhotos({
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [isEditingPhotos, setIsEditingPhotos] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [rejectedPhotoCount, setRejectedPhotoCount] = useState(0);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savedOrderRef = useRef<Photo[]>(initialPhotos);
   const savingDetailsRef = useRef(false);
@@ -261,7 +267,7 @@ function InteriorPhotos({
     defaultValues: { title, description },
   });
   const currentDescription = useWatch({ control, name: 'description' }) ?? '';
-  const isBusy = imageUpload.isUploading || createImage.isPending;
+  const isBusy = isUploadingPhotos || imageUpload.isUploading || createImage.isPending;
   const isSavingOrder = reorderImages.isPending;
   const isPhotoActionPending = isBusy || isSavingOrder || deleteImage.isPending;
   const policyUser = {
@@ -299,38 +305,48 @@ function InteriorPhotos({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!canCreateContent || photoActionRef.current || isPhotoActionPending) return;
     const files = e.target.files;
-    if (!files) return;
+    if (!files?.length) return;
+    const validFiles = Array.from(files).filter(
+      (file) => SUPPORTED_PHOTO_TYPES.includes(file.type) && file.size <= MAX_PHOTO_FILE_SIZE,
+    );
+    setRejectedPhotoCount(files.length - validFiles.length);
+    setActionError(null);
     const remainingSlots = Math.max(MAX_CONTENT_IMAGES - photos.length, 0);
-    const filesToAdd = Array.from(files).slice(0, remainingSlots);
+    const filesToAdd = validFiles.slice(0, remainingSlots);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (filesToAdd.length === 0) return;
 
     photoActionRef.current = true;
-    setActionError(null);
-    const added = imageUpload.addImages(filesToAdd);
+    setIsUploadingPhotos(true);
     try {
-      const uploadedUrls = await Promise.all(
-        added.map((image) => {
+      const added = imageUpload.addImages(filesToAdd);
+      const results = await Promise.allSettled(
+        added.map(async (image): Promise<Photo> => {
           if (!image.file) throw new Error('업로드할 이미지 파일이 없습니다.');
-          return imageUpload.uploadImage(image.file);
-        }),
-      );
-      const created = await Promise.all(
-        uploadedUrls.map((imageUrl) =>
-          createImage.mutateAsync({
+          const imageUrl = await imageUpload.uploadImage(image.file);
+          const created = await createImage.mutateAsync({
             imageUrl,
             width: DEFAULT_CONTENT_IMAGE_WIDTH,
             height: DEFAULT_CONTENT_IMAGE_HEIGHT,
-          }),
-        ),
+          });
+          return {
+            id: created.contentId,
+            url: imageUrl,
+            alt: image.file.name,
+            userId: user?.id ?? undefined,
+          };
+        }),
       );
-      const newPhotos: Photo[] = created.map((res, index) => ({
-        id: res.contentId,
-        url: uploadedUrls[index],
-        alt: added[index]?.file.name,
-        userId: user?.id ?? undefined,
-      }));
+      const newPhotos = results.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value] : [],
+      );
       setPhotos((previous) => [...previous, ...newPhotos]);
+      const failures = results.filter((result) => result.status === 'rejected');
+      if (failures.length > 0) {
+        setActionError(
+          `${failures.length}장은 올리지 못했어요\n${getErrorMessage(failures[0].reason, '사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.')}`,
+        );
+      }
     } catch (error) {
       setActionError(
         getErrorMessage(error, '사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.'),
@@ -338,6 +354,7 @@ function InteriorPhotos({
     } finally {
       imageUpload.clearImages();
       photoActionRef.current = false;
+      setIsUploadingPhotos(false);
     }
   };
 
@@ -496,12 +513,15 @@ function InteriorPhotos({
         </form>
 
         <section aria-label="섹션 사진" className="mt-3">
-          <div className="mb-3 flex min-h-11 items-center justify-between gap-2">
+          <div
+            className={cn(
+              'flex min-h-11 items-center justify-between gap-2',
+              isEditingPhotos ? 'mb-1' : 'mb-3',
+            )}
+          >
             {isEditingPhotos ? (
               <p className="typography-body-md-medium text-secondary">
-                {canReorder
-                  ? '순서는 완료하면 저장돼요. 삭제는 바로 반영돼요.'
-                  : '삭제는 바로 반영돼요.'}
+                순서 변경과 삭제는 자동으로 저장돼요
               </p>
             ) : (
               <h2 className="typography-body-lg-semibold">
@@ -526,12 +546,30 @@ function InteriorPhotos({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            accept={SUPPORTED_PHOTO_TYPES.join(',')}
             multiple
             onChange={handleFileChange}
             className="hidden"
             aria-label="섹션 사진 추가"
           />
+          {(rejectedPhotoCount > 0 || actionError) && (
+            <div
+              role="alert"
+              className="mb-3 flex items-start gap-3 rounded-12 bg-secondary py-4 pl-4 pr-5"
+            >
+              <img src={PhotoNoticeIcon} alt="" className="shrink-0" />
+              <div className="typography-body-lg-regular min-w-0 whitespace-pre-line text-secondary">
+                {rejectedPhotoCount > 0 && (
+                  <p>
+                    {rejectedPhotoCount}장은 올리지 못했어요
+                    <br />
+                    지원하지 않는 형식이거나 20MB를 넘는 파일이에요
+                  </p>
+                )}
+                {actionError && <p>{actionError}</p>}
+              </div>
+            </div>
+          )}
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -550,11 +588,11 @@ function InteriorPhotos({
                       disabled={photos.length >= MAX_CONTENT_IMAGES || isPhotoActionPending}
                       className={cn(
                         buttonClass,
-                        'typography-body-md-medium flex size-full flex-col items-center justify-center gap-0.5 rounded-12 border border-primary hover:bg-secondary',
+                        'typography-body-md-medium flex size-full flex-col items-center justify-center gap-1 rounded-12 border border-primary hover:bg-secondary',
                       )}
                     >
                       <img src={PhotoAddIcon} alt="" />
-                      {isBusy ? '업로드 중' : '사진추가'}
+                      {isBusy ? '업로드 중' : '사진 추가'}
                     </button>
                   </li>
                 )}
@@ -577,15 +615,6 @@ function InteriorPhotos({
             <p className="typography-body-lg-regular py-6 text-secondary">
               아직 등록된 사진이 없어요.
             </p>
-          )}
-          {actionError && (
-            <div
-              role="alert"
-              className="mt-6 flex items-start gap-2 rounded-12 bg-secondary px-5 py-4"
-            >
-              <img src={PhotoNoticeIcon} alt="" className="shrink-0" />
-              <p className="typography-body-lg-regular text-secondary">{actionError}</p>
-            </div>
           )}
         </section>
       </main>
