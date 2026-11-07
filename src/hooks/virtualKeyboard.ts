@@ -136,6 +136,7 @@ let frameId = 0;
 let ensureVisibleTimer: ReturnType<typeof setTimeout> | undefined;
 
 const bottomObstructions = new Map<HTMLElement, number>();
+const obstructionListeners = new Set<() => void>();
 
 function readState(): KeyboardState {
   const vv = window.visualViewport;
@@ -303,13 +304,30 @@ function applyScrollPaddingBottom() {
   else style.removeProperty('scroll-padding-bottom');
 }
 
-/** 화면 하단을 가리는 고정 요소(하단 고정 바 등)의 높이를 등록한다. 입력창 보정 · scroll-padding 에 쓴다 */
+function handleBottomObstructionChange() {
+  applyScrollPaddingBottom();
+  obstructionListeners.forEach((listener) => listener());
+}
+
+/** 화면 하단을 가리는 고정 요소(하단 고정 바 등)의 높이를 등록한다. 입력창 보정 · scroll-padding · 토스트 위치에 쓴다 */
 export function setBottomObstruction(element: HTMLElement, height: number) {
   bottomObstructions.set(element, height);
-  applyScrollPaddingBottom();
+  handleBottomObstructionChange();
 }
 
 export function removeBottomObstruction(element: HTMLElement) {
   bottomObstructions.delete(element);
-  applyScrollPaddingBottom();
+  handleBottomObstructionChange();
+}
+
+/** 등록된 하단 고정 요소 중 가장 높은 것의 높이(px). 없으면 0 */
+export function getBottomObstructionHeight() {
+  return getMaxBottomObstruction();
+}
+
+export function subscribeBottomObstruction(listener: () => void) {
+  obstructionListeners.add(listener);
+  return () => {
+    obstructionListeners.delete(listener);
+  };
 }

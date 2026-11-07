@@ -1,10 +1,12 @@
 import { type RefObject, useEffect, useState, useSyncExternalStore } from 'react';
 
 import {
+  getBottomObstructionHeight,
   getIsKeyboardOpen,
   getKeyboardInset,
   removeBottomObstruction,
   setBottomObstruction,
+  subscribeBottomObstruction,
   subscribeVirtualKeyboard,
 } from './virtualKeyboard';
 
@@ -53,4 +55,13 @@ export function useBottomObstruction(ref: RefObject<HTMLElement>, enabled = true
   }, [ref, enabled]);
 
   return height;
+}
+
+/** 등록된 하단 고정 요소(하단 버튼 · 고정 바) 중 가장 높은 것의 높이(px). 없으면 0 */
+export function useBottomObstructionHeight() {
+  return useSyncExternalStore(
+    subscribeBottomObstruction,
+    getBottomObstructionHeight,
+    getBottomObstructionHeight,
+  );
 }

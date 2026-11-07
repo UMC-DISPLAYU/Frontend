@@ -1,10 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   computeFocusScrollDelta,
   computeKeyboardInset,
   detectKeyboardOpen,
+  getBottomObstructionHeight,
   isTextEditableElement,
+  removeBottomObstruction,
+  setBottomObstruction,
+  subscribeBottomObstruction,
 } from './virtualKeyboard';
 
 describe('computeKeyboardInset', () => {
@@ -114,5 +118,49 @@ describe('isTextEditableElement', () => {
     );
     expect(isTextEditableElement(el({ tagName: 'TEXTAREA', disabled: true }))).toBe(false);
     expect(isTextEditableElement(el({ tagName: 'BUTTON' }))).toBe(false);
+  });
+});
+
+describe('하단 고정 요소 높이', () => {
+  // 중간에 실패해도 가짜 document 와 등록 상태가 다음 테스트에 남지 않게 정리한다
+  const cleanups: (() => void)[] = [];
+  afterEach(() => {
+    cleanups.splice(0).forEach((cleanup) => cleanup());
+    vi.unstubAllGlobals();
+  });
+
+  it('등록된 요소가 없으면 0', () => {
+    expect(getBottomObstructionHeight()).toBe(0);
+  });
+
+  it('여러 개면 가장 높은 값, 지우면 남은 값으로 돌아가고 바뀔 때마다 알린다', () => {
+    // 테스트 환경(node)에는 DOM이 없어 scroll-padding 을 적는 documentElement.style 만 흉내 낸다
+    vi.stubGlobal('document', {
+      documentElement: { style: { scrollPaddingBottom: '', removeProperty: vi.fn() } },
+    });
+    const listener = vi.fn();
+    const unsubscribe = subscribeBottomObstruction(listener);
+    const bar = {} as HTMLElement;
+    const button = {} as HTMLElement;
+    cleanups.push(
+      unsubscribe,
+      () => removeBottomObstruction(bar),
+      () => removeBottomObstruction(button),
+    );
+
+    setBottomObstruction(bar, 72);
+    setBottomObstruction(button, 96);
+    expect(getBottomObstructionHeight()).toBe(96);
+
+    removeBottomObstruction(button);
+    expect(getBottomObstructionHeight()).toBe(72);
+
+    removeBottomObstruction(bar);
+    expect(getBottomObstructionHeight()).toBe(0);
+    expect(listener).toHaveBeenCalledTimes(4);
+
+    unsubscribe();
+    setBottomObstruction(bar, 72);
+    expect(listener).toHaveBeenCalledTimes(4);
   });
 });
