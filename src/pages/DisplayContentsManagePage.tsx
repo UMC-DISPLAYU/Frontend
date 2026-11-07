@@ -14,7 +14,6 @@ import { useHideFooter } from '@/components/layout';
 import {
   useCreateContentCategory,
   useDeleteContentCategory,
-  useUpdateContentCategory,
 } from '@/hooks/queries/useContentCategories';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
@@ -45,15 +44,10 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
   const canShowCategoryMenu = canEditCategory || canDeleteCategory;
 
   const createMutation = useCreateContentCategory(displayId);
-  const updateMutation = useUpdateContentCategory(displayId);
   const deleteMutation = useDeleteContentCategory(displayId);
 
   const [editMode, setEditMode] = useState(false);
-  const [editor, setEditor] = useState<{
-    open: boolean;
-    mode: 'create' | 'edit';
-    content: Content;
-  }>({ open: false, mode: 'create', content: EMPTY_CONTENT });
+  const [createOpen, setCreateOpen] = useState(false);
   const [deleting, setDeleting] = useState<Content | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -68,28 +62,19 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
       thumbnail: cat.contents[0]?.imageUrl,
     })) ?? [];
   const isEditingList = editMode && contents.length > 0 && canShowCategoryMenu;
-  const closeEditor = () => setEditor((previous) => ({ ...previous, open: false }));
-  const openEditor = (content: Content, mode: 'create' | 'edit') => {
+  const closeEditor = () => setCreateOpen(false);
+  const openEditor = () => {
     setSaveError(null);
-    setEditor({ content, mode, open: true });
+    setCreateOpen(true);
   };
 
   const handleSave = (patch: { title: string; description: string }) => {
+    if (createMutation.isPending) return;
+    setSaveError(null);
     const body = { name: patch.title, description: patch.description };
     const onError = (error: unknown) =>
       setSaveError(getErrorMessage(error, '섹션 정보를 저장하지 못했어요. 다시 시도해주세요.'));
-    if (editor.mode === 'create') {
-      if (createMutation.isPending) return;
-      setSaveError(null);
-      createMutation.mutate(body, { onSuccess: closeEditor, onError });
-    } else {
-      if (updateMutation.isPending) return;
-      setSaveError(null);
-      updateMutation.mutate(
-        { categoryId: editor.content.id, body },
-        { onSuccess: closeEditor, onError },
-      );
-    }
+    createMutation.mutate(body, { onSuccess: closeEditor, onError });
   };
 
   const handleDelete = () => {
@@ -133,7 +118,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
         <div className="flex min-h-11 items-center justify-between gap-2">
           {isEditingList ? (
             <p className="typography-body-md-medium text-secondary">
-              섹션 정보를 수정하거나 삭제할 수 있어요
+              순서 변경과 삭제는 자동으로 저장돼요
             </p>
           ) : (
             <p className="typography-body-lg-semibold text-primary">섹션 {contents.length}</p>
@@ -157,7 +142,6 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
               content={content}
               editing={isEditingList}
               onClick={() => navigate(`/exhibition/${displayId}/contents/${content.id}`)}
-              onEdit={canEditCategory ? () => openEditor(content, 'edit') : undefined}
               onDelete={
                 canDeleteCategory
                   ? () => {
@@ -174,7 +158,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
       {canCreateCategory && !isEditingList && (
         <button
           type="button"
-          onClick={() => openEditor(EMPTY_CONTENT, 'create')}
+          onClick={openEditor}
           className="typography-body-lg-semibold mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
         >
           <img src={SectionPlusIcon} alt="" />
@@ -182,10 +166,10 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
         </button>
       )}
       <ContentEditSheet
-        content={editor.content}
-        open={editor.open}
-        mode={editor.mode}
-        isSaving={editor.mode === 'create' ? createMutation.isPending : updateMutation.isPending}
+        content={EMPTY_CONTENT}
+        open={createOpen}
+        mode="create"
+        isSaving={createMutation.isPending}
         errorMessage={saveError}
         onClose={closeEditor}
         onSave={handleSave}

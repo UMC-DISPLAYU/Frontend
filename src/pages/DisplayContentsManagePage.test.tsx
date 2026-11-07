@@ -22,7 +22,6 @@ const h = vi.hoisted(() => ({
     contents: { imageUrl: string }[];
   }[],
   create: { mutate: vi.fn(), isPending: false },
-  update: { mutate: vi.fn(), isPending: false },
   remove: { mutate: vi.fn(), isPending: false },
   navigate: vi.fn(),
 }));
@@ -71,7 +70,6 @@ vi.mock('@/hooks/queries/useDisplayDetail', () => ({
 }));
 vi.mock('@/hooks/queries/useContentCategories', () => ({
   useCreateContentCategory: () => h.create,
-  useUpdateContentCategory: () => h.update,
   useDeleteContentCategory: () => h.remove,
 }));
 
@@ -106,7 +104,6 @@ beforeEach(() => {
   h.canManage = true;
   h.categories = [{ categoryId: 11, name: '내부 사진', description: '설명', contents: [] }];
   h.create.isPending = false;
-  h.update.isPending = false;
   h.remove.isPending = false;
   vi.clearAllMocks();
 });
@@ -142,23 +139,28 @@ it('수정과 삭제는 기존 권한이 있는 사용자에게만 노출한다'
   h.canManage = false;
   const tree = render();
   expect(tree.some((node) => node.type === 'button')).toBe(false);
-  expect(get(tree, ContentCard).props.onEdit).toBeUndefined();
+  expect(get(tree, ContentCard).props.editing).toBe(false);
   expect(get(tree, ContentCard).props.onDelete).toBeUndefined();
 });
 
-it('편집 모드에서도 기존 수정 요청을 유지하고 저장 중 중복 제출을 막는다', () => {
+it('편집 모드의 섹션을 누르면 수정 시트 대신 기존 사진 편집 페이지로 이동한다', () => {
   click(button(render(), '편집'));
-  let tree = render();
+  const tree = render();
   expect(get(tree, ContentCard).props.editing).toBe(true);
-  (get(tree, ContentCard).props.onEdit as () => void)();
-  tree = render();
-  h.update.isPending = true;
-  save(tree);
-  expect(h.update.mutate).not.toHaveBeenCalled();
-  h.update.isPending = false;
+  (get(tree, ContentCard).props.onClick as () => void)();
+  expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/contents/11');
+  expect(get(render(), ContentEditSheet).props.open).toBe(false);
+});
+
+it('섹션 추가 저장 중 중복 제출을 막는다', () => {
+  click(button(render(), '섹션 추가'));
+  h.create.isPending = true;
   save(render());
-  expect(h.update.mutate).toHaveBeenCalledWith(
-    { categoryId: 11, body: { name: '새 섹션', description: '소개' } },
+  expect(h.create.mutate).not.toHaveBeenCalled();
+  h.create.isPending = false;
+  save(render());
+  expect(h.create.mutate).toHaveBeenCalledWith(
+    { name: '새 섹션', description: '소개' },
     expect.objectContaining({ onSuccess: expect.any(Function) }),
   );
 });
@@ -177,30 +179,24 @@ it('마지막 섹션 삭제 성공 뒤 빈 목록에서 다시 추가할 수 있
   expect(button(render(), '섹션 추가')).toBeDefined();
 });
 
-it.each(['create', 'edit'] as const)(
-  '섹션 %s 실패 시 창을 유지하고 재시도·다시 열기에서 오류를 지운다',
-  (mode) => {
-    const open = () => {
-      if (mode === 'create') click(button(render(), '섹션 추가'));
-      else (get(render(), ContentCard).props.onEdit as () => void)();
-    };
-    const mutation = mode === 'create' ? h.create : h.update;
-    open();
-    save(render());
-    mutation.mutate.mock.calls[0][1].onError(new Error('Network Error'));
-    let sheet = get(render(), ContentEditSheet);
-    expect(sheet.props.open).toBe(true);
-    expect(sheet.props.errorMessage).toBe('네트워크 연결을 확인해주세요.');
+it('섹션 추가 실패 시 창을 유지하고 재시도·다시 열기에서 오류를 지운다', () => {
+  const open = () => click(button(render(), '섹션 추가'));
+  const mutation = h.create;
+  open();
+  save(render());
+  mutation.mutate.mock.calls[0][1].onError(new Error('Network Error'));
+  let sheet = get(render(), ContentEditSheet);
+  expect(sheet.props.open).toBe(true);
+  expect(sheet.props.errorMessage).toBe('네트워크 연결을 확인해주세요.');
 
-    save(render());
-    expect(get(render(), ContentEditSheet).props.errorMessage).toBeNull();
-    mutation.mutate.mock.calls[1][1].onError(new Error('Network Error'));
-    sheet = get(render(), ContentEditSheet);
-    (sheet.props.onClose as () => void)();
-    open();
-    expect(get(render(), ContentEditSheet).props.errorMessage).toBeNull();
-  },
-);
+  save(render());
+  expect(get(render(), ContentEditSheet).props.errorMessage).toBeNull();
+  mutation.mutate.mock.calls[1][1].onError(new Error('Network Error'));
+  sheet = get(render(), ContentEditSheet);
+  (sheet.props.onClose as () => void)();
+  open();
+  expect(get(render(), ContentEditSheet).props.errorMessage).toBeNull();
+});
 
 it('섹션 삭제 실패 시 목록과 확인 창을 유지하고 다시 열면 오류를 지운다', () => {
   (get(render(), ContentCard).props.onDelete as () => void)();

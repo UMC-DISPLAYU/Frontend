@@ -1,5 +1,4 @@
-import { Pencil } from 'lucide-react';
-
+import OrderIcon from '@/assets/exhibition-work/OrderIcon.svg';
 import SectionChevronIcon from '@/assets/exhibition-work/SectionChevronIcon.svg';
 import SectionPhotoIcon from '@/assets/exhibition-work/SectionPhotoIcon.svg';
 import SectionTrashIcon from '@/assets/exhibition-work/SectionTrashIcon.svg';
@@ -10,19 +9,12 @@ interface ContentCardProps {
   content: Content;
   onClick: () => void;
   editing?: boolean;
-  onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export function ContentCard({
-  content,
-  onClick,
-  editing = false,
-  onEdit,
-  onDelete,
-}: ContentCardProps) {
+export function ContentCard({ content, onClick, editing = false, onDelete }: ContentCardProps) {
   return (
-    <div className="flex items-center border-b border-primary">
+    <div className="relative flex items-center border-b border-primary">
       <button
         type="button"
         onClick={onClick}
@@ -47,7 +39,9 @@ export function ContentCard({
           <span className="flex min-w-0 flex-col gap-1">
             <span className="typography-body-xl-semibold truncate">{content.title}</span>
             {content.description && (
-              <span className="typography-body-md-medium line-clamp-2">{content.description}</span>
+              <span className={`typography-body-md-medium line-clamp-2 ${editing ? 'pr-20' : ''}`}>
+                {content.description}
+              </span>
             )}
           </span>
           <span className="typography-body-md-medium text-secondary">
@@ -65,7 +59,7 @@ export function ContentCard({
         )}
       </button>
       {editing && (
-        <div className="ml-1 flex shrink-0 items-center">
+        <div className="absolute top-1/2 -right-3 flex -translate-y-1/2 items-center">
           {onDelete && (
             <button
               type="button"
@@ -76,16 +70,16 @@ export function ContentCard({
               <img src={SectionTrashIcon} alt="" />
             </button>
           )}
-          {onEdit && (
-            <button
-              type="button"
-              onClick={onEdit}
-              aria-label={`${content.title} 섹션 정보 수정`}
-              className="grid size-11 place-items-center rounded-12 text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
-            >
-              <Pencil aria-hidden="true" className="size-5" strokeWidth={1.5} />
-            </button>
-          )}
+          {/* shortcut: 섹션 순서 저장 API가 연결되면 드래그 핸들을 활성화한다. */}
+          <button
+            type="button"
+            disabled
+            aria-label={`${content.title} 섹션 순서 변경 (준비 중)`}
+            title="섹션 순서 변경은 아직 지원하지 않아요"
+            className="grid size-11 cursor-default place-items-center rounded-12"
+          >
+            <img src={OrderIcon} alt="" />
+          </button>
         </div>
       )}
     </div>
