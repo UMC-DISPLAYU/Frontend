@@ -9,6 +9,7 @@ import { fileHandlers } from './handlers/file';
 import { healthHandlers } from './handlers/health';
 import { loungeHandlers } from './handlers/lounge';
 import { personalArtworkHandlers } from './handlers/personalArtwork';
+import { schoolVerificationHandlers } from './handlers/schoolVerification';
 import { userHandlers } from './handlers/user';
 import { passthroughHandlers } from './passthrough';
 
@@ -17,6 +18,7 @@ export const handlers = [
   ...healthHandlers,
   ...authHandlers,
   ...userHandlers,
+  ...schoolVerificationHandlers,
   ...displayHandlers,
   ...loungeHandlers,
   ...agreementHandlers,

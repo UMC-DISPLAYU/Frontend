@@ -1,7 +1,7 @@
-import { http } from 'msw';
+import { delay, http } from 'msw';
 
 import { mockDb } from '@/mocks/data/repository';
-import { created, paths, readJson, success } from '@/mocks/response';
+import { created, fail, paths, readJson, success } from '@/mocks/response';
 
 type MockArtistProfile = {
   artistId: number;
@@ -41,7 +41,19 @@ export const artistHandlers = [
   ),
   ...paths('/api/v1/artists/me/artist-profile').map((path) =>
     http.post(path, async ({ request }) => {
+      await delay(600);
       const body = await readJson<Partial<MockArtistProfile>>(request);
+
+      // 가짜 API: 저장 실패 문구를 확인할 수 있게 '중복작가'는 이미 쓰는 이름으로 처리합니다.
+      if (body.artistName?.trim() === '중복작가') {
+        return fail(
+          '/api/v1/artists/me/artist-profile',
+          409,
+          'DUPLICATE_ARTIST_NAME',
+          '이미 사용 중인 작가 프로필명입니다.',
+        );
+      }
+
       myArtistProfile = {
         artistId: 1,
         artistProfileId: 1,
