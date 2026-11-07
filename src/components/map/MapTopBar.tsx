@@ -49,14 +49,14 @@ export function MapTopBar({
   };
 
   return (
-    <div className="pointer-events-none fixed top-[calc(env(safe-area-inset-top)+12px)] right-5 left-5 z-20 grid gap-3 transition-[left] duration-450 ease-[cubic-bezier(.16,1,.3,1)] md:left-[calc(var(--map-panel-width)+20px)]">
+    <div className="pointer-events-none fixed top-[calc(var(--spacing-safe-area-top)+12px)] right-5 left-5 z-20 grid gap-3 transition-[left] duration-slow ease-standard tablet:left-[calc(var(--map-panel-width)+20px)]">
       <div className="pointer-events-auto flex items-center gap-2">
         <button
           type="button"
           aria-label="뒤로"
           onClick={onBack}
           className={cn(
-            'grid size-11 shrink-0 place-items-center rounded-circle bg-primary-black text-interactive-inverse transition-[scale] duration-200 active:scale-96',
+            'grid size-11 shrink-0 place-items-center rounded-circle bg-primary-black text-interactive-inverse transition-[scale] duration-fast active:scale-96',
             FLOAT_SHADOW,
           )}
         >
@@ -130,7 +130,7 @@ export function MapTopBar({
               aria-pressed={pressed}
               onClick={() => onToggleStatus(value)}
               className={cn(
-                'typography-body-lg-semibold relative inline-flex h-9 items-center gap-1.5 rounded-circle px-3.5 transition-[scale,background-color,color] duration-200 ease-[cubic-bezier(.16,1,.3,1)] after:absolute after:-inset-x-0.5 after:-inset-y-1 active:scale-96',
+                'typography-body-lg-semibold relative inline-flex h-9 items-center gap-1.5 rounded-circle px-3.5 transition-[scale,background-color,color] duration-fast ease-standard after:absolute after:-inset-x-0.5 after:-inset-y-1 active:scale-96',
                 FLOAT_SHADOW,
                 pressed
                   ? 'bg-primary-black text-interactive-inverse'
@@ -140,7 +140,7 @@ export function MapTopBar({
               <span>{label}</span>
               <b
                 className={cn(
-                  'font-semibold tabular-nums transition-colors duration-200',
+                  'font-semibold tabular-nums transition-colors duration-fast',
                   pressed ? 'text-[#d4d4d8]' : 'text-tertiary',
                 )}
               >

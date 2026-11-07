@@ -33,7 +33,7 @@ export function MapExhibitionCard({
   onClick,
 }: MapExhibitionCardProps) {
   const className = cn(
-    'relative grid h-31 w-full grid-cols-[86px_minmax(0,1fr)] overflow-hidden rounded-12 border bg-interactive-primary text-left text-[#d4d4d8] transition-[border-color,scale] duration-300 ease-[cubic-bezier(.16,1,.3,1)] hover:border-[#3f3f46] active:scale-99',
+    'relative grid h-31 w-full grid-cols-[86px_minmax(0,1fr)] overflow-hidden rounded-12 border bg-interactive-primary text-left text-[#d4d4d8] transition-[border-color,scale] duration-base ease-standard hover:border-[#3f3f46] active:scale-99',
     selected
       ? 'border-2 border-interactive-inverse hover:border-interactive-inverse'
       : 'border-[#27272a]',

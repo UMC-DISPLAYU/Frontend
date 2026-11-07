@@ -37,22 +37,20 @@ export function MapSheet({
         id="map-sheet"
         aria-label="전시 목록"
         className={cn(
-          'fixed right-0 bottom-0 left-0 z-40 flex h-[calc(100dvh-env(safe-area-inset-top)-8px)] select-none md:select-auto translate-y-[calc(100%-var(--map-sheet-visible))] flex-col rounded-t-20 bg-primary-black pb-[env(safe-area-inset-bottom)] text-interactive-inverse shadow-[0_-4px_20px_rgba(0,0,0,.25)]',
-          isDragging
-            ? 'transition-none'
-            : 'transition-[translate] duration-450 ease-[cubic-bezier(.16,1,.3,1)]',
-          'md:right-auto md:h-dvh md:w-100 md:translate-y-0 md:rounded-none md:pb-0 md:shadow-[4px_0_20px_rgba(0,0,0,.2)]',
-          'md:transition-[translate,visibility] md:duration-400',
-          isPanelFolded && 'md:invisible md:-translate-x-[calc(100%+12px)]',
+          'fixed right-0 bottom-0 left-0 z-40 flex h-[calc(100dvh-var(--spacing-safe-area-top)-8px)] select-none tablet:select-auto translate-y-[calc(100%-var(--map-sheet-visible))] flex-col rounded-t-20 bg-primary-black pb-safe-area-bottom text-interactive-inverse shadow-[0_-4px_20px_rgba(0,0,0,.25)]',
+          isDragging ? 'transition-none' : 'transition-[translate] duration-slow ease-standard',
+          'tablet:right-auto tablet:h-dvh tablet:w-100 tablet:translate-y-0 tablet:rounded-none tablet:pb-0 tablet:shadow-[4px_0_20px_rgba(0,0,0,.2)]',
+          'tablet:transition-[translate,visibility] tablet:duration-slow',
+          isPanelFolded && 'tablet:invisible tablet:-translate-x-[calc(100%+12px)]',
         )}
       >
-        <div className="shrink-0 touch-none px-5 md:touch-auto md:pt-7">
+        <div className="shrink-0 touch-none px-5 tablet:touch-auto tablet:pt-7">
           <button
             type="button"
             aria-label="목록 크기 바꾸기"
             aria-controls="map-sheet-body"
             onClick={onHandleTap}
-            className="mx-auto flex h-8 w-25 items-center justify-center md:hidden"
+            className="mx-auto flex h-8 w-25 items-center justify-center tablet:hidden"
           >
             <span className="h-1.5 w-17.5 rounded-circle bg-[#3f3f46]" />
           </button>
@@ -62,14 +60,12 @@ export function MapSheet({
           ref={bodyRef}
           id="map-sheet-body"
           className={cn(
-            'grid min-h-0 flex-1 content-start gap-3 px-5 pt-4 pb-5 opacity-(--map-sheet-content-opacity) [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin] md:overflow-y-auto md:pb-7 md:opacity-100',
-            isDragging
-              ? 'transition-none'
-              : 'transition-opacity duration-450 ease-[cubic-bezier(.16,1,.3,1)]',
+            'grid min-h-0 flex-1 content-start gap-3 px-5 pt-4 pb-5 opacity-(--map-sheet-content-opacity) [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin] tablet:overflow-y-auto tablet:pb-7 tablet:opacity-100',
+            isDragging ? 'transition-none' : 'transition-opacity duration-slow ease-standard',
             isFull
               ? 'touch-pan-y overflow-y-auto overscroll-contain'
               : 'touch-none overflow-hidden',
-            'md:touch-auto',
+            'tablet:touch-auto',
           )}
         >
           {children}
@@ -82,12 +78,12 @@ export function MapSheet({
         aria-controls="map-sheet"
         aria-label={isPanelFolded ? '목록 펼치기' : '목록 접기'}
         onClick={onToggleFold}
-        className="fixed top-1/2 left-(--map-panel-width) z-45 -mt-7 hidden h-14 w-7 place-items-center rounded-r-12 bg-primary-white text-tertiary shadow-[0_1px_2px_rgba(0,0,0,.06),0_4px_12px_rgba(0,0,0,.08),0_12px_24px_rgba(0,0,0,.06)] transition-[left,color] duration-400 ease-[cubic-bezier(.16,1,.3,1)] after:absolute after:-inset-y-1 after:-right-2.5 after:left-0 hover:text-primary md:grid"
+        className="fixed top-1/2 left-(--map-panel-width) z-45 -mt-7 hidden h-14 w-7 place-items-center rounded-r-12 bg-primary-white text-tertiary shadow-[0_1px_2px_rgba(0,0,0,.06),0_4px_12px_rgba(0,0,0,.08),0_12px_24px_rgba(0,0,0,.06)] transition-[left,color] duration-slow ease-standard after:absolute after:-inset-y-1 after:-right-2.5 after:left-0 hover:text-primary tablet:grid"
       >
         <ChevronLeft
           aria-hidden
           className={cn(
-            'size-5 transition-[rotate] duration-400 ease-[cubic-bezier(.16,1,.3,1)]',
+            'size-5 transition-[rotate] duration-slow ease-standard',
             isPanelFolded && 'rotate-180',
           )}
           strokeWidth={2}

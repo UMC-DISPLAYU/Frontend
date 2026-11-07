@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
 
+import { staggerStyle } from '@/utils/stagger';
+
 import { MapExhibitionCard } from './MapExhibitionCard';
 import type { MapExhibition } from './useMapExhibitions';
-
-const MAX_STAGGER_ITEMS = 8;
-const STAGGER_MS = 60;
 
 const toDetailPath = (id: number) => `/display/${id}`;
 
@@ -33,7 +32,7 @@ export function MapSelectedExhibition({
       />
       <Link
         to={toDetailPath(exhibition.id)}
-        className="typography-body-lg-semibold grid h-11 place-items-center rounded-12 bg-primary-white text-[#000] transition-[scale] duration-200 ease-[cubic-bezier(.16,1,.3,1)] active:scale-98"
+        className="typography-body-lg-semibold grid h-11 place-items-center rounded-12 bg-primary-white text-[#000] transition-[scale] duration-fast ease-standard active:scale-98"
       >
         전시 보러가기
       </Link>
@@ -69,11 +68,7 @@ export function MapExhibitionList({
   }
 
   return exhibitions.map((exhibition, index) => (
-    <div
-      key={exhibition.id}
-      style={{ transitionDelay: `${Math.min(index, MAX_STAGGER_ITEMS) * STAGGER_MS}ms` }}
-      className="transition-[opacity,translate] duration-450 ease-[cubic-bezier(.16,1,.3,1)] starting:translate-y-3 starting:opacity-0 motion-reduce:transition-none"
-    >
+    <div key={exhibition.id} style={staggerStyle(index)} className="animate-rise">
       <MapExhibitionCard
         title={exhibition.title}
         posterImageUrl={exhibition.posterImageUrl}

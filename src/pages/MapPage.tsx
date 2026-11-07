@@ -23,7 +23,6 @@ import {
   MapSheet,
   MapSheetMessage,
   type MapSnapshot,
-  MapToast,
   MapTopBar,
   matchesMapFilters,
   PANEL_WIDTH,
@@ -32,12 +31,12 @@ import {
   type SheetSnap,
   useElementHeight,
   useMapExhibitions,
-  useMapToast,
   useMapViewport,
   useMyLocation,
   useSheetDrag,
   zoomBy,
 } from '@/components/map';
+import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 
 const DEFAULT_CENTER: LatLng = { lat: 37.5665, lng: 126.978 };
@@ -92,7 +91,6 @@ export function MapPage() {
   const sheetBodyRef = useRef<HTMLDivElement>(null);
   const { height: viewportHeight, isDesktop } = useMapViewport();
   const sheetFullPx = useElementHeight(sheetRef, viewportHeight);
-  const toast = useMapToast();
   const [isSdkLoading, sdkError] = useKakaoLoader({
     appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
     libraries: ['services'],
@@ -147,7 +145,7 @@ export function MapPage() {
       setSelection(null);
       if (map) focusOn(map, location, getInsetsFor(nextSnap), { maxLevel: MY_LOCATION_MAX_LEVEL });
     },
-    onError: toast.show,
+    onError: (message) => toast(message),
   });
 
   const { exhibitions, matched, inView, statusCounts, hasData, isLoading, error, refetch } =
@@ -424,8 +422,6 @@ export function MapPage() {
       >
         {renderSheetContent()}
       </MapSheet>
-
-      <MapToast message={toast.message} isVisible={toast.isVisible} />
     </div>
   );
 }

@@ -6,7 +6,7 @@ const FLOAT_SHADOW =
   'shadow-[0_1px_2px_rgba(0,0,0,.06),0_4px_12px_rgba(0,0,0,.08),0_12px_24px_rgba(0,0,0,.06)]';
 
 const buttonClassName =
-  'grid size-11 place-items-center bg-primary-white text-primary transition-[scale,opacity,background-color,color] duration-200 ease-[cubic-bezier(.16,1,.3,1)] active:scale-94 disabled:cursor-default disabled:active:scale-100';
+  'grid size-11 place-items-center bg-primary-white text-primary transition-[scale,opacity,background-color,color] duration-fast ease-standard active:scale-94 disabled:cursor-default disabled:active:scale-100';
 
 interface MapControlsProps {
   canZoomIn: boolean;
@@ -32,7 +32,7 @@ export function MapControls({
   onLocate,
 }: MapControlsProps) {
   return (
-    <div className="fixed right-5 bottom-[calc(var(--map-sheet-visible)+16px)] z-30 grid gap-2 transition-[bottom] duration-450 ease-[cubic-bezier(.16,1,.3,1)] md:bottom-7">
+    <div className="fixed right-5 bottom-[calc(var(--map-sheet-visible)+16px)] z-30 grid gap-2 transition-[bottom] duration-slow ease-standard tablet:bottom-7">
       <div className={cn('grid overflow-hidden rounded-circle bg-primary-white', FLOAT_SHADOW)}>
         <button
           type="button"
@@ -80,7 +80,7 @@ export function MapControls({
       >
         <Locate
           aria-hidden
-          className={cn('size-6', isLocating && 'motion-safe:animate-pulse')}
+          className={cn('size-6', isLocating && 'animate-pulse')}
           strokeWidth={1.8}
         />
       </button>

@@ -5,7 +5,6 @@ export { MapExhibitionCard } from './MapExhibitionCard';
 export { MapPin, MyLocationMarker } from './MapPin';
 export { MapSheet } from './MapSheet';
 export { MapExhibitionList, MapSelectedExhibition, MapSheetMessage } from './MapSheetContent';
-export { MapToast } from './MapToast';
 export { MapTopBar } from './MapTopBar';
 export {
   fitTo,
@@ -26,7 +25,6 @@ export {
 } from './mapViewport';
 export { useElementHeight } from './useElementHeight';
 export { type MapExhibition, matchesMapFilters, useMapExhibitions } from './useMapExhibitions';
-export { useMapToast } from './useMapToast';
 export { useMapViewport } from './useMapViewport';
 export { useMyLocation } from './useMyLocation';
 export { useSheetDrag } from './useSheetDrag';
