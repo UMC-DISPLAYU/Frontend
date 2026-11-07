@@ -43,6 +43,7 @@ const lazyPage = <T extends Record<string, unknown>>(
 // Lazy loaded page components
 const Homepage = lazyPage(() => import('./pages/Homepage'), 'Homepage');
 const SearchPage = lazyPage(() => import('./pages/SearchPage'), 'SearchPage');
+const MapPage = lazyPage(() => import('./pages/MapPage'), 'MapPage');
 const AuthPage = lazyPage(() => import('./pages/AuthPage'), 'AuthPage');
 const DisplayDetailPage = lazyPage(() => import('./pages/DisplayDetailPage'), 'DisplayDetailPage');
 const ArtworkDetailPage = lazyPage(() => import('./pages/ArtworkDetailPage'), 'ArtworkDetailPage');
@@ -195,6 +196,7 @@ export const router = createBrowserRouter([
       { index: true, element: <RootRedirect /> },
       { path: 'home', element: <Homepage /> },
       { path: 'search', element: <SearchPage /> },
+      { path: 'map', element: <MapPage /> },
       {
         path: 'artist/:userId',
         loader: validateNumericId('userId'),
