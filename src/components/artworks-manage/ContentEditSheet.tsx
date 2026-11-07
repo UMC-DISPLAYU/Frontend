@@ -1,73 +1,132 @@
-import { useState } from 'react';
+import { useEffect, useId } from 'react';
 
-import { BottomSheet } from '@/components/ui/BottomSheet';
-import { RequiredLabel } from '@/components/ui/RequiredLabel';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
+
+import { Overlay } from '@/components/ui';
 import type { Content } from '@/types';
 
 import { CONTENT_DESCRIPTION_MAX_LENGTH } from './constants';
+import { contentEditSchema, type ContentEditValues } from './contentEdit.schema';
 
 interface ContentEditSheetProps {
   content: Content;
+  open: boolean;
   mode?: 'create' | 'edit';
+  isSaving?: boolean;
+  errorMessage?: string | null;
   onClose: () => void;
-  onSave: (patch: { title: string; description: string }) => void;
+  onSave: (patch: ContentEditValues) => void;
 }
 
 export function ContentEditSheet({
   content,
+  open,
   mode = 'edit',
+  isSaving = false,
+  errorMessage,
   onClose,
   onSave,
 }: ContentEditSheetProps) {
-  const [title, setTitle] = useState(content.title);
-  const [description, setDescription] = useState(content.description);
-  const canSave = title.trim().length > 0;
+  const formId = useId();
+  const titleId = useId();
+  const descriptionId = useId();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { isValid, errors },
+  } = useForm<ContentEditValues>({
+    resolver: zodResolver(contentEditSchema),
+    mode: 'onChange',
+    defaultValues: { title: content.title, description: content.description },
+  });
+  const description = useWatch({ control, name: 'description' });
+
+  useEffect(() => {
+    if (open) reset({ title: content.title, description: content.description });
+  }, [open, content.id, content.title, content.description, reset]);
 
   return (
-    <BottomSheet
-      open={true}
-      title={mode === 'create' ? '콘텐츠 추가' : '콘텐츠 수정'}
-      subtitle={mode === 'create' ? '전시 콘텐츠에서 사용할 콘텐츠를 만들어주세요.' : undefined}
+    <Overlay
+      open={open}
+      title={mode === 'create' ? '섹션 추가' : '섹션 수정'}
       onClose={onClose}
+      footer={
+        <button
+          type="submit"
+          form={formId}
+          disabled={!isValid || isSaving}
+          className="typography-body-lg-semibold mt-4 flex h-11 w-full items-center justify-center rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable disabled:active:scale-100"
+        >
+          {isSaving ? '저장 중…' : mode === 'create' ? '추가하기' : '저장하기'}
+        </button>
+      }
     >
-      <div className="flex flex-col px-5 pt-4">
+      <form
+        id={formId}
+        onSubmit={handleSubmit((values) => {
+          if (!isSaving) onSave(values);
+        })}
+        className="flex flex-col gap-6 pt-2"
+      >
         <div className="flex flex-col gap-2">
-          <RequiredLabel htmlFor="content-title" required>
-            콘텐츠명
-          </RequiredLabel>
+          <label htmlFor={titleId} className="typography-body-lg-semibold text-primary">
+            섹션 제목 <span className="text-error">*</span>
+          </label>
           <input
-            id="content-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="전시장 내부"
-            className="typo-body-xs-regular w-full bg-transparent px-3 py-2.5 text-main border-b border-stone-300 placeholder:text-hint focus:outline-none"
+            id={titleId}
+            {...register('title')}
+            placeholder="섹션 제목을 입력해주세요"
+            aria-required="true"
+            aria-invalid={!!errors.title}
+            aria-describedby={errors.title ? `${titleId}-error` : undefined}
+            className="typography-body-lg-regular min-h-11 w-full border-b border-primary bg-transparent py-3 text-primary placeholder:text-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
+          {errors.title && (
+            <p
+              id={`${titleId}-error`}
+              role="alert"
+              className="typography-body-md-medium text-error"
+            >
+              {errors.title.message}
+            </p>
+          )}
         </div>
-
-        <div className="mt-5 flex flex-col gap-2">
-          <label htmlFor="content-desc" className="typo-body-sm-bold text-main">
-            콘텐츠 설명
+        <div className="flex flex-col gap-2">
+          <label htmlFor={descriptionId} className="typography-body-lg-semibold text-primary">
+            섹션 설명 <span className="typography-body-md-medium">· 선택</span>
           </label>
           <textarea
-            id="content-desc"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="전시 공간과 현장 분위기를 담는 앨범이에요"
-            rows={3}
+            id={descriptionId}
+            {...register('description')}
+            placeholder="섹션 설명을 입력해주세요"
+            rows={4}
             maxLength={CONTENT_DESCRIPTION_MAX_LENGTH}
-            className="typo-body-xs-regular w-full resize-none bg-transparent px-3 py-2.5 text-main border-b border-stone-300 placeholder:text-hint focus:outline-none"
+            aria-invalid={!!errors.description}
+            aria-describedby={errors.description ? `${descriptionId}-error` : undefined}
+            className="typography-body-lg-regular min-h-32 w-full resize-none rounded-12 border border-primary bg-transparent p-4 text-primary placeholder:text-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
+          <p className="typography-body-md-medium text-right text-tertiary">
+            {description.length} / {CONTENT_DESCRIPTION_MAX_LENGTH}
+          </p>
+          {errors.description && (
+            <p
+              id={`${descriptionId}-error`}
+              role="alert"
+              className="typography-body-md-medium text-error"
+            >
+              {errors.description.message}
+            </p>
+          )}
         </div>
-
-        <button
-          type="button"
-          disabled={!canSave}
-          onClick={() => onSave({ title: title.trim(), description: description.trim() })}
-          className="typo-body-sm-bold mt-10 h-11 w-full rounded-xl bg-bt-black text-white disabled:opacity-40 flex justify-center items-center"
-        >
-          {mode === 'create' ? '추가하기' : '저장하기'}
-        </button>
-      </div>
-    </BottomSheet>
+        {errorMessage && (
+          <p role="alert" className="typography-body-md-medium text-error">
+            {errorMessage}
+          </p>
+        )}
+      </form>
+    </Overlay>
   );
 }

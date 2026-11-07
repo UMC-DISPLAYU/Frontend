@@ -1,94 +1,92 @@
-import { MoreHorizontal } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 
+import SectionChevronIcon from '@/assets/exhibition-work/SectionChevronIcon.svg';
+import SectionPhotoIcon from '@/assets/exhibition-work/SectionPhotoIcon.svg';
+import SectionTrashIcon from '@/assets/exhibition-work/SectionTrashIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import type { Content } from '@/types';
-import { cn } from '@/utils/cn';
-
-/* 대표 이미지가 없는 콘텐츠는 DU 로고를 폴백으로 보여줍니다. */
-function Thumbnail({ src }: { src?: string }) {
-  return (
-    <div className="size-20 shrink-0 overflow-hidden rounded-xl bg-box200">
-      {src ? (
-        <OptimizedImage src={src} displayWidth={80} alt="" className="size-full object-cover" />
-      ) : (
-        <div className="grid size-full place-items-center bg-box200 p-3">
-          <img src={FALLBACK_POSTER_IMAGE} alt="" className="w-full opacity-40" />
-        </div>
-      )}
-    </div>
-  );
-}
 
 interface ContentCardProps {
   content: Content;
-  onMore: (e: React.MouseEvent) => void;
-  onClick?: () => void;
-  dimmed?: boolean;
-  showMore?: boolean;
-  moreRef?: React.Ref<HTMLButtonElement>;
+  onClick: () => void;
+  editing?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-/* 콘텐츠 카드 (디자이너 지정 형식) */
 export function ContentCard({
   content,
-  onMore,
   onClick,
-  dimmed = false,
-  showMore = true,
-  moreRef,
+  editing = false,
+  onEdit,
+  onDelete,
 }: ContentCardProps) {
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!onClick || (event.key !== 'Enter' && event.key !== ' ')) return;
-
-    event.preventDefault();
-    onClick();
-  };
-
-  const handleMoreClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    onMore(event);
-  };
-
-  const handleMoreKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-  };
-
   return (
-    <div
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
-      className={cn(
-        'flex h-27.5 items-center gap-3 overflow-hidden rounded-[18px] bg-card px-4 py-3.5',
-        onClick && 'cursor-pointer',
-        dimmed && 'opacity-40',
-      )}
-    >
-      <Thumbnail src={content.thumbnail} />
-      <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-        <p className="typo-body-md-bold truncate text-main">{content.title}</p>
-        <div className="flex flex-col gap-4">
-          <p className="typo-body-xs-regular line-clamp-2 text-sub700">{content.description}</p>
-          <p className="typo-body-xxs-regular text-faint">
-            {content.photoCount > 0
-              ? `사진 ${content.photoCount} / 20`
-              : '아직 추가된 사진이 없어요.'}
-          </p>
+    <div className="flex items-center border-b border-primary">
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={`${content.title}, 사진 ${content.photoCount}개 보기`}
+        className="group flex min-w-0 flex-1 items-center gap-4 rounded-12 py-4 text-left transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+      >
+        {content.thumbnail ? (
+          <OptimizedImage
+            src={content.thumbnail}
+            displayWidth={96}
+            alt=""
+            skeleton
+            frameClassName="size-24 shrink-0 rounded-12"
+            className="transition-transform duration-base ease-standard group-hover:scale-103"
+          />
+        ) : (
+          <span className="grid size-24 shrink-0 place-items-center rounded-12 bg-secondary">
+            <img src={SectionPhotoIcon} alt="" />
+          </span>
+        )}
+        <span className="flex h-24 min-w-0 flex-1 flex-col justify-between text-primary">
+          <span className="flex min-w-0 flex-col gap-1">
+            <span className="typography-body-xl-semibold truncate">{content.title}</span>
+            {content.description && (
+              <span className="typography-body-md-medium line-clamp-2">{content.description}</span>
+            )}
+          </span>
+          <span className="typography-body-md-medium text-secondary">
+            사진 {content.photoCount}/20
+          </span>
+        </span>
+        {!editing && (
+          <span className="grid size-5 shrink-0 place-items-center">
+            <img
+              src={SectionChevronIcon}
+              alt=""
+              className="transition-transform duration-fast ease-standard group-hover:translate-x-0.5"
+            />
+          </span>
+        )}
+      </button>
+      {editing && (
+        <div className="ml-1 flex shrink-0 items-center">
+          {onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              aria-label={`${content.title} 섹션 삭제`}
+              className="grid size-11 place-items-center rounded-12 transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+            >
+              <img src={SectionTrashIcon} alt="" />
+            </button>
+          )}
+          {onEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              aria-label={`${content.title} 섹션 정보 수정`}
+              className="grid size-11 place-items-center rounded-12 text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+            >
+              <Pencil aria-hidden="true" className="size-5" strokeWidth={1.5} />
+            </button>
+          )}
         </div>
-      </div>
-      {showMore && (
-        <button
-          ref={moreRef}
-          type="button"
-          onClick={handleMoreClick}
-          onKeyDown={handleMoreKeyDown}
-          aria-label={`${content.title} 더보기`}
-          className="self-start p-1"
-        >
-          <MoreHorizontal className="size-5 text-hint" />
-        </button>
       )}
     </div>
   );
