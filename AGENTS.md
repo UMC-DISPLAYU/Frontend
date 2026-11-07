@@ -5,13 +5,14 @@
 
 ## 프로젝트 맥락
 
-- React 18 + TypeScript + Vite 기반 **모바일 웹** 프론트엔드다. 패키지 매니저는 `pnpm`.
+- React 18 + TypeScript + Vite 기반 **반응형 웹**(모바일 · 태블릿 · 데스크톱) 프론트엔드다. 패키지 매니저는 `pnpm`.
 - 라우팅: `react-router-dom` v7, 라우트 정의는 `src/Router.tsx`.
 - 스타일: Tailwind CSS v4. 클래스 조합은 `cn()`(`src/utils/cn.ts`)을 사용한다. 토큰 규칙은 아래 "스타일 (디자인 토큰)"을 따른다.
 - import 경로는 `@/` 별칭(`src/*`)을 사용한다.
 - 팀 협업 규칙(커밋·브랜치·네이밍·export)은 `CONVENTION.md`를 따른다. commitlint, husky, ESLint가 강제하므로 우회하지 않는다.
 - 팀 코드 리뷰 기준은 `.coderabbit.yaml`의 `path_instructions`에 있다. 대부분 이 파일과 같은 내용이고, React 리뷰 관점(의존성 배열, cleanup, key, race condition 등)이 필요할 때 참고한다.
 - 권한 매트릭스(리소스 × 액션 × 역할)는 `docs/README.md`(GitBook)에 있다.
+- 반응형 · 인터랙션 정책(브레이크포인트, 컨테이너, safe area, 터치 영역, 모션, 오버레이 등)은 `docs/ui-policy.md`(GitBook)에 있다. UI를 만들거나 고칠 때 먼저 읽고, 문서에 없는 세부 사항은 [프로토타입](https://displayu-demo.vercel.app/)을 따른다.
 
 ### 환경 변수
 
@@ -103,6 +104,35 @@
 - `target="_blank"`에는 `rel="noopener noreferrer"`, `dangerouslySetInnerHTML`은 sanitize 후에만 사용한다.
 - 토큰·이메일·위치 등 민감 정보를 `console.log`에 남기지 않는다(`no-console` 경고 대상).
 - `src/styles/index.css`의 input `font-size: 16px` 규칙은 iOS Safari 입력 확대 방지용이다. 한 번 삭제했다가 되돌린 이력(#352 revert)이 있으니 지우지 않는다.
+
+### 반응형 · 인터랙션 공용 코드
+
+정책은 `docs/ui-policy.md`가 기준이다. 새 페이지는 아래 공용 코드를 쓰고, 같은 기능을 화면에서 따로 만들지 않는다.
+
+- 토큰(정의: `src/styles/tokens/semantic.css`, `theme.css`)
+  - 브레이크포인트: `tablet:`(768px~), `desktop:`(900px~). 768~899px는 데스크톱 레이아웃을 따르므로 레이아웃 전환은 `tablet:`에서 하고, `desktop:`은 여백·열 수 조정에만 쓴다. Tailwind 기본 `sm:`·`md:`·`lg:`는 새 코드에서 쓰지 않는다.
+  - 여백·폭: `px-gutter`(20 → 32 → 40px 자동), `max-w-form`(672px), `max-w-list`(1160px)
+  - safe area: 헤더 `pt-safe-area-top`, 하단 고정 요소 `pb-safe-area-bottom`. legacy `pb-safe-bottom`은 새 코드에서 쓰지 않는다.
+  - 냅바·키보드: `pb-navbar-clearance`(냅바에 가리지 않게), `bottom-keyboard-inset`(키보드 위에 붙이기)
+  - 오버레이 뒤 배경: `bg-dim`. 포커스 테두리: `focus-visible:outline-2 focus-visible:outline-focus`(어두운 배경 위에서는 `outline-focus-inverse`)
+  - 모션: `duration-fast`(200) · `duration-base`(300) · `duration-slow`(450), `ease-standard`. 애니메이션은 `animate-fade-*`, `animate-sheet-*`, `animate-modal-*`, `animate-toast-*`, `animate-rise`. 동작 줄이기는 `index.css` 전역 규칙이 처리하므로 컴포넌트에서 따로 막지 않는다.
+  - `theme.css`에 토큰을 추가하면 `src/utils/cn.ts`의 tailwind-merge 설정에도 추가한다(안 하면 `cn()` 덮어쓰기가 동작하지 않는다).
+- 페이지 틀: `PageContainer`(`@/components/layout`). 입력 화면(등록·수정)은 `variant="form"`, 목록·관리 화면은 `variant="list"`. 홈은 프로토타입을 따라 직접 만든다.
+- 스크롤: 새 페이지는 window 스크롤을 쓴다. 페이지 전체를 `h-dvh overflow-y-auto`로 감싸지 않는다(스크롤 복원·키보드 보정이 동작하지 않는다). 새 페이지 이동은 최상단, 뒤로가기는 위치 복원을 `RootLayout`의 `<ScrollRestoration />`이 처리한다.
+- 라우트 구조: `RootLayout`(모든 라우트 공통: 스크롤 복원, 토스트, 오버레이 기록 정리, 키보드 추적) 안에 `Layout`(냅바·푸터)이 있다. 냅바가 필요 없는 화면은 `Layout` 밖, `RootLayout` 안에 둔다.
+- 탭·필터·정렬을 URL에 둘 때는 `useReplaceSearchParams`(`@/hooks/useReplaceSearchParams`)를 쓴다. 뒤로가기 단계를 쌓지 않고 스크롤을 유지한다.
+- 하단 고정 버튼: 본문 흐름 안 sticky 버튼은 `BottomButton inPageContainer`, 화면 하단 고정 바는 `BottomFixedBar container="form" | "list"`. 둘 다 safe area와 iOS 키보드를 처리한다. 직접 만드는 하단 고정 요소는 `fixed bottom-keyboard-inset`을 쓰고 `useBottomObstruction(ref)`(`@/hooks/useVirtualKeyboard`)로 등록한다.
+- 오버레이: `Overlay`(`@/components/ui`). 768px 미만 바텀시트, 이상 가운데 모달로 자동 전환되고, 스크롤 잠금과 배경 탭·ESC·뒤로가기 닫기를 처리한다.
+  - `open` prop으로만 열고 닫는다. `{open && <Overlay … />}`처럼 조건부로 렌더링하지 않는다(닫힘 애니메이션이 사라진다).
+  - 오버레이 안에서 다른 페이지로 이동할 때는 `replace`로 이동한다.
+  - 오버레이는 열릴 때 같은 URL로 history 기록을 쌓아 `location.key`·`location.state`가 바뀐다. 상태 초기화는 `pathname` 기준으로 한다.
+  - 기존 `BottomSheet`·`ConfirmModal`·`AlertModal`은 legacy 화면용이다. 새 화면에서는 쓰지 않는다.
+- 로딩
+  - React Query `isPending`(아직 데이터 없음)일 때만 스켈레톤을 띄운다. `isFetching`(다시 불러오는 중)일 때는 기존 데이터를 그대로 둔다.
+  - 스켈레톤은 카드 단위로, 실제 목록과 같은 그리드 안에서 `SkeletonList` + `Skeleton`(`@/components/ui`)으로 같은 크기·모서리를 맞춘다.
+  - 이미지는 `OptimizedImage`에 `skeleton`과 `frameClassName`(비율·크기·모서리, 필수)을 넘긴다. 로딩 중에는 shimmer, 완료되면 fade-in으로 나타난다.
+- 토스트: `toast('저장했어요')`(`@/stores/toastStore`). 하단 가운데, 냅바 위에 3초 동안 뜬다. `Toaster`는 `RootLayout`에 붙어 있으므로 다시 마운트하지 않는다.
+- 목록 등장 애니메이션: 목록 아이템에 `className="animate-rise" style={staggerStyle(index)}`(`@/utils/stagger`)을 준다. 무한 스크롤은 페이지 안의 인덱스 또는 `startIndex`로 센다. 헤더·냅바·버튼·텍스트 같은 고정 UI에는 쓰지 않는다.
 
 ### 목(MSW)
 
