@@ -13,6 +13,8 @@ export interface ExhibitionItem {
   title: string;
   org: string;
   period: string;
+  startDate?: string;
+  endDate?: string;
   place: string;
   thumbnail: string;
   memo?: string;

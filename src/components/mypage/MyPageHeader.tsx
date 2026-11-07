@@ -147,7 +147,7 @@ export function MyPageHeader({
             )}
             <button
               type="button"
-              onClick={() => navigate('/my/exhibitions')}
+              onClick={() => navigate('/display-management')}
               className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
             >
               <span className="typo-body-sm-regular text-main">전시관리</span>

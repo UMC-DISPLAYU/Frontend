@@ -83,7 +83,7 @@ export function SettingPage() {
           <SettingRow
             title="내 전시 관리"
             desc="대표자 또는 팀원으로 참여 중인 전시를 관리해요."
-            onClick={() => navigate('/my/exhibitions')}
+            onClick={() => navigate('/display-management')}
           />
           <SettingRow
             title="초대 요청"

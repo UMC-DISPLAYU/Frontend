@@ -94,7 +94,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
     return (
       <ErrorView
         message="유효하지 않은 전시 접근입니다. (전시 ID 없음)"
-        onRetry={() => navigate('/my/exhibitions')}
+        onRetry={() => navigate('/display-management')}
         retryLabel="내 전시 목록으로 이동"
       />
     );

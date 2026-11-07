@@ -70,6 +70,10 @@ const EditArtistProfilePage = lazyPage(
   'EditArtistProfilePage',
 );
 const MyExhibitionsPage = lazyPage(() => import('./pages/MyExhibitionsPage'), 'MyExhibitionsPage');
+const DisplayManagementPage = lazyPage(
+  () => import('./pages/DisplayManagementPage'),
+  'DisplayManagementPage',
+);
 const ExhibitionRegister = lazyPage(
   () => import('./pages/exhibition-register'),
   'ExhibitionRegister',
@@ -249,6 +253,10 @@ export const router = createBrowserRouter([
               { path: 'artist-verification', element: <ArtistVerifyPage /> },
 
               // 내 전시 관리 목록
+              {
+                path: 'display-management',
+                element: <DisplayManagementPage />,
+              },
               {
                 path: 'my/exhibitions',
                 element: <MyExhibitionsPage />,

@@ -191,7 +191,7 @@ export function ArtistNameSetup() {
         { displayId, displayNickname },
         {
           onSuccess: () => {
-            navigate('/my/exhibitions');
+            navigate('/display-management');
           },
         },
       );

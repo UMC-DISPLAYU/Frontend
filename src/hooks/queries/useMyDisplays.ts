@@ -29,6 +29,8 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
    * department가 비어있으면 자연히 주최/소속명만 남습니다. */
   org: [display.school, display.department].filter(Boolean).join(' '),
   period: `${formatDate(display.startDate)} – ${formatDate(display.endDate)}`,
+  startDate: display.startDate,
+  endDate: display.endDate,
   place: display.placeName,
   thumbnail: display.postImageUrl,
   artistName: display.displayNickname ?? display.artistName,
