@@ -5,6 +5,10 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { AddArtworkPage } from '@/components/artwork-register/AddArtworkPage';
+import {
+  ArtworkEditAuthors,
+  ArtworkEditQna,
+} from '@/components/artwork-register/ArtworkEditParticipants';
 import type {
   AuthorOption,
   RegisterPerson,
@@ -18,9 +22,10 @@ import { RegisterArtworkPage } from '@/components/artwork-register/RegisterArtwo
 import { RegisterCollaboratorsPage } from '@/components/artwork-register/RegisterCollaboratorsPage';
 import { SelectArtistPage } from '@/components/artwork-register/SelectArtistPage';
 import { ErrorView } from '@/components/common/ErrorView';
-import { LoadingView } from '@/components/common/LoadingView';
+import { WorkHeader } from '@/components/exhibition-work';
 import { useFlowContext } from '@/components/guards/useFlowContext';
-import { useHideFooter } from '@/components/layout';
+import { PageContainer, useHideFooter } from '@/components/layout';
+import { Overlay, Skeleton } from '@/components/ui';
 import {
   ARTWORK_FIELD_MAP,
   DEFAULT_ARTWORK_IMAGE_HEIGHT,
@@ -146,6 +151,7 @@ function ArtworkRegisterPageContent() {
   );
   const [registerMode, setRegisterModeState] = useState<ArtworkRegisterMode>(draft.registerMode);
   const [activeSheet, setActiveSheet] = useState<RegisterSheet>(null);
+  const [isExitConfirmOpen, setExitConfirmOpen] = useState(false);
   const [selectedOtherAuthorId, setSelectedOtherAuthorIdState] = useState<string | null>(
     draft.selectedOtherAuthorId,
   );
@@ -608,9 +614,9 @@ function ArtworkRegisterPageContent() {
       setStep('basic', { replace: true });
       return;
     }
-    // When editing an existing artwork and we are on the basic step, navigate back to the artworks list (replace history)
+    // 수정 화면에서는 저장하지 않고 나갈지 먼저 확인합니다.
     if (isEditMode && step === 'basic') {
-      navigate(`/exhibition/${displayId}/artworks`, { replace: true });
+      setExitConfirmOpen(true);
       return;
     }
     // For other steps in edit or create flow, keep existing navigation logic
@@ -920,7 +926,20 @@ function ArtworkRegisterPageContent() {
         onRetry={() => void refetchArtworkDetail()}
       />
     ) : (
-      <LoadingView message="작품 정보를 불러오는 중..." />
+      <PageContainer variant="form" aria-busy="true" aria-label="작품 정보를 불러오는 중">
+        <WorkHeader title="작품 수정" onBack={flowBack} />
+        <div className="flex flex-col gap-6">
+          <Skeleton className="h-5 w-20 rounded-4" />
+          <Skeleton className="h-32 w-full rounded-12" />
+          <Skeleton className="mt-4 h-5 w-24 rounded-4" />
+          <div className="flex gap-2">
+            <Skeleton className="h-32 w-24 rounded-12" />
+            <Skeleton className="h-32 w-24 rounded-12" />
+          </div>
+          <Skeleton className="h-11 w-full rounded-8" />
+          <Skeleton className="h-32 w-full rounded-12" />
+        </div>
+      </PageContainer>
     );
   }
 
@@ -956,6 +975,34 @@ function ArtworkRegisterPageContent() {
       {step === 'basic' && (
         <RegisterArtworkPage
           isEditMode={isEditMode}
+          headerContent={
+            isEditMode ? <WorkHeader title="작품 수정" onBack={handleBack} /> : undefined
+          }
+          authorContent={
+            isEditMode ? (
+              <ArtworkEditAuthors
+                author={displayAuthor}
+                collaborators={collaborators}
+                onAdd={() => setActiveSheet('collaboratorMethod')}
+                onRemove={(person) => {
+                  setCollaborators((prev) => prev.filter((item) => item.id !== person.id));
+                  setQnaAssigneeIds((prev) => prev.filter((id) => id !== person.id));
+                }}
+              />
+            ) : undefined
+          }
+          qnaContent={
+            isEditMode ? (
+              <ArtworkEditQna
+                options={qnaAssigneeOptions}
+                selectedIds={effectiveQnaAssigneeIds}
+                ownerId={ownerQnaAssigneeId}
+                onToggle={toggleQnaAssignee}
+              />
+            ) : undefined
+          }
+          submitError={submitError}
+          isSubmitting={isSubmitting}
           title={title}
           description={description}
           field={field}
@@ -981,7 +1028,7 @@ function ArtworkRegisterPageContent() {
           onRemoveArtworkImage={artworkUpload.removeImage}
           onAddProcessImages={processUpload.addImages}
           onRemoveProcessImage={processUpload.removeImage}
-          onNext={handleBasicNext}
+          onNext={isEditMode ? handleSubmit : handleBasicNext}
         />
       )}
       {step === 'participants' && (
@@ -1006,6 +1053,7 @@ function ArtworkRegisterPageContent() {
         />
       )}
       <ArtworkRegisterSheets
+        isEditMode={isEditMode}
         activeSheet={activeSheet}
         collaboratorOptions={collaboratorOptions}
         directCollaboratorName={directCollaboratorName}
@@ -1017,6 +1065,36 @@ function ArtworkRegisterPageContent() {
         onAddTeamCollaborator={addTeamCollaborator}
         onChangeDirectCollaboratorName={setDirectCollaboratorName}
         onSubmitDirectCollaborator={submitDirectCollaborator}
+      />
+      <Overlay
+        open={isExitConfirmOpen}
+        onClose={() => setExitConfirmOpen(false)}
+        title="작품 수정을 나갈까요?"
+        description="수정한 내용은 저장되지 않아요"
+        size="sm"
+        role="alertdialog"
+        showCloseButton={false}
+        footer={
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setExitConfirmOpen(false)}
+              className="typography-body-lg-semibold min-h-11 rounded-12 bg-secondary px-3 text-primary transition duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+            >
+              계속 수정
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setExitConfirmOpen(false);
+                navigate(`/exhibition/${displayId}/artworks`, { replace: true });
+              }}
+              className="typography-body-lg-semibold min-h-11 rounded-12 bg-interactive-primary px-3 text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+            >
+              나가기
+            </button>
+          </div>
+        }
       />
     </>
   );

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { UseFormRegisterReturn } from 'react-hook-form';
 
 import { ImageUploader } from '@/components/common';
@@ -9,10 +10,11 @@ import type { ImageUploadItem } from '@/hooks/useImageUpload';
 import { sanitizeArtworkRegisterYearInput } from '@/pages/artwork-register/artworkRegister.schema';
 import { cn } from '@/utils/cn';
 
+import { ArtworkEditForm } from './ArtworkEditForm';
 import { UnderlineTextarea } from './ArtworkRegisterControls';
 import { ArtworkRegisterLayout } from './ArtworkRegisterLayout';
 
-interface RegisterArtworkPageProps {
+export interface RegisterArtworkPageProps {
   isEditMode: boolean;
   title: string;
   description: string;
@@ -40,37 +42,45 @@ interface RegisterArtworkPageProps {
   onAddProcessImages: (files: FileList | File[]) => void;
   onRemoveProcessImage: (id: string) => void;
   onNext: () => void;
+  headerContent?: ReactNode;
+  authorContent?: ReactNode;
+  qnaContent?: ReactNode;
+  submitError?: string | null;
+  isSubmitting?: boolean;
 }
 
-function RegisterArtworkPage({
-  isEditMode,
-  title,
-  description,
-  field,
-  year,
-  medium,
-  size,
-  point,
-  artworkImages,
-  processImages,
-  canProceed,
-  titleError,
-  yearError,
-  mediumError,
-  yearInputProps,
-  onBack,
-  onChangeTitle,
-  onChangeDescription,
-  onChangeField,
-  onChangeMedium,
-  onChangeSize,
-  onChangePoint,
-  onAddArtworkImages,
-  onRemoveArtworkImage,
-  onAddProcessImages,
-  onRemoveProcessImage,
-  onNext,
-}: RegisterArtworkPageProps) {
+function RegisterArtworkPage(props: RegisterArtworkPageProps) {
+  if (props.isEditMode) return <ArtworkEditForm {...props} />;
+
+  const {
+    isEditMode,
+    title,
+    description,
+    field,
+    year,
+    medium,
+    size,
+    point,
+    artworkImages,
+    processImages,
+    canProceed,
+    titleError,
+    yearError,
+    mediumError,
+    yearInputProps,
+    onBack,
+    onChangeTitle,
+    onChangeDescription,
+    onChangeField,
+    onChangeMedium,
+    onChangeSize,
+    onChangePoint,
+    onAddArtworkImages,
+    onRemoveArtworkImage,
+    onAddProcessImages,
+    onRemoveProcessImage,
+    onNext,
+  } = props;
   return (
     <ArtworkRegisterLayout
       title={isEditMode ? '작품 정보 수정' : '전시작 등록'}
