@@ -2,7 +2,7 @@ import { ChevronLeft } from 'lucide-react';
 
 export function OnboardingHeader({ onBack }: { onBack: () => void }) {
   return (
-    <div className="shrink-0 px-5 pt-3.5">
+    <div className="shrink-0 pt-3.5">
       <button
         type="button"
         onClick={onBack}

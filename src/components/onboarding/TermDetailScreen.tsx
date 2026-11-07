@@ -128,7 +128,7 @@ export function TermDetailScreen({
 }) {
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-[#e5e7eb] bg-[#ffffff] px-4">
+      <header className="sticky top-0 z-10 -mx-gutter flex h-14 shrink-0 items-center gap-2 border-b border-[#e5e7eb] bg-[#ffffff] px-4">
         <button
           type="button"
           onClick={onBack}
@@ -143,7 +143,8 @@ export function TermDetailScreen({
       </header>
 
       {agreement ? (
-        <main className="min-h-0 flex-1 overflow-y-auto bg-[#ffffff] px-6 pt-5 pb-8">
+        /* 피그마 본문 좌우 여백 24px = px-gutter(20px) + px-1 */
+        <main className="flex-1 bg-[#ffffff] px-1 pt-5 pb-8">
           <p className="text-[11.5px] leading-[17.25px] font-normal text-[#8a94a6]">
             시행일 {formatEffectiveDate(agreement.effectiveDate)} · 버전 {agreement.version}
           </p>

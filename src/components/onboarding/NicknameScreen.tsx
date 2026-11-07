@@ -81,7 +81,7 @@ export function NicknameScreen({
     <>
       <OnboardingHeader onBack={onBack} />
 
-      <main className="min-h-0 flex-1 overflow-y-auto px-5 pt-10 pb-6">
+      <main className="flex-1 pt-10 pb-6">
         <h1 className="typography-title-md text-main">
           디유에서 사용할
           <br />
@@ -163,7 +163,7 @@ export function NicknameScreen({
         </ul>
       </main>
 
-      <div className="shrink-0 px-5 pb-8">
+      <div className="shrink-0 pb-3">
         <InfoNotice>닉네임은 이후 마이페이지에서 변경할 수 있어요.</InfoNotice>
         {submitError ? (
           <p

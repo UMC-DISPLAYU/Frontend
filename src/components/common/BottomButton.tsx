@@ -7,6 +7,8 @@ interface BottomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   children: React.ReactNode;
   /** PageContainer 안에 둘 때 true. 좌우 여백은 PageContainer 의 px-gutter 를 그대로 쓴다 */
   inPageContainer?: boolean;
+  /** 버튼을 감싸는 하단 영역의 class. 페이지 배경이 bg-page 가 아닐 때 배경을 맞춘다 */
+  wrapperClassName?: string;
 }
 
 export function BottomButton({
@@ -14,6 +16,7 @@ export function BottomButton({
   className,
   type = 'button',
   inPageContainer = false,
+  wrapperClassName,
   ...props
 }: BottomButtonProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -27,6 +30,7 @@ export function BottomButton({
       className={cn(
         'sticky bottom-keyboard-inset z-10 mt-auto shrink-0 bg-page',
         inPageContainer && 'pt-5',
+        wrapperClassName,
       )}
     >
       <div

@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
+import { PageContainer } from '@/components/layout';
 import {
   NicknameScreen,
   type PolicyTermKey,
@@ -25,8 +26,14 @@ export function NewOnboardingPage() {
   const [terms, setTerms] = useState<TermState>(INITIAL_TERMS);
   const signup = useOnboardingSignup(terms);
 
+  /* 단계는 같은 URL 안에서 바뀌어 ScrollRestoration 이 처리하지 않으므로 직접 맨 위로 올린다 */
+  const goTo = (next: Step) => {
+    setStep(next);
+    window.scrollTo(0, 0);
+  };
+
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-primary-white">
+    <PageContainer variant="form" className="bg-primary-white">
       {step === 'terms' ? (
         <TermsAgreementScreen
           terms={terms}
@@ -34,9 +41,9 @@ export function NewOnboardingPage() {
           onBack={() => navigate('/login')}
           onOpenDetail={(key) => {
             setSelectedTerm(key);
-            setStep('termDetail');
+            goTo('termDetail');
           }}
-          onNext={() => setStep('nickname')}
+          onNext={() => goTo('nickname')}
         />
       ) : null}
 
@@ -46,7 +53,7 @@ export function NewOnboardingPage() {
           agreement={findAgreement(signup.agreements, selectedTerm)}
           isLoading={signup.isAgreementsLoading}
           onRetry={() => void signup.refetchAgreements()}
-          onBack={() => setStep('terms')}
+          onBack={() => goTo('terms')}
         />
       ) : null}
 
@@ -54,9 +61,9 @@ export function NewOnboardingPage() {
         <NicknameScreen
           isSubmitting={signup.isSubmitting}
           submitError={signup.error}
-          onBack={() => setStep('terms')}
+          onBack={() => goTo('terms')}
           onSubmit={async (nickname) => {
-            if (await signup.submit(nickname)) setStep('done');
+            if (await signup.submit(nickname)) goTo('done');
           }}
         />
       ) : null}
@@ -64,6 +71,6 @@ export function NewOnboardingPage() {
       {step === 'done' ? (
         <SignupCompleteScreen onNext={() => navigate('/home', { replace: true })} />
       ) : null}
-    </div>
+    </PageContainer>
   );
 }

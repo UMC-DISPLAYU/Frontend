@@ -87,7 +87,7 @@ export function TermsAgreementScreen({
     <>
       <OnboardingHeader onBack={onBack} />
 
-      <main className="min-h-0 flex-1 overflow-y-auto px-5 pt-10 pb-6">
+      <main className="flex-1 pt-10 pb-6">
         <h1 className="typography-title-md text-main">
           서비스 이용을 위해
           <br />

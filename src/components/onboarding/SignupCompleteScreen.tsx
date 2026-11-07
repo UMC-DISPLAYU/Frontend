@@ -6,7 +6,7 @@ import { OnboardingBottomButton } from './OnboardingBottomButton';
 export function SignupCompleteScreen({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <main className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 px-5">
+      <main className="flex flex-1 flex-col items-center justify-center gap-2.5">
         <div className="flex size-19 items-center justify-center rounded-full bg-box">
           <div className="flex size-12 items-center justify-center rounded-full bg-[#0d0d0d]">
             <Check className="size-6 text-[#ffffff]" strokeWidth={2.6} />
@@ -17,7 +17,7 @@ export function SignupCompleteScreen({ onNext }: { onNext: () => void }) {
         </h1>
       </main>
 
-      <div className="shrink-0 px-5 pb-8">
+      <div className="shrink-0 pb-3">
         <InfoNotice>전시 등록과 작품 등록은 대학생 인증 후 이용할 수 있어요.</InfoNotice>
       </div>
 
