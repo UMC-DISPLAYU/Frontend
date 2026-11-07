@@ -27,6 +27,8 @@ export function ContentDeleteConfirmDialog({
       description="섹션에 등록된 사진도 함께 삭제돼요"
       role="alertdialog"
       size="sm"
+      presentation="modal"
+      className="max-w-80.5"
       showCloseButton={false}
       initialFocusRef={cancelButtonRef}
       footer={
