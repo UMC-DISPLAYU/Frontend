@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ManageScreen, OrderScreen, WorkActionSheet } from '@/components/artworks-manage';
-import { BottomFixedBar } from '@/components/common';
+import { ManageScreen, OrderScreen } from '@/components/artworks-manage';
+import { ErrorView, LoadingView } from '@/components/common';
+import { ExhibitionWorkLayout } from '@/components/exhibition-work';
 import { useFlowContext } from '@/components/guards/useFlowContext';
-import { ConfirmModal, ExhibitionHeader } from '@/components/ui';
+import { Overlay, Skeleton, SkeletonList } from '@/components/ui';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
@@ -14,11 +15,12 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
-// import { useArtworkPolicy } from '@/hooks/usePolicy';
-// import type { ArtworkPolicyResource } from '@/policies/util';
+import { useArtworkPolicy } from '@/hooks/usePolicy';
 import type { Work } from '@/types/artworkManage';
+import { getErrorMessage } from '@/utils/error';
+import { hasPermission } from '@/utils/hasPermission';
 
-export function ArtworksManagePage() {
+export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const flowBack = useFlowBack();
   const { startFlow } = useFlowContext();
@@ -26,21 +28,26 @@ export function ArtworksManagePage() {
   const [searchParams] = useSearchParams();
   const { data: userMe } = useUserMe();
   const userId = userMe?.id;
-
-  // 중첩 라우트의 displayId를 최우선으로 사용하고 없으면 쿼리 스트링에서 가져옵니다.
   const displayId = Number(paramDisplayId ?? searchParams.get('displayId') ?? 0);
 
-  const [screen, setScreen] = useState<'manage' | 'order'>('manage');
-  const [sheetWork, setSheetWork] = useState<Work | null>(null);
+  const [screen, setScreen] = useState<'manage' | 'order'>(
+    !embedded && searchParams.get('mode') === 'order' ? 'order' : 'manage',
+  );
+  const [deleting, setDeleting] = useState<Work | null>(null);
   const [confirming, setConfirming] = useState(false);
-  // 순서 편집 중에는 사용자가 끌어놓은 순서를 우선 보여줍니다.
   const [orderedWorks, setOrderedWorks] = useState<Work[] | null>(null);
 
-  const { data } = useDisplayArtworks(displayId);
-  const { data: display } = useDisplayDetail(displayId);
+  const { data, isPending, isError, refetch } = useDisplayArtworks(displayId);
+  const {
+    data: display,
+    isPending: displayPending,
+    isError: displayError,
+  } = useDisplayDetail(displayId);
   const deleteArtworkMutation = useDeleteArtwork(displayId);
   const updateOrder = useUpdateArtworkOrder(displayId);
-
+  const artworkPolicy = useArtworkPolicy(display);
+  const canReorder = hasPermission(artworkPolicy, 'reorder');
+  const isOrderScreen = screen === 'order' && canReorder;
   const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
 
   const fetchedWorks = useMemo<Work[]>(
@@ -59,116 +66,161 @@ export function ArtworksManagePage() {
       })),
     [data],
   );
-
   const works = orderedWorks ?? fetchedWorks;
-  // const sheetArtworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(sheetWork));
-  const canEditSheetArtwork = true;
-  const canDeleteSheetArtwork = true;
-
-  const canCreateArtwork = true;
-  const shouldShowBottomBar = screen === 'manage' ? canCreateArtwork : true;
 
   const handleDelete = () => {
-    if (sheetWork) {
-      deleteArtworkMutation.mutate(sheetWork.id, {
-        onSuccess: () => setOrderedWorks(null),
-      });
+    if (!deleting || deleteArtworkMutation.isPending) return;
+    deleteArtworkMutation.mutate(deleting.id, {
+      onSuccess: () => {
+        setOrderedWorks(null);
+        setConfirming(false);
+      },
+    });
+  };
+
+  const saveOrder = (onSuccess: () => void) => {
+    if (updateOrder.isPending || !canReorder) return;
+    if (!orderedWorks) {
+      onSuccess();
+      return;
     }
-    setConfirming(false);
-    setSheetWork(null);
+    updateOrder.mutate(
+      orderedWorks.map((work) => work.id),
+      {
+        onSuccess: () => {
+          setOrderedWorks(null);
+          onSuccess();
+        },
+      },
+    );
   };
 
-  const handleReorder = (next: Work[]) => {
-    setOrderedWorks(next);
-  };
-
-  const handleOrderBack = () => {
-    // 편집한 순서를 저장하고 목록 화면으로 돌아갑니다.
-    if (orderedWorks) {
-      updateOrder.mutate(
-        orderedWorks.map((work) => work.id),
-        { onSuccess: () => setOrderedWorks(null) },
-      );
-    }
-    setScreen('manage');
-  };
-
-  const handleBack = () => {
-    flowBack();
-  };
+  const handleOrderDone = () => saveOrder(() => setScreen('manage'));
 
   const handleAddArtwork = () => {
     startFlow('artwork-register', window.history.state?.idx ?? null);
-    if (isOwner) {
-      navigate(`/exhibition/${displayId}/artworks/add`);
-    } else {
-      navigate(`/exhibition/${displayId}/artworks/add/basic`);
-    }
+    navigate(`/exhibition/${displayId}/artworks/add${isOwner ? '' : '/basic'}`);
   };
 
-  return (
-    <div className="mx-auto min-h-dvh w-full max-w-md bg-page">
-      <ExhibitionHeader
-        title={screen === 'manage' ? '전시작 관리' : '순서 편집'}
-        onBack={screen === 'manage' ? handleBack : handleOrderBack}
-      />
+  if (!embedded && displayPending) return <LoadingView message="전시 정보를 불러오는 중..." />;
+  if (!embedded && (displayError || !display))
+    return <ErrorView message="전시 정보를 불러올 수 없습니다." onRetry={flowBack} />;
 
-      <main className={shouldShowBottomBar ? 'pb-bottom-bar-offset' : undefined}>
-        {screen === 'manage' ? (
-          <ManageScreen
+  const panel = (
+    <>
+      {isPending ? (
+        <div
+          aria-label="전시작을 불러오는 중"
+          className="mt-3 grid grid-cols-2 gap-3 tablet:grid-cols-3 desktop:grid-cols-4"
+        >
+          <SkeletonList count={6}>
+            {() => (
+              <div className="rounded-12 bg-secondary p-1.75">
+                <Skeleton className="aspect-3/4 rounded-12" />
+                <Skeleton className="mt-2 h-10 rounded-8" />
+              </div>
+            )}
+          </SkeletonList>
+        </div>
+      ) : isError ? (
+        <ErrorView message="전시작을 불러오지 못했어요." onRetry={() => void refetch()} />
+      ) : !isOrderScreen ? (
+        <ManageScreen
+          works={works}
+          display={display}
+          userId={userId}
+          onAdd={handleAddArtwork}
+          onEdit={(work) => navigate(`/exhibition/${displayId}/artworks/${work.id}/edit`)}
+          onDelete={(work) => {
+            deleteArtworkMutation.reset();
+            setDeleting(work);
+            setConfirming(true);
+          }}
+          onEditOrder={() => {
+            if (embedded) {
+              navigate(`/exhibition/${displayId}/artworks?mode=order`);
+              return;
+            }
+            updateOrder.reset();
+            setScreen('order');
+          }}
+        />
+      ) : (
+        <>
+          {updateOrder.error && (
+            <p role="alert" className="typography-body-md-medium my-3 text-error">
+              {getErrorMessage(updateOrder.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
+            </p>
+          )}
+          <OrderScreen
             works={works}
-            display={display}
-            onOpenSheet={setSheetWork}
-            onEditOrder={() => setScreen('order')}
+            onReorder={setOrderedWorks}
+            onDone={handleOrderDone}
+            disabled={updateOrder.isPending}
           />
-        ) : (
-          <OrderScreen works={works} onReorder={handleReorder} />
+        </>
+      )}
+      <Overlay
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title="작품을 삭제할까요?"
+        description="선택한 작품이 전시에서 사라져요"
+        role="alertdialog"
+        size="sm"
+        showCloseButton={false}
+        footer={
+          <div className="flex gap-2 pb-5 tablet:pb-0">
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              disabled={deleteArtworkMutation.isPending}
+              className="typography-body-lg-semibold min-h-11 flex-1 rounded-12 bg-secondary text-primary focus-visible:outline-2 focus-visible:outline-focus active:scale-99 disabled:opacity-50"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleteArtworkMutation.isPending}
+              className="typography-body-lg-semibold min-h-11 flex-1 rounded-12 bg-notice text-interactive-inverse focus-visible:outline-2 focus-visible:outline-focus active:scale-99 disabled:opacity-50"
+            >
+              {deleteArtworkMutation.isPending ? '삭제 중' : '삭제하기'}
+            </button>
+          </div>
+        }
+      >
+        <div className="rounded-12 bg-error-subtle p-3 text-error">
+          <p className="typography-body-lg-semibold">삭제 주의</p>
+          <p className="typography-body-md-medium mt-1">삭제한 작품은 복구할 수 없어요.</p>
+        </div>
+        {deleteArtworkMutation.error && (
+          <p role="alert" className="typography-body-md-medium mt-3 text-error">
+            {getErrorMessage(
+              deleteArtworkMutation.error,
+              '작품을 삭제하지 못했어요. 다시 시도해주세요.',
+            )}
+          </p>
         )}
-      </main>
+      </Overlay>
+    </>
+  );
 
-      {shouldShowBottomBar && screen === 'manage' ? (
-        <BottomFixedBar>
-          <button
-            type="button"
-            onClick={handleAddArtwork}
-            className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
-          >
-            전시작 추가
-          </button>
-        </BottomFixedBar>
-      ) : shouldShowBottomBar ? (
-        <BottomFixedBar>
-          <button
-            type="button"
-            onClick={handleOrderBack}
-            className="w-full h-11 py-3 bg-dark rounded-xl typo-body-sm-bold text-card inline-flex justify-center items-center gap-1.5"
-          >
-            순서 저장하기
-          </button>
-        </BottomFixedBar>
-      ) : null}
-
-      {sheetWork && (canEditSheetArtwork || canDeleteSheetArtwork) && (
-        <WorkActionSheet
-          work={sheetWork}
-          canEdit={canEditSheetArtwork}
-          canDelete={canDeleteSheetArtwork}
-          onClose={() => setSheetWork(null)}
-          onEdit={() => navigate(`/exhibition/${displayId}/artworks/${sheetWork.id}/edit`)}
-          onDelete={() => setConfirming(true)}
-        />
-      )}
-
-      {confirming && (
-        <ConfirmModal
-          title="작품을 삭제할까요?"
-          message={'삭제한 작품은 복구할 수 없어요.\n정말 삭제하시겠어요?'}
-          confirmLabel="삭제하기"
-          layout="vertical"
-          onCancel={() => setConfirming(false)}
-          onConfirm={handleDelete}
-        />
-      )}
-    </div>
+  return embedded ? (
+    panel
+  ) : (
+    <ExhibitionWorkLayout
+      display={display!}
+      activeTab="artworks"
+      onBack={isOrderScreen ? handleOrderDone : flowBack}
+      onTabChange={(tab) => {
+        if (tab === 'artworks') return;
+        const changeTab = () =>
+          navigate(`/exhibition/${displayId}/work?tab=${tab}`, { replace: true });
+        if (isOrderScreen) saveOrder(changeTab);
+        else changeTab();
+      }}
+    >
+      {panel}
+    </ExhibitionWorkLayout>
   );
 }

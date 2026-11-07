@@ -1,23 +1,28 @@
-import { MoreHorizontal } from 'lucide-react';
-
 import type { DisplayDetailDto } from '@/api/dto';
+import AddArtworkIcon from '@/assets/exhibition-work/AddArtworkIcon.svg';
+import OrderIcon from '@/assets/exhibition-work/OrderIcon.svg';
+import PlusIcon from '@/assets/exhibition-work/PlusIcon.svg';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
 import type { ArtworkPolicyResource } from '@/policies/util';
 import type { Work } from '@/types/artworkManage';
 import { hasPermission } from '@/utils/hasPermission';
+import { staggerStyle } from '@/utils/stagger';
 
-import { Thumbnail } from './Common';
+import { WorkActionSheet } from './WorkActionSheet';
+import { WorkCard } from './WorkCard';
 
 interface ManageScreenProps {
   works: Work[];
   display?: DisplayDetailDto;
-  onOpenSheet: (work: Work) => void;
+  userId?: number;
+  onEdit: (work: Work) => void;
+  onDelete: (work: Work) => void;
   onEditOrder: () => void;
+  onAdd: () => void;
 }
 
 function getArtworkPolicyResource(work: Work): ArtworkPolicyResource | undefined {
   if (work.artistUserId === undefined) return undefined;
-
   return {
     artistUserId: work.artistUserId,
     coAuthors: work.coAuthorUserIds?.map((userId) => ({ userId, name: '' })),
@@ -27,67 +32,105 @@ function getArtworkPolicyResource(work: Work): ArtworkPolicyResource | undefined
 function WorkRow({
   work,
   display,
-  onOpenSheet,
-}: {
-  work: Work;
-  display?: DisplayDetailDto;
-  onOpenSheet: (work: Work) => void;
-}) {
-  const artworkPolicy = useArtworkPolicy(display, getArtworkPolicyResource(work));
-  const canShowMenu =
-    hasPermission(artworkPolicy, 'edit') || hasPermission(artworkPolicy, 'delete');
+  userId,
+  onEdit,
+  onDelete,
+}: Pick<ManageScreenProps, 'display' | 'userId' | 'onEdit' | 'onDelete'> & { work: Work }) {
+  const policy = useArtworkPolicy(display, getArtworkPolicyResource(work));
+  const canEdit = hasPermission(policy, 'edit');
+  const canDelete = hasPermission(policy, 'delete');
+  const isMine =
+    userId !== undefined &&
+    (work.artistUserId === userId || Boolean(work.coAuthorUserIds?.includes(userId)));
 
   return (
-    <li className="flex h-32 items-start justify-between gap-3 rounded-[18px] bg-card px-4 py-3.5">
-      <div className="flex min-w-0 items-center gap-3">
-        <Thumbnail src={work.thumbnail} className="w-18 h-25" />
-        <div className="flex min-w-0 h-25 flex-col justify-between py-0.5">
-          <div className="flex flex-col gap-1">
-            <p className="typo-body-md-bold truncate text-main">{work.title}</p>
-            <p className="typo-body-xs-regular text-sub700">{work.artist}</p>
-          </div>
-          <p className="typo-body-xxs-regular text-faint">등록자 {work.owner}</p>
-        </div>
-      </div>
-
-      {canShowMenu && (
-        <button
-          type="button"
-          onClick={() => onOpenSheet(work)}
-          aria-label={`${work.title} 작품 관리`}
-          className="p-1"
-        >
-          <MoreHorizontal className="size-5 text-hint" />
-        </button>
+    <WorkCard work={work} isMine={isMine}>
+      {(canEdit || canDelete) && (
+        <WorkActionSheet
+          work={work}
+          canEdit={canEdit}
+          canDelete={canDelete}
+          onEdit={() => onEdit(work)}
+          onDelete={() => onDelete(work)}
+        />
       )}
-    </li>
+    </WorkCard>
   );
 }
 
-export function ManageScreen({ works, display, onOpenSheet, onEditOrder }: ManageScreenProps) {
-  const artworkPolicy = useArtworkPolicy(display);
-  const canReorderArtwork = hasPermission(artworkPolicy, 'reorder');
+export function ManageScreen({
+  works,
+  display,
+  userId,
+  onEdit,
+  onDelete,
+  onEditOrder,
+  onAdd,
+}: ManageScreenProps) {
+  const policy = useArtworkPolicy(display);
+  const canReorder = hasPermission(policy, 'reorder');
+  const canCreate = hasPermission(policy, 'create');
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex items-end justify-between px-5 pt-5">
-        <p className="typo-body-md-bold text-main">전체 작품 {works.length}개</p>
-        {canReorderArtwork && (
+    <>
+      {works.length > 0 && (
+        <div className="flex min-h-11 items-center justify-between">
+          <p className="typography-body-lg-semibold text-primary">전시작 {works.length}</p>
+          {canReorder && works.length > 1 && (
+            <button
+              type="button"
+              onClick={onEditOrder}
+              className="typography-body-md-medium -mr-2 flex min-h-11 items-center gap-1 rounded-8 px-2 text-secondary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
+            >
+              <img src={OrderIcon} alt="" />
+              순서 편집
+            </button>
+          )}
+        </div>
+      )}
+      {works.length === 0 ? (
+        canCreate ? (
           <button
             type="button"
-            onClick={onEditOrder}
-            className="typo-body-xs-regular text-main underline"
+            onClick={onAdd}
+            className="mt-3 flex min-h-55 w-full flex-col items-center justify-center gap-1 rounded-12 bg-secondary text-primary transition duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
           >
-            순서 편집
+            <img src={AddArtworkIcon} alt="" className="mb-2" />
+            <span className="typography-body-lg-semibold">전시작 추가</span>
+            <span className="typography-body-md-medium text-secondary">작품을 등록해 주세요</span>
           </button>
-        )}
-      </div>
-
-      <ul className="flex flex-col gap-3 overflow-y-auto px-5 pt-5">
-        {works.map((work) => (
-          <WorkRow key={work.id} work={work} display={display} onOpenSheet={onOpenSheet} />
-        ))}
-      </ul>
-    </div>
+        ) : (
+          <p className="typography-body-lg-medium mt-3 flex min-h-55 items-center justify-center rounded-12 bg-secondary text-secondary">
+            등록된 전시작이 없어요
+          </p>
+        )
+      ) : (
+        <>
+          {canCreate && (
+            <button
+              type="button"
+              onClick={onAdd}
+              className="typography-body-lg-semibold mb-3 flex min-h-11 w-full items-center justify-center gap-1 rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+            >
+              <img src={PlusIcon} alt="" />
+              전시작 추가
+            </button>
+          )}
+          <ul className="grid grid-cols-2 gap-3 tablet:grid-cols-3 desktop:grid-cols-4">
+            {works.map((work, index) => (
+              <li key={work.id} className="min-w-0 animate-rise" style={staggerStyle(index)}>
+                <WorkRow
+                  work={work}
+                  display={display}
+                  userId={userId}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
   );
 }

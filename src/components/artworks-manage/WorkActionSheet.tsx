@@ -1,15 +1,12 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { useEffect, useId, useRef, useState } from 'react';
 
-import { BottomSheet } from '@/components/ui/BottomSheet';
+import MoreIcon from '@/assets/exhibition-work/MoreIcon.svg';
 import type { Work } from '@/types/artworkManage';
-
-import { Thumbnail } from './Common';
 
 interface WorkActionSheetProps {
   work: Work;
   canEdit: boolean;
   canDelete: boolean;
-  onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
@@ -18,60 +15,83 @@ export function WorkActionSheet({
   work,
   canEdit,
   canDelete,
-  onClose,
   onEdit,
   onDelete,
 }: WorkActionSheetProps) {
-  return (
-    <BottomSheet open={!!work} onClose={onClose} title="작품 관리">
-      <div className="px-5">
-        <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5">
-          <Thumbnail src={work.thumbnail} className="w-18 h-25" />
-          <div className="flex min-w-0 h-25 flex-col justify-between py-0.5">
-            <div className="flex flex-col gap-1">
-              <p className="typo-body-md-bold truncate text-main">{work.title}</p>
-              <p className="typo-body-xs-regular text-sub700">{work.artist}</p>
-            </div>
-            <p className="typo-body-xxs-regular text-faint">등록자 {work.owner}</p>
-          </div>
-        </div>
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
 
-        <div className="mt-3">
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setOpen(false);
+      triggerRef.current?.focus();
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute top-1.5 right-1.5"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+    >
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-label={`${work.title} 작품 관리`}
+        aria-expanded={open}
+        aria-controls={menuId}
+        onClick={() => setOpen(!open)}
+        className="flex size-11 items-center justify-center rounded-circle transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-focus-inverse active:scale-99"
+      >
+        <img src={MoreIcon} alt="" />
+      </button>
+      {open && (
+        <div
+          id={menuId}
+          aria-label="작품 관리"
+          className="absolute right-0 z-20 w-36 rounded-12 border border-primary bg-primary-white p-1 shadow-lg"
+        >
           {canEdit && (
             <button
               type="button"
-              onClick={onEdit}
-              className="flex w-full items-center gap-4 px-2 py-4 text-left"
+              onClick={() => {
+                setOpen(false);
+                onEdit();
+              }}
+              className="typography-body-md-medium min-h-11 w-full rounded-8 px-3 text-left text-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-card">
-                <Pencil className="size-4 text-main" />
-              </span>
-              <span>
-                <span className="typo-body-sm-regular block text-main">작품 정보 수정</span>
-                <span className="typo-body-sm-regular block text-faint">
-                  작품명, 설명, 작가 정보 수정
-                </span>
-              </span>
+              수정하기
             </button>
           )}
-
           {canDelete && (
             <button
               type="button"
-              onClick={onDelete}
-              className="flex w-full items-center gap-4 px-2 py-4 text-left"
+              onClick={() => {
+                setOpen(false);
+                onDelete();
+              }}
+              className="typography-body-md-medium min-h-11 w-full rounded-8 px-3 text-left text-error transition duration-fast ease-standard hover:bg-error-subtle focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-card">
-                <Trash2 className="size-4 text-error" />
-              </span>
-              <span>
-                <span className="typo-body-sm-regular block text-error">작품 삭제</span>
-                <span className="typo-body-sm-regular block text-faint">전시에서 작품 제거</span>
-              </span>
+              삭제하기
             </button>
           )}
         </div>
-      </div>
-    </BottomSheet>
+      )}
+    </div>
   );
 }
