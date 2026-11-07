@@ -7,6 +7,8 @@ import { cn } from '@/utils/cn';
 
 interface MapExhibitionCardProps {
   title: string;
+  /** 시트 제목에 이름이 이미 크게 있을 때 카드의 제목 줄을 뺀다 */
+  showTitle?: boolean;
   posterImageUrl: string;
   organization?: string;
   period: string;
@@ -20,6 +22,7 @@ interface MapExhibitionCardProps {
 
 export function MapExhibitionCard({
   title,
+  showTitle = true,
   posterImageUrl,
   organization,
   period,
@@ -49,11 +52,20 @@ export function MapExhibitionCard({
       </span>
       <span className="flex min-w-0 flex-col justify-between p-3">
         <span className="min-w-0">
-          <span className="typography-body-xl-semibold block truncate pr-14 text-interactive-inverse">
-            {title}
-          </span>
+          {showTitle ? (
+            <span className="typography-body-xl-semibold block truncate pr-14 text-interactive-inverse">
+              {title}
+            </span>
+          ) : null}
           {organization ? (
-            <span className="typography-body-md-medium mt-0.5 block truncate">{organization}</span>
+            <span
+              className={cn(
+                'typography-body-md-medium block truncate',
+                showTitle ? 'mt-0.5' : 'pr-14',
+              )}
+            >
+              {organization}
+            </span>
           ) : null}
         </span>
         <span className="typography-body-md-medium grid gap-0.5 text-tertiary">
@@ -77,7 +89,7 @@ export function MapExhibitionCard({
 
   if (to) {
     return (
-      <Link to={to} className={className}>
+      <Link to={to} aria-label={showTitle ? undefined : title} className={className}>
         {content}
       </Link>
     );

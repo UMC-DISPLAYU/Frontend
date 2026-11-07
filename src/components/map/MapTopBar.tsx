@@ -1,4 +1,5 @@
-import { ChevronLeft, LocateOff, Search } from 'lucide-react';
+import { ChevronLeft, LocateOff, Search, X } from 'lucide-react';
+import type { FormEvent, MouseEvent } from 'react';
 
 import { cn } from '@/utils/cn';
 
@@ -14,7 +15,8 @@ const STATUS_CHIPS: { value: MapExhibitionStatus; label: string }[] = [
 
 interface MapTopBarProps {
   query: string;
-  onQueryChange: (query: string) => void;
+  onSearch: (query: string) => void;
+  onClearSearch: () => void;
   statusFilters: MapExhibitionStatus[];
   statusCounts: Record<MapExhibitionStatus, number>;
   onToggleStatus: (status: MapExhibitionStatus) => void;
@@ -24,13 +26,28 @@ interface MapTopBarProps {
 
 export function MapTopBar({
   query,
-  onQueryChange,
+  onSearch,
+  onClearSearch,
   statusFilters,
   statusCounts,
   onToggleStatus,
   showLocationNotice,
   onBack,
 }: MapTopBarProps) {
+  // 탐색 페이지와 같이 돋보기(또는 키보드 검색 키)를 눌러야 검색한다
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSearch(String(new FormData(event.currentTarget).get('q') ?? ''));
+    // 모바일에서 검색 후 키보드를 내린다
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  };
+
+  const handleClear = (event: MouseEvent<HTMLButtonElement>) => {
+    const input = event.currentTarget.form?.elements.namedItem('q');
+    if (input instanceof HTMLInputElement) input.value = '';
+    onClearSearch();
+  };
+
   return (
     <div className="pointer-events-none fixed top-[calc(env(safe-area-inset-top)+12px)] right-5 left-5 z-20 grid gap-3 transition-[left] duration-450 ease-[cubic-bezier(.16,1,.3,1)] md:left-[calc(var(--map-panel-width)+20px)]">
       <div className="pointer-events-auto flex items-center gap-2">
@@ -45,27 +62,39 @@ export function MapTopBar({
         >
           <ChevronLeft aria-hidden className="size-6" strokeWidth={2} />
         </button>
-        <label className="relative h-11 min-w-0 flex-1">
-          <span className="sr-only">전시 검색</span>
-          {/* 전역 input 축소 규칙(iOS 확대 방지)은 16px 글자만 필요하므로 크기 보정은 풀어 둔다 */}
+        <form role="search" onSubmit={handleSubmit} className="relative h-11 min-w-0 flex-1">
+          {/* 전역 input 축소 규칙(iOS 확대 방지)은 16px 글자만 필요하므로 크기 보정은 풀어 둔다.
+              확정된 검색어가 바뀌면 입력값을 다시 맞추려고 key로 리셋한다 */}
           <input
+            key={query}
             type="search"
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
+            name="q"
+            aria-label="전시 검색어"
+            defaultValue={query}
             placeholder="어떤 전시를 찾고 있나요?"
             autoComplete="off"
             enterKeyHint="search"
             className={cn(
-              'typography-body-xl-medium h-11 !w-full !transform-none rounded-circle bg-secondary pr-12 pl-5 text-primary !mr-0 placeholder:text-[#6b6b75] [&::-webkit-search-cancel-button]:hidden',
+              'peer typography-body-xl-medium h-11 !w-full !transform-none rounded-circle bg-secondary pr-20 pl-5 text-primary !mr-0 placeholder:text-[#6b6b75] [&::-webkit-search-cancel-button]:hidden',
               FLOAT_SHADOW,
             )}
           />
-          <Search
-            aria-hidden
-            className="pointer-events-none absolute top-2.5 right-3 size-6 text-tertiary"
-            strokeWidth={1.8}
-          />
-        </label>
+          <button
+            type="button"
+            aria-label="검색어 지우기"
+            onClick={handleClear}
+            className="absolute top-0 right-10 grid h-11 w-9 place-items-center text-icon-tertiary peer-placeholder-shown:hidden"
+          >
+            <X aria-hidden className="size-4.5" strokeWidth={2} />
+          </button>
+          <button
+            type="submit"
+            aria-label="검색"
+            className="absolute top-0 right-1 grid h-11 w-10 place-items-center text-tertiary"
+          >
+            <Search aria-hidden className="size-6" strokeWidth={1.8} />
+          </button>
+        </form>
       </div>
 
       {showLocationNotice ? (

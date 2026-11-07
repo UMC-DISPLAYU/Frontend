@@ -5,6 +5,7 @@ import {
   getNearestSnap,
   getNextSnapOnTap,
   getReachableSnaps,
+  getSheetContentOpacity,
   getSnapAfterMapTap,
   getSnapOptions,
   getSnapPx,
@@ -52,6 +53,15 @@ describe('시트 높이', () => {
     expect(getNearestSnap(getReachableSnaps(getSnapOptions(false), 'full'), -5000, FULL_PX)).toBe(
       'mid',
     );
+  });
+
+  it('내용은 peek에서 투명하고 mid(핀 상태는 one)에 가까워질수록 진해진다', () => {
+    const list = getSnapOptions(false);
+    expect(getSheetContentOpacity(86, list, FULL_PX)).toBe(0);
+    expect(getSheetContentOpacity(193, list, FULL_PX)).toBeCloseTo(0.5);
+    expect(getSheetContentOpacity(300, list, FULL_PX)).toBe(1);
+    expect(getSheetContentOpacity(FULL_PX, list, FULL_PX)).toBe(1);
+    expect(getSheetContentOpacity(193, getSnapOptions(true), FULL_PX)).toBeCloseTo(0.5);
   });
 
   it('지도를 누르면 중간 높이일 때만 peek로 내려간다', () => {

@@ -3,7 +3,9 @@ import { type RefObject, useEffect, useRef, useState } from 'react';
 import {
   getNearestSnap,
   getReachableSnaps,
+  getSheetContentOpacity,
   getSnapPx,
+  SHEET_CONTENT_OPACITY_VAR,
   SHEET_VISIBLE_VAR,
   type SheetSnap,
 } from './mapViewport';
@@ -61,7 +63,12 @@ export function useSheetDrag({
     const maxPx = getSnapPx(reachable[reachable.length - 1], fullPx);
 
     const setVisiblePx = (px: number) => {
-      rootRef.current?.style.setProperty(SHEET_VISIBLE_VAR, `${px}px`);
+      const root = rootRef.current;
+      root?.style.setProperty(SHEET_VISIBLE_VAR, `${px}px`);
+      root?.style.setProperty(
+        SHEET_CONTENT_OPACITY_VAR,
+        String(getSheetContentOpacity(px, snapOptions, fullPx)),
+      );
     };
 
     const begin = (clientY: number, target: EventTarget | null, timeStamp: number) => {

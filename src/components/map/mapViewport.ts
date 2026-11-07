@@ -4,7 +4,7 @@
  *
  * [높이 단계]
  * - 목록: peek 86px · mid 300px(처음) · full(상태바 바로 아래 8px까지)
- * - 핀을 고른 상태: peek · one 262px (one은 선택한 전시 한 장을 보여주는 높이)
+ * - 핀을 고른 상태: peek · one 300px (one은 선택한 전시 한 장을 보여주는 높이)
  * - full 높이는 기기마다 safe area가 달라 시트 요소를 실제로 재서 쓴다
  *
  * [끌기]
@@ -28,6 +28,13 @@
  * - 핀을 누르면 one, 목록 카드를 누르면 mid로 바뀌고 지도가 그 전시로 이동한다
  * - 선택이 풀리면 one은 mid로 돌아간다
  *
+ * [제목·내용] (실험 중)
+ * - 손잡이 아래 큰 제목(20px)은 높이와 상관없이 크기가 같다
+ *   목록: "이 지역 전시 n개" / 핀 상태: 전시 이름(누르면 상세로)
+ * - 제목 아래 내용은 peek에서 투명하고, 올릴수록 진해져 mid(핀 상태는 one)에서 완전히 보인다.
+ *   끄는 동안 손가락 위치에 맞춰 계속 바뀐다. 그보다 위에서는 계속 보인다
+ * - 핀 상태 카드에는 제목이 위에 있으므로 제목 줄을 빼서 이름이 두 번 나오지 않게 한다
+ *
  * [그 밖]
  * - full이면 상단 바(뒤로·검색·칩)는 시트에 가려진다
  * - "이 지역 전시" 목록은 시트를 mid보다 높이 올려도 mid일 때 보이는 지도 영역을 기준으로 한다
@@ -39,8 +46,9 @@ export type SheetSnap = 'peek' | 'one' | 'mid' | 'full';
 
 export const PANEL_WIDTH = 400;
 export const SHEET_VISIBLE_VAR = '--map-sheet-visible';
+export const SHEET_CONTENT_OPACITY_VAR = '--map-sheet-content-opacity';
 
-const SNAP_PX: Record<Exclude<SheetSnap, 'full'>, number> = { peek: 86, one: 262, mid: 300 };
+const SNAP_PX: Record<Exclude<SheetSnap, 'full'>, number> = { peek: 86, one: 300, mid: 300 };
 const MOBILE_TOP_BAR_HEIGHT = 124;
 const MOBILE_CONTROL_GUTTER = 64;
 const DESKTOP_CONTROL_GUTTER = 72;
@@ -66,6 +74,14 @@ export function getNearestSnap(
       ? snap
       : best,
   );
+}
+
+/** 제목 아래 내용의 불투명도: 가장 낮은 단계에서 0, 그다음 단계(mid·one)부터 1 */
+export function getSheetContentOpacity(visiblePx: number, options: SheetSnap[], fullPx: number) {
+  const from = getSnapPx(options[0], fullPx);
+  const to = getSnapPx(options[1] ?? options[0], fullPx);
+  if (to <= from) return 1;
+  return Math.min(1, Math.max(0, (visiblePx - from) / (to - from)));
 }
 
 export function getReachableSnaps(options: SheetSnap[], current: SheetSnap): SheetSnap[] {

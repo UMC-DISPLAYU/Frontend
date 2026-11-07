@@ -4,7 +4,7 @@ import type { ReactNode, RefObject } from 'react';
 import { cn } from '@/utils/cn';
 
 interface MapSheetProps {
-  title: string | null;
+  title: ReactNode;
   isFull: boolean;
   isDragging: boolean;
   isPanelFolded: boolean;
@@ -52,22 +52,20 @@ export function MapSheet({
             aria-label="목록 크기 바꾸기"
             aria-controls="map-sheet-body"
             onClick={onHandleTap}
-            className={cn(
-              'mx-auto flex h-8 w-25 items-center justify-center md:hidden',
-              !title && '-mb-4',
-            )}
+            className="mx-auto flex h-8 w-25 items-center justify-center md:hidden"
           >
             <span className="h-1.5 w-17.5 rounded-circle bg-[#3f3f46]" />
           </button>
-          {title ? (
-            <h2 className="typography-body-lg-semibold flex h-5 items-center">{title}</h2>
-          ) : null}
+          <h2 className="typography-title-xs flex h-7 min-w-0 items-center">{title}</h2>
         </div>
         <div
           ref={bodyRef}
           id="map-sheet-body"
           className={cn(
-            'grid min-h-0 flex-1 content-start gap-3 px-5 pt-4 pb-5 [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin] md:overflow-y-auto md:pb-7',
+            'grid min-h-0 flex-1 content-start gap-3 px-5 pt-4 pb-5 opacity-(--map-sheet-content-opacity) [scrollbar-color:#3f3f46_transparent] [scrollbar-width:thin] md:overflow-y-auto md:pb-7 md:opacity-100',
+            isDragging
+              ? 'transition-none'
+              : 'transition-opacity duration-450 ease-[cubic-bezier(.16,1,.3,1)]',
             isFull
               ? 'touch-pan-y overflow-y-auto overscroll-contain'
               : 'touch-none overflow-hidden',

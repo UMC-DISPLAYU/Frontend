@@ -1,13 +1,14 @@
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useKakaoLoader } from 'react-kakao-maps-sdk';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import {
   fitTo,
   focusOn,
   getMapSnapshot,
   getNextSnapOnTap,
+  getSheetContentOpacity,
   getSnapAfterMapTap,
   getSnapOptions,
   getSnapPx,
@@ -26,6 +27,7 @@ import {
   MapTopBar,
   matchesMapFilters,
   PANEL_WIDTH,
+  SHEET_CONTENT_OPACITY_VAR,
   SHEET_VISIBLE_VAR,
   type SheetSnap,
   useElementHeight,
@@ -45,7 +47,6 @@ const MAX_LEVEL = 14;
 const FOCUS_MAX_LEVEL = 5;
 const MY_LOCATION_MAX_LEVEL = 4;
 const IDLE_DEBOUNCE_MS = 250;
-const SEARCH_FIT_DELAY_MS = 300;
 
 const VIEW_STATE_KEY = 'MAP_PAGE_VIEW_STATE';
 const PANEL_FOLDED_KEY = 'MAP_PAGE_PANEL_FOLDED';
@@ -108,7 +109,6 @@ export function MapPage() {
   const [isPanelFolded, setIsPanelFolded] = useState(readPanelFolded);
 
   const idleTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const searchFitTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const didInitialFitRef = useRef(savedView !== null);
 
   // 선택한 전시가 지도 밖으로 나가도 시트에는 남도록 선택 당시 값을 쓰고, 필터에서 빠지면 선택을 푼다
@@ -187,7 +187,6 @@ export function MapPage() {
   useEffect(
     () => () => {
       clearTimeout(idleTimerRef.current);
-      clearTimeout(searchFitTimerRef.current);
     },
     [],
   );
@@ -275,16 +274,18 @@ export function MapPage() {
     );
   };
 
-  const handleQueryChange = (nextQuery: string) => {
+  const handleSearch = (word: string) => {
+    const nextQuery = word.trim();
     setQuery(nextQuery);
     clearSelection();
-    const targets = exhibitions.filter((exhibition) =>
-      matchesMapFilters(exhibition, nextQuery, statusFilters),
+    // 검색하면 결과가 다 보이도록 지도를 옮긴다
+    fitToMatches(
+      exhibitions.filter((exhibition) => matchesMapFilters(exhibition, nextQuery, statusFilters)),
     );
-    clearTimeout(searchFitTimerRef.current);
-    // 검색하면 결과가 다 보이도록 입력이 멈춘 뒤 지도를 옮긴다
-    searchFitTimerRef.current = setTimeout(() => fitToMatches(targets), SEARCH_FIT_DELAY_MS);
   };
+
+  // 검색어를 지울 때는 검색만 풀고 지도는 보던 위치 그대로 둔다
+  const handleClearSearch = () => setQuery('');
 
   const handleToggleFold = () => {
     const next = !isPanelFolded;
@@ -349,6 +350,9 @@ export function MapPage() {
 
   const rootStyle = {
     [SHEET_VISIBLE_VAR]: `${sheetVisiblePx}px`,
+    [SHEET_CONTENT_OPACITY_VAR]: isDesktop
+      ? 1
+      : getSheetContentOpacity(sheetVisiblePx, getSnapOptions(isPinMode), sheetFullPx),
     '--map-panel-width': isDesktop && !isFolded ? `${PANEL_WIDTH}px` : '0px',
   } as CSSProperties;
 
@@ -379,7 +383,8 @@ export function MapPage() {
 
       <MapTopBar
         query={query}
-        onQueryChange={handleQueryChange}
+        onSearch={handleSearch}
+        onClearSearch={handleClearSearch}
         statusFilters={statusFilters}
         statusCounts={statusCounts}
         onToggleStatus={handleToggleStatus}
@@ -400,7 +405,15 @@ export function MapPage() {
       />
 
       <MapSheet
-        title={isPinMode ? null : `이 지역 전시 ${inView.length}개`}
+        title={
+          selected && isPinMode ? (
+            <Link to={`/display/${selected.exhibition.id}`} className="truncate">
+              {selected.exhibition.title}
+            </Link>
+          ) : (
+            `이 지역 전시 ${inView.length}개`
+          )
+        }
         isFull={snap === 'full'}
         isDragging={sheetDrag.isDragging}
         isPanelFolded={isFolded}
