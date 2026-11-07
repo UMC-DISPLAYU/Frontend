@@ -40,6 +40,10 @@
   --semantic-color-bg-warning-subtle: var(--primitive-color-yellow-100);
   --semantic-color-bg-disable: var(--primitive-color-zinc-100);
   --semantic-color-bg-notice: var(--primitive-color-red-500);
+  /* 오버레이(시트 · 모달) 뒤 배경. 피그마에 변수는 없고, 화면의 Dim 레이어가
+     bg/primary - black(#000000)에 레이어 투명도 42% 를 준 값이라 그대로 옮겼다.
+     color-mix 로 참조하면 미지원 브라우저(iOS 16.1 이하)에서 불투명한 검정으로 대체돼 값을 직접 쓴다 */
+  --semantic-color-bg-dim: rgb(0 0 0 / 0.42);
 
   /* Icon */
   --semantic-color-icon-primary: var(--primitive-color-zinc-900);
@@ -81,4 +85,53 @@
   --semantic-radius-20: var(--primitive-unit-20);
   --semantic-radius-24: var(--primitive-unit-24);
   --semantic-radius-circle: 9999px;
+
+  /*
+   * 아래 Layout · Motion 값은 피그마 변수가 아니라 반응형 · 인터랙션 정책(docs/ui-policy.md)과
+   * 프로토타입에서 가져왔다. 피그마에 대응 변수가 생기면 primitive 를 거치도록 옮긴다.
+   */
+
+  /* Layout — 컨테이너 최대 폭(좌우 여백 포함). 입력 화면(등록 · 수정) / 목록 · 관리 화면 */
+  --semantic-layout-container-form: 672px;
+  --semantic-layout-container-list: 1160px;
+
+  /* Layout — 좌우 여백. 모바일 값이고, 아래 @media 에서 태블릿 · 데스크톱 값으로 바뀐다 */
+  --semantic-layout-gutter: 20px;
+
+  /* Layout — safe area. 노치 · 홈 인디케이터가 없는 기기에서도 최소 여백을 둔다(프로토타입 값) */
+  --semantic-layout-safe-area-top: max(8px, env(safe-area-inset-top));
+  --semantic-layout-safe-area-bottom: max(16px, env(safe-area-inset-bottom));
+
+  /* Layout — 하단 플로팅 냅바. clearance 는 화면 아래에서 냅바 윗변까지의 거리다.
+     본문 하단 여백, 토스트 위치처럼 냅바를 피해야 하는 곳이 이 값을 쓴다 */
+  --semantic-layout-navbar-height: 70px;
+  --semantic-layout-navbar-clearance: calc(
+    var(--semantic-layout-navbar-height) + var(--semantic-layout-safe-area-bottom)
+  );
+
+  /* Layout — 가상 키보드가 가린 높이. 기본 0이고, 실행 중 VisualViewport 를 보고 JS 가 :root 에 덮어쓴다.
+     하단 고정 요소가 bottom-keyboard-inset 으로 키보드 위에 붙는다 */
+  --semantic-layout-keyboard-inset: 0px;
+
+  /* Motion */
+  --semantic-motion-duration-fast: 200ms;
+  --semantic-motion-duration-base: 300ms;
+  --semantic-motion-duration-slow: 450ms;
+  --semantic-motion-easing-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  /* 목록 아이템이 순서대로 등장할 때 아이템 사이 간격 */
+  --semantic-motion-stagger: 60ms;
+}
+
+/* 브레이크포인트 값은 theme.css 의 --breakpoint-tablet(48rem) · --breakpoint-desktop(56.25rem)과 같다.
+   :root 변수는 @media 안에서 theme 변수를 참조할 수 없어 값을 직접 쓴다 */
+@media (width >= 48rem) {
+  :root {
+    --semantic-layout-gutter: 32px;
+  }
+}
+
+@media (width >= 56.25rem) {
+  :root {
+    --semantic-layout-gutter: 40px;
+  }
 }

@@ -22,12 +22,12 @@ export function FNB({ hasFixedBottomBar = false, className }: FNBProps) {
   return (
     <footer
       className={cn(
-        'w-full max-w-md mx-auto bg-fnb px-6.5 py-6 overflow-hidden',
-        hasFixedBottomBar ? 'pb-28' : 'pb-8',
+        'w-full overflow-hidden bg-fnb',
+        hasFixedBottomBar && 'pb-navbar-clearance',
         className,
       )}
     >
-      <div className="flex flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-list flex-col gap-6 px-gutter pt-6 pb-8">
         {/* 로고 & 서브타이틀 */}
         <div className="flex flex-col items-start gap-3">
           <img alt="DISPLAYU" className="h-6 w-auto self-start" src={DUfontlogo} />
