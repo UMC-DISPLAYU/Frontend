@@ -10,7 +10,7 @@ type ExploreFieldTabsProps = {
 
 export function ExploreFieldTabs({ options, selectedLabel, onSelect }: ExploreFieldTabsProps) {
   return (
-    <div className="scrollbar-none -mx-5 flex overflow-x-auto px-5" role="tablist">
+    <div className="scrollbar-none -mx-5 flex overflow-x-auto px-5">
       {options.map((option) => (
         <UnderlineTab
           key={option.label}

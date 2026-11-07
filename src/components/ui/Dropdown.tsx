@@ -81,6 +81,7 @@ export function Dropdown({
 
       {isOpen ? (
         <ul
+          aria-label={placeholder}
           className={cn(
             'absolute top-full z-30 mt-1 flex min-w-full flex-col gap-1 rounded-12 border border-icon-tertiary bg-primary-white p-1.5',
             isPlain ? 'right-0' : 'left-0',
