@@ -64,10 +64,7 @@ const LoungeBoardDetailPage = lazyPage(
 const PolicyPage = lazyPage(() => import('./pages/PolicyPage'), 'PolicyPage');
 const ForbiddenPage = lazyPage(() => import('./pages/ForbiddenPage'), 'ForbiddenPage');
 const MyPage = lazyPage(() => import('./pages/MyPage'), 'MyPage');
-const ArtistVerificationPage = lazyPage(
-  () => import('./pages/artist-verification'),
-  'ArtistVerificationPage',
-);
+const ArtistVerifyPage = lazyPage(() => import('./pages/artist-verification'), 'ArtistVerifyPage');
 const EditArtistProfilePage = lazyPage(
   () => import('./pages/artist-verification'),
   'EditArtistProfilePage',
@@ -249,7 +246,7 @@ export const router = createBrowserRouter([
             element: <AuthGuard />,
             children: [
               { path: 'my', element: <MyPage /> },
-              { path: 'artist-verification', element: <ArtistVerificationPage /> },
+              { path: 'artist-verification', element: <ArtistVerifyPage /> },
 
               // 내 전시 관리 목록
               {
