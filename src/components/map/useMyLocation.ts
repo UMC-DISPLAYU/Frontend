@@ -71,6 +71,7 @@ export function useMyLocation({ onLocated, onError }: UseMyLocationOptions) {
     navigator.permissions
       ?.query({ name: 'geolocation' })
       .then((result) => {
+        if (cancelled) return;
         status = result;
         apply();
         status.addEventListener('change', apply);

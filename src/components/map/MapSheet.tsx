@@ -50,7 +50,7 @@ export function MapSheet({
             aria-label="목록 크기 바꾸기"
             aria-controls="map-sheet-body"
             onClick={onHandleTap}
-            className="mx-auto flex h-8 w-25 items-center justify-center tablet:hidden"
+            className="relative mx-auto flex h-8 w-25 items-center justify-center after:absolute after:inset-x-0 after:-inset-y-1.5 tablet:hidden"
           >
             <span className="h-1.5 w-17.5 rounded-circle bg-[#3f3f46]" />
           </button>

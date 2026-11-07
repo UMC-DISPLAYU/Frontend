@@ -39,7 +39,7 @@ export function MapSelectedExhibition({
       <button
         type="button"
         onClick={onShowAll}
-        className="typography-body-md-medium justify-self-center px-2 py-0.5 text-tertiary underline underline-offset-2"
+        className="typography-body-md-medium relative justify-self-center px-2 py-0.5 text-tertiary underline underline-offset-2 after:absolute after:-inset-x-1 after:-inset-y-3"
       >
         이 지역 전시 {inViewCount}개 보기
       </button>
@@ -106,7 +106,7 @@ export function MapSheetMessage({
         <button
           type="button"
           onClick={onAction}
-          className="typography-body-md-medium mt-2 px-2 py-0.5 text-interactive-inverse underline underline-offset-2"
+          className="typography-body-md-medium relative mt-2 px-2 py-0.5 text-interactive-inverse underline underline-offset-2 after:absolute after:-inset-x-1 after:-inset-y-3"
         >
           {actionLabel}
         </button>

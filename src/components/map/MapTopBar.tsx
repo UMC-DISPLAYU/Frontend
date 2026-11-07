@@ -78,7 +78,7 @@ export function MapTopBar({
             autoComplete="off"
             enterKeyHint="search"
             className={cn(
-              'peer typography-body-xl-medium h-11 !w-full !transform-none rounded-circle bg-secondary pr-20 pl-5 text-primary !mr-0 placeholder:text-[#6b6b75] [&::-webkit-search-cancel-button]:hidden',
+              'peer typography-body-xl-medium h-11 !w-full !transform-none rounded-circle bg-secondary pr-22 pl-5 text-primary !mr-0 placeholder:text-[#6b6b75] [&::-webkit-search-cancel-button]:hidden',
               FLOAT_SHADOW,
             )}
           />
@@ -86,14 +86,14 @@ export function MapTopBar({
             type="button"
             aria-label="검색어 지우기"
             onClick={handleClear}
-            className="absolute top-0 right-10 grid h-11 w-9 place-items-center text-icon-tertiary peer-placeholder-shown:hidden"
+            className="absolute top-0 right-11 grid size-11 place-items-center text-icon-tertiary peer-placeholder-shown:hidden"
           >
             <X aria-hidden className="size-4.5" strokeWidth={2} />
           </button>
           <button
             type="submit"
             aria-label="검색"
-            className="absolute top-0 right-1 grid h-11 w-10 place-items-center text-tertiary"
+            className="absolute top-0 right-0 grid size-11 place-items-center text-tertiary"
           >
             <Search aria-hidden className="size-6" strokeWidth={1.8} />
           </button>
