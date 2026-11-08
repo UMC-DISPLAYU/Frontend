@@ -1,7 +1,6 @@
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 
 import type {
-  DisplayListItemDto,
   GetArtworkPreviewRequestDto,
   GetClosingSoonDisplaysRequestDto,
   HomeExhibitionDto,
@@ -84,7 +83,6 @@ export interface HomeExhibitionCard {
   period: string;
   /** 홈 · 검색 응답에 장소가 아직 없어 비어 있다(백엔드 협의 중) */
   place?: string;
-  likeCount?: number;
 }
 
 const HOME_TAB_SIZE = 10;
@@ -93,17 +91,12 @@ const homeTabClosingSoonParams = { size: HOME_TAB_SIZE };
 const homeTabLiveParams = { status: 'ONGOING', cursor: 0, size: HOME_TAB_SIZE };
 const homeTabSoonParams = { status: 'UPCOMING', cursor: 0, size: HOME_TAB_SIZE };
 
-const toHomeCard = (
-  display: HomeExhibitionDto | (DisplayListItemDto & Partial<HomeExhibitionDto>),
-): HomeExhibitionCard => ({
+const toHomeCard = (display: HomeExhibitionDto): HomeExhibitionCard => ({
   displayId: display.displayId,
   title: display.title,
   posterImageUrl: display.posterImageUrl,
-  organization:
-    display.schoolDepartmentName ||
-    [display.organization, display.department].filter(Boolean).join(' '),
+  organization: display.schoolDepartmentName,
   period: `${formatDate(display.startedAt)} - ${formatDate(display.endedAt)}`,
-  likeCount: 'likeCount' in display ? display.likeCount : undefined,
 });
 
 /**

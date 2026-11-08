@@ -5,17 +5,17 @@ import type {
   OffsetPageRequestDto,
 } from './common.dto';
 
+/* 졸업전시 · 마감 임박 · 검색 목록이 공통으로 내려주는 전시 항목(실서버 응답 기준, 스웨거에는 응답 스키마가 없다) */
 export interface HomeExhibitionDto {
   displayId: number;
   title: string;
   posterImageUrl: string;
-  organization: string;
-  department: string;
-  schoolDepartmentName?: string;
+  schoolDepartmentName: string;
   startedAt: string;
   endedAt: string;
-  dayLeft?: number;
-  isArchived?: boolean;
+  /* 종료일까지 남은 일수. 이미 끝난 전시는 음수다 */
+  dayLeft: number;
+  isArchived: boolean;
 }
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
@@ -59,15 +59,7 @@ export interface GetDuPicksResponseDataDto {
 
 export type GetDuPicksResponseDto = ApiResponseDto<GetDuPicksResponseDataDto>;
 
-export interface DisplayListItemDto {
-  displayId: number;
-  title: string;
-  posterImageUrl: string;
-  startedAt: string;
-  endedAt: string;
-  dayLeft?: number;
-  isArchived: boolean;
-  schoolDepartmentName?: string;
+export interface DisplayListItemDto extends HomeExhibitionDto {
   /* 탐색 카드 좋아요용. 백엔드 검색 응답에 아직 없어 목 데이터에만 있습니다. */
   likeCount?: number;
   isLiked?: boolean;

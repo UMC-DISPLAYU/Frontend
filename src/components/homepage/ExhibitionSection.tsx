@@ -30,8 +30,7 @@ function ExhibitionCard({
   onBookmarkClick: (displayId: number, saved: boolean, e: React.MouseEvent) => void;
 }) {
   const navigate = useNavigate();
-  const schoolDepartmentName =
-    item.schoolDepartmentName ?? [item.organization, item.department].filter(Boolean).join(' ');
+  const { schoolDepartmentName } = item;
   const isSaved = item.isArchived === true || savedExhibitionIds.has(item.displayId);
 
   return (
