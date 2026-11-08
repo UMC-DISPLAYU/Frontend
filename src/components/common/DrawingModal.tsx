@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Loader2, Undo2, X } from 'lucide-react';
-
-import sendIcon from '@/assets/comment/SendIcon.svg';
+import undoIcon from '@/assets/comment/UndoIcon.svg';
+import { cn } from '@/utils/cn';
 
 type Point = {
   x: number;
@@ -23,6 +22,19 @@ type Props = {
   error?: string;
 };
 
+const SWATCHES = [
+  { label: '검정', token: '--semantic-color-bg-interactive-primary' },
+  { label: '빨강', token: '--primitive-color-red-500' },
+  { label: '파랑', token: '--primitive-color-blue-500' },
+];
+const STROKE_WIDTH = 4;
+// 댓글 사진 칸(5:6)에 잘리지 않고 들어가도록 내보낼 때 이 비율로 맞춘다
+const EXPORT_ASPECT_RATIO = 5 / 6;
+
+// 캔버스는 CSS 클래스를 쓸 수 없어 토큰 값을 읽어서 그린다
+const readToken = (token: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+
 function DrawingCanvasInner({
   onClose,
   onSubmit,
@@ -31,6 +43,7 @@ function DrawingCanvasInner({
 }: Omit<Props, 'isOpen'>) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [selectedToken, setSelectedToken] = useState(SWATCHES[0].token);
   const currentStrokeRef = useRef<Stroke | null>(null);
   const isDrawingRef = useRef(false);
 
@@ -150,8 +163,8 @@ function DrawingCanvasInner({
     const point = getCanvasPoint(e);
     const newStroke: Stroke = {
       points: [point],
-      color: '#111111',
-      width: 3.5,
+      color: readToken(selectedToken),
+      width: STROKE_WIDTH,
     };
 
     currentStrokeRef.current = newStroke;
@@ -220,11 +233,6 @@ function DrawingCanvasInner({
   const handleSubmit = async () => {
     if (strokes.length === 0 || isSubmitting) return;
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-
     // 1. 전체 스트로크의 바운딩 박스 계산
     let minX = Infinity;
     let minY = Infinity;
@@ -243,17 +251,17 @@ function DrawingCanvasInner({
 
     if (minX === Infinity || minY === Infinity) return;
 
-    // 여백(Padding) 추가
-    const padding = 20;
-    const boundedMinX = Math.max(0, minX - padding);
-    const boundedMinY = Math.max(0, minY - padding);
-    const boundedMaxX = Math.min(rect.width, maxX + padding);
-    const boundedMaxY = Math.min(rect.height, maxY + padding);
+    const padding = 24;
+    let cropWidth = Math.max(maxX - minX + padding * 2, 60);
+    let cropHeight = Math.max(maxY - minY + padding * 2, 60);
+    if (cropWidth / cropHeight > EXPORT_ASPECT_RATIO) cropHeight = cropWidth / EXPORT_ASPECT_RATIO;
+    else cropWidth = cropHeight * EXPORT_ASPECT_RATIO;
+    cropWidth = Math.round(cropWidth);
+    cropHeight = Math.round(cropHeight);
 
-    const cropWidth = Math.max(Math.round(boundedMaxX - boundedMinX), 60);
-    const cropHeight = Math.max(Math.round(boundedMaxY - boundedMinY), 60);
+    const cropLeft = (minX + maxX) / 2 - cropWidth / 2;
+    const cropTop = (minY + maxY) / 2 - cropHeight / 2;
 
-    // 2. 크롭 영역에 맞춘 고화질 내보내기용 오프스크린 캔버스 생성
     const exportCanvas = document.createElement('canvas');
     const scale = Math.max(window.devicePixelRatio || 1, 2);
     exportCanvas.width = cropWidth * scale;
@@ -262,13 +270,15 @@ function DrawingCanvasInner({
     const exportCtx = exportCanvas.getContext('2d');
     if (!exportCtx) return;
 
-    // 투명 배경으로 초기화
-    exportCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
-
-    // 스케일 및 오프셋 적용하여 스트로크 렌더링
     exportCtx.scale(scale, scale);
-    exportCtx.translate(-boundedMinX, -boundedMinY);
+    exportCtx.translate(-cropLeft, -cropTop);
     redrawCanvas(exportCtx, strokes);
+
+    // 흰 화면 위에서 그림 경계가 보이도록 입력칸과 같은 회색을 획 뒤에 깐다
+    exportCtx.setTransform(1, 0, 0, 1, 0, 0);
+    exportCtx.globalCompositeOperation = 'destination-over';
+    exportCtx.fillStyle = readToken('--semantic-color-bg-secondary');
+    exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
     exportCanvas.toBlob(async (blob) => {
       if (!blob) return;
@@ -279,72 +289,82 @@ function DrawingCanvasInner({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col justify-between bg-white/65 backdrop-blur-sm select-none touch-none animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex animate-fade-in touch-none flex-col items-center justify-center bg-primary-white select-none desktop:bg-dim"
       role="dialog"
       aria-modal="true"
       aria-label="그림 그리기"
     >
-      {/* 상단 여백 (모바일 상단 노치/상태바 영역) */}
-      <div className="pt-safe-top h-10 shrink-0" />
-
-      {/* 중앙 드로잉 캔버스 */}
-      <div className="relative flex-1 w-full h-full min-h-0">
-        <canvas
-          ref={canvasRef}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          className="absolute inset-0 size-full cursor-crosshair touch-none"
-        />
-      </div>
-
-      {error && (
-        <p role="alert" className="px-6 typo-body-xs-regular text-error">
-          {error}
-        </p>
-      )}
-
-      {/* 하단 컨트롤 바 */}
-      <div className="px-6 pt-3 pb-8 border-t border-line pb-safe-bottom flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          {/* 닫기 버튼 */}
+      <div className="flex size-full flex-col bg-primary-white desktop:h-[min(760px,92vh)] desktop:w-120 desktop:rounded-20 desktop:shadow-lg">
+        <div className="mt-[env(safe-area-inset-top)] flex h-14 shrink-0 items-center justify-between px-5">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            aria-label="그리기 취소"
-            className="size-12 rounded-full bg-[#E5E5EA] text-[#1C1C1E] flex items-center justify-center shadow-sm active:scale-95 hover:bg-[#D7D7DF] transition-all cursor-pointer disabled:opacity-50"
+            className="typography-body-xl-medium h-11 cursor-pointer text-secondary disabled:opacity-50"
           >
-            <X size={22} strokeWidth={2} />
+            취소
           </button>
+          <h2 className="typography-body-xl-semibold text-primary">그리기</h2>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={strokes.length === 0 || isSubmitting}
+            className="typography-body-xl-semibold h-11 cursor-pointer text-primary disabled:text-disable"
+          >
+            {isSubmitting ? '보내는 중' : '보내기'}
+          </button>
+        </div>
 
-          {/* 실행 취소 버튼 */}
+        <div className="flex min-h-0 flex-1 px-5 pt-2">
+          <div className="relative flex-1 overflow-hidden rounded-12 border border-primary bg-primary-white">
+            <canvas
+              ref={canvasRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              aria-label="그림 그리기 영역"
+              className="absolute inset-0 size-full cursor-crosshair touch-none"
+            />
+          </div>
+        </div>
+
+        {error && (
+          <p role="alert" className="typography-body-md-medium px-5 pt-2 text-error">
+            {error}
+          </p>
+        )}
+
+        <div className="flex shrink-0 items-center px-5 pt-4 pb-[max(34px,env(safe-area-inset-bottom))] desktop:pb-5">
+          {SWATCHES.map(({ label, token }) => (
+            <button
+              key={token}
+              type="button"
+              aria-label={label}
+              aria-pressed={selectedToken === token}
+              onClick={() => setSelectedToken(token)}
+              className={cn(
+                'grid size-10 cursor-pointer place-items-center rounded-circle',
+                selectedToken === token && 'border-2 border-interactive-primary',
+              )}
+            >
+              <span
+                className="size-7 rounded-circle"
+                style={{ backgroundColor: `var(${token})` }}
+              />
+            </button>
+          ))}
+          <span aria-hidden className="w-2.5 shrink-0" />
           <button
             type="button"
             onClick={handleUndo}
             disabled={strokes.length === 0 || isSubmitting}
-            aria-label="마지막 획 지우기"
-            className="size-12 rounded-full bg-[#E5E5EA] text-[#1C1C1E] flex items-center justify-center shadow-sm active:scale-95 hover:bg-[#D7D7DF] transition-all cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+            aria-label="되돌리기"
+            className="grid size-10 cursor-pointer place-items-center rounded-12 border border-primary transition duration-fast ease-standard hover:bg-secondary active:scale-94 disabled:pointer-events-none disabled:opacity-40"
           >
-            <Undo2 size={22} strokeWidth={2} />
+            <img src={undoIcon} alt="" />
           </button>
         </div>
-
-        {/* 전송 버튼 */}
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={strokes.length === 0 || isSubmitting}
-          aria-label="그림 댓글 등록"
-          className="size-12 rounded-full bg-[#E5E5EA] text-[#1C1C1E] flex items-center justify-center shadow-sm active:scale-95 hover:bg-[#D7D7DF] transition-all cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
-        >
-          {isSubmitting ? (
-            <Loader2 size={22} className="animate-spin text-main" />
-          ) : (
-            <img src={sendIcon} alt="" className="size-5" />
-          )}
-        </button>
       </div>
     </div>
   );

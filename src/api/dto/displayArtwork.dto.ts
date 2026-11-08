@@ -18,18 +18,12 @@ export interface ArtworkGuestbookUserDto {
 
 export interface ArtworkGuestbookReplyDto {
   feelingReplyId?: number;
-  questionReplyId?: number;
-  queReplyId?: number;
-  questionId?: number;
   content: string;
   createdAt: string;
   user?: ArtworkGuestbookUserDto;
   likeCount?: number;
   isLiked?: boolean;
   images?: ArtworkFeelingReplyImageDto[];
-  /* 질문 답변(작가 답변)은 user 대신 이 필드들로 내려온다. */
-  creatorId?: number;
-  creatorName?: string;
   isCreator?: boolean;
   userId?: number;
   nickname?: string;
@@ -188,131 +182,6 @@ export interface GetMyArtworkFeelingsResponseDataDto {
 }
 
 export type GetMyArtworkFeelingsResponseDto = ApiResponseDto<GetMyArtworkFeelingsResponseDataDto>;
-
-export interface ArtworkQuestionDto {
-  questionId: number;
-  /* 비공개 질문을 볼 권한이 없으면 content/user/reply/likeCount가 모두 null로 마스킹됩니다. */
-  content: string | null;
-  isPublic: boolean;
-  /* 질문/답변 원문을 조회할 권한이 있는지. 서버가 계산해서 내려줍니다. */
-  accessible: boolean;
-  /* 로그인 사용자가 이 질문에 답변을 등록할 수 있는지. 서버가 계산해서 내려줍니다. */
-  canReply: boolean;
-  likeCount: number | null;
-  answerStatus?: 'WAITING' | 'ANSWERED';
-  createdAt: string;
-  displayArtworkId?: number;
-  userId?: number;
-  images?: { imageUrl: string; width?: number; height?: number }[];
-  user: ArtworkGuestbookUserDto | null;
-  reply: ArtworkGuestbookReplyDto | null;
-}
-
-export interface GetArtworkQuestionsResponseDataDto {
-  questions: ArtworkQuestionDto[];
-  nextCursorId: number | null;
-  size: number;
-  hasNext: boolean;
-}
-
-export type GetArtworkQuestionsResponseDto = ApiResponseDto<GetArtworkQuestionsResponseDataDto>;
-
-export interface MyArtworkQuestionDto {
-  questionId: number | null;
-  personalQuestionId: number | null;
-  artworkId: number | null;
-  personalArtworkId: number | null;
-  artworkName: string;
-  content: string;
-  isPublic: boolean;
-  answerStatus: 'WAITING' | 'ANSWERED';
-  createdAt: string;
-}
-
-export interface GetMyArtworkQuestionsResponseDataDto {
-  questions: MyArtworkQuestionDto[];
-  nextCursor: string | null;
-  size: number;
-  hasNext: boolean;
-}
-
-export type GetMyArtworkQuestionsResponseDto = ApiResponseDto<GetMyArtworkQuestionsResponseDataDto>;
-
-export interface ReceivedArtworkQuestionDto {
-  questionId: number;
-  personalQuestionId: number | null;
-  artworkId: number;
-  personalArtworkId: number | null;
-  artworkName: string;
-  content: string;
-  isPublic: boolean;
-  answerStatus: 'WAITING' | 'ANSWERED';
-  questionerId: number;
-  questionerNickname: string;
-  createdAt: string;
-}
-
-export interface GetReceivedArtworkQuestionsResponseDataDto {
-  questions: ReceivedArtworkQuestionDto[];
-  nextCursor: string | null;
-  size: number;
-  hasNext: boolean;
-}
-
-export type GetReceivedArtworkQuestionsResponseDto =
-  ApiResponseDto<GetReceivedArtworkQuestionsResponseDataDto>;
-
-export interface CreateArtworkQuestionRequestDto {
-  content: string;
-  isPublic: boolean;
-  images?: ArtworkFeelingReplyImageRequestDto[];
-}
-
-export interface ArtworkQuestionRecordDto {
-  artQueId: number;
-  content: string;
-  isPublic: boolean;
-  answerStatus: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  displayArtworkId: number;
-  userId: number;
-}
-
-export type CreateArtworkQuestionResponseDto = ApiResponseDto<ArtworkQuestionRecordDto>;
-
-export interface DeleteArtworkQuestionResponseDataDto {
-  questionId: number;
-  deletedAt: string;
-}
-
-export type DeleteArtworkQuestionResponseDto = ApiResponseDto<DeleteArtworkQuestionResponseDataDto>;
-
-export interface CreateArtworkQuestionReplyRequestDto {
-  content: string;
-  images?: ArtworkFeelingReplyImageRequestDto[];
-}
-
-export interface CreateArtworkQuestionReplyResponseDataDto {
-  queReplyId: number;
-  content: string;
-  createdAt: string;
-  questionId: number;
-  creatorId: number;
-  creatorName: string;
-}
-
-export type CreateArtworkQuestionReplyResponseDto =
-  ApiResponseDto<CreateArtworkQuestionReplyResponseDataDto>;
-
-export interface DeleteArtworkQuestionReplyResponseDataDto {
-  questionReplyId: number;
-  deletedAt: string;
-}
-
-export type DeleteArtworkQuestionReplyResponseDto =
-  ApiResponseDto<DeleteArtworkQuestionReplyResponseDataDto>;
 
 export interface ArtworkFeelingLikeDto {
   feelingId: number;

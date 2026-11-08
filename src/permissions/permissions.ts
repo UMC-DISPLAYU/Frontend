@@ -5,7 +5,6 @@ import type {
   DisplayPolicyResource,
   LoungePostPolicyResource,
   MyResource,
-  PrivatableResource,
   UserOwnedResource,
 } from '@/policies/util';
 import type { User } from '@/types/policy';
@@ -25,7 +24,6 @@ export type Attrs = {
 
   isArtworkCreator: boolean;
   isArtworkCollaborator: boolean;
-  isQnaManager: boolean;
 
   isPersonalArtworkOwner: boolean;
 
@@ -33,8 +31,6 @@ export type Attrs = {
   isReplyAuthor: boolean;
 
   isMyArchive: boolean;
-
-  isPrivate: boolean;
 
   // 라운지 게시판 카테고리가 작가 인증이 있어야 열람 가능한 게시판인가
   // (전시 준비·작업 팁 / 모집·협업 — 전시 후기·전시 장소 대여는 false)
@@ -68,13 +64,12 @@ function toArtwork(a: Attrs): ArtworkPolicyResource {
   return {
     artistUserId: a.isArtworkCreator ? SELF_ID : OTHER_ID,
     coAuthors: a.isArtworkCollaborator ? [{ userId: SELF_ID, name: '' }] : [],
-    qaHandlers: a.isQnaManager ? [{ userId: SELF_ID }] : [],
   };
 }
 
-// 질문/감상평/리뷰 "원글" — 작성자 여부(isAuthor) + 공개 여부(isPrivate)
-function toPost(a: Attrs): UserOwnedResource & PrivatableResource {
-  return { userId: a.isAuthor ? SELF_ID : OTHER_ID, isPublic: !a.isPrivate };
+// 감상평/리뷰 "원글" — 작성자 여부(isAuthor)
+function toPost(a: Attrs): UserOwnedResource {
+  return { userId: a.isAuthor ? SELF_ID : OTHER_ID };
 }
 
 // 답글 — 작성자 여부(isReplyAuthor)
@@ -141,18 +136,6 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
   'artwork:delete': (a) => policies.artwork.delete(toUser(a), toArtwork(a), toDisplay(a)),
   'artwork:reorder': (a) => policies.artwork.reorder(toUser(a), toDisplay(a)),
 
-  'question:view': (a) => policies.question.view(toUser(a), toPost(a), toDisplay(a)),
-  'question:create': (a) => policies.question.create(toUser(a), toArtwork(a)),
-  'question:delete': (a) => policies.question.delete(toUser(a), toPost(a), toDisplay(a)),
-  'question:like': (a) => policies.question.like(toUser(a)),
-  'question:unlike': (a) => policies.question.unlike(toUser(a)),
-  'question:reply.view': (a) => policies.question.reply.view(toUser(a), toPost(a), toDisplay(a)),
-  'question:reply.create': (a) =>
-    policies.question.reply.create(toUser(a), toArtwork(a), toDisplay(a)),
-  'question:reply.like': (a) => policies.question.reply.like(toUser(a)),
-  'question:reply.unlike': (a) => policies.question.reply.unlike(toUser(a)),
-  'question:reply.delete': (a) => policies.question.reply.delete(toUser(a), toReply(a)),
-
   'feeling:create': (a) => policies.feeling.create(toUser(a)),
   'feeling:delete': (a) => policies.feeling.delete(toUser(a), toPost(a), toDisplay(a)),
   'feeling:like': (a) => policies.feeling.like(toUser(a)),
@@ -177,22 +160,6 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
   'personalArtwork:unlike': (a) => policies.personalArtwork.unlike(toUser(a)),
   'personalArtwork:edit': (a) => policies.personalArtwork.edit(toUser(a), toPersonalArtwork(a)),
   'personalArtwork:delete': (a) => policies.personalArtwork.delete(toUser(a), toPersonalArtwork(a)),
-
-  'personalQuestion:view': (a) =>
-    policies.personalQuestion.view(toUser(a), toPost(a), toPersonalArtwork(a)),
-  'personalQuestion:create': (a) => policies.personalQuestion.create(toUser(a)),
-  'personalQuestion:delete': (a) =>
-    policies.personalQuestion.delete(toUser(a), toPost(a), toPersonalArtwork(a)),
-  'personalQuestion:like': (a) => policies.personalQuestion.like(toUser(a)),
-  'personalQuestion:unlike': (a) => policies.personalQuestion.unlike(toUser(a)),
-  'personalQuestion:reply.view': (a) =>
-    policies.personalQuestion.reply.view(toUser(a), toPost(a), toPersonalArtwork(a)),
-  'personalQuestion:reply.create': (a) =>
-    policies.personalQuestion.reply.create(toUser(a), toPersonalArtwork(a)),
-  'personalQuestion:reply.like': (a) => policies.personalQuestion.reply.like(toUser(a)),
-  'personalQuestion:reply.unlike': (a) => policies.personalQuestion.reply.unlike(toUser(a)),
-  'personalQuestion:reply.delete': (a) =>
-    policies.personalQuestion.reply.delete(toUser(a), toReply(a)),
 
   'personalFeeling:create': (a) => policies.personalFeeling.create(toUser(a)),
   'personalFeeling:like': (a) => policies.personalFeeling.like(toUser(a)),

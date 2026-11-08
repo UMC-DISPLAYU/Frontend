@@ -150,7 +150,6 @@ function useArtworkPolicyResource(): ResourceQueryState<ArtworkPolicyResource> {
     resource: artwork
       ? {
           artistUserId: artwork.artistUserId ?? 0,
-          qaHandlers: artwork.qaHandlers,
           coAuthors: artwork.coAuthors,
         }
       : null,
