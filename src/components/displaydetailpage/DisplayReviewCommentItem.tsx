@@ -165,8 +165,6 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
         onDelete={handleDelete}
         onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
-        tightSpacing
-        showDivider
       />
       {loginModal}
     </>

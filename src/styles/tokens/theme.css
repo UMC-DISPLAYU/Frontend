@@ -27,6 +27,9 @@
   --text-color-disable: var(--semantic-color-text-disable);
   /* 피그마가 비선택 탭·드롭다운 글씨에 시멘틱이 아닌 primitive color/primary/400을 직접 쓴다 */
   --text-color-primary-400: var(--primitive-color-primary-400);
+  /* 피그마가 사진 위 장수 칩 글씨에 base/white, 저장 버튼 글씨에 bg/primary - white를 직접 쓴다 */
+  --text-color-base-white: var(--primitive-color-base-white);
+  --text-color-bg-primary-white: var(--semantic-color-bg-primary-white);
 
   /* Background */
   --background-color-primary-white: var(--semantic-color-bg-primary-white);
@@ -46,6 +49,8 @@
   --background-color-disable: var(--semantic-color-bg-disable);
   --background-color-notice: var(--semantic-color-bg-notice);
   --background-color-dim: var(--semantic-color-bg-dim);
+  /* 피그마가 사진 위 장수 칩 바탕에 시멘틱이 아닌 base/black을 직접 쓴다 */
+  --background-color-base-black: var(--primitive-color-base-black);
 
   /* Icon */
   --text-color-icon-primary: var(--semantic-color-icon-primary);
@@ -83,6 +88,10 @@
   --border-color-disable: var(--semantic-color-border-disable);
   /* 피그마가 드롭다운·필터 칩 외곽선에 icon/tertiary를 쓰는데 같은 값의 border 토큰이 없다 */
   --border-color-icon-tertiary: var(--semantic-color-icon-tertiary);
+  /* 피그마가 구분선·외곽선에 bg 색 변수를 쓰는데 같은 값의 border 토큰이 없다 */
+  --border-color-bg-secondary: var(--semantic-color-bg-secondary);
+  --border-color-bg-tertiary: var(--semantic-color-bg-tertiary);
+  --border-color-bg-primary-black: var(--semantic-color-bg-primary-black);
 
   /* Radius */
   --radius-0: var(--semantic-radius-0);
