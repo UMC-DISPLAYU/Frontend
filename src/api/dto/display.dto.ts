@@ -39,26 +39,6 @@ export interface GetClosingSoonDisplaysResponseDataDto {
 export type GetClosingSoonDisplaysResponseDto =
   ApiResponseDto<GetClosingSoonDisplaysResponseDataDto>;
 
-export interface DuPickDto {
-  duPickId: number;
-  title: string;
-  subtitle: string;
-  bannerImageUrl: string;
-  createdAt: string;
-}
-
-export interface GetDuPicksRequestDto {
-  cursor?: number | null;
-  size?: number;
-}
-
-export interface GetDuPicksResponseDataDto {
-  duPicks: DuPickDto[];
-  pagination: CursorPaginationDto<number>;
-}
-
-export type GetDuPicksResponseDto = ApiResponseDto<GetDuPicksResponseDataDto>;
-
 export interface DisplayListItemDto extends HomeExhibitionDto {
   /* 탐색 카드 좋아요용. 백엔드 검색 응답에 아직 없어 목 데이터에만 있습니다. */
   likeCount?: number;
