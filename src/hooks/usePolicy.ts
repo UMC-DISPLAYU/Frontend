@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import type {
   ArtworkFeelingDto,
   ArtworkGuestbookReplyDto,
-  ArtworkQuestionDto,
   DisplayDetailDto,
   DisplayReviewDto,
   DisplayReviewReplyDto,
@@ -12,8 +11,6 @@ import type {
   LoungeReplyDto,
   PersonalArtworkFeelingReplyDto,
   PersonalArtworkFeelingResponseDataDto,
-  PersonalArtworkQuestionReplyResponseDataDto,
-  PersonalArtworkQuestionResponseDataDto,
   PersonalArtworkResponseDataDto,
 } from '@/api/dto';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
@@ -137,25 +134,6 @@ export function useArtworkPolicy(
   );
 }
 
-export function useQuestionPolicy(
-  question: ArtworkQuestionDto,
-  display: DisplayDetailDto,
-  artwork?: ArtworkPolicyResource,
-): PermissionMap<Exclude<PolicyAction<'question'>, `reply.${string}`>> {
-  const user = useCurrentPolicyUser();
-
-  return useMemo(
-    () => ({
-      view: () => policies.question.view(user, question, display),
-      create: () => (artwork ? policies.question.create(user, artwork) : false),
-      delete: () => policies.question.delete(user, question, display),
-      like: () => policies.question.like(user),
-      unlike: () => policies.question.unlike(user),
-    }),
-    [user, question, display, artwork],
-  );
-}
-
 export function useFeelingPolicy(
   display: DisplayDetailDto,
   feeling?: ArtworkFeelingDto,
@@ -247,55 +225,6 @@ export function usePersonalArtworkPolicy(
         personalArtwork ? policies.personalArtwork.delete(user, personalArtwork) : false,
     }),
     [user, personalArtwork],
-  );
-}
-
-export function usePersonalQuestionPolicy(
-  question?: PersonalArtworkQuestionResponseDataDto,
-  personalArtwork?: PersonalArtworkResponseDataDto,
-): PolicyPermissionMap<'personalQuestion'> {
-  const user = useCurrentPolicyUser();
-
-  return useMemo(
-    () => ({
-      view: () =>
-        question && personalArtwork
-          ? policies.personalQuestion.view(user, question, personalArtwork)
-          : true,
-      create: () => policies.personalQuestion.create(user),
-      delete: () =>
-        question && personalArtwork
-          ? policies.personalQuestion.delete(user, question, personalArtwork)
-          : false,
-      like: () => policies.personalQuestion.like(user),
-      unlike: () => policies.personalQuestion.unlike(user),
-      'reply.view': () =>
-        question && personalArtwork
-          ? policies.personalQuestion.reply.view(user, question, personalArtwork)
-          : true,
-      'reply.create': () =>
-        personalArtwork ? policies.personalQuestion.reply.create(user, personalArtwork) : false,
-      'reply.like': () => policies.personalQuestion.reply.like(user),
-      'reply.unlike': () => policies.personalQuestion.reply.unlike(user),
-      'reply.delete': (reply?: PersonalArtworkQuestionReplyResponseDataDto) =>
-        reply ? policies.personalQuestion.reply.delete(user, reply) : false,
-    }),
-    [user, question, personalArtwork],
-  );
-}
-
-export function usePersonalQuestionReplyPolicy(
-  reply?: PersonalArtworkQuestionReplyResponseDataDto | null,
-): Pick<PolicyPermissionMap<'personalQuestion'>, 'reply.delete' | 'reply.like' | 'reply.unlike'> {
-  const user = useCurrentPolicyUser();
-
-  return useMemo(
-    () => ({
-      'reply.like': () => policies.personalQuestion.reply.like(user),
-      'reply.unlike': () => policies.personalQuestion.reply.unlike(user),
-      'reply.delete': () => (reply ? policies.personalQuestion.reply.delete(user, reply) : false),
-    }),
-    [user, reply],
   );
 }
 

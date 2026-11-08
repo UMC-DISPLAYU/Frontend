@@ -1,24 +1,24 @@
-import { Fragment, useEffect, useState } from 'react';
-
-import { Calendar, ChevronRight, Heart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
-import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
-import { ARTWORK_TYPE_LABEL_MAP } from '@/constants/artwork';
 import { useToggleArtworkLike } from '@/hooks/queries/useArtworkDetail';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArchivePolicy } from '@/hooks/usePolicy';
 import type { ArtworkDetail } from '@/types/exhibition';
-import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
+
+import { ArtworkInlineActions } from './ArtworkActions';
+import type { ArtworkArtist } from './ArtworkArtists';
+import { type ExhibitionState, getArtworkSpecText } from './artworkDetail.utils';
+import { ArtworkExhibitionRow } from './ArtworkExhibitionRow';
+import { ArtworkLabel } from './ArtworkLabel';
+import { ArtworkSaveButton } from './ArtworkSaveButton';
 
 type Props = {
   artwork: ArtworkDetail;
+  artists: ArtworkArtist[];
+  exhibitionState: ExhibitionState | null;
+  shareImageUrl?: string;
 };
 
-export function ArtworkMeta({ artwork }: Props) {
-  const navigate = useNavigate();
-  const [isAtTop, setIsAtTop] = useState(true);
+export function ArtworkMeta({ artwork, artists, exhibitionState, shareImageUrl }: Props) {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
 
@@ -26,15 +26,6 @@ export function ArtworkMeta({ artwork }: Props) {
   const liked = artwork.isLiked ?? false;
   const likeCount = artwork.likeCount ?? artwork.bookmarkCount ?? 0;
   const toggleLike = useToggleArtworkLike(artwork.artworkId);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsAtTop(window.scrollY <= 10);
-    };
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const handleLike = () => {
     if (toggleLike.isPending) return;
@@ -46,105 +37,38 @@ export function ArtworkMeta({ artwork }: Props) {
     toggleLike.mutate(liked);
   };
 
-  /* 분류·연도·크기·재료 순으로, 값이 있는 항목만 가운뎃점(·)으로 이어 보여줍니다. */
-  const infoParts = [
-    ARTWORK_TYPE_LABEL_MAP[artwork.type] ?? artwork.type,
-    artwork.productionYear ? `${artwork.productionYear}` : null,
-    artwork.size,
-    artwork.materialMedia,
-  ].filter((part): part is string => Boolean(part));
-
   return (
-    <div className="bg-page px-5 pt-5 pb-6">
-      {/* 제목/하트 */}
-      <div className="flex items-start justify-between gap-3">
-        <h1 className="typo-body-2xl-bold text-main">{artwork.artworkName}</h1>
-        <div className="flex flex-col items-center shrink-0">
-          <button
-            type="button"
-            aria-label="좋아요"
-            onClick={handleLike}
-            className="cursor-pointer active:scale-95 transition-transform"
-          >
-            <Heart
-              size={24}
-              strokeWidth={1.5}
-              className={cn(
-                'transition-colors duration-200',
-                liked ? 'fill-heart text-heart' : 'fill-none text-main',
-              )}
-            />
-          </button>
-          <span className="typo-body-xs-regular mt-1 text-main">{likeCount}</span>
-        </div>
-      </div>
-
-      {/* 작가명 + 작품 정보(분류·연도·크기·재료) */}
-      <div className="flex flex-col items-start gap-2 mb-2.5">
-        <p className="typo-body-sm-regular text-main -mt-1.5">{artwork.artist}</p>
-        {infoParts.length > 0 && (
-          <div className="flex items-center gap-1 self-stretch">
-            {infoParts.map((part, idx) => (
-              <Fragment key={idx}>
-                {idx > 0 && <span className="typo-body-xs-regular text-hint">·</span>}
-                <span className="typo-body-xs-regular text-hint">{part}</span>
-              </Fragment>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 소속 전시 카드 */}
-      <button
-        type="button"
-        onClick={() => navigate(`/display/${artwork.exhibitionId}`)}
-        className="w-full flex items-center gap-2 p-3 bg-box100 rounded-xl mb-4 cursor-pointer text-left"
-        style={{
-          boxShadow:
-            '8px 8px 18px 0px rgba(67, 0, 209, 0.04), inset 2px 2px 3px 0px rgba(0, 0, 0, 0.20), inset -2px -2px 3px 0px rgba(255, 255, 255, 1.00)',
-        }}
-      >
-        {/* 썸네일 이미지 */}
-        <div className="w-18 h-24 shrink-0 rounded-sm overflow-hidden bg-box200">
-          <img
-            src={artwork.exhibitionThumbnail}
-            alt="전시 썸네일"
-            className="w-full h-full object-cover"
+    <>
+      <ArtworkLabel
+        title={artwork.artworkName}
+        artists={artists}
+        spec={getArtworkSpecText(artwork)}
+        liked={liked}
+        likeCount={likeCount}
+        onToggleLike={handleLike}
+        exhibition={
+          <ArtworkExhibitionRow
+            displayId={artwork.exhibitionId}
+            title={artwork.exhibitionTitle}
+            organizer={artwork.exhibitionOrganizer}
+            posterUrl={artwork.exhibitionThumbnail}
+            state={exhibitionState}
           />
-        </div>
-
-        {/* 텍스트 영역 */}
-        <div className="flex flex-col justify-between h-24 min-w-0 flex-1 py-0.5">
-          {/* 제목, 설명 */}
-          <div className="flex flex-col justify-start items-start gap-1 min-w-0">
-            <span className="inline-flex items-start rounded px-2 py-0.5 bg-box200">
-              <span className="typo-body-xxs-regular text-logo">소속전시</span>
-            </span>
-            <h2 className="w-full typo-body-sm-bold text-main truncate">
-              {artwork.exhibitionTitle}
-            </h2>
-            <p className="w-full typo-body-xs-regular text-sub600 truncate">
-              {artwork.exhibitionSubtitle}
-            </p>
-          </div>
-
-          {/* 날짜 */}
-          <div className="flex items-center gap-[5px] text-faint">
-            <Calendar size={12} className="shrink-0 text-faint ml-0.5" strokeWidth={1.5} />
-            <span className="typo-body-xxs-regular text-faint">{artwork.exhibitionPeriod}</span>
-          </div>
-        </div>
-
-        {/* 오른쪽 화살표 */}
-        <div className="shrink-0 -mr-2.5">
-          <ChevronRight size={32} className="text-faint" strokeWidth={1.5} />
-        </div>
-      </button>
-
-      {!isAtTop && (
-        <ArtworkSaveButton artworkId={artwork.artworkId} saved={artwork.isArchived ?? false} />
-      )}
+        }
+        actions={
+          <ArtworkInlineActions
+            shareTitle={artwork.artworkName}
+            shareImageUrl={shareImageUrl}
+            saveButton={
+              <ArtworkSaveButton
+                artworkId={artwork.artworkId}
+                saved={artwork.isArchived ?? false}
+              />
+            }
+          />
+        }
+      />
       {loginModal}
-    </div>
+    </>
   );
 }

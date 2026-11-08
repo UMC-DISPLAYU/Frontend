@@ -1,13 +1,13 @@
 import { type ChangeEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
 
-import { Check, CirclePlus, CircleX, X } from 'lucide-react';
-
-import drawingIcon from '@/assets/comment/DrawingIcon.svg';
-import galleryIcon from '@/assets/comment/GalleryIcon.svg';
-import sendIcon from '@/assets/comment/SendIcon.svg';
+import arrowUpIcon from '@/assets/comment/ArrowUpIcon.svg';
+import closeIcon from '@/assets/comment/CloseIcon.svg';
+import imageIcon from '@/assets/comment/ImageIcon.svg';
+import pencilIcon from '@/assets/comment/PencilIcon.svg';
 import { DrawingModal } from '@/components/common/DrawingModal';
 import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useBottomObstruction, useIsKeyboardOpen } from '@/hooks/useVirtualKeyboard';
 import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
@@ -21,7 +21,6 @@ type Props = {
   onSubmit: (payload: {
     content: string;
     images: BottomCommentBarImage[];
-    isPrivate: boolean;
   }) => Promise<void | boolean>;
   isSubmitting?: boolean;
   /* 이미지 업로드 도메인. 지정하지 않으면 이미지 첨부 없이 텍스트만 입력받습니다. */
@@ -30,10 +29,20 @@ type Props = {
   /* 답글 모드일 때 대상 작성자 닉네임. 넘기면 입력창 위에 안내 줄이 표시됩니다. */
   replyingTo?: string;
   onCancelReply?: () => void;
-  /* 작품 방명록의 질문 탭처럼 비공개로 남길 수 있는 화면에서 사용합니다. */
-  showPrivateOption?: boolean;
+  /**
+   * legacy(기본값): max-w-md 페이지용. 화면 아래 가운데에 고정된다
+   * page: 반응형 페이지용. 900px 미만은 화면 전체 폭 하단 고정, 이상은 놓인 자리에 그대로 표시된다
+   */
+  placement?: 'legacy' | 'page';
   className?: string;
 };
+
+// 한 줄일 때 48px 입력칸을 채우는 높이(하단 여백 4 제외)와, 4줄까지 늘어나는 최대 높이
+const TEXTAREA_MIN_HEIGHT = 44;
+const TEXTAREA_MAX_HEIGHT = 114;
+
+const TOOL_BUTTON_CLASS =
+  'relative grid size-10 shrink-0 cursor-pointer place-items-center rounded-8 before:absolute before:-inset-0.5 transition duration-fast ease-standard hover:bg-tertiary active:scale-94 disabled:pointer-events-none disabled:opacity-40';
 
 export function BottomCommentBar({
   placeholder = '글을 입력하세요.',
@@ -43,23 +52,23 @@ export function BottomCommentBar({
   maxImages = 3,
   replyingTo,
   onCancelReply,
-  showPrivateOption = false,
+  placement = 'legacy',
   className = '',
 }: Props) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [content, setContent] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const attachMenuRef = useRef<HTMLDivElement>(null);
-  const attachButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const submittingRef = useRef(false);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  const barHeight = useBottomObstruction(barRef);
+  const isKeyboardOpen = useIsKeyboardOpen();
 
   const { images, addImages, removeImage, clearImages, uploadImages, uploadImage, isUploading } =
     useImageUpload({
@@ -67,8 +76,10 @@ export function BottomCommentBar({
       maxImages,
     });
 
+  const isPagePlacement = placement === 'page';
   const isBusy = isSubmitting || isUploading || isSaving;
-  const canSubmit = (content.trim().length > 0 || images.length > 0) && !isBusy;
+  const hasDraft = content.trim().length > 0 || images.length > 0;
+  const canSubmit = hasDraft && !isBusy;
 
   /* 답글달기를 누르면 입력창에 바로 포커스를 줘서 이어서 타이핑할 수 있게 합니다. */
   useEffect(() => {
@@ -77,27 +88,15 @@ export function BottomCommentBar({
     }
   }, [replyingTo]);
 
-  /* 팝오버 메뉴 외부 클릭 시 닫기 */
   useEffect(() => {
-    if (!isAttachMenuOpen) return;
-
-    const handlePointerDownOutside = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (
-        attachMenuRef.current &&
-        !attachMenuRef.current.contains(target) &&
-        attachButtonRef.current &&
-        !attachButtonRef.current.contains(target)
-      ) {
-        setIsAttachMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('pointerdown', handlePointerDownOutside);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDownOutside);
-    };
-  }, [isAttachMenuOpen]);
+    const textarea = inputRef.current;
+    if (!textarea) return;
+    textarea.style.height = '0';
+    textarea.style.height = `${Math.min(
+      Math.max(textarea.scrollHeight, TEXTAREA_MIN_HEIGHT),
+      TEXTAREA_MAX_HEIGHT,
+    )}px`;
+  }, [content]);
 
   const pickImages = (event: ChangeEvent<HTMLInputElement>) => {
     if (!submittingRef.current && event.target.files?.length) addImages(event.target.files);
@@ -127,10 +126,8 @@ export function BottomCommentBar({
         height: dimensions[index].height,
       }));
 
-      if ((await onSubmit({ content: content.trim(), images: submitImages, isPrivate })) === false)
-        return;
+      if ((await onSubmit({ content: content.trim(), images: submitImages })) === false) return;
       setContent('');
-      setIsPrivate(false);
       clearImages();
     } catch (error) {
       setSubmitError(
@@ -142,13 +139,15 @@ export function BottomCommentBar({
     }
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    // 여러 줄 입력이라 Enter는 줄바꿈으로 두고, Ctrl·Cmd+Enter로 보낸다
+    if (event.key !== 'Enter' || !(event.metaKey || event.ctrlKey)) return;
+    if (event.nativeEvent.isComposing) return;
     event.preventDefault();
-    submit();
+    void submit();
   };
 
-  /* 드로잉 캔버스에서 전송 버튼을 눌렀을 때 */
+  /* 그림은 글·사진과 섞지 않고 단독으로 바로 올립니다. */
   const handleDrawingSubmit = async (file: File, dimensions: { width: number; height: number }) => {
     if (!accessToken) {
       setIsLoginModalOpen(true);
@@ -170,10 +169,7 @@ export function BottomCommentBar({
         },
       ];
 
-      if ((await onSubmit({ content: content.trim(), images: submitImages, isPrivate })) === false)
-        return;
-      setContent('');
-      setIsPrivate(false);
+      if ((await onSubmit({ content: '', images: submitImages })) === false) return;
       clearImages();
       setIsDrawingOpen(false);
     } catch (error) {
@@ -184,21 +180,15 @@ export function BottomCommentBar({
     }
   };
 
-  const handleAttachButtonClick = () => {
+  const handlePickPhoto = () => {
     if (!accessToken) {
       setIsLoginModalOpen(true);
       return;
     }
-    setIsAttachMenuOpen((prev) => !prev);
-  };
-
-  const handleSelectPhoto = () => {
-    setIsAttachMenuOpen(false);
     fileInputRef.current?.click();
   };
 
-  const handleSelectDrawing = () => {
-    setIsAttachMenuOpen(false);
+  const handleOpenDrawing = () => {
     if (!accessToken) {
       setIsLoginModalOpen(true);
       return;
@@ -206,177 +196,150 @@ export function BottomCommentBar({
     setIsDrawingOpen(true);
   };
 
-  const inputRow = (
-    <>
-      {showPrivateOption && (
-        <button
-          type="button"
-          onClick={() => setIsPrivate((prev) => !prev)}
-          disabled={isBusy}
-          aria-pressed={isPrivate}
-          className="flex shrink-0 cursor-pointer items-center gap-1.5 text-hint hover:text-main"
-        >
-          <span
-            className={cn(
-              'flex size-4 items-center justify-center rounded border border-hint transition-colors',
-              isPrivate && 'border-main bg-main text-white',
-            )}
-          >
-            {isPrivate && <Check size={12} strokeWidth={3} />}
-          </span>
-          <span className="typo-body-xs-regular text-hint">비공개</span>
-        </button>
-      )}
-
-      <input
-        ref={inputRef}
-        value={content}
-        disabled={isBusy}
-        onFocus={(e) => {
-          if (!accessToken) {
-            e.target.blur();
-            setIsLoginModalOpen(true);
-            onCancelReply?.();
-          }
-        }}
-        onChange={(e) => setContent(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className="typo-body-sm-regular min-w-0 flex-1 bg-transparent text-main outline-none placeholder:text-faint"
-      />
-
-      {imageDomain && (
-        <div className="relative shrink-0 flex items-center">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            disabled={isBusy}
-            onChange={pickImages}
-            className="hidden"
-          />
-
-          {/* 사진 / 그리기 선택 팝오버 메뉴 */}
-          {isAttachMenuOpen && (
-            <div
-              ref={attachMenuRef}
-              className="absolute bottom-full right-0 mb-3 w-22 h-24 rounded-[20px] bg-white/85 backdrop-blur-[10px] shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)] border border-white/60 flex flex-col items-center justify-center gap-4 z-30 animate-in fade-in zoom-in-95 duration-150 select-none"
-            >
-              <button
-                type="button"
-                disabled={isBusy}
-                onClick={handleSelectPhoto}
-                className="w-16 flex items-center justify-start gap-2 hover:opacity-75 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
-              >
-                <img src={galleryIcon} alt="" className="size-5 shrink-0 object-contain" />
-                <span className="typo-body-md-regular text-main whitespace-nowrap">사진</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isBusy}
-                onClick={handleSelectDrawing}
-                className="w-16 flex items-center justify-start gap-2 hover:opacity-75 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
-              >
-                <img src={drawingIcon} alt="" className="size-4 shrink-0 object-contain" />
-                <span className="typo-body-md-regular text-main whitespace-nowrap">그리기</span>
-              </button>
-            </div>
-          )}
-
-          <button
-            ref={attachButtonRef}
-            type="button"
-            onClick={handleAttachButtonClick}
-            disabled={images.length >= maxImages || isBusy}
-            aria-label="첨부 메뉴 열기"
-            aria-expanded={isAttachMenuOpen}
-            className="shrink-0 cursor-pointer"
-          >
-            {isAttachMenuOpen ? (
-              <CircleX size={20} className="text-main shrink-0" strokeWidth={2.5} />
-            ) : (
-              <CirclePlus size={20} className="text-main shrink-0" strokeWidth={2.5} />
-            )}
-          </button>
-        </div>
-      )}
-      <button
-        type="button"
-        onClick={submit}
-        disabled={!canSubmit}
-        aria-label="등록"
-        className="shrink-0 cursor-pointer"
-      >
-        <img src={sendIcon} alt="" className="size-6 shrink-0" />
-      </button>
-    </>
-  );
-
   return (
     <>
+      {isPagePlacement && (
+        <div aria-hidden className="shrink-0 desktop:hidden" style={{ height: barHeight }} />
+      )}
       <div
+        ref={barRef}
         className={cn(
-          'fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-line bg-card shadow-[0px_-2px_8px_0px_rgba(4,0,250,0.03)]',
+          'fixed bottom-keyboard-inset z-50 border-t border-bg-secondary bg-primary-white',
+          isPagePlacement
+            ? 'inset-x-0 desktop:static desktop:mt-3 desktop:border-0 desktop:bg-transparent'
+            : 'left-1/2 w-full max-w-md -translate-x-1/2',
           className,
         )}
       >
         <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
-        <div className="px-5 pt-4 pb-safe-bottom">
+        <div
+          className={cn(
+            'pt-4',
+            // 키보드가 열리면 홈 인디케이터가 가려지므로 safe area 대신 기본 여백만 둔다
+            isKeyboardOpen ? 'pb-4' : 'pb-safe-area-bottom',
+            isPagePlacement ? 'px-gutter desktop:p-0' : 'px-5',
+          )}
+        >
           {replyingTo && (
-            <div className="-mx-5 mb-3 flex items-center gap-2 px-5 pb-2">
-              <span className="typo-body-xs-regular text-hint">
-                <span className="typo-body-xs-bold">{replyingTo}</span>에게 답글 작성 중
+            <div className="mb-3 flex items-center gap-2">
+              <span className="typography-body-md-medium text-secondary">
+                <span className="typography-body-md-semibold">{replyingTo}</span>에게 답글 작성 중
               </span>
               <button
                 type="button"
                 onClick={onCancelReply}
                 disabled={isBusy}
                 aria-label="답글 취소"
-                className="typo-body-xs-regular text-faint cursor-pointer"
+                className="typography-body-md-medium cursor-pointer text-tertiary"
               >
                 취소
               </button>
             </div>
           )}
 
-          {images.length > 0 ? (
-            <div className="flex flex-col items-start gap-2.5 rounded-xl bg-[#D7D7DF] p-3">
-              <div className="flex w-full items-center gap-2">
+          <div className="flex flex-col overflow-hidden rounded-12 bg-secondary focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-focus">
+            {images.length > 0 && (
+              <div className="flex gap-2 px-3 pt-3">
                 {images.map((image) => (
-                  <div key={image.id} className="relative size-16 shrink-0">
-                    <img
-                      src={image.previewUrl}
-                      alt=""
-                      className="size-16 rounded-lg object-cover"
-                    />
+                  <div
+                    key={image.id}
+                    className="relative h-20 w-16 shrink-0 animate-fade-in overflow-hidden rounded-8"
+                  >
+                    <img src={image.previewUrl} alt="" className="size-full object-cover" />
                     <button
                       type="button"
                       onClick={() => removeImage(image.id)}
                       disabled={isBusy}
                       aria-label="이미지 삭제"
-                      className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-main"
+                      className="absolute top-1 right-1 grid size-5 cursor-pointer place-items-center rounded-circle bg-interactive-primary before:absolute before:-inset-3"
                     >
-                      <X size={12} className="text-white" strokeWidth={2.5} />
+                      <img src={closeIcon} alt="" />
                     </button>
                   </div>
                 ))}
               </div>
-              <div className="flex w-full items-center gap-2">{inputRow}</div>
+            )}
+
+            <div className="flex items-end pr-1 pb-1 pl-4">
+              <textarea
+                ref={inputRef}
+                rows={1}
+                value={content}
+                disabled={isBusy}
+                aria-label="글 입력"
+                onFocus={(event) => {
+                  if (!accessToken) {
+                    event.target.blur();
+                    setIsLoginModalOpen(true);
+                    onCancelReply?.();
+                  }
+                }}
+                onChange={(event) => setContent(event.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder}
+                className="typography-body-xl-regular min-w-0 flex-1 resize-none overflow-y-auto bg-transparent pt-3 pb-2 text-primary outline-none [scrollbar-width:none] placeholder:text-tertiary [&::-webkit-scrollbar]:hidden"
+              />
+
+              {imageDomain && (
+                <div className="flex shrink-0">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={isBusy}
+                    onChange={pickImages}
+                    className="hidden"
+                  />
+                  {/* 그림은 단독으로만 올리므로 글이나 사진이 있으면 연필을 숨긴다 */}
+                  {!hasDraft && (
+                    <button
+                      type="button"
+                      onClick={handleOpenDrawing}
+                      disabled={isBusy}
+                      aria-label="그림 그리기"
+                      className={TOOL_BUTTON_CLASS}
+                    >
+                      <img src={pencilIcon} alt="" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handlePickPhoto}
+                    disabled={images.length >= maxImages || isBusy}
+                    aria-label="사진 추가"
+                    className={TOOL_BUTTON_CLASS}
+                  >
+                    <img src={imageIcon} alt="" />
+                  </button>
+                </div>
+              )}
+
+              {hasDraft && (
+                <button
+                  type="button"
+                  onClick={submit}
+                  disabled={!canSubmit}
+                  aria-label="등록"
+                  className="relative grid size-10 shrink-0 animate-fade-in cursor-pointer place-items-center before:absolute before:-inset-0.5 disabled:opacity-50"
+                >
+                  <span className="grid size-8 place-items-center rounded-circle bg-interactive-primary transition-transform duration-fast ease-standard active:scale-94">
+                    <img src={arrowUpIcon} alt="" />
+                  </span>
+                </button>
+              )}
             </div>
-          ) : (
-            <div className="flex items-center gap-2 rounded-xl bg-box200 p-3">{inputRow}</div>
-          )}
+          </div>
+
           {submitError && !isDrawingOpen && (
-            <p role="alert" className="mt-2 typo-body-xs-regular text-error">
+            <p role="alert" className="typography-body-md-medium mt-2 text-error">
               {submitError}
             </p>
           )}
         </div>
       </div>
 
-      {/* 손글씨 / 그림 그리기 모달 */}
+      {/* 그림 그리기 화면 */}
       <DrawingModal
         isOpen={isDrawingOpen}
         onClose={() => {

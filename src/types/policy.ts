@@ -17,17 +17,6 @@ export type PolicyActionMap = {
     | 'reorder';
   displayInvitation: 'create';
   artwork: 'create' | 'edit' | 'delete' | 'reorder';
-  question:
-    | 'view'
-    | 'create'
-    | 'delete'
-    | 'like'
-    | 'unlike'
-    | 'reply.view'
-    | 'reply.create'
-    | 'reply.like'
-    | 'reply.unlike'
-    | 'reply.delete';
   feeling:
     | 'create'
     | 'delete'
@@ -47,17 +36,6 @@ export type PolicyActionMap = {
     | 'reply.unlike'
     | 'reply.delete';
   personalArtwork: 'create' | 'like' | 'unlike' | 'edit' | 'delete';
-  personalQuestion:
-    | 'view'
-    | 'create'
-    | 'delete'
-    | 'like'
-    | 'unlike'
-    | 'reply.view'
-    | 'reply.create'
-    | 'reply.like'
-    | 'reply.unlike'
-    | 'reply.delete';
   personalFeeling:
     | 'create'
     | 'like'

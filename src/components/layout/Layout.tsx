@@ -32,7 +32,6 @@ export function Layout() {
   // 하단 네비게이션 바(Navbar) 표시 여부 (홈, 검색, 라운지, 마이)
   const showNavbarPaths = ['/home', '/search', '/lounge'];
   const exactNavbarPaths = ['/my'];
-  const hideNavbarPaths = ['/lounge/my-questions'];
 
   const isRouteHandleNavbarHidden = matches.some(
     (match) => (match.handle as { hideNavbar?: boolean })?.hideNavbar,
@@ -41,7 +40,6 @@ export function Layout() {
   const shouldShowNavbar =
     (showNavbarPaths.some((path) => location.pathname.startsWith(path)) ||
       exactNavbarPaths.some((path) => location.pathname === path)) &&
-    !hideNavbarPaths.some((path) => location.pathname.startsWith(path)) &&
     !isLoungeWritePath &&
     !isRouteHandleNavbarHidden &&
     !manualNavbarHidden;
