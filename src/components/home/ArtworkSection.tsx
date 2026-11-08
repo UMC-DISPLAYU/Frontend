@@ -9,7 +9,9 @@ import { staggerStyle } from '@/utils/stagger';
 
 import { HOME_INNER } from './homeLayout';
 
-const CARD_CLASS = 'w-43.75 flex-none snap-start rounded-12 tablet:w-50 min-[68.75rem]:w-55';
+// 폰에서는 2장 + 3번째가 조금 보이게(프로토타입 11-08): 폭 = (화면 폭 − 76px) / 2, 최대 175px
+const CARD_CLASS =
+  'w-[min(175px,calc((100vw-76px)/2))] flex-none snap-start rounded-12 tablet:w-50 min-[68.75rem]:w-55';
 
 interface ArtworkSectionProps {
   artworks: ArtworkPreviewItemDto[] | undefined;
@@ -32,7 +34,7 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
         >
           더보기
           <span className="grid size-4 place-items-center">
-            <img src={ChevronMoreIcon} alt="" className="-rotate-90" />
+            <img src={ChevronMoreIcon} alt="" />
           </span>
         </Link>
       </div>

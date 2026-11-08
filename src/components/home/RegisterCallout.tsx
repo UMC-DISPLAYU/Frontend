@@ -19,7 +19,7 @@ export function RegisterCallout({ onRegister }: { onRegister: () => void }) {
         >
           전시 등록하기
           <span className="grid size-3 place-items-center">
-            <img src={GoIcon} alt="" />
+            <img src={GoIcon} alt="" className="size-3" />
           </span>
         </button>
       </div>

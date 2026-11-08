@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 import ChevronMapIcon from '@/assets/home/ChevronMapIcon.svg';
 import MapPinIcon from '@/assets/home/MapPinIcon.svg';
-import ViewToggleIcon from '@/assets/home/ViewToggleIcon.svg';
 import type { HomeExhibitionCard, HomeExhibitionTab } from '@/hooks/queries/useHome';
 import { cn } from '@/utils/cn';
 
@@ -74,7 +73,8 @@ export function ExhibitionShowcase({
     // 둘 중 큰 높이를 유지해 전환해도 아래 화면이 움직이지 않고, 숨긴 쪽은 포커스 · 스크린리더에서 빠진다
     stage = (
       <>
-        <div className="grid">
+        {/* 프로토타입처럼 포스터(232:329) + 위 여백 16 + 정보 3줄(99)만큼 높이를 잡아 둔다. 장소가 없거나 탭을 바꿔도 높이가 같다 */}
+        <div className="grid min-h-[calc(var(--poster-w)*329/232+115px)]">
           <div className={cn('col-start-1 row-start-1 min-w-0', isList && 'invisible')}>
             <PosterCarousel key={tab} items={items} showRank={showRank} />
           </div>
@@ -86,10 +86,11 @@ export function ExhibitionShowcase({
           <button
             type="button"
             aria-pressed={isList}
+            aria-label={isList ? '포스터형으로 보기' : '리스트형으로 보기'}
             onClick={() => onViewChange(isList ? 'poster' : 'list')}
             className="typography-body-md-medium -my-2.5 flex min-h-11 items-center gap-0.75 rounded-4 text-tertiary underline underline-offset-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:outline-focus-inverse"
           >
-            <img src={ViewToggleIcon} alt="" />
+            {isList ? <PosterViewIcon /> : <ListViewIcon />}
             {isList ? '포스터형' : '리스트형'}
           </button>
         </div>
@@ -154,7 +155,7 @@ export function ExhibitionShowcase({
             </span>
           </span>
           <span className="grid size-8 place-items-center transition-transform duration-base ease-standard group-hover:translate-x-0.5">
-            <img src={ChevronMapIcon} alt="" className="-rotate-90" />
+            <img src={ChevronMapIcon} alt="" />
           </span>
         </span>
       </Link>
@@ -171,5 +172,40 @@ function StageMessage({ message, children }: { message: string; children: ReactN
       <p className="typography-body-xl-semibold">{message}</p>
       {children}
     </div>
+  );
+}
+
+// 프로토타입 인라인 아이콘. currentColor 라 버튼 hover 색을 따라간다
+function ListViewIcon() {
+  return (
+    <svg
+      viewBox="0 0 15 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      aria-hidden="true"
+      className="h-3.5 w-3.75 shrink-0"
+    >
+      <path d="M5 3h8M5 7h8M5 11h8M1.5 3h.01M1.5 7h.01M1.5 11h.01" />
+    </svg>
+  );
+}
+
+function PosterViewIcon() {
+  return (
+    <svg
+      viewBox="0 0 15 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="h-3.5 w-3.75 shrink-0"
+    >
+      <path d="M2.5 6A5 5 0 0 1 11.6 4M12.5 8A5 5 0 0 1 3.4 10" />
+      <path d="M11.8 1.6V4.2H9.2M3.2 12.4V9.8h2.6" />
+    </svg>
   );
 }

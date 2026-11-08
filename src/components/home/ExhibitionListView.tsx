@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 
-import HeartLightIcon from '@/assets/home/HeartLightIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { CardMetaList } from '@/components/ui';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
@@ -81,30 +80,13 @@ export function ExhibitionListView({ items, showRank }: ExhibitionListViewProps)
                   </span>
                   <div className="flex min-w-0 flex-col justify-between p-3">
                     <div className="grid gap-0.5">
-                      <span
-                        className={cn(
-                          'typography-body-xl-semibold truncate',
-                          item.likeCount !== undefined && 'pr-14',
-                        )}
-                      >
-                        {item.title}
-                      </span>
+                      <span className="typography-body-xl-semibold truncate">{item.title}</span>
                       <span className="typography-body-md-medium truncate">
                         {item.organization}
                       </span>
                     </div>
                     <CardMetaList period={item.period} location={item.place} />
                   </div>
-                  {item.likeCount !== undefined && (
-                    <span
-                      role="img"
-                      aria-label={`좋아요 ${item.likeCount}개`}
-                      className="typography-body-md-medium absolute top-3 right-3 flex h-6.25 items-center gap-0.5 rounded-circle bg-primary-white/8 px-2.25 text-disable tabular-nums backdrop-blur-md"
-                    >
-                      <img src={HeartLightIcon} alt="" className="size-3.5" />
-                      {item.likeCount}
-                    </span>
-                  )}
                 </Link>
               );
             })}

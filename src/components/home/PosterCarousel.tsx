@@ -1,8 +1,7 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { KeyboardEvent } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 
-import HeartLightIcon from '@/assets/home/HeartLightIcon.svg';
+import ChevronArrowIcon from '@/assets/home/ChevronArrowIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { CardMetaList, Skeleton, SkeletonList } from '@/components/ui';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
@@ -40,7 +39,7 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
         onClick={() => scrollToIndex(activeIndex - 1)}
         className={cn(ARROW_CLASS, 'left-(--home-pad)')}
       >
-        <ChevronLeft aria-hidden="true" className="size-6" strokeWidth={1.5} />
+        <img src={ChevronArrowIcon} alt="" className="-scale-x-100" />
       </button>
       <button
         type="button"
@@ -49,7 +48,7 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
         onClick={() => scrollToIndex(activeIndex + 1)}
         className={cn(ARROW_CLASS, 'right-(--home-pad)')}
       >
-        <ChevronRight aria-hidden="true" className="size-6" strokeWidth={1.5} />
+        <img src={ChevronArrowIcon} alt="" />
       </button>
 
       <div
@@ -67,6 +66,12 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
         {items.map((item, index) => {
           const isActive = index === activeIndex;
           const rank = showRank ? index + 1 : null;
+          // 옆 포스터는 상세로 가지 않고 먼저 가운데로 온다
+          const openOrCenter = (event: MouseEvent) => {
+            if (isActive) return;
+            event.preventDefault();
+            scrollToIndex(index);
+          };
 
           return (
             <article
@@ -79,12 +84,7 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
                 to={`/display/${item.displayId}`}
                 aria-label={`전시 상세 보기: ${item.title}`}
                 tabIndex={isActive ? 0 : -1}
-                // 옆 포스터는 상세로 가지 않고 먼저 가운데로 온다
-                onClick={(event) => {
-                  if (isActive) return;
-                  event.preventDefault();
-                  scrollToIndex(index);
-                }}
+                onClick={openOrCenter}
                 className={cn(
                   'relative block aspect-232/329 w-full origin-top overflow-hidden rounded-12 bg-primary-400 transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
                   !isActive && 'translate-y-3.5 scale-91',
@@ -112,24 +112,11 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
                     !isActive && 'opacity-0',
                   )}
                 />
-                {item.likeCount !== undefined && (
-                  <span
-                    role="img"
-                    aria-label={`좋아요 ${item.likeCount}개`}
-                    className={cn(
-                      'typography-body-md-medium absolute top-3 right-3 flex items-center gap-0.5 rounded-circle bg-primary-black px-2.25 py-1 text-disable transition-opacity duration-base ease-standard',
-                      !isActive && 'opacity-40',
-                    )}
-                  >
-                    <img src={HeartLightIcon} alt="" className="size-3.5" />
-                    {item.likeCount}
-                  </span>
-                )}
                 {rank && (
                   <span
                     aria-hidden="true"
                     className={cn(
-                      'typography-title-xl absolute bottom-3 left-4 transition duration-base ease-standard',
+                      'typography-title-xl absolute bottom-3 left-4 transition duration-fast ease-standard',
                       isActive ? 'translate-y-1.5 text-quaternary' : 'text-tertiary',
                     )}
                   >
@@ -139,12 +126,28 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
               </Link>
               <div
                 className={cn(
-                  'grid w-full gap-2 pt-3.5 text-center transition duration-base ease-standard',
-                  isActive ? 'text-quaternary' : '-translate-y-3.5 text-tertiary',
+                  'grid w-full gap-2 pt-3.5 text-center transition-transform duration-base ease-standard',
+                  !isActive && '-translate-y-3.5',
                 )}
               >
-                <div className="grid gap-0.5">
-                  <p className="typography-body-xl-semibold truncate">{item.title}</p>
+                <div
+                  className={cn(
+                    'grid gap-0.5 transition-colors duration-fast ease-out',
+                    isActive ? 'text-quaternary' : 'text-tertiary',
+                  )}
+                >
+                  {/* 포스터와 같은 링크라 탭 순서에서는 뺀다 */}
+                  <Link
+                    to={`/display/${item.displayId}`}
+                    tabIndex={-1}
+                    onClick={openOrCenter}
+                    className={cn(
+                      'typography-body-xl-semibold block truncate decoration-1 underline-offset-3',
+                      isActive && 'hover:underline',
+                    )}
+                  >
+                    {item.title}
+                  </Link>
                   <p className="typography-body-md-medium truncate">{item.organization}</p>
                 </div>
                 <CardMetaList period={item.period} location={item.place} className="items-center" />

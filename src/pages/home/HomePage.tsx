@@ -28,6 +28,26 @@ import { hasPermission } from '@/utils/hasPermission';
 
 import { useHomeAuthBootstrap } from './useHomeAuthBootstrap';
 
+// 프로토타입처럼 마지막으로 고른 보기(포스터형 · 리스트형)를 기억한다. 주소의 ?view= 가 있으면 그게 먼저다
+const VIEW_STORAGE_KEY = 'du.homeview';
+
+const readStoredView = (): HomeExhibitionView | null => {
+  try {
+    const stored = localStorage.getItem(VIEW_STORAGE_KEY);
+    return stored === 'list' || stored === 'poster' ? stored : null;
+  } catch {
+    return null;
+  }
+};
+
+const storeView = (view: HomeExhibitionView) => {
+  try {
+    localStorage.setItem(VIEW_STORAGE_KEY, view);
+  } catch {
+    // 시크릿 모드 등 저장소를 못 쓰면 이번 방문에서만 유지한다
+  }
+};
+
 export function HomePage() {
   // 신규 홈은 자체 푸터를 쓰므로 Layout 의 FNB 를 숨긴다
   useHideFooter();
@@ -36,7 +56,9 @@ export function HomePage() {
   const navigate = useNavigate();
   const [searchParams, replaceSearchParams] = useReplaceSearchParams();
   const tab = parseHomeTab(searchParams.get('tab'));
-  const view: HomeExhibitionView = searchParams.get('view') === 'list' ? 'list' : 'poster';
+  const viewParam = searchParams.get('view');
+  const view: HomeExhibitionView =
+    viewParam === 'list' || viewParam === 'poster' ? viewParam : (readStoredView() ?? 'poster');
 
   const exhibitions = useHomeTabExhibitions(tab);
   const artworks = useHomeArtworkPreview();
@@ -62,14 +84,17 @@ export function HomePage() {
   };
 
   return (
-    // Layout 이 냅바 자리로 main 에 준 아래 여백까지 흰 배경으로 덮는다
-    <div className={cn('-mb-navbar-clearance bg-primary-white pb-navbar-clearance', HOME_PAD_VARS)}>
+    // Layout 이 냅바 자리로 main 에 준 아래 여백을 걷어내고, 프로토타입 하단 여백(132px)을 직접 둔다
+    <div className={cn('-mb-navbar-clearance bg-primary-white pb-33', HOME_PAD_VARS)}>
       <HomeHeader />
       <ExhibitionShowcase
         tab={tab}
         onTabChange={(next: HomeExhibitionTab) => setParam('tab', next === 'pop' ? null : next)}
         view={view}
-        onViewChange={(next) => setParam('view', next === 'list' ? 'list' : null)}
+        onViewChange={(next) => {
+          storeView(next);
+          setParam('view', next);
+        }}
         items={exhibitions.data}
         isPending={exhibitions.isPending}
         isError={exhibitions.isError}

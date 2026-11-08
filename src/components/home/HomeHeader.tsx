@@ -8,15 +8,18 @@ import { HOME_INNER } from './homeLayout';
 
 export function HomeHeader() {
   return (
-    <header className="bg-primary-white pt-safe-area-top">
-      <div className={cn(HOME_INNER, 'flex h-11 items-center justify-between tablet:h-16')}>
+    // 홈 프로토타입 헤더에는 공용 safe-area-top 의 최소 8px 이 없다. 노치 기기의 안전 영역만 둔다
+    <header className="bg-primary-white pt-[env(safe-area-inset-top)]">
+      <div
+        className={cn(HOME_INNER, 'flex items-center justify-between py-4 tablet:h-16 tablet:py-0')}
+      >
         <h1>
           <img src={Logo} alt="Display U." width={124} height={28} />
         </h1>
         <Link
           to="/search"
           aria-label="검색"
-          className="-mr-2 grid size-11 place-items-center rounded-circle transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
+          className="-my-2 -mr-2 grid size-11 place-items-center rounded-circle transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
         >
           <img src={SearchIcon} alt="" />
         </Link>
