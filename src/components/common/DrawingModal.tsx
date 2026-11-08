@@ -119,6 +119,16 @@ function DrawingCanvasInner({
     };
   }, [resizeCanvas]);
 
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.isComposing || isSubmitting) return;
+      onClose();
+    };
+
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [onClose, isSubmitting]);
+
   /* 실행 취소 (마지막 획 삭제) */
   const handleUndo = useCallback(() => {
     if (strokes.length === 0 || isSubmitting) return;

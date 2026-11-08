@@ -48,7 +48,7 @@ export function ArtworkIntroTab({ content, point, processImageUrls }: Props) {
                   type="button"
                   aria-expanded={false}
                   onClick={() => setIsExpanded(true)}
-                  className="typography-body-md-medium h-7 cursor-pointer text-tertiary transition-colors duration-fast ease-standard hover:text-primary"
+                  className="typography-body-md-medium relative h-7 cursor-pointer text-tertiary before:absolute before:-inset-2 transition-colors duration-fast ease-standard hover:text-primary"
                 >
                   더보기
                 </button>

@@ -12,7 +12,9 @@ export type ArtworkArtist = {
 
 const COLLAPSE_FROM = 5;
 const COLLAPSED_COUNT = 3;
-const ARTIST_CLASS = 'typography-body-xl-semibold flex h-8 items-center gap-0.5 text-primary';
+// 보이는 높이는 32px로 두고 누르는 영역만 44px로 넓힌다
+const ARTIST_CLASS =
+  'typography-body-xl-semibold relative flex h-8 items-center gap-0.5 text-primary before:absolute before:inset-x-0 before:-inset-y-1.5';
 
 export function ArtworkArtists({ artists }: { artists: ArtworkArtist[] }) {
   const [isExpanded, setIsExpanded] = useState(false);

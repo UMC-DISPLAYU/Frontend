@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 
 import type { PersonalArtworkResponseDataDto } from '@/api/dto';
 import { BottomCommentBar } from '@/components/common/BottomCommentBar';
+import { ErrorView } from '@/components/common/ErrorView';
 import {
   useCreatePersonalArtworkFeeling,
   useCreatePersonalArtworkFeelingReply,
@@ -9,6 +10,7 @@ import {
 } from '@/hooks/queries/usePersonalArtwork';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { usePersonalFeelingPolicy } from '@/hooks/usePolicy';
+import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { GuestbookSkeleton } from './ArtworkGuestbookTab';
@@ -21,7 +23,8 @@ type Props = {
 
 export function PersonalArtworkGuestbookTab({ artwork, myUserId }: Props) {
   const personalArtworkId = artwork.personalArtworkId;
-  const { data, isPending } = usePersonalArtworkFeelings(personalArtworkId);
+  const { data, error, isPending, isError, refetch } =
+    usePersonalArtworkFeelings(personalArtworkId);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const feelingPolicy = usePersonalFeelingPolicy(undefined, artwork);
 
@@ -53,7 +56,7 @@ export function PersonalArtworkGuestbookTab({ artwork, myUserId }: Props) {
     <div className="px-gutter py-2 desktop:px-0">
       {isPending && <GuestbookSkeleton />}
 
-      {!isPending && feelings.length === 0 && (
+      {!isPending && !isError && feelings.length === 0 && (
         <p className="typography-body-lg-medium py-10 text-center text-tertiary">
           아직 방명록이 없어요
         </p>
@@ -72,6 +75,17 @@ export function PersonalArtworkGuestbookTab({ artwork, myUserId }: Props) {
           />
         ))}
       </div>
+
+      {isError && (
+        <ErrorView
+          fullScreen={false}
+          message={getErrorMessage(error, '방명록을 불러오지 못했어요.')}
+          onRetry={() => {
+            void refetch();
+          }}
+          retryLabel="다시 시도"
+        />
+      )}
 
       <BottomCommentBar
         placement="page"

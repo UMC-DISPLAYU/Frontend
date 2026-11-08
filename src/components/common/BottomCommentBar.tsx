@@ -42,7 +42,7 @@ const TEXTAREA_MIN_HEIGHT = 44;
 const TEXTAREA_MAX_HEIGHT = 114;
 
 const TOOL_BUTTON_CLASS =
-  'grid size-10 shrink-0 cursor-pointer place-items-center rounded-8 transition duration-fast ease-standard hover:bg-tertiary active:scale-94 disabled:pointer-events-none disabled:opacity-40';
+  'relative grid size-10 shrink-0 cursor-pointer place-items-center rounded-8 before:absolute before:-inset-0.5 transition duration-fast ease-standard hover:bg-tertiary active:scale-94 disabled:pointer-events-none disabled:opacity-40';
 
 export function BottomCommentBar({
   placeholder = '글을 입력하세요.',
@@ -321,7 +321,7 @@ export function BottomCommentBar({
                   onClick={submit}
                   disabled={!canSubmit}
                   aria-label="등록"
-                  className="grid size-10 shrink-0 animate-fade-in cursor-pointer place-items-center disabled:opacity-50"
+                  className="relative grid size-10 shrink-0 animate-fade-in cursor-pointer place-items-center before:absolute before:-inset-0.5 disabled:opacity-50"
                 >
                   <span className="grid size-8 place-items-center rounded-circle bg-interactive-primary transition-transform duration-fast ease-standard active:scale-94">
                     <img src={arrowUpIcon} alt="" />

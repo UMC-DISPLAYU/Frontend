@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { BottomCommentBar } from '@/components/common/BottomCommentBar';
+import { ErrorView } from '@/components/common/ErrorView';
 import { Skeleton, SkeletonList } from '@/components/ui/Skeleton';
 import {
   useArtworkFeelings,
@@ -10,6 +11,7 @@ import {
 } from '@/hooks/queries/useArtworkFeelings';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useFeelingPolicy, useFeelingReplyPolicy } from '@/hooks/usePolicy';
+import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworkFeelingCommentItem } from './ArtworkFeelingCommentItem';
@@ -37,8 +39,17 @@ export function GuestbookSkeleton() {
 }
 
 export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
-  const { data, isPending, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useArtworkFeelings(artworkId);
+  const {
+    data,
+    error,
+    isPending,
+    isError,
+    isFetchNextPageError,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useArtworkFeelings(artworkId);
   const createFeeling = useCreateArtworkFeeling();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const feelingPolicy = useFeelingPolicy(display, undefined);
@@ -72,7 +83,13 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        // 다음 페이지 요청이 실패하면 자동으로 다시 부르지 않고 재시도 버튼에 맡긴다
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          !isFetchNextPageError
+        ) {
           void fetchNextPage();
         }
       },
@@ -81,13 +98,13 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   return (
     <div className="px-gutter py-2 desktop:px-0">
       {isPending && <GuestbookSkeleton />}
 
-      {!isPending && feelings.length === 0 && (
+      {!isPending && !isError && feelings.length === 0 && (
         <p className="typography-body-lg-medium py-10 text-center text-tertiary">
           아직 방명록이 없어요
         </p>
@@ -112,6 +129,17 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
         <p className="typography-body-md-medium animate-pulse py-4 text-center text-tertiary">
           불러오는 중...
         </p>
+      )}
+
+      {isError && (
+        <ErrorView
+          fullScreen={false}
+          message={getErrorMessage(error, '방명록을 불러오지 못했어요.')}
+          onRetry={() => {
+            void (isFetchNextPageError ? fetchNextPage() : refetch());
+          }}
+          retryLabel="다시 시도"
+        />
       )}
 
       <BottomCommentBar
