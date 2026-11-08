@@ -24,7 +24,7 @@ import { SelectArtistPage } from '@/components/artwork-register/SelectArtistPage
 import { ErrorView } from '@/components/common/ErrorView';
 import { WorkHeader } from '@/components/exhibition-work';
 import { useFlowContext } from '@/components/guards/useFlowContext';
-import { PageContainer, useHideFooter } from '@/components/layout';
+import { PageContainer } from '@/components/layout';
 import { Overlay, Skeleton } from '@/components/ui';
 import {
   ARTWORK_FIELD_MAP,
@@ -97,8 +97,6 @@ export function ArtworkRegisterPage() {
 }
 
 function ArtworkRegisterPageContent() {
-  useHideFooter();
-
   const { draft, updateDraft, resetDraft } = useArtworkRegisterDraft();
   const navigate = useNavigate();
   const flowBack = useFlowBack();

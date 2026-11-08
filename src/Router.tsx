@@ -519,7 +519,7 @@ export const router = createBrowserRouter([
               {
                 path: 'lounge/:category/:id/edit',
                 element: <ExhibitionReviewWritePage />,
-                handle: { hideNavbar: true, hideFooter: true },
+                handle: { hideNavbar: true },
               },
             ],
           },

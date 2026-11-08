@@ -10,7 +10,6 @@ import {
   parseHomeTab,
   RegisterCallout,
 } from '@/components/home';
-import { useHideFooter } from '@/components/layout';
 import {
   type HomeExhibitionTab,
   useHomeArtworkPreview,
@@ -49,8 +48,6 @@ const storeView = (view: HomeExhibitionView) => {
 };
 
 export function HomePage() {
-  // 신규 홈은 자체 푸터를 쓰므로 Layout 의 FNB 를 숨긴다
-  useHideFooter();
   useHomeAuthBootstrap();
 
   const navigate = useNavigate();
