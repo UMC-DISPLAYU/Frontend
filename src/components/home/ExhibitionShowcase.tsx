@@ -50,7 +50,8 @@ export function ExhibitionShowcase({
   };
 
   let stage: ReactNode;
-  if (isError) {
+  // 이미 받은 목록이 있으면 다시 불러오기가 실패해도 목록을 그대로 둔다
+  if (isError && !items) {
     stage = (
       <StageMessage message="전시를 불러오지 못했어요">
         <button type="button" onClick={onRetry} className={STAGE_LINK_CLASS}>
