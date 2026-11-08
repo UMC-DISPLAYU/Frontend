@@ -36,6 +36,20 @@ const displayDetailResponse = (displayId: number) => {
     invitations: display.invitations ?? [],
     contentCategories: display.contentCategories ?? [],
     images: display.images ?? display.posterImages ?? [],
+    artworkContentOpen: display.artworkContentOpen ?? 'ON_EXHIBITION',
+    exhibitionContentOpen: display.exhibitionContentOpen ?? 'ON_EXHIBITION',
+    period: display.period ?? {
+      startDate: display.startDate ?? display.startedAt,
+      endDate: display.endDate ?? display.endedAt,
+      startTime: display.startTime ?? '10:00:00',
+      endTime: display.endTime ?? '18:00:00',
+    },
+    location: display.location ?? {
+      placeName: display.placeName,
+      latitude: display.latitude ?? 37.5665,
+      longitude: display.longitude ?? 126.978,
+      roadAddress: display.roadAddress ?? '',
+    },
   };
 };
 
@@ -181,6 +195,32 @@ export const displayHandlers = [
 
       return success('/api/v1/display', display);
     }),
+  ),
+  ...paths('/api/v1/display/publish').map((path) =>
+    http.patch(path, async ({ request }) => {
+      const body = await readJson<{ displayId?: number }>(request);
+      const displayId = body.displayId ?? 101;
+      findDisplay(displayId).status = 'PENDING_REVIEW';
+
+      return success('/api/v1/display/publish', displayDetailResponse(displayId));
+    }),
+  ),
+  ...paths('/api/v1/display/{displayId}/draft').map((path) =>
+    http.patch(path, ({ params }) => {
+      const displayId = toNumber(params.displayId, 101);
+      findDisplay(displayId).status = 'DRAFT';
+
+      return success('/api/v1/display/{displayId}/draft', displayDetailResponse(displayId));
+    }),
+  ),
+  ...paths('/api/v1/display/{displayId}/rejection-reason').map((path) =>
+    http.get(path, ({ params }) =>
+      success('/api/v1/display/{displayId}/rejection-reason', {
+        displayId: toNumber(params.displayId, 101),
+        publishStatus: 'REJECTED',
+        rejectionReason: '이미지 출처를 확인할 수 없어요',
+      }),
+    ),
   ),
   /* 공개 시점 조회는 전시 상세 응답에 포함되어 별도 핸들러가 없습니다. */
   ...paths('/api/v1/display/{displayId}/reservation').map((path) =>

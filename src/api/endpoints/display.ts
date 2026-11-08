@@ -15,6 +15,7 @@ import type {
   DisplayMemberInvitationResponseDataDto,
   DisplayMemberListRawResponseDataDto,
   DisplayMemberListResponseDataDto,
+  DisplayRejectionReasonResponseDataDto,
   DisplayReviewLikeResponseDataDto,
   DisplayReviewReplyLikeResponseDataDto,
   GetArtistDisplaysResponseDataDto,
@@ -113,6 +114,16 @@ export const updateDisplayReservation = async (
 // PATCH /v1/display/publish
 export const publishDisplay = async (displayId: number): Promise<DisplayDetailDto> =>
   apiRequest('/v1/display/publish', { method: 'PATCH', body: { displayId } });
+
+// PATCH /v1/display/{displayId}/draft
+export const hideDisplay = async (displayId: number): Promise<DisplayDetailDto> =>
+  apiRequest(`/v1/display/${displayId}/draft`, { method: 'PATCH' });
+
+// GET /v1/display/{displayId}/rejection-reason
+export const getDisplayRejectionReason = async (
+  displayId: number,
+): Promise<DisplayRejectionReasonResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/rejection-reason`);
 
 // POST /v1/display/like
 export const toggleDisplayLike = async (
