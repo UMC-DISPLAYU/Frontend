@@ -20,7 +20,9 @@ export function ExhibitionListView({ items, showRank }: ExhibitionListViewProps)
   for (let i = 0; i < items.length; i += COLUMN_SIZE) {
     columns.push(items.slice(i, i + COLUMN_SIZE));
   }
-  const { ref, activeIndex, scrollToIndex } = useCenteredScroll<HTMLDivElement>(columns.length);
+  const { ref, activeIndex, highlightIndex, scrollToIndex } = useCenteredScroll<HTMLDivElement>(
+    columns.length,
+  );
 
   return (
     <div
@@ -37,7 +39,7 @@ export function ExhibitionListView({ items, showRank }: ExhibitionListViewProps)
             key={column[0].displayId}
             className={cn(
               'grid w-(--list-w) flex-none snap-center gap-3 transition-opacity duration-slow ease-standard',
-              !isActive && 'opacity-40',
+              columnIndex !== highlightIndex && 'opacity-40',
             )}
           >
             {column.map((item, rowIndex) => {

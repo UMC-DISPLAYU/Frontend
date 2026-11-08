@@ -22,7 +22,9 @@ interface PosterCarouselProps {
 }
 
 export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
-  const { ref, activeIndex, scrollToIndex } = useCenteredScroll<HTMLDivElement>(items.length);
+  const { ref, activeIndex, highlightIndex, scrollToIndex } = useCenteredScroll<HTMLDivElement>(
+    items.length,
+  );
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
@@ -65,6 +67,8 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
       >
         {items.map((item, index) => {
           const isActive = index === activeIndex;
+          // 글자 색 · 순위는 한 프레임 뒤에 강조해 탭을 바꿀 때 페이드인 · 아래로 내려오며 나타난다
+          const isHighlighted = index === highlightIndex;
           const rank = showRank ? index + 1 : null;
           // 옆 포스터는 상세로 가지 않고 먼저 가운데로 온다
           const openOrCenter = (event: MouseEvent) => {
@@ -117,7 +121,7 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
                     aria-hidden="true"
                     className={cn(
                       'typography-title-xl absolute bottom-3 left-4 transition duration-fast ease-standard',
-                      isActive ? 'translate-y-1.5 text-quaternary' : 'text-tertiary',
+                      isHighlighted ? 'translate-y-1.5 text-quaternary' : 'text-tertiary',
                     )}
                   >
                     {rank}
@@ -133,7 +137,7 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
                 <div
                   className={cn(
                     'grid gap-0.5 transition-colors duration-fast ease-out',
-                    isActive ? 'text-quaternary' : 'text-tertiary',
+                    isHighlighted ? 'text-quaternary' : 'text-tertiary',
                   )}
                 >
                   {/* 포스터와 같은 링크라 탭 순서에서는 뺀다 */}

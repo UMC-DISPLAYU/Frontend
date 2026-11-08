@@ -7,6 +7,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export function useCenteredScroll<T extends HTMLElement>(itemCount: number) {
   const ref = useRef<T>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  // 새로 그린 목록(탭 전환 등)은 한 프레임 동안 강조 없이 그린 뒤 강조한다.
+  // 프로토타입처럼 글자 색 · 순위 · 열 밝기가 전환 애니메이션으로 나타나게 하려는 것이다
+  useEffect(() => {
+    // 강조 전 모습이 먼저 계산돼 있어야 클래스가 바뀔 때 전환이 실행된다
+    void ref.current?.offsetWidth;
+    const frame = requestAnimationFrame(() => setIsRevealed(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   useEffect(() => {
     const list = ref.current;
@@ -53,5 +63,8 @@ export function useCenteredScroll<T extends HTMLElement>(itemCount: number) {
     });
   }, []);
 
-  return { ref, activeIndex, scrollToIndex };
+  /** 강조(글자 색 · 순위 · 열 밝기)용 인덱스. 처음 한 프레임은 -1 이다 */
+  const highlightIndex = isRevealed ? activeIndex : -1;
+
+  return { ref, activeIndex, highlightIndex, scrollToIndex };
 }
