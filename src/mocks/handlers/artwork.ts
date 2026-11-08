@@ -8,50 +8,6 @@ const now = () => new Date().toISOString();
 const findArtwork = (artworkId: number) =>
   mockDb.artworks.find((artwork: any) => artwork.artworkId === artworkId) ?? mockDb.artworks[0];
 
-const myArtworkQuestions = [
-  {
-    questionId: 1,
-    personalQuestionId: null,
-    artworkId: 1001,
-    personalArtworkId: null,
-    artworkName: '빛의 결',
-    content:
-      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
-    answerStatus: 'WAITING',
-    isPublic: false,
-    questionerId: 11,
-    questionerNickname: 'artseeker_j',
-    createdAt: now(),
-  },
-  {
-    questionId: 2,
-    personalQuestionId: null,
-    artworkId: 1001,
-    personalArtworkId: null,
-    artworkName: '빛의 결',
-    content:
-      '서울대학교 미술관에서 열린 전시를 다녀왔는데요, 전시 공간 구성도 좋고 작품들도 하나하나 인상 깊었...',
-    answerStatus: 'WAITING',
-    isPublic: true,
-    questionerId: 12,
-    questionerNickname: 'artseeker_j',
-    createdAt: now(),
-  },
-  {
-    questionId: 3,
-    personalQuestionId: null,
-    artworkId: 1002,
-    personalArtworkId: null,
-    artworkName: '형태의 침묵',
-    content: '작품 설명에서 말한 반복되는 선의 의미가 궁금합니다.',
-    answerStatus: 'ANSWERED',
-    isPublic: true,
-    questionerId: 13,
-    questionerNickname: 'viewer_08',
-    createdAt: now(),
-  },
-];
-
 export const artworkHandlers = [
   ...paths('/api/v1/artworks').map((path) =>
     http.get(path, ({ request }) => {
@@ -174,18 +130,6 @@ export const artworkHandlers = [
         })),
       }),
     ),
-  ),
-  ...paths('/api/v1/artworks/questions/received').map((path) =>
-    http.get(path, ({ request }) => {
-      const answerStatus = new URL(request.url).searchParams.get('answerStatus');
-
-      return success('/api/v1/artworks/questions/received', {
-        questions: myArtworkQuestions.filter((question) => question.answerStatus === answerStatus),
-        nextCursor: null,
-        size: 10,
-        hasNext: false,
-      });
-    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
     http.get(path, ({ params }) =>
@@ -365,81 +309,5 @@ export const artworkHandlers = [
           likeCount: 1,
         }),
       ),
-  ),
-  ...paths('/api/v1/artworks/{artworkId}/questions').map((path) =>
-    http.get(path, ({ params }) =>
-      success('/api/v1/artworks/{artworkId}/questions', {
-        questions: mockDb.artworkQuestions.filter(
-          (question: any) => question.artworkId === toNumber(params.artworkId, 1001),
-        ),
-        nextCursorId: null,
-        size: mockDb.artworkQuestions.length,
-        hasNext: false,
-      }),
-    ),
-  ),
-  ...paths('/api/v1/artworks/{artworkId}/questions').map((path) =>
-    http.post(path, async ({ params, request }) => {
-      const body = await readJson<{ content?: string; isPublic?: boolean }>(request);
-      const questionId = Date.now();
-      const question = {
-        artQueId: questionId,
-        questionId,
-        artworkId: toNumber(params.artworkId, 1001),
-        content: body.content ?? '',
-        isPublic: body.isPublic ?? true,
-        accessible: true,
-        canReply: false,
-        likeCount: 0,
-        user: mockDb.me,
-        writer: mockDb.me,
-        userId: mockDb.me.userId,
-        reply: null,
-        answerStatus: 'WAITING',
-        createdAt: now(),
-        updatedAt: now(),
-        deletedAt: null,
-      };
-
-      // 최신 질문이 목록 아래에 표시되도록 뒤에 붙입니다.
-      mockDb.artworkQuestions.push(question);
-
-      return created('/api/v1/artworks/{artworkId}/questions', question);
-    }),
-  ),
-  ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}').map((path) =>
-    http.delete(path, ({ params }) => {
-      const questionId = toNumber(params.questionId);
-
-      mockDb.artworkQuestions = mockDb.artworkQuestions.filter(
-        (item: any) => item.questionId !== questionId,
-      );
-
-      return success('/api/v1/artworks/{artworkId}/questions/{questionId}', {
-        questionId,
-        deletedAt: now(),
-      });
-    }),
-  ),
-  /* 질문 답변은 질문의 reply 필드에 담깁니다. */
-  ...paths('/api/v1/artworks/{artworkId}/questions/{questionId}/reply').map((path) =>
-    http.post(path, async ({ params, request }) => {
-      const body = await readJson<{ content?: string }>(request);
-      const questionId = toNumber(params.questionId);
-      const reply = {
-        questionReplyId: Date.now(),
-        queReplyId: Date.now(),
-        content: body.content ?? '',
-        userId: mockDb.me.userId,
-        nickname: mockDb.me.nickname,
-        isCreator: true,
-        createdAt: now(),
-      };
-
-      const question = mockDb.artworkQuestions.find((item: any) => item.questionId === questionId);
-      if (question) question.reply = reply;
-
-      return created('/api/v1/artworks/{artworkId}/questions/{questionId}/reply', reply);
-    }),
   ),
 ];

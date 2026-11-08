@@ -1,18 +1,19 @@
-import { SaveButtonUI } from '@/components/ui/SaveButtonUI';
 import { useArchiveArtwork, useUnarchiveArtwork } from '@/hooks/queries/useArchive';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArchivePolicy } from '@/hooks/usePolicy';
+import { toast } from '@/stores/toastStore';
 import { hasPermission } from '@/utils/hasPermission';
+
+import { ArtworkSaveButtonView } from './ArtworkSaveButtonView';
 
 type Props = {
   className?: string;
-  id?: string;
   artworkId: number;
-  /* 작품 상세의 isSaved. 저장 여부에 따라 버튼 문구가 바뀝니다. */
+  /* 작품 상세의 isArchived. 저장 여부에 따라 버튼 문구가 바뀝니다. */
   saved?: boolean;
 };
 
-export function ArtworkSaveButton({ className = '', id, artworkId, saved = false }: Props) {
+export function ArtworkSaveButton({ className, artworkId, saved = false }: Props) {
   const archive = useArchiveArtwork();
   const unarchive = useUnarchiveArtwork();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
@@ -27,20 +28,13 @@ export function ArtworkSaveButton({ className = '', id, artworkId, saved = false
       return;
     }
 
-    if (saved) unarchive.mutate(artworkId);
-    else archive.mutate(artworkId);
+    if (saved) unarchive.mutate(artworkId, { onSuccess: () => toast('저장을 취소했어요') });
+    else archive.mutate(artworkId, { onSuccess: () => toast('보관함에 저장했어요') });
   };
 
   return (
     <>
-      <SaveButtonUI
-        text={saved ? '저장됨' : '작품 저장'}
-        variant="dark"
-        isSaved={saved}
-        onClick={toggleSave}
-        className={className}
-        id={id}
-      />
+      <ArtworkSaveButtonView saved={saved} onClick={toggleSave} className={className} />
       {loginModal}
     </>
   );

@@ -12,6 +12,7 @@ const harness = vi.hoisted(() => ({
   refs: [] as { current: unknown }[],
   stateIndex: 0,
   refIndex: 0,
+  images: [] as { id: string; file: object; previewUrl: string }[],
   clearImages: vi.fn(),
   uploadImages: vi.fn(),
   uploadImage: vi.fn(),
@@ -37,9 +38,13 @@ vi.mock('react', async (original) => ({
 vi.mock('@/stores/authStore', () => ({ useAuthStore: () => 'token' }));
 vi.mock('./LoginConfirmModal', () => ({ LoginConfirmModal: () => null }));
 vi.mock('@/utils/image', () => ({ readImageDimensions: async () => ({ width: 10, height: 20 }) }));
+vi.mock('@/hooks/useVirtualKeyboard', () => ({
+  useBottomObstruction: () => 0,
+  useIsKeyboardOpen: () => false,
+}));
 vi.mock('@/hooks/useImageUpload', () => ({
   useImageUpload: () => ({
-    images: [{ id: 'photo', file: {}, previewUrl: 'preview' }],
+    images: harness.images,
     clearImages: harness.clearImages,
     uploadImages: harness.uploadImages,
     uploadImage: harness.uploadImage,
@@ -57,7 +62,7 @@ const nodes = (node: ReactNode): Element[] =>
 const render = (onSubmit: () => Promise<void | boolean>) => {
   harness.stateIndex = 0;
   harness.refIndex = 0;
-  const tree = nodes(BottomCommentBar({ onSubmit, imageDomain: 'test', showPrivateOption: true }));
+  const tree = nodes(BottomCommentBar({ onSubmit, imageDomain: 'test' }));
   return (match: (node: Element) => boolean) => tree.find(match)!;
 };
 const byLabel = (label: string) => (node: Element) => node.props['aria-label'] === label;
@@ -67,6 +72,7 @@ const failure = new ApiError('server details', { status: 500 });
 beforeEach(() => {
   harness.states = [];
   harness.refs = [];
+  harness.images = [{ id: 'photo', file: {}, previewUrl: 'preview' }];
   vi.clearAllMocks();
   harness.uploadImages.mockResolvedValue(['uploaded']);
   harness.uploadImage.mockResolvedValue('drawing');
@@ -81,11 +87,10 @@ it('저장 실패와 중복 클릭은 초안을 유지하고 성공한 재시도
       }),
   );
   let view = render(save);
-  const input = view((node) => node.type === 'input' && 'placeholder' in node.props);
+  const input = view((node) => node.type === 'textarea' && 'placeholder' in node.props);
   (input.props.onChange as (event: { target: { value: string } }) => void)({
     target: { value: 'draft' },
   });
-  await click(view((node) => 'aria-pressed' in node.props));
   view = render(save);
   const pending = click(view(byLabel('등록')));
   await click(view(byLabel('등록')));
@@ -94,10 +99,9 @@ it('저장 실패와 중복 클릭은 초안을 유지하고 성공한 재시도
   reject(failure);
   await pending;
   view = render(save);
-  expect(view((node) => node.type === 'input' && 'placeholder' in node.props).props.value).toBe(
+  expect(view((node) => node.type === 'textarea' && 'placeholder' in node.props).props.value).toBe(
     'draft',
   );
-  expect(view((node) => 'aria-pressed' in node.props).props['aria-pressed']).toBe(true);
   expect(view((node) => node.props.role === 'alert').props.children).toContain('서버');
   expect(harness.clearImages).not.toHaveBeenCalled();
 
@@ -105,8 +109,9 @@ it('저장 실패와 중복 클릭은 초안을 유지하고 성공한 재시도
   await click(view(byLabel('등록')));
   view = render(save);
   expect(harness.clearImages).toHaveBeenCalledTimes(1);
-  expect(view((node) => node.type === 'input' && 'placeholder' in node.props).props.value).toBe('');
-  expect(view((node) => 'aria-pressed' in node.props).props['aria-pressed']).toBe(false);
+  expect(view((node) => node.type === 'textarea' && 'placeholder' in node.props).props.value).toBe(
+    '',
+  );
 });
 
 it('업로드 실패와 권한으로 중단된 저장도 이미지를 지우지 않는다', async () => {
@@ -124,16 +129,9 @@ it('그림 저장 실패는 모달을 유지하고 성공할 때만 닫는다', 
     .fn<() => Promise<void>>()
     .mockRejectedValueOnce(failure)
     .mockResolvedValue(undefined);
+  harness.images = [];
   let view = render(save);
-  await click(view(byLabel('첨부 메뉴 열기')));
-  view = render(save);
-  await click(
-    view(
-      (node) =>
-        node.type === 'button' &&
-        nodes(node.props.children as ReactNode).some((child) => child.props.children === '그리기'),
-    ),
-  );
+  await click(view(byLabel('그림 그리기')));
   view = render(save);
   const submit = view((node) => node.type === DrawingModal).props.onSubmit as (
     file: File,

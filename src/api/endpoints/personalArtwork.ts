@@ -1,20 +1,13 @@
 import type {
   CreatePersonalArtworkFeelingRequestDto,
-  CreatePersonalArtworkQuestionRequestDto,
   CreatePersonalArtworkReplyRequestDto,
   GetPersonalArtworkFeelingsResponseDataDto,
-  GetPersonalArtworkQuestionReplyResponseDataDto,
-  GetPersonalArtworkQuestionsResponseDataDto,
   GetPersonalArtworksResponseDataDto,
   PersonalArtworkFeelingLikeResponseDataDto,
   PersonalArtworkFeelingReplyLikeResponseDataDto,
   PersonalArtworkFeelingReplyListResponseDataDto,
   PersonalArtworkFeelingResponseDataDto,
   PersonalArtworkLikeResponseDataDto,
-  PersonalArtworkQuestionLikeResponseDataDto,
-  PersonalArtworkQuestionReplyLikeResponseDataDto,
-  PersonalArtworkQuestionReplyResponseDataDto,
-  PersonalArtworkQuestionResponseDataDto,
   PersonalArtworkRequestDto,
   PersonalArtworkResponseDataDto,
 } from '@/api/dto';
@@ -154,75 +147,4 @@ export const unlikePersonalArtworkFeelingReply = async (
   apiRequest(
     `/v1/personal-artworks/${personalArtworkId}/feelings/${personalFeelingId}/reply/${personalFeelingReplyId}/like`,
     { method: 'DELETE' },
-  );
-
-// GET /v1/personal-artworks/:personalArtworkId/questions
-export const getPersonalArtworkQuestions = async (
-  personalArtworkId: number,
-): Promise<GetPersonalArtworkQuestionsResponseDataDto> =>
-  apiRequest(`/v1/personal-artworks/${personalArtworkId}/questions`);
-
-// POST /v1/personal-artworks/:personalArtworkId/questions
-export const createPersonalArtworkQuestion = async (
-  personalArtworkId: number,
-  body: CreatePersonalArtworkQuestionRequestDto,
-): Promise<PersonalArtworkQuestionResponseDataDto> =>
-  apiRequest(`/v1/personal-artworks/${personalArtworkId}/questions`, { method: 'POST', body });
-
-// DELETE /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId
-export const deletePersonalArtworkQuestion = async (
-  personalArtworkId: number,
-  personalQuestionId: number,
-): Promise<unknown> =>
-  apiRequest(`/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}`, {
-    method: 'DELETE',
-  });
-
-// POST /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/like
-export const togglePersonalArtworkQuestionLike = async (
-  personalArtworkId: number,
-  personalQuestionId: number,
-): Promise<PersonalArtworkQuestionLikeResponseDataDto> =>
-  apiRequest(`/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/like`, {
-    method: 'POST',
-  });
-
-// POST /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/reply
-export const createPersonalArtworkQuestionReply = async (
-  personalArtworkId: number,
-  personalQuestionId: number,
-  body: CreatePersonalArtworkReplyRequestDto,
-): Promise<PersonalArtworkQuestionReplyResponseDataDto> =>
-  apiRequest(`/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/reply`, {
-    method: 'POST',
-    body,
-  });
-
-// GET /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/reply
-export const getPersonalArtworkQuestionReply = async (
-  personalArtworkId: number,
-  personalQuestionId: number,
-): Promise<GetPersonalArtworkQuestionReplyResponseDataDto> =>
-  apiRequest(`/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/reply`);
-
-// DELETE /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/reply/:personalQuestionReplyId
-export const deletePersonalArtworkQuestionReply = async (
-  personalArtworkId: number,
-  personalQuestionId: number,
-  personalQuestionReplyId: number,
-): Promise<unknown> =>
-  apiRequest(
-    `/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/reply/${personalQuestionReplyId}`,
-    { method: 'DELETE' },
-  );
-
-// POST /v1/personal-artworks/:personalArtworkId/questions/:personalQuestionId/reply/:personalQuestionReplyId/like
-export const togglePersonalArtworkQuestionReplyLike = async (
-  personalArtworkId: number,
-  personalQuestionId: number,
-  personalQuestionReplyId: number,
-): Promise<PersonalArtworkQuestionReplyLikeResponseDataDto> =>
-  apiRequest(
-    `/v1/personal-artworks/${personalArtworkId}/questions/${personalQuestionId}/reply/${personalQuestionReplyId}/like`,
-    { method: 'POST' },
   );

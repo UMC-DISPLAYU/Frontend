@@ -177,8 +177,6 @@ export const PersonalFeelingCommentItem = memo(function PersonalFeelingCommentIt
         onDelete={handleDelete}
         onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
-        tightSpacing
-        showDivider
       />
       {loginModal}
     </>

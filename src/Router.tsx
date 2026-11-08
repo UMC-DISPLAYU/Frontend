@@ -124,12 +124,10 @@ const PersonalArtworksRegister = lazyPage(
   () => import('./pages/personal-artworks-register'),
   'PersonalArtworksRegister',
 );
-const AnswerPage = lazyPage(() => import('./pages/AnswerPage'), 'AnswerPage');
 const InvitationRequestPage = lazyPage(
   () => import('./pages/InvitationRequestPage'),
   'InvitationRequestPage',
 );
-const MyQuestionsPage = lazyPage(() => import('./pages/MyQuestionsPage'), 'MyQuestionsPage');
 const MyReviewPage = lazyPage(() => import('./pages/MyReviewPage'), 'MyReviewPage');
 const MyActivityPage = lazyPage(() => import('./pages/MyActivityPage'), 'MyActivityPage');
 const OnboardingPage = lazyPage(() => import('./pages/onboarding'), 'OnboardingPage');
@@ -501,19 +499,10 @@ export const router = createBrowserRouter([
                   </PersonalArtworkPermissionGuard>
                 ),
               },
-              {
-                path: 'answer-questions',
-                element: (
-                  <ArtistPermissionGuard>
-                    <AnswerPage />
-                  </ArtistPermissionGuard>
-                ),
-              },
               { path: 'invitation-request', element: <InvitationRequestPage /> },
               { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
               { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },
               { path: 'my-review', element: <MyReviewPage /> },
-              { path: 'my-questions', element: <MyQuestionsPage /> },
               { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },
               { path: 'lounge/my-activity', element: <MyActivityPage /> },
               {

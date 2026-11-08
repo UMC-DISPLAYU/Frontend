@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MOCK_ARTWORK, MOCK_DISPLAY } from '@/mocks/data';
+import { MOCK_ARTWORK_FEELING_REPLIES, MOCK_ARTWORK_FEELINGS } from '@/mocks/data/feelings';
 import {
   MOCK_PERSONAL_ARTWORK_FEELING_REPLIES,
   MOCK_PERSONAL_ARTWORK_FEELINGS,
-  MOCK_PERSONAL_ARTWORK_QUESTION_REPLIES,
-  MOCK_PERSONAL_ARTWORK_QUESTIONS,
   MOCK_PERSONAL_ARTWORKS,
 } from '@/mocks/data/personalArtwork';
 
@@ -214,7 +213,7 @@ const artworkToDetail = (artwork: any) => ({
 
 /*
  * 닉네임 검색(GET /users/search)과 팀원 초대 화면에서 사용하는 검색 대상 사용자입니다.
- * userId 1~15는 mockDb.me와 다른 핸들러(작품 질문 등)가 이미 쓰고 있어 201번대를 사용합니다.
+ * userId 1~15는 mockDb.me와 다른 핸들러가 이미 쓰고 있어 201번대를 사용합니다.
  */
 const MOCK_SEARCHABLE_USERS = [
   { userId: 201, name: '이정우', nickname: 'quietroom' },
@@ -292,46 +291,13 @@ export const mockDb: {
     },
   ],
   displayReviewReplies: [] as any[],
-  artworkFeelings: [
-    {
-      feelingId: 1,
-      artworkId: 1001,
-      content: '재료감이 인상적입니다.',
-      writer: makeUser(5),
-      author: makeUser(5),
-      likeCount: 1,
-      liked: false,
-      replyCount: 0,
-      createdAt: now(),
-      updatedAt: now(),
-    },
-  ],
+  artworkFeelings: [...MOCK_ARTWORK_FEELINGS],
   /* 저장한 작가 id 목록. 기본으로 한 명 저장된 상태입니다. */
   savedArtistIds: [1] as number[],
-  artworkFeelingReplies: [] as any[],
-  artworkQuestionReplies: [] as any[],
-  artworkQuestions: [
-    {
-      questionId: 1,
-      artworkId: 1001,
-      content: '설치 위치는 어디인가요?',
-      isPublic: true,
-      accessible: true,
-      canReply: false,
-      likeCount: 0,
-      writer: makeUser(6),
-      author: makeUser(6),
-      answer: null,
-      reply: null,
-      createdAt: now(),
-      updatedAt: now(),
-    },
-  ],
+  artworkFeelingReplies: [...MOCK_ARTWORK_FEELING_REPLIES],
   personalArtworks: [...MOCK_PERSONAL_ARTWORKS],
   personalArtworkFeelings: [...MOCK_PERSONAL_ARTWORK_FEELINGS],
   personalArtworkFeelingReplies: [...MOCK_PERSONAL_ARTWORK_FEELING_REPLIES],
-  personalArtworkQuestions: [...MOCK_PERSONAL_ARTWORK_QUESTIONS],
-  personalArtworkQuestionReplies: [...MOCK_PERSONAL_ARTWORK_QUESTION_REPLIES],
   archivedExhibitionIds: new Set<number>(),
   archivedArtworkIds: new Set<number>(),
   archivedPersonalArtworkIds: new Set<number>(),

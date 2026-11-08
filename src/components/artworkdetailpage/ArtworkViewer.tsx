@@ -1,0 +1,374 @@
+import { type KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+import backIcon from '@/assets/artwork-detail/back.svg';
+import viewOneIcon from '@/assets/artwork-detail/view-one.svg';
+import viewOneActiveIcon from '@/assets/artwork-detail/view-one-active.svg';
+import viewStackIcon from '@/assets/artwork-detail/view-stack.svg';
+import viewStackActiveIcon from '@/assets/artwork-detail/view-stack-active.svg';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { cn } from '@/utils/cn';
+
+import { useViewerChromeFade } from './useViewerChromeFade';
+
+type ViewMode = 'one' | 'stack';
+
+type Props = {
+  images: string[];
+  title: string;
+  onBack: () => void;
+};
+
+const VIEW_MODE_STORAGE_KEY = 'du.view';
+const STAGE_IMAGE_WIDTH = 1080;
+const THUMB_IMAGE_WIDTH = 96;
+const OVERLAY_TOP_CLASS = 'top-[max(16px,env(safe-area-inset-top))]';
+
+// 900px 이상에서 뷰어가 놓이는 위쪽 여백(desktop:top-8)
+const DESKTOP_TOP_OFFSET = 32;
+const desktopTopOffset = () =>
+  window.matchMedia('(width >= 56.25rem)').matches ? DESKTOP_TOP_OFFSET : 0;
+
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const scrollBehavior = (): ScrollBehavior => (prefersReducedMotion() ? 'auto' : 'smooth');
+
+const readStoredViewMode = (): ViewMode => {
+  try {
+    return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === 'stack' ? 'stack' : 'one';
+  } catch {
+    return 'one';
+  }
+};
+
+const storeViewMode = (mode: ViewMode) => {
+  try {
+    localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+  } catch {
+    // 저장소를 쓸 수 없는 환경에서는 이번 방문에만 적용된다
+  }
+};
+
+function StackImage({ src, alt, eager }: { src: string; alt: string; eager: boolean }) {
+  // 이미지가 뜨기 전에도 자리를 잡아 두어 장 사이 이동 위치가 틀어지지 않게 한다
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <OptimizedImage
+      src={src}
+      displayWidth={STAGE_IMAGE_WIDTH}
+      alt={alt}
+      draggable={false}
+      loading={eager ? 'eager' : 'lazy'}
+      onLoad={() => setIsLoaded(true)}
+      className={cn('block w-full bg-secondary select-none', isLoaded ? 'h-auto' : 'aspect-4/5')}
+    />
+  );
+}
+
+export function ArtworkViewer({ images, title, onBack }: Props) {
+  const photoCount = images.length;
+  const hasMultiple = photoCount > 1;
+
+  const [storedMode, setStoredMode] = useState<ViewMode>(readStoredViewMode);
+  const [current, setCurrent] = useState(0);
+  const mode: ViewMode = hasMultiple ? storedMode : 'one';
+  const isStack = mode === 'stack';
+
+  const viewerRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const stackRef = useRef<HTMLDivElement>(null);
+  const shouldAlignAfterModeChange = useRef(false);
+  const currentRef = useRef(current);
+
+  const { isControlsIdle, isChipIdle, peekChip, holdProps } = useViewerChromeFade(
+    stageRef,
+    isStack,
+  );
+
+  const showPhoto = (index: number) => {
+    if (index !== currentRef.current) peekChip();
+    currentRef.current = index;
+    setCurrent(index);
+  };
+
+  const scrollToStackImage = (index: number, behavior: ScrollBehavior) => {
+    const element = stackRef.current?.children[index];
+    if (!element) return;
+    window.scrollTo({
+      top: element.getBoundingClientRect().top + window.scrollY - desktopTopOffset(),
+      behavior,
+    });
+  };
+
+  const goTo = (index: number) => {
+    const next = Math.max(0, Math.min(photoCount - 1, index));
+    const track = trackRef.current;
+    if (track) track.scrollTo({ left: next * track.clientWidth, behavior: scrollBehavior() });
+    showPhoto(next);
+  };
+
+  const changeMode = (next: ViewMode) => {
+    if (next === mode) return;
+    shouldAlignAfterModeChange.current = true;
+    storeViewMode(next);
+    setStoredMode(next);
+  };
+
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (track) track.scrollLeft = currentRef.current * track.clientWidth;
+
+    if (!shouldAlignAfterModeChange.current) return;
+    shouldAlignAfterModeChange.current = false;
+
+    if (isStack) {
+      scrollToStackImage(currentRef.current, scrollBehavior());
+    } else if (viewerRef.current?.parentElement) {
+      // 뷰어는 sticky라 현재 위치 대신 뷰어를 담은 레이아웃의 맨 위를 기준으로 한다
+      const top = viewerRef.current.parentElement.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+    }
+  }, [isStack]);
+
+  useEffect(() => {
+    const realign = () => {
+      const track = trackRef.current;
+      if (track) track.scrollTo({ left: currentRef.current * track.clientWidth, behavior: 'auto' });
+    };
+    window.addEventListener('resize', realign);
+    return () => window.removeEventListener('resize', realign);
+  }, []);
+
+  useEffect(() => {
+    if (!isStack) return;
+
+    let isScheduled = false;
+    const onScroll = () => {
+      if (isScheduled) return;
+      isScheduled = true;
+      requestAnimationFrame(() => {
+        isScheduled = false;
+        const line = window.innerHeight * 0.4;
+        let visibleIndex = 0;
+        Array.from(stackRef.current?.children ?? []).forEach((element, index) => {
+          if (element.getBoundingClientRect().top <= line) visibleIndex = index;
+        });
+        if (visibleIndex !== currentRef.current) {
+          currentRef.current = visibleIndex;
+          setCurrent(visibleIndex);
+        }
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isStack]);
+
+  const handleTrackScroll = () => {
+    const track = trackRef.current;
+    if (!track || track.clientWidth === 0) return;
+    const index = Math.round(track.scrollLeft / track.clientWidth);
+    if (index !== currentRef.current && index >= 0 && index < photoCount) showPhoto(index);
+  };
+
+  const handleTrackKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      goTo(current + 1);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      goTo(current - 1);
+    }
+  };
+
+  const altOf = (index: number) => `${title} ${index + 1}/${photoCount}`;
+
+  return (
+    <section
+      ref={viewerRef}
+      aria-label="작품 이미지"
+      className={cn(
+        'relative desktop:flex desktop:items-start desktop:gap-3',
+        !isStack && 'desktop:sticky desktop:top-8',
+      )}
+    >
+      {hasMultiple && (
+        <div
+          role="list"
+          aria-label="이미지 목록"
+          className={cn(
+            'hidden max-h-[min(78vh,820px)] shrink-0 flex-col gap-1.5 overflow-y-auto [scrollbar-width:none] desktop:flex [&::-webkit-scrollbar]:hidden',
+            isStack && 'desktop:sticky desktop:top-8',
+          )}
+        >
+          {images.map((src, index) => (
+            <button
+              key={src}
+              type="button"
+              aria-label={`${index + 1}번째 이미지 보기`}
+              aria-current={index === current}
+              onClick={() => (isStack ? scrollToStackImage(index, scrollBehavior()) : goTo(index))}
+              className={cn(
+                'h-16 w-12 shrink-0 cursor-pointer overflow-hidden rounded-6 border-2 transition-opacity duration-fast ease-standard',
+                index === current
+                  ? 'border-interactive-selected opacity-100'
+                  : 'border-transparent opacity-55 hover:opacity-100',
+              )}
+            >
+              <OptimizedImage
+                src={src}
+                displayWidth={THUMB_IMAGE_WIDTH}
+                alt=""
+                className="size-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div
+        ref={stageRef}
+        className={cn(
+          'relative min-w-0 flex-1',
+          !isStack &&
+            'aspect-402/554 overflow-hidden bg-secondary min-[600px]:aspect-auto min-[600px]:h-[78vh] desktop:h-[min(78vh,820px)] desktop:rounded-12',
+        )}
+      >
+        <div
+          className={cn(
+            'pointer-events-none z-20',
+            isStack ? 'sticky top-0 h-0 w-full' : 'absolute inset-0',
+          )}
+        >
+          <button
+            type="button"
+            aria-label="뒤로가기"
+            onClick={onBack}
+            className={cn(
+              'pointer-events-auto absolute left-5 grid size-11 cursor-pointer place-items-center rounded-circle border border-[rgba(0,0,0,0.08)] bg-[#ffffff] shadow-card transition-transform duration-fast ease-standard active:scale-94',
+              OVERLAY_TOP_CLASS,
+            )}
+          >
+            <img src={backIcon} alt="" />
+          </button>
+
+          {hasMultiple && (
+            <div
+              role="group"
+              aria-label="감상 방식"
+              {...holdProps}
+              className={cn(
+                'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-primary-white p-1 transition-opacity duration-base ease-standard',
+                OVERLAY_TOP_CLASS,
+                isControlsIdle && 'opacity-55',
+              )}
+            >
+              <button
+                type="button"
+                aria-label="한 장씩 보기"
+                aria-pressed={!isStack}
+                onClick={() => changeMode('one')}
+                className={cn(
+                  'grid h-8 w-9 cursor-pointer place-items-center rounded-circle transition-colors duration-fast ease-standard',
+                  !isStack && 'bg-interactive-primary',
+                )}
+              >
+                <img src={isStack ? viewOneIcon : viewOneActiveIcon} alt="" />
+              </button>
+              <button
+                type="button"
+                aria-label="이어서 보기"
+                aria-pressed={isStack}
+                onClick={() => changeMode('stack')}
+                className={cn(
+                  'grid h-8 w-9 cursor-pointer place-items-center rounded-circle transition-colors duration-fast ease-standard',
+                  isStack && 'bg-interactive-primary',
+                )}
+              >
+                <img src={isStack ? viewStackActiveIcon : viewStackIcon} alt="" />
+              </button>
+            </div>
+          )}
+
+          {hasMultiple && (
+            <span
+              aria-live="polite"
+              className={cn(
+                'typography-body-sm-medium absolute rounded-circle bg-base-black/60 px-2 py-1 text-base-white tabular-nums transition-opacity duration-base ease-standard',
+                isStack
+                  ? 'top-[calc(max(16px,env(safe-area-inset-top))+10px)] right-28'
+                  : 'right-4 bottom-4',
+                isChipIdle && 'opacity-0',
+              )}
+            >
+              {current + 1} / {photoCount}
+            </span>
+          )}
+        </div>
+
+        {isStack ? (
+          <div
+            ref={stackRef}
+            aria-label="작품 이미지 이어보기"
+            className="desktop:overflow-hidden desktop:rounded-12"
+          >
+            {images.map((src, index) => (
+              <StackImage key={src} src={src} alt={altOf(index)} eager={index === 0} />
+            ))}
+          </div>
+        ) : (
+          <div
+            ref={trackRef}
+            tabIndex={0}
+            role="group"
+            aria-roledescription="이미지 슬라이더"
+            aria-label="작품 이미지"
+            onScroll={handleTrackScroll}
+            onKeyDown={handleTrackKeyDown}
+            className="flex h-full touch-pan-x touch-pan-y touch-pinch-zoom snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {images.map((src, index) => (
+              <div key={src} className="h-full flex-[0_0_100%] snap-center bg-secondary">
+                <OptimizedImage
+                  src={src}
+                  displayWidth={STAGE_IMAGE_WIDTH}
+                  alt={altOf(index)}
+                  draggable={false}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  skeleton
+                  frameClassName="size-full"
+                  className="object-contain select-none"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {hasMultiple && !isStack && (
+          <>
+            <button
+              type="button"
+              aria-label="이전 이미지"
+              disabled={current === 0}
+              onClick={() => goTo(current - 1)}
+              className="absolute top-1/2 left-4 z-20 -mt-5.5 hidden size-11 cursor-pointer place-items-center rounded-circle bg-[rgba(255,255,255,0.82)] text-icon-primary backdrop-blur-[10px] transition duration-fast ease-standard hover:scale-106 disabled:cursor-default disabled:opacity-35 disabled:hover:scale-100 desktop:grid"
+            >
+              <ChevronLeft aria-hidden="true" size={20} strokeWidth={1.7} />
+            </button>
+            <button
+              type="button"
+              aria-label="다음 이미지"
+              disabled={current === photoCount - 1}
+              onClick={() => goTo(current + 1)}
+              className="absolute top-1/2 right-4 z-20 -mt-5.5 hidden size-11 cursor-pointer place-items-center rounded-circle bg-[rgba(255,255,255,0.82)] text-icon-primary backdrop-blur-[10px] transition duration-fast ease-standard hover:scale-106 disabled:cursor-default disabled:opacity-35 disabled:hover:scale-100 desktop:grid"
+            >
+              <ChevronRight aria-hidden="true" size={20} strokeWidth={1.7} />
+            </button>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
