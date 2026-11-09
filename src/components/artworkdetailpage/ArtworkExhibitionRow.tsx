@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import chevronIcon from '@/assets/artwork-detail/chevron-exhibition.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
-
-import { EXHIBITION_STATE_LABEL, type ExhibitionState } from './artworkDetail.utils';
+import { EXHIBITION_STATE_LABEL, type ExhibitionState } from '@/utils/exhibitionState';
 
 type Props = {
   displayId: string;
@@ -38,7 +37,7 @@ export function ArtworkExhibitionRow({ displayId, title, organizer, posterUrl, s
                   'size-2 rounded-circle',
                   state === 'ongoing' && 'bg-interactive-primary',
                   state === 'upcoming' && 'border-2 border-interactive-primary',
-                  state === 'ended' && 'bg-icon-disable',
+                  state === 'ended' && 'bg-current text-icon-disable',
                 )}
               />
               <span className="typography-body-md-medium text-tertiary">

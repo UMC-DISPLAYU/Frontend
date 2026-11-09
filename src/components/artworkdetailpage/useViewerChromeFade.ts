@@ -1,6 +1,6 @@
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
-const CONTROLS_IDLE_MS = 3000;
+const IDLE_MS = 3000;
 const CHIP_IDLE_MS = 1600;
 const STACK_SCROLL_THRESHOLD = 10;
 const STACK_TOP_ZONE = 80;
@@ -8,21 +8,21 @@ const STACK_TOP_ZONE = 80;
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
- * 사진 위 컨트롤이 작품을 가리지 않게 한다.
- * 보기 방식 스위치는 3초 가만히 있으면 흐려지고, 장수 칩은 넘긴 직후에만 잠깐 보인다.
- * 이어서 보기에서는 아래로 내리면 숨기고 위로 올리면 다시 보여준다.
+ * 사진 위 컨트롤(뒤로가기 · 보기 방식 · 장수 칩)이 작품을 가리지 않게 한다. 움직임 줄이기면 그대로 둔다.
+ * - 한 장씩: 3초 가만히 있으면 보기 방식이 흐려지고, 장수 칩은 넘긴 직후에만 잠깐 보인다.
+ * - 이어서(디자이너 메모): 아래로 내리거나 3초 가만히 있으면 모두 숨고, 위로 올리거나 맨 위에서는 다시 보인다.
  */
 export function useViewerChromeFade(stageRef: RefObject<HTMLElement>, isStack: boolean) {
-  const [isControlsIdle, setIsControlsIdle] = useState(false);
+  const [isIdle, setIsIdle] = useState(false);
   const [isChipIdle, setIsChipIdle] = useState(false);
 
-  const controlsTimerRef = useRef(0);
+  const idleTimerRef = useRef(0);
   const chipTimerRef = useRef(0);
   const holdCountRef = useRef(0);
-  const isControlsIdleRef = useRef(false);
+  const isIdleRef = useRef(false);
 
   const clearTimers = useCallback(() => {
-    window.clearTimeout(controlsTimerRef.current);
+    window.clearTimeout(idleTimerRef.current);
     window.clearTimeout(chipTimerRef.current);
   }, []);
 
@@ -34,21 +34,21 @@ export function useViewerChromeFade(stageRef: RefObject<HTMLElement>, isStack: b
     }, CHIP_IDLE_MS);
   }, []);
 
-  const setControlsIdle = useCallback((idle: boolean) => {
-    isControlsIdleRef.current = idle;
-    setIsControlsIdle(idle);
+  const setIdle = useCallback((idle: boolean) => {
+    isIdleRef.current = idle;
+    setIsIdle(idle);
   }, []);
 
   const wake = useCallback(() => {
-    setControlsIdle(false);
+    setIdle(false);
     setIsChipIdle(false);
-    window.clearTimeout(controlsTimerRef.current);
+    window.clearTimeout(idleTimerRef.current);
     armChipTimer();
     if (prefersReducedMotion()) return;
-    controlsTimerRef.current = window.setTimeout(() => {
-      if (holdCountRef.current === 0) setControlsIdle(true);
-    }, CONTROLS_IDLE_MS);
-  }, [armChipTimer, setControlsIdle]);
+    idleTimerRef.current = window.setTimeout(() => {
+      if (holdCountRef.current === 0) setIdle(true);
+    }, IDLE_MS);
+  }, [armChipTimer, setIdle]);
 
   const peekChip = useCallback(() => {
     setIsChipIdle(false);
@@ -60,7 +60,7 @@ export function useViewerChromeFade(stageRef: RefObject<HTMLElement>, isStack: b
     if (!stage) return;
 
     const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerType === 'mouse' && isControlsIdleRef.current) wake();
+      if (event.pointerType === 'mouse' && isIdleRef.current) wake();
     };
 
     wake();
@@ -84,8 +84,7 @@ export function useViewerChromeFade(stageRef: RefObject<HTMLElement>, isStack: b
       const delta = y - lastY;
       if (delta > STACK_SCROLL_THRESHOLD && y > STACK_TOP_ZONE) {
         clearTimers();
-        setControlsIdle(true);
-        setIsChipIdle(true);
+        setIdle(true);
         lastY = y;
       } else if (delta < -STACK_SCROLL_THRESHOLD || y <= STACK_TOP_ZONE) {
         wake();
@@ -95,7 +94,7 @@ export function useViewerChromeFade(stageRef: RefObject<HTMLElement>, isStack: b
 
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [isStack, wake, clearTimers, setControlsIdle]);
+  }, [isStack, wake, clearTimers, setIdle]);
 
   const hold = useCallback(() => {
     holdCountRef.current += 1;
@@ -108,9 +107,14 @@ export function useViewerChromeFade(stageRef: RefObject<HTMLElement>, isStack: b
   }, [wake]);
 
   return {
-    isControlsIdle,
-    isChipIdle,
+    /* 이어서 보기에서 컨트롤을 모두 숨기는 중 */
+    isStackHidden: isStack && isIdle,
+    /* 한 장씩 보기에서 보기 방식을 흐리게 */
+    isControlsDimmed: !isStack && isIdle,
+    isChipHidden: isStack ? isIdle : isChipIdle,
     peekChip,
     holdProps: { onMouseEnter: hold, onMouseLeave: release, onFocus: hold, onBlur: release },
   };
 }
+
+export type ViewerChrome = ReturnType<typeof useViewerChromeFade>;

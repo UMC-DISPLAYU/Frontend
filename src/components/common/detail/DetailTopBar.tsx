@@ -5,7 +5,7 @@ import searchIcon from '@/assets/display-detail/search-header.svg';
 import { cn } from '@/utils/cn';
 
 /* 768px 이상에서만 보이는 서비스 헤더(프로토타입 `.top`). 그 아래 폭은 냅바 없이 뒤로가기만 둔다 */
-export function DisplayTopBar({ className }: { className?: string }) {
+export function DetailTopBar({ className }: { className?: string }) {
   return (
     <header
       className={cn(

@@ -4,7 +4,6 @@ import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkBottomBar } from '@/components/artworkdetailpage/ArtworkActions';
 import type { ArtworkArtist } from '@/components/artworkdetailpage/ArtworkArtists';
 import {
-  getExhibitionState,
   getProcessImages,
   hasArtworkIntro,
 } from '@/components/artworkdetailpage/artworkDetail.utils';
@@ -12,7 +11,10 @@ import {
   ArtworkDetailShell,
   ArtworkDetailSkeleton,
 } from '@/components/artworkdetailpage/ArtworkDetailShell';
-import { ArtworkGuestbookTab } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
+import {
+  ArtworkGuestbookTab,
+  ArtworkPreviewGuestbook,
+} from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab';
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
@@ -25,6 +27,8 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
 import { getErrorMessage } from '@/utils/error';
+import { getExhibitionState } from '@/utils/exhibitionState';
+import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
 export function ArtworkDetailPage() {
   const flowBack = useFlowBack();
@@ -61,6 +65,7 @@ export function ArtworkDetailPage() {
   }
 
   const policyDisplay = (display ?? { ownerUserId: 0, teamMembers: [] }) as DisplayDetailDto;
+  const isPreview = display ? isPreviewDisplay(display) : false;
 
   const artistDisplayName = getExhibitionArtistName(
     detail.artistName,
@@ -116,12 +121,14 @@ export function ArtworkDetailPage() {
       images={viewerImages}
       title={detail.artworkName}
       onBack={() => flowBack()}
+      isPreview={isPreview}
       label={
         <ArtworkMeta
           artwork={artwork}
           artists={artists}
           exhibitionState={getExhibitionState(display?.period)}
           shareImageUrl={orderedImages[0]}
+          isPreview={isPreview}
         />
       }
       hasIntro={hasArtworkIntro({
@@ -137,14 +144,27 @@ export function ArtworkDetailPage() {
         />
       }
       guestbook={
-        <ArtworkGuestbookTab artworkId={artworkId} display={policyDisplay} myUserId={userMe?.id} />
+        isPreview ? (
+          <ArtworkPreviewGuestbook />
+        ) : (
+          <ArtworkGuestbookTab
+            artworkId={artworkId}
+            display={policyDisplay}
+            myUserId={userMe?.id}
+          />
+        )
       }
       bottomBar={
         <ArtworkBottomBar
           shareTitle={detail.artworkName}
           shareImageUrl={orderedImages[0]}
+          disabled={isPreview}
           saveButton={
-            <ArtworkSaveButton artworkId={artworkId} saved={detail.isArchived ?? false} />
+            <ArtworkSaveButton
+              artworkId={artworkId}
+              saved={detail.isArchived ?? false}
+              disabled={isPreview}
+            />
           }
         />
       }

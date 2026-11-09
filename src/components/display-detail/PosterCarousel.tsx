@@ -1,9 +1,8 @@
 import { type KeyboardEvent, useRef, useState } from 'react';
 
+import { DetailBackButton } from '@/components/common/detail';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
-
-import { DisplayBackButton } from './DisplayBackButton';
 
 type Props = {
   images: string[];
@@ -119,10 +118,7 @@ export function PosterCarousel({ images, title, onBack, isPreview = false }: Pro
 
         {/* 900px 미만은 화면을 따라 내려오는 뒤로가기를 DisplayDetailView 가 따로 둔다 */}
         {isPreview && (
-          <DisplayBackButton
-            onBack={onBack}
-            className="absolute top-5 left-5 hidden desktop:grid"
-          />
+          <DetailBackButton onBack={onBack} className="absolute top-5 left-5 hidden desktop:grid" />
         )}
       </div>
     </div>

@@ -1,53 +1,51 @@
-import { type KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  type KeyboardEvent,
+  type RefObject,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import backIcon from '@/assets/artwork-detail/back.svg';
 import viewOneIcon from '@/assets/artwork-detail/view-one.svg';
 import viewOneActiveIcon from '@/assets/artwork-detail/view-one-active.svg';
 import viewStackIcon from '@/assets/artwork-detail/view-stack.svg';
 import viewStackActiveIcon from '@/assets/artwork-detail/view-stack-active.svg';
+import { DetailBackButton } from '@/components/common/detail';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
 
-import { useViewerChromeFade } from './useViewerChromeFade';
-
-type ViewMode = 'one' | 'stack';
+import { getStackPhotoIndex, STACK_READING_LINE } from './artworkDetail.utils';
+import type { ViewerChrome } from './useViewerChromeFade';
+import type { ViewMode } from './useViewMode';
 
 type Props = {
   images: string[];
   title: string;
+  mode: ViewMode;
+  onModeChange: (mode: ViewMode) => void;
+  stageRef: RefObject<HTMLDivElement>;
+  chrome: ViewerChrome;
+  /* 900px 이상은 서비스 헤더가 있어 뒤로가기를 빼지만, 미리보기는 사진 위에 둔다 */
+  isPreview: boolean;
   onBack: () => void;
 };
 
-const VIEW_MODE_STORAGE_KEY = 'du.view';
 const STAGE_IMAGE_WIDTH = 1080;
 const THUMB_IMAGE_WIDTH = 96;
-const OVERLAY_TOP_CLASS = 'top-[max(16px,env(safe-area-inset-top))]';
-
-// 900px 이상에서 뷰어가 놓이는 위쪽 여백(desktop:top-8)
-const DESKTOP_TOP_OFFSET = 32;
-const desktopTopOffset = () =>
-  window.matchMedia('(width >= 56.25rem)').matches ? DESKTOP_TOP_OFFSET : 0;
+const OVERLAY_TOP = 'top-[max(16px,env(safe-area-inset-top))]';
+// 높이 40인 보기 방식 스위치를 높이 44인 뒤로가기와 가운데를 맞춘다
+const SWITCH_TOP = 'top-[calc(max(16px,env(safe-area-inset-top))+2px)]';
+// 이어서 보기에서 썸네일로 옮길 때 사진 윗변이 놓이는 자리. 현재 장 계산의 기준선으로도 읽는다
+const STACK_SCROLL_MARGIN =
+  'scroll-mt-(--detail-top) desktop:scroll-mt-[calc(var(--detail-top)+2rem)]';
+// 사용자가 직접 스크롤하기 시작했다는 신호. 썸네일로 고른 장을 이때까지 유지한다
+const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const scrollBehavior = (): ScrollBehavior => (prefersReducedMotion() ? 'auto' : 'smooth');
-
-const readStoredViewMode = (): ViewMode => {
-  try {
-    return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === 'stack' ? 'stack' : 'one';
-  } catch {
-    return 'one';
-  }
-};
-
-const storeViewMode = (mode: ViewMode) => {
-  try {
-    localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
-  } catch {
-    // 저장소를 쓸 수 없는 환경에서는 이번 방문에만 적용된다
-  }
-};
 
 function StackImage({ src, alt, eager }: { src: string; alt: string; eager: boolean }) {
   // 이미지가 뜨기 전에도 자리를 잡아 두어 장 사이 이동 위치가 틀어지지 않게 한다
@@ -61,31 +59,39 @@ function StackImage({ src, alt, eager }: { src: string; alt: string; eager: bool
       draggable={false}
       loading={eager ? 'eager' : 'lazy'}
       onLoad={() => setIsLoaded(true)}
-      className={cn('block w-full bg-secondary select-none', isLoaded ? 'h-auto' : 'aspect-4/5')}
+      className={cn(
+        'block w-full bg-secondary select-none',
+        STACK_SCROLL_MARGIN,
+        isLoaded ? 'h-auto' : 'aspect-4/5',
+      )}
     />
   );
 }
 
-export function ArtworkViewer({ images, title, onBack }: Props) {
+export function ArtworkViewer({
+  images,
+  title,
+  mode,
+  onModeChange,
+  stageRef,
+  chrome,
+  isPreview,
+  onBack,
+}: Props) {
   const photoCount = images.length;
   const hasMultiple = photoCount > 1;
-
-  const [storedMode, setStoredMode] = useState<ViewMode>(readStoredViewMode);
-  const [current, setCurrent] = useState(0);
-  const mode: ViewMode = hasMultiple ? storedMode : 'one';
   const isStack = mode === 'stack';
 
-  const viewerRef = useRef<HTMLElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
   const stackRef = useRef<HTMLDivElement>(null);
   const shouldAlignAfterModeChange = useRef(false);
   const currentRef = useRef(current);
+  // 썸네일 · 보기 방식 전환으로 옮긴 장. 페이지 끝이라 사진이 위까지 못 올라와도 고른 장을 유지한다
+  const isStackPinnedRef = useRef(false);
 
-  const { isControlsIdle, isChipIdle, peekChip, holdProps } = useViewerChromeFade(
-    stageRef,
-    isStack,
-  );
+  const { isStackHidden, isControlsDimmed, isChipHidden, peekChip, holdProps } = chrome;
+  const stackHiddenClass = isStackHidden && 'pointer-events-none opacity-0';
 
   const showPhoto = (index: number) => {
     if (index !== currentRef.current) peekChip();
@@ -96,10 +102,8 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
   const scrollToStackImage = (index: number, behavior: ScrollBehavior) => {
     const element = stackRef.current?.children[index];
     if (!element) return;
-    window.scrollTo({
-      top: element.getBoundingClientRect().top + window.scrollY - desktopTopOffset(),
-      behavior,
-    });
+    isStackPinnedRef.current = true;
+    element.scrollIntoView({ behavior, block: 'start' });
   };
 
   const goTo = (index: number) => {
@@ -109,11 +113,19 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
     showPhoto(next);
   };
 
+  const selectThumb = (index: number) => {
+    if (!isStack) {
+      goTo(index);
+      return;
+    }
+    showPhoto(index);
+    scrollToStackImage(index, scrollBehavior());
+  };
+
   const changeMode = (next: ViewMode) => {
     if (next === mode) return;
     shouldAlignAfterModeChange.current = true;
-    storeViewMode(next);
-    setStoredMode(next);
+    onModeChange(next);
   };
 
   useLayoutEffect(() => {
@@ -123,13 +135,9 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
     if (!shouldAlignAfterModeChange.current) return;
     shouldAlignAfterModeChange.current = false;
 
-    if (isStack) {
-      scrollToStackImage(currentRef.current, scrollBehavior());
-    } else if (viewerRef.current?.parentElement) {
-      // 뷰어는 sticky라 현재 위치 대신 뷰어를 담은 레이아웃의 맨 위를 기준으로 한다
-      const top = viewerRef.current.parentElement.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
-    }
+    // 한 장씩 보기는 페이지 맨 위의 사진에서 이어 보고, 이어서 보기는 보던 장으로 내려간다
+    if (isStack) scrollToStackImage(currentRef.current, scrollBehavior());
+    else window.scrollTo({ top: 0, behavior: 'auto' });
   }, [isStack]);
 
   useEffect(() => {
@@ -144,26 +152,33 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
   useEffect(() => {
     if (!isStack) return;
 
-    let isScheduled = false;
+    let frame = 0;
+    const unpin = () => {
+      isStackPinnedRef.current = false;
+    };
     const onScroll = () => {
-      if (isScheduled) return;
-      isScheduled = true;
-      requestAnimationFrame(() => {
-        isScheduled = false;
-        const line = window.innerHeight * 0.4;
-        let visibleIndex = 0;
-        Array.from(stackRef.current?.children ?? []).forEach((element, index) => {
-          if (element.getBoundingClientRect().top <= line) visibleIndex = index;
-        });
-        if (visibleIndex !== currentRef.current) {
-          currentRef.current = visibleIndex;
-          setCurrent(visibleIndex);
+      if (isStackPinnedRef.current || frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const stack = stackRef.current;
+        if (!stack?.firstElementChild) return;
+        const anchor = parseFloat(getComputedStyle(stack.firstElementChild).scrollMarginTop) || 0;
+        const tops = Array.from(stack.children, (element) => element.getBoundingClientRect().top);
+        const index = getStackPhotoIndex(tops, anchor, window.innerHeight * STACK_READING_LINE);
+        if (index !== currentRef.current) {
+          currentRef.current = index;
+          setCurrent(index);
         }
       });
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    USER_SCROLL_EVENTS.forEach((type) => window.addEventListener(type, unpin, { passive: true }));
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      USER_SCROLL_EVENTS.forEach((type) => window.removeEventListener(type, unpin));
+    };
   }, [isStack]);
 
   const handleTrackScroll = () => {
@@ -187,11 +202,10 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
 
   return (
     <section
-      ref={viewerRef}
       aria-label="작품 이미지"
       className={cn(
         'relative desktop:flex desktop:items-start desktop:gap-3',
-        !isStack && 'desktop:sticky desktop:top-8',
+        !isStack && 'desktop:sticky desktop:top-[calc(var(--detail-top)+2rem)]',
       )}
     >
       {hasMultiple && (
@@ -200,16 +214,16 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
           aria-label="이미지 목록"
           className={cn(
             'hidden max-h-[min(78vh,820px)] shrink-0 flex-col gap-1.5 overflow-y-auto [scrollbar-width:none] desktop:flex [&::-webkit-scrollbar]:hidden',
-            isStack && 'desktop:sticky desktop:top-8',
+            isStack && 'desktop:sticky desktop:top-[calc(var(--detail-top)+2rem)]',
           )}
         >
           {images.map((src, index) => (
             <button
-              key={src}
+              key={`${src}-${index}`}
               type="button"
               aria-label={`${index + 1}번째 이미지 보기`}
               aria-current={index === current}
-              onClick={() => (isStack ? scrollToStackImage(index, scrollBehavior()) : goTo(index))}
+              onClick={() => selectThumb(index)}
               className={cn(
                 'h-16 w-12 shrink-0 cursor-pointer overflow-hidden rounded-6 border-2 transition-opacity duration-fast ease-standard',
                 index === current
@@ -239,20 +253,21 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
         <div
           className={cn(
             'pointer-events-none z-20',
-            isStack ? 'sticky top-0 h-0 w-full' : 'absolute inset-0',
+            isStack ? 'sticky top-(--detail-top) h-0 w-full' : 'absolute inset-0',
           )}
         >
-          <button
-            type="button"
-            aria-label="뒤로가기"
-            onClick={onBack}
-            className={cn(
-              'pointer-events-auto absolute left-5 grid size-11 cursor-pointer place-items-center rounded-circle border border-[rgba(0,0,0,0.08)] bg-[#ffffff] shadow-card transition-transform duration-fast ease-standard active:scale-94',
-              OVERLAY_TOP_CLASS,
-            )}
-          >
-            <img src={backIcon} alt="" />
-          </button>
+          {/* 900px 미만의 뒤로가기는 화면을 따라 내려오도록 ArtworkDetailShell 이 둔다 */}
+          {isPreview && (
+            <DetailBackButton
+              onBack={onBack}
+              {...holdProps}
+              className={cn(
+                'pointer-events-auto absolute left-5 hidden desktop:grid',
+                OVERLAY_TOP,
+                stackHiddenClass,
+              )}
+            />
+          )}
 
           {hasMultiple && (
             <div
@@ -260,9 +275,10 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
               aria-label="감상 방식"
               {...holdProps}
               className={cn(
-                'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-primary-white p-1 transition-opacity duration-base ease-standard',
-                OVERLAY_TOP_CLASS,
-                isControlsIdle && 'opacity-55',
+                'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-base-black/45 p-1 backdrop-blur-lg transition-opacity duration-base ease-standard',
+                SWITCH_TOP,
+                isControlsDimmed && 'opacity-55',
+                stackHiddenClass,
               )}
             >
               <button
@@ -271,7 +287,7 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
                 aria-pressed={!isStack}
                 onClick={() => changeMode('one')}
                 className={cn(
-                  'grid h-8 w-9 cursor-pointer place-items-center rounded-circle transition-colors duration-fast ease-standard',
+                  'grid h-8 w-9 cursor-pointer place-items-center rounded-circle transition duration-fast ease-standard active:scale-94',
                   !isStack && 'bg-interactive-primary',
                 )}
               >
@@ -283,7 +299,7 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
                 aria-pressed={isStack}
                 onClick={() => changeMode('stack')}
                 className={cn(
-                  'grid h-8 w-9 cursor-pointer place-items-center rounded-circle transition-colors duration-fast ease-standard',
+                  'grid h-8 w-9 cursor-pointer place-items-center rounded-circle transition duration-fast ease-standard active:scale-94',
                   isStack && 'bg-interactive-primary',
                 )}
               >
@@ -300,7 +316,7 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
                 isStack
                   ? 'top-[calc(max(16px,env(safe-area-inset-top))+10px)] right-28'
                   : 'right-4 bottom-4',
-                isChipIdle && 'opacity-0',
+                isChipHidden && 'opacity-0',
               )}
             >
               {current + 1} / {photoCount}
@@ -315,7 +331,12 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
             className="desktop:overflow-hidden desktop:rounded-12"
           >
             {images.map((src, index) => (
-              <StackImage key={src} src={src} alt={altOf(index)} eager={index === 0} />
+              <StackImage
+                key={`${src}-${index}`}
+                src={src}
+                alt={altOf(index)}
+                eager={index === 0}
+              />
             ))}
           </div>
         ) : (
@@ -330,7 +351,10 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
             className="flex h-full touch-pan-x touch-pan-y touch-pinch-zoom snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {images.map((src, index) => (
-              <div key={src} className="h-full flex-[0_0_100%] snap-center bg-secondary">
+              <div
+                key={`${src}-${index}`}
+                className="h-full flex-[0_0_100%] snap-center bg-secondary"
+              >
                 <OptimizedImage
                   src={src}
                   displayWidth={STAGE_IMAGE_WIDTH}
@@ -353,7 +377,7 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
               aria-label="이전 이미지"
               disabled={current === 0}
               onClick={() => goTo(current - 1)}
-              className="absolute top-1/2 left-4 z-20 -mt-5.5 hidden size-11 cursor-pointer place-items-center rounded-circle bg-[rgba(255,255,255,0.82)] text-icon-primary backdrop-blur-[10px] transition duration-fast ease-standard hover:scale-106 disabled:cursor-default disabled:opacity-35 disabled:hover:scale-100 desktop:grid"
+              className="absolute top-1/2 left-4 z-20 -mt-5.5 hidden size-11 cursor-pointer place-items-center rounded-circle bg-primary-white/82 text-icon-primary backdrop-blur-md transition duration-fast ease-standard hover:scale-106 disabled:cursor-default disabled:opacity-35 disabled:hover:scale-100 desktop:grid"
             >
               <ChevronLeft aria-hidden="true" size={20} strokeWidth={1.7} />
             </button>
@@ -362,7 +386,7 @@ export function ArtworkViewer({ images, title, onBack }: Props) {
               aria-label="다음 이미지"
               disabled={current === photoCount - 1}
               onClick={() => goTo(current + 1)}
-              className="absolute top-1/2 right-4 z-20 -mt-5.5 hidden size-11 cursor-pointer place-items-center rounded-circle bg-[rgba(255,255,255,0.82)] text-icon-primary backdrop-blur-[10px] transition duration-fast ease-standard hover:scale-106 disabled:cursor-default disabled:opacity-35 disabled:hover:scale-100 desktop:grid"
+              className="absolute top-1/2 right-4 z-20 -mt-5.5 hidden size-11 cursor-pointer place-items-center rounded-circle bg-primary-white/82 text-icon-primary backdrop-blur-md transition duration-fast ease-standard hover:scale-106 disabled:cursor-default disabled:opacity-35 disabled:hover:scale-100 desktop:grid"
             >
               <ChevronRight aria-hidden="true" size={20} strokeWidth={1.7} />
             </button>

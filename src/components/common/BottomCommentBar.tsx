@@ -277,7 +277,8 @@ export function BottomCommentBar({
                 onChange={(event) => setContent(event.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
-                className="typography-body-xl-regular min-w-0 flex-1 resize-none overflow-y-auto bg-transparent pt-3 pb-2 text-primary outline-none [scrollbar-width:none] placeholder:text-tertiary [&::-webkit-scrollbar]:hidden"
+                // 디자인이 16px 그대로라 index.css 의 iOS 확대 방지 축소(scale .875 · 폭 114.3%)를 끈다. 글자는 16px 이라 확대는 여전히 막힌다
+                className="typography-body-xl-regular mr-0! w-auto! min-w-0 flex-1 transform-none! resize-none overflow-y-auto bg-transparent pt-3 pb-2 text-primary outline-none [scrollbar-width:none] placeholder:text-tertiary [&::-webkit-scrollbar]:hidden"
               />
 
               {imageDomain && (
