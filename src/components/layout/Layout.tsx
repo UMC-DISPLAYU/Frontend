@@ -21,11 +21,8 @@ export function Layout() {
   // 실행돼 로그인 흐름이 비정상 작동할 수 있다. 로그인 화면을 새로 만들 때 함께 옮긴다.
   useRedirectAfterLogin();
 
-  // 라운지 글쓰기 페이지 (/lounge/:category/post)
-  const isLoungeWritePath = /^\/lounge\/[^/]+\/post$/.test(location.pathname);
-
-  // 하단 네비게이션 바(Navbar) 표시 여부 (홈, 검색, 라운지, 마이)
-  const showNavbarPaths = ['/home', '/search', '/lounge'];
+  // 하단 네비게이션 바(Navbar) 표시 여부 (홈, 검색, 마이)
+  const showNavbarPaths = ['/home', '/search'];
   const exactNavbarPaths = ['/my'];
 
   const isRouteHandleNavbarHidden = matches.some(
@@ -35,7 +32,6 @@ export function Layout() {
   const shouldShowNavbar =
     (showNavbarPaths.some((path) => location.pathname.startsWith(path)) ||
       exactNavbarPaths.some((path) => location.pathname === path)) &&
-    !isLoungeWritePath &&
     !isRouteHandleNavbarHidden &&
     !manualNavbarHidden;
 
