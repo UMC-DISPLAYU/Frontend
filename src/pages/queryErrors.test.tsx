@@ -6,7 +6,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { ApiError } from '@/api/apiError';
 import { ErrorView } from '@/components/common/ErrorView';
 
-import { DisplayDetailPage } from './DisplayDetailPage';
+import { DisplayDetailPage } from './display-detail/DisplayDetailPage';
 import { DisplayInvitationLinkPage } from './DisplayInvitationLinkPage';
 import { ExplorePage } from './ExplorePage';
 
@@ -55,15 +55,9 @@ vi.mock('@/components/common', async () => ({
   ErrorView: (await import('@/components/common/ErrorView')).ErrorView,
   LoadingView: () => <div>로딩 중</div>,
 }));
-vi.mock('@/components/displaydetailpage', () => ({
-  ArtworkTab: () => null,
-  BottomFixedBar: () => null,
-  DetailTabNav: () => null,
-  DisplaySaveButton: () => null,
-  ExhibitionMeta: () => null,
-  HeroSlider: () => <div>전시 상세</div>,
-  IntroTab: () => null,
-  ReviewTab: () => null,
+vi.mock('@/components/display-detail', () => ({
+  DisplayDetailSkeleton: () => null,
+  DisplayDetailView: () => <div>전시 상세</div>,
 }));
 vi.mock('@/components/explore', async () => ({
   ...(await import('@/components/explore/exploreOptions')),
