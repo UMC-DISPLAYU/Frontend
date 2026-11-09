@@ -1,76 +1,34 @@
-import {
-  type KeyboardEvent,
-  type RefObject,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type KeyboardEvent, type RefObject, useLayoutEffect, useRef, useState } from 'react';
 
 import { cn } from '@/utils/cn';
 
-import {
-  DISPLAY_DETAIL_TABS,
-  type DisplayDetailTabKey,
-  displayPanelId,
-  displayTabId,
-} from './displayDetail.utils';
-
-const TAB_LABEL: Record<DisplayDetailTabKey, string> = {
-  intro: '소개',
-  works: '작품',
-  reviews: '후기',
-};
-
-type Props = {
-  activeTab: DisplayDetailTabKey;
-  onTabChange: (tab: DisplayDetailTabKey) => void;
-  /* 탭 줄이 원래 놓이는 자리. 붙었는지 재고, 탭을 바꿀 때 돌아갈 위치로 쓴다 */
+type Props<T extends string> = {
+  tabs: readonly T[];
+  labels: Record<T, string>;
+  /* tablist 이름. 예: "전시 상세" */
+  label: string;
+  tabId: (tab: T) => string;
+  panelId: (tab: T) => string;
+  activeTab: T;
+  onTabChange: (tab: T) => void;
+  /* 탭 줄이 원래 놓이는 자리. 붙었는지 재고, 탭을 바꿀 때 돌아갈 위치로 쓴다(useDetailTab) */
   sentinelRef: RefObject<HTMLDivElement>;
+  isStuck: boolean;
 };
 
-/*
- * 탭 줄이 화면 위에 붙었는지. 붙어 있는 동안 900px 미만은 뒤로가기 버튼이 탭 줄 왼쪽에 앉는다.
- * 붙는 위치는 미리보기 띠 · 768px 이상 헤더에 따라 달라서 탭 줄의 실제 sticky top 을 읽는다
- */
-function useIsStuck(sentinelRef: RefObject<HTMLDivElement>, navRef: RefObject<HTMLDivElement>) {
-  const [isStuck, setIsStuck] = useState(false);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    const nav = navRef.current;
-    if (!sentinel || !nav) return;
-
-    let observer: IntersectionObserver | undefined;
-    let observedTop = -1;
-    const observe = () => {
-      const top = parseFloat(getComputedStyle(nav).top) || 0;
-      if (top === observedTop) return;
-      observedTop = top;
-      observer?.disconnect();
-      observer = new IntersectionObserver(
-        ([entry]) => setIsStuck(!entry.isIntersecting && entry.boundingClientRect.top < top),
-        { rootMargin: `-${top}px 0px 0px 0px` },
-      );
-      observer.observe(sentinel);
-    };
-
-    observe();
-    window.addEventListener('resize', observe);
-    return () => {
-      window.removeEventListener('resize', observe);
-      observer?.disconnect();
-    };
-  }, [sentinelRef, navRef]);
-
-  return isStuck;
-}
-
-export function DisplayTabNav({ activeTab, onTabChange, sentinelRef }: Props) {
-  const navRef = useRef<HTMLDivElement>(null);
-  const isStuck = useIsStuck(sentinelRef, navRef);
+export function DetailTabNav<T extends string>({
+  tabs,
+  labels,
+  label,
+  tabId,
+  panelId,
+  activeTab,
+  onTabChange,
+  sentinelRef,
+  isStuck,
+}: Props<T>) {
   const listRef = useRef<HTMLDivElement>(null);
-  const buttonRefs = useRef<Partial<Record<DisplayDetailTabKey, HTMLButtonElement | null>>>({});
+  const buttonRefs = useRef<Partial<Record<T, HTMLButtonElement | null>>>({});
   const [indicator, setIndicator] = useState<{ x: number; width: number; animate: boolean }>();
 
   // 밑줄 하나가 탭에서 탭으로 미끄러진다(프로토타입). 처음 자리를 잡을 때는 움직이지 않는다
@@ -96,8 +54,8 @@ export function DisplayTabNav({ activeTab, onTabChange, sentinelRef }: Props) {
   const moveFocus = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
     event.preventDefault();
-    const step = event.key === 'ArrowRight' ? 1 : DISPLAY_DETAIL_TABS.length - 1;
-    const next = DISPLAY_DETAIL_TABS[(index + step) % DISPLAY_DETAIL_TABS.length];
+    const step = event.key === 'ArrowRight' ? 1 : tabs.length - 1;
+    const next = tabs[(index + step) % tabs.length];
     onTabChange(next);
     buttonRefs.current[next]?.focus();
   };
@@ -106,15 +64,14 @@ export function DisplayTabNav({ activeTab, onTabChange, sentinelRef }: Props) {
     <>
       <div ref={sentinelRef} aria-hidden className="invisible -mb-px h-px" />
       <div
-        ref={navRef}
         className={cn(
           'sticky top-(--detail-top) z-20 border-b border-bg-tertiary bg-primary-white px-gutter pb-0.5 transition-[padding] duration-fast ease-standard desktop:-ml-1 desktop:px-0',
           // 뒤로가기(왼쪽 20 + 44)를 비켜 첫 탭을 오른쪽으로 민다
           isStuck && 'max-desktop:pl-17',
         )}
       >
-        <div ref={listRef} role="tablist" aria-label="전시 상세" className="relative flex gap-2">
-          {DISPLAY_DETAIL_TABS.map((tab, index) => {
+        <div ref={listRef} role="tablist" aria-label={label} className="relative flex gap-2">
+          {tabs.map((tab, index) => {
             const isActive = tab === activeTab;
             return (
               <button
@@ -122,11 +79,11 @@ export function DisplayTabNav({ activeTab, onTabChange, sentinelRef }: Props) {
                 ref={(element) => {
                   buttonRefs.current[tab] = element;
                 }}
-                id={displayTabId(tab)}
+                id={tabId(tab)}
                 type="button"
                 role="tab"
                 aria-selected={isActive}
-                aria-controls={displayPanelId(tab)}
+                aria-controls={panelId(tab)}
                 tabIndex={isActive ? 0 : -1}
                 onClick={() => onTabChange(tab)}
                 onKeyDown={(event) => moveFocus(event, index)}
@@ -135,7 +92,7 @@ export function DisplayTabNav({ activeTab, onTabChange, sentinelRef }: Props) {
                   isActive ? 'text-primary' : 'text-tertiary',
                 )}
               >
-                {TAB_LABEL[tab]}
+                {labels[tab]}
               </button>
             );
           })}

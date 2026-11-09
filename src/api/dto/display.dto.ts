@@ -130,6 +130,7 @@ export interface DisplayDetailDto {
   period: DisplayPeriodDto;
   artworkContentOpen: DisplayContentOpenType;
   exhibitionContentOpen: DisplayContentOpenType;
+  /* 공개 여부(PUBLISHED · DRAFT). 전시 예정 · 중 · 종료는 period 로 계산한다 */
   status: string;
   invitationToken: string | null;
   invitationDisabledAt: string | null;
@@ -137,8 +138,8 @@ export interface DisplayDetailDto {
   contentCategories: DisplayContentCategoryDto[];
   teamMembers: DisplayTeamMemberDto[];
   invitations: DisplayInvitationDto[];
-  /* 전시 링크. 백엔드 요청 중이라 실서버 응답에는 아직 없고, 필드 이름은 확정되면 맞춥니다 */
-  instagramId?: string | null;
+  /* 전시 링크(선택). 필드 이름은 백엔드와 확정했고, 실서버 응답에 아직 없을 수 있다 */
+  instagramUrl?: string | null;
   websiteUrl?: string | null;
 }
 

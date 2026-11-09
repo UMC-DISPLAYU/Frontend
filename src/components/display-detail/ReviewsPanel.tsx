@@ -39,8 +39,8 @@ function ReviewSkeleton() {
 /* 공개 전에는 후기를 부르지 않고, 입력바는 모양만 두고 막는다 */
 export function PreviewReviewsPanel() {
   return (
-    <section aria-label="전시 후기" className="px-gutter pt-2 pb-10 desktop:px-0">
-      <p className="typography-body-lg-regular pt-12 pb-6 text-center text-tertiary">
+    <section aria-label="전시 후기" className="px-gutter py-2 desktop:px-0">
+      <p className="typography-body-lg-medium py-10 text-center text-tertiary">
         공개 전이라 후기가 없어요
       </p>
       <fieldset disabled className="m-0 min-w-0 border-0 p-0 opacity-45">
@@ -112,11 +112,11 @@ export function ReviewsPanel({ display }: Props) {
   }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   return (
-    <section aria-label="전시 후기" className="px-gutter pt-2 pb-10 desktop:px-0">
+    <section aria-label="전시 후기" className="px-gutter py-2 desktop:px-0">
       {isPending && <ReviewSkeleton />}
 
       {!isPending && !isError && reviews.length === 0 && (
-        <p className="typography-body-lg-regular pt-12 pb-6 text-center text-tertiary">
+        <p className="typography-body-lg-medium py-10 text-center text-tertiary">
           아직 후기가 없어요
         </p>
       )}

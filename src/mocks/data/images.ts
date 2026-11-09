@@ -867,12 +867,13 @@ export const MOCK_ARTWORK: MockArtwork[] = [
     displayId: 101,
     title: 'E202 번아웃 사건',
     artist: '김경준',
-    description: null,
+    // 빈 문자열은 목 상세가 확인용 문구를 채우지 않는다. 소개 탭 없이 방명록만 보이는 경우
+    description: '',
     type: 'SCULPTURE',
     productionYear: 2026,
     material: 'PETG, 3D Modeling',
     size: '50 x 350 x 225 (cm)',
-    point: null,
+    point: '',
     images: [
       {
         imageUrl:
@@ -889,7 +890,9 @@ export const MOCK_ARTWORK: MockArtwork[] = [
     displayId: 101,
     title: '보를 찾습니다',
     artist: '황다겸',
-    description: null,
+    // 3줄을 넘는 소개글(더보기 확인용)
+    description:
+      '같은 산책길을 접지 지도, 소책자, 실로 묶은 작은 노트에 다르게 옮긴 편집디자인 작업입니다. 01·02·03으로 표시한 경로는 종이를 펼치면 연결되고, 접으면 서로 다른 장면으로 나뉩니다. 접지선이 정보를 숨기거나 드러내는 방식을 통해 지도를 읽는 순서와 손으로 다루는 경험을 함께 설계했습니다.',
     type: 'SCULPTURE',
     productionYear: 2026,
     material: 'PETG, 3D Modeling',
@@ -927,6 +930,20 @@ export const MOCK_ARTWORK: MockArtwork[] = [
       {
         imageUrl:
           'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/aa0b06bb-599f-49d0-8c48-8370aa9020b9-023-image.png',
+      },
+    ],
+    processImages: [
+      {
+        imageUrl:
+          'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/4ca2fdd6-5ee6-4090-819a-e4a449496901-025-image.png',
+      },
+      {
+        imageUrl:
+          'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/f0fe3b7d-8e11-453f-bb18-0edd41ef54cd-026-image.png',
+      },
+      {
+        imageUrl:
+          'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/2cdda5f9-acb3-4437-be2b-594dfe48bbf0-027-image.png',
       },
     ],
   },

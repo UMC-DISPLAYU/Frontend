@@ -7,6 +7,7 @@ export type { CommentData } from './comment';
 export { CommentItem } from './comment';
 export { DrawingModal } from './DrawingModal';
 export { ErrorView } from './ErrorView';
+export { ExpandableText } from './ExpandableText';
 export { ImageModal } from './ImageModal';
 export { ImageUploader } from './ImageUploader';
 export { LoadingView } from './LoadingView';

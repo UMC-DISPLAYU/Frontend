@@ -95,7 +95,7 @@ const ICON_PROPS = {
 /* 피그마 전시 링크 개선안(11-05): 카드 · 버튼이 아니라 아이콘 + 글자 링크 한 줄, 입력한 것만 보인다 */
 function ExternalLinks({ display }: { display: DisplayDetailDto }) {
   const links: (ExternalLink & { name: string; icon: ReactNode })[] = [];
-  const instagram = toInstagramLink(display.instagramId);
+  const instagram = toInstagramLink(display.instagramUrl);
   const website = toWebsiteLink(display.websiteUrl);
   if (instagram) links.push({ ...instagram, name: '인스타그램', icon: <InstagramIcon /> });
   if (website) links.push({ ...website, name: '웹사이트', icon: <WebsiteIcon /> });

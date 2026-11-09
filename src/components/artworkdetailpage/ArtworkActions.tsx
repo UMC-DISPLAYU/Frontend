@@ -7,9 +7,10 @@ import { useBottomObstruction } from '@/hooks/useVirtualKeyboard';
 type ShareProps = {
   shareTitle: string;
   shareImageUrl?: string;
+  disabled?: boolean;
 };
 
-function ShareButton({ shareTitle, shareImageUrl }: ShareProps) {
+function ShareButton({ shareTitle, shareImageUrl, disabled }: ShareProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -18,7 +19,9 @@ function ShareButton({ shareTitle, shareImageUrl }: ShareProps) {
         type="button"
         aria-label="공유"
         onClick={() => setIsOpen(true)}
-        className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-12 border border-primary transition-colors duration-fast ease-standard hover:bg-secondary"
+        disabled={disabled}
+        title={disabled ? '공개 전에는 사용할 수 없어요' : undefined}
+        className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-12 border border-primary transition-colors duration-fast ease-standard hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-45"
       >
         <img src={shareIcon} alt="" />
       </button>

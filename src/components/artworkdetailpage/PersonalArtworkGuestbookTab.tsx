@@ -76,6 +76,8 @@ export function PersonalArtworkGuestbookTab({ artwork, myUserId }: Props) {
         ))}
       </div>
 
+      <div aria-hidden className="h-4" />
+
       {isError && (
         <ErrorView
           fullScreen={false}

@@ -51,8 +51,12 @@ const displayDetailResponse = (displayId: number) => {
             latitude: 37.5509,
             longitude: 126.9254,
           },
-    /* 백엔드에 요청한 전시 링크. 첫 전시에만 넣어 링크가 없는 경우도 같이 확인한다 */
-    instagramId: display.instagramId ?? (display.displayId === 101 ? 'soft_landing_2026' : null),
+    /* 전시 링크: 101은 둘 다, 102는 인스타그램만, 나머지는 없음 */
+    instagramUrl:
+      display.instagramUrl ??
+      (display.displayId === 101 || display.displayId === 102
+        ? 'https://www.instagram.com/soft_landing_2026/'
+        : null),
     websiteUrl:
       display.websiteUrl ?? (display.displayId === 101 ? 'https://softlanding.kr/' : null),
   };

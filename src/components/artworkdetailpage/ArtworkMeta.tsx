@@ -2,11 +2,12 @@ import { useToggleArtworkLike } from '@/hooks/queries/useArtworkDetail';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArchivePolicy } from '@/hooks/usePolicy';
 import type { ArtworkDetail } from '@/types/exhibition';
+import type { ExhibitionState } from '@/utils/exhibitionState';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworkInlineActions } from './ArtworkActions';
 import type { ArtworkArtist } from './ArtworkArtists';
-import { type ExhibitionState, getArtworkSpecText } from './artworkDetail.utils';
+import { getArtworkSpecText } from './artworkDetail.utils';
 import { ArtworkExhibitionRow } from './ArtworkExhibitionRow';
 import { ArtworkLabel } from './ArtworkLabel';
 import { ArtworkSaveButton } from './ArtworkSaveButton';
@@ -16,9 +17,16 @@ type Props = {
   artists: ArtworkArtist[];
   exhibitionState: ExhibitionState | null;
   shareImageUrl?: string;
+  isPreview: boolean;
 };
 
-export function ArtworkMeta({ artwork, artists, exhibitionState, shareImageUrl }: Props) {
+export function ArtworkMeta({
+  artwork,
+  artists,
+  exhibitionState,
+  shareImageUrl,
+  isPreview,
+}: Props) {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
 
@@ -46,6 +54,7 @@ export function ArtworkMeta({ artwork, artists, exhibitionState, shareImageUrl }
         liked={liked}
         likeCount={likeCount}
         onToggleLike={handleLike}
+        disabled={isPreview}
         exhibition={
           <ArtworkExhibitionRow
             displayId={artwork.exhibitionId}
@@ -59,10 +68,12 @@ export function ArtworkMeta({ artwork, artists, exhibitionState, shareImageUrl }
           <ArtworkInlineActions
             shareTitle={artwork.artworkName}
             shareImageUrl={shareImageUrl}
+            disabled={isPreview}
             saveButton={
               <ArtworkSaveButton
                 artworkId={artwork.artworkId}
                 saved={artwork.isArchived ?? false}
+                disabled={isPreview}
               />
             }
           />

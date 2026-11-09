@@ -29,7 +29,10 @@ export function PersonalArtworkSaveButton({ className, personalArtworkId, saved 
     }
 
     if (saved) unarchive.mutate(personalArtworkId, { onSuccess: () => toast('저장을 취소했어요') });
-    else archive.mutate(personalArtworkId, { onSuccess: () => toast('보관함에 저장했어요') });
+    else
+      archive.mutate(personalArtworkId, {
+        onSuccess: () => toast('보관함에 저장했어요', { action: { label: '보기', to: '/my' } }),
+      });
   };
 
   return (

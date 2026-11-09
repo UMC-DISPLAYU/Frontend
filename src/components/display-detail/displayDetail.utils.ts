@@ -1,15 +1,9 @@
-import type { DisplayDetailDto } from '@/api/dto';
-
 export type DisplayDetailTabKey = 'intro' | 'works' | 'reviews';
 
 export const DISPLAY_DETAIL_TABS: DisplayDetailTabKey[] = ['intro', 'works', 'reviews'];
 
 export const displayTabId = (tab: DisplayDetailTabKey) => `display-tab-${tab}`;
 export const displayPanelId = (tab: DisplayDetailTabKey) => `display-panel-${tab}`;
-
-/* 공개 전(등록 중) 전시. 팀원이 미리보기로 열 때만 상세가 내려온다 */
-export const isPreviewDisplay = (display: Pick<DisplayDetailDto, 'status'>) =>
-  display.status === 'DRAFT';
 
 const toDot = (date: string) => date.slice(0, 10).replace(/-/g, '.');
 

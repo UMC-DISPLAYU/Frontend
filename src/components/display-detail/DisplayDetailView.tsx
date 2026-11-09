@@ -1,18 +1,28 @@
 import type { DisplayDetailDto } from '@/api/dto';
+import {
+  DetailBackButton,
+  DetailPreviewBanner,
+  detailStickyTopClass,
+  DetailTabNav,
+  DetailTopBar,
+  useDetailTab,
+} from '@/components/common/detail';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { cn } from '@/utils/cn';
+import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
 import { DisplayBottomBar, DisplayInlineActions, DisplaySaveButton } from './DisplayActions';
-import { DisplayBackButton } from './DisplayBackButton';
-import { displayPanelId, displayTabId, isPreviewDisplay } from './displayDetail.utils';
+import {
+  DISPLAY_DETAIL_TABS,
+  type DisplayDetailTabKey,
+  displayPanelId,
+  displayTabId,
+} from './displayDetail.utils';
 import { DisplaySummary } from './DisplaySummary';
-import { DisplayTabNav } from './DisplayTabNav';
-import { DisplayTopBar } from './DisplayTopBar';
 import { IntroPanel } from './IntroPanel';
 import { PosterCarousel } from './PosterCarousel';
 import { PreviewReviewsPanel, ReviewsPanel } from './ReviewsPanel';
-import { useDisplayDetailTab } from './useDisplayDetailTab';
 import { WorksPanel } from './WorksPanel';
 
 /*
@@ -27,11 +37,11 @@ const LAYOUT =
 const SHEET =
   'min-w-0 min-[37.5rem]:mx-auto min-[37.5rem]:max-w-160 desktop:mx-0 desktop:max-w-170';
 
-/* sticky 요소(탭 줄 · 뒤로가기 · 포스터)가 붙는 위치. 미리보기 띠(40)와 768px 이상 헤더(64)를 더한 값 */
-const stickyTop = (isPreview: boolean) =>
-  isPreview
-    ? '[--detail-top:2.5rem] tablet:[--detail-top:6.5rem]'
-    : '[--detail-top:0rem] tablet:[--detail-top:4rem]';
+const TAB_LABEL: Record<DisplayDetailTabKey, string> = {
+  intro: '소개',
+  works: '작품',
+  reviews: '후기',
+};
 
 type Props = {
   display: DisplayDetailDto;
@@ -39,7 +49,7 @@ type Props = {
 };
 
 export function DisplayDetailView({ display, onBack }: Props) {
-  const { activeTab, selectTab, sentinelRef } = useDisplayDetailTab();
+  const { activeTab, selectTab, sentinelRef, isStuck } = useDetailTab(DISPLAY_DETAIL_TABS);
   const isPreview = isPreviewDisplay(display);
 
   const posters = (display.images ?? [])
@@ -62,30 +72,19 @@ export function DisplayDetailView({ display, onBack }: Props) {
   );
 
   return (
-    <div className={cn('min-h-dvh bg-primary-white', stickyTop(isPreview))}>
+    <div className={cn('min-h-dvh bg-primary-white', detailStickyTopClass(isPreview))}>
       {isPreview && (
-        <div
-          // 붙는 위치(--detail-top)가 40px 기준이라 좁은 화면에서도 한 줄로 두고 넘치면 말줄임
-          role="status"
-          className="typography-body-md-regular sticky top-0 z-40 flex h-10 items-center justify-center gap-2 bg-primary-black px-gutter text-center text-interactive-inverse"
-        >
-          <b className="typography-body-md-semibold shrink-0 rounded-circle bg-primary-white px-2 py-px text-primary">
-            미리보기
-          </b>
-          <span className="min-w-0 truncate">
-            공개 전 모습이에요. 저장·좋아요·후기 작성은 할 수 없어요
-          </span>
-        </div>
+        <DetailPreviewBanner message="공개 전 모습이에요. 저장·좋아요·후기 작성은 할 수 없어요" />
       )}
 
-      <DisplayTopBar className={isPreview ? 'top-10' : 'top-0'} />
+      <DetailTopBar className={isPreview ? 'top-10' : 'top-0'} />
 
       {/*
        * 900px 미만: 높이 0인 sticky 칸이라 처음엔 포스터 위(20, 20)에 있다가,
        * 스크롤하면 화면 맨 위(768px 이상은 헤더 아래)에 붙어 탭 줄 왼쪽에 앉는다(프로토타입 11-09)
        */}
       <div className="sticky top-[calc(var(--detail-top)-max(20px,env(safe-area-inset-top)))] z-30 h-0 desktop:hidden">
-        <DisplayBackButton
+        <DetailBackButton
           onBack={onBack}
           className="absolute top-[max(20px,env(safe-area-inset-top))] left-5"
         />
@@ -106,7 +105,17 @@ export function DisplayDetailView({ display, onBack }: Props) {
             actions={<DisplayInlineActions saveButton={saveButton} {...share} />}
           />
 
-          <DisplayTabNav activeTab={activeTab} onTabChange={selectTab} sentinelRef={sentinelRef} />
+          <DetailTabNav
+            tabs={DISPLAY_DETAIL_TABS}
+            labels={TAB_LABEL}
+            label="전시 상세"
+            tabId={displayTabId}
+            panelId={displayPanelId}
+            activeTab={activeTab}
+            onTabChange={selectTab}
+            sentinelRef={sentinelRef}
+            isStuck={isStuck}
+          />
 
           <div
             id={displayPanelId('intro')}
@@ -131,12 +140,15 @@ export function DisplayDetailView({ display, onBack }: Props) {
               />
             </div>
           )}
+          {/*
+           * 후기 패널은 등장 애니메이션을 두지 않는다. fade-in(fill both)이 끝나도 쌓임 맥락이 남아
+           * 안의 고정 입력바가 sticky 탭 줄 아래로 깔린다(작품 방명록과 같게)
+           */}
           {activeTab === 'reviews' && (
             <div
               id={displayPanelId('reviews')}
               role="tabpanel"
               aria-labelledby={displayTabId('reviews')}
-              className="animate-fade-in"
             >
               {isPreview ? <PreviewReviewsPanel /> : <ReviewsPanel display={display} />}
             </div>
@@ -153,7 +165,7 @@ export function DisplayDetailView({ display, onBack }: Props) {
 export function DisplayDetailSkeleton() {
   return (
     <div className="min-h-dvh bg-primary-white">
-      <DisplayTopBar className="top-0" />
+      <DetailTopBar className="top-0" />
       <div className={LAYOUT}>
         <Skeleton className="aspect-402/568 min-[37.5rem]:mx-auto min-[37.5rem]:mt-6 min-[37.5rem]:max-w-120 min-[37.5rem]:rounded-16 desktop:mt-0 desktop:max-w-none" />
         <div className={SHEET}>
