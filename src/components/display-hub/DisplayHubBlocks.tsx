@@ -54,7 +54,8 @@ export function DisplayHubBlocks({
         <Link to={`${basePath}/team`} className={`${CARD_CLASS} flex flex-col gap-3 p-4`}>
           <span className="typography-body-lg-semibold flex items-center gap-2 text-primary">
             <img src={UsersIcon} alt="" />
-            팀원 관리
+            <span className="flex-1">팀원 관리</span>
+            <img src={ChevronIcon} alt="" className="hidden tablet:block" />
           </span>
           <span className="flex flex-col gap-1">
             <span className="typography-body-lg-regular text-secondary">
@@ -81,7 +82,8 @@ export function DisplayHubBlocks({
         >
           <span className="typography-body-lg-semibold flex items-center gap-2 text-primary">
             <img src={PencilIcon} alt="" />
-            기본 정보
+            <span className="flex-1">기본 정보</span>
+            <img src={ChevronIcon} alt="" className="hidden tablet:block" />
           </span>
           <span className="typography-body-lg-regular flex flex-col gap-1 text-secondary">
             <span>전시명·소개·일정</span>

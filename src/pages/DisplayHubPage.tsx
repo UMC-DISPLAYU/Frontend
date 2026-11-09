@@ -21,9 +21,11 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useDisplayRejectionReason } from '@/hooks/queries/useDisplayRejectionReason';
 import { useUpdateDisplayReservation } from '@/hooks/queries/useDisplayReservation';
 import { toast } from '@/stores/toastStore';
+import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 
-const GRID_CLASS = 'grid gap-6 pb-10 tablet:grid-cols-2 tablet:items-start desktop:gap-10';
+const GRID_CLASS =
+  'flex flex-col gap-6 pb-10 desktop:grid desktop:grid-cols-[380px_minmax(0,1fr)] desktop:items-start desktop:gap-14';
 
 function DisplayHubSkeleton() {
   return (
@@ -92,17 +94,36 @@ export function DisplayHubPage() {
     });
   };
 
+  const actionButton =
+    display && status !== 'PENDING_REVIEW' ? (
+      <button
+        type="button"
+        onClick={() => setOpenDialog(status === 'PUBLISHED' ? 'hide' : 'publish')}
+        className={cn(
+          'typography-body-lg-semibold h-11 w-full rounded-12 transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99',
+          status === 'PUBLISHED'
+            ? 'bg-secondary text-primary hover:bg-tertiary'
+            : 'bg-interactive-primary text-interactive-inverse hover:bg-interactive-primary-hover',
+        )}
+      >
+        {status === 'PUBLISHED' ? '비공개로 전환' : '등록 요청하기'}
+      </button>
+    ) : null;
+
   const renderContent = () => {
     if (display) {
       const contentOpen = reservation.isPending ? reservation.variables : display;
 
       return (
         <main className={GRID_CLASS}>
-          <DisplayHubSummary
-            display={display}
-            status={status}
-            rejectionReason={rejection?.rejectionReason}
-          />
+          <div className="flex flex-col gap-6">
+            <DisplayHubSummary
+              display={display}
+              status={status}
+              rejectionReason={rejection?.rejectionReason}
+            />
+            {actionButton && <div className="hidden desktop:block">{actionButton}</div>}
+          </div>
           <div className="flex flex-col gap-3">
             <DisplayHubBlocks
               display={display}
@@ -117,6 +138,9 @@ export function DisplayHubPage() {
               disabled={reservation.isPending}
               onChange={changeReservation}
             />
+            {actionButton && (
+              <div className="hidden pt-3 tablet:block desktop:hidden">{actionButton}</div>
+            )}
           </div>
         </main>
       );
@@ -134,32 +158,15 @@ export function DisplayHubPage() {
   };
 
   return (
-    <PageContainer variant="list" fillHeight className="bg-primary-white text-primary">
+    <PageContainer variant="form" className="bg-primary-white text-primary desktop:max-w-list">
       <WorkHeader title="전시 관리" />
       {renderContent()}
 
       {/* 심사 중 요청 취소는 백엔드 API가 없어 버튼을 노출하지 않는다 */}
-      {display && (status === 'DRAFT' || status === 'REJECTED') && (
-        <BottomFixedBar container="list">
-          <button
-            type="button"
-            onClick={() => setOpenDialog('publish')}
-            className="typography-body-lg-semibold h-11 w-full rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
-          >
-            등록 요청하기
-          </button>
-        </BottomFixedBar>
-      )}
-      {display && status === 'PUBLISHED' && (
-        <BottomFixedBar container="list">
-          <button
-            type="button"
-            onClick={() => setOpenDialog('hide')}
-            className="typography-body-lg-semibold h-11 w-full rounded-12 bg-secondary text-primary transition duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
-          >
-            비공개로 전환
-          </button>
-        </BottomFixedBar>
+      {actionButton && (
+        <div className="tablet:hidden">
+          <BottomFixedBar container="form">{actionButton}</BottomFixedBar>
+        </div>
       )}
 
       <DisplayHubConfirmDialog
