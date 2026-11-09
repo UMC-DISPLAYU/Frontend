@@ -11,9 +11,10 @@ type Props = {
   artworkId: number;
   /* 작품 상세의 isArchived. 저장 여부에 따라 버튼 문구가 바뀝니다. */
   saved?: boolean;
+  disabled?: boolean;
 };
 
-export function ArtworkSaveButton({ className, artworkId, saved = false }: Props) {
+export function ArtworkSaveButton({ className, artworkId, saved = false, disabled }: Props) {
   const archive = useArchiveArtwork();
   const unarchive = useUnarchiveArtwork();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
@@ -29,12 +30,20 @@ export function ArtworkSaveButton({ className, artworkId, saved = false }: Props
     }
 
     if (saved) unarchive.mutate(artworkId, { onSuccess: () => toast('저장을 취소했어요') });
-    else archive.mutate(artworkId, { onSuccess: () => toast('보관함에 저장했어요') });
+    else
+      archive.mutate(artworkId, {
+        onSuccess: () => toast('보관함에 저장했어요', { action: { label: '보기', to: '/my' } }),
+      });
   };
 
   return (
     <>
-      <ArtworkSaveButtonView saved={saved} onClick={toggleSave} className={className} />
+      <ArtworkSaveButtonView
+        saved={saved}
+        onClick={toggleSave}
+        disabled={disabled}
+        className={className}
+      />
       {loginModal}
     </>
   );

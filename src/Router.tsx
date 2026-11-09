@@ -41,14 +41,17 @@ const lazyPage = <T extends Record<string, unknown>>(
 };
 
 // Lazy loaded page components
-const Homepage = lazyPage(() => import('./pages/Homepage'), 'Homepage');
+const HomePage = lazyPage(() => import('./pages/home'), 'HomePage');
 const ExplorePage = lazyPage(() => import('./pages/ExplorePage'), 'ExplorePage');
 const MapPage = lazyPage(() => import('./pages/MapPage'), 'MapPage');
 const AuthPage = lazyPage(() => import('./pages/AuthPage'), 'AuthPage');
-const DisplayDetailPage = lazyPage(() => import('./pages/DisplayDetailPage'), 'DisplayDetailPage');
+const DisplayDetailPage = lazyPage(
+  () => import('./pages/display-detail/DisplayDetailPage'),
+  'DisplayDetailPage',
+);
 const ArtworkDetailPage = lazyPage(() => import('./pages/ArtworkDetailPage'), 'ArtworkDetailPage');
 const DisplayContentsPage = lazyPage(
-  () => import('./pages/DisplayContentsPage'),
+  () => import('./pages/display-detail/DisplayContentsPage'),
   'DisplayContentsPage',
 );
 const LoungePage = lazyPage(() => import('./pages/LoungePage'), 'LoungePage');
@@ -69,7 +72,10 @@ const EditArtistProfilePage = lazyPage(
   () => import('./pages/artist-verification'),
   'EditArtistProfilePage',
 );
-const MyExhibitionsPage = lazyPage(() => import('./pages/MyExhibitionsPage'), 'MyExhibitionsPage');
+const DisplayManagementPage = lazyPage(
+  () => import('./pages/DisplayManagementPage'),
+  'DisplayManagementPage',
+);
 const ExhibitionRegister = lazyPage(
   () => import('./pages/exhibition-register'),
   'ExhibitionRegister',
@@ -193,7 +199,7 @@ export const router = createBrowserRouter([
         children: [
           // 🔓 공개 라우트 (비로그인 게스트 접근 가능)
           { index: true, element: <RootRedirect /> },
-          { path: 'home', element: <Homepage /> },
+          { path: 'home', element: <HomePage /> },
           { path: 'search', element: <ExplorePage /> },
           {
             path: 'artist/:userId',
@@ -248,8 +254,12 @@ export const router = createBrowserRouter([
 
               // 내 전시 관리 목록
               {
+                path: 'display-management',
+                element: <DisplayManagementPage />,
+              },
+              {
                 path: 'my/exhibitions',
-                element: <MyExhibitionsPage />,
+                element: <Navigate to="/display-management" replace />,
               },
 
               // 1. 전시 등록 플로우
@@ -508,7 +518,7 @@ export const router = createBrowserRouter([
               {
                 path: 'lounge/:category/:id/edit',
                 element: <ExhibitionReviewWritePage />,
-                handle: { hideNavbar: true, hideFooter: true },
+                handle: { hideNavbar: true },
               },
             ],
           },

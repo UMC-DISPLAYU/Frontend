@@ -38,6 +38,20 @@ export function GuestbookSkeleton() {
   );
 }
 
+/* 공개 전에는 방명록을 부르지 않고, 입력바는 모양만 두고 막는다 */
+export function ArtworkPreviewGuestbook() {
+  return (
+    <div className="px-gutter py-2 desktop:px-0">
+      <p className="typography-body-lg-medium py-10 text-center text-tertiary">
+        공개 전이라 방명록이 없어요
+      </p>
+      <fieldset disabled className="m-0 min-w-0 border-0 p-0 opacity-45">
+        <BottomCommentBar placement="page" onSubmit={async () => false} />
+      </fieldset>
+    </div>
+  );
+}
+
 export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
   const {
     data,

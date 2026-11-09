@@ -17,7 +17,8 @@ export function ErrorView({
   className,
   fullScreen = true,
 }: ErrorViewProps) {
-  const displayMessage = title || message;
+  // getErrorMessage 는 취소된 요청에 빈 문자열을 돌려주므로 빈 문구도 기본 문구로 바꾼다
+  const displayMessage = title || message || '오류가 발생했습니다.';
 
   return (
     <div

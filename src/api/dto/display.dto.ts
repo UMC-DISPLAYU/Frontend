@@ -5,17 +5,17 @@ import type {
   OffsetPageRequestDto,
 } from './common.dto';
 
+/* 졸업전시 · 마감 임박 · 검색 목록이 공통으로 내려주는 전시 항목(실서버 응답 기준, 스웨거에는 응답 스키마가 없다) */
 export interface HomeExhibitionDto {
   displayId: number;
   title: string;
   posterImageUrl: string;
-  organization: string;
-  department: string;
-  schoolDepartmentName?: string;
+  schoolDepartmentName: string;
   startedAt: string;
   endedAt: string;
-  dayLeft?: number;
-  isArchived?: boolean;
+  /* 종료일까지 남은 일수. 이미 끝난 전시는 음수다 */
+  dayLeft: number;
+  isArchived: boolean;
 }
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
@@ -39,35 +39,7 @@ export interface GetClosingSoonDisplaysResponseDataDto {
 export type GetClosingSoonDisplaysResponseDto =
   ApiResponseDto<GetClosingSoonDisplaysResponseDataDto>;
 
-export interface DuPickDto {
-  duPickId: number;
-  title: string;
-  subtitle: string;
-  bannerImageUrl: string;
-  createdAt: string;
-}
-
-export interface GetDuPicksRequestDto {
-  cursor?: number | null;
-  size?: number;
-}
-
-export interface GetDuPicksResponseDataDto {
-  duPicks: DuPickDto[];
-  pagination: CursorPaginationDto<number>;
-}
-
-export type GetDuPicksResponseDto = ApiResponseDto<GetDuPicksResponseDataDto>;
-
-export interface DisplayListItemDto {
-  displayId: number;
-  title: string;
-  posterImageUrl: string;
-  startedAt: string;
-  endedAt: string;
-  dayLeft?: number;
-  isArchived: boolean;
-  schoolDepartmentName?: string;
+export interface DisplayListItemDto extends HomeExhibitionDto {
   /* 탐색 카드 좋아요용. 백엔드 검색 응답에 아직 없어 목 데이터에만 있습니다. */
   likeCount?: number;
   isLiked?: boolean;
@@ -164,6 +136,7 @@ export interface DisplayDetailDto {
   period: DisplayPeriodDto;
   artworkContentOpen: DisplayContentOpenType;
   exhibitionContentOpen: DisplayContentOpenType;
+  /* 공개 여부(PUBLISHED · DRAFT). 전시 예정 · 중 · 종료는 period 로 계산한다 */
   status: string;
   invitationToken: string | null;
   invitationDisabledAt: string | null;
@@ -171,6 +144,9 @@ export interface DisplayDetailDto {
   contentCategories: DisplayContentCategoryDto[];
   teamMembers: DisplayTeamMemberDto[];
   invitations: DisplayInvitationDto[];
+  /* 전시 링크(선택). 필드 이름은 백엔드와 확정했고, 실서버 응답에 아직 없을 수 있다 */
+  instagramUrl?: string | null;
+  websiteUrl?: string | null;
 }
 
 export interface DisplayLocationDto {
@@ -487,6 +463,8 @@ export interface DisplayLikeStatusResponseDataDto {
 
 export type DisplayLikeStatusResponseDto = ApiResponseDto<DisplayLikeStatusResponseDataDto>;
 
+export type DisplayPublishStatus = 'PUBLISHED' | 'DRAFT' | 'PENDING_REVIEW' | 'REJECTED';
+
 export interface MyDisplayDto {
   displayId: number;
   title: string;
@@ -498,7 +476,7 @@ export interface MyDisplayDto {
   placeName: string;
   postImageUrl: string;
   isLeader?: boolean;
-  publishStatus?: 'PUBLISHED' | 'DRAFT';
+  publishStatus?: DisplayPublishStatus;
   displayNickname?: string;
   artistName?: string;
 }

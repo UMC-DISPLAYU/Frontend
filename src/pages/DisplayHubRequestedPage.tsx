@@ -3,12 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import CompleteIcon from '@/assets/display-hub/CompleteIcon.svg';
 import StepDoneIcon from '@/assets/display-hub/StepDoneIcon.svg';
 import { BottomFixedBar } from '@/components/common';
-import { PageContainer, useHideFooter } from '@/components/layout';
+import { PageContainer } from '@/components/layout';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 
 export function DisplayHubRequestedPage() {
-  useHideFooter();
-
   const { displayId } = useParams();
   const { data: display } = useDisplayDetail(Number(displayId));
 
@@ -69,7 +67,7 @@ export function DisplayHubRequestedPage() {
 
       <BottomFixedBar container="form">
         <Link
-          to="/my/exhibitions"
+          to="/display-management"
           replace
           className="typography-body-lg-semibold flex h-11 w-full items-center justify-center rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
         >

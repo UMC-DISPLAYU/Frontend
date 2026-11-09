@@ -45,7 +45,6 @@ vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams()],
   useLocation: () => ({ state: null }),
 }));
-vi.mock('@/components/layout', () => ({ useHideFooter: vi.fn() }));
 vi.mock('@/components/common', () => ({ ErrorView: () => null, LoadingView: () => null }));
 vi.mock('@/components/exhibition-work', () => ({ ExhibitionWorkLayout: () => null }));
 vi.mock('@/components/artworks-manage', () => ({

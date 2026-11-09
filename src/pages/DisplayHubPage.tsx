@@ -13,7 +13,7 @@ import {
   getDisplayHubStatus,
 } from '@/components/display-hub';
 import { WorkHeader } from '@/components/exhibition-work';
-import { PageContainer, useHideFooter } from '@/components/layout';
+import { PageContainer } from '@/components/layout';
 import { Skeleton } from '@/components/ui';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import {
@@ -62,8 +62,6 @@ function DisplayHubSkeleton() {
 }
 
 export function DisplayHubPage() {
-  useHideFooter();
-
   const navigate = useNavigate();
   const { displayId: displayIdParam } = useParams();
   const displayId = Number(displayIdParam);

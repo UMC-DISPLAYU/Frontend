@@ -89,6 +89,29 @@
   }
 }
 
+/*
+ * 페이지 전환(냅바 탭 이동, Link viewTransition): 나머지 화면만 짧게 겹쳐 넘긴다(프로토타입 120ms).
+ * 냅바는 view-transition-name 으로 떼어 내 새 화면 것만 그대로 보여 준다.
+ * 옛 스냅샷과 겹치면 선택 알약이 이전 자리와 새 자리에 동시에 보인다.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 120ms;
+}
+::view-transition-old(navbar) {
+  display: none;
+}
+::view-transition-new(navbar) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* iOS Safari input focus auto-zoom prevention (16px + scale + layout compensation) */
 input,
 select,
