@@ -890,7 +890,9 @@ export const MOCK_ARTWORK: MockArtwork[] = [
     displayId: 101,
     title: '보를 찾습니다',
     artist: '황다겸',
-    description: null,
+    // 3줄을 넘는 소개글(더보기 확인용)
+    description:
+      '같은 산책길을 접지 지도, 소책자, 실로 묶은 작은 노트에 다르게 옮긴 편집디자인 작업입니다. 01·02·03으로 표시한 경로는 종이를 펼치면 연결되고, 접으면 서로 다른 장면으로 나뉩니다. 접지선이 정보를 숨기거나 드러내는 방식을 통해 지도를 읽는 순서와 손으로 다루는 경험을 함께 설계했습니다.',
     type: 'SCULPTURE',
     productionYear: 2026,
     material: 'PETG, 3D Modeling',

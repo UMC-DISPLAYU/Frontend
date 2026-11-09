@@ -1,12 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-
-import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import contentStack from '@/assets/display-detail/content-stack.svg';
 import placeMap from '@/assets/display-detail/place-map.svg';
 import placePin from '@/assets/display-detail/place-pin.svg';
+import { ExpandableText } from '@/components/common/ExpandableText';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
 
@@ -19,50 +17,12 @@ const DIVIDER =
   'relative before:absolute before:inset-x-gutter before:top-0 before:h-px before:bg-tertiary desktop:before:inset-x-0';
 
 function IntroText({ content }: { content: string }) {
-  const textRef = useRef<HTMLParagraphElement>(null);
-  const [expanded, setExpanded] = useState(false);
-  const [isClamped, setIsClamped] = useState(false);
-
-  // 펼친 뒤에는 잘리지 않아 다시 재면 접기 버튼이 사라지므로 접힌 상태에서만 잰다
-  useEffect(() => {
-    const element = textRef.current;
-    if (!element || expanded) return;
-    const measure = () => setIsClamped(element.scrollHeight > element.clientHeight);
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [content, expanded]);
-
   return (
     <section aria-label="전시소개" className="px-gutter pt-5 desktop:px-0">
-      <p
-        ref={textRef}
-        className={cn(
-          'typography-body-lg-regular whitespace-pre-line text-pretty text-secondary',
-          !expanded && 'line-clamp-3',
-        )}
-      >
-        {content}
-      </p>
-      {(isClamped || expanded) && (
-        <div className="mt-3 flex justify-end">
-          <button
-            type="button"
-            aria-expanded={expanded}
-            onClick={() => setExpanded((value) => !value)}
-            className="typography-body-md-medium -my-2 inline-flex cursor-pointer items-center gap-0.5 py-2 text-tertiary hover:text-primary"
-          >
-            {expanded ? '접기' : '더보기'}
-            <ChevronRight
-              aria-hidden="true"
-              size={14}
-              strokeWidth={1.7}
-              className={cn('transition-transform duration-fast', expanded && '-rotate-90')}
-            />
-          </button>
-        </div>
-      )}
+      <ExpandableText
+        text={content}
+        className="typography-body-lg-regular text-pretty text-secondary"
+      />
     </section>
   );
 }

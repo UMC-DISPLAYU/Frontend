@@ -1,3 +1,5 @@
+import { ExpandableText } from '@/components/common/ExpandableText';
+
 import { ProcessStrip } from './ProcessStrip';
 
 type Props = {
@@ -11,9 +13,10 @@ export function ArtworkIntroTab({ content, point, processImageUrls }: Props) {
     <div>
       <div className="px-gutter pt-7 desktop:px-0">
         {content?.trim() && (
-          <p className="typography-body-lg-regular desktop:typography-body-xl-regular break-words whitespace-pre-line text-primary">
-            {content}
-          </p>
+          <ExpandableText
+            text={content}
+            className="typography-body-lg-regular desktop:typography-body-xl-regular break-words text-primary"
+          />
         )}
 
         {point?.trim() && (

@@ -8,6 +8,7 @@ export { CommentItem } from './comment';
 export { DeleteConfirmModal } from './DeleteConfirmModal';
 export { DrawingModal } from './DrawingModal';
 export { ErrorView } from './ErrorView';
+export { ExpandableText } from './ExpandableText';
 export { ImageModal } from './ImageModal';
 export { ImageUploader } from './ImageUploader';
 export { LeaveConfirmModal } from './LeaveConfirmModal';
