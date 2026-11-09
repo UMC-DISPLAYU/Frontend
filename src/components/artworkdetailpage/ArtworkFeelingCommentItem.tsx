@@ -181,8 +181,6 @@ export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem
         onDelete={handleDelete}
         onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
-        tightSpacing
-        showDivider
       />
       {loginModal}
     </>

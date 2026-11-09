@@ -104,7 +104,7 @@
 
   /* Layout — 하단 플로팅 냅바. clearance 는 화면 아래에서 냅바 윗변까지의 거리다.
      본문 하단 여백, 토스트 위치처럼 냅바를 피해야 하는 곳이 이 값을 쓴다 */
-  --semantic-layout-navbar-height: 70px;
+  --semantic-layout-navbar-height: 56px;
   --semantic-layout-navbar-clearance: calc(
     var(--semantic-layout-navbar-height) + var(--semantic-layout-safe-area-bottom)
   );
@@ -118,6 +118,8 @@
   --semantic-motion-duration-base: 300ms;
   --semantic-motion-duration-slow: 450ms;
   --semantic-motion-easing-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  /* 출발 속도가 0인 곡선. 정지 상태에서 미끄러지는 이동(냅바 선택 알약)에 쓴다(프로토타입 값) */
+  --semantic-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
   /* 목록 아이템이 순서대로 등장할 때 아이템 사이 간격 */
   --semantic-motion-stagger: 60ms;
 }

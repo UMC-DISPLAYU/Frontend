@@ -15,12 +15,10 @@ const BASE: Attrs = {
   isDisplayMember: false,
   isArtworkCreator: false,
   isArtworkCollaborator: false,
-  isQnaManager: false,
   isPersonalArtworkOwner: false,
   isAuthor: false,
   isReplyAuthor: false,
   isMyArchive: false,
-  isPrivate: false,
   isArtistOnlyBoard: false,
 };
 
@@ -36,7 +34,7 @@ const ROLES = {
   /** 일반 회원 (작가 아님, 아무 관계 없음) */
   member: { ...BASE, authenticated: true },
 
-  /** 해당 글/질문을 쓴 회원 */
+  /** 해당 글을 쓴 회원 */
   author: { ...BASE, authenticated: true, isAuthor: true },
 
   /** 해당 답글을 쓴 회원 */
@@ -60,15 +58,6 @@ const ROLES = {
     artistVerified: true,
     isDisplayMember: true,
     isDisplayOwner: true,
-  },
-
-  /** 전시 소속인 + 해당 작품 QnA 담당자 */
-  qnaManager: {
-    ...BASE,
-    authenticated: true,
-    artistVerified: true,
-    isDisplayMember: true,
-    isQnaManager: true,
   },
 
   /** 전시 소속인 + 작품 생성자 */
@@ -131,7 +120,7 @@ function check(role: RoleName, permission: string, override: Partial<Attrs> = {}
 type Rule = {
   /** 'display:create' 형태 */
   permission: string;
-  /** 이 규칙이 적용되는 리소스 상태 (예: 비공개 질문) */
+  /** 이 규칙이 적용되는 리소스 상태 (예: 작성자 본인) */
   when?: Partial<Attrs>;
   /** 사람이 읽을 조건 설명 (테스트 이름에 노출) */
   desc: string;
@@ -199,57 +188,6 @@ const MATRIX: Record<string, Rule[]> = {
     },
   ],
 
-  question: [
-    {
-      permission: 'question:view',
-      when: { isPrivate: false },
-      desc: '공개 질문은 누구나',
-      allow: ALL_ROLES,
-    },
-    {
-      permission: 'question:view',
-      when: { isPrivate: true },
-      desc: '비공개: 질문 쓴 사람 || (작가 인증 && 전시 소속인)',
-      allow: ['author', ...DISPLAY_MEMBERS],
-    },
-    {
-      permission: 'question:create',
-      desc: '회원 && 해당 작품의 작가(공동 작업자 포함)가 아님',
-      allow: MEMBERS.filter((r) => r !== 'artworkCreator' && r !== 'artworkCollaborator'),
-    },
-    {
-      permission: 'question:delete',
-      desc: '질문 쓴 사람 || (작가 인증 && 전시 소유자)',
-      allow: ['author', 'displayOwner'],
-    },
-    { permission: 'question:like', desc: '회원', allow: MEMBERS },
-    { permission: 'question:unlike', desc: '회원', allow: MEMBERS },
-    {
-      permission: 'question:reply.view',
-      when: { isPrivate: false },
-      desc: '공개 질문의 답변은 누구나',
-      allow: ALL_ROLES,
-    },
-    {
-      permission: 'question:reply.view',
-      when: { isPrivate: true },
-      desc: '비공개: 질문 쓴 사람 || (작가 인증 && 전시 소속인)',
-      allow: ['author', ...DISPLAY_MEMBERS],
-    },
-    {
-      permission: 'question:reply.create',
-      desc: '작가 인증 && (전시 소유자 || (전시 소속인 && QnA 담당자))',
-      allow: ['displayOwner', 'qnaManager'],
-    },
-    { permission: 'question:reply.like', desc: '회원', allow: MEMBERS },
-    { permission: 'question:reply.unlike', desc: '회원', allow: MEMBERS },
-    {
-      permission: 'question:reply.delete',
-      desc: '응답 쓴 사람만',
-      allow: ['replyAuthor'],
-    },
-  ],
-
   feeling: [
     { permission: 'feeling:create', desc: '회원', allow: MEMBERS },
     {
@@ -302,51 +240,6 @@ const MATRIX: Record<string, Rule[]> = {
     },
     { permission: 'personalArtwork:like', desc: '회원', allow: MEMBERS },
     { permission: 'personalArtwork:unlike', desc: '회원', allow: MEMBERS },
-  ],
-
-  personalQuestion: [
-    {
-      permission: 'personalQuestion:view',
-      when: { isPrivate: false },
-      desc: '공개 질문은 누구나',
-      allow: ALL_ROLES,
-    },
-    {
-      permission: 'personalQuestion:view',
-      when: { isPrivate: true },
-      desc: '비공개: 질문 쓴 사람 || (작가 인증 && 작품 만든 사람)',
-      allow: ['author', 'personalArtworkOwner'],
-    },
-    { permission: 'personalQuestion:create', desc: '회원', allow: MEMBERS },
-    {
-      permission: 'personalQuestion:delete',
-      desc: '질문 쓴 사람 || (작가 인증 && 작품 만든 사람)',
-      allow: ['author', 'personalArtworkOwner'],
-    },
-    {
-      permission: 'personalQuestion:reply.view',
-      when: { isPrivate: false },
-      desc: '공개 질문의 답변은 누구나',
-      allow: ALL_ROLES,
-    },
-    {
-      permission: 'personalQuestion:reply.view',
-      when: { isPrivate: true },
-      desc: '비공개: 질문 쓴 사람 || (작가 인증 && 작품 만든 사람)',
-      allow: ['author', 'personalArtworkOwner'],
-    },
-    {
-      permission: 'personalQuestion:reply.create',
-      desc: '작가 인증 && 작품 만든 사람',
-      allow: ['personalArtworkOwner'],
-    },
-    { permission: 'personalQuestion:reply.like', desc: '회원', allow: MEMBERS },
-    { permission: 'personalQuestion:reply.unlike', desc: '회원', allow: MEMBERS },
-    {
-      permission: 'personalQuestion:reply.delete',
-      desc: '응답 쓴 사람',
-      allow: ['replyAuthor'],
-    },
   ],
 
   personalFeeling: [

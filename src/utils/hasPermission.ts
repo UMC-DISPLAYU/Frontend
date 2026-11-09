@@ -1,10 +1,10 @@
 // 유틸 사용 시 다음과 같이 사용할 수 있습니다
 // ```
 // const artworkPolicy = useArtworkPolicy(display, artwork);
-// const questionPolicy = useQuestionPolicy(question, display, artwork);
+// const feelingReplyPolicy = useFeelingReplyPolicy(display);
 //
 // {hasPermission(artworkPolicy, 'delete') && <DeleteButton />}
-// {hasPermission(questionPolicy, 'reply.create') && <ReplyForm />}
+// {hasPermission(feelingReplyPolicy, 'reply.create') && <ReplyForm />}
 // ```
 
 import type { PermissionMap } from '@/types/policy';

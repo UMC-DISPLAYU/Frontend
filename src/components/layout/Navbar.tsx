@@ -1,110 +1,120 @@
 import { useState } from 'react';
 
-import { NavLink } from 'react-router-dom';
+import { Link, matchPath, useLocation } from 'react-router-dom';
 
-import homeIcon from '@/assets/nav/HomeIcon.svg';
-import homeIconActive from '@/assets/nav/HomeIconActive.svg';
-import loungeIcon from '@/assets/nav/LoungeIcon.svg';
-import loungeIconActive from '@/assets/nav/LoungeIconActive.svg';
-import myIcon from '@/assets/nav/MyIcon.svg';
-import myIconActive from '@/assets/nav/MyIconActive.svg';
-import searchIcon from '@/assets/nav/SearchIcon.svg';
-import searchIconActive from '@/assets/nav/SearchIconActive.svg';
 import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 
-type NavId = 'home' | 'lounge' | 'my' | 'search';
+import {
+  HomeOutlineIcon,
+  HomeSolidIcon,
+  SearchOutlineIcon,
+  SearchSolidIcon,
+  UserOutlineIcon,
+  UserSelectedIcon,
+} from './NavbarIcons';
 
 const NAV_ITEMS = [
   {
-    activeIcon: homeIconActive,
-    icon: homeIcon,
-    id: 'home',
+    ActiveIcon: HomeSolidIcon,
+    activeIconClassName: 'text-icon-interactive-inverse',
+    Icon: HomeOutlineIcon,
+    end: true,
     label: '홈',
     path: '/home',
   },
   {
-    activeIcon: searchIconActive,
-    icon: searchIcon,
-    id: 'search',
+    ActiveIcon: SearchSolidIcon,
+    activeIconClassName: 'text-icon-interactive-inverse',
+    Icon: SearchOutlineIcon,
+    end: false,
     label: '탐색',
     path: '/search',
   },
   {
-    activeIcon: loungeIconActive,
-    icon: loungeIcon,
-    id: 'lounge',
-    label: '라운지',
-    path: '/lounge',
-  },
-  {
-    activeIcon: myIconActive,
-    icon: myIcon,
-    id: 'my',
+    ActiveIcon: UserSelectedIcon,
+    activeIconClassName: 'text-icon-white',
+    Icon: UserOutlineIcon,
+    end: true,
     label: '마이',
     path: '/my',
   },
-] satisfies Array<{
-  activeIcon: string;
-  icon: string;
-  id: NavId;
-  label: string;
-  path: string;
-}>;
+];
+
+const SLIDE = 'transition-transform duration-base ease-emphasized will-change-transform';
 
 export function Navbar() {
+  const { pathname } = useLocation();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+  const activeIndex = NAV_ITEMS.findIndex(({ end, path }) => matchPath({ end, path }, pathname));
+
   return (
+    // view-transition-name: 페이지 전환 스냅샷에서 냅바를 따로 떼어 알약 이동이 끊기지 않게 한다(index.css)
     <nav
       aria-label="하단 메뉴"
-      className="pointer-events-none fixed inset-x-0 bottom-safe-area-bottom z-50 flex justify-center px-5"
+      className="pointer-events-none fixed inset-x-0 bottom-safe-area-bottom z-50 flex justify-center [view-transition-name:navbar]"
     >
       <LoginConfirmModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         redirectPath="/my"
       />
-      <div className="pointer-events-auto relative h-navbar-height w-[362px] max-w-full px-2">
-        <div className="absolute inset-0 rounded-[250px] bg-[rgba(182,178,178,0.6)] backdrop-blur-[10px] shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-2px_-2px_4px_-2px_rgba(241,241,241,0.60),inset_2px_2px_4px_-2px_rgba(255,255,255,1.00)] pointer-events-none" />
-        <div className="relative z-10 flex h-full items-center justify-center">
-          {NAV_ITEMS.map(({ activeIcon, icon, id, label, path }) => {
-            return (
-              <NavLink
-                key={id}
-                end={path === '/home'}
-                className="w-20 h-14 inline-flex flex-col items-center justify-center cursor-pointer rounded-3xl border-0 bg-transparent outline-none transition-transform duration-150 active:scale-95 focus-visible:ring-2 focus-visible:ring-white"
-                to={path}
-                onClick={(e) => {
-                  if (path === '/my' && !accessToken) {
-                    e.preventDefault();
-                    setIsLoginModalOpen(true);
-                  }
-                }}
-              >
-                {({ isActive }) => (
-                  <div className="h-10 flex flex-col items-center justify-start gap-1">
-                    <img
-                      alt=""
-                      className="size-5 transition-transform duration-200"
-                      src={isActive ? activeIcon : icon}
-                    />
-                    <span
-                      className={cn(
-                        'whitespace-nowrap transition-colors duration-150 typo-body-xs-regular text-navbar-fg',
-                        isActive && 'typo-body-xs-bold',
-                      )}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                )}
-              </NavLink>
-            );
-          })}
-        </div>
+      <div className="pointer-events-auto relative flex h-14 w-56.5 items-center rounded-circle border border-secondary bg-primary-black p-1">
+        {/* 선택 알약 하나를 옮긴다. 안의 채움 아이콘 줄은 반대로 같이 움직여 제자리에 머물고,
+            알약이 지나가는 자리에서만 보여 선 → 채움 아이콘이 위치에 따라 바뀐다 */}
+        {activeIndex >= 0 && (
+          <span
+            aria-hidden="true"
+            className={cn(
+              'pointer-events-none absolute top-1 left-1 z-2 h-11.5 w-18 overflow-hidden rounded-circle bg-zinc-800',
+              SLIDE,
+            )}
+            style={{ transform: `translateX(${activeIndex * 100}%)` }}
+          >
+            <span
+              className={cn('absolute inset-y-0 left-0 flex', SLIDE)}
+              style={{
+                transform: `translateX(calc(${activeIndex} * -100% / ${NAV_ITEMS.length}))`,
+              }}
+            >
+              {NAV_ITEMS.map(({ ActiveIcon, activeIconClassName, path }) => (
+                <span key={path} className="flex h-11.5 w-18 items-center justify-center">
+                  <ActiveIcon className={cn('size-6', activeIconClassName)} />
+                </span>
+              ))}
+            </span>
+          </span>
+        )}
+
+        {NAV_ITEMS.map(({ Icon, label, path }, index) => {
+          const isActive = index === activeIndex;
+
+          return (
+            <Link
+              key={path}
+              aria-current={isActive ? 'page' : undefined}
+              aria-label={label}
+              className={cn(
+                'group relative z-1 flex h-11.5 w-18 items-center justify-center rounded-circle text-icon-tertiary transition-colors duration-fast [-webkit-tap-highlight-color:transparent]',
+                'focus-visible:z-3 focus-visible:outline-2 focus-visible:-outline-offset-3 focus-visible:outline-focus-inverse',
+                !isActive && 'hover:text-zinc-400',
+              )}
+              to={path}
+              viewTransition
+              onClick={(e) => {
+                if (path === '/my' && !accessToken) {
+                  e.preventDefault();
+                  setIsLoginModalOpen(true);
+                }
+              }}
+            >
+              <Icon className="size-6 transition-transform duration-fast ease-emphasized group-active:scale-96" />
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

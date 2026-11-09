@@ -36,6 +36,25 @@ const displayDetailResponse = (displayId: number) => {
     invitations: display.invitations ?? [],
     contentCategories: display.contentCategories ?? [],
     images: display.images ?? display.posterImages ?? [],
+    period: display.period ?? {
+      startDate: display.startedAt,
+      endDate: display.endedAt,
+      startTime: display.startTime,
+      endTime: display.endTime,
+    },
+    location:
+      display.location && typeof display.location === 'object'
+        ? display.location
+        : {
+            placeName: display.placeName,
+            roadAddress: '서울특별시 마포구 와우산로 94',
+            latitude: 37.5509,
+            longitude: 126.9254,
+          },
+    /* 백엔드에 요청한 전시 링크. 첫 전시에만 넣어 링크가 없는 경우도 같이 확인한다 */
+    instagramId: display.instagramId ?? (display.displayId === 101 ? 'soft_landing_2026' : null),
+    websiteUrl:
+      display.websiteUrl ?? (display.displayId === 101 ? 'https://softlanding.kr/' : null),
   };
 };
 
@@ -102,25 +121,6 @@ const isInsideBounds = (
   latitude <= bounds.northLatitude &&
   longitude >= bounds.westLongitude &&
   longitude <= bounds.eastLongitude;
-
-const duPicks = () => [
-  {
-    duPickId: 1,
-    title: '디유대학교 포스터전: 작업 큐레이션',
-    subtitle: '학생들의 감각이 포스터가 되는 순간',
-    bannerImageUrl:
-      'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/a0c512ba-c1ce-43e0-ae2a-f52e2cb8dd84-KakaoTalk_Photo_2026-08-01-13-40-36.jpeg',
-    createdAt: now(),
-  },
-  {
-    duPickId: 2,
-    title: '작품은 어디까지 설명해야 할까',
-    subtitle: '캡션과 작가 노트에서 발견한 좋은 문장의 조건',
-    bannerImageUrl:
-      'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/d091230b-1a5f-419c-ad7d-8c3629580e44-KakaoTalk_Photo_2026-08-02-16-33-34.jpeg',
-    createdAt: now(),
-  },
-];
 
 export const displayHandlers = [
   ...paths('/api/v1/display').map((path) =>
@@ -206,16 +206,6 @@ export const displayHandlers = [
         pagination: { nextCursor: null, size: mockDb.displays.length, hasNext: false },
       }),
     ),
-  ),
-  ...paths('/api/v1/display/du-picks').map((path) =>
-    http.get(path, () => {
-      const items = duPicks();
-
-      return success('/api/v1/display/du-picks', {
-        duPicks: items,
-        pagination: { nextCursor: null, size: items.length, hasNext: false },
-      });
-    }),
   ),
   ...paths('/api/v1/display/graduation').map((path) =>
     http.get(path, () => success('/api/v1/display/graduation', { exhibitions: listDisplays() })),

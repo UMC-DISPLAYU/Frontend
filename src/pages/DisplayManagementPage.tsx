@@ -10,7 +10,7 @@ import {
   DisplayManagementCard,
 } from '@/components/display-management';
 import { WorkHeader } from '@/components/exhibition-work';
-import { PageContainer, useHideFooter } from '@/components/layout';
+import { PageContainer } from '@/components/layout';
 import { Skeleton, SkeletonList } from '@/components/ui';
 import {
   useDeleteDisplay,
@@ -29,8 +29,6 @@ import { staggerStyle } from '@/utils/stagger';
 const LIST_CLASS = 'grid grid-cols-1 gap-3 desktop:grid-cols-2 desktop:gap-4';
 
 export function DisplayManagementPage() {
-  useHideFooter();
-
   const navigate = useNavigate();
   const { data: displays, isPending, refetch } = useMyDisplays();
   const deleteDisplay = useDeleteDisplay();

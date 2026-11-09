@@ -7,7 +7,6 @@ import { LogoutConfirmModal } from '@/components/common';
 import { SettingHeader, SettingRow, SettingSection } from '@/components/setting';
 import { useLogout } from '@/hooks/queries/useAuth';
 import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
-import { useReceivedArtworkQuestions } from '@/hooks/queries/useReceivedArtworkQuestions';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
 import { hasPermission } from '@/utils/hasPermission';
@@ -22,10 +21,8 @@ export function SettingPage() {
   const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
 
   const { data: invitationsData } = useMyDisplayInvitations();
-  const { data: questionsData } = useReceivedArtworkQuestions({ answerStatus: 'WAITING' });
 
   const invitationCount = invitationsData?.invitations?.length ?? 0;
-  const pendingQuestionCount = questionsData?.questions?.length ?? 0;
 
   const handleLogout = () => {
     setIsConfirmingLogout(false);
@@ -91,14 +88,6 @@ export function SettingPage() {
             badge={invitationCount > 0 ? invitationCount : undefined}
             onClick={() => navigate('/invitation-request')}
           />
-          {canViewArtist && (
-            <SettingRow
-              title="답변할 질문"
-              desc="내가 담당한 작품 질문에 답변해요."
-              badge={pendingQuestionCount > 0 ? pendingQuestionCount : undefined}
-              onClick={() => navigate('/answer-questions')}
-            />
-          )}
           <SettingRow
             title="전시 등록하기"
             desc="전시를 직접 등록하려면 작가 인증이 필요해요."
@@ -117,11 +106,6 @@ export function SettingPage() {
             title="내가 남긴 감상"
             desc="전시 후기와 방명록을 모아봐요."
             onClick={() => navigate('/my-review')}
-          />
-          <SettingRow
-            title="내가 한 질문"
-            desc="작품에 남긴 질문과 답변 상태를 확인해요."
-            onClick={() => navigate('/my-questions')}
             last
           />
         </SettingSection>

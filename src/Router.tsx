@@ -41,14 +41,17 @@ const lazyPage = <T extends Record<string, unknown>>(
 };
 
 // Lazy loaded page components
-const Homepage = lazyPage(() => import('./pages/Homepage'), 'Homepage');
+const HomePage = lazyPage(() => import('./pages/home'), 'HomePage');
 const ExplorePage = lazyPage(() => import('./pages/ExplorePage'), 'ExplorePage');
 const MapPage = lazyPage(() => import('./pages/MapPage'), 'MapPage');
 const AuthPage = lazyPage(() => import('./pages/AuthPage'), 'AuthPage');
-const DisplayDetailPage = lazyPage(() => import('./pages/DisplayDetailPage'), 'DisplayDetailPage');
+const DisplayDetailPage = lazyPage(
+  () => import('./pages/display-detail/DisplayDetailPage'),
+  'DisplayDetailPage',
+);
 const ArtworkDetailPage = lazyPage(() => import('./pages/ArtworkDetailPage'), 'ArtworkDetailPage');
 const DisplayContentsPage = lazyPage(
-  () => import('./pages/DisplayContentsPage'),
+  () => import('./pages/display-detail/DisplayContentsPage'),
   'DisplayContentsPage',
 );
 const LoungePage = lazyPage(() => import('./pages/LoungePage'), 'LoungePage');
@@ -127,12 +130,10 @@ const PersonalArtworksRegister = lazyPage(
   () => import('./pages/personal-artworks-register'),
   'PersonalArtworksRegister',
 );
-const AnswerPage = lazyPage(() => import('./pages/AnswerPage'), 'AnswerPage');
 const InvitationRequestPage = lazyPage(
   () => import('./pages/InvitationRequestPage'),
   'InvitationRequestPage',
 );
-const MyQuestionsPage = lazyPage(() => import('./pages/MyQuestionsPage'), 'MyQuestionsPage');
 const MyReviewPage = lazyPage(() => import('./pages/MyReviewPage'), 'MyReviewPage');
 const MyActivityPage = lazyPage(() => import('./pages/MyActivityPage'), 'MyActivityPage');
 const OnboardingPage = lazyPage(() => import('./pages/onboarding'), 'OnboardingPage');
@@ -198,7 +199,7 @@ export const router = createBrowserRouter([
         children: [
           // 🔓 공개 라우트 (비로그인 게스트 접근 가능)
           { index: true, element: <RootRedirect /> },
-          { path: 'home', element: <Homepage /> },
+          { path: 'home', element: <HomePage /> },
           { path: 'search', element: <ExplorePage /> },
           {
             path: 'artist/:userId',
@@ -508,25 +509,16 @@ export const router = createBrowserRouter([
                   </PersonalArtworkPermissionGuard>
                 ),
               },
-              {
-                path: 'answer-questions',
-                element: (
-                  <ArtistPermissionGuard>
-                    <AnswerPage />
-                  </ArtistPermissionGuard>
-                ),
-              },
               { path: 'invitation-request', element: <InvitationRequestPage /> },
               { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
               { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },
               { path: 'my-review', element: <MyReviewPage /> },
-              { path: 'my-questions', element: <MyQuestionsPage /> },
               { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },
               { path: 'lounge/my-activity', element: <MyActivityPage /> },
               {
                 path: 'lounge/:category/:id/edit',
                 element: <ExhibitionReviewWritePage />,
-                handle: { hideNavbar: true, hideFooter: true },
+                handle: { hideNavbar: true },
               },
             ],
           },

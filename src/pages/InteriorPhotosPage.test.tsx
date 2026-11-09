@@ -70,7 +70,7 @@ vi.mock(
 vi.mock('@/components/common', () => ({ BottomFixedBar: () => null, ErrorView: () => null }));
 vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: () => null }));
 vi.mock('@/components/exhibition-work', () => ({ WorkHeader: () => null }));
-vi.mock('@/components/layout', () => ({ PageContainer: () => null, useHideFooter: vi.fn() }));
+vi.mock('@/components/layout', () => ({ PageContainer: () => null }));
 vi.mock('@/components/ui', () => ({ Skeleton: () => null, SkeletonList: () => null }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
 vi.mock('@/hooks/usePolicy', async () => {

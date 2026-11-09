@@ -1,16 +1,6 @@
-import type { ArtworkQuestionDto } from '@/api/dto';
 import type { LoungeCategoryKey } from '@/constants/loungeCategories';
 
 // ─── Home Types ────────────────────────────────────────────────────────────
-
-export interface DuPickItem {
-  id?: number | string;
-  title: string;
-  name?: string;
-  date: string;
-  location: string;
-  bannerImageUrl?: string;
-}
 
 export interface ArtworkPreviewItem {
   id: string;
@@ -133,8 +123,6 @@ export interface ReviewItem {
 }
 // ─── Artwork Detail Types ──────────────────────────────────────────────────
 
-export type ArtworkGuestbookTab = 'review' | 'question';
-
 export interface ArtworkImage {
   imageUrl: string;
   isThumbnail: boolean;
@@ -202,11 +190,4 @@ export interface GuestbookReview {
   isArtist?: boolean;
   isMyReview?: boolean;
   commentCount?: number;
-}
-
-export interface GuestbookQuestion extends ArtworkQuestionDto {
-  user: (NonNullable<ArtworkQuestionDto['user']> & { profileImageUrl?: string }) | null;
-  commentCount?: number;
-  isLiked?: boolean;
-  isMyQuestion?: boolean;
 }

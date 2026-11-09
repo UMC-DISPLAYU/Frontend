@@ -4,9 +4,16 @@ export const TOAST_DURATION_MS = 3000;
 /** 닫힘 애니메이션(base 300ms)의 animationend 가 오지 않을 때 대신 지우는 시간 */
 export const TOAST_EXIT_FALLBACK_MS = 600;
 
+/** 문구 뒤에 붙는 이동 링크. 예: "보관함에 저장했어요 · 보기" */
+export interface ToastAction {
+  label: string;
+  to: string;
+}
+
 export interface ToastItem {
   id: number;
   message: string;
+  action?: ToastAction;
   isClosing: boolean;
 }
 
@@ -16,6 +23,7 @@ interface ToastState {
 
 interface ToastOptions {
   duration?: number;
+  action?: ToastAction;
 }
 
 export const useToastStore = create<ToastState>(() => ({ toast: null }));
@@ -32,11 +40,14 @@ const clearTimers = () => {
 };
 
 /** 토스트는 한 번에 하나만 보인다. 떠 있는 중에 다시 부르면 새 문구로 바꾸고 시간을 처음부터 센다 */
-export function toast(message: string, { duration = TOAST_DURATION_MS }: ToastOptions = {}) {
+export function toast(
+  message: string,
+  { duration = TOAST_DURATION_MS, action }: ToastOptions = {},
+) {
   clearTimers();
 
   const id = nextId++;
-  useToastStore.setState({ toast: { id, message, isClosing: false } });
+  useToastStore.setState({ toast: { id, message, action, isClosing: false } });
   hideTimer = setTimeout(() => dismissToast(id), duration);
 
   return id;
