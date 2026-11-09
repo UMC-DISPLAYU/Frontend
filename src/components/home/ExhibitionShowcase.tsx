@@ -89,7 +89,7 @@ export function ExhibitionShowcase({
             aria-pressed={isList}
             aria-label={isList ? '포스터형으로 보기' : '리스트형으로 보기'}
             onClick={() => onViewChange(isList ? 'poster' : 'list')}
-            className="typography-body-md-medium -my-2.5 flex min-h-11 items-center gap-0.75 rounded-4 text-tertiary underline underline-offset-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:outline-focus-inverse"
+            className="typography-body-md-medium relative flex cursor-pointer items-center gap-0.75 rounded-4 py-1 text-tertiary underline after:absolute after:inset-x-0 after:-inset-y-2.5 underline-offset-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:outline-focus-inverse"
           >
             {isList ? <PosterViewIcon /> : <ListViewIcon />}
             {isList ? '포스터형' : '리스트형'}
@@ -123,7 +123,7 @@ export function ExhibitionShowcase({
               onClick={() => onTabChange(key)}
               onKeyDown={(event) => onTabKeyDown(event, index)}
               className={cn(
-                'typography-body-lg-semibold flex-none border-b-2 px-3 py-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
+                'typography-body-lg-semibold flex-none cursor-pointer border-b-2 px-3 py-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
                 isSelected
                   ? 'border-interactive-inverse text-quaternary'
                   : 'border-transparent text-tertiary',
@@ -144,11 +144,12 @@ export function ExhibitionShowcase({
         className="group mt-4 block border-t border-icon-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse"
       >
         <span className={cn(HOME_INNER, 'flex items-center justify-between py-5')}>
-          <span className="flex items-center gap-3.5">
+          {/* 프로토타입은 .map span 의 위 여백 2px 이 바깥 묶음에도 걸려 글자 · 핀이 4px 내려가 있다. 높이(86px)를 맞추려고 그대로 둔다 */}
+          <span className="flex items-center gap-3.5 pt-0.5">
             <span className="grid size-8.5 place-items-center">
               <img src={MapPinIcon} alt="" />
             </span>
-            <span className="flex flex-col gap-0.5">
+            <span className="flex flex-col gap-0.5 pt-0.5">
               <span className="typography-body-xl-semibold">가까운 전시 찾기</span>
               <span className="typography-body-md-medium text-tertiary">
                 지도에서 전시 위치를 확인해보세요
@@ -165,7 +166,7 @@ export function ExhibitionShowcase({
 }
 
 const STAGE_LINK_CLASS =
-  'typography-body-md-medium flex min-h-11 items-center rounded-4 text-tertiary underline underline-offset-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:outline-focus-inverse';
+  'typography-body-md-medium flex min-h-11 cursor-pointer items-center rounded-4 text-tertiary underline underline-offset-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:outline-focus-inverse';
 
 function StageMessage({ message, children }: { message: string; children: ReactNode }) {
   return (

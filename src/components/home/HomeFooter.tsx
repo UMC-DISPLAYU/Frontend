@@ -6,7 +6,7 @@ import { cn } from '@/utils/cn';
 import { HOME_INNER } from './homeLayout';
 
 const FOOTER_LINK_CLASS =
-  '-my-3.5 flex min-h-11 items-center rounded-4 transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-focus';
+  'relative rounded-4 after:absolute after:inset-x-0 after:-inset-y-3.5 transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-focus';
 
 export function HomeFooter() {
   return (
