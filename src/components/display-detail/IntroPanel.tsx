@@ -70,7 +70,7 @@ function IntroText({ content }: { content: string }) {
 /* 피그마 메모: 인스타그램 게시물 첫 표지(3:4)를 자르지 않고 144×192로, 아래에 콘텐츠 제목 한 줄 */
 function ContentCards({ display }: Props) {
   return (
-    <section aria-label="전시콘텐츠" className={cn(DIVIDER, 'mt-7 px-gutter pt-5 desktop:px-0')}>
+    <section aria-label="전시콘텐츠" className={cn(DIVIDER, 'mt-7 px-gutter pt-5.25 desktop:px-0')}>
       <div className="-mx-gutter flex snap-x snap-proximity scroll-px-gutter gap-3 overflow-x-auto px-gutter [scrollbar-width:none] desktop:mx-0 desktop:grid desktop:grid-cols-3 desktop:overflow-visible desktop:px-0 [&::-webkit-scrollbar]:hidden">
         {display.contentCategories.map((category) => (
           <Link
