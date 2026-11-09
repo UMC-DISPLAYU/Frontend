@@ -38,9 +38,12 @@ export function ArtworkDetailPage() {
   const { data: userMe } = useUserMe();
   const { data: detail, isPending, error, refetch } = useArtworkDetail(artworkId);
   /* 작가 전용 권한 판단(팀원 여부 등)과 전시 상태 표시에 필요해 전시 상세도 함께 조회합니다. */
-  const { data: display } = useDisplayDetail(detail?.exhibitionInfo?.displayId ?? 0);
+  const { data: display, isLoading: isDisplayLoading } = useDisplayDetail(
+    detail?.exhibitionInfo?.displayId ?? 0,
+  );
 
-  if (isPending && Number.isFinite(artworkId) && artworkId > 0) {
+  // 공개 전 여부를 알기 전에 버튼이 눌리거나 방명록을 부르지 않도록 전시 상세까지 기다린다
+  if ((isPending || isDisplayLoading) && Number.isFinite(artworkId) && artworkId > 0) {
     return <ArtworkDetailSkeleton />;
   }
 
