@@ -9,6 +9,7 @@ interface DisplayHubConfirmDialogProps {
   warning?: { title: string; description: string };
   confirmLabel: string;
   pendingLabel: string;
+  cancelLabel?: string;
   isPending: boolean;
   errorMessage: string | null;
   onCancel: () => void;
@@ -22,6 +23,7 @@ export function DisplayHubConfirmDialog({
   warning,
   confirmLabel,
   pendingLabel,
+  cancelLabel = '취소',
   isPending,
   errorMessage,
   onCancel,
@@ -53,7 +55,7 @@ export function DisplayHubConfirmDialog({
             onClick={onCancel}
             className="typography-body-lg-semibold h-11 flex-1 rounded-12 bg-secondary text-primary transition duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
           >
-            취소
+            {cancelLabel}
           </button>
           <button
             type="button"

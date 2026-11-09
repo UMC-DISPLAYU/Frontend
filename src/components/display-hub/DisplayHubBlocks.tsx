@@ -87,7 +87,7 @@ export function DisplayHubBlocks({
           </span>
           <span className="typography-body-lg-regular flex flex-col gap-1 text-secondary">
             <span>전시명·소개·일정</span>
-            <span>장소·유의사항</span>
+            <span>장소</span>
           </span>
         </Link>
       </div>

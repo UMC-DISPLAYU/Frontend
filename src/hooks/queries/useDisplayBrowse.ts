@@ -7,6 +7,7 @@ import type {
   UpdateDisplayRequestDto,
 } from '@/api/dto';
 import {
+  cancelDisplayReview,
   createDisplay,
   getDisplayMap,
   hideDisplay,
@@ -78,6 +79,19 @@ export const useHideDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => hideDisplay(displayId),
+    onSuccess: (_, displayId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+    },
+  });
+};
+
+// PATCH /v1/display/{displayId}/review/cancel: 등록 요청 취소
+export const useCancelDisplayReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (displayId: number) => cancelDisplayReview(displayId),
     onSuccess: (_, displayId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });

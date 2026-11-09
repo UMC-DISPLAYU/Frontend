@@ -7,6 +7,7 @@ import { BottomFixedBar, ErrorView } from '@/components/common';
 import {
   DisplayHubBlocks,
   DisplayHubConfirmDialog,
+  type DisplayHubStatus,
   DisplayHubSummary,
   DisplayHubVisibility,
   getDisplayHubStatus,
@@ -15,7 +16,11 @@ import { WorkHeader } from '@/components/exhibition-work';
 import { PageContainer, useHideFooter } from '@/components/layout';
 import { Skeleton } from '@/components/ui';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
-import { useHideDisplay, usePublishDisplay } from '@/hooks/queries/useDisplayBrowse';
+import {
+  useCancelDisplayReview,
+  useHideDisplay,
+  usePublishDisplay,
+} from '@/hooks/queries/useDisplayBrowse';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useDisplayRejectionReason } from '@/hooks/queries/useDisplayRejectionReason';
@@ -26,6 +31,20 @@ import { getErrorMessage } from '@/utils/error';
 
 const GRID_CLASS =
   'flex flex-col gap-6 pb-10 desktop:grid desktop:grid-cols-[380px_minmax(0,1fr)] desktop:items-start desktop:gap-14';
+
+type HubDialog = 'publish' | 'hide' | 'cancel';
+
+const getHubAction = (
+  status: DisplayHubStatus,
+): { label: string; dialog: HubDialog; isPrimary: boolean } => {
+  if (status === 'PUBLISHED') {
+    return { label: '비공개로 전환', dialog: 'hide', isPrimary: false };
+  }
+  if (status === 'PENDING_REVIEW') {
+    return { label: '요청 취소하기', dialog: 'cancel', isPrimary: false };
+  }
+  return { label: '등록 요청하기', dialog: 'publish', isPrimary: true };
+};
 
 function DisplayHubSkeleton() {
   return (
@@ -59,7 +78,8 @@ export function DisplayHubPage() {
   const publish = usePublishDisplay();
   const hide = useHideDisplay();
   const reservation = useUpdateDisplayReservation(displayId);
-  const [openDialog, setOpenDialog] = useState<'publish' | 'hide' | null>(null);
+  const cancelReview = useCancelDisplayReview();
+  const [openDialog, setOpenDialog] = useState<HubDialog | null>(null);
 
   const closePublishDialog = () => {
     if (publish.isPending) return;
@@ -71,6 +91,21 @@ export function DisplayHubPage() {
     if (hide.isPending) return;
     setOpenDialog(null);
     hide.reset();
+  };
+
+  const closeCancelDialog = () => {
+    if (cancelReview.isPending) return;
+    setOpenDialog(null);
+    cancelReview.reset();
+  };
+
+  const confirmCancelReview = () => {
+    cancelReview.mutate(displayId, {
+      onSuccess: () => {
+        setOpenDialog(null);
+        toast('등록 요청을 취소했어요');
+      },
+    });
   };
 
   const confirmPublish = () => {
@@ -94,21 +129,21 @@ export function DisplayHubPage() {
     });
   };
 
-  const actionButton =
-    display && status !== 'PENDING_REVIEW' ? (
-      <button
-        type="button"
-        onClick={() => setOpenDialog(status === 'PUBLISHED' ? 'hide' : 'publish')}
-        className={cn(
-          'typography-body-lg-semibold h-11 w-full rounded-12 transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99',
-          status === 'PUBLISHED'
-            ? 'bg-secondary text-primary hover:bg-tertiary'
-            : 'bg-interactive-primary text-interactive-inverse hover:bg-interactive-primary-hover',
-        )}
-      >
-        {status === 'PUBLISHED' ? '비공개로 전환' : '등록 요청하기'}
-      </button>
-    ) : null;
+  const hubAction = display ? getHubAction(status) : null;
+  const actionButton = hubAction ? (
+    <button
+      type="button"
+      onClick={() => setOpenDialog(hubAction.dialog)}
+      className={cn(
+        'typography-body-lg-semibold h-11 w-full rounded-12 transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99',
+        hubAction.isPrimary
+          ? 'bg-interactive-primary text-interactive-inverse hover:bg-interactive-primary-hover'
+          : 'bg-secondary text-primary hover:bg-tertiary',
+      )}
+    >
+      {hubAction.label}
+    </button>
+  ) : null;
 
   const renderContent = () => {
     if (display) {
@@ -162,7 +197,6 @@ export function DisplayHubPage() {
       <WorkHeader title="전시 관리" />
       {renderContent()}
 
-      {/* 심사 중 요청 취소는 백엔드 API가 없어 버튼을 노출하지 않는다 */}
       {actionButton && (
         <div className="tablet:hidden">
           <BottomFixedBar container="form">{actionButton}</BottomFixedBar>
@@ -204,6 +238,22 @@ export function DisplayHubPage() {
         }
         onCancel={closeHideDialog}
         onConfirm={confirmHide}
+      />
+      <DisplayHubConfirmDialog
+        open={openDialog === 'cancel'}
+        title="등록 요청을 취소할까요?"
+        description={'심사 요청을 철회하고 준비 중 상태로 돌아가요\n작성한 내용은 그대로 유지돼요'}
+        confirmLabel="요청 취소하기"
+        pendingLabel="취소 중…"
+        cancelLabel="돌아가기"
+        isPending={cancelReview.isPending}
+        errorMessage={
+          cancelReview.error
+            ? getErrorMessage(cancelReview.error, '요청을 취소하지 못했어요. 다시 시도해주세요.')
+            : null
+        }
+        onCancel={closeCancelDialog}
+        onConfirm={confirmCancelReview}
       />
     </PageContainer>
   );
