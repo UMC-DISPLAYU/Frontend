@@ -15,7 +15,8 @@ export function DisplayDetailPage() {
 
   if (isPending && displayId !== null) return <DisplayDetailSkeleton />;
 
-  if (error || !display || displayId === null) {
+  // 다시 불러오기만 실패하면(좋아요 · 저장 뒤 등) 받아 둔 상세를 그대로 보여준다
+  if (!display || displayId === null) {
     return (
       <ErrorView
         message={

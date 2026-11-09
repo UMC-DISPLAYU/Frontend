@@ -139,6 +139,14 @@ it.each([403, 404, 500])('상세 HTTP %i를 구분하고 뒤로가기 대신 다
   expect(renderToStaticMarkup(DisplayDetailPage())).toContain('전시 상세');
 });
 
+it('받아 둔 상세가 있으면 다시 불러오기가 실패해도 오류 화면으로 바꾸지 않는다', () => {
+  h.query.data = { displayId: 1 };
+  h.query.error = new ApiError('server', { status: 500 });
+  const html = renderToStaticMarkup(DisplayDetailPage());
+  expect(html).toContain('전시 상세');
+  expect(html).not.toContain('서버');
+});
+
 it('잘못된 상세 ID에서는 비활성 query의 로딩 대신 뒤로가기를 제공한다', () => {
   h.id = 'bad';
   h.query.isPending = true;

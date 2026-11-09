@@ -49,7 +49,7 @@ export function PosterCarousel({ images, title, onBack, isPreview = false }: Pro
     <div className="relative desktop:sticky desktop:top-[calc(var(--detail-top)+2rem)] desktop:flex desktop:items-start desktop:gap-3">
       {hasMultiple && (
         <div
-          role="list"
+          role="group"
           aria-label="포스터 목록"
           className="hidden max-h-[calc(100dvh-8.75rem)] shrink-0 flex-col gap-1.5 overflow-y-auto [scrollbar-width:none] desktop:flex [&::-webkit-scrollbar]:hidden"
         >
@@ -57,7 +57,6 @@ export function PosterCarousel({ images, title, onBack, isPreview = false }: Pro
             <button
               key={`${src}-${index}`}
               type="button"
-              role="listitem"
               aria-label={`포스터 ${index + 1} 보기`}
               aria-current={index === current}
               onClick={() => goTo(index)}

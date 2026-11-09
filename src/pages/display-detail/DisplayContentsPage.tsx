@@ -20,12 +20,16 @@ export function DisplayContentsPage() {
   const displayId = parseDisplayId(id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
 
-  const categoryId = Number(searchParams.get('category'));
+  const categoryParam = searchParams.get('category');
   const categories = display?.contentCategories ?? [];
-  // 카드에서 들어오지 않았으면(주소만 입력) 첫 콘텐츠를 보여준다
-  const category = categories.find((item) => item.categoryId === categoryId) ?? categories[0];
+  // 주소만 입력해 들어오면 첫 콘텐츠를 보여주고, 없는 콘텐츠 번호면 다른 콘텐츠로 바꾸지 않고 없다고 알린다
+  const category =
+    categoryParam === null
+      ? categories[0]
+      : categories.find((item) => item.categoryId === Number(categoryParam));
 
-  if (displayId === null || (!isPending && (error || !display || !category))) {
+  // 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
+  if (displayId === null || (!isPending && (!display || !category))) {
     return (
       <ErrorView
         message={

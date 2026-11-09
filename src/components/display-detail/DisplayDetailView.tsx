@@ -65,13 +65,16 @@ export function DisplayDetailView({ display, onBack }: Props) {
     <div className={cn('min-h-dvh bg-primary-white', stickyTop(isPreview))}>
       {isPreview && (
         <div
+          // 붙는 위치(--detail-top)가 40px 기준이라 좁은 화면에서도 한 줄로 두고 넘치면 말줄임
           role="status"
-          className="typography-body-md-regular sticky top-0 z-40 flex min-h-10 items-center justify-center gap-2 bg-primary-black px-gutter py-2 text-center text-interactive-inverse"
+          className="typography-body-md-regular sticky top-0 z-40 flex h-10 items-center justify-center gap-2 bg-primary-black px-gutter text-center text-interactive-inverse"
         >
           <b className="typography-body-md-semibold shrink-0 rounded-circle bg-primary-white px-2 py-px text-primary">
             미리보기
           </b>
-          <span>공개 전 모습이에요. 저장·좋아요·후기 작성은 할 수 없어요</span>
+          <span className="min-w-0 truncate">
+            공개 전 모습이에요. 저장·좋아요·후기 작성은 할 수 없어요
+          </span>
         </div>
       )}
 
