@@ -153,7 +153,7 @@ export function DisplayHubPage() {
             <DisplayHubSummary
               display={display}
               status={status}
-              rejectionReason={rejection?.rejectionReason}
+              rejectionReason={status === 'REJECTED' ? rejection?.rejectionReason : undefined}
             />
             {actionButton && <div className="hidden desktop:block">{actionButton}</div>}
           </div>

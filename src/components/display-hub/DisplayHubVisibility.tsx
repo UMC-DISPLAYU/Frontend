@@ -23,6 +23,7 @@ interface VisibilityFieldProps {
 function VisibilityField({ label, value, startDate, disabled, onChange }: VisibilityFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const labelId = useId();
   const selected = OPTIONS.find((option) => option.value === value) ?? OPTIONS[1];
 
@@ -33,7 +34,9 @@ function VisibilityField({ label, value, startDate, disabled, onChange }: Visibi
       if (!containerRef.current?.contains(event.target as Node)) setIsOpen(false);
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsOpen(false);
+      if (event.key !== 'Escape') return;
+      setIsOpen(false);
+      triggerRef.current?.focus();
     };
 
     document.addEventListener('pointerdown', closeOnOutside);
@@ -49,15 +52,18 @@ function VisibilityField({ label, value, startDate, disabled, onChange }: Visibi
       <span id={labelId} className="typography-body-lg-semibold text-primary">
         {label}
       </span>
+      {/* disabled 는 저장 중 포커스를 잃게 하므로 aria-disabled 로 막는다 */}
       <button
+        ref={triggerRef}
         type="button"
-        aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-labelledby={labelId}
-        disabled={disabled}
-        onClick={() => setIsOpen((prev) => !prev)}
+        aria-disabled={disabled}
+        onClick={() => {
+          if (!disabled) setIsOpen((prev) => !prev);
+        }}
         className={cn(
-          'flex w-full items-center gap-2 border-b py-3 text-left transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-default',
+          'flex w-full items-center gap-2 border-b py-3 text-left transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus aria-disabled:cursor-default',
           isOpen ? 'border-interactive-primary' : 'border-primary',
         )}
       >
@@ -74,18 +80,19 @@ function VisibilityField({ label, value, startDate, disabled, onChange }: Visibi
 
       {isOpen && (
         <ul
-          role="listbox"
           aria-labelledby={labelId}
           className="absolute top-full left-0 z-60 -mt-5 w-full animate-fade-in overflow-hidden rounded-12 border border-primary bg-primary-white shadow-card"
         >
           {OPTIONS.map((option) => {
             const isSelected = option.value === value;
             return (
-              <li key={option.value} role="option" aria-selected={isSelected}>
+              <li key={option.value}>
                 <button
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => {
                     setIsOpen(false);
+                    triggerRef.current?.focus();
                     if (!isSelected) onChange(option.value);
                   }}
                   className={cn(
