@@ -9,8 +9,8 @@ type Props = {
   images: string[];
   title: string;
   onBack: () => void;
-  /* 미리보기 띠(40px)가 위에 있으면 900px 이상에서 붙는 위치를 그만큼 내린다 */
-  hasBanner?: boolean;
+  /* 900px 이상은 서비스 헤더가 있어 뒤로가기를 빼지만, 미리보기는 포스터 위에 둔다 */
+  isPreview?: boolean;
 };
 
 const POSTER_IMAGE_WIDTH = 1080;
@@ -22,7 +22,7 @@ const scrollBehavior = (): ScrollBehavior =>
  * 포스터는 자르지 않고 전체를 보여주고(contain), 남는 곳은 연한 회색으로 채운다.
  * 여러 장이면 옆으로 넘기고 오른쪽 위에 장수를 보인다. 900px 이상은 왼쪽에 세로 썸네일 목록이 붙는다.
  */
-export function PosterCarousel({ images, title, onBack, hasBanner = false }: Props) {
+export function PosterCarousel({ images, title, onBack, isPreview = false }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
   const hasMultiple = images.length > 1;
@@ -46,12 +46,7 @@ export function PosterCarousel({ images, title, onBack, hasBanner = false }: Pro
   };
 
   return (
-    <div
-      className={cn(
-        'relative desktop:sticky desktop:flex desktop:items-start desktop:gap-3',
-        hasBanner ? 'desktop:top-18' : 'desktop:top-8',
-      )}
-    >
+    <div className="relative desktop:sticky desktop:top-[calc(var(--detail-top)+2rem)] desktop:flex desktop:items-start desktop:gap-3">
       {hasMultiple && (
         <div
           role="list"
@@ -124,7 +119,12 @@ export function PosterCarousel({ images, title, onBack, hasBanner = false }: Pro
         )}
 
         {/* 900px 미만은 화면을 따라 내려오는 뒤로가기를 DisplayDetailView 가 따로 둔다 */}
-        <DisplayBackButton onBack={onBack} className="absolute top-5 left-5 hidden desktop:grid" />
+        {isPreview && (
+          <DisplayBackButton
+            onBack={onBack}
+            className="absolute top-5 left-5 hidden desktop:grid"
+          />
+        )}
       </div>
     </div>
   );
