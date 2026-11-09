@@ -4,7 +4,7 @@ import type { ReactNode, RefObject } from 'react';
 import { cn } from '@/utils/cn';
 
 interface MapSheetProps {
-  title: ReactNode;
+  title: string;
   isFull: boolean;
   isDragging: boolean;
   isPanelFolded: boolean;
@@ -54,7 +54,7 @@ export function MapSheet({
           >
             <span className="h-1.5 w-17.5 rounded-circle bg-[#3f3f46]" />
           </button>
-          <h2 className="typography-title-xs flex h-7 min-w-0 items-center">{title}</h2>
+          <h2 className="typography-body-lg-semibold h-5 truncate">{title}</h2>
         </div>
         <div
           ref={bodyRef}

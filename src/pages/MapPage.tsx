@@ -114,6 +114,7 @@ export function MapPage() {
     selection && matchesMapFilters(selection.exhibition, query, statusFilters) ? selection : null;
   const isPinMode = selected?.via === 'pin';
   const snap = !isPinMode && requestedSnap === 'one' ? 'mid' : requestedSnap;
+  const isSheetLowered = !isDesktop && snap === 'peek';
 
   const sheetVisiblePx = isDesktop ? 0 : getSnapPx(snap, sheetFullPx);
   const isFolded = isDesktop && isPanelFolded;
@@ -403,7 +404,13 @@ export function MapPage() {
       />
 
       <MapSheet
-        title={selected && isPinMode ? '선택한 전시' : `이 지역 전시 ${inView.length}개`}
+        title={
+          selected && isPinMode
+            ? isSheetLowered
+              ? selected.exhibition.title
+              : '선택한 전시'
+            : `이 지역 전시 ${inView.length}개`
+        }
         isFull={snap === 'full'}
         isDragging={sheetDrag.isDragging}
         isPanelFolded={isFolded}
