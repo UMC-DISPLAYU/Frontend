@@ -481,6 +481,8 @@ export interface DisplayLikeStatusResponseDataDto {
 
 export type DisplayLikeStatusResponseDto = ApiResponseDto<DisplayLikeStatusResponseDataDto>;
 
+export type DisplayPublishStatus = 'PUBLISHED' | 'DRAFT' | 'PENDING_REVIEW' | 'REJECTED';
+
 export interface MyDisplayDto {
   displayId: number;
   title: string;
@@ -492,7 +494,7 @@ export interface MyDisplayDto {
   placeName: string;
   postImageUrl: string;
   isLeader?: boolean;
-  publishStatus?: 'PUBLISHED' | 'DRAFT';
+  publishStatus?: DisplayPublishStatus;
   displayNickname?: string;
   artistName?: string;
 }

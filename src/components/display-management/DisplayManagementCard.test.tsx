@@ -54,12 +54,37 @@ beforeEach(() => {
 it('상태, 역할, 전시 정보를 표시한다', () => {
   const html = render(display);
 
-  expect(html).toContain('전시 중');
+  expect(html).toContain('공개 중');
   expect(html).toContain('· 대표자(전시작가)');
   expect(html).toContain('FORM 2026');
-  expect(html).toContain('06.10 - 06.20');
+  expect(html).toContain('2026.06.10 - 06.20');
   expect(html).toContain('301호 2층 아트홀');
   expect(html).toContain('FORM 2026 메뉴');
+});
+
+it.each([
+  ['DRAFT', '준비 중'],
+  ['PENDING_REVIEW', '심사 중'],
+  ['REJECTED', '반려'],
+] as const)('발행 상태가 %s이면 날짜 상태 대신 %s(으)로 표시한다', (publishStatus, label) => {
+  const html = render({ ...display, publishStatus });
+
+  expect(html).toContain(label);
+  expect(html).not.toContain('공개 중');
+});
+
+it.each([
+  ['PENDING_REVIEW', 'text-info'],
+  ['REJECTED', 'text-error'],
+] as const)('발행 상태가 %s이면 %s 색으로 표시한다', (publishStatus, colorClass) => {
+  expect(render({ ...display, publishStatus })).toContain(colorClass);
+});
+
+it('발행된 전시는 날짜 기준 상태를 표시한다', () => {
+  expect(render({ ...display, publishStatus: 'PUBLISHED' })).toContain('공개 중');
+  expect(render({ ...display, publishStatus: 'PUBLISHED', status: '전시 종료' })).toContain(
+    '전시 종료',
+  );
 });
 
 it('전시 작가명이 응답에 있으면 멤버 목록을 조회하지 않는다', () => {

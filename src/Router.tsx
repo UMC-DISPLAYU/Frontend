@@ -69,7 +69,6 @@ const EditArtistProfilePage = lazyPage(
   () => import('./pages/artist-verification'),
   'EditArtistProfilePage',
 );
-const MyExhibitionsPage = lazyPage(() => import('./pages/MyExhibitionsPage'), 'MyExhibitionsPage');
 const DisplayManagementPage = lazyPage(
   () => import('./pages/DisplayManagementPage'),
   'DisplayManagementPage',
@@ -259,7 +258,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: 'my/exhibitions',
-                element: <MyExhibitionsPage />,
+                element: <Navigate to="/display-management" replace />,
               },
 
               // 1. 전시 등록 플로우

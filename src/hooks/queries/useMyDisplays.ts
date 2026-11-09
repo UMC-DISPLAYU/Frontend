@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { ArtistDisplayDto, UpdateMyDisplayNicknameRequestDto } from '@/api/dto';
 import {
@@ -64,14 +64,18 @@ export const useArtistDisplays = (userId: number, { enabled = true }: { enabled?
     },
   });
 
+const invalidateDisplayQueries = (queryClient: QueryClient, displayId: number) => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+  queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
+};
+
 export const useDeleteDisplay = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (displayId: number) => deleteDisplay(displayId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
-    },
+    onSuccess: (_, displayId) => invalidateDisplayQueries(queryClient, displayId),
   });
 };
 
@@ -80,9 +84,7 @@ export const useExitDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => exitDisplay(displayId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
-    },
+    onSuccess: (_, displayId) => invalidateDisplayQueries(queryClient, displayId),
   });
 };
 

@@ -1,3 +1,4 @@
+import type { DisplayPublishStatus } from '@/api/dto';
 import CalendarIcon from '@/assets/display-management/CalendarIcon.svg';
 import LocationIcon from '@/assets/display-management/LocationIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
@@ -15,8 +16,17 @@ import { type DisplayCardAction, DisplayCardMenu } from './DisplayCardMenu';
 import { formatDisplayPeriod } from './formatDisplayPeriod';
 
 const STATUS_TEXT_CLASS: Record<string, string> = {
-  '전시 중': 'text-success',
+  '공개 중': 'text-success',
   '전시 종료': 'text-tertiary',
+  '심사 중': 'text-info',
+  반려: 'text-error',
+};
+
+// displayStatus 는 날짜로만 계산되어 발행 전 전시도 '전시 중'으로 오므로 발행 상태를 먼저 본다
+const UNPUBLISHED_STATUS_LABEL: Partial<Record<DisplayPublishStatus, string>> = {
+  DRAFT: '준비 중',
+  PENDING_REVIEW: '심사 중',
+  REJECTED: '반려',
 };
 
 export function DisplayManagementCard({
@@ -54,6 +64,9 @@ export function DisplayManagementCard({
 
   const isLeader = ex.isLeader ?? ex.isOwner ?? false;
   const role = isLeader ? '대표자' : '팀원';
+  const publishedLabel = ex.status === '전시 중' ? '공개 중' : ex.status;
+  const statusLabel =
+    (ex.publishStatus && UNPUBLISHED_STATUS_LABEL[ex.publishStatus]) ?? publishedLabel;
 
   const actions: DisplayCardAction[] = [];
   if (canEditArtistName) {
@@ -84,17 +97,17 @@ export function DisplayManagementCard({
           <span
             className={cn(
               'typography-body-md-semibold flex shrink-0 items-center gap-1.5',
-              STATUS_TEXT_CLASS[ex.status] ?? 'text-primary',
+              STATUS_TEXT_CLASS[statusLabel] ?? 'text-primary',
             )}
           >
             <span
               aria-hidden="true"
               className={cn(
                 'size-2 rounded-circle bg-current',
-                !STATUS_TEXT_CLASS[ex.status] && 'text-icon-secondary',
+                !STATUS_TEXT_CLASS[statusLabel] && 'text-icon-secondary',
               )}
             />
-            {ex.status}
+            {statusLabel}
           </span>
           <span className="typography-body-md-medium truncate text-secondary">
             · {role}
