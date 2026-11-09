@@ -7,8 +7,10 @@ import type {
   UpdateDisplayRequestDto,
 } from '@/api/dto';
 import {
+  cancelDisplayReview,
   createDisplay,
   getDisplayMap,
+  hideDisplay,
   publishDisplay,
   searchDisplays,
   updateDisplay,
@@ -71,7 +73,33 @@ export const useUpdateDisplay = (displayId: number | undefined) => {
   });
 };
 
-// PATCH /v1/display/publish: 전시 등록하기
+// PATCH /v1/display/{displayId}/draft: 공개 중인 전시를 비공개로 전환
+export const useHideDisplay = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (displayId: number) => hideDisplay(displayId),
+    onSuccess: (_, displayId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+    },
+  });
+};
+
+// PATCH /v1/display/{displayId}/review/cancel: 등록 요청 취소
+export const useCancelDisplayReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (displayId: number) => cancelDisplayReview(displayId),
+    onSuccess: (_, displayId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+    },
+  });
+};
+
+// PATCH /v1/display/publish: 전시 공개 심사 신청
 export const usePublishDisplay = () => {
   const queryClient = useQueryClient();
 

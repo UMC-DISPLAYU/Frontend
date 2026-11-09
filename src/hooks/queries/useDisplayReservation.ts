@@ -15,7 +15,7 @@ export const useUpdateDisplayReservation = (displayId: number | undefined) => {
     },
     onSuccess: () => {
       if (!displayId) return;
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      return queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
     },
   });
 };

@@ -110,6 +110,12 @@ export type GetDisplayMapResponseDto = ApiResponseDto<GetDisplayMapResponseDataD
  */
 export type DisplayContentOpenType = 'IMMEDIATELY' | 'ON_EXHIBITION';
 
+export interface DisplayRejectionReasonResponseDataDto {
+  displayId: number;
+  publishStatus: 'REJECTED';
+  rejectionReason: string;
+}
+
 export interface DisplayDetailDto {
   displayId: number;
   ownerUserId: number;

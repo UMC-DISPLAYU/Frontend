@@ -53,6 +53,8 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'graduation', params ?? {}] as const,
     details: () => [...queryKeys.displays.all, 'detail'] as const,
     detail: (displayId: number) => [...queryKeys.displays.details(), displayId] as const,
+    rejectionReason: (displayId: number) =>
+      [...queryKeys.displays.detail(displayId), 'rejection-reason'] as const,
     likeStatus: (displayId: number) =>
       [...queryKeys.displays.all, 'like-status', displayId] as const,
     reviews: (displayId: number) => [...queryKeys.displays.all, 'reviews', displayId] as const,

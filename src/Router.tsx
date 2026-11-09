@@ -89,7 +89,11 @@ const ExhibitionRegisterDraftRoute = lazyPage(
   () => import('./pages/exhibition-register/ExhibitionRegisterDraftRoute'),
   'ExhibitionRegisterDraftRoute',
 );
-const ExhibitionManage = lazyPage(() => import('./pages/ExhibitionManagePage'), 'ExhibitionManage');
+const DisplayHubPage = lazyPage(() => import('./pages/DisplayHubPage'), 'DisplayHubPage');
+const DisplayHubRequestedPage = lazyPage(
+  () => import('./pages/DisplayHubRequestedPage'),
+  'DisplayHubRequestedPage',
+);
 const ExhibitionReviewWritePage = lazyPage(
   () => import('./pages/ExhibitionReviewWritePage'),
   'ExhibitionReviewWritePage',
@@ -119,10 +123,6 @@ const InteriorPhotosPage = lazyPage(
   'InteriorPhotosPage',
 );
 const TeamManage = lazyPage(() => import('./pages/TeamManagePage'), 'TeamManage');
-const VisibilitySettings = lazyPage(
-  () => import('./pages/VisibilitySettingsPage'),
-  'VisibilitySettings',
-);
 const DisplayAcceptPage = lazyPage(() => import('./pages/DisplayAcceptPage'), 'DisplayAcceptPage');
 const SettingPage = lazyPage(() => import('./pages/Settingpage'), 'SettingPage');
 const EditBasicInfoPage = lazyPage(() => import('./pages/EditBasicInfoPage'), 'EditBasicInfoPage');
@@ -326,7 +326,15 @@ export const router = createBrowserRouter([
                     path: 'manage',
                     element: (
                       <DisplayPermissionGuard action="edit">
-                        <ExhibitionManage />
+                        <DisplayHubPage />
+                      </DisplayPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'manage/requested',
+                    element: (
+                      <DisplayPermissionGuard action="edit">
+                        <DisplayHubRequestedPage />
                       </DisplayPermissionGuard>
                     ),
                   },
@@ -376,14 +384,6 @@ export const router = createBrowserRouter([
                       <DisplayInvitationPermissionGuard action="create">
                         <TeamManage />
                       </DisplayInvitationPermissionGuard>
-                    ),
-                  },
-                  {
-                    path: 'visibility',
-                    element: (
-                      <DisplayPermissionGuard action="edit">
-                        <VisibilitySettings />
-                      </DisplayPermissionGuard>
                     ),
                   },
                   {
