@@ -45,10 +45,13 @@ const HomePage = lazyPage(() => import('./pages/home'), 'HomePage');
 const ExplorePage = lazyPage(() => import('./pages/ExplorePage'), 'ExplorePage');
 const MapPage = lazyPage(() => import('./pages/MapPage'), 'MapPage');
 const AuthPage = lazyPage(() => import('./pages/AuthPage'), 'AuthPage');
-const DisplayDetailPage = lazyPage(() => import('./pages/DisplayDetailPage'), 'DisplayDetailPage');
+const DisplayDetailPage = lazyPage(
+  () => import('./pages/display-detail/DisplayDetailPage'),
+  'DisplayDetailPage',
+);
 const ArtworkDetailPage = lazyPage(() => import('./pages/ArtworkDetailPage'), 'ArtworkDetailPage');
 const DisplayContentsPage = lazyPage(
-  () => import('./pages/DisplayContentsPage'),
+  () => import('./pages/display-detail/DisplayContentsPage'),
   'DisplayContentsPage',
 );
 const LoungePage = lazyPage(() => import('./pages/LoungePage'), 'LoungePage');

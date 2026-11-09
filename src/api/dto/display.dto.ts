@@ -137,6 +137,9 @@ export interface DisplayDetailDto {
   contentCategories: DisplayContentCategoryDto[];
   teamMembers: DisplayTeamMemberDto[];
   invitations: DisplayInvitationDto[];
+  /* 전시 링크. 백엔드 요청 중이라 실서버 응답에는 아직 없고, 필드 이름은 확정되면 맞춥니다 */
+  instagramId?: string | null;
+  websiteUrl?: string | null;
 }
 
 export interface DisplayLocationDto {
