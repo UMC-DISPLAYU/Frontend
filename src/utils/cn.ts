@@ -21,7 +21,7 @@ const twMerge = extendTailwindMerge({
       ],
       breakpoint: ['tablet', 'desktop'],
       container: ['form', 'list'],
-      ease: ['standard'],
+      ease: ['standard', 'emphasized'],
       radius: ['0', '4', '6', '8', '12', '16', '20', '24', 'circle'],
       shadow: ['xs', 'sm', 'md', 'lg', 'card'],
       spacing: [

@@ -30,6 +30,8 @@
   /* 피그마가 사진 위 장수 칩 글씨에 base/white, 저장 버튼 글씨에 bg/primary - white를 직접 쓴다 */
   --text-color-base-white: var(--primitive-color-base-white);
   --text-color-bg-primary-white: var(--semantic-color-bg-primary-white);
+  /* 냅바 비선택 아이콘 hover 색. 프로토타입이 primitive color/zinc/400을 직접 쓴다 */
+  --text-color-zinc-400: var(--primitive-color-zinc-400);
 
   /* Background */
   --background-color-primary-white: var(--semantic-color-bg-primary-white);
@@ -51,6 +53,8 @@
   --background-color-dim: var(--semantic-color-bg-dim);
   /* 피그마가 사진 위 장수 칩 바탕에 시멘틱이 아닌 base/black을 직접 쓴다 */
   --background-color-base-black: var(--primitive-color-base-black);
+  /* 피그마가 냅바 선택 알약 바탕에 시멘틱이 아닌 color/zinc/800을 직접 쓴다 */
+  --background-color-zinc-800: var(--primitive-color-zinc-800);
 
   /* Icon */
   --text-color-icon-primary: var(--semantic-color-icon-primary);
@@ -132,11 +136,12 @@
   --spacing-navbar-clearance: var(--semantic-layout-navbar-clearance);
   --spacing-keyboard-inset: var(--semantic-layout-keyboard-inset);
 
-  /* Motion — duration-fast · duration-base · duration-slow, ease-standard */
+  /* Motion — duration-fast · duration-base · duration-slow, ease-standard · ease-emphasized */
   --transition-duration-fast: var(--semantic-motion-duration-fast);
   --transition-duration-base: var(--semantic-motion-duration-base);
   --transition-duration-slow: var(--semantic-motion-duration-slow);
   --ease-standard: var(--semantic-motion-easing-standard);
+  --ease-emphasized: var(--semantic-motion-easing-emphasized);
 
   /* Animation — 들어올 때는 both(지연 중에도 시작 프레임 유지), 나갈 때는 forwards(끝 프레임 유지) */
   --animate-fade-in: fade-in var(--semantic-motion-duration-base)
