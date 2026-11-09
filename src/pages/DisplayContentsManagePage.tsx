@@ -10,7 +10,6 @@ import {
 } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
-import { useHideFooter } from '@/components/layout';
 import {
   useCreateContentCategory,
   useDeleteContentCategory,
@@ -24,8 +23,6 @@ import { hasPermission } from '@/utils/hasPermission';
 import { staggerStyle } from '@/utils/stagger';
 
 export function DisplayContentsManagePage({ embedded = false }: { embedded?: boolean } = {}) {
-  useHideFooter();
-
   const navigate = useNavigate();
   const flowBack = useFlowBack();
   const { displayId: paramDisplayId } = useParams();

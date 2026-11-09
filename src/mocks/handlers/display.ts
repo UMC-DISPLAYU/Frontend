@@ -103,25 +103,6 @@ const isInsideBounds = (
   longitude >= bounds.westLongitude &&
   longitude <= bounds.eastLongitude;
 
-const duPicks = () => [
-  {
-    duPickId: 1,
-    title: '디유대학교 포스터전: 작업 큐레이션',
-    subtitle: '학생들의 감각이 포스터가 되는 순간',
-    bannerImageUrl:
-      'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/a0c512ba-c1ce-43e0-ae2a-f52e2cb8dd84-KakaoTalk_Photo_2026-08-01-13-40-36.jpeg',
-    createdAt: now(),
-  },
-  {
-    duPickId: 2,
-    title: '작품은 어디까지 설명해야 할까',
-    subtitle: '캡션과 작가 노트에서 발견한 좋은 문장의 조건',
-    bannerImageUrl:
-      'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/d091230b-1a5f-419c-ad7d-8c3629580e44-KakaoTalk_Photo_2026-08-02-16-33-34.jpeg',
-    createdAt: now(),
-  },
-];
-
 export const displayHandlers = [
   ...paths('/api/v1/display').map((path) =>
     http.post(path, async ({ request }) => {
@@ -206,16 +187,6 @@ export const displayHandlers = [
         pagination: { nextCursor: null, size: mockDb.displays.length, hasNext: false },
       }),
     ),
-  ),
-  ...paths('/api/v1/display/du-picks').map((path) =>
-    http.get(path, () => {
-      const items = duPicks();
-
-      return success('/api/v1/display/du-picks', {
-        duPicks: items,
-        pagination: { nextCursor: null, size: items.length, hasNext: false },
-      });
-    }),
   ),
   ...paths('/api/v1/display/graduation').map((path) =>
     http.get(path, () => success('/api/v1/display/graduation', { exhibitions: listDisplays() })),

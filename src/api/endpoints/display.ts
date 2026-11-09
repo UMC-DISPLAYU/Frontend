@@ -26,8 +26,6 @@ import type {
   GetDisplayReviewRepliesResponseDataDto,
   GetDisplayReviewsRequestDto,
   GetDisplayReviewsResponseDataDto,
-  GetDuPicksRequestDto,
-  GetDuPicksResponseDataDto,
   GetMyDisplayReviewsResponseDataDto,
   GetMyDisplaysResponseDataDto,
   HomeExhibitionDto,
@@ -62,11 +60,6 @@ export const getClosingSoonDisplays = async (
   apiRequest<GetClosingSoonDisplaysResponseDataDto>('/v1/display/closing-soon', {
     query: params,
   });
-
-// GET /v1/display/du-picks
-export const getDuPicks = async (
-  params: GetDuPicksRequestDto = {},
-): Promise<GetDuPicksResponseDataDto> => apiRequest('/v1/display/du-picks', { query: params });
 
 // GET /v1/display/search
 export const searchDisplays = async (

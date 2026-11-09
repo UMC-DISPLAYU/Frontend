@@ -31,7 +31,7 @@ import { contentEditSchema, type ContentEditValues } from '@/components/artworks
 import { BottomFixedBar, ErrorView } from '@/components/common';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { WorkHeader } from '@/components/exhibition-work';
-import { PageContainer, useHideFooter } from '@/components/layout';
+import { PageContainer } from '@/components/layout';
 import { Skeleton, SkeletonList } from '@/components/ui';
 import {
   DEFAULT_CONTENT_IMAGE_HEIGHT,
@@ -159,7 +159,6 @@ function SortablePhotoItem({
 }
 
 export function InteriorPhotosPage() {
-  useHideFooter();
   const flowBack = useFlowBack();
   const { displayId: paramDisplayId, categoryId: paramCategoryId } = useParams();
   const displayId = Number(paramDisplayId ?? 0);

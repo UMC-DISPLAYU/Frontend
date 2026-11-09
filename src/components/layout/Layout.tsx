@@ -6,18 +6,13 @@ import { useRedirectAfterLogin } from '@/hooks/usePendingRedirect';
 import { useIsKeyboardOpen } from '@/hooks/useVirtualKeyboard';
 import { cn } from '@/utils/cn';
 
-import { FNB } from './FNB';
 import { FooterContext } from './FooterContext';
 import { Navbar } from './Navbar';
 import { useReportNavbarPresence } from './navbarPresence';
 
-// FNB(푸터) 노출 경로 화이트리스트 (필요 시 배열에 경로 추가)
-const FNB_SHOW_PATHS = ['/home'];
-
 export function Layout() {
   const location = useLocation();
   const matches = useMatches();
-  const [manualFooterHidden, setManualFooterHidden] = useState(false);
   const [manualNavbarHidden, setManualNavbarHidden] = useState(false);
   const isKeyboardOpen = useIsKeyboardOpen();
 
@@ -48,37 +43,21 @@ export function Layout() {
   const isNavbarVisible = shouldShowNavbar && !isKeyboardOpen;
   useReportNavbarPresence(isNavbarVisible);
 
-  // 하단 푸터(FNB) 표시 여부
-  const isPathFooterShown =
-    FNB_SHOW_PATHS.some((path) => location.pathname.startsWith(path)) && !isLoungeWritePath;
-
-  const isRouteHandleFooterHidden = matches.some(
-    (match) => (match.handle as { hideFooter?: boolean })?.hideFooter,
-  );
-
-  const shouldShowFooter = isPathFooterShown && !manualFooterHidden && !isRouteHandleFooterHidden;
-
-  // useHideFooter · useHideNavbar 가 context 를 effect 의존성으로 쓰므로 렌더마다 새 객체를 만들지 않는다
+  // useHideNavbar 가 context 를 effect 의존성으로 쓰므로 렌더마다 새 객체를 만들지 않는다
   const footerContextValue = useMemo(
     () => ({
-      isFooterHidden: !shouldShowFooter,
-      setFooterHidden: setManualFooterHidden,
       isNavbarHidden: !isNavbarVisible,
       setNavbarHidden: setManualNavbarHidden,
     }),
-    [shouldShowFooter, isNavbarVisible],
+    [isNavbarVisible],
   );
 
   return (
     <FooterContext.Provider value={footerContextValue}>
       <div className="flex min-h-dvh flex-col justify-between">
-        <main
-          className={cn('flex-1', shouldShowNavbar && !shouldShowFooter && 'pb-navbar-clearance')}
-        >
+        <main className={cn('flex-1', shouldShowNavbar && 'pb-navbar-clearance')}>
           <Outlet />
         </main>
-
-        {shouldShowFooter && <FNB hasFixedBottomBar={shouldShowNavbar} />}
 
         {isNavbarVisible && <Navbar />}
       </div>

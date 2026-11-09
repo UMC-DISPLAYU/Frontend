@@ -2,7 +2,6 @@ import { Link, useParams } from 'react-router-dom';
 
 import { ErrorView, LoadingView } from '@/components/common';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
-import { useHideFooter } from '@/components/layout';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
@@ -12,7 +11,6 @@ import { ArtworksManagePage } from './ArtworksManagePage';
 import { DisplayContentsManagePage } from './DisplayContentsManagePage';
 
 export function ExhibitionWorkPage() {
-  useHideFooter();
   const { displayId } = useParams();
   const flowBack = useFlowBack();
   const [searchParams, replaceSearchParams] = useReplaceSearchParams();

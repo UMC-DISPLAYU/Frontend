@@ -88,6 +88,8 @@
   --border-color-disable: var(--semantic-color-border-disable);
   /* 피그마가 드롭다운·필터 칩 외곽선에 icon/tertiary를 쓰는데 같은 값의 border 토큰이 없다 */
   --border-color-icon-tertiary: var(--semantic-color-icon-tertiary);
+  /* 피그마가 홈 리스트형 카드 외곽선에 icon/secondary를 쓴다. 다크 영역 구분선(#2d2d30, 변수 없음)도 이 값으로 맞춘다 */
+  --border-color-icon-secondary: var(--semantic-color-icon-secondary);
   /* 피그마가 구분선·외곽선에 bg 색 변수를 쓰는데 같은 값의 border 토큰이 없다 */
   --border-color-bg-secondary: var(--semantic-color-bg-secondary);
   --border-color-bg-tertiary: var(--semantic-color-bg-tertiary);

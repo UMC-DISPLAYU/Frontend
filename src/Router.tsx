@@ -41,7 +41,7 @@ const lazyPage = <T extends Record<string, unknown>>(
 };
 
 // Lazy loaded page components
-const Homepage = lazyPage(() => import('./pages/Homepage'), 'Homepage');
+const HomePage = lazyPage(() => import('./pages/home'), 'HomePage');
 const ExplorePage = lazyPage(() => import('./pages/ExplorePage'), 'ExplorePage');
 const MapPage = lazyPage(() => import('./pages/MapPage'), 'MapPage');
 const AuthPage = lazyPage(() => import('./pages/AuthPage'), 'AuthPage');
@@ -193,7 +193,7 @@ export const router = createBrowserRouter([
         children: [
           // 🔓 공개 라우트 (비로그인 게스트 접근 가능)
           { index: true, element: <RootRedirect /> },
-          { path: 'home', element: <Homepage /> },
+          { path: 'home', element: <HomePage /> },
           { path: 'search', element: <ExplorePage /> },
           {
             path: 'artist/:userId',
@@ -508,7 +508,7 @@ export const router = createBrowserRouter([
               {
                 path: 'lounge/:category/:id/edit',
                 element: <ExhibitionReviewWritePage />,
-                handle: { hideNavbar: true, hideFooter: true },
+                handle: { hideNavbar: true },
               },
             ],
           },
