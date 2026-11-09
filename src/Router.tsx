@@ -117,10 +117,6 @@ const InteriorPhotosPage = lazyPage(
   'InteriorPhotosPage',
 );
 const TeamManage = lazyPage(() => import('./pages/TeamManagePage'), 'TeamManage');
-const VisibilitySettings = lazyPage(
-  () => import('./pages/VisibilitySettingsPage'),
-  'VisibilitySettings',
-);
 const DisplayAcceptPage = lazyPage(() => import('./pages/DisplayAcceptPage'), 'DisplayAcceptPage');
 const SettingPage = lazyPage(() => import('./pages/Settingpage'), 'SettingPage');
 const EditBasicInfoPage = lazyPage(() => import('./pages/EditBasicInfoPage'), 'EditBasicInfoPage');
@@ -378,14 +374,6 @@ export const router = createBrowserRouter([
                       <DisplayInvitationPermissionGuard action="create">
                         <TeamManage />
                       </DisplayInvitationPermissionGuard>
-                    ),
-                  },
-                  {
-                    path: 'visibility',
-                    element: (
-                      <DisplayPermissionGuard action="edit">
-                        <VisibilitySettings />
-                      </DisplayPermissionGuard>
                     ),
                   },
                   {
