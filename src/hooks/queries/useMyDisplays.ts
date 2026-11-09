@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { ArtistDisplayDto, UpdateMyDisplayNicknameRequestDto } from '@/api/dto';
 import {
@@ -29,6 +29,8 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
    * department가 비어있으면 자연히 주최/소속명만 남습니다. */
   org: [display.school, display.department].filter(Boolean).join(' '),
   period: `${formatDate(display.startDate)} – ${formatDate(display.endDate)}`,
+  startDate: display.startDate,
+  endDate: display.endDate,
   place: display.placeName,
   thumbnail: display.postImageUrl,
   artistName: display.displayNickname ?? display.artistName,
@@ -62,14 +64,18 @@ export const useArtistDisplays = (userId: number, { enabled = true }: { enabled?
     },
   });
 
+const invalidateDisplayQueries = (queryClient: QueryClient, displayId: number) => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+  queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
+};
+
 export const useDeleteDisplay = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (displayId: number) => deleteDisplay(displayId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
-    },
+    onSuccess: (_, displayId) => invalidateDisplayQueries(queryClient, displayId),
   });
 };
 
@@ -78,9 +84,7 @@ export const useExitDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => exitDisplay(displayId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
-    },
+    onSuccess: (_, displayId) => invalidateDisplayQueries(queryClient, displayId),
   });
 };
 

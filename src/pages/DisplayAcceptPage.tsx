@@ -38,7 +38,7 @@ export function DisplayAcceptPage() {
   const [titleRow, departmentRow, periodRow, roleRow] = buildExhibitionInfo(invitation);
 
   const handleGoManage = () => {
-    navigate('/my/exhibitions', {
+    navigate('/display-management', {
       replace: true,
       state: { completedFlowBackIndex: state?.invitationFlowBackIndex ?? null },
     });
