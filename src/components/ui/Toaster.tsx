@@ -1,5 +1,7 @@
 import { createPortal } from 'react-dom';
 
+import { Link } from 'react-router-dom';
+
 import { useBottomObstructionHeight } from '@/hooks/useVirtualKeyboard';
 import { removeToast, useToastStore } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
@@ -42,10 +44,22 @@ export function Toaster({ hasNavbar }: ToasterProps) {
             }}
             className={cn(
               'mb-3 w-max max-w-110 rounded-8 bg-primary-black px-4.5 py-3.5 typography-body-lg-medium break-keep text-interactive-inverse',
+              current.action && 'pointer-events-auto',
               current.isClosing ? 'animate-toast-out' : 'animate-toast-in',
             )}
           >
             {current.message}
+            {current.action && (
+              <>
+                {' · '}
+                <Link
+                  to={current.action.to}
+                  className="rounded-4 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-focus-inverse"
+                >
+                  {current.action.label}
+                </Link>
+              </>
+            )}
           </p>
         )}
       </div>
