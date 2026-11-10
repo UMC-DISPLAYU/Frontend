@@ -5,7 +5,12 @@ import PlusIcon from '@/assets/display-register/PlusIcon.svg';
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import { cn } from '@/utils/cn';
 
-import { MAX_POSTER_FILE_MB, POSTER_ACCEPT_TYPES } from './displayRegister.constants';
+import {
+  MAX_POSTER_FILE_MB,
+  POSTER_ACCEPT_TYPES,
+  POSTER_CARD_RATIO,
+} from './displayRegister.constants';
+import { cropImageStyle } from './posterCrop';
 import { PosterCropSheet } from './PosterCropSheet';
 import type { PosterItem, PosterUploads } from './usePosterUploads';
 
@@ -75,11 +80,26 @@ function PosterThumb({
       aria-busy={isUploading}
       className="relative h-26.25 w-21 shrink-0 overflow-hidden rounded-12 bg-secondary"
     >
-      <img
-        src={item.previewUrl}
-        alt={`포스터 ${index + 1}`}
-        className={cn('size-full object-cover', isUploading && 'opacity-50')}
-      />
+      {isRepresentative && item.crop ? (
+        // 썸네일(4:5)과 카드(402:568) 비율이 달라, 카드 비율 상자를 가운데 두고 넘치는 위아래를 잘라 보여준다
+        <div
+          className="absolute top-1/2 left-0 w-full -translate-y-1/2 overflow-hidden"
+          style={{ aspectRatio: POSTER_CARD_RATIO }}
+        >
+          <img
+            src={item.previewUrl}
+            alt={`포스터 ${index + 1}`}
+            style={cropImageStyle(item.crop)}
+            className={cn(isUploading && 'opacity-50')}
+          />
+        </div>
+      ) : (
+        <img
+          src={item.previewUrl}
+          alt={`포스터 ${index + 1}`}
+          className={cn('size-full object-cover', isUploading && 'opacity-50')}
+        />
+      )}
       <button
         type="button"
         aria-label={`포스터 ${index + 1} 삭제`}
