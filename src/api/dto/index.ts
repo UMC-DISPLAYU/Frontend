@@ -1,3 +1,4 @@
+export * from './address.dto';
 export * from './agreement.dto';
 export * from './archive.dto';
 export * from './artist.dto';

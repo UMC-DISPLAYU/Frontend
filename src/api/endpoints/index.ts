@@ -1,3 +1,4 @@
+export * from './address';
 export * from './agreement';
 export * from './archive';
 export * from './artist';

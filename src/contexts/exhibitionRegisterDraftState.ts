@@ -18,6 +18,8 @@ export type ExhibitionRegisterDraft = {
   address: string;
   latitude: number | null;
   longitude: number | null;
+  instagramId: string;
+  websiteUrl: string;
   contact: string;
   notice: string;
   artistName: string;
@@ -45,6 +47,8 @@ export const INITIAL_EXHIBITION_REGISTER_DRAFT: ExhibitionRegisterDraft = {
   address: '',
   latitude: null,
   longitude: null,
+  instagramId: '',
+  websiteUrl: '',
   contact: '',
   notice: '',
   artistName: '',

@@ -84,6 +84,10 @@ const DisplayRegisterIntroPage = lazyPage(
   () => import('./pages/DisplayRegisterIntroPage'),
   'DisplayRegisterIntroPage',
 );
+const DisplayRegisterBasicPage = lazyPage(
+  () => import('./pages/DisplayRegisterBasicPage'),
+  'DisplayRegisterBasicPage',
+);
 const ExhibitionBasicInfo = lazyPage(
   () => import('./pages/exhibition-register'),
   'ExhibitionBasicInfo',
@@ -284,18 +288,6 @@ export const router = createBrowserRouter([
                         fallback="/exhibition/register"
                         complete="start"
                       >
-                        <ExhibitionRegister />
-                      </GuardedFlowStep>
-                    ),
-                  },
-                  {
-                    path: 'exhibition/register/new',
-                    element: (
-                      <GuardedFlowStep
-                        required={[]}
-                        fallback="/exhibition/register/new"
-                        complete="start"
-                      >
                         <DisplayRegisterIntroPage />
                       </GuardedFlowStep>
                     ),
@@ -308,7 +300,7 @@ export const router = createBrowserRouter([
                         fallback="/exhibition/register"
                         complete="basic"
                       >
-                        <ExhibitionBasicInfo />
+                        <DisplayRegisterBasicPage />
                       </GuardedFlowStep>
                     ),
                   },
