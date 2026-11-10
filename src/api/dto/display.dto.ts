@@ -399,6 +399,9 @@ export interface CreateDisplayRequestDto {
   subtitle?: string;
   description?: string;
   precautions?: string | null;
+  /* 선택. https:// 로 시작하는 전체 주소만 받고 빈 문자열은 안 된다(없으면 보내지 않는다) */
+  instagramUrl?: string;
+  websiteUrl?: string;
   departmentOrClubValid?: boolean;
   regionValid?: boolean;
 }
