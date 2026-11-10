@@ -21,7 +21,11 @@ export type ExhibitionRegisterDraft = {
   contact: string;
   notice: string;
   artistName: string;
+  fieldLabels: string[];
+  posterCrop: PosterCropRect | null;
 };
+
+export type PosterCropRect = { x: number; y: number; w: number; h: number };
 
 export const INITIAL_EXHIBITION_REGISTER_DRAFT: ExhibitionRegisterDraft = {
   imageUrls: [],
@@ -44,6 +48,8 @@ export const INITIAL_EXHIBITION_REGISTER_DRAFT: ExhibitionRegisterDraft = {
   contact: '',
   notice: '',
   artistName: '',
+  fieldLabels: [],
+  posterCrop: null,
 };
 
 export const ExhibitionRegisterDraftContext = createContext<{

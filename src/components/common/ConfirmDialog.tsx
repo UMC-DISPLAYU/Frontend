@@ -2,21 +2,21 @@ import { useRef } from 'react';
 
 import { Overlay } from '@/components/ui';
 
-interface DisplayHubConfirmDialogProps {
+interface ConfirmDialogProps {
   open: boolean;
   title: string;
   description: string;
   warning?: { title: string; description: string };
   confirmLabel: string;
-  pendingLabel: string;
+  pendingLabel?: string;
   cancelLabel?: string;
-  isPending: boolean;
-  errorMessage: string | null;
+  isPending?: boolean;
+  errorMessage?: string | null;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export function DisplayHubConfirmDialog({
+export function ConfirmDialog({
   open,
   title,
   description,
@@ -24,11 +24,11 @@ export function DisplayHubConfirmDialog({
   confirmLabel,
   pendingLabel,
   cancelLabel = '취소',
-  isPending,
-  errorMessage,
+  isPending = false,
+  errorMessage = null,
   onCancel,
   onConfirm,
-}: DisplayHubConfirmDialogProps) {
+}: ConfirmDialogProps) {
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
@@ -63,7 +63,7 @@ export function DisplayHubConfirmDialog({
             onClick={onConfirm}
             className="typography-body-lg-semibold h-11 flex-1 rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable disabled:active:scale-100"
           >
-            {isPending ? pendingLabel : confirmLabel}
+            {isPending && pendingLabel ? pendingLabel : confirmLabel}
           </button>
         </div>
       }

@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import type { UpdateDisplayReservationRequestDto } from '@/api/dto';
-import { BottomFixedBar, ErrorView } from '@/components/common';
+import { BottomFixedBar, ConfirmDialog, ErrorView } from '@/components/common';
 import {
   DisplayHubBlocks,
-  DisplayHubConfirmDialog,
   type DisplayHubStatus,
   DisplayHubSummary,
   DisplayHubVisibility,
@@ -201,7 +200,7 @@ export function DisplayHubPage() {
         </div>
       )}
 
-      <DisplayHubConfirmDialog
+      <ConfirmDialog
         open={openDialog === 'publish'}
         title="전시 등록을 요청할까요?"
         description={
@@ -218,7 +217,7 @@ export function DisplayHubPage() {
         onCancel={closePublishDialog}
         onConfirm={confirmPublish}
       />
-      <DisplayHubConfirmDialog
+      <ConfirmDialog
         open={openDialog === 'hide'}
         title="비공개로 전환할까요?"
         description="전시가 준비 중 상태로 돌아가요"
@@ -237,7 +236,7 @@ export function DisplayHubPage() {
         onCancel={closeHideDialog}
         onConfirm={confirmHide}
       />
-      <DisplayHubConfirmDialog
+      <ConfirmDialog
         open={openDialog === 'cancel'}
         title="등록 요청을 취소할까요?"
         description={'심사 요청을 철회하고 준비 중 상태로 돌아가요\n작성한 내용은 그대로 유지돼요'}
