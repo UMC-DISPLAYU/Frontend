@@ -37,10 +37,23 @@ describe('parseWebsiteUrl', () => {
     });
   });
 
-  it('경로와 쿼리를 유지하고 끝 슬래시는 뺀다', () => {
-    expect(parseWebsiteUrl('http://www.displayu.kr/works/?a=1')).toMatchObject({
+  it('경로 · 쿼리 · 해시를 유지하고 끝 슬래시는 뺀다', () => {
+    expect(parseWebsiteUrl('https://www.displayu.kr/works/?a=1#about')).toEqual({
       status: 'valid',
-      value: 'www.displayu.kr/works?a=1',
+      value: 'www.displayu.kr/works?a=1#about',
+      href: 'https://www.displayu.kr/works/?a=1#about',
+    });
+  });
+
+  it('http 주소는 프로토콜을 남겨 다시 확인해도 http 로 유지한다', () => {
+    const first = parseWebsiteUrl('http://www.displayu.kr/works/?a=1');
+    expect(first).toEqual({
+      status: 'valid',
+      value: 'http://www.displayu.kr/works?a=1',
+      href: 'http://www.displayu.kr/works/?a=1',
+    });
+    expect(first.status === 'valid' && parseWebsiteUrl(first.value)).toMatchObject({
+      href: 'http://www.displayu.kr/works?a=1',
     });
   });
 

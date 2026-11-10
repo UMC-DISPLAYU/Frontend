@@ -32,7 +32,13 @@ export function parseWebsiteUrl(raw: string): LinkParseResult {
     if (!HOSTNAME_PATTERN.test(url.hostname)) return { status: 'invalid' };
 
     const path = url.pathname === '/' ? '' : url.pathname.replace(/\/$/, '');
-    return { status: 'valid', value: `${url.host}${path}${url.search}`, href: url.href };
+    // https 는 생략해 보여주고, http 는 남겨야 다시 확인할 때 https 로 바뀌지 않는다
+    const protocol = url.protocol === 'http:' ? 'http://' : '';
+    return {
+      status: 'valid',
+      value: `${protocol}${url.host}${path}${url.search}${url.hash}`,
+      href: url.href,
+    };
   } catch {
     return { status: 'invalid' };
   }
