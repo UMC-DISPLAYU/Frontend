@@ -15,6 +15,7 @@ interface DisplayTypeSelectProps {
 export function DisplayTypeSelect({ labelId, value, onChange }: DisplayTypeSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -23,7 +24,9 @@ export function DisplayTypeSelect({ labelId, value, onChange }: DisplayTypeSelec
       if (!rootRef.current?.contains(event.target as Node)) setIsOpen(false);
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsOpen(false);
+      if (event.key !== 'Escape') return;
+      setIsOpen(false);
+      triggerRef.current?.focus();
     };
 
     document.addEventListener('pointerdown', handlePointerDown);
@@ -37,6 +40,7 @@ export function DisplayTypeSelect({ labelId, value, onChange }: DisplayTypeSelec
   return (
     <div ref={rootRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -72,6 +76,7 @@ export function DisplayTypeSelect({ labelId, value, onChange }: DisplayTypeSelec
               onClick={() => {
                 onChange(option);
                 setIsOpen(false);
+                triggerRef.current?.focus();
               }}
               className="typography-body-xl-regular flex h-13 w-full items-center gap-2 px-4 text-left text-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
             >

@@ -39,7 +39,7 @@ export function DisplayRegisterIntroPage() {
   const affiliationLabelId = useId();
 
   const { draft, updateDraft } = useExhibitionRegisterDraft();
-  const { data: artistProfile } = useMyArtistProfile();
+  const { data: artistProfile, isPending: isProfilePending } = useMyArtistProfile();
   const schoolName = artistProfile?.schoolName ?? '';
   const posters = usePosterUploads({
     initialUrls: draft.imageUrls,
@@ -74,7 +74,12 @@ export function DisplayRegisterIntroPage() {
     values.fieldLabels?.length ||
     values.department,
   );
-  const canSubmit = isValid && posters.uploadedUrls.length > 0 && !posters.isUploading;
+  // 학교명은 프로필에서 채우므로, 조회가 끝나기 전에 넘어가면 소속이 학교 없이 저장된다
+  const canSubmit =
+    isValid &&
+    posters.uploadedUrls.length > 0 &&
+    !posters.isUploading &&
+    !(isProfilePending && !isOtherGroup);
 
   useEffect(() => {
     if (!hasInput) return;

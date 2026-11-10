@@ -7,6 +7,9 @@ import { toast } from '@/stores/toastStore';
 
 import { MAX_POSTER_FILE_MB, POSTER_ACCEPT_TYPES } from './displayRegister.constants';
 
+/** file: 형식 · 용량이 맞지 않아 올리지 않은 파일, upload: 업로드 요청 실패 */
+export type PosterErrorKind = 'file' | 'upload';
+
 export type PosterItem = {
   id: string;
   previewUrl: string;
@@ -36,7 +39,7 @@ export function usePosterUploads({
       crop: index === 0 ? initialCrop : null,
     })),
   );
-  const [hasError, setHasError] = useState(false);
+  const [errorKind, setErrorKind] = useState<PosterErrorKind | null>(null);
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
   const { mutateAsync: uploadImage } = useUploadImage();
 
@@ -70,7 +73,7 @@ export function usePosterUploads({
           if (wasRemoved) return;
 
           setFailedFiles((prev) => [...prev, file]);
-          setHasError(true);
+          setErrorKind('upload');
         });
     },
     [uploadImage],
@@ -78,7 +81,7 @@ export function usePosterUploads({
 
   const addFiles = useCallback(
     (files: File[]) => {
-      setHasError(false);
+      setErrorKind(null);
       setFailedFiles([]);
 
       const remaining = MAX_POSTER_UPLOAD_IMAGES - itemsRef.current.length;
@@ -88,7 +91,7 @@ export function usePosterUploads({
 
       const candidates = files.slice(0, Math.max(remaining, 0));
       const accepted = candidates.filter(isAcceptablePoster);
-      if (accepted.length < candidates.length) setHasError(true);
+      if (accepted.length < candidates.length) setErrorKind('file');
       if (accepted.length === 0) return;
 
       const added = accepted.map((file) => ({
@@ -107,7 +110,7 @@ export function usePosterUploads({
   /** 다시 올릴 파일이 있으면 올리고 true, 없으면(형식 · 용량 오류) false 를 돌려준다 */
   const retry = useCallback(() => {
     if (failedFiles.length === 0) {
-      setHasError(false);
+      setErrorKind(null);
       return false;
     }
 
@@ -128,7 +131,7 @@ export function usePosterUploads({
 
   return {
     items,
-    hasError,
+    errorKind,
     isUploading: items.some((item) => !item.uploadedUrl),
     uploadedUrls: items.flatMap((item) => item.uploadedUrl ?? []),
     posterCrop: items[0]?.crop ?? null,

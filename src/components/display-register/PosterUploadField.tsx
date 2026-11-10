@@ -46,7 +46,20 @@ function PosterLabel({ count }: { count?: number }) {
   );
 }
 
-function RetryButton({ onClick }: { onClick: () => void }) {
+const ERROR_COPY = {
+  upload: {
+    title: '업로드하지 못했어요',
+    description: '네트워크 상태를 확인하고 다시 시도해주세요',
+    action: '다시 시도',
+  },
+  file: {
+    title: '올릴 수 없는 파일이에요',
+    description: `JPG, PNG, WEBP 파일만 장당 ${MAX_POSTER_FILE_MB}MB까지 올릴 수 있어요`,
+    action: '다시 선택',
+  },
+} as const;
+
+function RetryButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -56,7 +69,7 @@ function RetryButton({ onClick }: { onClick: () => void }) {
         FOCUS_CLASS,
       )}
     >
-      다시 시도
+      {label}
     </button>
   );
 }
@@ -140,7 +153,8 @@ export function PosterUploadField({ posters }: { posters: PosterUploads }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [cropSession, setCropSession] = useState<{ item: PosterItem; key: number } | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
-  const { items, hasError } = posters;
+  const { items, errorKind } = posters;
+  const errorCopy = errorKind && ERROR_COPY[errorKind];
 
   const openPicker = () => inputRef.current?.click();
   const handleRetry = () => {
@@ -186,7 +200,7 @@ export function PosterUploadField({ posters }: { posters: PosterUploads }) {
     return (
       <div className="flex items-start gap-4">
         {fileInput}
-        {hasError ? (
+        {errorCopy ? (
           <>
             <div
               aria-hidden="true"
@@ -195,12 +209,10 @@ export function PosterUploadField({ posters }: { posters: PosterUploads }) {
               !
             </div>
             <div role="alert" className="flex min-w-0 flex-1 flex-col items-start gap-1">
-              <p className="typography-body-lg-semibold text-error">업로드하지 못했어요</p>
-              <p className="typography-body-md-medium text-secondary">
-                네트워크 상태를 확인하고 다시 시도해주세요
-              </p>
+              <p className="typography-body-lg-semibold text-error">{errorCopy.title}</p>
+              <p className="typography-body-md-medium text-secondary">{errorCopy.description}</p>
               <div className="pt-1">
-                <RetryButton onClick={handleRetry} />
+                <RetryButton label={errorCopy.action} onClick={handleRetry} />
               </div>
             </div>
           </>
@@ -227,15 +239,13 @@ export function PosterUploadField({ posters }: { posters: PosterUploads }) {
         <PosterLabel count={items.length} />
         <PosterHelp />
       </div>
-      {hasError && (
+      {errorCopy && (
         <div role="alert" className="flex items-center gap-3 rounded-12 bg-error-subtle p-4">
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <p className="typography-body-lg-semibold text-error">업로드하지 못했어요</p>
-            <p className="typography-body-md-medium text-secondary">
-              네트워크 상태를 확인하고 다시 시도해주세요
-            </p>
+            <p className="typography-body-lg-semibold text-error">{errorCopy.title}</p>
+            <p className="typography-body-md-medium text-secondary">{errorCopy.description}</p>
           </div>
-          <RetryButton onClick={handleRetry} />
+          <RetryButton label={errorCopy.action} onClick={handleRetry} />
         </div>
       )}
       <div className="-mx-gutter flex scroll-px-gutter gap-2 overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
