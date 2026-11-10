@@ -1,8 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 
 import CompleteIcon from '@/assets/display-hub/CompleteIcon.svg';
-import StepDoneIcon from '@/assets/display-hub/StepDoneIcon.svg';
 import { BottomFixedBar } from '@/components/common';
+import { DisplayPublishSteps } from '@/components/display-hub';
 import { PageContainer } from '@/components/layout';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 
@@ -29,24 +29,7 @@ export function DisplayHubRequestedPage() {
           </div>
         </div>
 
-        <ol className="relative grid grid-cols-3">
-          <li
-            aria-hidden="true"
-            className="absolute inset-x-3 top-2.75 h-0.5 bg-interactive-primary"
-          />
-          <li className="relative flex flex-col items-start gap-2">
-            <img src={StepDoneIcon} alt="" />
-            <span className="typography-body-md-medium text-secondary">준비하기</span>
-          </li>
-          <li className="relative flex flex-col items-center gap-2">
-            <img src={StepDoneIcon} alt="" />
-            <span className="typography-body-md-medium text-secondary">등록 요청</span>
-          </li>
-          <li aria-current="step" className="relative flex flex-col items-end gap-2">
-            <span className="size-6 rounded-circle border-6 border-interactive-primary bg-primary-white" />
-            <span className="typography-body-md-semibold text-primary">승인 후 공개</span>
-          </li>
-        </ol>
+        <DisplayPublishSteps current={3} />
 
         <div className="flex flex-col gap-3">
           <dl className="flex flex-col gap-5 rounded-12 bg-secondary px-5 py-6">

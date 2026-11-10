@@ -1,4 +1,5 @@
 export { AddressSearchView } from './AddressSearchView';
+export { buildCreateDisplayRequest } from './createDisplayRequest';
 export { DisplayFieldChips } from './DisplayFieldChips';
 export { DisplayLinkField } from './DisplayLinkField';
 export { parseInstagramId, parseWebsiteUrl } from './displayLinks';
@@ -9,6 +10,11 @@ export {
   OTHER_GROUP_DISPLAY_TYPE,
   toExhibitionFields,
 } from './displayRegister.constants';
+export {
+  displayRegisterArtistSchema,
+  type DisplayRegisterArtistValues,
+  MAX_ARTIST_NAME_LENGTH,
+} from './displayRegisterArtist.schema';
 export {
   displayRegisterBasicSchema,
   type DisplayRegisterBasicValues,

@@ -88,6 +88,14 @@ const DisplayRegisterBasicPage = lazyPage(
   () => import('./pages/DisplayRegisterBasicPage'),
   'DisplayRegisterBasicPage',
 );
+const DisplayRegisterArtistPage = lazyPage(
+  () => import('./pages/DisplayRegisterArtistPage'),
+  'DisplayRegisterArtistPage',
+);
+const DisplayRegisterCompletePage = lazyPage(
+  () => import('./pages/DisplayRegisterCompletePage'),
+  'DisplayRegisterCompletePage',
+);
 const ExhibitionBasicInfo = lazyPage(
   () => import('./pages/exhibition-register'),
   'ExhibitionBasicInfo',
@@ -312,7 +320,7 @@ export const router = createBrowserRouter([
                         fallback="/exhibition/register/basic"
                         complete="artist"
                       >
-                        <ArtistNameSetup />
+                        <DisplayRegisterArtistPage />
                       </GuardedFlowStep>
                     ),
                   },
@@ -335,6 +343,14 @@ export const router = createBrowserRouter([
                     element: (
                       <DisplayPermissionGuard action="edit">
                         <DisplayHubPage />
+                      </DisplayPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'created',
+                    element: (
+                      <DisplayPermissionGuard action="edit">
+                        <DisplayRegisterCompletePage />
                       </DisplayPermissionGuard>
                     ),
                   },
