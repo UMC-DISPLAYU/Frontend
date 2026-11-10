@@ -34,6 +34,11 @@ export const queryKeys = {
     search: (keyword?: string) => [...queryKeys.schools.all, 'search', keyword ?? ''] as const,
   },
 
+  address: {
+    all: ['address'] as const,
+    search: (query: string) => [...queryKeys.address.all, 'search', query] as const,
+  },
+
   health: {
     all: ['health'] as const,
   },
