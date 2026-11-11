@@ -1,5 +1,6 @@
-import { type KeyboardEvent, type RefObject, useLayoutEffect, useRef, useState } from 'react';
+import { type KeyboardEvent, type RefObject, useRef } from 'react';
 
+import { useTabIndicator } from '@/hooks/useTabIndicator';
 import { cn } from '@/utils/cn';
 
 type Props<T extends string> = {
@@ -27,29 +28,8 @@ export function DetailTabNav<T extends string>({
   sentinelRef,
   isStuck,
 }: Props<T>) {
-  const listRef = useRef<HTMLDivElement>(null);
+  const { listRef, indicator } = useTabIndicator<HTMLDivElement>(activeTab);
   const buttonRefs = useRef<Partial<Record<T, HTMLButtonElement | null>>>({});
-  const [indicator, setIndicator] = useState<{ x: number; width: number; animate: boolean }>();
-
-  // 밑줄 하나가 탭에서 탭으로 미끄러진다(프로토타입). 처음 자리를 잡을 때는 움직이지 않는다
-  useLayoutEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
-    const measure = () => {
-      const button = buttonRefs.current[activeTab];
-      if (!button) return;
-      setIndicator((prev) => ({
-        x: button.offsetLeft,
-        width: button.offsetWidth,
-        animate: prev !== undefined,
-      }));
-    };
-    measure();
-    // 글꼴이 늦게 들어와 탭 폭이 바뀌어도 맞춘다
-    const observer = new ResizeObserver(measure);
-    observer.observe(list);
-    return () => observer.disconnect();
-  }, [activeTab]);
 
   const moveFocus = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;

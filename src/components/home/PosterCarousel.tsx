@@ -14,7 +14,7 @@ const RAIL_CLASS =
   'relative flex items-start gap-3 overflow-x-auto overscroll-x-contain px-[calc(50%-var(--poster-w)/2)] pt-4 [scrollbar-width:none] tablet:gap-4 min-[68.75rem]:gap-6 [&::-webkit-scrollbar]:hidden';
 
 const ARROW_CLASS =
-  'absolute top-47.5 z-10 hidden size-11 cursor-pointer place-items-center rounded-circle border border-icon-secondary bg-primary-black text-quaternary transition duration-fast ease-standard hover:bg-interactive-primary focus-visible:outline-2 focus-visible:outline-focus-inverse active:scale-96 disabled:invisible min-[68.75rem]:grid';
+  'absolute top-47.5 z-10 hidden size-11 place-items-center rounded-circle border border-icon-secondary bg-primary-black text-quaternary transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-focus-inverse enabled:cursor-pointer enabled:hover:bg-interactive-primary enabled:active:scale-96 min-[68.75rem]:grid';
 
 interface PosterCarouselProps {
   items: HomeExhibitionCard[];
