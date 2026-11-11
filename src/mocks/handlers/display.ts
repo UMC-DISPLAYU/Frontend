@@ -68,6 +68,15 @@ const displayDetailResponse = (displayId: number) => {
   };
 };
 
+const MY_DISPLAY_PUBLISH_STATUSES = [
+  'PUBLISHED',
+  'DRAFT',
+  'PENDING_REVIEW',
+  'REJECTED',
+  'PUBLISHED',
+  'PUBLISHED',
+] as const;
+
 const myDisplayItem = (display: any) => ({
   displayId: display.displayId,
   title: display.title,
@@ -373,8 +382,21 @@ export const displayHandlers = [
   ...paths('/api/v1/display/me').map((path) =>
     http.get(path, () =>
       success('/api/v1/display/me', {
-        createdDisplays: listDisplays().slice(0, 3).map(myDisplayItem),
-        participatedDisplays: listDisplays().slice(3, 6).map(myDisplayItem),
+        // 실서버처럼 공개 여부와 대표자 여부를 담아, 내 전시 관리 카드의 상태를 모두 확인할 수 있게 한다
+        createdDisplays: listDisplays()
+          .slice(0, 3)
+          .map((display: any, index: number) => ({
+            ...myDisplayItem(display),
+            isLeader: true,
+            publishStatus: MY_DISPLAY_PUBLISH_STATUSES[index],
+          })),
+        participatedDisplays: listDisplays()
+          .slice(3, 6)
+          .map((display: any, index: number) => ({
+            ...myDisplayItem(display),
+            isLeader: false,
+            publishStatus: MY_DISPLAY_PUBLISH_STATUSES[index + 3],
+          })),
       }),
     ),
   ),
