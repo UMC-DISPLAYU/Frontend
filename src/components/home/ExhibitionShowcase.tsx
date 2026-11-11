@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import ChevronMapIcon from '@/assets/home/ChevronMapIcon.svg';
 import MapPinIcon from '@/assets/home/MapPinIcon.svg';
 import type { HomeExhibitionCard, HomeExhibitionTab } from '@/hooks/queries/useHome';
+import { useTabIndicator } from '@/hooks/useTabIndicator';
 import { cn } from '@/utils/cn';
 
 import { ExhibitionListView } from './ExhibitionListView';
@@ -36,6 +37,7 @@ export function ExhibitionShowcase({
   onRetry,
 }: ExhibitionShowcaseProps) {
   const tabId = useId();
+  const { listRef: tabListRef, indicator } = useTabIndicator<HTMLDivElement>(tab);
   const currentTab = HOME_TABS.find(({ key }) => key === tab) ?? HOME_TABS[0];
   const showRank = tab === 'pop';
   const isList = view === 'list';
@@ -105,9 +107,10 @@ export function ExhibitionShowcase({
       className="bg-primary-black pb-6.5 text-quaternary [--poster-w:232px] tablet:[--poster-w:264px] min-[68.75rem]:[--poster-w:320px]"
     >
       <div
+        ref={tabListRef}
         role="tablist"
         aria-label="전시 분류"
-        className="mx-auto flex max-w-[calc(1320px+var(--home-pad)*2)] justify-center-safe overflow-x-auto px-[calc(var(--home-pad)-12px)] pt-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="relative mx-auto flex max-w-[calc(1320px+var(--home-pad)*2)] justify-center-safe overflow-x-auto px-[calc(var(--home-pad)-12px)] pt-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {HOME_TABS.map(({ key, label }, index) => {
           const isSelected = key === tab;
@@ -123,16 +126,24 @@ export function ExhibitionShowcase({
               onClick={() => onTabChange(key)}
               onKeyDown={(event) => onTabKeyDown(event, index)}
               className={cn(
-                'typography-body-lg-semibold flex-none cursor-pointer border-b-2 px-3 py-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
-                isSelected
-                  ? 'border-interactive-inverse text-quaternary'
-                  : 'border-transparent text-tertiary',
+                'typography-body-lg-semibold flex-none cursor-pointer border-b-2 border-transparent px-3 py-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
+                isSelected ? 'text-quaternary' : 'text-tertiary',
               )}
             >
               {label}
             </button>
           );
         })}
+        {indicator && (
+          <span
+            aria-hidden
+            className={cn(
+              'absolute bottom-0 left-0 h-0.5 bg-interactive-inverse',
+              indicator.animate && 'transition-[translate,width] duration-base ease-standard',
+            )}
+            style={{ translate: `${indicator.x}px 0`, width: indicator.width }}
+          />
+        )}
       </div>
 
       <div id={`${tabId}-panel`} role="tabpanel" aria-labelledby={`${tabId}-${tab}`}>
