@@ -31,7 +31,9 @@ export function DisplayEditDraftGate({
   const [sessionId] = useState(() =>
     refreshOnEnter && navigationType === 'PUSH' ? `${Date.now()}-${Math.random()}` : null,
   );
-  const isReady = sessionId ? draft.editSessionId === sessionId : draft.editDisplayId === displayId;
+  // 주소의 전시 번호만 바뀌어 다시 마운트되지 않은 경우에도 다른 전시 값을 쓰지 않도록 id 를 함께 본다
+  const isReady =
+    draft.editDisplayId === displayId && (!sessionId || draft.editSessionId === sessionId);
 
   useEffect(() => {
     if (!detail || isReady || (sessionId && isFetching)) return;

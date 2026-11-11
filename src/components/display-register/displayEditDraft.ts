@@ -33,6 +33,11 @@ export function toFieldLabels(serverFields: string[]) {
   return [...new Set(labels)];
 }
 
+/** 화면 분야로 나타낼 수 없는 서버 값. 수정 화면에서 보이지 않아도 지워지지 않게 따로 둔다 */
+export function toHiddenServerFields(serverFields: string[]) {
+  return serverFields.filter((serverField) => toFieldLabels([serverField]).length === 0);
+}
+
 /** 전시 상세를 수정 화면에서 쓰는 draft 로 바꾼다 */
 export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
   const type = DISPLAY_TYPE_REVERSE_MAP[detail.displayType] ?? '';
@@ -51,6 +56,7 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
     type,
     field: toExhibitionFields(fieldLabels),
     fieldLabels,
+    hiddenServerFields: toHiddenServerFields(detail.displayFields ?? []),
     school: isOtherGroup ? '' : (detail.organization ?? ''),
     department: isOtherGroup ? '' : (detail.department ?? ''),
     organizer: isOtherGroup ? (detail.organization ?? '') : '',
@@ -72,7 +78,8 @@ export function buildUpdateDisplayRequest(
   draft: ExhibitionRegisterDraft,
 ): UpdateDisplayRequestDto | null {
   const type = DISPLAY_TYPE_MAP[draft.type];
-  const fields = toDisplayFields(draft);
+  const visibleFields = toDisplayFields(draft);
+  const fields = [...new Set([...visibleFields, ...draft.hiddenServerFields])];
   const { schoolOrOrganization, departmentOrClub } = toDisplayAffiliation(draft);
   const title = draft.title.trim();
   const placeName = draft.placeName.trim();
@@ -80,7 +87,7 @@ export function buildUpdateDisplayRequest(
   const hasRequired =
     draft.imageUrls[0] &&
     type &&
-    fields.length > 0 &&
+    visibleFields.length > 0 &&
     title &&
     schoolOrOrganization &&
     draft.startDate &&

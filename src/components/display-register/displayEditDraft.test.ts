@@ -50,6 +50,13 @@ describe('toFieldLabels', () => {
 });
 
 describe('toEditDraft', () => {
+  it('화면에 없는 분야는 따로 보존한다', () => {
+    expect(toEditDraft(DETAIL)).toMatchObject({
+      fieldLabels: ['그래픽', '영상'],
+      hiddenServerFields: ['FASHION'],
+    });
+  });
+
   it('전시 상세를 수정 화면 값으로 바꾼다', () => {
     expect(toEditDraft(DETAIL)).toMatchObject({
       editDisplayId: 7,
@@ -79,12 +86,12 @@ describe('toEditDraft', () => {
 });
 
 describe('buildUpdateDisplayRequest', () => {
-  it('수정 API 가 받는 항목만 담는다', () => {
+  it('수정 API 가 받는 항목만 담고, 화면에 없는 분야도 그대로 보낸다', () => {
     expect(buildUpdateDisplayRequest(toEditDraft(DETAIL))).toEqual({
       title: '졸업 전시',
       posterImageUrl: 'p0',
       type: 'GRADUATION',
-      fields: ['DESIGN', 'VIDEO'],
+      fields: ['DESIGN', 'VIDEO', 'FASHION'],
       schoolOrOrganization: '디유대학교',
       departmentOrClub: '시각디자인과',
       description: '소개',
