@@ -15,18 +15,12 @@ import { hasPermission } from '@/utils/hasPermission';
 import { type DisplayCardAction, DisplayCardMenu } from './DisplayCardMenu';
 import { formatDisplayPeriod } from './formatDisplayPeriod';
 
-const STATUS_TEXT_CLASS: Record<string, string> = {
-  '공개 중': 'text-success',
-  '전시 종료': 'text-tertiary',
-  '심사 중': 'text-info',
-  반려: 'text-error',
-};
-
-// displayStatus 는 날짜로만 계산되어 발행 전 전시도 '전시 중'으로 오므로 발행 상태를 먼저 본다
-const UNPUBLISHED_STATUS_LABEL: Partial<Record<DisplayPublishStatus, string>> = {
-  DRAFT: '준비 중',
-  PENDING_REVIEW: '심사 중',
-  REJECTED: '반려',
+// 전시 관리에서는 공개 여부만 보여주고, 기간에 따른 전시 예정 · 종료는 보여주지 않는다(PM 확인)
+const PUBLISH_STATUS: Record<DisplayPublishStatus, { label: string; className?: string }> = {
+  DRAFT: { label: '준비 중' },
+  PENDING_REVIEW: { label: '심사 중', className: 'text-info' },
+  REJECTED: { label: '반려', className: 'text-error' },
+  PUBLISHED: { label: '공개 중', className: 'text-success' },
 };
 
 export function DisplayManagementCard({
@@ -64,9 +58,8 @@ export function DisplayManagementCard({
 
   const isLeader = ex.isLeader ?? ex.isOwner ?? false;
   const role = isLeader ? '대표자' : '팀원';
-  const publishedLabel = ex.status === '전시 중' ? '공개 중' : ex.status;
-  const statusLabel =
-    (ex.publishStatus && UNPUBLISHED_STATUS_LABEL[ex.publishStatus]) ?? publishedLabel;
+  // 예전 응답처럼 publishStatus 가 없으면 공개된 전시로 본다
+  const status = PUBLISH_STATUS[ex.publishStatus ?? 'PUBLISHED'] ?? PUBLISH_STATUS.PUBLISHED;
 
   const actions: DisplayCardAction[] = [];
   if (canEditArtistName) {
@@ -97,17 +90,17 @@ export function DisplayManagementCard({
           <span
             className={cn(
               'typography-body-md-semibold flex shrink-0 items-center gap-1.5',
-              STATUS_TEXT_CLASS[statusLabel] ?? 'text-primary',
+              status.className ?? 'text-primary',
             )}
           >
             <span
               aria-hidden="true"
               className={cn(
                 'size-2 rounded-circle bg-current',
-                !STATUS_TEXT_CLASS[statusLabel] && 'text-icon-secondary',
+                !status.className && 'text-icon-secondary',
               )}
             />
-            {statusLabel}
+            {status.label}
           </span>
           <span className="typography-body-md-medium truncate text-secondary">
             · {role}

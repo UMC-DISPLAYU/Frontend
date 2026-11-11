@@ -66,7 +66,7 @@ it.each([
   ['DRAFT', '준비 중'],
   ['PENDING_REVIEW', '심사 중'],
   ['REJECTED', '반려'],
-] as const)('발행 상태가 %s이면 날짜 상태 대신 %s(으)로 표시한다', (publishStatus, label) => {
+] as const)('발행 상태가 %s이면 %s(으)로 표시한다', (publishStatus, label) => {
   const html = render({ ...display, publishStatus });
 
   expect(html).toContain(label);
@@ -80,10 +80,19 @@ it.each([
   expect(render({ ...display, publishStatus })).toContain(colorClass);
 });
 
-it('발행된 전시는 날짜 기준 상태를 표시한다', () => {
-  expect(render({ ...display, publishStatus: 'PUBLISHED' })).toContain('공개 중');
-  expect(render({ ...display, publishStatus: 'PUBLISHED', status: '전시 종료' })).toContain(
-    '전시 종료',
+it.each(['전시 예정', '전시 종료'])(
+  '공개된 전시는 기간이 %s여도 공개 중으로 표시한다',
+  (status) => {
+    const html = render({ ...display, publishStatus: 'PUBLISHED', status });
+
+    expect(html).toContain('공개 중');
+    expect(html).not.toContain(status);
+  },
+);
+
+it('발행 상태가 없으면 공개 중으로 표시한다', () => {
+  expect(render({ ...display, publishStatus: undefined, status: '전시 종료' })).toContain(
+    '공개 중',
   );
 });
 
