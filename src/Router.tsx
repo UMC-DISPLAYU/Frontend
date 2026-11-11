@@ -8,7 +8,6 @@ import { AuthGuard } from './components/guards/AuthGuard';
 import {
   ArtistPermissionGuard,
   ArtworkPermissionGuard,
-  DisplayArtistNamePermissionGuard,
   DisplayContentPermissionGuard,
   DisplayCreatePermissionGuard,
   DisplayInvitationPermissionGuard,
@@ -76,10 +75,6 @@ const DisplayManagementPage = lazyPage(
   () => import('./pages/DisplayManagementPage'),
   'DisplayManagementPage',
 );
-const ExhibitionRegister = lazyPage(
-  () => import('./pages/exhibition-register'),
-  'ExhibitionRegister',
-);
 const DisplayRegisterIntroPage = lazyPage(
   () => import('./pages/DisplayRegisterIntroPage'),
   'DisplayRegisterIntroPage',
@@ -96,11 +91,6 @@ const DisplayRegisterCompletePage = lazyPage(
   () => import('./pages/DisplayRegisterCompletePage'),
   'DisplayRegisterCompletePage',
 );
-const ExhibitionBasicInfo = lazyPage(
-  () => import('./pages/exhibition-register'),
-  'ExhibitionBasicInfo',
-);
-const ArtistNameSetup = lazyPage(() => import('./pages/exhibition-register'), 'ArtistNameSetup');
 const ExhibitionRegisterDraftRoute = lazyPage(
   () => import('./pages/exhibition-register/ExhibitionRegisterDraftRoute'),
   'ExhibitionRegisterDraftRoute',
@@ -375,7 +365,7 @@ export const router = createBrowserRouter([
                     element: (
                       <DisplayPermissionGuard action="edit">
                         <GuardedFlowStep required={[]} fallback="../edit" complete="edit-start">
-                          <ExhibitionRegister />
+                          <DisplayRegisterIntroPage />
                         </GuardedFlowStep>
                       </DisplayPermissionGuard>
                     ),
@@ -389,17 +379,9 @@ export const router = createBrowserRouter([
                           fallback="../edit"
                           complete="edit-basic"
                         >
-                          <ExhibitionBasicInfo />
+                          <DisplayRegisterBasicPage />
                         </GuardedFlowStep>
                       </DisplayPermissionGuard>
-                    ),
-                  },
-                  {
-                    path: 'edit/artist',
-                    element: (
-                      <DisplayArtistNamePermissionGuard action="edit">
-                        <ArtistNameSetup />
-                      </DisplayArtistNamePermissionGuard>
                     ),
                   },
                   {

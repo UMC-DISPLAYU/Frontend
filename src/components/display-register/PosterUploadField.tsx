@@ -77,11 +77,13 @@ function RetryButton({ label, onClick }: { label: string; onClick: () => void })
 function PosterThumb({
   item,
   index,
+  locked,
   onRemove,
   onAdjust,
 }: {
   item: PosterItem;
   index: number;
+  locked: boolean;
   onRemove: () => void;
   onAdjust: () => void;
 }) {
@@ -113,22 +115,24 @@ function PosterThumb({
           className={cn('size-full object-cover', isUploading && 'opacity-50')}
         />
       )}
-      <button
-        type="button"
-        aria-label={`포스터 ${index + 1} 삭제`}
-        onClick={onRemove}
-        className={cn('absolute top-0 right-0 flex size-11 justify-end p-1', FOCUS_CLASS)}
-      >
-        <span className="flex size-6 items-center justify-center rounded-12 bg-primary-white">
-          <img src={CloseIcon} alt="" className="size-4" />
-        </span>
-      </button>
+      {!locked && (
+        <button
+          type="button"
+          aria-label={`포스터 ${index + 1} 삭제`}
+          onClick={onRemove}
+          className={cn('absolute top-0 right-0 flex size-11 justify-end p-1', FOCUS_CLASS)}
+        >
+          <span className="flex size-6 items-center justify-center rounded-12 bg-primary-white">
+            <img src={CloseIcon} alt="" className="size-4" />
+          </span>
+        </button>
+      )}
       {isRepresentative && (
         <>
           <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1 left-1 rounded-4 bg-primary-black px-1.5 py-0.5 text-base-white">
             대표
           </span>
-          {!isUploading && (
+          {!isUploading && !locked && (
             <button
               type="button"
               aria-label="대표 포스터 카드에 보이는 부분 조정"
@@ -149,7 +153,13 @@ function PosterThumb({
   );
 }
 
-export function PosterUploadField({ posters }: { posters: PosterUploads }) {
+interface PosterUploadFieldProps {
+  posters: PosterUploads;
+  /** 수정 API 가 포스터 목록을 받지 않아, 수정 화면에서는 보기만 한다 */
+  locked?: boolean;
+}
+
+export function PosterUploadField({ posters, locked = false }: PosterUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [cropSession, setCropSession] = useState<{ item: PosterItem; key: number } | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
@@ -234,10 +244,14 @@ export function PosterUploadField({ posters }: { posters: PosterUploads }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {fileInput}
+      {!locked && fileInput}
       <div className="flex flex-col gap-1">
         <PosterLabel count={items.length} />
-        <PosterHelp />
+        {locked ? (
+          <p className="typography-body-md-medium text-secondary">포스터는 지금 수정할 수 없어요</p>
+        ) : (
+          <PosterHelp />
+        )}
       </div>
       {errorCopy && (
         <div role="alert" className="flex items-center gap-3 rounded-12 bg-error-subtle p-4">
@@ -249,7 +263,7 @@ export function PosterUploadField({ posters }: { posters: PosterUploads }) {
         </div>
       )}
       <div className="-mx-gutter flex scroll-px-gutter gap-2 overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {items.length < MAX_POSTER_UPLOAD_IMAGES && (
+        {!locked && items.length < MAX_POSTER_UPLOAD_IMAGES && (
           <button type="button" onClick={openPicker} className={cn(ADD_TILE_CLASS, 'h-26.25 w-21')}>
             <img src={PlusIcon} alt="" className="size-6" />
             <span className="typography-body-md-medium text-secondary">추가</span>
@@ -260,6 +274,7 @@ export function PosterUploadField({ posters }: { posters: PosterUploads }) {
             key={item.id}
             item={item}
             index={index}
+            locked={locked}
             onRemove={() => posters.remove(item.id)}
             onAdjust={() => openCrop(item)}
           />

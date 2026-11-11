@@ -1,5 +1,7 @@
 export { AddressSearchView } from './AddressSearchView';
 export { buildCreateDisplayRequest } from './createDisplayRequest';
+export { buildUpdateDisplayRequest, isEditDraftChanged, toEditDraft } from './displayEditDraft';
+export { DisplayEditDraftGate } from './DisplayEditDraftGate';
 export { DisplayFieldChips } from './DisplayFieldChips';
 export { DisplayLinkField } from './DisplayLinkField';
 export { parseInstagramId, parseWebsiteUrl } from './displayLinks';
