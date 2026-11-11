@@ -24,6 +24,8 @@ const toMonth = (isoDate: string | null) => {
 interface DisplayPeriodSheetProps {
   open: boolean;
   initialRange: DateRange;
+  /** 수정할 때는 이미 시작한 전시도 있어 지난 날짜를 고를 수 있게 한다 */
+  allowPast?: boolean;
   onClose: () => void;
   onConfirm: (range: { start: string; end: string }) => void;
 }
@@ -31,6 +33,7 @@ interface DisplayPeriodSheetProps {
 export function DisplayPeriodSheet({
   open,
   initialRange,
+  allowPast = false,
   onClose,
   onConfirm,
 }: DisplayPeriodSheetProps) {
@@ -38,7 +41,8 @@ export function DisplayPeriodSheet({
   const [view, setView] = useState(() => toMonth(initialRange.start));
   const today = toIsoDate(new Date());
   const todayMonth = toMonth(null);
-  const isFirstMonth = view.year === todayMonth.year && view.month === todayMonth.month;
+  const isFirstMonth =
+    !allowPast && view.year === todayMonth.year && view.month === todayMonth.month;
 
   const moveMonth = (delta: number) =>
     setView(({ year, month }) => toMonth(toIsoDate(new Date(year, month + delta, 1))));
@@ -133,7 +137,7 @@ export function DisplayPeriodSheet({
               <button
                 key={date}
                 type="button"
-                disabled={date < today}
+                disabled={!allowPast && date < today}
                 aria-pressed={isEdge}
                 aria-label={`${view.month + 1}월 ${day}일${date === range.start ? ', 시작일' : ''}${date === range.end ? ', 종료일' : ''}`}
                 onClick={() => setRange((prev) => pickRangeDate(prev, date))}

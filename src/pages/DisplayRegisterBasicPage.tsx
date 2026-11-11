@@ -2,12 +2,14 @@ import { useEffect, useId, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import type { AddressSearchResultDto } from '@/api/dto';
 import { BottomFixedBar } from '@/components/common';
 import {
   AddressSearchView,
+  buildUpdateDisplayRequest,
+  DisplayEditDraftGate,
   DisplayLinkField,
   DisplayPeriodSheet,
   DisplayPickerButton,
@@ -23,12 +25,17 @@ import {
 } from '@/components/display-register';
 import { PageContainer } from '@/components/layout';
 import type { ExhibitionRegisterDraft } from '@/contexts/exhibitionRegisterDraftState';
+import { useUpdateDisplay } from '@/hooks/queries/useDisplayBrowse';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
+import { toast } from '@/stores/toastStore';
+import { getErrorMessage } from '@/utils/error';
 
 const LABEL_CLASS = 'typography-body-lg-semibold text-primary';
 const HELP_CLASS = 'typography-body-md-medium text-secondary';
+// 수정 API 가 아직 주소 · 링크를 받지 않아 수정 화면에서는 잠근다
+const LOCKED_HELP = '지금은 수정할 수 없어요';
 const REQUIRED_MARK = (
   <span aria-hidden="true" className="typography-body-lg-semibold text-error">
     *
@@ -55,9 +62,12 @@ const toDraft = (values: Partial<DisplayRegisterBasicValues>): Partial<Exhibitio
   };
 };
 
-export function DisplayRegisterBasicPage() {
+function DisplayRegisterBasicForm() {
   const navigate = useNavigate();
   const flowBack = useFlowBack();
+  const editDisplayId = Number(useParams().displayId) || null;
+  const isEdit = editDisplayId !== null;
+  const updateDisplay = useUpdateDisplay(editDisplayId ?? undefined);
   const periodLabelId = useId();
   const timeLabelId = useId();
   const addressLabelId = useId();
@@ -143,10 +153,41 @@ export function DisplayRegisterBasicPage() {
     requestAddressClose();
   };
 
+  const saveEdit = (nextDraft: ExhibitionRegisterDraft) => {
+    const request = buildUpdateDisplayRequest(nextDraft);
+
+    if (!request) {
+      toast('입력하지 않은 항목이 있어요. 1/2 화면을 확인해주세요');
+      return;
+    }
+
+    updateDisplay.mutate(request, {
+      onSuccess: () => {
+        toast('전시 정보를 수정했어요');
+        // 수정 1/2 · 2/2 기록을 지나 들어오기 전 화면(전시 관리)으로 돌아간다
+        const historyIndex = window.history.state?.idx;
+        if (typeof historyIndex === 'number' && historyIndex >= 2) {
+          navigate(-2);
+          return;
+        }
+        navigate(`/exhibition/${editDisplayId}/manage`, { replace: true });
+      },
+      onError: (error) => {
+        toast(getErrorMessage(error, '전시 정보를 수정하지 못했어요. 다시 시도해주세요'));
+      },
+    });
+  };
+
   const onSubmit = (data: DisplayRegisterBasicValues) => {
     const basicStep = toDraft(data);
 
     updateDraft(basicStep);
+
+    if (isEdit) {
+      saveEdit({ ...draft, ...basicStep });
+      return;
+    }
+
     navigate('/exhibition/register/artist', { state: { ...draft, ...basicStep } });
   };
 
@@ -248,9 +289,12 @@ export function DisplayRegisterBasicPage() {
               placeholder="주소 검색"
               value={values.address ?? ''}
               icon="search"
+              disabled={isEdit}
               onClick={openAddress}
             />
-            <p className={HELP_CLASS}>검색 결과에서 전시 장소의 주소를 선택해주세요</p>
+            <p className={HELP_CLASS}>
+              {isEdit ? LOCKED_HELP : '검색 결과에서 전시 장소의 주소를 선택해주세요'}
+            </p>
           </div>
 
           <Controller
@@ -267,6 +311,8 @@ export function DisplayRegisterBasicPage() {
                   instagram.status === 'valid' ? `instagram.com/${instagram.value} 로 연결돼요` : ''
                 }
                 errorMessage="아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)"
+                lockedHelp={LOCKED_HELP}
+                disabled={isEdit}
                 name={field.name}
                 value={field.value}
                 onChange={field.onChange}
@@ -294,6 +340,8 @@ export function DisplayRegisterBasicPage() {
                   website.status === 'valid' ? `${website.href.replace(/\/$/, '')} 로 연결돼요` : ''
                 }
                 errorMessage="주소 형식을 확인해 주세요 (예: displayu.kr)"
+                lockedHelp={LOCKED_HELP}
+                disabled={isEdit}
                 name={field.name}
                 value={field.value}
                 onChange={field.onChange}
@@ -312,10 +360,10 @@ export function DisplayRegisterBasicPage() {
           <button
             form="display-register-basic-form"
             type="submit"
-            disabled={!isValid}
+            disabled={!isValid || updateDisplay.isPending}
             className="typography-body-lg-semibold h-11 w-full rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-disable disabled:text-disable disabled:active:scale-100"
           >
-            다음
+            {isEdit ? (updateDisplay.isPending ? '저장하는 중…' : '수정 완료') : '다음'}
           </button>
         </BottomFixedBar>
       )}
@@ -326,6 +374,7 @@ export function DisplayRegisterBasicPage() {
             key={`period-${sheet.key}`}
             open={isSheetOpen && sheet.kind === 'period'}
             initialRange={{ start: values.startDate || null, end: values.endDate || null }}
+            allowPast={isEdit}
             onClose={() => setIsSheetOpen(false)}
             onConfirm={({ start, end }) => {
               setValue('startDate', start, { shouldValidate: true, shouldDirty: true });
@@ -348,5 +397,18 @@ export function DisplayRegisterBasicPage() {
         </>
       )}
     </PageContainer>
+  );
+}
+
+/** 수정(/exhibition/:displayId/edit…)이면 전시 상세를 draft 에 채운 뒤 같은 폼을 그린다 */
+export function DisplayRegisterBasicPage() {
+  const isEdit = Boolean(useParams().displayId);
+
+  if (!isEdit) return <DisplayRegisterBasicForm />;
+
+  return (
+    <DisplayEditDraftGate>
+      <DisplayRegisterBasicForm />
+    </DisplayEditDraftGate>
   );
 }

@@ -13,6 +13,22 @@ export function toDisplayRegion(address: string): CreateDisplayRequestDto['regio
   return 'OTHERS';
 }
 
+export const toDisplayFields = (draft: ExhibitionRegisterDraft) => [
+  ...new Set(draft.field.map((field) => DISPLAY_FIELD_MAP[field] ?? field)),
+];
+
+/** 기타 단체 전시는 단체명만, 그 외는 학교 + 학과. 학교가 없으면 학과를 소속으로 쓴다 */
+export function toDisplayAffiliation(draft: ExhibitionRegisterDraft) {
+  const department = draft.department.trim();
+
+  if (draft.type === OTHER_GROUP_DISPLAY_TYPE) {
+    return { schoolOrOrganization: draft.organizer.trim(), departmentOrClub: '' };
+  }
+
+  const school = draft.school.trim();
+  return { schoolOrOrganization: school || department, departmentOrClub: school ? department : '' };
+}
+
 /** 1/2 · 2/2 에서 모은 draft 로 전시 생성 요청을 만든다. 필수값이 빠졌으면 null */
 export function buildCreateDisplayRequest(
   draft: ExhibitionRegisterDraft,
@@ -20,12 +36,8 @@ export function buildCreateDisplayRequest(
 ): CreateDisplayRequestDto | null {
   const [posterImageUrl, ...extraPosters] = draft.imageUrls;
   const type = DISPLAY_TYPE_MAP[draft.type];
-  const fields = [...new Set(draft.field.map((field) => DISPLAY_FIELD_MAP[field] ?? field))];
-  const isOtherGroup = draft.type === OTHER_GROUP_DISPLAY_TYPE;
-  const department = draft.department.trim();
-  const schoolOrOrganization = isOtherGroup
-    ? draft.organizer.trim()
-    : draft.school.trim() || department;
+  const fields = toDisplayFields(draft);
+  const { schoolOrOrganization, departmentOrClub } = toDisplayAffiliation(draft);
   const nickname = displayNickname.trim();
 
   const hasRequired =
@@ -47,7 +59,6 @@ export function buildCreateDisplayRequest(
   if (!hasRequired) return null;
 
   const description = draft.intro.trim();
-  const departmentOrClub = isOtherGroup || !draft.school.trim() ? '' : department;
 
   return {
     title: draft.title.trim(),

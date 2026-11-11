@@ -2,23 +2,27 @@ import { useEffect, useId, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { BottomFixedBar, ConfirmDialog } from '@/components/common';
 import {
+  DisplayEditDraftGate,
   DisplayFieldChips,
   DisplayRegisterHeader,
   displayRegisterIntroSchema,
   type DisplayRegisterIntroValues,
   DisplayRegisterProgress,
   DisplayTypeSelect,
+  isEditDraftChanged,
   MAX_DISPLAY_FIELDS,
   OTHER_GROUP_DISPLAY_TYPE,
   PosterUploadField,
+  toEditDraft,
   toExhibitionFields,
   usePosterUploads,
 } from '@/components/display-register';
 import { PageContainer } from '@/components/layout';
+import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useExhibitionRegisterDraft } from '@/hooks/useExhibitionRegisterDraft';
 import { useFlowBack } from '@/hooks/useFlowBack';
@@ -31,16 +35,22 @@ const REQUIRED_MARK = (
   </span>
 );
 
-export function DisplayRegisterIntroPage() {
+function DisplayRegisterIntroForm() {
   const navigate = useNavigate();
   const flowBack = useFlowBack();
   const typeLabelId = useId();
   const fieldLabelId = useId();
   const affiliationLabelId = useId();
+  const editDisplayId = Number(useParams().displayId) || null;
+  const isEdit = editDisplayId !== null;
 
   const { draft, updateDraft } = useExhibitionRegisterDraft();
-  const { data: artistProfile, isPending: isProfilePending } = useMyArtistProfile();
-  const schoolName = artistProfile?.schoolName ?? '';
+  const { data: artistProfile, isPending: isProfilePending } = useMyArtistProfile({
+    enabled: !isEdit,
+  });
+  const { data: editDetail } = useDisplayDetail(editDisplayId ?? 0);
+  // 수정할 때는 전시에 저장된 소속을, 등록할 때는 인증된 학교를 보여준다
+  const schoolName = isEdit ? draft.school : (artistProfile?.schoolName ?? '');
   const posters = usePosterUploads({
     initialUrls: draft.imageUrls,
     initialCrop: draft.posterCrop,
@@ -66,20 +76,33 @@ export function DisplayRegisterIntroPage() {
 
   const values = useWatch({ control });
   const isOtherGroup = values.type === OTHER_GROUP_DISPLAY_TYPE;
-  const hasInput = Boolean(
-    posters.items.length ||
-    values.title ||
-    values.intro ||
-    values.type ||
-    values.fieldLabels?.length ||
-    values.department,
-  );
+  const hasInput = isEdit
+    ? Boolean(
+        editDetail &&
+        isEditDraftChanged(toEditDraft(editDetail), {
+          ...draft,
+          title: values.title ?? '',
+          intro: values.intro ?? '',
+          type: values.type ?? '',
+          fieldLabels: values.fieldLabels ?? [],
+          department: isOtherGroup ? '' : (values.department ?? ''),
+          organizer: isOtherGroup ? (values.department ?? '') : '',
+        }),
+      )
+    : Boolean(
+        posters.items.length ||
+        values.title ||
+        values.intro ||
+        values.type ||
+        values.fieldLabels?.length ||
+        values.department,
+      );
   // 학교명은 프로필에서 채우므로, 조회가 끝나기 전에 넘어가면 소속이 학교 없이 저장된다
   const canSubmit =
     isValid &&
     posters.uploadedUrls.length > 0 &&
     !posters.isUploading &&
-    !(isProfilePending && !isOtherGroup);
+    !(!isEdit && isProfilePending && !isOtherGroup);
 
   useEffect(() => {
     if (!hasInput) return;
@@ -108,7 +131,7 @@ export function DisplayRegisterIntroPage() {
       return;
     }
 
-    navigate('/my', { replace: true });
+    navigate(isEdit ? `/exhibition/${editDisplayId}/manage` : '/my', { replace: true });
   };
 
   const onSubmit = (data: DisplayRegisterIntroValues) => {
@@ -127,7 +150,9 @@ export function DisplayRegisterIntroPage() {
     };
 
     updateDraft(introStep);
-    navigate('/exhibition/register/basic', { state: introStep });
+    navigate(isEdit ? `/exhibition/${editDisplayId}/edit/basic` : '/exhibition/register/basic', {
+      state: introStep,
+    });
   };
 
   return (
@@ -141,7 +166,7 @@ export function DisplayRegisterIntroPage() {
           className="flex flex-col gap-6 pb-6"
         >
           <DisplayRegisterProgress step={1} label="01 전시 소개" />
-          <PosterUploadField posters={posters} />
+          <PosterUploadField posters={posters} locked={isEdit} />
 
           <div className="group flex flex-col gap-1">
             <label htmlFor="display-title" className="flex items-center gap-1">
@@ -266,13 +291,26 @@ export function DisplayRegisterIntroPage() {
 
       <ConfirmDialog
         open={isLeaveOpen}
-        title="전시 등록을 나갈까요?"
-        description="입력한 내용은 저장되지 않아요"
+        title={isEdit ? '전시 정보 수정을 나갈까요?' : '전시 등록을 나갈까요?'}
+        description={isEdit ? '수정한 내용은 저장되지 않아요' : '입력한 내용은 저장되지 않아요'}
         confirmLabel="나가기"
-        cancelLabel="계속 작성"
+        cancelLabel={isEdit ? '계속 수정' : '계속 작성'}
         onCancel={() => setIsLeaveOpen(false)}
         onConfirm={handleLeave}
       />
     </PageContainer>
+  );
+}
+
+/** 수정(/exhibition/:displayId/edit…)이면 전시 상세를 draft 에 채운 뒤 같은 폼을 그린다 */
+export function DisplayRegisterIntroPage() {
+  const isEdit = Boolean(useParams().displayId);
+
+  if (!isEdit) return <DisplayRegisterIntroForm />;
+
+  return (
+    <DisplayEditDraftGate refreshOnEnter>
+      <DisplayRegisterIntroForm />
+    </DisplayEditDraftGate>
   );
 }

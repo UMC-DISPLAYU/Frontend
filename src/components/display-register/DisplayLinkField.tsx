@@ -10,6 +10,8 @@ interface DisplayLinkFieldProps extends Omit<InputHTMLAttributes<HTMLInputElemen
   idleHelp: string;
   validHelp: string;
   errorMessage: string;
+  /** disabled 일 때 보여줄 안내 */
+  lockedHelp?: string;
 }
 
 export function DisplayLinkField({
@@ -18,12 +20,20 @@ export function DisplayLinkField({
   idleHelp,
   validHelp,
   errorMessage,
+  lockedHelp,
   ...inputProps
 }: DisplayLinkFieldProps) {
   const inputId = useId();
   const helpId = useId();
-  const isInvalid = parsed.status === 'invalid';
-  const help = parsed.status === 'valid' ? validHelp : isInvalid ? errorMessage : idleHelp;
+  const isLocked = Boolean(inputProps.disabled);
+  const isInvalid = !isLocked && parsed.status === 'invalid';
+  const help = isLocked
+    ? (lockedHelp ?? idleHelp)
+    : parsed.status === 'valid'
+      ? validHelp
+      : isInvalid
+        ? errorMessage
+        : idleHelp;
 
   return (
     <div className="flex flex-col gap-1">
@@ -45,7 +55,7 @@ export function DisplayLinkField({
           spellCheck={false}
           aria-invalid={isInvalid}
           aria-describedby={helpId}
-          className="typography-body-xl-regular w-full bg-transparent text-primary outline-none placeholder:text-tertiary"
+          className="typography-body-xl-regular w-full bg-transparent text-primary outline-none placeholder:text-tertiary disabled:text-secondary"
           {...inputProps}
         />
       </div>

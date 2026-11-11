@@ -12,6 +12,7 @@ interface DisplayPickerButtonProps {
   value: string;
   icon?: 'selector' | 'search';
   haspopup?: 'dialog';
+  disabled?: boolean;
   onClick: () => void;
 }
 
@@ -22,6 +23,7 @@ export function DisplayPickerButton({
   value,
   icon = 'selector',
   haspopup,
+  disabled = false,
   onClick,
 }: DisplayPickerButtonProps) {
   const valueId = useId();
@@ -31,15 +33,16 @@ export function DisplayPickerButton({
       id={id}
       type="button"
       aria-haspopup={haspopup}
+      disabled={disabled}
       aria-labelledby={`${labelId} ${valueId}`}
       onClick={onClick}
-      className="flex w-full min-w-0 items-center gap-2 border-b border-primary py-3 text-left transition duration-fast ease-standard hover:border-interactive-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      className="flex w-full min-w-0 items-center gap-2 border-b border-primary py-3 text-left transition duration-fast ease-standard enabled:hover:border-interactive-primary disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
       <span
         id={valueId}
         className={cn(
           'typography-body-xl-regular min-w-0 flex-1 truncate',
-          value ? 'text-primary' : 'text-tertiary',
+          value ? (disabled ? 'text-secondary' : 'text-primary') : 'text-tertiary',
         )}
       >
         {value ? (
@@ -51,7 +54,11 @@ export function DisplayPickerButton({
           placeholder
         )}
       </span>
-      <img src={icon === 'search' ? SearchIcon : SelectorIcon} alt="" className="size-6 shrink-0" />
+      <img
+        src={icon === 'search' ? SearchIcon : SelectorIcon}
+        alt=""
+        className={cn('size-6 shrink-0', disabled && 'opacity-40')}
+      />
     </button>
   );
 }
