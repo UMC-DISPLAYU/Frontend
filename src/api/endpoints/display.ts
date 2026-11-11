@@ -1,4 +1,5 @@
 import type {
+  CancelDisplayScreeningResponseDataDto,
   CreateDisplayInvitationLinkResponseDataDto,
   CreateDisplayRequestDto,
   CreateDisplayResponseDataDto,
@@ -112,10 +113,12 @@ export const publishDisplay = async (displayId: number): Promise<DisplayDetailDt
 export const hideDisplay = async (displayId: number): Promise<DisplayDetailDto> =>
   apiRequest(`/v1/display/${displayId}/draft`, { method: 'PATCH' });
 
-// PATCH /v1/display/{displayId}/review/cancel
-// 백엔드 API가 아직 없어 호출하면 실패한다. 경로는 임시이며 API가 나오면 맞춘다.
-export const cancelDisplayReview = async (displayId: number): Promise<DisplayDetailDto> =>
-  apiRequest(`/v1/display/${displayId}/review/cancel`, { method: 'PATCH' });
+// POST /v1/display/{displayId}/screenings/{screeningId}/cancel
+export const cancelDisplayScreening = async (
+  displayId: number,
+  screeningId: number,
+): Promise<CancelDisplayScreeningResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/screenings/${screeningId}/cancel`, { method: 'POST' });
 
 // GET /v1/display/{displayId}/rejection-reason
 export const getDisplayRejectionReason = async (

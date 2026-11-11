@@ -16,7 +16,7 @@ import { PageContainer } from '@/components/layout';
 import { Skeleton } from '@/components/ui';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import {
-  useCancelDisplayReview,
+  useCancelDisplayScreening,
   useHideDisplay,
   usePublishDisplay,
 } from '@/hooks/queries/useDisplayBrowse';
@@ -75,7 +75,7 @@ export function DisplayHubPage() {
   const publish = usePublishDisplay();
   const hide = useHideDisplay();
   const reservation = useUpdateDisplayReservation(displayId);
-  const cancelReview = useCancelDisplayReview();
+  const cancelReview = useCancelDisplayScreening();
   const [openDialog, setOpenDialog] = useState<HubDialog | null>(null);
 
   const closePublishDialog = () => {
@@ -97,12 +97,23 @@ export function DisplayHubPage() {
   };
 
   const confirmCancelReview = () => {
-    cancelReview.mutate(displayId, {
-      onSuccess: () => {
-        setOpenDialog(null);
-        toast('등록 요청을 취소했어요');
+    const screeningId = display?.currentScreeningId;
+    if (screeningId == null) {
+      // 심사 중으로 보이지만 심사 ID가 없으면 화면 정보가 오래된 것이라 다시 불러온다.
+      setOpenDialog(null);
+      toast('전시 상태가 바뀌었어요. 다시 확인해주세요.');
+      void refetch();
+      return;
+    }
+    cancelReview.mutate(
+      { displayId, screeningId },
+      {
+        onSuccess: () => {
+          setOpenDialog(null);
+          toast('등록 요청을 취소했어요');
+        },
       },
-    });
+    );
   };
 
   const confirmPublish = () => {

@@ -2,7 +2,7 @@
 import { http } from 'msw';
 
 import { mockDb, okStatus } from '@/mocks/data/repository';
-import { created, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const now = () => new Date().toISOString();
 
@@ -14,6 +14,8 @@ const listDisplays = () =>
       display.posterImages?.[0]?.imageUrl ??
       display.images?.[0]?.imageUrl,
   }));
+
+let nextScreeningId = 1;
 
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
@@ -30,6 +32,8 @@ const displayDetailResponse = (displayId: number) => {
     ownerUserId: display.ownerUserId ?? mockDb.me.userId,
     isLiked: display.isLiked ?? false,
     likeCount: display.likeCount ?? 0,
+    currentScreeningId:
+      display.status === 'PENDING_REVIEW' ? (display.currentScreeningId ?? null) : null,
     invitationToken: display.invitationToken ?? null,
     invitationDisabledAt: display.invitationDisabledAt ?? null,
     teamMembers: display.teamMembers ?? [],
@@ -192,7 +196,9 @@ export const displayHandlers = [
     http.patch(path, async ({ request }) => {
       const body = await readJson<{ displayId?: number }>(request);
       const displayId = body.displayId ?? 101;
-      findDisplay(displayId).status = 'PENDING_REVIEW';
+      const display = findDisplay(displayId);
+      display.status = 'PENDING_REVIEW';
+      display.currentScreeningId = nextScreeningId++;
 
       return success('/api/v1/display/publish', displayDetailResponse(displayId));
     }),
@@ -203,6 +209,32 @@ export const displayHandlers = [
       findDisplay(displayId).status = 'DRAFT';
 
       return success('/api/v1/display/{displayId}/draft', displayDetailResponse(displayId));
+    }),
+  ),
+  ...paths('/api/v1/display/{displayId}/screenings/{screeningId}/cancel').map((path) =>
+    http.post(path, ({ params }) => {
+      const displayId = toNumber(params.displayId, 101);
+      const screeningId = toNumber(params.screeningId, 0);
+      const display = findDisplay(displayId);
+
+      if (display.status !== 'PENDING_REVIEW' || display.currentScreeningId !== screeningId) {
+        return fail(
+          '/api/v1/display/{displayId}/screenings/{screeningId}/cancel',
+          409,
+          'DISPLAY_SCREENING_NOT_PENDING',
+          '이미 처리된 심사 요청이에요.',
+        );
+      }
+
+      display.status = 'DRAFT';
+      display.currentScreeningId = null;
+
+      return success('/api/v1/display/{displayId}/screenings/{screeningId}/cancel', {
+        displayId,
+        screeningId,
+        status: 'DRAFT',
+        screeningStatus: 'CANCELLED',
+      });
     }),
   ),
   ...paths('/api/v1/display/{displayId}/rejection-reason').map((path) =>

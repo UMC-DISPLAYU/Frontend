@@ -110,6 +110,13 @@ export type GetDisplayMapResponseDto = ApiResponseDto<GetDisplayMapResponseDataD
  */
 export type DisplayContentOpenType = 'IMMEDIATELY' | 'ON_EXHIBITION';
 
+export interface CancelDisplayScreeningResponseDataDto {
+  displayId: number;
+  screeningId: number;
+  status: string;
+  screeningStatus: string;
+}
+
 export interface DisplayRejectionReasonResponseDataDto {
   displayId: number;
   publishStatus: 'REJECTED';
@@ -138,6 +145,8 @@ export interface DisplayDetailDto {
   exhibitionContentOpen: DisplayContentOpenType;
   /* 공개 여부(PUBLISHED · DRAFT). 전시 예정 · 중 · 종료는 period 로 계산한다 */
   status: string;
+  /* 현재 심사 요청 ID. 심사 중이 아니면 null이고, 심사 요청 취소 API의 screeningId로 쓴다 */
+  currentScreeningId: number | null;
   invitationToken: string | null;
   invitationDisabledAt: string | null;
   images: DisplayImageDto[];

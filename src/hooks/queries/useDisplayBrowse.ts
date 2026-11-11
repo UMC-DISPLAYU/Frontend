@@ -7,7 +7,7 @@ import type {
   UpdateDisplayRequestDto,
 } from '@/api/dto';
 import {
-  cancelDisplayReview,
+  cancelDisplayScreening,
   createDisplay,
   getDisplayMap,
   hideDisplay,
@@ -86,13 +86,15 @@ export const useHideDisplay = () => {
   });
 };
 
-// PATCH /v1/display/{displayId}/review/cancel: 등록 요청 취소
-export const useCancelDisplayReview = () => {
+// POST /v1/display/{displayId}/screenings/{screeningId}/cancel: 등록(심사) 요청 취소
+export const useCancelDisplayScreening = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (displayId: number) => cancelDisplayReview(displayId),
-    onSuccess: (_, displayId) => {
+    mutationFn: ({ displayId, screeningId }: { displayId: number; screeningId: number }) =>
+      cancelDisplayScreening(displayId, screeningId),
+    // 409(이미 승인·반려·취소됨)여도 화면 상태가 서버와 어긋난 것이므로 실패 시에도 다시 불러온다.
+    onSettled: (_, __, { displayId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
     },
