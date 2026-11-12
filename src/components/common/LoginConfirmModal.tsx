@@ -31,15 +31,25 @@ export function LoginConfirmModal({
       title="로그인이 필요해요"
       size="sm"
       showCloseButton={false}
+      footer={
+        // 터치 영역(44px)은 유지하고, 보이는 글자 위아래 간격은 Figma(버튼과 20px, 시트 하단 16px)에 맞춘다
+        <button
+          type="button"
+          onClick={onClose}
+          className="typography-body-md-medium mx-auto -my-3.5 flex min-h-11 cursor-pointer items-center px-2 text-tertiary underline underline-offset-3 focus-visible:outline-2 focus-visible:outline-focus"
+        >
+          비회원으로 계속 둘러보기
+        </button>
+      }
     >
-      <div className="flex flex-col gap-2 pt-1">
+      <div className="flex flex-col gap-4 pt-1">
         <button
           type="button"
           disabled={isPending}
           onClick={() => onLogin('kakao')}
           className={cn(SOCIAL_BUTTON, 'bg-kakao text-kakao hover:brightness-[.97]')}
         >
-          <img src={kakaoIcon} alt="" aria-hidden="true" className="absolute left-4.5 size-5" />
+          <img src={kakaoIcon} alt="" aria-hidden="true" className="absolute left-4.5 size-4.5" />
           카카오로 시작하기
         </button>
         <button
@@ -61,14 +71,6 @@ export function LoginConfirmModal({
           {error}
         </p>
       )}
-
-      <button
-        type="button"
-        onClick={onClose}
-        className="typography-body-md-medium mx-auto mt-1.5 flex min-h-11 cursor-pointer items-center px-2 text-tertiary underline underline-offset-3 focus-visible:outline-2 focus-visible:outline-focus"
-      >
-        비회원으로 계속 둘러보기
-      </button>
     </Overlay>
   );
 }
