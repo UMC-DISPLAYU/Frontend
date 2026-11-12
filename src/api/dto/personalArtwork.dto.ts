@@ -1,15 +1,17 @@
-import type { ApiResponseDto, ImageRequestDto, ImageResponseDto } from './common.dto';
+import type { ApiResponseDto, ImageResponseDto } from './common.dto';
+import type { ArtworkImageRequestDto, ArtworkTypeDto } from './displayArtwork.dto';
 
 export interface PersonalArtworkRequestDto {
   artworkName: string;
   content?: string;
-  type: string;
-  types?: string[];
+  type?: ArtworkTypeDto;
+  /* 서버가 최대 2개까지 받는다 */
+  types?: ArtworkTypeDto[];
   productionYear: number;
   materialMedia: string;
   size?: string;
   point?: string;
-  images: ImageRequestDto[];
+  images: ArtworkImageRequestDto[];
 }
 
 export interface PersonalArtworkResponseDataDto {
