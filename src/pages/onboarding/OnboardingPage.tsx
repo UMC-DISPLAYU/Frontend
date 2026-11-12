@@ -958,7 +958,7 @@ export function OnboardingPage() {
         <TermsScreen
           terms={terms}
           onChange={setTerms}
-          onBack={() => navigate('/login')}
+          onBack={() => navigate('/home', { replace: true })}
           onOpenDetail={(code) => {
             setSelectedPolicy(code);
             setStep('termsDetail');

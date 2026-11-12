@@ -32,6 +32,8 @@
   --text-color-bg-primary-white: var(--semantic-color-bg-primary-white);
   /* 냅바 비선택 아이콘 hover 색. 프로토타입이 primitive color/zinc/400을 직접 쓴다 */
   --text-color-zinc-400: var(--primitive-color-zinc-400);
+  /* 카카오 로그인 버튼 글씨. 피그마 kakao/text 변수 값을 그대로 옮겼다 */
+  --text-color-kakao: rgb(0 0 0 / 0.85);
 
   /* Background */
   --background-color-primary-white: var(--semantic-color-bg-primary-white);
@@ -55,6 +57,8 @@
   --background-color-base-black: var(--primitive-color-base-black);
   /* 피그마가 냅바 선택 알약 바탕에 시멘틱이 아닌 color/zinc/800을 직접 쓴다 */
   --background-color-zinc-800: var(--primitive-color-zinc-800);
+  /* 카카오 로그인 버튼. 피그마 kakao/bg 변수 값을 그대로 옮겼다(브랜드 색이라 primitive 를 거치지 않는다) */
+  --background-color-kakao: #fee500;
 
   /* Icon */
   --text-color-icon-primary: var(--semantic-color-icon-primary);

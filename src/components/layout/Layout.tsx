@@ -17,8 +17,8 @@ export function Layout() {
   const isKeyboardOpen = useIsKeyboardOpen();
 
   // 로그인 후 복귀 경로가 있는 경우 이동 처리
-  // ⚠️ 앱 전역 동작이지만 RootLayout 으로 옮기지 않는다. 옮기면 Layout 밖인 로그인 화면(legacy)에서도
-  // 실행돼 로그인 흐름이 비정상 작동할 수 있다. 로그인 화면을 새로 만들 때 함께 옮긴다.
+  // ⚠️ RootLayout 으로 옮기지 않는다. Layout 밖인 온보딩은 가입 직후 토큰이 생겨도 완료 화면을 보여줘야 하고,
+  // 완료 화면에서 홈으로 넘어와 Layout 이 그려질 때 복귀한다.
   useRedirectAfterLogin();
 
   // 하단 네비게이션 바(Navbar) 표시 여부 (홈, 검색, 마이)

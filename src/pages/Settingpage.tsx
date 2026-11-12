@@ -30,7 +30,7 @@ export function SettingPage() {
       {},
       {
         onSettled: () => {
-          navigate('/login', { replace: true });
+          navigate('/home', { replace: true });
         },
       },
     );

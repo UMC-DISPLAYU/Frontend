@@ -5,8 +5,6 @@ import { ApiError } from '@/api/apiError';
 import { getDisplayInvitationByToken } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 import { ErrorView } from '@/components/common/ErrorView';
-import { useReserveRedirectAfterLogin } from '@/hooks/usePendingRedirect';
-import { useAuthStore } from '@/stores/authStore';
 import { getErrorMessage } from '@/utils/error';
 
 /* 초대 링크로 들어온 전시를 목록에서 찾을 수 있도록 displayId를 붙입니다. */
@@ -16,11 +14,10 @@ const toInvitationListPath = (displayId?: number) =>
 /*
  * 백엔드가 발급하는 초대 URL(/display/invitation/{token})의 착지 지점입니다.
  * 토큰으로 전시를 확인한 뒤 받은 초대 목록 화면으로 넘깁니다.
- * 비로그인 상태면 로그인 후 돌아올 수 있도록 복귀 경로를 남겨둡니다.
+ * 초대 목록은 보호 화면이라, 비로그인이면 AuthGuard가 그 위에 로그인 모달을 띄우고 로그인 후 돌아옵니다.
  */
 export function DisplayInvitationLinkPage() {
   const { token = '' } = useParams();
-  const accessToken = useAuthStore((state) => state.accessToken);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.displayInvitations.byToken(token),
@@ -30,9 +27,6 @@ export function DisplayInvitationLinkPage() {
   });
 
   const invitationListPath = toInvitationListPath(data?.displayId);
-
-  //복귀 경로 예약
-  useReserveRedirectAfterLogin(data ? invitationListPath : null);
 
   if (!token) return <Navigate to="/invitation-request" replace />;
 
@@ -76,9 +70,6 @@ export function DisplayInvitationLinkPage() {
       </div>
     );
   }
-
-  // 로그인해야 받은 초대 목록을 조회할 수 있습니다.
-  if (!accessToken) return <Navigate to="/login" replace />;
 
   return <Navigate to={invitationListPath} replace />;
 }

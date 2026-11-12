@@ -5,8 +5,13 @@
  */
 const PENDING_REDIRECT_KEY = 'pending-redirect';
 
+/* 외부 URL로 보내지 않도록 같은 사이트 경로(`/...`)만 허용합니다. `//host`, `/\host`는 브라우저가 외부 주소로 해석합니다. */
+export function isInternalPath(path: string): boolean {
+  return path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\');
+}
+
 export function savePendingRedirect(path: string) {
-  if (!path) return;
+  if (!isInternalPath(path)) return;
 
   sessionStorage.setItem(PENDING_REDIRECT_KEY, path);
 }
@@ -23,5 +28,5 @@ export function consumePendingRedirect(): string | null {
 
   clearPendingRedirect();
 
-  return path;
+  return isInternalPath(path) ? path : null;
 }
