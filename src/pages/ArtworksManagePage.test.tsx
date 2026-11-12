@@ -3,6 +3,7 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 import { beforeEach, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/api/apiError';
+import { ArtworkAuthorChoiceSheet } from '@/components/artwork-register';
 import { ManageScreen, OrderScreen } from '@/components/artworks-manage';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
 import { Overlay } from '@/components/ui';
@@ -24,7 +25,6 @@ const h = vi.hoisted(() => ({
   order: { mutate: vi.fn(), reset: vi.fn(), isPending: false, error: null as Error | null },
   remove: { mutate: vi.fn(), reset: vi.fn(), isPending: false, error: null as Error | null },
   navigate: vi.fn(),
-  startFlow: vi.fn(),
 }));
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
@@ -45,6 +45,15 @@ vi.mock('react-router-dom', () => ({
   useParams: () => ({ displayId: '7' }),
   useSearchParams: () => [new URLSearchParams(h.search)],
 }));
+vi.mock('@/components/artwork-register', async () => ({
+  ...(await vi.importActual<typeof import('@/components/artwork-register/proxyAuthor')>(
+    '@/components/artwork-register/proxyAuthor',
+  )),
+  ...(await vi.importActual<typeof import('@/components/artwork-register/artworkTeam')>(
+    '@/components/artwork-register/artworkTeam',
+  )),
+  ArtworkAuthorChoiceSheet: () => null,
+}));
 vi.mock('@/components/artworks-manage', () => ({
   ManageScreen: () => null,
   OrderScreen: () => null,
@@ -56,15 +65,22 @@ vi.mock('@/components/ui', () => ({
   Skeleton: () => null,
   SkeletonList: () => null,
 }));
-vi.mock('@/components/guards/useFlowContext', () => ({
-  useFlowContext: () => ({ startFlow: h.startFlow }),
-}));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
 vi.mock('@/hooks/queries/useUserProfile', () => ({
   useUserMe: () => ({ data: { id: h.userId, isVerified: true } }),
 }));
 vi.mock('@/hooks/queries/useDisplayDetail', () => ({
   useDisplayDetail: () => ({ data: { displayId: 7, ownerUserId: 1 } }),
+}));
+vi.mock('@/hooks/queries/useDisplayMembers', () => ({
+  useDisplayMembers: () => ({
+    data: {
+      members: [
+        { userId: 1, displayNickname: '대표', role: 'LEADER', accepted: true },
+        { userId: 3, displayNickname: '김서윤', role: 'TEAM_MEM', accepted: true },
+      ],
+    },
+  }),
 }));
 vi.mock('@/hooks/queries/useDisplayArtworks', () => ({
   useDisplayArtworks: () => ({ data: { artworks: h.artworks } }),
@@ -173,14 +189,34 @@ it('삭제 실패는 확인창을 유지하고 중복 요청을 막으며 성공
   expect(get(Overlay).props.open).toBe(false);
 });
 
-it.each([
-  [1, '/exhibition/7/artworks/add'],
-  [2, '/exhibition/7/artworks/add/basic'],
-] as const)('사용자 %i의 기존 등록 분기와 플로우 시작을 유지한다', (userId, destination) => {
-  h.userId = userId;
+it('팀원이 작품 추가를 누르면 바로 작품 등록으로 이동한다', () => {
+  h.userId = 2;
   call(get(ManageScreen), 'onAdd');
-  expect(h.startFlow).toHaveBeenCalledWith('artwork-register', 4);
-  expect(h.navigate).toHaveBeenCalledWith(destination);
+  expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/artworks/new');
+  expect(get(ArtworkAuthorChoiceSheet).props.open).toBe(false);
+});
+
+it('대표자는 누구의 작품인지 고른 뒤 작품 등록으로 이동한다', () => {
+  call(get(ManageScreen), 'onAdd');
+  expect(h.navigate).not.toHaveBeenCalled();
+
+  const sheet = get(ArtworkAuthorChoiceSheet);
+  expect(sheet.props.open).toBe(true);
+  expect(sheet.props.candidates).toEqual([
+    { userId: 3, name: '김서윤', caption: '팀원', disabled: false },
+  ]);
+
+  (sheet.props.onSelectMine as () => void)();
+  expect(h.navigate).toHaveBeenLastCalledWith('/exhibition/7/artworks/new', { replace: true });
+  (sheet.props.onSelectMember as (userId: number) => void)(3);
+  expect(h.navigate).toHaveBeenLastCalledWith('/exhibition/7/artworks/new?as=member&userId=3', {
+    replace: true,
+  });
+  (sheet.props.onSelectName as (name: string) => void)('김하늘');
+  expect(h.navigate).toHaveBeenLastCalledWith(
+    `/exhibition/7/artworks/new?as=name&name=${encodeURIComponent('김하늘')}`,
+    { replace: true },
+  );
 });
 
 it('메인 탭에서 순서 편집을 누르면 저장 뒤로가기가 있는 별도 화면으로 이동한다', () => {

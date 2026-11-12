@@ -139,7 +139,7 @@ export function MyPageHeader({
             {canCreatePersonalArtwork && (
               <button
                 type="button"
-                onClick={() => navigate('/personal-artworks/register')}
+                onClick={() => navigate('/personal-artworks/new')}
                 className="flex-1 h-11 bg-box200 rounded-xl flex justify-center items-center"
               >
                 <span className="typo-body-sm-regular text-main">작품등록</span>

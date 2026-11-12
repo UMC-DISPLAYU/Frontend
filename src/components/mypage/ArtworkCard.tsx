@@ -57,7 +57,7 @@ export function ArtworkCard({
 
   const handleEdit = () => {
     if (item.personalArtworkId) {
-      navigate(`/personal-artworks/register?id=${item.personalArtworkId}`);
+      navigate(`/personal-artworks/${item.personalArtworkId}/edit`);
     }
   };
 

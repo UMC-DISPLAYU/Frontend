@@ -2,10 +2,15 @@ import { useMemo, useState } from 'react';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import {
+  ArtworkAuthorChoiceSheet,
+  buildArtworkRegisterPath,
+  type ProxyAuthor,
+  toTeamCandidates,
+} from '@/components/artwork-register';
 import { ManageScreen, OrderScreen } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
-import { useFlowContext } from '@/components/guards/useFlowContext';
 import { Overlay, Skeleton, SkeletonList } from '@/components/ui';
 import {
   useDeleteArtwork,
@@ -13,6 +18,7 @@ import {
   useUpdateArtworkOrder,
 } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
@@ -23,7 +29,6 @@ import { hasPermission } from '@/utils/hasPermission';
 export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const flowBack = useFlowBack();
-  const { startFlow } = useFlowContext();
   const { displayId: paramDisplayId } = useParams();
   const [searchParams] = useSearchParams();
   const { data: userMe } = useUserMe();
@@ -36,6 +41,7 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const [deleting, setDeleting] = useState<Work | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [orderedWorks, setOrderedWorks] = useState<Work[] | null>(null);
+  const [authorChoice, setAuthorChoice] = useState({ open: false, key: 0 });
 
   const { data, isPending, isError, refetch } = useDisplayArtworks(displayId);
   const {
@@ -49,6 +55,16 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const canReorder = hasPermission(artworkPolicy, 'reorder');
   const isOrderScreen = screen === 'order' && canReorder;
   const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
+  // 대신 등록 시트의 팀원 목록. 대표자만 시트를 열기 때문에 대표자일 때만 불러온다
+  const { data: memberList } = useDisplayMembers(isOwner ? displayId : 0);
+  const proxyCandidates = useMemo(
+    () =>
+      toTeamCandidates(memberList?.members, {
+        ownerUserId: display?.ownerUserId,
+        excludeUserIds: [userId],
+      }),
+    [display?.ownerUserId, memberList, userId],
+  );
 
   const fetchedWorks = useMemo<Work[]>(
     () =>
@@ -97,10 +113,19 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
 
   const handleOrderDone = () => saveOrder(() => setScreen('manage'));
 
+  // 프로토타입: 팀원은 바로 작품 등록, 대표자는 먼저 누구의 작품인지 고른다
   const handleAddArtwork = () => {
-    startFlow('artwork-register', window.history.state?.idx ?? null);
-    navigate(`/exhibition/${displayId}/artworks/add${isOwner ? '' : '/basic'}`);
+    if (!isOwner) {
+      navigate(buildArtworkRegisterPath(displayId));
+      return;
+    }
+
+    setAuthorChoice((prev) => ({ open: true, key: prev.key + 1 }));
   };
+
+  // 시트가 쌓은 기록을 대체해야 등록 화면에서 뒤로가기로 이 목록에 돌아온다
+  const openRegister = (proxy?: ProxyAuthor) =>
+    navigate(buildArtworkRegisterPath(displayId, proxy), { replace: true });
 
   if (!embedded && displayPending) return <LoadingView message="전시 정보를 불러오는 중..." />;
   if (!embedded && (displayError || !display))
@@ -160,6 +185,15 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
           />
         </>
       )}
+      <ArtworkAuthorChoiceSheet
+        key={authorChoice.key}
+        open={authorChoice.open}
+        candidates={proxyCandidates}
+        onClose={() => setAuthorChoice((prev) => ({ ...prev, open: false }))}
+        onSelectMine={() => openRegister()}
+        onSelectMember={(memberUserId) => openRegister({ kind: 'member', userId: memberUserId })}
+        onSelectName={(name) => openRegister({ kind: 'name', name })}
+      />
       <Overlay
         open={confirming}
         onClose={() => setConfirming(false)}
