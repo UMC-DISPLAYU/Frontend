@@ -53,16 +53,18 @@ const DisplayContentsPage = lazyPage(
   () => import('./pages/display-detail/DisplayContentsPage'),
   'DisplayContentsPage',
 );
-const LoungePage = lazyPage(() => import('./pages/LoungePage'), 'LoungePage');
+// 라운지는 당분간 노출하지 않는다 (#442)
+// const LoungePage = lazyPage(() => import('./pages/LoungePage'), 'LoungePage');
 const PersonalArtworkDetailPage = lazyPage(
   () => import('./pages/PersonalArtworkDetailPage'),
   'PersonalArtworkDetailPage',
 );
-const LoungeBoardPage = lazyPage(() => import('./pages/LoungeBoardPage'), 'LoungeBoardPage');
-const LoungeBoardDetailPage = lazyPage(
-  () => import('./pages/LoungeBoardDetailPage'),
-  'LoungeBoardDetailPage',
-);
+// 라운지는 당분간 노출하지 않는다 (#442)
+// const LoungeBoardPage = lazyPage(() => import('./pages/LoungeBoardPage'), 'LoungeBoardPage');
+// const LoungeBoardDetailPage = lazyPage(
+//   () => import('./pages/LoungeBoardDetailPage'),
+//   'LoungeBoardDetailPage',
+// );
 const PolicyPage = lazyPage(() => import('./pages/PolicyPage'), 'PolicyPage');
 const ForbiddenPage = lazyPage(() => import('./pages/ForbiddenPage'), 'ForbiddenPage');
 const MyPage = lazyPage(() => import('./pages/MyPage'), 'MyPage');
@@ -100,10 +102,11 @@ const DisplayHubRequestedPage = lazyPage(
   () => import('./pages/DisplayHubRequestedPage'),
   'DisplayHubRequestedPage',
 );
-const ExhibitionReviewWritePage = lazyPage(
-  () => import('./pages/ExhibitionReviewWritePage'),
-  'ExhibitionReviewWritePage',
-);
+// 라운지는 당분간 노출하지 않는다 (#442)
+// const ExhibitionReviewWritePage = lazyPage(
+//   () => import('./pages/ExhibitionReviewWritePage'),
+//   'ExhibitionReviewWritePage',
+// );
 const ExhibitionWorkPage = lazyPage(
   () => import('./pages/ExhibitionWorkPage'),
   'ExhibitionWorkPage',
@@ -141,7 +144,8 @@ const InvitationRequestPage = lazyPage(
   'InvitationRequestPage',
 );
 const MyReviewPage = lazyPage(() => import('./pages/MyReviewPage'), 'MyReviewPage');
-const MyActivityPage = lazyPage(() => import('./pages/MyActivityPage'), 'MyActivityPage');
+// 라운지는 당분간 노출하지 않는다 (#442)
+// const MyActivityPage = lazyPage(() => import('./pages/MyActivityPage'), 'MyActivityPage');
 const NewOnboardingPage = lazyPage(() => import('./pages/onboarding'), 'NewOnboardingPage');
 const DisplayInvitationLinkPage = lazyPage(
   () => import('./pages/DisplayInvitationLinkPage'),
@@ -231,7 +235,8 @@ export const router = createBrowserRouter([
             errorElement: <NotFound />,
             element: <DisplayContentsPage />,
           },
-          { path: 'lounge', element: <LoungePage /> },
+          // 라운지는 당분간 노출하지 않는다 (#442)
+          // { path: 'lounge', element: <LoungePage /> },
           /* 개인 작품 상세는 비회원도 열람할 수 있습니다. */
           {
             path: 'personal-artworks/:personalArtworkId',
@@ -239,14 +244,15 @@ export const router = createBrowserRouter([
             errorElement: <NotFound />,
             element: <PersonalArtworkDetailPage />,
           },
-          { path: 'lounge/:category', element: <LoungeBoardPage /> },
-          {
-            path: 'lounge/:category/:id',
-            loader: validateNumericId('id'),
-            errorElement: <NotFound />,
-            element: <LoungeBoardDetailPage />,
-            handle: { hideNavbar: true },
-          },
+          // 라운지는 당분간 노출하지 않는다 (#442)
+          // { path: 'lounge/:category', element: <LoungeBoardPage /> },
+          // {
+          //   path: 'lounge/:category/:id',
+          //   loader: validateNumericId('id'),
+          //   errorElement: <NotFound />,
+          //   element: <LoungeBoardDetailPage />,
+          //   handle: { hideNavbar: true },
+          // },
           { path: 'policy', element: <PolicyPage /> },
           { path: '403', element: <ForbiddenPage /> },
 
@@ -518,13 +524,14 @@ export const router = createBrowserRouter([
               { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
               { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },
               { path: 'my-review', element: <MyReviewPage /> },
-              { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },
-              { path: 'lounge/my-activity', element: <MyActivityPage /> },
-              {
-                path: 'lounge/:category/:id/edit',
-                element: <ExhibitionReviewWritePage />,
-                handle: { hideNavbar: true },
-              },
+              // 라운지는 당분간 노출하지 않는다 (#442)
+              // { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },
+              // { path: 'lounge/my-activity', element: <MyActivityPage /> },
+              // {
+              //   path: 'lounge/:category/:id/edit',
+              //   element: <ExhibitionReviewWritePage />,
+              //   handle: { hideNavbar: true },
+              // },
             ],
           },
         ],
