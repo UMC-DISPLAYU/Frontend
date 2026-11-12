@@ -5,8 +5,8 @@ import closeIcon from '@/assets/comment/CloseIcon.svg';
 import imageIcon from '@/assets/comment/ImageIcon.svg';
 import pencilIcon from '@/assets/comment/PencilIcon.svg';
 import { DrawingModal } from '@/components/common/DrawingModal';
-import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useBottomObstruction, useIsKeyboardOpen } from '@/hooks/useVirtualKeyboard';
 import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
@@ -56,7 +56,7 @@ export function BottomCommentBar({
   className = '',
 }: Props) {
   const accessToken = useAuthStore((state) => state.accessToken);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -106,7 +106,7 @@ export function BottomCommentBar({
 
   const submit = async () => {
     if (!accessToken) {
-      setIsLoginModalOpen(true);
+      openLoginModal();
       return;
     }
 
@@ -150,7 +150,7 @@ export function BottomCommentBar({
   /* 그림은 글·사진과 섞지 않고 단독으로 바로 올립니다. */
   const handleDrawingSubmit = async (file: File, dimensions: { width: number; height: number }) => {
     if (!accessToken) {
-      setIsLoginModalOpen(true);
+      openLoginModal();
       return;
     }
 
@@ -182,7 +182,7 @@ export function BottomCommentBar({
 
   const handlePickPhoto = () => {
     if (!accessToken) {
-      setIsLoginModalOpen(true);
+      openLoginModal();
       return;
     }
     fileInputRef.current?.click();
@@ -190,7 +190,7 @@ export function BottomCommentBar({
 
   const handleOpenDrawing = () => {
     if (!accessToken) {
-      setIsLoginModalOpen(true);
+      openLoginModal();
       return;
     }
     setIsDrawingOpen(true);
@@ -211,7 +211,7 @@ export function BottomCommentBar({
           className,
         )}
       >
-        <LoginConfirmModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+        {loginModal}
         <div
           className={cn(
             'pt-4',
@@ -270,7 +270,7 @@ export function BottomCommentBar({
                 onFocus={(event) => {
                   if (!accessToken) {
                     event.target.blur();
-                    setIsLoginModalOpen(true);
+                    openLoginModal();
                     onCancelReply?.();
                   }
                 }}

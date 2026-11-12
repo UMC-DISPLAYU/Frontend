@@ -49,7 +49,6 @@ vi.mock('@/hooks/queries/useDisplayDetail', () => ({ useDisplayDetail: () => h.q
 vi.mock('@/hooks/queries/useDisplayBrowse', () => ({ useInfiniteSearchDisplays: () => h.query }));
 vi.mock('@/hooks/useInfiniteScroll', () => ({ useInfiniteScroll: h.scroll }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.back }));
-vi.mock('@/hooks/usePendingRedirect', () => ({ useReserveRedirectAfterLogin: vi.fn() }));
 vi.mock('@/stores/authStore', () => ({ useAuthStore: () => h.token }));
 vi.mock('@/components/common', async () => ({
   ErrorView: (await import('@/components/common/ErrorView')).ErrorView,
@@ -169,10 +168,10 @@ it.each(['INVALID_DISPLAY_INVITATION_TOKEN', 'DISPLAY_INVITATION_DISABLED'])(
   },
 );
 
-it('정상 초대 조회 후 비로그인은 로그인, 로그인 사용자는 초대 목록으로 이동한다', () => {
+it('정상 초대 조회 후 로그인 여부와 상관없이 초대 목록으로 이동한다(비로그인은 AuthGuard가 로그인 모달을 띄운다)', () => {
   h.query.data = { displayId: 7 };
   h.token = null;
-  expect(DisplayInvitationLinkPage().props.to).toBe('/login');
+  expect(DisplayInvitationLinkPage().props.to).toBe('/invitation-request?displayId=7');
   h.token = 'token';
   expect(DisplayInvitationLinkPage().props.to).toBe('/invitation-request?displayId=7');
 });

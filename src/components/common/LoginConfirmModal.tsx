@@ -1,75 +1,76 @@
-import { createPortal } from 'react-dom';
-
-import { useNavigate } from 'react-router-dom';
-
+import googleIcon from '@/assets/onboarding/googleIcon.svg';
+import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
+import { Overlay } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
+type LoginProvider = 'kakao' | 'google';
+
 type LoginConfirmModalProps = {
-  isOpen: boolean;
+  open: boolean;
+  /** 비회원으로 계속 둘러보기 · 배경 탭 · ESC · 뒤로가기 */
   onClose: () => void;
-  onConfirm?: () => void;
-  redirectPath?: string;
-  className?: string;
+  onLogin: (provider: LoginProvider) => void;
+  isPending?: boolean;
+  error?: string;
 };
 
+const SOCIAL_BUTTON =
+  'relative flex h-13.5 w-full cursor-pointer items-center justify-center rounded-12 typography-body-xl-semibold transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable';
+
 export function LoginConfirmModal({
-  isOpen,
+  open,
   onClose,
-  onConfirm,
-  redirectPath,
-  className,
+  onLogin,
+  isPending = false,
+  error,
 }: LoginConfirmModalProps) {
-  const navigate = useNavigate();
-
-  if (!isOpen) return null;
-
-  const handleConfirm = () => {
-    if (onConfirm) {
-      onConfirm();
-    } else {
-      onClose();
-      navigate('/login', {
-        state: redirectPath ? { from: { pathname: redirectPath } } : undefined,
-      });
-    }
-  };
-
-  const modalContent = (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-5 animate-fade-in">
-      <div
-        className={cn(
-          'relative flex h-48 w-80 flex-col justify-between overflow-hidden rounded-[20px] bg-white/70 p-6 backdrop-blur-md',
-          'shadow-[2px_8px_18px_0px_rgba(4,0,250,0.06),inset_-3px_-3px_3px_-2px_rgba(241,241,241,0.60),inset_4px_4px_3px_-2px_rgba(255,255,255,1.00)]',
-          className,
-        )}
-      >
-        <div className="flex flex-col items-start justify-start pl-1 pt-1 gap-2">
-          <h3 className="typo-heading-xl text-modal-title">Display U</h3>
-          <p className="typo-body-md-regular text-modal-desc whitespace-pre-line">
-            로그인 후 이용할 수 있습니다.{'\n'}로그인 페이지로 이동하시겠습니까?
-          </p>
-        </div>
-
-        <div className="flex w-full items-center justify-start gap-2.5">
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="flex h-11 w-44 items-center justify-center gap-2.5 rounded-[100px] bg-modal-btn-hover-bg pt-3.5 pb-3.5 text-lg font-normal text-modal-btn-hover-fg transition-transform cursor-pointer active:scale-[0.98]"
-          >
-            확인
-          </button>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-11 w-44 items-center justify-center gap-2.5 rounded-[100px] bg-modal-btn-bg pt-3.5 pb-3.5 text-lg font-normal text-modal-btn-fg transition-transform cursor-pointer active:scale-[0.98]"
-          >
-            취소
-          </button>
-        </div>
+  return (
+    <Overlay
+      open={open}
+      onClose={onClose}
+      title="로그인이 필요해요"
+      size="sm"
+      showCloseButton={false}
+      footer={
+        // 터치 영역(44px)은 유지하고, 보이는 글자 위아래 간격은 Figma(버튼과 20px, 시트 하단 16px)에 맞춘다
+        <button
+          type="button"
+          onClick={onClose}
+          className="typography-body-md-medium mx-auto -my-3.5 flex min-h-11 cursor-pointer items-center px-2 text-tertiary underline underline-offset-3 focus-visible:outline-2 focus-visible:outline-focus"
+        >
+          비회원으로 계속 둘러보기
+        </button>
+      }
+    >
+      <div className="flex flex-col gap-4 pt-1">
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => onLogin('kakao')}
+          className={cn(SOCIAL_BUTTON, 'bg-kakao text-kakao hover:brightness-[.97]')}
+        >
+          <img src={kakaoIcon} alt="" aria-hidden="true" className="absolute left-4.5 size-4.5" />
+          카카오로 시작하기
+        </button>
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => onLogin('google')}
+          className={cn(
+            SOCIAL_BUTTON,
+            'border border-primary bg-primary-white text-primary hover:bg-secondary',
+          )}
+        >
+          <img src={googleIcon} alt="" aria-hidden="true" className="absolute left-4.5 size-5" />
+          Google로 시작하기
+        </button>
       </div>
-    </div>
-  );
 
-  return createPortal(modalContent, document.body);
+      {error && (
+        <p role="alert" className="typography-body-md-medium mt-3 text-center text-error">
+          {error}
+        </p>
+      )}
+    </Overlay>
+  );
 }

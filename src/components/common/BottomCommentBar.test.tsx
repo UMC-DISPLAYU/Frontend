@@ -36,7 +36,9 @@ vi.mock('react', async (original) => ({
   },
 }));
 vi.mock('@/stores/authStore', () => ({ useAuthStore: () => 'token' }));
-vi.mock('./LoginConfirmModal', () => ({ LoginConfirmModal: () => null }));
+vi.mock('@/hooks/usePermissionRequiredModal', () => ({
+  useLoginRequiredModal: () => ({ loginModal: null, openLoginModal: vi.fn() }),
+}));
 vi.mock('@/utils/image', () => ({ readImageDimensions: async () => ({ width: 10, height: 20 }) }));
 vi.mock('@/hooks/useVirtualKeyboard', () => ({
   useBottomObstruction: () => 0,

@@ -143,7 +143,6 @@ const InvitationRequestPage = lazyPage(
 const MyReviewPage = lazyPage(() => import('./pages/MyReviewPage'), 'MyReviewPage');
 const MyActivityPage = lazyPage(() => import('./pages/MyActivityPage'), 'MyActivityPage');
 const NewOnboardingPage = lazyPage(() => import('./pages/onboarding'), 'NewOnboardingPage');
-const LoginPage = lazyPage(() => import('./pages/LoginPage'), 'LoginPage');
 const DisplayInvitationLinkPage = lazyPage(
   () => import('./pages/DisplayInvitationLinkPage'),
   'DisplayInvitationLinkPage',
@@ -535,11 +534,6 @@ export const router = createBrowserRouter([
       {
         path: '/map',
         element: <MapPage />,
-      },
-
-      {
-        path: '/login',
-        element: <LoginPage />,
       },
 
       {

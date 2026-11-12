@@ -99,9 +99,9 @@ describe('토큰 갱신 요청 공유', () => {
         expect(replace).not.toHaveBeenCalled();
       } else {
         expect(auth.clearAccessToken).toHaveBeenCalledTimes(1);
-        expect(setItem).toHaveBeenCalledWith('pending-redirect', '/private?tab=1');
-        expect(replace).toHaveBeenCalledOnce();
-        expect(replace).toHaveBeenCalledWith('/login');
+        // 로그인 페이지가 없으므로 이동하지 않고, 보호 화면이면 AuthGuard가 로그인 모달을 띄운다
+        expect(setItem).not.toHaveBeenCalled();
+        expect(replace).not.toHaveBeenCalled();
       }
     },
   );

@@ -48,7 +48,7 @@ export function NewOnboardingPage() {
           <TermsAgreementScreen
             terms={terms}
             onChange={setTerms}
-            onBack={() => navigate('/login')}
+            onBack={() => navigate('/home')}
             onOpenDetail={(term) => goTo({ step: 'termDetail', term })}
             onNext={() => goTo({ step: 'nickname' })}
           />

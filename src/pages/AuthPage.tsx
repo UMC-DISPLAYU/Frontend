@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { ErrorView, LoadingView, LoginConfirmModal } from '@/components/common';
+import { ErrorView, LoadingView } from '@/components/common';
 import { ArtworkCard, AuthPageHeader, ExhibitionCard } from '@/components/mypage';
 import { FALLBACK_PROFILE_IMAGE } from '@/constants';
 import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
@@ -14,6 +14,7 @@ import {
 import { useArtistExhibitionArtworks, useUserArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useArtistDisplays } from '@/hooks/queries/useMyDisplays';
 import { useUserArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useShare } from '@/hooks/useShare';
 import { useAuthStore } from '@/stores/authStore';
 import type { ArtistProfile, SavedArtworkItem, TabKey } from '@/types/mypage';
@@ -26,7 +27,7 @@ export function AuthPage() {
   const userId = Number(userIdParam);
 
   const [activeTab, setActiveTab] = useState<TabKey>('exhibition');
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { loginModal, openLoginModal } = useLoginRequiredModal();
 
   const accessToken = useAuthStore((state) => state.accessToken);
   const { handleShare } = useShare();
@@ -107,7 +108,7 @@ export function AuthPage() {
 
   const handleToggleSave = () => {
     if (!accessToken) {
-      setIsLoginModalOpen(true);
+      openLoginModal();
       return;
     }
     if (isSavePending || !Number.isFinite(userId)) return;
@@ -136,11 +137,7 @@ export function AuthPage() {
 
   return (
     <div className="w-96 mx-auto h-dvh bg-box100 flex flex-col">
-      <LoginConfirmModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        redirectPath={`/artist/${userId}`}
-      />
+      {loginModal}
 
       <AuthPageHeader
         activeTab={activeTab}

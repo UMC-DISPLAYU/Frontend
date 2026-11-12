@@ -2,7 +2,6 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 import type { ApiResponseDto } from '@/api/dto';
 import { useAuthStore } from '@/stores/authStore';
-import { savePendingRedirect } from '@/utils/pendingRedirect';
 
 import { ApiError, SessionChangedError } from './apiError';
 
@@ -84,11 +83,8 @@ axiosInstance.interceptors.response.use(
           })
           .catch((refreshError) => {
             if (useAuthStore.getState().sessionVersion !== sessionVersion) throw refreshError;
+            // 로그인 페이지로 보내지 않는다. 보호 화면이면 AuthGuard가 그 자리에 로그인 모달을 띄운다
             useAuthStore.getState().clearAccessToken();
-            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-              savePendingRedirect(window.location.pathname + window.location.search);
-              window.location.replace('/login');
-            }
             throw refreshError;
           })
           .finally(() => {

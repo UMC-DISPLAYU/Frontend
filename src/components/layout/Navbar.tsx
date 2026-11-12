@@ -1,8 +1,6 @@
-import { useState } from 'react';
-
 import { Link, matchPath, useLocation } from 'react-router-dom';
 
-import { LoginConfirmModal } from '@/components/common/LoginConfirmModal';
+import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 
@@ -47,7 +45,7 @@ const SLIDE = 'transition-transform duration-base ease-emphasized will-change-tr
 export function Navbar() {
   const { pathname } = useLocation();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { loginModal, openLoginModal } = useLoginRequiredModal('/my');
 
   const activeIndex = NAV_ITEMS.findIndex(({ end, path }) => matchPath({ end, path }, pathname));
 
@@ -57,11 +55,7 @@ export function Navbar() {
       aria-label="하단 메뉴"
       className="pointer-events-none fixed inset-x-0 bottom-safe-area-bottom z-50 flex justify-center [view-transition-name:navbar]"
     >
-      <LoginConfirmModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        redirectPath="/my"
-      />
+      {loginModal}
       <div className="pointer-events-auto relative flex h-14 w-56.5 items-center rounded-circle border border-secondary bg-primary-black p-1">
         {/* 선택 알약 하나를 옮긴다. 안의 채움 아이콘 줄은 반대로 같이 움직여 제자리에 머물고,
             알약이 지나가는 자리에서만 보여 선 → 채움 아이콘이 위치에 따라 바뀐다 */}
@@ -107,7 +101,7 @@ export function Navbar() {
               onClick={(e) => {
                 if (path === '/my' && !accessToken) {
                   e.preventDefault();
-                  setIsLoginModalOpen(true);
+                  openLoginModal();
                 }
               }}
             >
