@@ -68,6 +68,7 @@ vi.mock('@/components/explore', async () => ({
   ExploreFilterMenu: () => null,
   ExploreSearchBar: () => null,
   ExploreViewToggle: () => null,
+  useSearchResultCount: () => null,
 }));
 vi.mock('@/components/layout', () => ({
   PageContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,

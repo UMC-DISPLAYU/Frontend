@@ -12,3 +12,4 @@ export {
 export { ExploreSearchBar } from './ExploreSearchBar';
 export { ExploreViewToggle } from './ExploreViewToggle';
 export { useExploreFilters } from './useExploreFilters';
+export { useSearchResultCount } from './useSearchResultCount';

@@ -11,6 +11,7 @@ import {
   STATUS_OPTIONS,
   TYPE_OPTIONS,
   useExploreFilters,
+  useSearchResultCount,
 } from '@/components/explore';
 import { PageContainer } from '@/components/layout';
 import { SkeletonList } from '@/components/ui';
@@ -52,6 +53,7 @@ export function ExplorePage() {
     isFetchNextPageError,
     isFetchingNextPage,
     isPending,
+    isPlaceholderData,
     refetch,
   } = useInfiniteSearchDisplays({
     searchWord: searchWord || null,
@@ -63,6 +65,16 @@ export function ExplorePage() {
 
   const pages = data?.pages ?? [];
   const hasExhibitions = pages.some((page) => page.exhibitions.length > 0);
+
+  const resultCount = useSearchResultCount({
+    active: isExhibitionView && searchWord.length > 0,
+    pageItemCounts: pages.map((page) => page.exhibitions.length),
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+    isPlaceholderData,
+    fetchNextPage,
+  });
 
   const triggerRef = useInfiniteScroll({
     hasNextPage: isExhibitionView && hasNextPage && !isError,
@@ -167,6 +179,9 @@ export function ExplorePage() {
         </div>
 
         <div className="mt-4 flex h-6 items-center">
+          <p aria-live="polite" className="typography-body-lg-semibold text-primary tabular-nums">
+            {resultCount === null ? '' : `전시 ${resultCount}개`}
+          </p>
           <ExploreFilterMenu
             label="정렬"
             onSelect={(option) => selectOption('sort', option)}
