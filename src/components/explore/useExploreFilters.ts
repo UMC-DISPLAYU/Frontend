@@ -1,4 +1,6 @@
-import { useSearchParams } from 'react-router-dom';
+import { useCallback } from 'react';
+
+import { useReplaceSearchParams } from '@/hooks/useReplaceSearchParams';
 
 import {
   type ExploreOption,
@@ -10,9 +12,9 @@ import {
   TYPE_OPTIONS,
 } from './exploreOptions';
 
-type FilterKey = 'field' | 'type' | 'status' | 'sort';
+export type ExploreFilterKey = 'field' | 'type' | 'status' | 'sort';
 
-const OPTIONS_BY_KEY: Record<FilterKey, readonly ExploreOption[]> = {
+const OPTIONS_BY_KEY: Record<ExploreFilterKey, readonly ExploreOption[]> = {
   field: FIELD_OPTIONS,
   type: TYPE_OPTIONS,
   status: STATUS_OPTIONS,
@@ -20,30 +22,43 @@ const OPTIONS_BY_KEY: Record<FilterKey, readonly ExploreOption[]> = {
 };
 
 export function useExploreFilters() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, replaceSearchParams] = useReplaceSearchParams();
 
-  const getOption = (key: FilterKey) =>
+  const getOption = (key: ExploreFilterKey) =>
     findOptionByLabel(OPTIONS_BY_KEY[key], searchParams.get(key));
 
   const view: ExploreView = searchParams.get('view') === 'artwork' ? 'artwork' : 'exhibition';
   const searchWord = searchParams.get('q') ?? '';
 
-  const updateParam = (key: FilterKey | 'view' | 'q', value: string | null) => {
-    setSearchParams(
-      (prev) => {
+  const updateParam = useCallback(
+    (key: ExploreFilterKey | 'view' | 'q', value: string | null) => {
+      replaceSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         if (value) next.set(key, value);
         else next.delete(key);
         return next;
-      },
-      { replace: true },
-    );
-  };
+      });
+    },
+    [replaceSearchParams],
+  );
 
-  const selectOption = (key: FilterKey, option: ExploreOption) => {
-    const isDefault = option.label === OPTIONS_BY_KEY[key][0].label;
-    updateParam(key, isDefault ? null : option.label);
-  };
+  const selectOption = useCallback(
+    (key: ExploreFilterKey, option: ExploreOption) => {
+      const isDefault = option.label === OPTIONS_BY_KEY[key][0].label;
+      updateParam(key, isDefault ? null : option.label);
+    },
+    [updateParam],
+  );
+
+  const submitSearch = useCallback(
+    (word: string) => updateParam('q', word.trim() || null),
+    [updateParam],
+  );
+
+  const setView = useCallback(
+    (nextView: ExploreView) => updateParam('view', nextView === 'exhibition' ? null : nextView),
+    [updateParam],
+  );
 
   return {
     field: getOption('field'),
@@ -53,8 +68,7 @@ export function useExploreFilters() {
     view,
     searchWord,
     selectOption,
-    submitSearch: (word: string) => updateParam('q', word.trim() || null),
-    setView: (nextView: ExploreView) =>
-      updateParam('view', nextView === 'exhibition' ? null : nextView),
+    submitSearch,
+    setView,
   };
 }

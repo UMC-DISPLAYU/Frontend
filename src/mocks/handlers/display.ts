@@ -464,7 +464,9 @@ export const displayHandlers = [
 
         const matchesType =
           typeParams.length === 0 ||
-          typeParams.some((t) => display.type === t || display.exhibitionType === t);
+          typeParams.some(
+            (t) => display.displayType === t || display.type === t || display.exhibitionType === t,
+          );
 
         return matchesKeyword && matchesField && matchesStatus && matchesRegion && matchesType;
       });

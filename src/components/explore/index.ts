@@ -1,6 +1,7 @@
+export { ExploreExhibitionCard, ExploreExhibitionCardSkeleton } from './ExploreExhibitionCard';
 export { ExploreFieldTabs } from './ExploreFieldTabs';
+export { ExploreFilterMenu } from './ExploreFilterMenu';
 export {
-  EXPLORE_VIEW_OPTIONS,
   type ExploreOption,
   type ExploreView,
   FIELD_OPTIONS,
@@ -8,5 +9,7 @@ export {
   STATUS_OPTIONS,
   TYPE_OPTIONS,
 } from './exploreOptions';
+export { ExploreSearchBar } from './ExploreSearchBar';
+export { ExploreViewToggle } from './ExploreViewToggle';
 export { useExploreFilters } from './useExploreFilters';
-export { useExploreLike } from './useExploreLike';
+export { useSearchResultCount } from './useSearchResultCount';

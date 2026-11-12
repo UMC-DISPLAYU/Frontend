@@ -97,6 +97,15 @@
   letter-spacing: -0.03em;
 }
 
+/* 피그마 body/md/regular2: 날짜 숫자가 붙어 보이지 않게 자간만 +1%로 둔 스타일 */
+@utility typography-body-md-regular2 {
+  font-family: var(--primitive-typography-font-family-typeface-1);
+  font-size: var(--primitive-unit-12);
+  font-weight: var(--primitive-typography-font-weight-500);
+  line-height: 140%;
+  letter-spacing: 0.01em;
+}
+
 @utility typography-body-lg-bold {
   font-family: var(--primitive-typography-font-family-typeface-1);
   font-size: var(--primitive-unit-14);

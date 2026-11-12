@@ -1,29 +1,46 @@
-import { type FormEvent, type MouseEvent, useMemo } from 'react';
-
-import { X } from 'lucide-react';
-
-import searchIcon from '@/assets/icons/SearchIcon.svg';
-import { ErrorView, LoadingView } from '@/components/common';
+import { ErrorView } from '@/components/common';
 import {
-  EXPLORE_VIEW_OPTIONS,
+  ExploreExhibitionCard,
+  ExploreExhibitionCardSkeleton,
   ExploreFieldTabs,
+  ExploreFilterMenu,
+  ExploreSearchBar,
+  ExploreViewToggle,
   FIELD_OPTIONS,
   SORT_OPTIONS,
   STATUS_OPTIONS,
   TYPE_OPTIONS,
   useExploreFilters,
-  useExploreLike,
+  useSearchResultCount,
 } from '@/components/explore';
-import { Dropdown, PosterCard, SegmentToggle } from '@/components/ui';
+import { PageContainer } from '@/components/layout';
+import { SkeletonList } from '@/components/ui';
 import { useInfiniteSearchDisplays } from '@/hooks/queries/useDisplayBrowse';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
+import { staggerStyle } from '@/utils/stagger';
+
+const PAGE_SIZE = 20;
+const RESULTS_ID = 'explore-results';
+const fieldTabId = (index: number) => `explore-field-${index}`;
+
+const GRID_CLASS =
+  'mt-4 grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3 desktop:grid-cols-4 min-[80rem]:grid-cols-5';
+
+function ExploreEmpty({ title, description }: { title: string; description?: string }) {
+  return (
+    <div className="mt-12 flex h-90 flex-col items-center justify-center gap-2 text-center">
+      <strong className="typography-body-xl-semibold text-primary">{title}</strong>
+      {description ? (
+        <p className="typography-body-md-medium text-secondary">{description}</p>
+      ) : null}
+    </div>
+  );
+}
 
 export function ExplorePage() {
   const { field, type, status, sort, view, searchWord, selectOption, setView, submitSearch } =
     useExploreFilters();
-  const like = useExploreLike();
 
   const isExhibitionView = view === 'exhibition';
 
@@ -35,163 +52,153 @@ export function ExplorePage() {
     isError,
     isFetchNextPageError,
     isFetchingNextPage,
-    isLoading,
+    isPending,
+    isPlaceholderData,
     refetch,
   } = useInfiniteSearchDisplays({
     searchWord: searchWord || null,
     field: field.value,
     type: type.value,
     status: status.value,
-    size: 20,
+    size: PAGE_SIZE,
   });
 
-  const exhibitions = useMemo(() => data?.pages.flatMap((page) => page.exhibitions) ?? [], [data]);
+  const pages = data?.pages ?? [];
+  const hasExhibitions = pages.some((page) => page.exhibitions.length > 0);
 
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    submitSearch(String(formData.get('q') ?? ''));
-    // 모바일에서 검색 후 키보드를 내린다
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-  };
-
-  const handleSearchClear = (event: MouseEvent<HTMLButtonElement>) => {
-    const input = event.currentTarget.form?.elements.namedItem('q');
-    if (input instanceof HTMLInputElement) input.value = '';
-    submitSearch('');
-  };
+  const resultCount = useSearchResultCount({
+    active: isExhibitionView && searchWord.length > 0,
+    pageItemCounts: pages.map((page) => page.exhibitions.length),
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+    isPlaceholderData,
+    fetchNextPage,
+  });
 
   const triggerRef = useInfiniteScroll({
     hasNextPage: isExhibitionView && hasNextPage && !isError,
     isFetchingNextPage,
     fetchNextPage,
+    rootMargin: '0px 0px 400px 0px',
   });
 
-  return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-primary-white">
-      <header className="sticky top-0 z-20 flex flex-col gap-3.75 bg-primary-white px-5 pt-5 shadow-card">
-        <form
-          className="flex items-center justify-between gap-2 rounded-circle bg-tertiary px-5.5 py-4"
-          onSubmit={handleSearchSubmit}
-          role="search"
-        >
-          {/* 확정된 검색어가 바뀌면(뒤로가기 등) 입력값을 다시 맞추기 위해 key로 리셋한다 */}
-          <input
-            aria-label="전시 검색어"
-            className="peer typography-body-xl-regular min-w-0 flex-1 bg-transparent text-primary placeholder:text-tertiary focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
-            defaultValue={searchWord}
-            enterKeyHint="search"
-            key={searchWord}
-            name="q"
-            placeholder="어떤 전시를 찾고 있나요?"
-            type="search"
+  const renderResults = () => {
+    if (!isExhibitionView) return <ExploreEmpty title="작품 검색은 준비 중이에요" />;
+
+    if (isPending) {
+      return (
+        <ul aria-busy="true" aria-label="전시를 불러오는 중" className={GRID_CLASS}>
+          <SkeletonList count={6}>
+            {() => (
+              <li aria-hidden="true">
+                <ExploreExhibitionCardSkeleton />
+              </li>
+            )}
+          </SkeletonList>
+        </ul>
+      );
+    }
+
+    if (isError && !hasExhibitions) {
+      return (
+        <ErrorView
+          fullScreen={false}
+          message={getErrorMessage(error, '전시를 검색하지 못했어요.')}
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      );
+    }
+
+    if (!hasExhibitions) {
+      return (
+        <ExploreEmpty description="다른 검색어나 필터로 찾아보세요" title="검색 결과가 없어요" />
+      );
+    }
+
+    return (
+      <>
+        <ul className={GRID_CLASS}>
+          {pages.map((page) =>
+            page.exhibitions.map((exhibition, index) => (
+              <li className="animate-rise" key={exhibition.displayId} style={staggerStyle(index)}>
+                <ExploreExhibitionCard exhibition={exhibition} />
+              </li>
+            )),
+          )}
+        </ul>
+        {isError ? (
+          <ErrorView
+            fullScreen={false}
+            message={getErrorMessage(error, '전시를 더 불러오지 못했어요.')}
+            onRetry={() => {
+              void (isFetchNextPageError ? fetchNextPage() : refetch());
+            }}
           />
-          <button
-            aria-label="검색어 지우기"
-            className="shrink-0 cursor-pointer text-icon-tertiary peer-placeholder-shown:hidden"
-            onClick={handleSearchClear}
-            type="button"
-          >
-            <X aria-hidden="true" className="size-4.5" strokeWidth={2} />
-          </button>
-          <button aria-label="검색" className="shrink-0 cursor-pointer" type="submit">
-            <img alt="" className="size-5" src={searchIcon} />
-          </button>
-        </form>
+        ) : null}
+        <div aria-hidden="true" className="h-1" ref={triggerRef} />
+      </>
+    );
+  };
+
+  return (
+    // Layout 이 냅바 자리로 main 에 준 아래 여백을 걷어내고, 프로토타입 하단 여백(150px)을 직접 둔다
+    <div className="-mb-navbar-clearance min-h-dvh bg-primary-white pb-37.5">
+      <PageContainer variant="list">
+        <h1 className="sr-only">탐색</h1>
+        <ExploreSearchBar onSearch={submitSearch} searchWord={searchWord} />
 
         <ExploreFieldTabs
           onSelect={(option) => selectOption('field', option)}
           options={FIELD_OPTIONS}
+          panelId={RESULTS_ID}
           selectedLabel={field.label}
+          tabId={fieldTabId}
         />
-      </header>
 
-      <section className="flex flex-1 flex-col gap-3 px-5 pt-5 pb-28">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Dropdown
+        <div className="mt-3.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <div className="flex gap-2">
+            <ExploreFilterMenu
+              label="전시 유형"
               onSelect={(option) => selectOption('type', option)}
               options={TYPE_OPTIONS}
-              placeholder="전시 유형"
               selectedLabel={type.label}
+              variant="chip"
             />
-            <Dropdown
+            <ExploreFilterMenu
+              label="전시 상태"
               onSelect={(option) => selectOption('status', option)}
               options={STATUS_OPTIONS}
-              placeholder="전시 상태"
               selectedLabel={status.label}
+              variant="chip"
             />
           </div>
-          <SegmentToggle onChange={setView} options={EXPLORE_VIEW_OPTIONS} value={view} />
+          <ExploreViewToggle onChange={setView} value={view} />
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="typography-body-xl-semibold text-primary">
-            {isExhibitionView ? '전시' : '작품'}
-          </h2>
-          <Dropdown
+        <div className="mt-4 flex h-6 items-center">
+          <p aria-live="polite" className="typography-body-lg-semibold text-primary tabular-nums">
+            {resultCount === null ? '' : `전시 ${resultCount}개`}
+          </p>
+          <ExploreFilterMenu
+            label="정렬"
             onSelect={(option) => selectOption('sort', option)}
             options={SORT_OPTIONS}
-            placeholder="정렬"
             selectedLabel={sort.label}
-            variant="plain"
+            variant="sort"
           />
         </div>
 
-        {!isExhibitionView ? (
-          <p className="typography-body-lg-regular pt-36 text-center text-tertiary">
-            작품 검색은 준비 중이에요.
-          </p>
-        ) : isLoading ? (
-          <LoadingView fullScreen={false} message="전시를 검색하는 중..." />
-        ) : isError && exhibitions.length === 0 ? (
-          <ErrorView
-            fullScreen={false}
-            message={getErrorMessage(error, '전시를 검색하지 못했어요.')}
-            onRetry={() => {
-              void refetch();
-            }}
-          />
-        ) : exhibitions.length === 0 ? (
-          <p className="typography-body-lg-regular pt-36 text-center text-tertiary">
-            검색 결과가 없어요.
-          </p>
-        ) : (
-          <>
-            <ul className="grid grid-cols-2 gap-x-3 gap-y-4">
-              {exhibitions.map((exhibition) => (
-                <li key={exhibition.displayId}>
-                  <PosterCard
-                    imageUrl={exhibition.posterImageUrl}
-                    isLikePending={like.isPendingFor(exhibition.displayId)}
-                    likeCount={exhibition.likeCount}
-                    liked={exhibition.isLiked}
-                    onLikeClick={() =>
-                      like.toggle(exhibition.displayId, Boolean(exhibition.isLiked))
-                    }
-                    period={`${formatDate(exhibition.startedAt)} - ${formatDate(exhibition.endedAt)}`}
-                    subtitle={exhibition.schoolDepartmentName}
-                    title={exhibition.title}
-                    to={`/display/${exhibition.displayId}`}
-                    variant="exhibition"
-                  />
-                </li>
-              ))}
-            </ul>
-            {isError ? (
-              <ErrorView
-                fullScreen={false}
-                message={getErrorMessage(error, '전시를 더 불러오지 못했어요.')}
-                onRetry={() => {
-                  void (isFetchNextPageError ? fetchNextPage() : refetch());
-                }}
-              />
-            ) : null}
-            <div aria-hidden="true" className="h-1" ref={triggerRef} />
-          </>
-        )}
-      </section>
-      {like.loginModal}
+        <section
+          aria-labelledby={fieldTabId(FIELD_OPTIONS.indexOf(field))}
+          id={RESULTS_ID}
+          role="tabpanel"
+        >
+          {renderResults()}
+        </section>
+      </PageContainer>
     </div>
   );
 }

@@ -1,4 +1,10 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import type {
   CreateDisplayRequestDto,
@@ -26,6 +32,8 @@ export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
 export const useInfiniteSearchDisplays = (params: Omit<SearchDisplaysRequestDto, 'cursor'>) =>
   useInfiniteQuery({
     queryKey: queryKeys.displays.search(params as SearchDisplaysRequestDto),
+    // 검색어 · 필터를 바꾸는 동안 이전 결과를 두어 목록이 스켈레톤으로 깜빡이지 않게 한다
+    placeholderData: keepPreviousData,
     queryFn: ({ pageParam = 0 }) =>
       searchDisplays({
         ...params,

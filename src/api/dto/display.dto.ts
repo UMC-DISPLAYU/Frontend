@@ -39,10 +39,9 @@ export interface GetClosingSoonDisplaysResponseDataDto {
 export type GetClosingSoonDisplaysResponseDto =
   ApiResponseDto<GetClosingSoonDisplaysResponseDataDto>;
 
+/* GET /v1/display/search 항목. 장소가 없는 전시는 비어 올 수 있다 */
 export interface DisplayListItemDto extends HomeExhibitionDto {
-  /* 탐색 카드 좋아요용. 백엔드 검색 응답에 아직 없어 목 데이터에만 있습니다. */
-  likeCount?: number;
-  isLiked?: boolean;
+  placeName?: string | null;
 }
 
 export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {

@@ -34,6 +34,7 @@ vi.mock('react', async (original) => ({
   useEffect: () => {},
   useMemo: (factory: () => unknown) => factory(),
   useRef: () => ({ current: null }),
+  useCallback: (callback: unknown) => callback,
 }));
 vi.mock('react-router-dom', () => ({
   useParams: () => ({ id: h.id, token: 'invitation' }),
@@ -61,14 +62,18 @@ vi.mock('@/components/display-detail', () => ({
 vi.mock('@/components/explore', async () => ({
   ...(await import('@/components/explore/exploreOptions')),
   ...(await import('@/components/explore/useExploreFilters')),
+  ExploreExhibitionCard: () => <div>기존 전시 카드</div>,
+  ExploreExhibitionCardSkeleton: () => null,
   ExploreFieldTabs: () => null,
-  useExploreLike: () => ({ toggle: vi.fn(), isPendingFor: () => false, loginModal: null }),
+  ExploreFilterMenu: () => null,
+  ExploreSearchBar: () => null,
+  ExploreViewToggle: () => null,
+  useSearchResultCount: () => null,
 }));
-vi.mock('@/components/ui', () => ({
-  Dropdown: () => null,
-  PosterCard: () => <div>기존 전시 카드</div>,
-  SegmentToggle: () => null,
+vi.mock('@/components/layout', () => ({
+  PageContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
+vi.mock('@/components/ui', () => ({ SkeletonList: () => null }));
 const nodes = (node: ReactNode): ReactElement<Record<string, unknown>>[] =>
   Children.toArray(node).flatMap((child) =>
     isValidElement<Record<string, unknown>>(child)
