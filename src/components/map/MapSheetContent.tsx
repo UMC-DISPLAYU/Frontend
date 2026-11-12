@@ -27,7 +27,6 @@ export function MapSelectedExhibition({
         period={exhibition.period}
         location={exhibition.locationName}
         distance={exhibition.distance}
-        showTitle={false}
         to={toDetailPath(exhibition.id)}
       />
       <Link
