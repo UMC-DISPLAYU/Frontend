@@ -1,15 +1,15 @@
-import { ChevronLeft } from 'lucide-react';
+import { BackIcon } from './OnboardingIcons';
 
 export function OnboardingHeader({ onBack }: { onBack: () => void }) {
   return (
-    <div className="shrink-0 pt-3.5">
+    <div className="-ml-2.5 flex h-14 shrink-0 items-center">
       <button
         type="button"
         onClick={onBack}
         aria-label="뒤로가기"
-        className="-ml-1 flex size-9 items-center justify-center"
+        className="grid size-11 cursor-pointer place-items-center rounded-circle text-primary transition-colors duration-fast hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus"
       >
-        <ChevronLeft className="size-7 text-icon-interactive-primary" strokeWidth={1.75} />
+        <BackIcon className="size-6" />
       </button>
     </div>
   );
