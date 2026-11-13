@@ -3,8 +3,6 @@ import type {
   CreateExhibitionArtworkRequestDto,
   DisplayArtworkEditResponseDataDto,
   ImageResponseDto,
-  PersonalArtworkRequestDto,
-  PersonalArtworkResponseDataDto,
   UpdateExhibitionArtworkRequestDto,
 } from '@/api/dto';
 import { DEFAULT_ARTWORK_IMAGE_HEIGHT, DEFAULT_ARTWORK_IMAGE_WIDTH } from '@/constants';
@@ -61,11 +59,23 @@ export function toArtworkImageRequests({
   ];
 }
 
+type ArtworkInfoRequest = Pick<
+  UpdateExhibitionArtworkRequestDto,
+  | 'artworkName'
+  | 'content'
+  | 'type'
+  | 'types'
+  | 'productionYear'
+  | 'materialMedia'
+  | 'size'
+  | 'images'
+>;
+
 /** 작품 정보 입력값을 등록 · 수정 요청 공통 필드로 바꾼다 */
 export function toArtworkInfoRequest(
   values: ArtworkRegisterValues,
   images: ArtworkImageUrls,
-): PersonalArtworkRequestDto {
+): ArtworkInfoRequest {
   const types = toArtworkTypes(values.fieldLabels);
 
   // 수정에서 비운 설명 · 규격이 지워지도록 빈 문자열도 그대로 보낸다
@@ -161,26 +171,13 @@ export function buildCreateArtworkRequest(
   return { displayId, ...buildUpdateArtworkRequest(input) };
 }
 
-/** 개인 작품 수정에서는 화면에 없는 감상 포인트를 그대로 보낸다 */
-export function buildPersonalArtworkRequest(
-  values: ArtworkRegisterValues,
-  images: ArtworkImageUrls,
-  previousPoint?: string | null,
-): PersonalArtworkRequestDto {
-  const point = previousPoint?.trim();
-
-  return { ...toArtworkInfoRequest(values, images), ...(point && { point }) };
-}
-
 type ArtworkInfoSource = Pick<
   DisplayArtworkEditResponseDataDto,
   'artworkName' | 'content' | 'type' | 'types' | 'productionYear' | 'materialMedia' | 'size'
 >;
 
 /** 수정 화면에 채울 입력값. types 가 없으면 type(쉼표로 이어진 값일 수 있다)을 쓴다 */
-export function toArtworkRegisterValues(
-  source: ArtworkInfoSource | PersonalArtworkResponseDataDto,
-): ArtworkRegisterValues {
+export function toArtworkRegisterValues(source: ArtworkInfoSource): ArtworkRegisterValues {
   const types =
     source.types && source.types.length > 0
       ? source.types

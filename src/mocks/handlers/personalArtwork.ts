@@ -18,25 +18,6 @@ export const personalArtworkHandlers = [
   ...paths('/api/v1/personal-artworks').map((path) =>
     http.get(path, () => success('/api/v1/personal-artworks', mockDb.personalArtworks)),
   ),
-  ...paths('/api/v1/personal-artworks').map((path) =>
-    http.post(path, async ({ request }) => {
-      const body = await readJson(request);
-      const artwork = {
-        ...body,
-        personalArtworkId: Date.now(),
-        userId: mockDb.me.userId,
-        nickname: mockDb.me.nickname,
-        profileImageUrl: mockDb.me.profileImageUrl,
-        isLiked: false,
-        likeCount: 0,
-        createdAt: now(),
-        updatedAt: now(),
-      };
-      mockDb.personalArtworks.unshift(artwork);
-
-      return created('/api/v1/personal-artworks', artwork);
-    }),
-  ),
   ...paths('/api/v1/personal-artworks/{personalArtworkId}').map((path) =>
     http.get(path, ({ params }) =>
       success(
@@ -44,14 +25,6 @@ export const personalArtworkHandlers = [
         findPersonalArtwork(toNumber(params.personalArtworkId)),
       ),
     ),
-  ),
-  ...paths('/api/v1/personal-artworks/{personalArtworkId}').map((path) =>
-    http.patch(path, async ({ params, request }) => {
-      const artwork = findPersonalArtwork(toNumber(params.personalArtworkId));
-      if (artwork) Object.assign(artwork, await readJson(request), { updatedAt: now() });
-
-      return success('/api/v1/personal-artworks/{personalArtworkId}', artwork);
-    }),
   ),
   ...paths('/api/v1/personal-artworks/{personalArtworkId}').map((path) =>
     http.delete(path, ({ params }) => {

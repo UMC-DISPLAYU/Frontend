@@ -4,7 +4,6 @@ import type { ArtworkRegisterValues } from './artworkRegister.schema';
 import type { ArtworkPerson } from './artworkRegister.types';
 import {
   buildCreateArtworkRequest,
-  buildPersonalArtworkRequest,
   buildUpdateArtworkRequest,
   resolveQaHandlerUserIds,
   splitArtworkImages,
@@ -133,16 +132,6 @@ describe('buildUpdateArtworkRequest', () => {
     expect(request).not.toHaveProperty('displayId');
     expect(request.point).toBe('겹겹이 쌓인 색');
     expect(request.qaHandlerUserIds).toEqual([3]);
-  });
-});
-
-describe('buildPersonalArtworkRequest', () => {
-  it('작가 · 담당자 필드 없이 작품 정보만 보낸다', () => {
-    const request = buildPersonalArtworkRequest(values, images, null);
-
-    expect(request).not.toHaveProperty('artistName');
-    expect(request).not.toHaveProperty('point');
-    expect(buildPersonalArtworkRequest(values, images, ' 포인트 ').point).toBe('포인트');
   });
 });
 

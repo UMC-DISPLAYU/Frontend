@@ -1,1 +1,0 @@
-export { PersonalArtworkRegisterPage } from './PersonalArtworkRegisterPage';

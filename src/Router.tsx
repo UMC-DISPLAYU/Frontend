@@ -14,7 +14,6 @@ import {
   DisplayPermissionGuard,
   FlowRoute,
   GuardedFlowStep,
-  PersonalArtworkPermissionGuard,
 } from './components/guards/RoutePermissionGuards';
 import { Layout, RootLayout } from './components/layout';
 
@@ -135,10 +134,6 @@ const TeamManage = lazyPage(() => import('./pages/TeamManagePage'), 'TeamManage'
 const DisplayAcceptPage = lazyPage(() => import('./pages/DisplayAcceptPage'), 'DisplayAcceptPage');
 const SettingPage = lazyPage(() => import('./pages/Settingpage'), 'SettingPage');
 const EditBasicInfoPage = lazyPage(() => import('./pages/EditBasicInfoPage'), 'EditBasicInfoPage');
-const PersonalArtworkRegisterPage = lazyPage(
-  () => import('./pages/personal-artworks-register'),
-  'PersonalArtworkRegisterPage',
-);
 const InvitationRequestPage = lazyPage(
   () => import('./pages/InvitationRequestPage'),
   'InvitationRequestPage',
@@ -421,24 +416,6 @@ export const router = createBrowserRouter([
                   <ArtistPermissionGuard>
                     <EditArtistProfilePage />
                   </ArtistPermissionGuard>
-                ),
-              },
-              {
-                path: 'personal-artworks/new',
-                element: (
-                  <PersonalArtworkPermissionGuard action="create">
-                    <PersonalArtworkRegisterPage />
-                  </PersonalArtworkPermissionGuard>
-                ),
-              },
-              {
-                path: 'personal-artworks/:personalArtworkId/edit',
-                loader: validateNumericId('personalArtworkId'),
-                errorElement: <NotFound />,
-                element: (
-                  <PersonalArtworkPermissionGuard action="create">
-                    <PersonalArtworkRegisterPage />
-                  </PersonalArtworkPermissionGuard>
                 ),
               },
               { path: 'invitation-request', element: <InvitationRequestPage /> },

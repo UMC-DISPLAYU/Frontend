@@ -15,7 +15,6 @@ import {
   useDisplayCreatePolicy,
   useDisplayInvitationPolicy,
   useDisplayPolicy,
-  usePersonalArtworkPolicy,
 } from '@/hooks/usePolicy';
 import type { ArtworkPolicyResource, DisplayPolicyResource } from '@/policies/util';
 import { getErrorMessage } from '@/utils/error';
@@ -56,11 +55,6 @@ type DisplayContentGuardProps = GuardChildrenProps & {
 };
 
 type DisplayInvitationGuardProps = GuardChildrenProps & {
-  action: 'create';
-  fallback?: string;
-};
-
-type PersonalArtworkGuardProps = GuardChildrenProps & {
   action: 'create';
   fallback?: string;
 };
@@ -243,20 +237,6 @@ export function DisplayInvitationPermissionGuard({
       fallback={fallback}
       policy={policy}
     >
-      {children}
-    </PermissionGuard>
-  );
-}
-
-export function PersonalArtworkPermissionGuard({
-  action,
-  fallback = '/403',
-  children,
-}: PersonalArtworkGuardProps) {
-  const policy = usePersonalArtworkPolicy();
-
-  return (
-    <PermissionGuard resource="personalArtwork" action={action} fallback={fallback} policy={policy}>
       {children}
     </PermissionGuard>
   );
