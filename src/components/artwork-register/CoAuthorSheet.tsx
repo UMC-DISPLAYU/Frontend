@@ -9,19 +9,32 @@ import { MAX_CO_AUTHOR_NAME_LENGTH } from './artworkRegister.constants';
 import type { ArtworkPerson, ArtworkTeamCandidate } from './artworkRegister.types';
 import { DIRECT_INPUT_CAPTION, toNamedCoAuthor, toTeamCoAuthor } from './artworkTeam';
 import { AuthorAvatar } from './AuthorAvatar';
+import type { CandidatesStatus } from './proxyAuthor';
+import { TeamCandidatesState } from './TeamCandidatesState';
 
 type CoAuthorTab = 'team' | 'name';
 
 interface CoAuthorSheetProps {
   open: boolean;
   candidates: ArtworkTeamCandidate[];
+  /** 팀원 목록 조회 상태. 불러오는 중 · 실패를 '팀원이 없어요'와 구분한다 */
+  candidatesStatus?: CandidatesStatus;
+  onRetryCandidates?: () => void;
   value: ArtworkPerson[];
   onClose: () => void;
   onDone: (next: ArtworkPerson[]) => void;
 }
 
 /** 열 때마다 key 를 바꿔 다시 마운트한다. 시트 안에서 고른 값은 완료를 눌러야 반영된다 */
-export function CoAuthorSheet({ open, candidates, value, onClose, onDone }: CoAuthorSheetProps) {
+export function CoAuthorSheet({
+  open,
+  candidates,
+  candidatesStatus = 'success',
+  onRetryCandidates,
+  value,
+  onClose,
+  onDone,
+}: CoAuthorSheetProps) {
   const inputId = useId();
   const helpId = useId();
   const [tab, setTab] = useState<CoAuthorTab>('team');
@@ -157,7 +170,8 @@ export function CoAuthorSheet({ open, candidates, value, onClose, onDone }: CoAu
               );
             })}
           </ul>
-          {candidates.length === 0 && (
+          <TeamCandidatesState status={candidatesStatus} onRetry={onRetryCandidates} />
+          {candidatesStatus === 'success' && candidates.length === 0 && (
             <p className="typography-body-lg-semibold py-7 text-center text-primary">
               선택할 수 있는 팀원이 없어요
             </p>

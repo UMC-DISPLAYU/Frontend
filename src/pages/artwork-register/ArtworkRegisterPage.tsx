@@ -18,6 +18,7 @@ import {
   EMPTY_ARTWORK_REGISTER_VALUES,
   parseProxyAuthor,
   type ProxyAuthor,
+  readArtworkTypes,
   splitArtworkImages,
   toArtworkRegisterValues,
   toNamedCoAuthor,
@@ -74,9 +75,11 @@ function ArtworkRegisterContent({
   const [coAuthors, setCoAuthors] = useState(initialCoAuthors);
   const [coSheet, setCoSheet] = useState({ open: false, key: 0 });
   const [registered, setRegistered] = useState<{ title: string; authors: string } | null>(null);
-  const { data: members } = useDisplayMembers(displayId);
+  const membersQuery = useDisplayMembers(displayId);
+  const members = membersQuery.data;
   const createArtwork = useCreateDisplayArtwork(displayId);
   const updateArtwork = useUpdateDisplayArtwork(displayId);
+  const isSubmitting = createArtwork.isPending || updateArtwork.isPending;
 
   const candidates = useMemo(
     () =>
@@ -139,16 +142,21 @@ function ArtworkRegisterContent({
       initialImages={initialImages}
       hasExtraChanges={coAuthors.length > 0}
       isReady={author.name.trim().length > 0}
-      isSubmitting={createArtwork.isPending || updateArtwork.isPending}
+      isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       leaveFallback={workPath}
+      previousTypes={edit ? readArtworkTypes(edit.previous) : undefined}
       authorSection={
         <>
           <ArtworkAuthorSection
             author={author}
             coAuthors={coAuthors}
             registrantName={registrantName}
-            onAddCoAuthor={() => setCoSheet((prev) => ({ open: true, key: prev.key + 1 }))}
+            onAddCoAuthor={() => {
+              // 저장 중에 시트를 열면 저장 후 이동이 시트 기록만 닫고 이 화면에 남는다
+              if (isSubmitting) return;
+              setCoSheet((prev) => ({ open: true, key: prev.key + 1 }));
+            }}
             onRemoveCoAuthor={(key) =>
               setCoAuthors((prev) => prev.filter((person) => person.key !== key))
             }
@@ -157,6 +165,10 @@ function ArtworkRegisterContent({
             key={coSheet.key}
             open={coSheet.open}
             candidates={candidates}
+            candidatesStatus={
+              membersQuery.isError ? 'error' : membersQuery.isPending ? 'pending' : 'success'
+            }
+            onRetryCandidates={() => void membersQuery.refetch()}
             value={coAuthors}
             onClose={() => setCoSheet((prev) => ({ ...prev, open: false }))}
             onDone={(next) => {
