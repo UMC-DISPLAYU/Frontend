@@ -25,7 +25,9 @@ const h = vi.hoisted(() => ({
   order: { mutate: vi.fn(), reset: vi.fn(), isPending: false, error: null as Error | null },
   remove: { mutate: vi.fn(), reset: vi.fn(), isPending: false, error: null as Error | null },
   navigate: vi.fn(),
+  toast: vi.fn(),
 }));
+vi.mock('@/stores/toastStore', () => ({ toast: h.toast }));
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
   useMemo: (factory: () => unknown) => factory(),
@@ -185,8 +187,10 @@ it('삭제 실패는 확인창을 유지하고 중복 요청을 막으며 성공
   call(pending, 'onClick');
   expect(h.remove.mutate).toHaveBeenCalledTimes(1);
   h.remove.isPending = false;
+  expect(h.toast).not.toHaveBeenCalled();
   h.remove.mutate.mock.calls[0][1].onSuccess();
   expect(get(Overlay).props.open).toBe(false);
+  expect(h.toast).toHaveBeenCalledWith('작품을 삭제했어요');
 });
 
 it('팀원이 작품 추가를 누르면 바로 작품 등록으로 이동한다', () => {

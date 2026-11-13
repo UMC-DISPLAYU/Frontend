@@ -74,3 +74,26 @@ it.each([
     expect(html.includes('다른 작품 작품 관리')).toBe(manageOthers);
   },
 );
+
+it.each([
+  [49, true],
+  [50, false],
+])('전시작 %i개일 때 전시작 추가 버튼 노출 %s', (count, visible) => {
+  const many: Work[] = Array.from({ length: count }, (_, index) => ({
+    ...works[1],
+    id: index + 100,
+    title: `작품 ${index}`,
+  }));
+  const html = renderToStaticMarkup(
+    <ManageScreen
+      works={many}
+      display={display}
+      userId={1}
+      onEdit={vi.fn()}
+      onDelete={vi.fn()}
+      onEditOrder={vi.fn()}
+      onAdd={vi.fn()}
+    />,
+  );
+  expect(html.includes('전시작 추가')).toBe(visible);
+});

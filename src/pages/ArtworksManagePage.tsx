@@ -22,6 +22,7 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
+import { toast } from '@/stores/toastStore';
 import type { Work } from '@/types/artworkManage';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
@@ -90,6 +91,7 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
       onSuccess: () => {
         setOrderedWorks(null);
         setConfirming(false);
+        toast('작품을 삭제했어요');
       },
     });
   };
@@ -198,7 +200,7 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
         open={confirming}
         onClose={() => setConfirming(false)}
         title="작품을 삭제할까요?"
-        description="선택한 작품이 전시에서 사라져요"
+        description="삭제하면 이 작품이 전시에서 사라져요"
         role="alertdialog"
         size="sm"
         showCloseButton={false}
@@ -224,8 +226,8 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
         }
       >
         <div className="rounded-12 bg-error-subtle p-3 text-error">
-          <p className="typography-body-lg-semibold">삭제 주의</p>
-          <p className="typography-body-md-medium mt-1">삭제한 작품은 복구할 수 없어요.</p>
+          <p className="typography-body-lg-semibold">삭제 안내</p>
+          <p className="typography-body-md-medium mt-1">삭제된 작품은 복구할 수 없어요</p>
         </div>
         {deleteArtworkMutation.error && (
           <p role="alert" className="typography-body-md-medium mt-3 text-error">
