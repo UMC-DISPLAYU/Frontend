@@ -69,6 +69,8 @@ export const artworkHandlers = [
         point: body.point ?? '',
         images: body.images ?? [],
         coAuthors: toCoAuthorList(body.coAuthors, Number(body.displayId ?? 101)),
+        // 전시작 목록이 공동 작가의 수정 · 삭제 권한을 판단하는 값
+        coAuthorUserIds: body.coAuthors?.userIds ?? [],
         artworkImageUrl: imageUrl,
         thumbnailUrl: imageUrl,
         imageUrl,
@@ -195,6 +197,7 @@ export const artworkHandlers = [
         thumbnailUrl: imageUrl,
         imageUrl,
         coAuthors,
+        coAuthorUserIds: body.coAuthors?.userIds ?? [],
       });
 
       return success('/api/v1/artworks/{artworkId}', {
