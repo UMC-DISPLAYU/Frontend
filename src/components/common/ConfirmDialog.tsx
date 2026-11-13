@@ -1,10 +1,10 @@
-import { useRef } from 'react';
+import { type ReactNode, useRef } from 'react';
 
 import { Overlay } from '@/components/ui';
 
 interface ConfirmDialogProps {
   open: boolean;
-  title: string;
+  title: ReactNode;
   description: string;
   warning?: { title: string; description: string };
   confirmLabel: string;

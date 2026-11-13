@@ -52,6 +52,7 @@ export const queryKeys = {
       [...queryKeys.displays.lists(), 'map', params] as const,
     nearby: (params: NearbyParams | null) =>
       [...queryKeys.displays.lists(), 'nearby', params] as const,
+    popular: () => [...queryKeys.displays.lists(), 'popular'] as const,
     closingSoon: (params?: GetClosingSoonDisplaysRequestDto) =>
       [...queryKeys.displays.lists(), 'closing-soon', params ?? {}] as const,
     graduation: (params?: { size?: number }) =>

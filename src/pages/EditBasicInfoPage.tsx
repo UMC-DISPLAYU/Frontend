@@ -1,197 +1,173 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronLeft, Info, Plus, X } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 import { ApiError } from '@/api/apiError';
 import type { UserProfileDto } from '@/api/dto';
-import defaultProfile from '@/assets/common/DefaultProfileIcon.png';
-import { BottomButton } from '@/components/common';
-import { LoadingView } from '@/components/common/LoadingView';
+import {
+  ArtistVerifyActionButton,
+  ArtistVerifyBottomBar,
+  ArtistVerifyBottomButton,
+  ArtistVerifyField,
+  ArtistVerifyHeader,
+  ArtistVerifyInput,
+} from '@/components/artist-verify';
+import { ConfirmDialog, ErrorView, ProfilePhotoField } from '@/components/common';
+import { PageContainer } from '@/components/layout';
+import { ProfileAvatar } from '@/components/mypage';
+import { Skeleton } from '@/components/ui';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
-import {
-  alphaNumericKoSchema,
-  nicknameLengthSchema,
-  noSpaceSchema,
-  noSpecialCharSchema,
-  type OnboardingNicknameFormValues,
-  onboardingNicknameSchema,
-} from '@/pages/onboarding/onboarding.schema';
+import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 
-function ProfilePhotoField({
-  image,
-  onChange,
-  isUploading,
-}: {
-  image: string | null;
-  onChange: (file: File) => void;
-  isUploading?: boolean;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
+import {
+  type EditBasicInfoFormValues,
+  editBasicInfoSchema,
+  NICKNAME_MAX,
+} from './editBasicInfo.schema';
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    onChange(file);
-  };
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        aria-label="프로필 사진 등록"
-        className="relative size-20"
-        disabled={isUploading}
-      >
-        {image ? (
-          <img src={image} alt="프로필 미리보기" className="size-20 rounded-full object-cover" />
-        ) : (
-          <img src={defaultProfile} alt="프로필" className="size-20 rounded-full object-cover" />
-        )}
-        {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
-            <LoadingView fullScreen={false} message="" className="!bg-transparent" />
-          </div>
-        )}
-        <span className="absolute bottom-0 right-0 flex size-6 items-center justify-center overflow-hidden rounded-full bg-hint">
-          <Plus className="text-white" strokeWidth={2} />
-        </span>
-      </button>
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-    </>
-  );
-}
+const FORM_ID = 'edit-basic-info-form';
+const HELPER_ID = 'nickname-helper';
 
 export function EditBasicInfoPage() {
-  const { data: userMe } = useUserMe();
+  const { data: userMe, isPending, isError, error, refetch } = useUserMe();
 
-  return <EditBasicInfoForm key={userMe?.id ?? 'loading'} userMe={userMe} />;
+  if (isError && !userMe) {
+    return (
+      <ErrorView
+        message={getErrorMessage(error, '내 정보를 불러오지 못했어요.')}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
+
+  if (isPending || !userMe) {
+    return (
+      <PageContainer className="bg-primary-white" variant="form">
+        <div aria-hidden="true" className="flex flex-col gap-5 pt-17">
+          <Skeleton className="mx-auto size-20 rounded-circle" />
+          <Skeleton className="h-16 w-full rounded-4" />
+        </div>
+      </PageContainer>
+    );
+  }
+
+  return <EditBasicInfoForm userMe={userMe} />;
 }
 
-function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
+type NicknameCheck = { nickname: string; isAvailable: boolean };
+
+function EditBasicInfoForm({ userMe }: { userMe: UserProfileDto }) {
   const flowBack = useFlowBack();
-  const [profileImage, setProfileImage] = useState<string | null>(userMe?.profileImageUrl ?? null);
-  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
-  const [nicknameCheckResult, setNicknameCheckResult] = useState<
-    'available' | 'unavailable' | null
-  >(null);
-  const [checkedNickname, setCheckedNickname] = useState('');
-  const [submitError, setSubmitError] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const savingRef = useRef(false);
+  const navigate = useNavigate();
   const updateUserMe = useUpdateUserMe();
   const uploadImage = useUploadImage();
   const checkNickname = useCheckNickname();
 
+  const initialNickname = userMe.nickname || userMe.name || '';
+  const initialPhotoUrl = userMe.profileImageUrl || null;
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhotoUrl);
+  const [nicknameCheck, setNicknameCheck] = useState<NicknameCheck | null>(null);
+  const [isLeaveOpen, setIsLeaveOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  // 상태 반영 전에 연달아 눌린 제출을 막는다
+  const savingRef = useRef(false);
+
+  useEffect(() => {
+    if (!photoPreview?.startsWith('blob:')) return;
+    return () => URL.revokeObjectURL(photoPreview);
+  }, [photoPreview]);
+
   const {
-    register,
-    handleSubmit,
     control,
-    setValue,
-    setError,
-    clearErrors,
     formState: { errors },
-  } = useForm<OnboardingNicknameFormValues>({
-    resolver: zodResolver(onboardingNicknameSchema),
+    handleSubmit,
+    register,
+    setError,
+  } = useForm<EditBasicInfoFormValues>({
+    defaultValues: { nickname: initialNickname },
     mode: 'onChange',
-    defaultValues: {
-      nickname: userMe?.nickname || userMe?.name || '',
-    },
+    resolver: zodResolver(editBasicInfoSchema),
   });
 
   const nickname = useWatch({ control, name: 'nickname' }) ?? '';
-  const isNicknameShapeValid = onboardingNicknameSchema.safeParse({ nickname }).success;
+  const isNicknameChanged = nickname !== initialNickname;
+  const isNicknameShapeValid = editBasicInfoSchema.safeParse({ nickname }).success;
+  const checkedNow = nicknameCheck?.nickname === nickname ? nicknameCheck : null;
+  const isChecked = checkedNow?.isAvailable === true;
+  const isTaken = checkedNow?.isAvailable === false;
+  // 비어 있을 때는 오류 대신 기본 안내를 보인다(프로토타입)
+  const nicknameError = nickname ? errors.nickname?.message : undefined;
 
-  // 닉네임이 기존 닉네임과 동일하다면 중복 확인 여부와 무관하게 저장할 수 있음
-  const isSameAsInitial = nickname === (userMe?.nickname || userMe?.name || '');
+  const isPhotoChanged = photoPreview !== initialPhotoUrl;
+  const hasChanges = isNicknameChanged || isPhotoChanged;
+  const canSave =
+    hasChanges && isNicknameShapeValid && (!isNicknameChanged || isChecked) && !isSaving;
 
-  const canSubmit =
-    (isSameAsInitial || (nicknameCheckResult === 'available' && checkedNickname === nickname)) &&
-    isNicknameShapeValid &&
-    !updateUserMe.isPending &&
-    !uploadImage.isPending;
+  const helper = nicknameError
+    ? { text: nicknameError, tone: 'error' as const }
+    : isTaken
+      ? { text: '이미 사용 중인 닉네임이에요', tone: 'error' as const }
+      : isChecked
+        ? { text: '사용할 수 있는 닉네임이에요', tone: 'success' as const }
+        : isNicknameChanged && nickname.length >= 2
+          ? { text: '중복 확인을 해주세요', tone: 'idle' as const }
+          : { text: '한글, 영문, 숫자로 2~15자', tone: 'idle' as const };
 
-  const handleDuplicateCheck = () => {
+  const handleCheck = () => {
     if (!isNicknameShapeValid || checkNickname.isPending) return;
-
-    setSubmitError('');
-    clearErrors('nickname');
+    const target = nickname;
     checkNickname.mutate(
-      { nickname: nickname.trim() },
+      { nickname: target },
       {
-        onSuccess: (data) => {
-          setCheckedNickname(nickname);
-          setNicknameCheckResult(data.isAvailable ? 'available' : 'unavailable');
-        },
-        onError: (error) => {
-          setSubmitError(
-            getErrorMessage(error, '닉네임 중복 확인에 실패했어요. 다시 시도해주세요.'),
-          );
-        },
+        onSuccess: (data) => setNicknameCheck({ nickname: target, isAvailable: data.isAvailable }),
+        onError: (error) =>
+          toast(getErrorMessage(error, '닉네임 중복 확인에 실패했어요. 다시 시도해주세요.')),
       },
     );
   };
 
-  const handleClearInput = () => {
-    setValue('nickname', '', { shouldValidate: true });
-    setNicknameCheckResult(null);
-    setCheckedNickname('');
+  const handlePhotoChange = (file: File | null) => {
+    setPhotoFile(file);
+    setPhotoPreview(file ? URL.createObjectURL(file) : null);
   };
 
-  useEffect(() => {
-    return () => {
-      if (profileImage?.startsWith('blob:')) {
-        URL.revokeObjectURL(profileImage);
-      }
-    };
-  }, [profileImage]);
+  const handleBack = () => (hasChanges ? setIsLeaveOpen(true) : flowBack());
 
-  const handleProfileImageChange = (file: File) => {
+  const onSubmit = async (values: EditBasicInfoFormValues) => {
     if (savingRef.current) return;
-    setProfileImage((prev) => {
-      if (prev?.startsWith('blob:')) {
-        URL.revokeObjectURL(prev);
-      }
-
-      return URL.createObjectURL(file);
-    });
-    setProfileImageFile(file);
-  };
-
-  const onFormSubmit = async (data: OnboardingNicknameFormValues) => {
-    if (!canSubmit || savingRef.current) return;
     savingRef.current = true;
     setIsSaving(true);
-    setSubmitError('');
-    clearErrors('nickname');
     try {
-      const uploadedProfileImageUrl = profileImageFile
-        ? await uploadImage.mutateAsync({ file: profileImageFile, domain: 'profile' })
-        : profileImage;
+      const profileImageUrl = photoFile
+        ? await uploadImage.mutateAsync({ file: photoFile, domain: 'profile' })
+        : photoPreview
+          ? undefined
+          : null;
       await updateUserMe.mutateAsync({
-        nickname: data.nickname.trim(),
-        ...(uploadedProfileImageUrl ? { profileImageUrl: uploadedProfileImageUrl } : {}),
+        nickname: values.nickname,
+        ...(isPhotoChanged ? { profileImageUrl } : {}),
       });
+      toast('프로필을 저장했어요');
       flowBack();
     } catch (error) {
       if (
         error instanceof ApiError &&
         ['DUPLICATE_NICKNAME', 'INVALID_NICKNAME_FORMAT'].includes(error.code ?? '')
       ) {
-        setNicknameCheckResult(null);
-        setCheckedNickname('');
+        setNicknameCheck(null);
         setError('nickname', {
           type: 'server',
           message: getErrorMessage(error, '닉네임을 확인해주세요.'),
         });
       } else {
-        setSubmitError(getErrorMessage(error, '프로필을 저장하지 못했어요. 다시 시도해주세요.'));
+        toast(getErrorMessage(error, '프로필을 저장하지 못했어요. 다시 시도해주세요.'));
       }
     } finally {
       savingRef.current = false;
@@ -200,152 +176,81 @@ function EditBasicInfoForm({ userMe }: { userMe?: UserProfileDto }) {
   };
 
   return (
-    <div className="max-w-md mx-auto h-dvh bg-page flex flex-col relative">
-      <header className="flex items-center gap-3 px-5 pt-[14px] pb-[11px]">
-        <button type="button" onClick={() => flowBack()} aria-label="뒤로가기" className="-ml-1">
-          <ChevronLeft className="size-7 text-main" strokeWidth={2} />
-        </button>
-        <h1 className="typo-body-xl-bold text-main">기본 정보 수정</h1>
-      </header>
+    <PageContainer className="bg-primary-white" variant="form">
+      <ArtistVerifyHeader onBack={handleBack} title="기본 정보 수정" />
 
-      <main className="flex-1 min-h-0 overflow-y-auto px-5 flex flex-col">
-        <div className="mt-6 flex justify-center">
+      <form
+        className="flex-1 pt-5 pb-6"
+        id={FORM_ID}
+        noValidate
+        onSubmit={(event) => handleSubmit(onSubmit)(event)}
+      >
+        <fieldset className="flex flex-col gap-5" disabled={isSaving}>
           <ProfilePhotoField
-            image={profileImage}
-            onChange={handleProfileImageChange}
-            isUploading={isSaving || uploadImage.isPending}
+            disabled={isSaving}
+            onChange={handlePhotoChange}
+            placeholder={<ProfileAvatar size={80} />}
+            shape="circle"
+            src={photoPreview}
           />
-        </div>
 
-        <form
-          id="edit-basic-info-form"
-          onSubmit={(event) => handleSubmit(onFormSubmit)(event)}
-          className="mt-15 flex flex-col gap-3"
-        >
-          <fieldset disabled={isSaving} className="contents">
-            <label htmlFor="activityName" className="typo-body-sm-bold text-main">
-              프로필 명
-            </label>
-            <div className="relative">
-              <div className="border-b border-line flex justify-end items-start gap-3">
-                <div className="flex-1 h-9 px-3 py-2.5 flex justify-start items-center gap-2">
-                  <input
-                    id="activityName"
-                    maxLength={15}
-                    placeholder="프로필 명"
-                    className="w-full typo-body-xs-regular text-main outline-none placeholder:text-hint bg-transparent"
-                    {...register('nickname', {
-                      onChange: () => {
-                        clearErrors('nickname');
-                        setNicknameCheckResult(null);
-                        setCheckedNickname('');
-                      },
-                    })}
-                  />
-                </div>
-                <div className="h-9 flex justify-start items-center gap-2.5">
-                  <div className="w-8 flex justify-start items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={handleClearInput}
-                      aria-label="프로필 명 지우기"
-                      className="size-5 bg-box200 rounded-[10px] flex justify-center items-center cursor-pointer"
-                    >
-                      <X className="size-2.5 text-card translate-x-[0.5px]" strokeWidth={2} />
-                    </button>
-                    <div className="w-px h-4 bg-faint" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleDuplicateCheck}
-                    disabled={!isNicknameShapeValid || checkNickname.isPending}
-                    className="w-17 h-8 rounded-lg outline outline-1 outline-offset-[-1px] outline-sub600 disabled:opacity-40 flex items-center justify-center cursor-pointer"
-                  >
-                    <span className="typo-body-xs-semibold text-main translate-y-px">
-                      중복 확인
-                    </span>
-                  </button>
-                </div>
-              </div>
-              {(errors.nickname?.message || (nicknameCheckResult && !isSameAsInitial)) && (
-                <div
-                  className={cn(
-                    'absolute left-0 top-full mt-1.5 typo-body-xxs-regular',
-                    !errors.nickname && nicknameCheckResult === 'available'
-                      ? 'text-link'
-                      : 'text-error',
-                  )}
-                >
-                  {errors.nickname?.message ||
-                    (nicknameCheckResult === 'available'
-                      ? '사용 가능한 닉네임이에요.'
-                      : '사용 불가한 닉네임이에요.')}
-                </div>
-              )}
-            </div>
+          <div className="flex items-start gap-2">
+            <ArtistVerifyField className="flex-1" htmlFor="nickname" label="닉네임">
+              <ArtistVerifyInput
+                aria-describedby={HELPER_ID}
+                autoCapitalize="none"
+                autoComplete="off"
+                id="nickname"
+                invalid={helper.tone === 'error'}
+                maxLength={NICKNAME_MAX}
+                placeholder="닉네임"
+                spellCheck={false}
+                {...register('nickname')}
+              />
+              <p
+                aria-live="polite"
+                className={cn(
+                  'typography-body-md-medium',
+                  helper.tone === 'error' && 'text-error',
+                  helper.tone === 'success' && 'text-success',
+                  helper.tone === 'idle' && 'text-secondary',
+                )}
+                id={HELPER_ID}
+              >
+                {helper.text}
+              </p>
+            </ArtistVerifyField>
+            <ArtistVerifyActionButton
+              disabled={
+                !isNicknameChanged || !isNicknameShapeValid || isChecked || checkNickname.isPending
+              }
+              onClick={handleCheck}
+            >
+              {isChecked ? '확인 완료' : '중복 확인'}
+            </ArtistVerifyActionButton>
+          </div>
+        </fieldset>
+      </form>
 
-            {/* 실시간 개별 조건 피드백 */}
-            <div className="mt-12.5 flex flex-col gap-2">
-              <div
-                className={cn(
-                  'typo-body-xs-regular',
-                  nickname.length > 0 && alphaNumericKoSchema.safeParse(nickname).success
-                    ? 'text-sub600'
-                    : 'text-faint',
-                )}
-              >
-                한글 · 영문 · 숫자
-              </div>
-              <div
-                className={cn(
-                  'typo-body-xs-regular',
-                  nickname.length > 0 && nicknameLengthSchema.safeParse(nickname).success
-                    ? 'text-sub600'
-                    : 'text-faint',
-                )}
-              >
-                2 ~ 15자
-              </div>
-              <div
-                className={cn(
-                  'typo-body-xs-regular',
-                  nickname.length > 0 && noSpecialCharSchema.safeParse(nickname).success
-                    ? 'text-sub600'
-                    : 'text-faint',
-                )}
-              >
-                특수문자 불가
-              </div>
-              <div
-                className={cn(
-                  'typo-body-xs-regular',
-                  nickname.length > 0 && noSpaceSchema.safeParse(nickname).success
-                    ? 'text-sub600'
-                    : 'text-faint',
-                )}
-              >
-                공백 불가
-              </div>
-            </div>
-          </fieldset>
-        </form>
+      <ArtistVerifyBottomBar>
+        <ArtistVerifyBottomButton disabled={!canSave} form={FORM_ID} type="submit">
+          {isSaving ? '저장 중' : '저장'}
+        </ArtistVerifyBottomButton>
+      </ArtistVerifyBottomBar>
 
-        <div className="mt-auto mb-7 flex items-start gap-1 rounded-2xl bg-card p-3.5">
-          <Info className="size-3 shrink-0 text-faint" strokeWidth={1.5} />
-          <p className="typo-body-xs-regular text-hint">
-            활동명은 댓글, 질문, 라운지 등 서비스 활동에서 사용돼요.
-          </p>
-        </div>
-      </main>
-
-      {submitError && (
-        <p role="alert" className="mx-5 mt-2 typo-body-xs-regular text-error">
-          {submitError}
-        </p>
-      )}
-      <BottomButton form="edit-basic-info-form" type="submit" disabled={!canSubmit || isSaving}>
-        {isSaving ? '저장 중' : '완료'}
-      </BottomButton>
-    </div>
+      <ConfirmDialog
+        cancelLabel="계속 수정"
+        confirmLabel="나가기"
+        description="바꾼 내용은 저장되지 않아요."
+        onCancel={() => setIsLeaveOpen(false)}
+        onConfirm={() => {
+          // 확인창이 쌓은 기록과 이 화면을 함께 빠져나간다
+          if (window.history.length > 2) navigate(-2);
+          else navigate('/my', { replace: true });
+        }}
+        open={isLeaveOpen}
+        title="수정을 그만할까요?"
+      />
+    </PageContainer>
   );
 }

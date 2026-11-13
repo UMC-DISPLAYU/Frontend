@@ -55,7 +55,7 @@ export function ArtworkBottomBar({ saveButton, ...share }: Props) {
       <div aria-hidden className="desktop:hidden" style={{ height: barHeight }} />
       <div
         ref={barRef}
-        className="fixed inset-x-0 bottom-keyboard-inset z-40 flex gap-3 border-t border-bg-secondary bg-primary-white px-gutter pt-3 pb-safe-area-bottom desktop:hidden"
+        className="fixed inset-x-0 bottom-keyboard-inset z-40 flex gap-3 border-t border-bg-secondary bg-primary-white px-5 pt-3 pb-safe-area-bottom desktop:hidden"
       >
         <ShareButton {...share} />
         {saveButton}

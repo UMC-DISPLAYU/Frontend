@@ -5,17 +5,27 @@ import {
   getArtworkPreview,
   getClosingSoonDisplays,
   getGraduationDisplays,
+  getPopularDisplays,
   searchDisplays,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
-import { formatDate } from '@/utils/date';
+import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
 const artworkPreviewParams = { type: 'RECOMMEND' as const, page: 0, size: 10 };
 
-export const useHomeArtworkPreview = () =>
+export const useHomeArtworkPreview = ({ enabled = true }: { enabled?: boolean } = {}) =>
   useQuery({
     queryKey: queryKeys.displayArtworks.preview(artworkPreviewParams),
     queryFn: () => getArtworkPreview(artworkPreviewParams),
+    enabled,
+  });
+
+/* 홈 인기 전시와 같은 목록. 마이 보관함 빈 상태처럼 필요할 때만 켠다 */
+export const usePopularDisplays = ({ enabled = true }: { enabled?: boolean } = {}) =>
+  useQuery({
+    queryKey: queryKeys.displays.popular(),
+    queryFn: () => getPopularDisplays(),
+    enabled,
   });
 
 export type HomeExhibitionTab = 'pop' | 'grad' | 'live' | 'soon' | 'end';
@@ -26,7 +36,6 @@ export interface HomeExhibitionCard {
   posterImageUrl: string;
   organization: string;
   period: string;
-  /** 홈 · 검색 응답에 장소가 아직 없어 비어 있다(백엔드 협의 중) */
   place?: string;
 }
 
@@ -41,7 +50,8 @@ const toHomeCard = (display: HomeExhibitionDto): HomeExhibitionCard => ({
   title: display.title,
   posterImageUrl: display.posterImageUrl,
   organization: display.schoolDepartmentName,
-  period: `${formatDate(display.startedAt)} - ${formatDate(display.endedAt)}`,
+  period: formatExhibitionPeriod(display.startedAt, display.endedAt),
+  place: display.placeName || undefined,
 });
 
 /**
@@ -49,6 +59,12 @@ const toHomeCard = (display: HomeExhibitionDto): HomeExhibitionCard => ({
  * 캐시에는 원본 응답을 두고 select 로 바꾼다 — 탐색 화면과 같은 query key 를 쓰기 때문이다.
  */
 export const useHomeTabExhibitions = (tab: HomeExhibitionTab) => {
+  const popular = useQuery({
+    queryKey: queryKeys.displays.popular(),
+    queryFn: () => getPopularDisplays(),
+    enabled: tab === 'pop',
+    select: (displays) => displays.map(toHomeCard),
+  });
   const graduation = useQuery({
     queryKey: queryKeys.displays.graduation(homeTabGraduationParams),
     queryFn: () => getGraduationDisplays(homeTabGraduationParams),
@@ -61,11 +77,10 @@ export const useHomeTabExhibitions = (tab: HomeExhibitionTab) => {
     enabled: tab === 'end',
     select: (data) => data.exhibitions.map(toHomeCard),
   });
-  // 인기 전시 API가 없어 전시 중 목록을 임시로 같이 쓴다(백엔드 협의 중). API가 생기면 pop 쿼리를 따로 둔다
   const live = useQuery({
     queryKey: queryKeys.displays.search(homeTabLiveParams),
     queryFn: () => searchDisplays(homeTabLiveParams),
-    enabled: tab === 'live' || tab === 'pop',
+    enabled: tab === 'live',
     select: (data) => data.exhibitions.map(toHomeCard),
   });
   const soon = useQuery({
@@ -75,6 +90,7 @@ export const useHomeTabExhibitions = (tab: HomeExhibitionTab) => {
     select: (data) => data.exhibitions.map(toHomeCard),
   });
 
+  if (tab === 'pop') return popular;
   if (tab === 'grad') return graduation;
   if (tab === 'end') return closingSoon;
   if (tab === 'soon') return soon;

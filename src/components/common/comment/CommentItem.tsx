@@ -141,7 +141,7 @@ function CommentPhotos({ urls, onOpen }: { urls: string[]; onOpen: (url: string)
             displayWidth={240}
             alt="댓글 이미지"
             skeleton
-            frameClassName="aspect-5/6 w-full rounded-12 bg-secondary"
+            frameClassName="aspect-5/6 w-full bg-secondary"
           />
         </button>
       ))}

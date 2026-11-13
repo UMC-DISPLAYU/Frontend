@@ -44,7 +44,7 @@ export function ArtworkLabel({
           onClick={onToggleLike}
           disabled={disabled}
           title={disabled ? '공개 전에는 사용할 수 없어요' : undefined}
-          className="-m-2 flex w-11 shrink-0 cursor-pointer flex-col items-center p-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100"
+          className="-m-2 -mt-1.5 flex w-11 shrink-0 cursor-pointer flex-col items-center p-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100"
         >
           <Heart
             aria-hidden="true"
@@ -59,7 +59,7 @@ export function ArtworkLabel({
         </button>
       </div>
 
-      <div className="mt-1 flex flex-col gap-1">
+      <div className="mt-1 flex flex-col">
         <ArtworkArtists artists={artists} />
         {spec && <p className="typography-body-lg-medium text-secondary">{spec}</p>}
       </div>

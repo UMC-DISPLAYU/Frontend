@@ -23,7 +23,9 @@ function useIsStuck(sentinelRef: RefObject<HTMLDivElement>) {
       observer?.disconnect();
       observer = new IntersectionObserver(
         ([entry]) => setIsStuck(!entry.isIntersecting && entry.boundingClientRect.top < top),
-        { rootMargin: `-${top}px 0px 0px 0px` },
+        // 아래쪽을 길게 늘려 화면 아래에 있을 때도 '보임'으로 친다. 안 그러면 맨 아래로 한 번에 건너뛸 때
+        // 화면 아래 → 화면 위로 '안 보임'이 그대로라 콜백이 오지 않는다
+        { rootMargin: `-${top}px 0px 1000000px 0px` },
       );
       observer.observe(sentinel);
     };

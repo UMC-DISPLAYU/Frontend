@@ -8,9 +8,9 @@ import {
   type ExhibitionRegisterDraft,
   INITIAL_EXHIBITION_REGISTER_DRAFT,
 } from '@/contexts/exhibitionRegisterDraftState';
+import { parseInstagramId } from '@/utils/linkInput';
 
 import { toDisplayAffiliation, toDisplayFields } from './createDisplayRequest';
-import { parseInstagramId } from './displayLinks';
 import {
   DISPLAY_FIELD_OPTIONS,
   OTHER_GROUP_DISPLAY_TYPE,

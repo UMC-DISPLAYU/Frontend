@@ -60,7 +60,7 @@ export function PosterCarousel({ images, title, onBack, isPreview = false }: Pro
               aria-current={index === current}
               onClick={() => goTo(index)}
               className={cn(
-                'h-16 w-12 shrink-0 cursor-pointer overflow-hidden rounded-6 border-2 transition-opacity duration-fast ease-standard hover:opacity-100',
+                'h-16 w-12 shrink-0 cursor-pointer overflow-hidden border-2 transition-opacity duration-fast ease-standard hover:opacity-100',
                 index === current
                   ? 'border-bg-primary-black opacity-100'
                   : 'border-transparent opacity-55',
@@ -78,7 +78,7 @@ export function PosterCarousel({ images, title, onBack, isPreview = false }: Pro
         </div>
       )}
 
-      <div className="relative aspect-402/568 overflow-hidden bg-secondary min-[37.5rem]:mx-auto min-[37.5rem]:mt-6 min-[37.5rem]:max-w-120 min-[37.5rem]:rounded-16 desktop:mx-0 desktop:mt-0 desktop:max-w-none desktop:min-w-0 desktop:flex-1">
+      <div className="relative aspect-402/568 overflow-hidden bg-secondary min-[37.5rem]:mx-auto min-[37.5rem]:mt-6 min-[37.5rem]:max-w-120 desktop:mx-0 desktop:mt-0 desktop:max-w-none desktop:min-w-0 desktop:flex-1">
         <div
           ref={trackRef}
           role="group"

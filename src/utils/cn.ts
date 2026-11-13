@@ -12,6 +12,8 @@ const twMerge = extendTailwindMerge({
         'fade-out',
         'sheet-in',
         'sheet-out',
+        'drawer-in',
+        'drawer-out',
         'modal-in',
         'modal-out',
         'toast-in',

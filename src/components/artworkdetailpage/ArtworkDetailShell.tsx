@@ -42,7 +42,7 @@ const TAB_LABEL: Record<ArtworkDetailTabKey, string> = { intro: '소개', guest:
  * - 900px 이상: 왼쪽 사진 · 오른쪽 정보 2단, 페이지 하나만 스크롤한다. 뒤로가기는 없다(미리보기만 사진 위에 둔다)
  */
 const LAYOUT =
-  'mx-auto w-full max-w-list desktop:grid desktop:grid-cols-[minmax(0,1.1fr)_minmax(380px,0.9fr)] desktop:items-start desktop:gap-x-18 desktop:px-gutter desktop:pt-8 desktop:pb-24';
+  'mx-auto w-full max-w-310 desktop:grid desktop:grid-cols-[minmax(0,1.1fr)_minmax(380px,0.9fr)] desktop:items-start desktop:gap-x-18 desktop:px-8 desktop:pt-8 desktop:pb-24';
 
 export function ArtworkDetailShell({
   images,
@@ -143,7 +143,7 @@ export function ArtworkDetailSkeleton() {
     <div className={cn('min-h-dvh bg-primary-white', detailStickyTopClass(false))}>
       <DetailTopBar className="top-0" />
       <div className={LAYOUT}>
-        <Skeleton className="aspect-402/554 min-[600px]:aspect-auto min-[600px]:h-[78vh] desktop:h-[min(78vh,820px)] desktop:rounded-12" />
+        <Skeleton className="aspect-402/554 min-[600px]:aspect-auto min-[600px]:h-[78vh] desktop:h-[min(78vh,820px)]" />
         <div className="flex flex-col gap-3 px-gutter pt-6 desktop:px-0 desktop:pt-0">
           <Skeleton className="h-7 w-2/3 rounded-4" />
           <Skeleton className="h-6 w-1/3 rounded-4" />

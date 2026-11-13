@@ -1,6 +1,6 @@
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="Icon / pencil">
-<path id="Vector" d="M4 20L5 16L16.5 4.5C16.8978 4.10218 17.4374 3.87868 18 3.87868C18.5626 3.87868 19.1022 4.10218 19.5 4.5C19.8978 4.89782 20.1213 5.43739 20.1213 6C20.1213 6.56261 19.8978 7.10218 19.5 7.5L8 19L4 20Z" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" stroke="#18181B"/>
-<path id="Vector_2" d="M14.5 6.5L17.5 9.5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" stroke="#18181B"/>
+<path id="Vector" d="M4 20.0002L5 16.0002L16.5 4.50023C16.8978 4.1024 17.4374 3.87891 18 3.87891C18.5626 3.87891 19.1022 4.1024 19.5 4.50023C19.8978 4.89805 20.1213 5.43762 20.1213 6.00023C20.1213 6.56284 19.8978 7.1024 19.5 7.50023L8 19.0002L4 20.0002Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#18181B"/>
+<path id="Vector_2" d="M14.5 6.5L17.5 9.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#18181B"/>
 </g>
 </svg>

@@ -225,7 +225,7 @@ export function ArtworkViewer({
               aria-current={index === current}
               onClick={() => selectThumb(index)}
               className={cn(
-                'h-16 w-12 shrink-0 cursor-pointer overflow-hidden rounded-6 border-2 transition-opacity duration-fast ease-standard',
+                'h-16 w-12 shrink-0 cursor-pointer overflow-hidden border-2 transition-opacity duration-fast ease-standard',
                 index === current
                   ? 'border-interactive-selected opacity-100'
                   : 'border-transparent opacity-55 hover:opacity-100',
@@ -247,7 +247,7 @@ export function ArtworkViewer({
         className={cn(
           'relative min-w-0 flex-1',
           !isStack &&
-            'aspect-402/554 overflow-hidden bg-secondary min-[600px]:aspect-auto min-[600px]:h-[78vh] desktop:h-[min(78vh,820px)] desktop:rounded-12',
+            'aspect-402/554 overflow-hidden bg-secondary min-[600px]:aspect-auto min-[600px]:h-[78vh] desktop:h-[min(78vh,820px)]',
         )}
       >
         <div
@@ -325,11 +325,7 @@ export function ArtworkViewer({
         </div>
 
         {isStack ? (
-          <div
-            ref={stackRef}
-            aria-label="작품 이미지 이어보기"
-            className="desktop:overflow-hidden desktop:rounded-12"
-          >
+          <div ref={stackRef} aria-label="작품 이미지 이어보기">
             {images.map((src, index) => (
               <StackImage
                 key={`${src}-${index}`}

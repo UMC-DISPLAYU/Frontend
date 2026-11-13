@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, Heart, MapPin } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import type { DisplayDetailDto } from '@/api/dto';
@@ -73,24 +73,37 @@ function LikeButton({ display, disabled }: { display: DisplayDetailDto; disabled
   );
 }
 
-function InfoRow({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
-  if (!value) return null;
+function InfoRow({ label, children }: { label: string; children: ReactNode }) {
+  if (!children) return null;
 
   return (
-    <div className="typography-body-lg-regular grid min-h-5 grid-cols-[14px_28px_1fr] items-center">
-      {icon}
-      <dt className="pl-1 text-tertiary">{label}</dt>
-      <dd className="pl-2 text-secondary">{value}</dd>
+    <div className="grid min-h-5 grid-cols-[auto_1fr] items-center">
+      <dt className="text-tertiary">{label}</dt>
+      <dd className="min-w-0 pl-2 text-secondary">{children}</dd>
     </div>
   );
 }
 
-const ICON_PROPS = {
-  'aria-hidden': true,
-  size: 14,
-  strokeWidth: 1.7,
-  className: 'text-icon-tertiary',
-};
+const OUT_ICON_CLASS =
+  'size-3 shrink-0 text-icon-tertiary transition duration-fast ease-standard group-hover:translate-x-px group-hover:-translate-y-px group-hover:text-icon-primary';
+
+/* 장소는 진한 글자 + ↗. 누르면 카카오맵에서 그 좌표를 연다 */
+function PlaceLink({ location }: { location: DisplayDetailDto['location'] }) {
+  const { placeName, latitude, longitude } = location;
+
+  return (
+    <a
+      href={`https://map.kakao.com/link/map/${encodeURIComponent(placeName)},${latitude},${longitude}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`장소 ${placeName}, 카카오맵에서 보기 (새 탭에서 열려요)`}
+      className="group typography-body-lg-medium relative inline-flex max-w-full items-center gap-2 align-top text-primary before:absolute before:-inset-x-1 before:-inset-y-3 focus-visible:outline-2 focus-visible:outline-focus"
+    >
+      <span className="min-w-0 truncate underline-offset-3 group-hover:underline">{placeName}</span>
+      <OutIcon className={OUT_ICON_CLASS} />
+    </a>
+  );
+}
 
 /* 피그마 전시 링크 개선안(11-05): 카드 · 버튼이 아니라 아이콘 + 글자 링크 한 줄, 입력한 것만 보인다 */
 function ExternalLinks({ display }: { display: DisplayDetailDto }) {
@@ -116,7 +129,7 @@ function ExternalLinks({ display }: { display: DisplayDetailDto }) {
           <span className="max-w-55 min-w-0 truncate underline-offset-3 group-hover:underline">
             {link.label}
           </span>
-          <OutIcon className="size-3 shrink-0 text-icon-tertiary transition duration-fast ease-standard group-hover:translate-x-px group-hover:-translate-y-px group-hover:text-icon-primary" />
+          <OutIcon className={OUT_ICON_CLASS} />
         </a>
       ))}
     </div>
@@ -126,6 +139,7 @@ function ExternalLinks({ display }: { display: DisplayDetailDto }) {
 export function DisplaySummary({ display, isPreview, actions }: Props) {
   const organizer =
     [display.organization, display.department].filter(Boolean).join(' ') || display.subtitle;
+  const periodDate = formatPeriodDate(display.period?.startDate, display.period?.endDate);
 
   return (
     <header className="grid gap-5 px-gutter py-6 desktop:px-0 desktop:pt-0 desktop:pb-5">
@@ -139,22 +153,16 @@ export function DisplaySummary({ display, isPreview, actions }: Props) {
         <LikeButton display={display} disabled={isPreview} />
       </div>
 
-      <dl className="grid gap-2">
-        <InfoRow
-          icon={<CalendarDays {...ICON_PROPS} />}
-          label="일정"
-          value={formatPeriodDate(display.period?.startDate, display.period?.endDate)}
-        />
-        <InfoRow
-          icon={<Clock {...ICON_PROPS} />}
-          label="운영"
-          value={formatPeriodTime(display.period?.startTime, display.period?.endTime)}
-        />
-        <InfoRow
-          icon={<MapPin {...ICON_PROPS} />}
-          label="장소"
-          value={display.location?.placeName ?? ''}
-        />
+      <dl className="typography-body-lg-regular grid gap-2">
+        <InfoRow label="일정">
+          {periodDate && <span className="tracking-normal">{periodDate}</span>}
+        </InfoRow>
+        <InfoRow label="운영">
+          {formatPeriodTime(display.period?.startTime, display.period?.endTime)}
+        </InfoRow>
+        <InfoRow label="장소">
+          {display.location?.placeName && <PlaceLink location={display.location} />}
+        </InfoRow>
       </dl>
 
       <ExternalLinks display={display} />

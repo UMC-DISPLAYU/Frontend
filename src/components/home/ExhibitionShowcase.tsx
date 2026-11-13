@@ -1,4 +1,4 @@
-import { type KeyboardEvent, type ReactNode, useId } from 'react';
+import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 
 import { Link } from 'react-router-dom';
 
@@ -41,13 +41,20 @@ export function ExhibitionShowcase({
   const currentTab = HOME_TABS.find(({ key }) => key === tab) ?? HOME_TABS[0];
   const showRank = tab === 'pop';
   const isList = view === 'list';
+  // 사용자가 탭을 바꿨을 때만 새 목록이 올라오며 나타난다(처음 열 때 · 주소로 들어올 때는 없음)
+  const [animateIn, setAnimateIn] = useState(false);
+
+  const pickTab = (next: HomeExhibitionTab) => {
+    setAnimateIn(true);
+    onTabChange(next);
+  };
 
   const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
     event.preventDefault();
     const step = event.key === 'ArrowRight' ? 1 : -1;
     const next = HOME_TABS[(index + step + HOME_TABS.length) % HOME_TABS.length];
-    onTabChange(next.key);
+    pickTab(next.key);
     document.getElementById(`${tabId}-${next.key}`)?.focus();
   };
 
@@ -79,10 +86,10 @@ export function ExhibitionShowcase({
         {/* 프로토타입처럼 포스터(232:329) + 위 여백 16 + 정보 3줄(99)만큼 높이를 잡아 둔다. 장소가 없거나 탭을 바꿔도 높이가 같다 */}
         <div className="grid min-h-[calc(var(--poster-w)*329/232+115px)]">
           <div className={cn('col-start-1 row-start-1 min-w-0', isList && 'invisible')}>
-            <PosterCarousel key={tab} items={items} showRank={showRank} />
+            <PosterCarousel key={tab} items={items} showRank={showRank} animateIn={animateIn} />
           </div>
           <div className={cn('col-start-1 row-start-1 min-w-0', !isList && 'invisible')}>
-            <ExhibitionListView key={tab} items={items} showRank={showRank} />
+            <ExhibitionListView key={tab} items={items} showRank={showRank} animateIn={animateIn} />
           </div>
         </div>
         <div className={cn(HOME_INNER, 'flex justify-end py-1')}>
@@ -123,10 +130,10 @@ export function ExhibitionShowcase({
               aria-selected={isSelected}
               aria-controls={`${tabId}-panel`}
               tabIndex={isSelected ? 0 : -1}
-              onClick={() => onTabChange(key)}
+              onClick={() => pickTab(key)}
               onKeyDown={(event) => onTabKeyDown(event, index)}
               className={cn(
-                'typography-body-lg-semibold flex-none cursor-pointer border-b-2 border-transparent px-3 py-2 transition-colors duration-fast ease-standard hover:text-quaternary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
+                'typography-body-lg-semibold flex-none cursor-pointer border-b-2 border-transparent px-3 py-2 transition duration-fast ease-standard hover:text-quaternary active:scale-96 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
                 isSelected ? 'text-quaternary' : 'text-tertiary',
               )}
             >

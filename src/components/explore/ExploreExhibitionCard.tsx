@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import type { DisplayListItemDto } from '@/api/dto';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton } from '@/components/ui';
-
-import { formatExhibitionPeriod } from './formatExhibitionPeriod';
+import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
 const POSTER_FRAME_CLASS = 'aspect-175/262 w-full bg-secondary';
 

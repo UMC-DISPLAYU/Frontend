@@ -5,7 +5,7 @@ import type {
   OffsetPageRequestDto,
 } from './common.dto';
 
-/* 졸업전시 · 마감 임박 · 검색 목록이 공통으로 내려주는 전시 항목(실서버 응답 기준, 스웨거에는 응답 스키마가 없다) */
+/* 인기 · 졸업전시 · 마감 임박 · 검색 목록이 공통으로 내려주는 전시 항목 */
 export interface HomeExhibitionDto {
   displayId: number;
   title: string;
@@ -16,6 +16,8 @@ export interface HomeExhibitionDto {
   /* 종료일까지 남은 일수. 이미 끝난 전시는 음수다 */
   dayLeft: number;
   isArchived: boolean;
+  /* 장소가 없는 전시는 비어 올 수 있다 */
+  placeName?: string | null;
 }
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
@@ -39,10 +41,8 @@ export interface GetClosingSoonDisplaysResponseDataDto {
 export type GetClosingSoonDisplaysResponseDto =
   ApiResponseDto<GetClosingSoonDisplaysResponseDataDto>;
 
-/* GET /v1/display/search 항목. 장소가 없는 전시는 비어 올 수 있다 */
-export interface DisplayListItemDto extends HomeExhibitionDto {
-  placeName?: string | null;
-}
+/* GET /v1/display/search 항목 */
+export type DisplayListItemDto = HomeExhibitionDto;
 
 export interface GetDisplaysRequestDto extends Partial<OffsetPageRequestDto> {
   searchWord?: string | null;

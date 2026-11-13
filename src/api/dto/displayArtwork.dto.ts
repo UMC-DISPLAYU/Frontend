@@ -337,6 +337,8 @@ export interface ArtworkPreviewItemDto {
   imageWidth: number;
   imageHeight: number;
   exhibitionInfo: ArtworkPreviewExhibitionInfoDto;
+  /* 대표 작가가 첫 번째이고 공동 작가가 이어진다 */
+  artists?: ArtworkCoAuthorDto[];
 }
 
 export interface GetArtworkPreviewResponseDataDto {
