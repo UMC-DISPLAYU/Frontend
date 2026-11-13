@@ -9,9 +9,9 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { getErrorMessage } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
-/* 피그마 메모: 흰 화면에서 사진이 위에서 아래로 이어진다. 폭 362(좌우 20) · 사이 12 · 반경 12 · 3:4 */
+/* 피그마 메모: 흰 화면에서 사진이 위에서 아래로 이어진다. 폭 362(좌우 20) · 사이 12 · 3:4 */
 const COLUMN = 'mx-auto w-full max-w-140';
-const PHOTO_FRAME = 'aspect-3/4 w-full overflow-hidden rounded-12 bg-tertiary';
+const PHOTO_FRAME = 'aspect-3/4 w-full overflow-hidden bg-tertiary';
 
 export function DisplayContentsPage() {
   const flowBack = useFlowBack();
