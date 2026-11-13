@@ -58,7 +58,8 @@ export interface UpdateNicknameRequestDto {
 }
 
 export interface UpdateMyProfileRequestDto {
-  profileImageUrl?: string;
+  /** null 이면 사진을 지운다 */
+  profileImageUrl?: string | null;
   nickname?: string;
 }
 

@@ -1,26 +1,56 @@
-import { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { cn } from '@/utils/cn';
 
-import { PencilIcon } from './ArtistProfileIcons';
-import { PhotoCropDialog } from './PhotoCropDialog';
+import { PhotoCropDialog, type PhotoShape } from './PhotoCropDialog';
 
 const ACCEPT = 'image/jpeg,image/png,image/webp';
 
 type ProfilePhotoFieldProps = {
+  /** 원: 기본 프로필(80), 사각형: 작가 사진(116×132) */
+  shape: PhotoShape;
   /** 저장된 주소 또는 새로 고른 사진의 미리보기 주소. 없으면 null */
   src: string | null;
+  /** 원 모양에서 사진이 없을 때 보일 기본 프로필 */
+  placeholder?: ReactNode;
   disabled?: boolean;
   /** 틀에 맞게 잘라 낸 사진. 삭제하면 null */
   onChange: (file: File | null) => void;
 };
 
-/** 작가 사진(116×132). 사진이 있으면 눌렀을 때 사진 변경 · 삭제 메뉴, 없으면 바로 사진을 고른다 */
-export function ProfilePhotoField({ src, disabled, onChange }: ProfilePhotoFieldProps) {
+function PencilIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height="16"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+      width="16"
+    >
+      <path d="m4 20 1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z" />
+      <path d="m14.5 6.5 3 3" />
+    </svg>
+  );
+}
+
+/** 프로필 사진. 사진이 있으면 눌렀을 때 사진 변경 · 삭제 메뉴, 없으면 바로 사진을 고른다 */
+export function ProfilePhotoField({
+  shape,
+  src,
+  placeholder,
+  disabled,
+  onChange,
+}: ProfilePhotoFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [pickedFile, setPickedFile] = useState<File | null>(null);
+  const isCircle = shape === 'circle';
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -47,29 +77,50 @@ export function ProfilePhotoField({ src, disabled, onChange }: ProfilePhotoField
     if (file) setPickedFile(file);
   };
 
+  const badge = (
+    <span
+      className={cn(
+        'absolute grid size-8 place-items-center rounded-circle border border-primary bg-primary-white text-primary transition-transform duration-fast ease-standard group-active:scale-94',
+        isCircle ? '-right-1 -bottom-1' : 'right-2 bottom-2',
+      )}
+    >
+      <PencilIcon />
+    </span>
+  );
+
   return (
-    <div className="relative mx-auto h-33 w-29" ref={rootRef}>
-      {src ? (
+    <div className={cn('relative mx-auto', isCircle ? 'size-20' : 'h-33 w-29')} ref={rootRef}>
+      {src || isCircle ? (
         <button
-          aria-expanded={isMenuOpen}
-          aria-haspopup="menu"
-          aria-label="프로필 사진 편집"
-          className="group relative block size-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          aria-expanded={src ? isMenuOpen : undefined}
+          aria-haspopup={src ? 'menu' : undefined}
+          aria-label={src ? '프로필 사진 편집' : '프로필 사진 등록'}
+          className={cn(
+            'group relative block size-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+            isCircle && 'rounded-circle',
+          )}
           disabled={disabled}
-          onClick={() => setIsMenuOpen((prev) => !prev)}
+          onClick={src ? () => setIsMenuOpen((prev) => !prev) : pick}
           type="button"
         >
-          <span className="block size-full overflow-hidden bg-tertiary transition-transform duration-fast ease-standard group-active:scale-98">
-            <OptimizedImage
-              alt=""
-              className="size-full object-cover"
-              displayWidth={232}
-              src={src}
-            />
+          <span
+            className={cn(
+              'block size-full overflow-hidden bg-tertiary transition-transform duration-fast ease-standard group-active:scale-98',
+              isCircle && 'rounded-circle',
+            )}
+          >
+            {src ? (
+              <OptimizedImage
+                alt=""
+                className="size-full object-cover"
+                displayWidth={isCircle ? 160 : 232}
+                src={src}
+              />
+            ) : (
+              placeholder
+            )}
           </span>
-          <span className="absolute right-2 bottom-2 grid size-8 place-items-center rounded-circle border border-primary bg-primary-white text-primary transition-transform duration-fast ease-standard group-active:scale-94">
-            <PencilIcon height="16" width="16" />
-          </span>
+          {badge}
         </button>
       ) : (
         <button
@@ -136,6 +187,7 @@ export function ProfilePhotoField({ src, disabled, onChange }: ProfilePhotoField
           setPickedFile(null);
           onChange(file);
         }}
+        shape={shape}
       />
     </div>
   );

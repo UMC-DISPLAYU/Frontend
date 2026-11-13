@@ -13,9 +13,12 @@ import { createPortal } from 'react-dom';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { cn } from '@/utils/cn';
 
-/** 작가 사진 틀 비율(116:132) */
-export const ARTIST_PHOTO_RATIO = 116 / 132;
+export type PhotoShape = 'circle' | 'rect';
+
+/** 틀 비율. 기본 프로필은 원(1:1), 작가 사진은 116:132 */
+const PHOTO_RATIO: Record<PhotoShape, number> = { circle: 1, rect: 116 / 132 };
 const OUTPUT_WIDTH = 480;
 const MAX_ZOOM = 3;
 const KEY_STEP_PX = 12;
@@ -26,13 +29,15 @@ type Size = { width: number; height: number };
 type PhotoCropDialogProps = {
   /** 고른 사진. null 이면 닫혀 있다 */
   file: File | null;
+  shape: PhotoShape;
   onCancel: () => void;
   onDone: (file: File) => void;
 };
 
 /** 사진을 끌어서 틀에 맞추고, 두 손가락 · 터치패드 핀치 · 휠 · +/− 키로 확대한다(프로토타입 `PhotoPick`) */
-export function PhotoCropDialog({ file, onCancel, onDone }: PhotoCropDialogProps) {
+export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDialogProps) {
   const open = Boolean(file);
+  const ratio = PHOTO_RATIO[shape];
   const panelRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [image, setImage] = useState<{ url: string; element: HTMLImageElement } | null>(null);
@@ -56,7 +61,7 @@ export function PhotoCropDialog({ file, onCancel, onDone }: PhotoCropDialogProps
     element.onload = () => {
       const { naturalWidth: width, naturalHeight: height } = element;
       setImage({ url, element });
-      setCrop({ cx: width / 2, cy: height / 2, cw: Math.min(width, height * ARTIST_PHOTO_RATIO) });
+      setCrop({ cx: width / 2, cy: height / 2, cw: Math.min(width, height * ratio) });
     };
     element.src = url;
     return () => {
@@ -64,7 +69,7 @@ export function PhotoCropDialog({ file, onCancel, onDone }: PhotoCropDialogProps
       setImage(null);
       setCrop(null);
     };
-  }, [file]);
+  }, [file, ratio]);
 
   useLayoutEffect(() => {
     const element = stageRef.current;
@@ -80,25 +85,30 @@ export function PhotoCropDialog({ file, onCancel, onDone }: PhotoCropDialogProps
     (next: Crop): Crop => {
       if (!image) return next;
       const { naturalWidth: width, naturalHeight: height } = image.element;
-      const fullWidth = Math.min(width, height * ARTIST_PHOTO_RATIO);
+      const fullWidth = Math.min(width, height * ratio);
       const cw = Math.max(fullWidth / MAX_ZOOM, Math.min(fullWidth, next.cw));
-      const ch = cw / ARTIST_PHOTO_RATIO;
+      const ch = cw / ratio;
       return {
         cw,
         cx: Math.max(cw / 2, Math.min(width - cw / 2, next.cx)),
         cy: Math.max(ch / 2, Math.min(height - ch / 2, next.cy)),
       };
     },
-    [image],
+    [image, ratio],
   );
 
   const update = (next: Crop) => setCrop(clamp(next));
 
-  // 틀 크기: 폭 264 이하, 위아래 여백 20씩
+  // 틀 크기(프로토타입): 원은 지름 300 이하, 사각형은 폭 264 이하. 위아래 여백 20씩
   const frameWidth = Math.round(
-    Math.max(0, Math.min(264, stage.width - 72, (stage.height - 40) * ARTIST_PHOTO_RATIO)),
+    Math.max(
+      0,
+      shape === 'circle'
+        ? Math.min(300, stage.width - 48, stage.height - 40)
+        : Math.min(264, stage.width - 72, (stage.height - 40) * ratio),
+    ),
   );
-  const frameHeight = Math.round(frameWidth / ARTIST_PHOTO_RATIO);
+  const frameHeight = Math.round(frameWidth / ratio);
   const scale = crop ? frameWidth / crop.cw : 1;
 
   const distance = () => {
@@ -169,11 +179,11 @@ export function PhotoCropDialog({ file, onCancel, onDone }: PhotoCropDialogProps
 
   const handleDone = () => {
     if (!image || !crop) return;
-    const height = Math.round(OUTPUT_WIDTH / ARTIST_PHOTO_RATIO);
+    const height = Math.round(OUTPUT_WIDTH / ratio);
     const canvas = document.createElement('canvas');
     canvas.width = OUTPUT_WIDTH;
     canvas.height = height;
-    const cropHeight = crop.cw / ARTIST_PHOTO_RATIO;
+    const cropHeight = crop.cw / ratio;
     canvas
       .getContext('2d')
       ?.drawImage(
@@ -189,7 +199,7 @@ export function PhotoCropDialog({ file, onCancel, onDone }: PhotoCropDialogProps
       );
     canvas.toBlob(
       (blob) => {
-        if (blob) onDone(new File([blob], 'artist-profile.jpg', { type: 'image/jpeg' }));
+        if (blob) onDone(new File([blob], 'profile.jpg', { type: 'image/jpeg' }));
       },
       'image/jpeg',
       0.86,
@@ -256,7 +266,10 @@ export function PhotoCropDialog({ file, onCancel, onDone }: PhotoCropDialogProps
               {/* 틀 밖을 어둡게 가린다 */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute border-2 border-interactive-inverse shadow-[0_0_0_999px_rgb(0_0_0/0.62)]"
+                className={cn(
+                  'pointer-events-none absolute border-2 border-interactive-inverse shadow-[0_0_0_999px_rgb(0_0_0/0.62)]',
+                  shape === 'circle' && 'rounded-circle',
+                )}
                 style={{
                   width: frameWidth,
                   height: frameHeight,

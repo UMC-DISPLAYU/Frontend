@@ -5,7 +5,6 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import type { ArtistProfileDto } from '@/api/dto';
-import { ProfilePhotoField } from '@/components/artist-profile';
 import {
   ActivityFieldSelector,
   ArtistVerifyBottomBar,
@@ -15,7 +14,7 @@ import {
   ArtistVerifyHelperText,
   ArtistVerifyInput,
 } from '@/components/artist-verify';
-import { ConfirmDialog, ErrorView, LinkInputField } from '@/components/common';
+import { ConfirmDialog, ErrorView, LinkInputField, ProfilePhotoField } from '@/components/common';
 import { PageContainer } from '@/components/layout';
 import { Skeleton } from '@/components/ui';
 import {
@@ -169,7 +168,12 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
         onSubmit={(event) => handleSubmit(onSubmit)(event)}
       >
         <fieldset className="flex flex-col gap-5" disabled={isSaving}>
-          <ProfilePhotoField disabled={isSaving} onChange={handlePhotoChange} src={photoPreview} />
+          <ProfilePhotoField
+            disabled={isSaving}
+            onChange={handlePhotoChange}
+            shape="rect"
+            src={photoPreview}
+          />
 
           <ArtistVerifyField htmlFor="artist-name" label="작가 프로필명">
             <ArtistVerifyInput

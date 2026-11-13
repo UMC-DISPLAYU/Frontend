@@ -21,6 +21,7 @@ export { MyArtistCard } from './MyArtistCard';
 export { MyPageHeader } from './MyPageHeader';
 export { GridIcon, MailIcon, PlusSquareIcon } from './MyPageIcons';
 export { MyPageTopBar } from './MyPageTopBar';
+export { ProfileAvatar } from './ProfileAvatar';
 export { SettingsDrawer } from './SettingsDrawer';
 export { SettingsSheet } from './SettingsSheet';
 export { useMyArchive } from './useMyArchive';
