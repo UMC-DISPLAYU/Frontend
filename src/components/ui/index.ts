@@ -1,7 +1,6 @@
 export { AlertModal } from './AlertModal';
 export { BackButton } from './BackButton';
 export { BottomSheet } from './BottomSheet';
-export { CardMetaList } from './CardMetaList';
 export { CategoryFilterBar } from './CategoryFilterBar';
 export { Chip } from './Chip';
 export { ChipGroup } from './ChipGroup';
@@ -11,7 +10,6 @@ export { FilterChip } from './FilterChip';
 export { LoungePostCard } from './LoungePostCard';
 export type { OverlayProps } from './Overlay';
 export { Overlay } from './Overlay';
-export { PosterCardCompact } from './PosterCardCompact';
 export { RequiredLabel } from './RequiredLabel';
 export { Skeleton, SkeletonList } from './Skeleton';
 export { Toaster } from './Toaster';
