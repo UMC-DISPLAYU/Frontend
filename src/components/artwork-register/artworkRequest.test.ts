@@ -68,15 +68,15 @@ describe('toArtworkImageRequests', () => {
     expect(requests.every((image) => image.width! > 0 && image.height! > 0)).toBe(true);
   });
 
-  it('이미 저장된 사진은 설명 · 크기를 그대로 보내고, 새 사진 · 잘못된 크기는 기본값을 쓴다', () => {
+  it('이미 저장된 사진은 설명(공백 · 빈 값 포함) · 크기를 그대로 보내고, 새 사진 · 잘못된 크기는 기본값을 쓴다', () => {
     const requests = toArtworkImageRequests(images, [
       { imageUrl: 'a1', caption: ' 정면 ', width: 1200, height: 1600 },
       { imageUrl: 'p1', caption: '', width: 0, height: -1 },
     ]);
 
-    expect(requests[0]).toMatchObject({ caption: '정면', width: 1200, height: 1600 });
+    expect(requests[0]).toMatchObject({ caption: ' 정면 ', width: 1200, height: 1600 });
     expect(requests[1]).not.toHaveProperty('caption');
-    expect(requests[2]).not.toHaveProperty('caption');
+    expect(requests[2]).toMatchObject({ caption: '' });
     expect(requests[2].width).toBeGreaterThan(0);
     expect(requests[2].height).toBeGreaterThan(0);
   });

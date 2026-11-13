@@ -72,13 +72,13 @@ export function toArtworkImageRequests(
     imageType: ArtworkImageRequestDto['imageType'],
   ): ArtworkImageRequestDto => {
     const saved = savedImages.find((image) => image.imageUrl === imageUrl);
-    const caption = saved?.caption?.trim();
 
     return {
       imageUrl,
       isThumbnail: imageType === 'ARTWORK' && index === 0,
       imageType,
-      ...(caption && { caption }),
+      // 저장된 설명은 공백 · 빈 문자열까지 원래 값 그대로 보낸다
+      ...(typeof saved?.caption === 'string' && { caption: saved.caption }),
       width: positive(saved?.width) ?? DEFAULT_ARTWORK_IMAGE_WIDTH,
       height: positive(saved?.height) ?? DEFAULT_ARTWORK_IMAGE_HEIGHT,
       sortOrder: index + 1,
