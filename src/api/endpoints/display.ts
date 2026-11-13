@@ -44,6 +44,13 @@ import type {
 
 import { apiRequest } from '../client';
 
+// GET /v1/display/popular
+export const getPopularDisplays = async (): Promise<HomeExhibitionDto[]> => {
+  const data = await apiRequest<{ exhibitions: HomeExhibitionDto[] }>('/v1/display/popular');
+
+  return data.exhibitions;
+};
+
 // GET /v1/display/graduation
 export const getGraduationDisplays = async (params?: {
   size?: number;

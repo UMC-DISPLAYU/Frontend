@@ -151,6 +151,15 @@ const artworkToDetail = (artwork: any) => ({
   artistName: artwork.artist,
   /* 작가 프로필 조회와 작가 저장에 쓰는 계정 id. 작품별로 고정된 값을 부여합니다. */
   artistUserId: 300 + (artwork.artworkId % 100),
+  artists: [
+    { userId: 300 + (artwork.artworkId % 100), name: artwork.artist },
+    ...(artwork.artworkId % 3 === 0
+      ? [
+          { userId: null, name: '김서윤' },
+          { userId: null, name: '박도현' },
+        ]
+      : []),
+  ],
   artworkImageUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
   imageWidth: 1600,
   imageHeight: 1600,

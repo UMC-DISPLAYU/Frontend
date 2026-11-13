@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 
 import ChevronArrowIcon from '@/assets/home/ChevronArrowIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { CardMetaList, Skeleton, SkeletonList } from '@/components/ui';
+import { Skeleton, SkeletonList } from '@/components/ui';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
 import { cn } from '@/utils/cn';
+import { staggerStyle } from '@/utils/stagger';
 
 import { useCenteredScroll } from './useCenteredScroll';
 
@@ -14,14 +15,16 @@ const RAIL_CLASS =
   'relative flex items-start gap-3 overflow-x-auto overscroll-x-contain px-[calc(50%-var(--poster-w)/2)] pt-4 [scrollbar-width:none] tablet:gap-4 min-[68.75rem]:gap-6 [&::-webkit-scrollbar]:hidden';
 
 const ARROW_CLASS =
-  'absolute top-47.5 z-10 hidden size-11 place-items-center rounded-circle border border-icon-secondary bg-primary-black text-quaternary transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-focus-inverse enabled:cursor-pointer enabled:hover:bg-interactive-primary enabled:active:scale-96 min-[68.75rem]:grid';
+  'absolute top-47.5 z-10 hidden size-11 place-items-center rounded-circle border border-icon-secondary bg-primary-black text-quaternary transition duration-fast ease-standard focus-visible:outline-2 cursor-pointer hover:bg-interactive-primary focus-visible:outline-focus-inverse active:scale-96 min-[68.75rem]:grid';
 
 interface PosterCarouselProps {
   items: HomeExhibitionCard[];
   showRank: boolean;
+  /** 탭을 바꿔 새로 그린 목록이면 앞 5칸이 차례로 올라오며 나타난다 */
+  animateIn?: boolean;
 }
 
-export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
+export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselProps) {
   const { ref, activeIndex, highlightIndex, scrollToIndex } = useCenteredScroll<HTMLDivElement>(
     items.length,
   );
@@ -34,10 +37,11 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
 
   return (
     <div className="relative">
+      {/* 프로토타입처럼 맨 끝에서도 버튼 모양 · 커서를 그대로 둔다. 누르면 아무 일도 없다(scrollToIndex 가 범위 밖을 무시) */}
       <button
         type="button"
         aria-label="이전 전시"
-        disabled={activeIndex === 0}
+        aria-disabled={activeIndex === 0}
         onClick={() => scrollToIndex(activeIndex - 1)}
         className={cn(ARROW_CLASS, 'left-(--home-pad)')}
       >
@@ -46,7 +50,7 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
       <button
         type="button"
         aria-label="다음 전시"
-        disabled={activeIndex === items.length - 1}
+        aria-disabled={activeIndex === items.length - 1}
         onClick={() => scrollToIndex(activeIndex + 1)}
         className={cn(ARROW_CLASS, 'right-(--home-pad)')}
       >
@@ -82,7 +86,11 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
               key={item.displayId}
               aria-label={rank ? `순위 ${rank}: ${item.title}` : item.title}
               aria-current={isActive || undefined}
-              className="flex w-(--poster-w) flex-none snap-center snap-always flex-col items-center"
+              className={cn(
+                'flex w-(--poster-w) flex-none snap-center snap-always flex-col items-center',
+                animateIn && 'animate-rise',
+              )}
+              style={animateIn ? staggerStyle(index, { maxSteps: 4 }) : undefined}
             >
               <Link
                 to={`/display/${item.displayId}`}
@@ -90,7 +98,7 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
                 tabIndex={isActive ? 0 : -1}
                 onClick={openOrCenter}
                 className={cn(
-                  'relative block aspect-232/329 w-full origin-top overflow-hidden rounded-12 bg-primary-400 transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
+                  'relative block aspect-402/568 w-full origin-top overflow-hidden bg-primary-400 transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
                   !isActive && 'translate-y-3.5 scale-91',
                 )}
               >
@@ -112,7 +120,7 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
                 <span
                   aria-hidden="true"
                   className={cn(
-                    'absolute inset-0 bg-primary-black transition-opacity duration-base ease-standard [mask-image:linear-gradient(transparent_56.5%,#000)]',
+                    'absolute inset-0 bg-primary-black transition-opacity duration-base ease-standard [mask-image:linear-gradient(transparent_74.77%,#000)]',
                     !isActive && 'opacity-0',
                   )}
                 />
@@ -154,7 +162,10 @@ export function PosterCarousel({ items, showRank }: PosterCarouselProps) {
                   </Link>
                   <p className="typography-body-md-medium truncate">{item.organization}</p>
                 </div>
-                <CardMetaList period={item.period} location={item.place} className="items-center" />
+                <div className="grid gap-0.5 text-tertiary">
+                  <p className="typography-body-md-regular2 truncate">{item.period}</p>
+                  {item.place && <p className="typography-body-md-medium truncate">{item.place}</p>}
+                </div>
               </div>
             </article>
           );
@@ -175,7 +186,7 @@ export function PosterCarouselSkeleton() {
               index !== 1 && 'translate-y-3.5 scale-91 opacity-40',
             )}
           >
-            <Skeleton className="aspect-232/329 w-full rounded-12" />
+            <Skeleton className="aspect-402/568 w-full" />
             <Skeleton className="mt-1.5 h-5 w-2/3 rounded-4" />
             <Skeleton className="h-4 w-1/2 rounded-4" />
           </div>
