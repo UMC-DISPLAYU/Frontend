@@ -123,6 +123,7 @@ export function ArtworkAuthorChoiceSheet({
       description={
         <span className={SMALL_DESCRIPTION_CLASS}>대신 등록할 작품의 작가 정보를 선택해주세요</span>
       }
+      showCloseButton={false}
       footer={
         <button
           type="button"
@@ -137,7 +138,7 @@ export function ArtworkAuthorChoiceSheet({
         </button>
       }
     >
-      <div role="tablist" className="-mx-5 grid grid-cols-2 border-b border-bg-tertiary">
+      <div role="tablist" className="grid grid-cols-2 border-b border-bg-tertiary">
         {(
           [
             ['team', '전시 팀원에서 선택'],

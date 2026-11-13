@@ -175,11 +175,7 @@ const authorCaption = (userId: number | null | undefined, myUserId: number | und
   return userId === myUserId ? '작가 · 나' : '작가 · 팀원';
 };
 
-/**
- * 전시 출품작 등록(/exhibition/:displayId/artworks/new)과 수정(/exhibition/:displayId/artworks/:artworkId/edit).
- * 대표자가 대신 등록할 때는 전시 작업의 작품 추가 시트가 ?as=member&userId= 또는 ?as=name&name= 을 붙여 들어온다.
- */
-export function ArtworkRegisterPage() {
+function ArtworkRegisterRoute() {
   const params = useParams();
   const [searchParams] = useSearchParams();
   const leave = useLeaveArtworkRegister();
@@ -305,5 +301,18 @@ export function ArtworkRegisterPage() {
       defaultValues={EMPTY_ARTWORK_REGISTER_VALUES}
       initialImages={{ artworkUrls: [], processUrls: [] }}
     />
+  );
+}
+
+/**
+ * 전시 출품작 등록(/exhibition/:displayId/artworks/new)과 수정(/exhibition/:displayId/artworks/:artworkId/edit).
+ * 대표자가 대신 등록할 때는 전시 작업의 작품 추가 시트가 ?as=member&userId= 또는 ?as=name&name= 을 붙여 들어온다.
+ */
+export function ArtworkRegisterPage() {
+  return (
+    // 프로토타입은 태블릿 · 데스크톱에서도 입력 칸 바깥까지 흰 화면이다
+    <div className="min-h-dvh bg-primary-white">
+      <ArtworkRegisterRoute />
+    </div>
   );
 }

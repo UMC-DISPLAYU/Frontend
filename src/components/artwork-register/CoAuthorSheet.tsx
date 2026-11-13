@@ -50,15 +50,26 @@ export function CoAuthorSheet({ open, candidates, value, onClose, onDone }: CoAu
     setNameInput('');
   };
 
-  const handleDone = () => {
-    // 이미 추가된 팀원은 시트를 연 사이 목록에서 빠졌더라도 지우지 않는다
-    const pickedTeam = pickedUserIds.flatMap((userId) => {
-      const candidate = candidates.find((item) => item.userId === userId);
-      if (candidate) return [toTeamCoAuthor(candidate)];
-      return value.filter((person) => person.userId === userId);
-    });
+  // 프로토타입: 탭을 바꾸면 입력 중이던 이름은 지워지고, 완료할 때는 이름 탭에 남은 입력만 함께 추가한다
+  const changeTab = (next: CoAuthorTab) => {
+    setTab(next);
+    setNameInput('');
+  };
 
-    onDone([...pickedTeam, ...withTypedName(typedNames).map(toNamedCoAuthor)]);
+  const handleDone = () => {
+    // 팀원은 고른 순서가 아니라 팀원 목록 순서로 넣는다. 시트를 연 사이 목록에서 빠진 팀원은 지우지 않는다
+    const pickedTeam = candidates
+      .filter((candidate) => pickedUserIds.includes(candidate.userId))
+      .map(toTeamCoAuthor);
+    const keptTeam = value.filter(
+      (person) =>
+        person.userId !== undefined &&
+        pickedUserIds.includes(person.userId) &&
+        !candidates.some((candidate) => candidate.userId === person.userId),
+    );
+    const names = tab === 'name' ? withTypedName(typedNames) : typedNames;
+
+    onDone([...pickedTeam, ...keptTeam, ...names.map(toNamedCoAuthor)]);
   };
 
   return (
@@ -66,6 +77,7 @@ export function CoAuthorSheet({ open, candidates, value, onClose, onDone }: CoAu
       open={open}
       onClose={onClose}
       title="공동 작가 추가"
+      showCloseButton={false}
       footer={
         <button
           type="button"
@@ -88,7 +100,7 @@ export function CoAuthorSheet({ open, candidates, value, onClose, onDone }: CoAu
             type="button"
             role="tab"
             aria-selected={tab === key}
-            onClick={() => setTab(key)}
+            onClick={() => changeTab(key)}
             className={cn(
               'typography-body-lg-semibold h-10 rounded-circle transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
               tab === key ? 'bg-primary-black text-base-white' : 'text-secondary',

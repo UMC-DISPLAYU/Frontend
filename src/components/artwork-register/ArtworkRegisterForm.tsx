@@ -3,7 +3,7 @@ import { type ChangeEvent, type ReactNode, useEffect, useId, useState } from 're
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import { BottomFixedBar, ConfirmDialog } from '@/components/common';
+import { ConfirmDialog } from '@/components/common';
 import { PageContainer } from '@/components/layout';
 
 import { ArtworkFieldChips } from './ArtworkFieldChips';
@@ -23,6 +23,7 @@ import {
   type ArtworkRegisterValues,
   sanitizeArtworkYearInput,
 } from './artworkRegister.schema';
+import { ArtworkRegisterCta } from './ArtworkRegisterCta';
 import { ArtworkRegisterHeader } from './ArtworkRegisterHeader';
 import type { ArtworkImageUrls } from './artworkRequest';
 import { useArtworkImageUploads } from './useArtworkImageUploads';
@@ -145,7 +146,7 @@ export function ArtworkRegisterForm({
     <PageContainer variant="form" className="bg-primary-white">
       <ArtworkRegisterHeader title={isEdit ? '작품 수정' : '작품 등록'} onBack={handleBack} />
 
-      <main className="flex-1 pt-5">
+      <div className="flex-1 pt-5">
         <form
           id={formId}
           noValidate
@@ -294,9 +295,9 @@ export function ArtworkRegisterForm({
             />
           </section>
         </form>
-      </main>
+      </div>
 
-      <BottomFixedBar container="form">
+      <ArtworkRegisterCta>
         <button
           form={formId}
           type="submit"
@@ -305,7 +306,7 @@ export function ArtworkRegisterForm({
         >
           {isEdit ? '수정 완료' : '작품 등록'}
         </button>
-      </BottomFixedBar>
+      </ArtworkRegisterCta>
 
       <ConfirmDialog
         open={isLeaveOpen}

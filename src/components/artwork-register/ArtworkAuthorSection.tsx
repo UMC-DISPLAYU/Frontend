@@ -63,7 +63,7 @@ export function ArtworkAuthorSection({
           </div>
         ))}
         {registrantName && (
-          <p className="typography-body-md-medium -mt-2 px-4 pb-4 text-secondary">
+          <p className="typography-body-md-medium mt-1 px-4 text-secondary">
             등록자 · {registrantName} (나)
           </p>
         )}

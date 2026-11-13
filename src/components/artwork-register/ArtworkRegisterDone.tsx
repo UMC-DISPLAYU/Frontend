@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 
 import CompleteIcon from '@/assets/display-hub/CompleteIcon.svg';
-import { BottomFixedBar } from '@/components/common';
 import { PageContainer } from '@/components/layout';
+
+import { ArtworkRegisterCta } from './ArtworkRegisterCta';
 
 interface ArtworkRegisterDoneProps {
   description: string;
@@ -20,7 +21,7 @@ export function ArtworkRegisterDone({ description, summary, onConfirm }: Artwork
 
   return (
     <PageContainer variant="form" className="bg-primary-white text-primary">
-      <main className="flex flex-col gap-10 pt-14 pb-5">
+      <div className="flex flex-col gap-10 pt-14 pb-5">
         <div className="flex flex-col items-center gap-5 text-center">
           <img src={CompleteIcon} alt="" />
           <div className="flex flex-col gap-2">
@@ -41,9 +42,9 @@ export function ArtworkRegisterDone({ description, summary, onConfirm }: Artwork
             </div>
           ))}
         </dl>
-      </main>
+      </div>
 
-      <BottomFixedBar container="form">
+      <ArtworkRegisterCta>
         <button
           type="button"
           onClick={onConfirm}
@@ -51,7 +52,7 @@ export function ArtworkRegisterDone({ description, summary, onConfirm }: Artwork
         >
           확인
         </button>
-      </BottomFixedBar>
+      </ArtworkRegisterCta>
     </PageContainer>
   );
 }

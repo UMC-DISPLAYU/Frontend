@@ -203,9 +203,7 @@ export function ArtworkImageField({
           />
         ))}
       </div>
-      {representativeImage?.uploadedUrl && (
-        <CardPreview imageUrl={representativeImage.previewUrl} />
-      )}
+      {representativeImage && <CardPreview imageUrl={representativeImage.previewUrl} />}
     </div>
   );
 }

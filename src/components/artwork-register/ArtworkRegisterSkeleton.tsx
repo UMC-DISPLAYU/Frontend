@@ -18,7 +18,7 @@ export function ArtworkRegisterSkeleton({
   return (
     <PageContainer variant="form" className="bg-primary-white">
       <ArtworkRegisterHeader title={title} onBack={onBack} />
-      <main
+      <div
         aria-busy="true"
         aria-label="작품 정보를 불러오는 중"
         className="flex flex-col gap-10 pt-5 pb-6"
@@ -42,7 +42,7 @@ export function ArtworkRegisterSkeleton({
           <Skeleton className="h-17 rounded-4" />
           <Skeleton className="h-32 rounded-12" />
         </div>
-      </main>
+      </div>
     </PageContainer>
   );
 }

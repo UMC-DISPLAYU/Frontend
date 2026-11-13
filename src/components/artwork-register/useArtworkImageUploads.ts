@@ -20,9 +20,34 @@ export type AddArtworkImagesResult = {
 const createImageId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const isLocalPreview = (url: string) => url.startsWith('blob:');
 
-export const isAcceptableArtworkImage = (file: File) =>
+export const isAcceptableArtworkImage = (file: Pick<File, 'type' | 'size'>) =>
   (ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) &&
   file.size <= MAX_ARTWORK_IMAGE_MB * 1024 * 1024;
+
+/**
+ * 프로토타입처럼 고른 순서대로 한 장씩 본다. 올릴 수 없는 파일은 건너뛰어 장수에 세지 않고,
+ * 칸이 다 찬 뒤에 남은 파일이 있으면 overLimit 이다.
+ */
+export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size'>>(
+  files: readonly TFile[],
+  currentCount: number,
+  maxImages: number,
+) {
+  const accepted: TFile[] = [];
+  let rejectedCount = 0;
+  let overLimit = false;
+
+  for (const file of files) {
+    if (currentCount + accepted.length >= maxImages) {
+      overLimit = true;
+      break;
+    }
+    if (isAcceptableArtworkImage(file)) accepted.push(file);
+    else rejectedCount += 1;
+  }
+
+  return { accepted, rejectedCount, overLimit };
+}
 
 /** 사진을 고르는 즉시 올리고, 실패한 파일은 목록에서 빼 두었다가 다시 올릴 수 있게 한다 */
 export function useArtworkImageUploads({
@@ -78,9 +103,11 @@ export function useArtworkImageUploads({
     (files: File[]): AddArtworkImagesResult => {
       setFailedFiles([]);
 
-      const remaining = Math.max(maxImages - itemsRef.current.length, 0);
-      const candidates = files.slice(0, remaining);
-      const accepted = candidates.filter(isAcceptableArtworkImage);
+      const { accepted, rejectedCount, overLimit } = pickArtworkFiles(
+        files,
+        itemsRef.current.length,
+        maxImages,
+      );
       const added = accepted.map((file) => ({
         file,
         item: { id: createImageId(), previewUrl: URL.createObjectURL(file) },
@@ -91,10 +118,7 @@ export function useArtworkImageUploads({
       setItems((prev) => [...prev, ...added.map(({ item }) => item)]);
       added.forEach(({ item, file }) => startUpload(item, file));
 
-      return {
-        overLimit: files.length > remaining,
-        rejectedCount: candidates.length - accepted.length,
-      };
+      return { overLimit, rejectedCount };
     },
     [maxImages, startUpload],
   );
