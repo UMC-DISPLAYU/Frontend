@@ -14,6 +14,7 @@ import { type BlockerFunction, useBlocker } from 'react-router-dom';
 
 import { ConfirmDialog } from '@/components/common';
 import { PageContainer } from '@/components/layout';
+import { toast } from '@/stores/toastStore';
 
 import { ArtworkFieldChips } from './ArtworkFieldChips';
 import { ArtworkImageField } from './ArtworkImageField';
@@ -91,6 +92,8 @@ export function ArtworkRegisterForm({
   const processImages = useArtworkImageUploads({
     initialUrls: initialImages.processUrls,
     maxImages: MAX_PROCESS_IMAGES,
+    // 프로토타입은 작업 과정 칸의 오류를 칸 위 안내 대신 토스트로 알린다
+    onUploadError: () => toast('작업 과정 사진을 올리지 못했어요. 다시 시도해주세요.'),
   });
 
   const {
@@ -150,8 +153,9 @@ export function ArtworkRegisterForm({
   useEffect(() => {
     if (blocker.state !== 'blocked') return;
     blocker.reset();
-    queueMicrotask(() => setIsLeaveOpen(true));
-  }, [blocker]);
+    // 저장 중에는 확인 모달을 열지 않는다(저장이 끝나면 화면이 바뀐다)
+    if (!isSubmitting) queueMicrotask(() => setIsLeaveOpen(true));
+  }, [blocker, isSubmitting]);
 
   const leaveNow: typeof leave = (...args) => {
     allowLeaveRef.current = true;
@@ -160,6 +164,9 @@ export function ArtworkRegisterForm({
 
   // 프로토타입: 등록은 입력한 내용이 있을 때만, 수정은 항상 나갈지 묻는다
   const handleBack = () => {
+    // 저장 중에 확인 모달을 열면 저장 후 이동이 모달 기록만 닫고 이 화면에 남는다
+    if (isSubmitting) return;
+
     if (isEdit || hasInput) {
       setIsLeaveOpen(true);
       return;

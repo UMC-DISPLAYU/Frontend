@@ -49,13 +49,18 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size'>>(
   return { accepted, rejectedCount, overLimit };
 }
 
-/** 사진을 고르는 즉시 올리고, 실패한 파일은 목록에서 빼 두었다가 다시 올릴 수 있게 한다 */
+/**
+ * 사진을 고르는 즉시 올리고, 실패한 파일은 목록에서 빼 두었다가 다시 올릴 수 있게 한다.
+ * onUploadError 를 넘기면 실패한 파일을 남기지 않고 그 콜백으로만 알린다(다시 시도 안내가 없는 칸)
+ */
 export function useArtworkImageUploads({
   initialUrls,
   maxImages,
+  onUploadError,
 }: {
   initialUrls: string[];
   maxImages: number;
+  onUploadError?: () => void;
 }) {
   const [items, setItems] = useState<ArtworkImageItem[]>(() =>
     initialUrls.map((url, index) => ({
@@ -67,10 +72,15 @@ export function useArtworkImageUploads({
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
   const { mutateAsync: uploadImage } = useUploadImage();
   const itemsRef = useRef(items);
+  const onUploadErrorRef = useRef(onUploadError);
 
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
+
+  useEffect(() => {
+    onUploadErrorRef.current = onUploadError;
+  });
 
   useEffect(() => {
     return () => {
@@ -93,7 +103,11 @@ export function useArtworkImageUploads({
 
           URL.revokeObjectURL(item.previewUrl);
           setItems((prev) => prev.filter((image) => image.id !== item.id));
-          if (!wasRemoved) setFailedFiles((prev) => [...prev, file]);
+          if (wasRemoved) return;
+
+          const reportError = onUploadErrorRef.current;
+          if (reportError) reportError();
+          else setFailedFiles((prev) => [...prev, file]);
         });
     },
     [uploadImage],
