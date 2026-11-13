@@ -57,7 +57,8 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const isOrderScreen = screen === 'order' && canReorder;
   const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
   // 대신 등록 시트의 팀원 목록. 대표자만 시트를 열기 때문에 대표자일 때만 불러온다
-  const { data: memberList } = useDisplayMembers(isOwner ? displayId : 0);
+  const membersQuery = useDisplayMembers(isOwner ? displayId : 0);
+  const memberList = membersQuery.data;
   const proxyCandidates = useMemo(
     () =>
       toTeamCandidates(memberList?.members, {
@@ -191,6 +192,10 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
         key={authorChoice.key}
         open={authorChoice.open}
         candidates={proxyCandidates}
+        candidatesStatus={
+          membersQuery.isError ? 'error' : membersQuery.isPending ? 'pending' : 'success'
+        }
+        onRetryCandidates={() => void membersQuery.refetch()}
         onClose={() => setAuthorChoice((prev) => ({ ...prev, open: false }))}
         onSelectMine={() => openRegister()}
         onSelectMember={(memberUserId) => openRegister({ kind: 'member', userId: memberUserId })}

@@ -26,6 +26,7 @@ const h = vi.hoisted(() => ({
   remove: { mutate: vi.fn(), reset: vi.fn(), isPending: false, error: null as Error | null },
   navigate: vi.fn(),
   toast: vi.fn(),
+  members: { isPending: false, isError: false, refetch: vi.fn() },
 }));
 vi.mock('@/stores/toastStore', () => ({ toast: h.toast }));
 vi.mock('react', async (original) => ({
@@ -76,6 +77,7 @@ vi.mock('@/hooks/queries/useDisplayDetail', () => ({
 }));
 vi.mock('@/hooks/queries/useDisplayMembers', () => ({
   useDisplayMembers: () => ({
+    ...h.members,
     data: {
       members: [
         { userId: 1, displayNickname: '대표', role: 'LEADER', accepted: true },
@@ -118,6 +120,7 @@ beforeEach(() => {
     artistUserId: 1,
   }));
   Object.assign(h.order, { isPending: false, error: null });
+  Object.assign(h.members, { isPending: false, isError: false });
   Object.assign(h.remove, { isPending: false, error: null });
   vi.clearAllMocks();
   vi.stubGlobal('window', { history: { state: { idx: 4 } } });
@@ -259,4 +262,18 @@ it('정렬 중 콘텐츠 탭 전환도 저장 성공을 기다리고 실패하�
   changeTab();
   h.order.mutate.mock.calls[1][1].onSuccess();
   expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/work?tab=contents', { replace: true });
+});
+
+it('대신 등록 시트에 팀원 목록 조회 상태를 넘겨 불러오는 중 · 실패를 팀원 없음과 구분한다', () => {
+  expect(get(ArtworkAuthorChoiceSheet).props.candidatesStatus).toBe('success');
+
+  h.members.isPending = true;
+  expect(get(ArtworkAuthorChoiceSheet).props.candidatesStatus).toBe('pending');
+
+  h.members.isPending = false;
+  h.members.isError = true;
+  const sheet = get(ArtworkAuthorChoiceSheet);
+  expect(sheet.props.candidatesStatus).toBe('error');
+  call(sheet, 'onRetryCandidates');
+  expect(h.members.refetch).toHaveBeenCalledOnce();
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { toTeamCandidates } from './artworkTeam';
-import { buildArtworkRegisterPath, parseProxyAuthor } from './proxyAuthor';
+import { buildArtworkRegisterPath, parseProxyAuthor, resolveDefaultProxyTab } from './proxyAuthor';
 
 const parse = (path: string) => parseProxyAuthor(new URL(path, 'https://x.test').searchParams);
 
@@ -66,5 +66,17 @@ describe('toTeamCandidates', () => {
       [2, '팀원', false],
       [3, '작가 인증 필요', true],
     ]);
+  });
+});
+
+describe('resolveDefaultProxyTab', () => {
+  it('팀원을 다 불러왔는데 고를 사람이 없을 때만 이름 탭부터 연다', () => {
+    expect(resolveDefaultProxyTab('success', 0)).toBe('name');
+    expect(resolveDefaultProxyTab('success', 1)).toBe('team');
+  });
+
+  it('불러오는 중이거나 실패하면 팀원 탭에서 상태를 보여준다', () => {
+    expect(resolveDefaultProxyTab('pending', 0)).toBe('team');
+    expect(resolveDefaultProxyTab('error', 0)).toBe('team');
   });
 });

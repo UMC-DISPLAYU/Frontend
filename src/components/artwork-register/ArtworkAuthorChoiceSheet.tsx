@@ -1,18 +1,21 @@
 import { useId, useState } from 'react';
 
-import { Overlay } from '@/components/ui';
+import { Overlay, Skeleton, SkeletonList } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
 import { MAX_PROXY_AUTHOR_NAME_LENGTH } from './artworkRegister.constants';
 import type { ArtworkTeamCandidate } from './artworkRegister.types';
 import { AuthorAvatar } from './AuthorAvatar';
+import { type CandidatesStatus, type ProxyTab, resolveDefaultProxyTab } from './proxyAuthor';
 
 type ChoiceStep = 'choice' | 'proxy';
-type ProxyTab = 'team' | 'name';
 
 interface ArtworkAuthorChoiceSheetProps {
   open: boolean;
   candidates: ArtworkTeamCandidate[];
+  /** 팀원 목록 조회 상태. 불러오는 중 · 실패를 '팀원이 없어요'와 구분한다 */
+  candidatesStatus?: CandidatesStatus;
+  onRetryCandidates?: () => void;
   onClose: () => void;
   onSelectMine: () => void;
   onSelectMember: (userId: number) => void;
@@ -69,6 +72,8 @@ function RadioMark({ checked }: { checked: boolean }) {
 export function ArtworkAuthorChoiceSheet({
   open,
   candidates,
+  candidatesStatus = 'success',
+  onRetryCandidates,
   onClose,
   onSelectMine,
   onSelectMember,
@@ -76,7 +81,8 @@ export function ArtworkAuthorChoiceSheet({
 }: ArtworkAuthorChoiceSheetProps) {
   const nameInputId = useId();
   const [step, setStep] = useState<ChoiceStep>('choice');
-  const [tab, setTab] = useState<ProxyTab>(candidates.length > 0 ? 'team' : 'name');
+  const [pickedTab, setTab] = useState<ProxyTab | null>(null);
+  const tab = pickedTab ?? resolveDefaultProxyTab(candidatesStatus, candidates.length);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [name, setName] = useState('');
   const canSubmit = tab === 'team' ? selectedUserId !== null : name.trim().length > 0;
@@ -165,7 +171,39 @@ export function ArtworkAuthorChoiceSheet({
 
       {tab === 'team' ? (
         <div role="tabpanel">
-          {candidates.length > 0 ? (
+          {candidatesStatus === 'pending' ? (
+            <div aria-busy="true" aria-label="팀원 목록을 불러오는 중" className="mt-6">
+              <SkeletonList count={2}>
+                {() => (
+                  <div className="flex items-center gap-3 py-3">
+                    <Skeleton className="size-11.5 shrink-0 rounded-circle" />
+                    <div className="flex flex-1 flex-col gap-1">
+                      <Skeleton className="h-5 w-20 rounded-4" />
+                      <Skeleton className="h-4 w-14 rounded-4" />
+                    </div>
+                  </div>
+                )}
+              </SkeletonList>
+            </div>
+          ) : candidatesStatus === 'error' ? (
+            <div role="alert" className="flex flex-col items-center gap-3 py-7 text-center">
+              <p className="typography-body-lg-semibold text-primary">
+                팀원 목록을 불러오지 못했어요
+              </p>
+              {onRetryCandidates && (
+                <button
+                  type="button"
+                  onClick={onRetryCandidates}
+                  className={cn(
+                    'typography-body-md-semibold min-h-11 rounded-12 bg-secondary px-4 text-primary transition duration-fast ease-standard hover:bg-tertiary active:scale-99',
+                    FOCUS_CLASS,
+                  )}
+                >
+                  다시 시도
+                </button>
+              )}
+            </div>
+          ) : candidates.length > 0 ? (
             <>
               <p className="typography-body-md-medium mt-4 text-secondary">
                 전시 팀원의 작가명과 프로필을 연결해요

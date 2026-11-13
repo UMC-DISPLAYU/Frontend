@@ -31,3 +31,10 @@ export function parseProxyAuthor(searchParams: URLSearchParams): ProxyAuthor | n
 
   return null;
 }
+
+export type ProxyTab = 'team' | 'name';
+export type CandidatesStatus = 'pending' | 'error' | 'success';
+
+/** 프로토타입: 고를 팀원이 없을 때만 이름 탭부터 연다. 불러오는 중 · 실패면 팀원 탭에서 상태를 보여준다 */
+export const resolveDefaultProxyTab = (status: CandidatesStatus, count: number): ProxyTab =>
+  status === 'success' && count === 0 ? 'name' : 'team';

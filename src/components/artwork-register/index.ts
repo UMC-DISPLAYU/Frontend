@@ -16,5 +16,11 @@ export {
 } from './artworkRequest';
 export { toNamedCoAuthor, toTeamCandidates } from './artworkTeam';
 export { CoAuthorSheet } from './CoAuthorSheet';
-export { buildArtworkRegisterPath, parseProxyAuthor, type ProxyAuthor } from './proxyAuthor';
+export {
+  buildArtworkRegisterPath,
+  type CandidatesStatus,
+  parseProxyAuthor,
+  type ProxyAuthor,
+  resolveDefaultProxyTab,
+} from './proxyAuthor';
 export { useLeaveArtworkRegister } from './useLeaveArtworkRegister';
