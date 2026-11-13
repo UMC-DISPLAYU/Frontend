@@ -16,6 +16,8 @@ const twMerge = extendTailwindMerge({
         'drawer-out',
         'modal-in',
         'modal-out',
+        'panel-in',
+        'panel-out',
         'toast-in',
         'toast-out',
         'rise',

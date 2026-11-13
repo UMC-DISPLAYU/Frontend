@@ -16,6 +16,8 @@ import {
   GuardedFlowStep,
   PersonalArtworkPermissionGuard,
 } from './components/guards/RoutePermissionGuards';
+// 배럴로 가져오면 받은 초대 시트 코드까지 첫 번들에 실린다
+import { ReceivedInvitationsRedirect } from './components/invitation/ReceivedInvitationsRedirect';
 import { Layout, RootLayout } from './components/layout';
 
 const lazyPage = <T extends Record<string, unknown>>(
@@ -111,10 +113,6 @@ const ExhibitionWorkPage = lazyPage(
   () => import('./pages/ExhibitionWorkPage'),
   'ExhibitionWorkPage',
 );
-const DisplayArtistNamePage = lazyPage(
-  () => import('./pages/DisplayArtistNamePage'),
-  'DisplayArtistNamePage',
-);
 const DisplayContentsManagePage = lazyPage(
   () => import('./pages/DisplayContentsManagePage'),
   'DisplayContentsManagePage',
@@ -132,16 +130,11 @@ const InteriorPhotosPage = lazyPage(
   'InteriorPhotosPage',
 );
 const TeamManage = lazyPage(() => import('./pages/TeamManagePage'), 'TeamManage');
-const DisplayAcceptPage = lazyPage(() => import('./pages/DisplayAcceptPage'), 'DisplayAcceptPage');
 const SettingPage = lazyPage(() => import('./pages/Settingpage'), 'SettingPage');
 const EditBasicInfoPage = lazyPage(() => import('./pages/EditBasicInfoPage'), 'EditBasicInfoPage');
 const PersonalArtworksRegister = lazyPage(
   () => import('./pages/personal-artworks-register'),
   'PersonalArtworksRegister',
-);
-const InvitationRequestPage = lazyPage(
-  () => import('./pages/InvitationRequestPage'),
-  'InvitationRequestPage',
 );
 const MyReviewPage = lazyPage(() => import('./pages/MyReviewPage'), 'MyReviewPage');
 // 라운지는 당분간 노출하지 않는다 (#442)
@@ -520,9 +513,8 @@ export const router = createBrowserRouter([
                   </PersonalArtworkPermissionGuard>
                 ),
               },
-              { path: 'invitation-request', element: <InvitationRequestPage /> },
-              { path: 'invitations/:id/artist-name', element: <DisplayArtistNamePage /> },
-              { path: 'invitations/:id/complete', element: <DisplayAcceptPage /> },
+              // 받은 초대는 마이 화면의 시트다. 초대 링크 · 기존 설정 화면이 보내는 이 경로는 마이로 보내 시트를 연다
+              { path: 'invitation-request', element: <ReceivedInvitationsRedirect /> },
               { path: 'my-review', element: <MyReviewPage /> },
               // 라운지는 당분간 노출하지 않는다 (#442)
               // { path: 'lounge/:category/post', element: <ExhibitionReviewWritePage /> },

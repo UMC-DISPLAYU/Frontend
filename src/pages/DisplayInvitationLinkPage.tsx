@@ -7,28 +7,25 @@ import { queryKeys } from '@/api/queryKeys';
 import { ErrorView } from '@/components/common/ErrorView';
 import { getErrorMessage } from '@/utils/error';
 
-/* 초대 링크로 들어온 전시를 목록에서 찾을 수 있도록 displayId를 붙입니다. */
-const toInvitationListPath = (displayId?: number) =>
-  displayId ? `/invitation-request?displayId=${displayId}` : '/invitation-request';
+/* 받은 초대 경로. 마이로 이동해 받은 초대 시트를 엽니다. */
+const INVITATION_LIST_PATH = '/invitation-request';
 
 /*
  * 백엔드가 발급하는 초대 URL(/display/invitation/{token})의 착지 지점입니다.
- * 토큰으로 전시를 확인한 뒤 받은 초대 목록 화면으로 넘깁니다.
- * 초대 목록은 보호 화면이라, 비로그인이면 AuthGuard가 그 위에 로그인 모달을 띄우고 로그인 후 돌아옵니다.
+ * 토큰으로 전시를 확인한 뒤(이때 서버가 대기 중인 초대를 만듭니다) 마이의 받은 초대 시트로 넘깁니다.
+ * 마이는 보호 화면이라, 비로그인이면 AuthGuard가 그 위에 로그인 모달을 띄우고 로그인 후 돌아옵니다.
  */
 export function DisplayInvitationLinkPage() {
   const { token = '' } = useParams();
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.displayInvitations.byToken(token),
     queryFn: () => getDisplayInvitationByToken(token),
     enabled: token.length > 0,
     retry: false,
   });
 
-  const invitationListPath = toInvitationListPath(data?.displayId);
-
-  if (!token) return <Navigate to="/invitation-request" replace />;
+  if (!token) return <Navigate to={INVITATION_LIST_PATH} replace />;
 
   if (isLoading) {
     return (
@@ -71,5 +68,5 @@ export function DisplayInvitationLinkPage() {
     );
   }
 
-  return <Navigate to={invitationListPath} replace />;
+  return <Navigate to={INVITATION_LIST_PATH} replace />;
 }
