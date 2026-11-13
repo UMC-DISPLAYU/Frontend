@@ -280,6 +280,11 @@ export const displayHandlers = [
       }),
     ),
   ),
+  ...paths('/api/v1/display/popular').map((path) =>
+    http.get(path, () =>
+      success('/api/v1/display/popular', { exhibitions: listDisplays().slice(0, 10) }),
+    ),
+  ),
   ...paths('/api/v1/display/graduation').map((path) =>
     http.get(path, () => success('/api/v1/display/graduation', { exhibitions: listDisplays() })),
   ),
