@@ -1,29 +1,30 @@
 import { z } from 'zod';
 
-import { MAX_ARTIST_FIELDS } from '@/constants/exhibition';
+import { type ExhibitionField, MAX_ARTIST_FIELDS } from '@/constants/exhibition';
+import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
+
+export const ARTIST_INTRO_MAX = 100;
 
 export const editArtistProfileSchema = z.object({
   artistName: z
     .string()
     .trim()
-    .min(2, { message: '프로필명은 최소 2자 이상 입력해주세요.' })
-    .max(15, { message: '프로필명은 최대 15자 이하로 입력해주세요.' })
-    .regex(/^[가-힣a-zA-Z0-9]+$/, {
-      message: '한글, 영문, 숫자만 사용할 수 있습니다. (특수문자/공백 불가)',
-    }),
-  introduction: z
-    .string()
-    .trim()
-    .max(100, { message: '소개글은 최대 100자 이하로 작성해주세요.' })
-    .optional(),
+    .min(2, { message: '2자 이상 입력해주세요' })
+    .max(15, { message: '15자 이하로 입력해주세요' })
+    .regex(/^[가-힣a-zA-Z0-9]+$/, { message: '한글, 영문, 숫자만 쓸 수 있어요' }),
   fields: z
-    .array(z.string())
-    .min(1, { message: '최소 1개 이상의 전시 분야를 선택해야 합니다.' })
-    .max(MAX_ARTIST_FIELDS, {
-      message: `분야는 최대 ${MAX_ARTIST_FIELDS}개까지만 선택할 수 있습니다.`,
-    }),
-  externalLink: z.string().trim().optional(),
-  univName: z.string().trim().optional(),
+    .array(z.custom<ExhibitionField>())
+    .min(1, { message: '작가 분야를 1개 이상 골라주세요' })
+    .max(MAX_ARTIST_FIELDS, { message: `분야는 최대 ${MAX_ARTIST_FIELDS}개까지 선택할 수 있어요` }),
+  introduction: z.string().max(ARTIST_INTRO_MAX, {
+    message: `소개는 ${ARTIST_INTRO_MAX}자 이하로 적어주세요`,
+  }),
+  instagram: z.string().refine((value) => parseInstagramId(value).status !== 'invalid', {
+    message: '아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)',
+  }),
+  portfolio: z.string().refine((value) => parseWebsiteUrl(value).status !== 'invalid', {
+    message: '주소 형식을 확인해 주세요 (예: displayu.kr)',
+  }),
 });
 
 export type EditArtistProfileFormValues = z.infer<typeof editArtistProfileSchema>;

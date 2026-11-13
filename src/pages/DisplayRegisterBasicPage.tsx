@@ -5,12 +5,11 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import type { AddressSearchResultDto } from '@/api/dto';
-import { BottomFixedBar } from '@/components/common';
+import { BottomFixedBar, LinkInputField } from '@/components/common';
 import {
   AddressSearchView,
   buildUpdateDisplayRequest,
   DisplayEditDraftGate,
-  DisplayLinkField,
   DisplayPeriodSheet,
   DisplayPickerButton,
   displayRegisterBasicSchema,
@@ -301,7 +300,7 @@ function DisplayRegisterBasicForm() {
             control={control}
             name="instagram"
             render={({ field }) => (
-              <DisplayLinkField
+              <LinkInputField
                 label="인스타그램"
                 parsed={instagram}
                 maxLength={60}
@@ -329,7 +328,7 @@ function DisplayRegisterBasicForm() {
             control={control}
             name="website"
             render={({ field }) => (
-              <DisplayLinkField
+              <LinkInputField
                 label="웹사이트"
                 parsed={website}
                 maxLength={120}

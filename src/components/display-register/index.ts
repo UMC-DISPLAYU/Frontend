@@ -3,8 +3,6 @@ export { buildCreateDisplayRequest } from './createDisplayRequest';
 export { buildUpdateDisplayRequest, isEditDraftChanged, toEditDraft } from './displayEditDraft';
 export { DisplayEditDraftGate } from './DisplayEditDraftGate';
 export { DisplayFieldChips } from './DisplayFieldChips';
-export { DisplayLinkField } from './DisplayLinkField';
-export { parseInstagramId, parseWebsiteUrl } from './displayLinks';
 export { DisplayPeriodSheet } from './DisplayPeriodSheet';
 export { DisplayPickerButton } from './DisplayPickerButton';
 export {
@@ -31,3 +29,4 @@ export { DisplayTimeSheet } from './DisplayTimeSheet';
 export { DisplayTypeSelect } from './DisplayTypeSelect';
 export { PosterUploadField } from './PosterUploadField';
 export { usePosterUploads } from './usePosterUploads';
+export { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';

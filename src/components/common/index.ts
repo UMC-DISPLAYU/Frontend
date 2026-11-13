@@ -11,6 +11,7 @@ export { ErrorView } from './ErrorView';
 export { ExpandableText } from './ExpandableText';
 export { ImageModal } from './ImageModal';
 export { ImageUploader } from './ImageUploader';
+export { LinkInputField } from './LinkInputField';
 export { LoadingView } from './LoadingView';
 export { LoginConfirmModal } from './LoginConfirmModal';
 export { LogoutConfirmModal } from './LogoutConfirmModal';

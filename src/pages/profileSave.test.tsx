@@ -17,6 +17,7 @@ const h = vi.hoisted(() => ({
   upload: vi.fn(),
   back: vi.fn(),
   setError: vi.fn(),
+  toast: vi.fn(),
 }));
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
@@ -44,6 +45,7 @@ vi.mock('react', async (original) => ({
   ],
 }));
 vi.mock('react-hook-form', () => ({
+  Controller: () => null,
   useForm: () => ({
     register: () => ({}),
     handleSubmit: (handler: unknown) => handler,
@@ -51,7 +53,7 @@ vi.mock('react-hook-form', () => ({
     setValue: vi.fn(),
     setError: h.setError,
     clearErrors: vi.fn(),
-    formState: { errors: {}, isValid: true, isSubmitting: false },
+    formState: { errors: {}, isValid: true, isDirty: true, isSubmitting: false },
   }),
   useWatch: ({ name }: { name: string }) =>
     ({
@@ -60,6 +62,8 @@ vi.mock('react-hook-form', () => ({
       introduction: '소개',
       fields: ['PAINTING'],
       univName: '학교',
+      instagram: '',
+      portfolio: '',
     })[name as 'nickname'],
 }));
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
@@ -81,8 +85,15 @@ vi.mock('@/hooks/queries/useSchoolEmailVerification', () => ({
   useResendVerificationEmail: () => ({}),
   useConfirmVerificationEmail: () => ({}),
 }));
-vi.mock('@/components/common', () => ({ BottomButton: () => null }));
-vi.mock('@/components/ui', () => ({ ChipGroup: () => null }));
+vi.mock('@/components/common', () => ({
+  BottomButton: () => null,
+  ConfirmDialog: () => null,
+  ErrorView: () => null,
+  LinkInputField: () => null,
+}));
+vi.mock('@/components/ui', () => ({ ChipGroup: () => null, Skeleton: () => null }));
+vi.mock('@/components/artist-profile', () => ({ ProfilePhotoField: () => null }));
+vi.mock('@/stores/toastStore', () => ({ toast: h.toast }));
 vi.mock('@/components/artist-verification', () => ({
   ArtistFieldSelector: () => null,
   ArtistProfileSection: () => null,
@@ -123,7 +134,7 @@ beforeEach(() => {
   vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:preview');
 });
 
-it.each([EditBasicInfoPage, EditArtistProfilePage])(
+it.each([EditBasicInfoPage])(
   '%s: 업로드 실패·저장 실패는 초안을 유지하고 성공만 이동한다',
   async (page) => {
     let tree = render(page);
@@ -146,6 +157,30 @@ it.each([EditBasicInfoPage, EditArtistProfilePage])(
     );
   },
 );
+
+it('작가 프로필 수정: 업로드 실패·저장 실패는 사진을 유지하고 알리며, 성공만 이동한다', async () => {
+  let tree = render(EditArtistProfilePage);
+  const photo = () => tree.find((node) => 'src' in node.props && 'onChange' in node.props)!;
+  (photo().props.onChange as (file: File) => void)({ name: 'photo.jpg' } as File);
+
+  h.upload.mockRejectedValueOnce(failure);
+  await form(render(EditArtistProfilePage))(values);
+  expect(h.save).not.toHaveBeenCalled();
+  expect(h.back).not.toHaveBeenCalled();
+  expect(h.toast).toHaveBeenLastCalledWith(expect.stringContaining('서버'));
+  tree = render(EditArtistProfilePage);
+  expect(photo().props.src).toBe('blob:preview');
+
+  h.save.mockRejectedValueOnce(failure);
+  await form(tree)(values);
+  expect(h.back).not.toHaveBeenCalled();
+
+  await form(render(EditArtistProfilePage))(values);
+  expect(h.back).toHaveBeenCalledTimes(1);
+  expect(h.save).toHaveBeenLastCalledWith(
+    expect.objectContaining({ profileImageUrl: 'https://example.com/photo.png' }),
+  );
+});
 
 it('중복 닉네임을 필드에 안내하며 이동하지 않는다', async () => {
   h.save.mockRejectedValueOnce(

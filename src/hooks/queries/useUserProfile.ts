@@ -91,6 +91,11 @@ export const useUpdateMyArtistProfile = () => {
     mutationFn: (body: UpdateArtistProfileRequestDto) => updateMyArtistProfile(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
+      // 작가 프로필 화면(/artist/:userId)은 userId 기준 key 를 쓴다
+      queryClient.invalidateQueries({
+        predicate: ({ queryKey }) =>
+          queryKey[0] === queryKeys.users.all[0] && queryKey[2] === 'artist-profile',
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.all });
     },
   });

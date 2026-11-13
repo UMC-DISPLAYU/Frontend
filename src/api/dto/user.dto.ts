@@ -86,11 +86,13 @@ export interface ArtistProfileDto {
 }
 
 export interface UpdateArtistProfileRequestDto {
-  profileImageUrl?: string;
+  /* null 이면 사진을 지운다 */
+  profileImageUrl?: string | null;
   artistName: string;
   introduction?: string;
   fields: string[];
-  externalLink?: string;
+  /* null 이면 링크를 지운다 */
+  externalLink?: string | null;
   univName?: string;
 }
 
