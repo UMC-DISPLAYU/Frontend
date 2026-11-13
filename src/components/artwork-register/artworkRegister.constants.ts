@@ -34,11 +34,24 @@ export const ARTWORK_FIELD_OPTIONS: readonly { label: string; value: ArtworkType
 
 const FALLBACK_FIELD_LABEL = '기타';
 
-/** 고른 분야 이름을 서버 enum 으로 바꾼다. 같은 enum 은 한 번만 보낸다 */
-export function toArtworkTypes(labels: readonly string[]): ArtworkTypeDto[] {
-  const values = labels.flatMap(
-    (label) => ARTWORK_FIELD_OPTIONS.find((option) => option.label === label)?.value ?? [],
-  );
+const SHOWN_FIELD_TYPES = new Set<string>(ARTWORK_FIELD_OPTIONS.map((option) => option.value));
+const isFallbackType = (type: string) => type === 'ETC' || !SHOWN_FIELD_TYPES.has(type);
+
+/**
+ * 고른 분야 이름을 서버 enum 으로 바꾼다. 같은 enum 은 한 번만 보낸다.
+ * 화면에 없는 서버 분야(FASHION · COMPLEX 등)는 기타로 보이므로, 수정할 때 기타가 그대로면 원래 값을 보낸다
+ */
+export function toArtworkTypes(
+  labels: readonly string[],
+  previousTypes: readonly string[] = [],
+): ArtworkTypeDto[] {
+  const previousFallback = previousTypes
+    .map((type) => type.trim())
+    .filter(isFallbackType) as ArtworkTypeDto[];
+  const values = labels.flatMap((label) => {
+    if (label === FALLBACK_FIELD_LABEL && previousFallback.length > 0) return previousFallback;
+    return ARTWORK_FIELD_OPTIONS.find((option) => option.label === label)?.value ?? [];
+  });
 
   return [...new Set(values)];
 }

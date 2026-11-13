@@ -252,7 +252,8 @@ function ArtworkRegisterRoute() {
         )}
         defaultValues={toArtworkRegisterValues(previous)}
         initialImages={splitArtworkImages(detailQuery.data.images)}
-        edit={{ artworkId, previous }}
+        // 수정 화면 조회 응답에는 사진 설명이 없어, 다시 보낼 사진 설명 · 크기는 관람용 상세에서 가져온다
+        edit={{ artworkId, previous: { ...previous, images: detailQuery.data.images } }}
       />
     );
   }

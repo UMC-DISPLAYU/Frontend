@@ -61,7 +61,7 @@ function PersonalArtworkRegisterContent({
       updateArtwork.mutate(
         {
           personalArtworkId: previous.personalArtworkId,
-          body: buildPersonalArtworkRequest(values, images, previous.point),
+          body: buildPersonalArtworkRequest(values, images, previous),
         },
         {
           onSuccess: () => {

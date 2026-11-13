@@ -18,42 +18,72 @@ export interface ArtworkImageUrls {
   processUrls: string[];
 }
 
-type ImageLike = Pick<ImageResponseDto, 'imageUrl' | 'sortOrder'> & { imageType?: string | null };
+type ImageLike = Pick<ImageResponseDto, 'imageUrl' | 'sortOrder'> & {
+  imageType?: string | null;
+  isThumbnail?: boolean | null;
+};
 
-/** 작품 이미지(ARTWORK)와 작업 과정(WORK_PROCESS)을 순서대로 나눈다. 구분이 없으면 작품 이미지로 본다 */
+/** 저장된 사진의 설명 · 크기. 수정 화면에는 입력 칸이 없어 같은 사진이면 그대로 다시 보낸다 */
+export type SavedArtworkImage = Pick<ImageResponseDto, 'imageUrl'> &
+  Partial<Pick<ImageResponseDto, 'caption' | 'width' | 'height'>>;
+
+/** 수정할 때 화면에 없는 값을 지키기 위한 기존 작품 정보 */
+export interface PreviousArtworkInfo {
+  type?: string | null;
+  types?: readonly string[] | null;
+  images?: readonly SavedArtworkImage[];
+}
+
+/**
+ * 작품 이미지(ARTWORK)와 작업 과정(WORK_PROCESS)을 순서대로 나눈다. 구분이 없으면 작품 이미지로 본다.
+ * 화면은 첫 장을 대표 사진으로 보여주므로 대표 사진(isThumbnail)을 맨 앞에 둔다
+ */
 export function splitArtworkImages(images: readonly ImageLike[] | undefined): ArtworkImageUrls {
   const sorted = [...(images ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const artworkImages = sorted.filter((image) => image.imageType !== 'WORK_PROCESS');
+  const thumbnail = artworkImages.find((image) => image.isThumbnail);
 
   return {
-    artworkUrls: sorted
-      .filter((image) => image.imageType !== 'WORK_PROCESS')
-      .map((image) => image.imageUrl),
+    artworkUrls: (thumbnail
+      ? [thumbnail, ...artworkImages.filter((image) => image !== thumbnail)]
+      : artworkImages
+    ).map((image) => image.imageUrl),
     processUrls: sorted
       .filter((image) => image.imageType === 'WORK_PROCESS')
       .map((image) => image.imageUrl),
   };
 }
 
+const positive = (value: number | null | undefined) =>
+  typeof value === 'number' && value > 0 ? value : undefined;
+
 /*
- * 서버가 width/height 를 양수로 받는데 화면에서는 실제 크기를 쓰지 않아 고정값을 보낸다.
+ * 서버가 width/height 를 양수로 받는데 새로 올린 사진은 실제 크기를 재지 않아 고정값을 보낸다.
+ * 이미 저장된 사진은 설명 · 크기를 그대로 보낸다(이미지 목록을 통째로 바꾸는 API 라 빠뜨리면 지워진다).
  * 대표 이미지는 작품 이미지 첫 장이다.
  */
-export function toArtworkImageRequests({
-  artworkUrls,
-  processUrls,
-}: ArtworkImageUrls): ArtworkImageRequestDto[] {
+export function toArtworkImageRequests(
+  { artworkUrls, processUrls }: ArtworkImageUrls,
+  savedImages: readonly SavedArtworkImage[] = [],
+): ArtworkImageRequestDto[] {
   const toImage = (
     imageUrl: string,
     index: number,
     imageType: ArtworkImageRequestDto['imageType'],
-  ) => ({
-    imageUrl,
-    isThumbnail: imageType === 'ARTWORK' && index === 0,
-    imageType,
-    width: DEFAULT_ARTWORK_IMAGE_WIDTH,
-    height: DEFAULT_ARTWORK_IMAGE_HEIGHT,
-    sortOrder: index + 1,
-  });
+  ): ArtworkImageRequestDto => {
+    const saved = savedImages.find((image) => image.imageUrl === imageUrl);
+    const caption = saved?.caption?.trim();
+
+    return {
+      imageUrl,
+      isThumbnail: imageType === 'ARTWORK' && index === 0,
+      imageType,
+      ...(caption && { caption }),
+      width: positive(saved?.width) ?? DEFAULT_ARTWORK_IMAGE_WIDTH,
+      height: positive(saved?.height) ?? DEFAULT_ARTWORK_IMAGE_HEIGHT,
+      sortOrder: index + 1,
+    };
+  };
 
   return [
     ...artworkUrls.map((url, index) => toImage(url, index, 'ARTWORK')),
@@ -61,12 +91,22 @@ export function toArtworkImageRequests({
   ];
 }
 
+/** 서버 분야 목록. types 가 없으면 type(쉼표로 이어진 값일 수 있다)을 쓴다 */
+export function readArtworkTypes(source: Pick<PreviousArtworkInfo, 'type' | 'types'>): string[] {
+  if (source.types && source.types.length > 0) return [...source.types];
+  return (source.type ?? '')
+    .split(',')
+    .map((type) => type.trim())
+    .filter(Boolean);
+}
+
 /** 작품 정보 입력값을 등록 · 수정 요청 공통 필드로 바꾼다 */
 export function toArtworkInfoRequest(
   values: ArtworkRegisterValues,
   images: ArtworkImageUrls,
+  previous?: PreviousArtworkInfo,
 ): PersonalArtworkRequestDto {
-  const types = toArtworkTypes(values.fieldLabels);
+  const types = toArtworkTypes(values.fieldLabels, previous ? readArtworkTypes(previous) : []);
 
   // 수정에서 비운 설명 · 규격이 지워지도록 빈 문자열도 그대로 보낸다
   return {
@@ -77,7 +117,7 @@ export function toArtworkInfoRequest(
     productionYear: Number(values.year),
     materialMedia: values.material.trim(),
     size: values.size.trim(),
-    images: toArtworkImageRequests(images),
+    images: toArtworkImageRequests(images, previous?.images),
   };
 }
 
@@ -125,8 +165,9 @@ interface ExhibitionArtworkRequestInput {
   author: ArtworkPerson;
   coAuthors: readonly ArtworkPerson[];
   ownerUserId?: number;
-  /** 수정할 때만: 화면에 없는 감상 포인트 · 기존 Q&A 담당자를 그대로 보낸다 */
-  previous?: Pick<DisplayArtworkEditResponseDataDto, 'point' | 'qaHandlerUserIds'>;
+  /** 수정할 때만: 화면에 없는 감상 포인트 · 기존 Q&A 담당자 · 분야 · 사진 설명을 그대로 보낸다 */
+  previous?: Pick<DisplayArtworkEditResponseDataDto, 'point' | 'qaHandlerUserIds'> &
+    PreviousArtworkInfo;
 }
 
 export function buildUpdateArtworkRequest({
@@ -140,7 +181,7 @@ export function buildUpdateArtworkRequest({
   const point = previous?.point?.trim();
 
   return {
-    ...toArtworkInfoRequest(values, images),
+    ...toArtworkInfoRequest(values, images, previous),
     ...(point && { point }),
     artistName: author.name.trim(),
     ...(typeof author.userId === 'number' && { artistUserId: author.userId }),
@@ -161,15 +202,15 @@ export function buildCreateArtworkRequest(
   return { displayId, ...buildUpdateArtworkRequest(input) };
 }
 
-/** 개인 작품 수정에서는 화면에 없는 감상 포인트를 그대로 보낸다 */
+/** 개인 작품 수정에서는 화면에 없는 감상 포인트 · 분야 · 사진 설명을 그대로 보낸다 */
 export function buildPersonalArtworkRequest(
   values: ArtworkRegisterValues,
   images: ArtworkImageUrls,
-  previousPoint?: string | null,
+  previous?: PreviousArtworkInfo & { point?: string | null },
 ): PersonalArtworkRequestDto {
-  const point = previousPoint?.trim();
+  const point = previous?.point?.trim();
 
-  return { ...toArtworkInfoRequest(values, images), ...(point && { point }) };
+  return { ...toArtworkInfoRequest(values, images, previous), ...(point && { point }) };
 }
 
 type ArtworkInfoSource = Pick<
@@ -181,15 +222,10 @@ type ArtworkInfoSource = Pick<
 export function toArtworkRegisterValues(
   source: ArtworkInfoSource | PersonalArtworkResponseDataDto,
 ): ArtworkRegisterValues {
-  const types =
-    source.types && source.types.length > 0
-      ? source.types
-      : (source.type ?? '').split(',').filter((type) => type.trim());
-
   return {
     title: source.artworkName ?? '',
     intro: source.content ?? '',
-    fieldLabels: toArtworkFieldLabels(types),
+    fieldLabels: toArtworkFieldLabels(readArtworkTypes(source)),
     year: source.productionYear ? String(source.productionYear) : '',
     material: source.materialMedia ?? '',
     size: source.size ?? '',
