@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { parseInstagramId, parseWebsiteUrl } from './displayLinks';
+import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
+
 import { isValidTimeRange } from './displaySchedule';
 
 export const MAX_PLACE_NAME_LENGTH = 60;

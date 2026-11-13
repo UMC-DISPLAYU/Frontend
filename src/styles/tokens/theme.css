@@ -102,6 +102,8 @@
   --border-color-bg-secondary: var(--semantic-color-bg-secondary);
   --border-color-bg-tertiary: var(--semantic-color-bg-tertiary);
   --border-color-bg-primary-black: var(--semantic-color-bg-primary-black);
+  /* 알림 점이 아이콘 선과 붙어 보이지 않게 바탕색 테두리를 두른다(마이 알림함) */
+  --border-color-bg-primary-white: var(--semantic-color-bg-primary-white);
 
   /* Radius */
   --radius-0: var(--semantic-radius-0);
@@ -156,6 +158,11 @@
     var(--semantic-motion-easing-standard) both;
   --animate-sheet-out: sheet-out var(--semantic-motion-duration-base)
     var(--semantic-motion-easing-standard) forwards;
+  /* 오른쪽에서 열리는 드로어(마이 설정). 프로토타입처럼 32px 만 밀려 나오며 함께 나타난다 */
+  --animate-drawer-in: drawer-in var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) both;
+  --animate-drawer-out: drawer-out var(--semantic-motion-duration-base)
+    var(--semantic-motion-easing-standard) forwards;
   --animate-modal-in: modal-in var(--semantic-motion-duration-base)
     var(--semantic-motion-easing-standard) both;
   --animate-modal-out: modal-out var(--semantic-motion-duration-base)
@@ -187,6 +194,18 @@
   @keyframes sheet-out {
     to {
       transform: translateY(100%);
+    }
+  }
+  @keyframes drawer-in {
+    from {
+      opacity: 0;
+      transform: translateX(32px);
+    }
+  }
+  @keyframes drawer-out {
+    to {
+      opacity: 0;
+      transform: translateX(32px);
     }
   }
   @keyframes modal-in {

@@ -1,10 +1,9 @@
 import { type InputHTMLAttributes, useId } from 'react';
 
 import { cn } from '@/utils/cn';
+import type { LinkParseResult } from '@/utils/linkInput';
 
-import type { LinkParseResult } from './displayLinks';
-
-interface DisplayLinkFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
+interface LinkInputFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
   label: string;
   parsed: LinkParseResult;
   idleHelp: string;
@@ -14,7 +13,7 @@ interface DisplayLinkFieldProps extends Omit<InputHTMLAttributes<HTMLInputElemen
   lockedHelp?: string;
 }
 
-export function DisplayLinkField({
+export function LinkInputField({
   label,
   parsed,
   idleHelp,
@@ -22,7 +21,7 @@ export function DisplayLinkField({
   errorMessage,
   lockedHelp,
   ...inputProps
-}: DisplayLinkFieldProps) {
+}: LinkInputFieldProps) {
   const inputId = useId();
   const helpId = useId();
   const isLocked = Boolean(inputProps.disabled);

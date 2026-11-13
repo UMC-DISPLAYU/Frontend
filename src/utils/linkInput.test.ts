@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseInstagramId, parseWebsiteUrl } from './displayLinks';
+import { parseInstagramId, parseWebsiteUrl } from './linkInput';
 
 describe('parseInstagramId', () => {
   it('비어 있으면 empty', () => {

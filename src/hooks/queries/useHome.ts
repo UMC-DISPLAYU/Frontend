@@ -13,10 +13,19 @@ import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
 const artworkPreviewParams = { type: 'RECOMMEND' as const, page: 0, size: 10 };
 
-export const useHomeArtworkPreview = () =>
+export const useHomeArtworkPreview = ({ enabled = true }: { enabled?: boolean } = {}) =>
   useQuery({
     queryKey: queryKeys.displayArtworks.preview(artworkPreviewParams),
     queryFn: () => getArtworkPreview(artworkPreviewParams),
+    enabled,
+  });
+
+/* 홈 인기 전시와 같은 목록. 마이 보관함 빈 상태처럼 필요할 때만 켠다 */
+export const usePopularDisplays = ({ enabled = true }: { enabled?: boolean } = {}) =>
+  useQuery({
+    queryKey: queryKeys.displays.popular(),
+    queryFn: () => getPopularDisplays(),
+    enabled,
   });
 
 export type HomeExhibitionTab = 'pop' | 'grad' | 'live' | 'soon' | 'end';
