@@ -136,16 +136,9 @@ export function ArtworkDetailPage() {
       }
       hasIntro={hasArtworkIntro({
         content: detail.content,
-        point: detail.point,
         processImageCount: processImageUrls.length,
       })}
-      intro={
-        <ArtworkIntroTab
-          content={detail.content}
-          point={detail.point}
-          processImageUrls={processImageUrls}
-        />
-      }
+      intro={<ArtworkIntroTab content={detail.content} processImageUrls={processImageUrls} />}
       guestbook={
         isPreview ? (
           <ArtworkPreviewGuestbook />

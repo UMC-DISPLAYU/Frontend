@@ -68,7 +68,6 @@ export function PersonalArtworkDetailPage() {
       label={<PersonalArtworkMeta artwork={artwork} shareImageUrl={viewerImages[0]} />}
       hasIntro={hasArtworkIntro({
         content: artwork.content,
-        point: artwork.point,
         processImageCount: getProcessImages(artwork.images).length,
       })}
       intro={<PersonalArtworkIntroTab artwork={artwork} />}

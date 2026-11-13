@@ -32,17 +32,15 @@ export function getStackPhotoIndex(tops: number[], anchor: number, line: number)
   return index;
 }
 
-/* 소개글·감상 포인트·작업과정이 모두 없는 작품은 소개 탭을 빼고 방명록만 보여줍니다. */
+/* 소개글·작업과정이 모두 없는 작품은 소개 탭을 빼고 방명록만 보여줍니다. */
 export function hasArtworkIntro({
   content,
-  point,
   processImageCount,
 }: {
   content?: string | null;
-  point?: string | null;
   processImageCount: number;
 }) {
-  return Boolean(content?.trim() || point?.trim() || processImageCount > 0);
+  return Boolean(content?.trim() || processImageCount > 0);
 }
 
 /* 분류·연도·크기·재료 순으로, 값이 있는 항목만 가운뎃점(·)으로 잇습니다. */

@@ -3,14 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { getProcessImages, getStackPhotoIndex, hasArtworkIntro } from './artworkDetail.utils';
 
 describe('hasArtworkIntro', () => {
-  it('소개글·감상 포인트·작업과정 중 하나라도 있으면 소개 탭을 둔다', () => {
+  it('소개글·작업과정 중 하나라도 있으면 소개 탭을 둔다', () => {
     expect(hasArtworkIntro({ content: '소개', processImageCount: 0 })).toBe(true);
-    expect(hasArtworkIntro({ point: '포인트', processImageCount: 0 })).toBe(true);
     expect(hasArtworkIntro({ processImageCount: 1 })).toBe(true);
   });
 
   it('공백뿐인 글은 내용이 없는 것으로 본다', () => {
-    expect(hasArtworkIntro({ content: '  ', point: '\n', processImageCount: 0 })).toBe(false);
+    expect(hasArtworkIntro({ content: '  \n', processImageCount: 0 })).toBe(false);
   });
 });
 

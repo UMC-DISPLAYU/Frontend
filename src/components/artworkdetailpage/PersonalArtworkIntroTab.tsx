@@ -11,7 +11,6 @@ export function PersonalArtworkIntroTab({ artwork }: Props) {
   return (
     <ArtworkIntroTab
       content={artwork.content}
-      point={artwork.point}
       processImageUrls={getProcessImages(artwork.images).map((image) => image.imageUrl)}
     />
   );
