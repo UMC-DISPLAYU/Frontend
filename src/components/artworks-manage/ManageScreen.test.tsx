@@ -45,15 +45,17 @@ beforeEach(() => {
   h.user = { id: 1, isVerified: true };
 });
 
+// 전시 대표자는 팀원의 작품도 수정 · 삭제할 수 있다(프로토타입 · Swagger · 권한 매트릭스)
 it.each([
-  [1, true, true, true, false],
-  [2, true, true, false, true],
-  [3, true, true, false, true],
-  [2, false, false, false, false],
-  [9, true, false, false, false],
+  [1, true, true, true, true, true],
+  [1, false, false, false, false, false],
+  [2, true, true, false, true, false],
+  [3, true, true, false, true, false],
+  [2, false, false, false, false, false],
+  [9, true, false, false, false, false],
 ] as const)(
-  '사용자 %i·인증 %s의 기존 생성·정렬·작품 관리 권한을 유지한다',
-  (id, verified, create, reorder, manage) => {
+  '사용자 %i·인증 %s의 생성·정렬·작품 관리 권한',
+  (id, verified, create, reorder, manage, manageOthers) => {
     h.user = { id, isVerified: verified };
     const html = renderToStaticMarkup(
       <ManageScreen
@@ -69,6 +71,6 @@ it.each([
     expect(html.includes('전시작 추가')).toBe(create);
     expect(html.includes('순서 편집')).toBe(reorder);
     expect(html.includes('대표 작품 작품 관리')).toBe(manage);
-    expect(html.includes('다른 작품 작품 관리')).toBe(false);
+    expect(html.includes('다른 작품 작품 관리')).toBe(manageOthers);
   },
 );
