@@ -4,9 +4,11 @@ import type {
   GetPersonalArtworkFeelingsResponseDataDto,
   PersonalArtworkFeelingImageRequestDto,
   PersonalArtworkFeelingReplyListResponseDataDto,
+  PersonalArtworkRequestDto,
   PersonalArtworkResponseDataDto,
 } from '@/api/dto';
 import {
+  createPersonalArtwork,
   createPersonalArtworkFeeling,
   createPersonalArtworkFeelingReply,
   deletePersonalArtwork,
@@ -22,6 +24,7 @@ import {
   unlikePersonalArtwork,
   unlikePersonalArtworkFeeling,
   unlikePersonalArtworkFeelingReply,
+  updatePersonalArtwork,
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
@@ -43,6 +46,35 @@ const invalidatePersonalArtworkLists = (queryClient: ReturnType<typeof useQueryC
   queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.lists() });
   queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.me() });
   queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
+};
+
+export const useCreatePersonalArtwork = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: PersonalArtworkRequestDto) => createPersonalArtwork(body),
+    onSuccess: () => invalidatePersonalArtworkLists(queryClient),
+  });
+};
+
+export const useUpdatePersonalArtwork = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      personalArtworkId,
+      body,
+    }: {
+      personalArtworkId: number;
+      body: Partial<PersonalArtworkRequestDto>;
+    }) => updatePersonalArtwork(personalArtworkId, body),
+    onSuccess: (_, variables) => {
+      invalidatePersonalArtworkLists(queryClient);
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.personalArtworks.detail(variables.personalArtworkId),
+      });
+    },
+  });
 };
 
 export const useDeletePersonalArtwork = () => {

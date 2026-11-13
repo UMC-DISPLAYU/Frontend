@@ -9,6 +9,7 @@ export { ArtworkRegisterSkeleton } from './ArtworkRegisterSkeleton';
 export {
   type ArtworkImageUrls,
   buildCreateArtworkRequest,
+  buildPersonalArtworkRequest,
   buildUpdateArtworkRequest,
   splitArtworkImages,
   toArtworkRegisterValues,

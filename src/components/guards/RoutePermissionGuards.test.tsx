@@ -44,6 +44,7 @@ vi.mock('@/hooks/usePolicy', () => ({
   useDisplayCreatePolicy: () => ({}),
   useDisplayInvitationPolicy: () => ({}),
   useArtworkPolicy: () => ({}),
+  usePersonalArtworkPolicy: () => ({}),
 }));
 vi.mock('./PermissionGuard', () => ({ PermissionGuard: () => <div>정상 권한 판정</div> }));
 beforeEach(() => {

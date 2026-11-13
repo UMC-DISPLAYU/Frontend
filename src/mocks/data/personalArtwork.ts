@@ -44,7 +44,7 @@ export const MOCK_PERSONAL_ARTWORKS: PersonalArtworkResponseDataDto[] = [
         height: 1600,
         sortOrder: 2,
         isThumbnail: false,
-        imageType: 'PROCESS',
+        imageType: 'WORK_PROCESS',
         caption: '',
       },
     ],
