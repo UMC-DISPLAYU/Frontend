@@ -1,7 +1,16 @@
-import { type ChangeEvent, type ReactNode, useEffect, useId, useState } from 'react';
+import {
+  type ChangeEvent,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, useWatch } from 'react-hook-form';
+import { type BlockerFunction, useBlocker } from 'react-router-dom';
 
 import { ConfirmDialog } from '@/components/common';
 import { PageContainer } from '@/components/layout';
@@ -112,14 +121,42 @@ export function ArtworkRegisterForm({
   const canSubmit =
     isReady && isValid && artworkImages.uploadedUrls.length > 0 && !isUploading && !isSubmitting;
 
+  const shouldWarnLeave = !isEdit && hasInput;
+  const allowLeaveRef = useRef(false);
+
   useEffect(() => {
-    if (isEdit || !hasInput) return;
+    if (!shouldWarnLeave) return;
 
     const warnBeforeUnload = (event: BeforeUnloadEvent) => event.preventDefault();
 
     window.addEventListener('beforeunload', warnBeforeUnload);
     return () => window.removeEventListener('beforeunload', warnBeforeUnload);
-  }, [hasInput, isEdit]);
+  }, [shouldWarnLeave]);
+
+  /*
+   * 프로토타입은 페이지가 바뀌어 브라우저 뒤로가기에도 이탈 경고가 뜬다. SPA 에서는 beforeunload 가 없으므로
+   * 다른 화면으로 가는 이동을 막고 나가기 확인을 띄운다. 오버레이(같은 경로) 기록 이동은 막지 않는다
+   */
+  const shouldBlock = useCallback<BlockerFunction>(
+    ({ currentLocation, nextLocation }) =>
+      shouldWarnLeave &&
+      !allowLeaveRef.current &&
+      currentLocation.pathname !== nextLocation.pathname,
+    [shouldWarnLeave],
+  );
+  const blocker = useBlocker(shouldBlock);
+
+  // 막은 이동은 되돌리고(reset) 머문 화면에서 나가기 확인을 연다. 확인 모달이 연 기록을 나가기가 함께 정리한다
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+    blocker.reset();
+    queueMicrotask(() => setIsLeaveOpen(true));
+  }, [blocker]);
+
+  const leaveNow: typeof leave = (...args) => {
+    allowLeaveRef.current = true;
+    leave(...args);
+  };
 
   // 프로토타입: 등록은 입력한 내용이 있을 때만, 수정은 항상 나갈지 묻는다
   const handleBack = () => {
@@ -128,7 +165,7 @@ export function ArtworkRegisterForm({
       return;
     }
 
-    leave(leaveFallback);
+    leaveNow(leaveFallback);
   };
 
   const yearInput = register('year');
@@ -315,7 +352,7 @@ export function ArtworkRegisterForm({
         confirmLabel="나가기"
         cancelLabel={isEdit ? '계속 수정' : '계속 작성'}
         onCancel={() => setIsLeaveOpen(false)}
-        onConfirm={() => leave(leaveFallback, { overlayOpen: true })}
+        onConfirm={() => leaveNow(leaveFallback, { overlayOpen: true })}
       />
     </PageContainer>
   );
