@@ -13,7 +13,7 @@ export function DetailTopBar({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="mx-auto flex h-full max-w-list items-center justify-between px-gutter">
+      <div className="mx-auto flex h-full max-w-310 items-center justify-between px-8">
         <Link
           to="/home"
           aria-label="Display U. 홈"
