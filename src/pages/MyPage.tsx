@@ -1,453 +1,386 @@
-import { useEffect, useMemo } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import type { ArchivedArtistDto, ArchivedArtworkDto, ArchivedExhibitionDto } from '@/api/dto';
-import { ErrorView, LoadingView } from '@/components/common';
+import { ConfirmDialog, ErrorView } from '@/components/common';
+import { PageContainer } from '@/components/layout';
 import {
-  ArtistCard,
-  ArtworkCard,
-  ExhibitionCard,
-  MyPageHeader,
-  SettingsSheet,
+  ARCHIVE_PANEL_ID,
+  ArchiveArtistRow,
+  ArchiveArtistRowSkeleton,
+  ArchiveArtworkCard,
+  ArchiveArtworkCardSkeleton,
+  ArchiveEmpty,
+  ArchiveExhibitionCard,
+  ArchiveExhibitionCardSkeleton,
+  archiveTabId,
+  ArchiveTabs,
+  GridIcon,
+  MailIcon,
+  MyActivityRow,
+  MyArtistCard,
+  MyPageTopBar,
+  PlusSquareIcon,
+  SettingsDrawer,
+  useMyArchive,
+  useMyArtistSummary,
 } from '@/components/mypage';
-import { FALLBACK_PROFILE_IMAGE } from '@/constants';
-import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
-import {
-  useArchivedArtists,
-  useArchivedExhibitions,
-  useDeleteArchivedArtworkMemo,
-  useDeleteArchivedExhibitionMemo,
-  useInfiniteArchivedArtworks,
-  useUnarchiveArtist,
-  useUnarchiveArtwork,
-  useUnarchiveExhibition,
-  useUnarchivePersonalArtwork,
-  useUpdateArchivedArtworkMemo,
-  useUpdateArchivedExhibitionMemo,
-} from '@/hooks/queries/useArchive';
-import { useArtistExhibitionArtworks, useMyArtworks } from '@/hooks/queries/useDisplayArtworks';
-import { useMyDisplays } from '@/hooks/queries/useMyDisplays';
-import { useMyArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
-import { useShare } from '@/hooks/useShare';
-import { useMyPageStore } from '@/stores/useMyPageStore';
-import type { ArtistItem, ExhibitionItem, SavedArtworkItem } from '@/types/mypage';
+import { Skeleton, SkeletonList } from '@/components/ui';
+import { useUnarchiveArtist } from '@/hooks/queries/useArchive';
+import { useLogout } from '@/hooks/queries/useAuth';
+import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
+import { useDeleteUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useArtistPolicy, useDisplayCreatePolicy } from '@/hooks/usePolicy';
+import { useReplaceSearchParams } from '@/hooks/useReplaceSearchParams';
+import { toast } from '@/stores/toastStore';
+import type { TabKey } from '@/types/mypage';
+import { cn } from '@/utils/cn';
+import { getErrorMessage } from '@/utils/error';
+import { hasPermission } from '@/utils/hasPermission';
+import { staggerStyle } from '@/utils/stagger';
 
-const formatCount = (count: number | undefined) => String(count ?? 0).padStart(2, '0');
+const GRID_CLASS = 'grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3';
 
-const STATUS_LABEL: Record<string, string> = {
-  ONGOING: '전시 중',
-  UPCOMING: '전시 예정',
-  ENDED: '전시 종료',
+const EMPTY_COPY: Record<TabKey, { title: string; linkLabel: string; linkTo: string }> = {
+  exhibition: {
+    title: '마음에 드는 전시를 모아 보세요',
+    linkLabel: '전시 둘러보기',
+    linkTo: '/search',
+  },
+  artwork: {
+    title: '마음에 드는 작품을 모아 보세요',
+    linkLabel: '작품 둘러보기',
+    linkTo: '/search?view=artwork',
+  },
+  artist: {
+    title: '마음에 드는 작가를 모아 보세요',
+    linkLabel: '전시 둘러보기',
+    linkTo: '/search',
+  },
 };
 
-const formatMonthDay = (date: string | null | undefined) => {
-  if (!date) return '';
-  const [, month, day] = date.split('-');
-  if (!month || !day) return date;
-  return `${month}.${day}`;
-};
+type DialogKey = 'verify' | 'logout' | 'withdraw' | 'withdrawBlocked';
 
-type ImageLike = {
-  thumbnailUrl?: string | null;
-  posterImageUrl?: string | null;
-  profileImageUrl?: string | null;
-  artworkImageUrl?: string | null;
-  imageUrl?: string | null;
-  images?: { imageUrl?: string | null }[];
-  posterImages?: { imageUrl?: string | null }[];
-};
-
-type ArchivedExhibitionView = ArchivedExhibitionDto & {
-  archiveDisplayId?: number;
-  name?: string;
-  department?: string;
-  startedAt?: string;
-  endedAt?: string;
-  locationName?: string;
-};
-
-type ArchivedArtworkView = ArchivedArtworkDto &
-  ImageLike & {
-    savedArtworkId?: number;
-    title?: string;
-    artworkTitle?: string;
-    artist?: string;
-    artistName?: string;
-  };
-
-type ArchivedArtistView = ArchivedArtistDto &
-  ImageLike & {
-    nickname?: string;
-    artistName?: string;
-    fields?: string[];
-    artworkCount?: number;
-    registeration?: number;
-    exhibitionCount?: number;
-    exhibition?: number;
-    memo?: string | null;
-  };
-
-/*
- * 이미지가 없을 때의 대체 이미지는 항목 종류에 따라 다릅니다.
- * 사람(작가)은 기본 프로필 아이콘, 전시/작품 썸네일은 빈 값으로 두고 카드에서 처리합니다.
- */
-const getImageUrl = (item: ImageLike, fallback = '') =>
-  item.thumbnailUrl ||
-  item.posterImageUrl ||
-  item.profileImageUrl ||
-  item.artworkImageUrl ||
-  item.imageUrl ||
-  item.images?.[0]?.imageUrl ||
-  item.posterImages?.[0]?.imageUrl ||
-  fallback;
+const parseTab = (value: string | null): TabKey =>
+  value === 'artwork' || value === 'artist' ? value : 'exhibition';
 
 export function MyPage() {
   const navigate = useNavigate();
-  const {
-    activeTab,
-    isArtistView,
-    isSettingsOpen,
-    setIsSettingsOpen,
-    toggleArtistView,
-    syncArtistViewWithVerification,
-  } = useMyPageStore();
+  const [searchParams, replaceSearchParams] = useReplaceSearchParams();
+  const activeTab = parseTab(searchParams.get('tab'));
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [dialog, setDialog] = useState<DialogKey | null>(null);
 
-  const { data: userData, isLoading: isUserLoading, error: userError } = useUserMe();
-  const { handleShare: shareUtil } = useShare();
-  const isVerified = userData?.isVerified;
+  const userQuery = useUserMe();
+  const user = userQuery.data;
+  const canViewArtist = hasPermission(useArtistPolicy(), 'view');
+  const canCreateDisplay = hasPermission(useDisplayCreatePolicy(), 'create');
 
-  // 작가 인증 상태가 실제로 바뀐 시점에만 뷰를 동기화 (수동으로 전환한 뷰를 리마운트 시 덮어쓰지 않기 위함)
-  useEffect(() => {
-    if (isVerified !== undefined) {
-      syncArtistViewWithVerification(isVerified);
-    }
-  }, [isVerified, syncArtistViewWithVerification]);
-  const archivedExhibitionsQuery = useArchivedExhibitions({ enabled: !isArtistView });
-  const archivedArtworksQuery = useInfiniteArchivedArtworks(
-    { size: 20 },
-    { enabled: !isArtistView },
-  );
-  const archivedArtistsQuery = useArchivedArtists({ enabled: !isArtistView });
-  const myArtistProfileQuery = useMyArtistProfile({
-    enabled: isArtistView,
-  });
-  /* 탭 진입 전에도 헤더의 전시/작품 수를 보여줘야 해서 탭과 무관하게 항상 불러옵니다. */
-  const myDisplaysQuery = useMyDisplays({
-    enabled: isArtistView,
-  });
-  const myArtworksQuery = useMyArtworks({
-    enabled: isArtistView,
-  });
-  const myExhibitionArtworksQuery = useArtistExhibitionArtworks(userData?.id ?? 0, {
-    enabled: isArtistView && Boolean(userData?.id),
-  });
-  const unarchiveExhibition = useUnarchiveExhibition();
-  const unarchiveArtwork = useUnarchiveArtwork();
-  const unarchivePersonalArtwork = useUnarchivePersonalArtwork();
+  const artistSummary = useMyArtistSummary({ userId: user?.id, enabled: canViewArtist });
+  const { data: invitationsData } = useMyDisplayInvitations();
+  const invitationCount = invitationsData?.invitations?.length ?? 0;
+
+  const archive = useMyArchive(activeTab);
   const unarchiveArtist = useUnarchiveArtist();
-  const updateExhibitionMemo = useUpdateArchivedExhibitionMemo();
-  const deleteExhibitionMemo = useDeleteArchivedExhibitionMemo();
-  const updateArtworkMemo = useUpdateArchivedArtworkMemo();
-  const deleteArtworkMemo = useDeleteArchivedArtworkMemo();
+  const logoutMutation = useLogout();
+  const deleteUserMutation = useDeleteUserMe();
 
-  const profile = useMemo(
-    () => ({
-      name: isArtistView
-        ? myArtistProfileQuery.data?.artistName || userData?.nickname || userData?.name || '사용자'
-        : userData?.nickname || userData?.name || '사용자',
-      avatar: isArtistView
-        ? myArtistProfileQuery.data?.profileImageUrl || FALLBACK_PROFILE_IMAGE
-        : userData?.profileImageUrl || FALLBACK_PROFILE_IMAGE,
-      caption: '내가 저장한 작품 확인하기',
-      isVerified: Boolean(userData?.isVerified),
-      school: myArtistProfileQuery.data?.schoolName || userData?.schoolEmail?.split('@')[1] || '',
-      fields:
-        myArtistProfileQuery.data?.fields.map(
-          (code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code,
-        ) ?? [],
-      exhibitionCount: formatCount(myDisplaysQuery.data?.length),
-      /* 개인 작품 + 전시 내 작품을 실제로 합산한 값입니다. */
-      artworkCount: formatCount(
-        (myArtworksQuery.data?.length ?? 0) +
-          (myExhibitionArtworksQuery.data?.artworks.length ?? 0),
-      ),
-      bio: myArtistProfileQuery.data?.introduction ?? '',
-      portfolioUrl:
-        myArtistProfileQuery.data?.portfolioUrl || myArtistProfileQuery.data?.externalLink || '',
-    }),
-    [
-      isArtistView,
-      myArtistProfileQuery.data,
-      myDisplaysQuery.data?.length,
-      myArtworksQuery.data?.length,
-      myExhibitionArtworksQuery.data?.artworks.length,
-      userData,
-    ],
-  );
+  const pagedQuery =
+    activeTab === 'artwork'
+      ? archive.artworksQuery
+      : activeTab === 'artist'
+        ? archive.artistsQuery
+        : null;
+  const triggerRef = useInfiniteScroll({
+    hasNextPage: pagedQuery?.hasNextPage && !pagedQuery.isError,
+    isFetchingNextPage: pagedQuery?.isFetchingNextPage ?? false,
+    fetchNextPage: () => void pagedQuery?.fetchNextPage(),
+    rootMargin: '0px 0px 400px 0px',
+  });
 
-  const exhibitions = useMemo<ExhibitionItem[]>(() => {
-    const items = (archivedExhibitionsQuery.data?.displays ?? []) as ArchivedExhibitionView[];
-    return items.map((item) => ({
-      id: String(item.archiveDisplayId ?? item.displayId),
-      archiveDisplayId: item.archiveDisplayId ?? item.displayId,
-      displayId: item.displayId,
-      userId: item.userId ?? userData?.id,
-      status: STATUS_LABEL[item.status] ?? item.status ?? '전시 중',
-      title: item.title ?? item.name ?? '',
-      org: [item.organization, item.department].filter(Boolean).join(' '),
-      period: `${formatMonthDay(item.startedAt)} - ${formatMonthDay(item.endedAt)}`,
-      place: item.locationName ?? item.location ?? '',
-      thumbnail: getImageUrl(item),
-      memo: item.memo ?? undefined,
-    }));
-  }, [archivedExhibitionsQuery.data, userData?.id]);
-
-  const myExhibitions = myDisplaysQuery.data ?? [];
-
-  const artworks = useMemo<SavedArtworkItem[]>(() => {
-    const items = (archivedArtworksQuery.data?.pages.flatMap((page) => page.works) ??
-      []) as ArchivedArtworkView[];
-    return items.map((item) => ({
-      id: String(item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId),
-      archiveWorkId: item.archiveWorkId ?? item.savedArtworkId ?? item.artworkId,
-      artworkId: item.artworkId,
-      personalArtworkId: item.personalArtworkId,
-      userId: item.userId ?? userData?.id,
-      title: item.artworkName ?? item.title ?? item.artworkTitle ?? '',
-      artist: item.artist ?? item.artistName ?? '',
-      thumbnail: getImageUrl(item),
-      memo: item.memo ?? undefined,
-    }));
-  }, [archivedArtworksQuery.data, userData?.id]);
-
-  const myArtworks = useMemo<SavedArtworkItem[]>(() => {
-    /* 개인 작품 목록 API는 artistName을 내려주지 않아 작가 프로필의 작가명을 대신 씁니다(본인 계정명 아님). */
-    const artistName =
-      myArtistProfileQuery.data?.artistName || userData?.nickname || userData?.name || '';
-    const personalItems: SavedArtworkItem[] = (myArtworksQuery.data ?? []).map((item) => ({
-      id: `personal-${item.personalArtworkId}`,
-      artworkId: item.personalArtworkId,
-      personalArtworkId: item.personalArtworkId,
-      title: item.artworkName,
-      artist: artistName,
-      thumbnail: item.thumbnailUrl ?? '',
-    }));
-    /* 전시에 등록한 작품도 함께 보여줘야 작가 프로필 작품 탭과 개수/목록이 일치합니다. */
-    const exhibitionItems: SavedArtworkItem[] = (
-      myExhibitionArtworksQuery.data?.artworks ?? []
-    ).map((item) => ({
-      id: `exhibit-${item.artworkId}`,
-      artworkId: item.artworkId,
-      displayId: item.displayId,
-      title: item.artworkName,
-      artist: item.artistName || artistName,
-      thumbnail: item.artworkImageUrl ?? '',
-    }));
-    return [...personalItems, ...exhibitionItems];
-  }, [myArtworksQuery.data, myExhibitionArtworksQuery.data, myArtistProfileQuery.data, userData]);
-
-  const artists = useMemo<ArtistItem[]>(() => {
-    const items = (archivedArtistsQuery.data?.pages.flatMap((page) => page.artists) ??
-      []) as ArchivedArtistView[];
-    return items.map((item) => ({
-      id: String(item.archiveArtistId ?? item.artistId),
-      artistId: item.artistId,
-      artistUserId: item.artistUserId,
-      name: item.artistName ?? item.nickname ?? '작가',
-      field:
-        item.fields
-          ?.map((field) => EXHIBITION_FIELD_LABELS[field as ExhibitionField] ?? field)
-          .join(', ') ?? '',
-      registeration: String(item.artworkCount ?? item.registeration ?? 0),
-      exhibition: String(item.exhibitionCount ?? item.exhibition ?? 0),
-      thumbnail: getImageUrl(item, FALLBACK_PROFILE_IMAGE),
-      memo: item.memo ?? undefined,
-    }));
-  }, [archivedArtistsQuery.data]);
-
-  const activeQuery =
-    activeTab === 'exhibition'
-      ? isArtistView
-        ? myDisplaysQuery
-        : archivedExhibitionsQuery
-      : activeTab === 'artwork'
-        ? // 작가 뷰 작품 탭은 개인 작품 + 전시 등록 작품 두 요청을 함께 보여줍니다.
-          isArtistView
-          ? {
-              isLoading: myArtworksQuery.isLoading || myExhibitionArtworksQuery.isLoading,
-              error: myArtworksQuery.error || myExhibitionArtworksQuery.error,
-            }
-          : archivedArtworksQuery
-        : archivedArtistsQuery;
-
-  const handleSelectSetting = () => {
-    setIsSettingsOpen(false);
+  const handleTabChange = (tab: TabKey) => {
+    replaceSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (tab === 'exhibition') next.delete('tab');
+      else next.set('tab', tab);
+      return next;
+    });
   };
 
-  const handleToggleView = () => {
-    if (!userData?.isVerified) {
+  const handleNewExhibition = () => {
+    if (canCreateDisplay) {
+      navigate('/exhibition/register');
       return;
     }
-
-    toggleArtistView();
+    setDialog('verify');
   };
 
-  const handleSaveExhibitionMemo = (item: ExhibitionItem, value: string) => {
-    const memo = value.trim();
-    if (memo) {
-      updateExhibitionMemo.mutate({
-        archiveDisplayId: item.archiveDisplayId ?? Number(item.id),
-        body: { content: memo },
-      });
-      return;
-    }
+  const handleLogout = () => {
+    logoutMutation.mutate(
+      {},
+      {
+        onSettled: () => navigate('/home', { replace: true }),
+      },
+    );
   };
 
-  const handleSaveArtworkMemo = (item: SavedArtworkItem, value: string) => {
-    const memo = value.trim();
-    if (memo) {
-      updateArtworkMemo.mutate({
-        archiveWorkId: item.archiveWorkId ?? Number(item.id),
-        body: { content: memo },
-      });
-      return;
-    }
+  const handleWithdraw = () => {
+    deleteUserMutation.mutate(undefined, {
+      onSuccess: () => navigate('/home', { replace: true }),
+    });
   };
 
-  const handleDeleteExhibitionMemo = (item: ExhibitionItem) => {
-    if (item.memo) {
-      deleteExhibitionMemo.mutate(item.archiveDisplayId ?? Number(item.id));
-    }
+  const handleUnarchiveArtist = (artistUserId: number) => {
+    unarchiveArtist.mutate(artistUserId, {
+      onSuccess: () => toast('저장을 취소했어요'),
+      onError: (error) => toast(getErrorMessage(error, '저장을 취소하지 못했어요')),
+    });
   };
 
-  const handleDeleteArtworkMemo = (item: SavedArtworkItem) => {
-    if (item.memo) {
-      deleteArtworkMemo.mutate(item.archiveWorkId ?? Number(item.id));
-    }
-  };
-
-  if (isUserLoading) {
-    return <LoadingView message="프로필 로딩 중..." />;
-  }
-
-  if (userError || !userData) {
+  if (userQuery.isError) {
     return (
       <ErrorView
-        message={userError?.message || '프로필 정보를 불러오지 못했습니다.'}
-        onRetry={() => window.location.reload()}
+        message={getErrorMessage(userQuery.error, '프로필 정보를 불러오지 못했어요.')}
+        onRetry={() => void userQuery.refetch()}
       />
     );
   }
 
-  const isArtistVerified = userData.isVerified;
-  const emptyMessage = `${activeTab === 'exhibition' ? '전시' : activeTab === 'artwork' ? '작품' : '작가'} 데이터가 없습니다.`;
+  const nickname = user?.nickname || user?.name || '';
 
-  const handleShare = async () => {
-    const url = `${window.location.origin}/artist/${userData.id}`;
-    await shareUtil(url, `${profile.name} 작가님`);
+  const renderArchiveList = () => {
+    const query =
+      activeTab === 'exhibition'
+        ? archive.exhibitionsQuery
+        : activeTab === 'artwork'
+          ? archive.artworksQuery
+          : archive.artistsQuery;
+    const items =
+      activeTab === 'exhibition'
+        ? archive.exhibitions
+        : activeTab === 'artwork'
+          ? archive.artworks
+          : archive.artists;
+
+    if (query.isPending) {
+      if (activeTab === 'artist') {
+        return (
+          <div aria-busy="true" aria-label="저장한 작가를 불러오는 중" className="mt-2">
+            <SkeletonList count={4}>{() => <ArchiveArtistRowSkeleton />}</SkeletonList>
+          </div>
+        );
+      }
+      return (
+        <ul aria-busy="true" aria-label="보관함을 불러오는 중" className={cn('mt-4', GRID_CLASS)}>
+          <SkeletonList count={4}>
+            {() => (
+              <li aria-hidden="true">
+                {activeTab === 'exhibition' ? (
+                  <ArchiveExhibitionCardSkeleton />
+                ) : (
+                  <ArchiveArtworkCardSkeleton />
+                )}
+              </li>
+            )}
+          </SkeletonList>
+        </ul>
+      );
+    }
+
+    if (query.isError && items.length === 0) {
+      return (
+        <ErrorView
+          fullScreen={false}
+          message={getErrorMessage(query.error, '보관함을 불러오지 못했어요.')}
+          onRetry={() => void query.refetch()}
+        />
+      );
+    }
+
+    if (items.length === 0) {
+      return (
+        <ArchiveEmpty
+          {...EMPTY_COPY[activeTab]}
+          isRecommendationPending={archive.isRecommendationPending}
+          recommendationLabel={
+            activeTab === 'artwork' ? '지금 인기 있는 작품' : '지금 인기 있는 전시'
+          }
+          recommendations={archive.recommendations}
+        />
+      );
+    }
+
+    if (activeTab === 'artist') {
+      return (
+        <ul className="mt-2">
+          {archive.artists.map(({ userId, view }, index) => (
+            <li className="animate-rise" key={view.key} style={staggerStyle(index)}>
+              <ArchiveArtistRow
+                artist={view}
+                isRemoving={unarchiveArtist.isPending && unarchiveArtist.variables === userId}
+                onUnarchive={() => handleUnarchiveArtist(userId)}
+              />
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    return (
+      <ul className={cn('mt-4', GRID_CLASS)}>
+        {activeTab === 'exhibition'
+          ? archive.exhibitions.map((exhibition, index) => (
+              <li className="animate-rise" key={exhibition.key} style={staggerStyle(index)}>
+                <ArchiveExhibitionCard exhibition={exhibition} />
+              </li>
+            ))
+          : archive.artworks.map((artwork, index) => (
+              <li className="animate-rise" key={artwork.key} style={staggerStyle(index)}>
+                <ArchiveArtworkCard artwork={artwork} />
+              </li>
+            ))}
+      </ul>
+    );
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-dvh bg-page flex flex-col">
-      <MyPageHeader
-        onVerifyArtist={() => {
-          navigate('/artist-verification');
-        }}
-        onShare={handleShare}
-        onToggleView={handleToggleView}
-        profile={profile}
-        isArtistVerified={isArtistVerified}
+    <div className="-mb-navbar-clearance min-h-dvh bg-primary-white pb-37.5">
+      <PageContainer
+        className="pt-[max(12px,env(safe-area-inset-top))] tablet:pt-[max(12px,env(safe-area-inset-top))] desktop:grid desktop:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-16 desktop:pt-8"
+        variant="list"
+      >
+        <h1 className="sr-only">마이</h1>
+
+        <div className="desktop:sticky desktop:top-6">
+          {user ? (
+            <MyPageTopBar
+              nickname={nickname}
+              onOpenMenu={() => setIsDrawerOpen(true)}
+              onOpenNotifications={() => toast('알림함은 준비 중이에요')}
+              profileImageUrl={user.profileImageUrl}
+            />
+          ) : (
+            <div aria-hidden="true" className="flex h-11 items-center gap-2">
+              <Skeleton className="size-9 rounded-circle" />
+              <Skeleton className="h-6 w-24 rounded-4" />
+            </div>
+          )}
+
+          {canViewArtist && user && (
+            <div className="mt-6">
+              <MyArtistCard
+                artistName={artistSummary.artistName || nickname}
+                summary={artistSummary.summary}
+                to={`/artist/${user.id}`}
+              />
+            </div>
+          )}
+
+          <ul aria-label="전시 활동" className="mt-3">
+            {canViewArtist && (
+              <MyActivityRow icon={<GridIcon />} label="내 전시 관리" to="/display-management" />
+            )}
+            {invitationCount > 0 && (
+              <MyActivityRow
+                count={invitationCount}
+                icon={<MailIcon />}
+                label="받은 초대"
+                to="/invitation-request"
+              />
+            )}
+            <MyActivityRow
+              icon={<PlusSquareIcon />}
+              label="새 전시 등록"
+              onClick={handleNewExhibition}
+            />
+          </ul>
+        </div>
+
+        <section aria-labelledby="archive-title" className="mt-8 desktop:mt-0">
+          <h2 className="typography-body-xxl-semibold text-primary" id="archive-title">
+            보관함
+          </h2>
+          <div className="mt-3">
+            <ArchiveTabs activeTab={activeTab} counts={archive.counts} onChange={handleTabChange} />
+          </div>
+          <div aria-labelledby={archiveTabId(activeTab)} id={ARCHIVE_PANEL_ID} role="tabpanel">
+            {renderArchiveList()}
+            {pagedQuery?.hasNextPage && <div aria-hidden="true" className="h-1" ref={triggerRef} />}
+          </div>
+        </section>
+      </PageContainer>
+
+      {user && (
+        <SettingsDrawer
+          isVerified={user.isVerified}
+          nickname={nickname}
+          onClose={() => setIsDrawerOpen(false)}
+          onLogout={() => setDialog('logout')}
+          onWithdraw={() =>
+            setDialog(artistSummary.isLeaderOfAnyDisplay ? 'withdrawBlocked' : 'withdraw')
+          }
+          open={isDrawerOpen}
+          profileImageUrl={user.profileImageUrl}
+          schoolName={artistSummary.schoolName}
+        />
+      )}
+
+      <ConfirmDialog
+        cancelLabel="나중에"
+        confirmLabel="작가 인증하기"
+        description={'학교 이메일로 인증한 뒤\n전시를 등록할 수 있어요'}
+        onCancel={() => setDialog(null)}
+        onConfirm={() => navigate('/artist-verification', { replace: true })}
+        open={dialog === 'verify'}
+        title={
+          <>
+            전시를 등록하려면
+            <br />
+            작가 인증이 필요해요
+          </>
+        }
       />
-
-      <section className="flex-1 min-h-0 overflow-y-auto px-4 py-6 pb-20 bg-box100">
-        {activeQuery.isLoading ? (
-          <LoadingView
-            fullScreen={false}
-            message="저장 목록 로딩 중..."
-            className="bg-transparent"
-          />
-        ) : activeQuery.error ? (
-          <ErrorView
-            fullScreen={false}
-            message="저장 목록을 불러오지 못했습니다."
-            className="bg-transparent"
-          />
-        ) : activeTab === 'exhibition' &&
-          (isArtistView ? myExhibitions : exhibitions).length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {(isArtistView ? myExhibitions : exhibitions).map((item) => (
-              <ExhibitionCard
-                key={item.id}
-                item={item}
-                isArtistView={isArtistView}
-                onUnarchive={(exhibition) => {
-                  if (window.confirm('저장한 전시에서 삭제할까요?')) {
-                    unarchiveExhibition.mutate(exhibition.displayId ?? Number(exhibition.id));
-                  }
-                }}
-                onSaveMemo={handleSaveExhibitionMemo}
-                onDeleteMemo={handleDeleteExhibitionMemo}
-                onOpen={(exhibition) =>
-                  navigate(`/display/${exhibition.displayId ?? exhibition.id}`)
-                }
-              />
-            ))}
-          </div>
-        ) : activeTab === 'artwork' && (isArtistView ? myArtworks : artworks).length > 0 ? (
-          <div className="grid grid-cols-2 gap-3">
-            {/* 가짜 컴포넌트 연결: 작가 뷰에서는 내 작품 전체 조회 mock 데이터를 렌더링합니다. */}
-            {(isArtistView ? myArtworks : artworks).map((item) => (
-              <ArtworkCard
-                key={item.id}
-                item={item}
-                isArtistView={isArtistView}
-                showMenu={isArtistView}
-                onUnarchive={(artwork) => {
-                  if (window.confirm('저장한 작품에서 삭제할까요?')) {
-                    if (artwork.personalArtworkId) {
-                      unarchivePersonalArtwork.mutate(artwork.personalArtworkId);
-                    } else {
-                      unarchiveArtwork.mutate(artwork.artworkId ?? Number(artwork.id));
-                    }
-                  }
-                }}
-                onSaveMemo={handleSaveArtworkMemo}
-                onDeleteMemo={handleDeleteArtworkMemo}
-                onOpen={(artwork) =>
-                  navigate(
-                    artwork.personalArtworkId
-                      ? `/personal-artworks/${artwork.personalArtworkId}`
-                      : `/artwork/${artwork.artworkId ?? artwork.id}`,
-                  )
-                }
-              />
-            ))}
-          </div>
-        ) : activeTab === 'artist' && artists.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {artists.map((item) => (
-              <ArtistCard
-                key={item.id}
-                item={item}
-                onOpen={(artist) => navigate(`/artist/${artist.artistUserId ?? artist.id}`)}
-                onUnarchive={(artist) => {
-                  if (window.confirm('저장한 작가에서 삭제할까요?')) {
-                    unarchiveArtist.mutate(artist.artistUserId ?? Number(artist.id));
-                  }
-                }}
-              />
-            ))}
-          </div>
-        ) : (
-          <ErrorView fullScreen={false} message={emptyMessage} className="bg-transparent" />
-        )}
-      </section>
-
-      <SettingsSheet
-        open={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        onSelect={handleSelectSetting}
+      <ConfirmDialog
+        confirmLabel="로그아웃하기"
+        description={'로그아웃 후에도 저장한 전시와 기록은\n계정에 유지돼요'}
+        isPending={logoutMutation.isPending}
+        onCancel={() => setDialog(null)}
+        onConfirm={handleLogout}
+        open={dialog === 'logout'}
+        pendingLabel="로그아웃 중..."
+        title="로그아웃할까요?"
+      />
+      <ConfirmDialog
+        confirmLabel="탈퇴하기"
+        description="참여 중인 전시에서도 나가게 돼요"
+        errorMessage={
+          deleteUserMutation.isError
+            ? getErrorMessage(deleteUserMutation.error, '탈퇴하지 못했어요. 다시 시도해 주세요.')
+            : null
+        }
+        isPending={deleteUserMutation.isPending}
+        onCancel={() => {
+          deleteUserMutation.reset();
+          setDialog(null);
+        }}
+        onConfirm={handleWithdraw}
+        open={dialog === 'withdraw'}
+        pendingLabel="탈퇴하는 중..."
+        title="탈퇴할까요?"
+        warning={{
+          title: '삭제 안내',
+          description: '작가 프로필과 작가로 연결된 작품은 복구할 수 없어요',
+        }}
+      />
+      <ConfirmDialog
+        cancelLabel="닫기"
+        confirmLabel="전시 관리로 이동"
+        description={'대표로 있는 전시를 위임하거나 삭제한 뒤\n탈퇴할 수 있어요'}
+        onCancel={() => setDialog(null)}
+        onConfirm={() => navigate('/display-management', { replace: true })}
+        open={dialog === 'withdrawBlocked'}
+        title="탈퇴할 수 없어요"
       />
     </div>
   );
