@@ -15,10 +15,10 @@ type Props = {
   isPreview: boolean;
 };
 
-const GRID = 'grid grid-cols-2 gap-3 desktop:grid-cols-3 desktop:gap-4';
+const GRID = 'grid grid-cols-2 gap-x-3 gap-y-6 desktop:grid-cols-3';
 
-/* 피그마 `Card / 작품 · 검정`: 사진(3:4) 안쪽 8, 사진 아래 12 · 제목↔작가 2 · 아래 12 */
-const CARD_FRAME = 'aspect-3/4 w-full overflow-hidden rounded-12';
+/* 피그마 `Card / 작품 · 검정`(카드 E): 틀 없이 사진(3:4), 사진 아래 8 · 제목↔작가 2 */
+const CARD_FRAME = 'aspect-3/4 w-full overflow-hidden bg-secondary';
 
 export function WorksPanel({ displayId, teamMembers, isPreview }: Props) {
   const { data, error, isPending, isError, refetch } = useDisplayArtworks(displayId);
@@ -30,9 +30,10 @@ export function WorksPanel({ displayId, teamMembers, isPreview }: Props) {
         <div className={GRID}>
           <SkeletonList count={4}>
             {() => (
-              <div className="rounded-12 bg-base-black p-2">
+              <div>
                 <Skeleton className={CARD_FRAME} />
-                <div className="h-15" />
+                <Skeleton className="mt-2 h-5 w-2/3 rounded-4" />
+                <Skeleton className="mt-0.5 h-4 w-1/3 rounded-4" />
               </div>
             )}
           </SkeletonList>
@@ -57,21 +58,19 @@ export function WorksPanel({ displayId, teamMembers, isPreview }: Props) {
               key={artwork.artworkId}
               to={`/artwork/${artwork.artworkId}`}
               style={staggerStyle(index)}
-              className="group block animate-rise overflow-hidden rounded-12 bg-base-black text-quaternary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
+              className="group block animate-rise text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
             >
-              <div className="px-2 pt-2">
-                <OptimizedImage
-                  src={artwork.artworkImageUrl}
-                  displayWidth={360}
-                  alt={artwork.artworkName}
-                  skeleton
-                  frameClassName={CARD_FRAME}
-                  className="size-full object-cover transition-transform duration-slow ease-standard group-hover:scale-103"
-                />
-              </div>
-              <div className="p-3">
+              <OptimizedImage
+                src={artwork.artworkImageUrl}
+                displayWidth={360}
+                alt={artwork.artworkName}
+                skeleton
+                frameClassName={CARD_FRAME}
+                className="size-full object-cover transition-transform duration-slow ease-standard group-hover:scale-103"
+              />
+              <div className="pt-2">
                 <b className="typography-body-lg-semibold block truncate">{artwork.artworkName}</b>
-                <span className="typography-body-md-medium mt-0.5 block truncate">
+                <span className="typography-body-md-medium mt-0.5 block truncate text-secondary">
                   {getExhibitionArtistName(artwork.artistName, artwork.artistUserId, teamMembers)}
                 </span>
               </div>

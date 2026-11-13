@@ -2,9 +2,6 @@ import { Link } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import contentStack from '@/assets/display-detail/content-stack.svg';
-import placeMap from '@/assets/display-detail/place-map.svg';
-import placePin from '@/assets/display-detail/place-pin.svg';
-import { ExpandableText } from '@/components/common/ExpandableText';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
 
@@ -19,10 +16,9 @@ const DIVIDER =
 function IntroText({ content }: { content: string }) {
   return (
     <section aria-label="전시소개" className="px-gutter pt-5 desktop:px-0">
-      <ExpandableText
-        text={content}
-        className="typography-body-lg-regular text-pretty text-secondary"
-      />
+      <p className="typography-body-lg-regular text-pretty whitespace-pre-line text-secondary">
+        {content}
+      </p>
     </section>
   );
 }
@@ -36,7 +32,7 @@ function ContentCards({ display }: Props) {
           <Link
             key={category.categoryId}
             to={`/display/${display.displayId}/contents?category=${category.categoryId}`}
-            className="group w-36 shrink-0 snap-start rounded-12 text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus desktop:w-auto"
+            className="group w-36 shrink-0 snap-start text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus desktop:w-auto"
           >
             <div className="relative">
               <OptimizedImage
@@ -44,7 +40,7 @@ function ContentCards({ display }: Props) {
                 displayWidth={288}
                 alt=""
                 skeleton
-                frameClassName="aspect-3/4 w-full overflow-hidden rounded-12 border border-primary bg-tertiary"
+                frameClassName="aspect-3/4 w-full overflow-hidden border border-primary bg-tertiary"
                 className="size-full object-cover transition-transform duration-slow ease-standard group-hover:scale-104"
               />
               {/* 인스타그램처럼 사진이 여러 장이면 오른쪽 위에 묶음 표시 */}
@@ -67,49 +63,11 @@ function ContentCards({ display }: Props) {
   );
 }
 
-/* 지도는 저작권 때문에 실제 지도 캡처 대신 무채색 그림을 쓴다(프로토타입과 같은 그림) */
-function PlaceCard({ display }: Props) {
-  const { placeName, roadAddress, latitude, longitude } = display.location;
-  const mapUrl = `https://map.kakao.com/link/map/${encodeURIComponent(placeName)},${latitude},${longitude}`;
-
-  return (
-    <section aria-label="위치 안내" className={cn(DIVIDER, 'mt-5 px-gutter pt-6.25 desktop:px-0')}>
-      <div className="overflow-hidden rounded-12 bg-base-black">
-        <div aria-hidden="true" className="relative h-40">
-          <img src={placeMap} alt="" className="size-full object-cover" />
-          <img
-            src={placePin}
-            alt=""
-            className="absolute top-15.5 left-1/2 size-8.75 -translate-x-1/2"
-          />
-        </div>
-        <div className="flex min-h-18 items-center gap-3 p-4">
-          <div className="min-w-0 flex-1">
-            <strong className="typography-body-lg-bold block text-quaternary">{placeName}</strong>
-            {roadAddress && (
-              <small className="typography-body-md-medium block text-tertiary">{roadAddress}</small>
-            )}
-          </div>
-          <a
-            href={mapUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="typography-body-md-semibold inline-flex h-8 shrink-0 items-center rounded-8 border border-primary px-3 text-quaternary transition duration-fast ease-standard hover:bg-primary-white/12 focus-visible:outline-2 focus-visible:outline-focus-inverse active:scale-96"
-          >
-            지도 보기
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function IntroPanel({ display }: Props) {
   return (
     <div className="pb-10">
       {display.content && <IntroText content={display.content} />}
       {display.contentCategories.length > 0 && <ContentCards display={display} />}
-      {display.location?.placeName && <PlaceCard display={display} />}
     </div>
   );
 }

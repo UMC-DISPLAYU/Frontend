@@ -31,9 +31,10 @@ import { WorksPanel } from './WorksPanel';
  * - 600~767px: 포스터 · 본문을 가운데 좁은 단으로
  * - 768~899px: 위에 서비스 헤더(64)가 생기고, 탭 줄 · 뒤로가기는 그 아래에 붙는다
  * - 900px 이상: 왼쪽 포스터 · 오른쪽 정보 2단, 뒤로가기는 없다(미리보기만 포스터 위에 둔다)
+ * 최대 폭 1240 · 좌우 여백 32는 공용 컨테이너(max-w-list · px-gutter)가 아니라 프로토타입 값이다
  */
 const LAYOUT =
-  'mx-auto w-full max-w-list desktop:grid desktop:grid-cols-[minmax(320px,40%)_minmax(0,1fr)] desktop:items-start desktop:gap-x-14 desktop:px-gutter desktop:pt-8 desktop:pb-20';
+  'mx-auto w-full max-w-310 desktop:grid desktop:grid-cols-[minmax(320px,40%)_minmax(0,1fr)] desktop:items-start desktop:gap-x-14 desktop:px-8 desktop:pt-8 desktop:pb-20';
 const SHEET =
   'min-w-0 min-[37.5rem]:mx-auto min-[37.5rem]:max-w-160 desktop:mx-0 desktop:max-w-170';
 
@@ -79,18 +80,19 @@ export function DisplayDetailView({ display, onBack }: Props) {
 
       <DetailTopBar className={isPreview ? 'top-10' : 'top-0'} />
 
-      {/*
-       * 900px 미만: 높이 0인 sticky 칸이라 처음엔 포스터 위(20, 20)에 있다가,
-       * 스크롤하면 화면 맨 위(768px 이상은 헤더 아래)에 붙어 탭 줄 왼쪽에 앉는다(프로토타입 11-09)
-       */}
-      <div className="sticky top-[calc(var(--detail-top)-max(20px,env(safe-area-inset-top)))] z-30 h-0 desktop:hidden">
-        <DetailBackButton
-          onBack={onBack}
-          className="absolute top-[max(20px,env(safe-area-inset-top))] left-5"
-        />
-      </div>
-
       <div className={LAYOUT}>
+        {/*
+         * 900px 미만: 높이 0인 sticky 칸이라 처음엔 포스터 위(20, 20)에 있다가,
+         * 스크롤하면 화면 맨 위(768px 이상은 헤더 아래)에 붙어 탭 줄 왼쪽에 앉는다(프로토타입 11-09).
+         * 포스터와 같은 칸 안에 둬야 600~899px 포스터 위 여백(24)만큼 같이 내려온다
+         */}
+        <div className="sticky top-[calc(var(--detail-top)-max(20px,env(safe-area-inset-top)))] z-30 h-0 desktop:hidden">
+          <DetailBackButton
+            onBack={onBack}
+            className="absolute top-[max(20px,env(safe-area-inset-top))] left-5"
+          />
+        </div>
+
         <PosterCarousel
           images={posters.length > 0 ? posters : [FALLBACK_POSTER_IMAGE]}
           title={display.title}
@@ -167,7 +169,7 @@ export function DisplayDetailSkeleton() {
     <div className="min-h-dvh bg-primary-white">
       <DetailTopBar className="top-0" />
       <div className={LAYOUT}>
-        <Skeleton className="aspect-402/568 min-[37.5rem]:mx-auto min-[37.5rem]:mt-6 min-[37.5rem]:max-w-120 min-[37.5rem]:rounded-16 desktop:mt-0 desktop:max-w-none" />
+        <Skeleton className="aspect-402/568 min-[37.5rem]:mx-auto min-[37.5rem]:mt-6 min-[37.5rem]:max-w-120 desktop:mt-0 desktop:max-w-none" />
         <div className={SHEET}>
           <div className="flex flex-col gap-2 px-gutter py-6 desktop:px-0 desktop:pt-0">
             <Skeleton className="h-7 w-2/3 rounded-4" />
