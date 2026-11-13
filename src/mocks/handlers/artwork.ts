@@ -2,7 +2,7 @@
 import { http } from 'msw';
 
 import { listResponse, mockDb, okStatus } from '@/mocks/data/repository';
-import { created, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const now = () => new Date().toISOString();
 const findArtwork = (artworkId: number) =>
@@ -185,7 +185,18 @@ export const artworkHandlers = [
   ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
     http.patch(path, async ({ params, request }) => {
-      const artwork = findArtwork(toNumber(params.artworkId, 1001));
+      // 없는 작품을 고치면 다른 작품이 바뀌지 않게, id 가 정확히 같은 작품만 고친다
+      const artwork = mockDb.artworks.find(
+        (item: any) => item.artworkId === toNumber(params.artworkId),
+      );
+      if (!artwork) {
+        return fail(
+          '/api/v1/artworks/{artworkId}',
+          404,
+          'ARTWORK_NOT_FOUND',
+          '작품을 찾을 수 없습니다.',
+        );
+      }
       const body = await readJson<Record<string, any>>(request);
       const imageUrl = body.images?.[0]?.imageUrl ?? artwork.artworkImageUrl;
       const coAuthors = toCoAuthorList(body.coAuthors, artwork.displayId);
