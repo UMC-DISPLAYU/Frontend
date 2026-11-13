@@ -56,6 +56,20 @@ export function toArtworkTypes(
   return [...new Set(values)];
 }
 
+/**
+ * 고른 분야가 서버 한도(최대 2개)를 넘는지. 기타가 화면에 없는 서버 분야 여러 개를 대신하고 있으면
+ * 보낼 때 그만큼 늘어나므로 바꾼 뒤의 서버 값 개수로도 센다
+ */
+export function exceedsArtworkFieldLimit(
+  labels: readonly string[],
+  previousTypes: readonly string[] = [],
+) {
+  return (
+    labels.length > MAX_ARTWORK_FIELDS ||
+    toArtworkTypes(labels, previousTypes).length > MAX_ARTWORK_FIELDS
+  );
+}
+
 /** 서버 enum 을 분야 이름으로 되돌린다. 화면에 없는 값(FASHION · COMPLEX 등)은 기타로 본다 */
 export function toArtworkFieldLabels(types: readonly string[]): string[] {
   const labels = types.map(

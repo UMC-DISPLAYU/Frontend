@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { toArtworkFieldLabels, toArtworkTypes } from './artworkRegister.constants';
+import {
+  exceedsArtworkFieldLimit,
+  toArtworkFieldLabels,
+  toArtworkTypes,
+} from './artworkRegister.constants';
 import {
   artworkRegisterSchema,
   type ArtworkRegisterValues,
@@ -82,5 +86,18 @@ describe('작품분야 변환', () => {
     expect(toArtworkFieldLabels(['PAINTING', 'DESIGN'])).toEqual(['회화', '그래픽']);
     expect(toArtworkFieldLabels(['FASHION', 'COMPLEX'])).toEqual(['기타']);
     expect(toArtworkFieldLabels(['PAINTING', 'SCULPTURE', 'MEDIA'])).toEqual(['회화', '조소']);
+  });
+});
+
+describe('작품분야 개수 한도', () => {
+  it('분야 이름 2개 · 서버 값 2개까지는 넘지 않는다', () => {
+    expect(exceedsArtworkFieldLimit(['회화', '조소'])).toBe(false);
+    expect(exceedsArtworkFieldLimit(['회화', '조소', '사진'])).toBe(true);
+  });
+
+  it('기타가 화면에 없는 서버 분야 2개를 대신하면 다른 분야를 더 고를 수 없다', () => {
+    expect(exceedsArtworkFieldLimit(['기타'], ['FASHION', 'COMPLEX'])).toBe(false);
+    expect(exceedsArtworkFieldLimit(['기타', '회화'], ['FASHION', 'COMPLEX'])).toBe(true);
+    expect(exceedsArtworkFieldLimit(['기타', '회화'], ['FASHION'])).toBe(false);
   });
 });

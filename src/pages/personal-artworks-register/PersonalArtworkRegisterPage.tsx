@@ -12,6 +12,7 @@ import {
   type ArtworkRegisterValues,
   buildPersonalArtworkRequest,
   EMPTY_ARTWORK_REGISTER_VALUES,
+  readArtworkTypes,
   splitArtworkImages,
   toArtworkRegisterValues,
   useLeaveArtworkRegister,
@@ -107,6 +108,7 @@ function PersonalArtworkRegisterContent({
       isSubmitting={createArtwork.isPending || updateArtwork.isPending}
       onSubmit={handleSubmit}
       leaveFallback={leavePath}
+      previousTypes={previous ? readArtworkTypes(previous) : undefined}
     />
   );
 }

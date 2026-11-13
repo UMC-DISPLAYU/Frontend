@@ -2,22 +2,33 @@ import CheckIcon from '@/assets/display-register/CheckIcon.svg';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
-import { ARTWORK_FIELD_OPTIONS, MAX_ARTWORK_FIELDS } from './artworkRegister.constants';
+import {
+  ARTWORK_FIELD_OPTIONS,
+  exceedsArtworkFieldLimit,
+  MAX_ARTWORK_FIELDS,
+} from './artworkRegister.constants';
 
 interface ArtworkFieldChipsProps {
   labelId: string;
   selected: string[];
+  /** 수정할 때 기존 서버 분야. 기타가 화면에 없는 분야를 대신하면 한도를 그만큼 센다 */
+  previousTypes?: readonly string[];
   onChange: (next: string[]) => void;
 }
 
-export function ArtworkFieldChips({ labelId, selected, onChange }: ArtworkFieldChipsProps) {
+export function ArtworkFieldChips({
+  labelId,
+  selected,
+  previousTypes,
+  onChange,
+}: ArtworkFieldChipsProps) {
   const toggle = (label: string) => {
     if (selected.includes(label)) {
       onChange(selected.filter((item) => item !== label));
       return;
     }
 
-    if (selected.length >= MAX_ARTWORK_FIELDS) {
+    if (exceedsArtworkFieldLimit([...selected, label], previousTypes)) {
       toast(`분야는 최대 ${MAX_ARTWORK_FIELDS}개까지 선택할 수 있어요`);
       return;
     }

@@ -66,6 +66,8 @@ export interface ArtworkRegisterFormProps {
   onSubmit: (values: ArtworkRegisterValues, images: ArtworkImageUrls) => void;
   /** 돌아갈 화면 기록이 없을 때 이동할 경로 */
   leaveFallback: string;
+  /** 수정할 때 기존 서버 분야(화면에 없는 분야를 지키고 개수 한도를 맞추는 데 쓴다) */
+  previousTypes?: readonly string[];
 }
 
 export function ArtworkRegisterForm({
@@ -78,6 +80,7 @@ export function ArtworkRegisterForm({
   isSubmitting,
   onSubmit,
   leaveFallback,
+  previousTypes,
 }: ArtworkRegisterFormProps) {
   const leave = useLeaveArtworkRegister();
   const formId = useId();
@@ -269,6 +272,7 @@ export function ArtworkRegisterForm({
                   <ArtworkFieldChips
                     labelId={fieldLabelId}
                     selected={field.value}
+                    previousTypes={previousTypes}
                     onChange={field.onChange}
                   />
                 )}
