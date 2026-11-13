@@ -26,22 +26,25 @@ export function ArtworkExhibitionRow({ displayId, title, organizer, posterUrl, s
           displayWidth={80}
           alt=""
           skeleton
-          frameClassName="h-12.5 w-10 shrink-0 rounded-4"
+          frameClassName="aspect-402/568 w-10 shrink-0 bg-secondary"
         />
         <span className="flex min-w-0 flex-1 flex-col">
+          {/* 프로토타입처럼 상태 줄이 본문 글자의 줄 높이를 갖는다(행 높이 92.8, 900px 이상 95.6) */}
           {state && (
-            <span className="flex items-center gap-1.5">
-              <span
-                aria-hidden
-                className={cn(
-                  'size-2 rounded-circle',
-                  state === 'ongoing' && 'bg-interactive-primary',
-                  state === 'upcoming' && 'border-2 border-interactive-primary',
-                  state === 'ended' && 'bg-current text-icon-disable',
-                )}
-              />
-              <span className="typography-body-md-medium text-tertiary">
-                {EXHIBITION_STATE_LABEL[state]}
+            <span className="typography-body-lg-regular desktop:typography-body-xl-regular">
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  aria-hidden
+                  className={cn(
+                    'size-2 rounded-circle',
+                    state === 'ongoing' && 'bg-interactive-primary',
+                    state === 'upcoming' && 'border-2 border-interactive-primary',
+                    state === 'ended' && 'bg-current text-icon-disable',
+                  )}
+                />
+                <span className="typography-body-md-medium text-tertiary">
+                  {EXHIBITION_STATE_LABEL[state]}
+                </span>
               </span>
             </span>
           )}
