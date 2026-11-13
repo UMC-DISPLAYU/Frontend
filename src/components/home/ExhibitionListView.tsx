@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { CardMetaList } from '@/components/ui';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
 import { cn } from '@/utils/cn';
+import { staggerStyle } from '@/utils/stagger';
 
 import { useCenteredScroll } from './useCenteredScroll';
 
@@ -12,10 +12,11 @@ const COLUMN_SIZE = 3;
 interface ExhibitionListViewProps {
   items: HomeExhibitionCard[];
   showRank: boolean;
+  animateIn?: boolean;
 }
 
 /** 리스트형: 전시를 3개씩 세로로 묶은 열을 옆으로 넘긴다. 가운데 열만 선명하다 */
-export function ExhibitionListView({ items, showRank }: ExhibitionListViewProps) {
+export function ExhibitionListView({ items, showRank, animateIn }: ExhibitionListViewProps) {
   const columns: HomeExhibitionCard[][] = [];
   for (let i = 0; i < items.length; i += COLUMN_SIZE) {
     columns.push(items.slice(i, i + COLUMN_SIZE));
@@ -40,7 +41,9 @@ export function ExhibitionListView({ items, showRank }: ExhibitionListViewProps)
             className={cn(
               'grid w-(--list-w) flex-none snap-center gap-3 transition-opacity duration-slow ease-standard',
               columnIndex !== highlightIndex && 'opacity-40',
+              animateIn && 'animate-rise',
             )}
+            style={animateIn ? staggerStyle(columnIndex, { maxSteps: 4 }) : undefined}
           >
             {column.map((item, rowIndex) => {
               const rank = showRank ? columnIndex * COLUMN_SIZE + rowIndex + 1 : null;
@@ -57,7 +60,7 @@ export function ExhibitionListView({ items, showRank }: ExhibitionListViewProps)
                     event.preventDefault();
                     scrollToIndex(columnIndex);
                   }}
-                  className="relative grid h-31 grid-cols-[86px_minmax(0,1fr)] overflow-hidden rounded-12 border border-icon-secondary bg-interactive-primary text-quaternary shadow-card transition duration-fast ease-standard hover:border-secondary focus-visible:outline-2 focus-visible:outline-focus-inverse active:scale-99"
+                  className="relative grid h-31 grid-cols-[86px_minmax(0,1fr)] overflow-hidden border border-icon-secondary bg-interactive-primary text-quaternary shadow-card transition duration-fast ease-standard hover:border-secondary focus-visible:outline-2 focus-visible:outline-focus-inverse active:scale-99"
                 >
                   <span className="relative bg-primary-400">
                     <OptimizedImage
@@ -87,7 +90,12 @@ export function ExhibitionListView({ items, showRank }: ExhibitionListViewProps)
                         {item.organization}
                       </span>
                     </div>
-                    <CardMetaList period={item.period} location={item.place} />
+                    <div className="grid gap-0.5 text-tertiary">
+                      <p className="typography-body-md-regular2 truncate">{item.period}</p>
+                      {item.place && (
+                        <p className="typography-body-md-medium truncate">{item.place}</p>
+                      )}
+                    </div>
                   </div>
                 </Link>
               );

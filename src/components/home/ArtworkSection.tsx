@@ -7,11 +7,14 @@ import { Skeleton, SkeletonList } from '@/components/ui';
 import { cn } from '@/utils/cn';
 import { staggerStyle } from '@/utils/stagger';
 
+import { ArtistByline } from './ArtistByline';
 import { HOME_INNER } from './homeLayout';
 
 // 폰에서는 2장 + 3번째가 조금 보이게(프로토타입 11-08): 폭 = (화면 폭 − 76px) / 2, 최대 175px
 const CARD_CLASS =
-  'w-[min(175px,calc((100vw-76px)/2))] flex-none snap-start rounded-12 tablet:w-50 min-[68.75rem]:w-55';
+  'w-[min(175px,calc((100vw-76px)/2))] flex-none snap-start tablet:w-50 min-[68.75rem]:w-55';
+
+const IMAGE_FRAME_CLASS = 'aspect-161/215 w-full bg-secondary';
 
 interface ArtworkSectionProps {
   artworks: ArtworkPreviewItemDto[] | undefined;
@@ -30,7 +33,7 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
         </h2>
         <Link
           to="/search?view=artwork"
-          className="typography-body-md-medium -my-3 -mr-1 flex min-h-11 items-center rounded-4 pl-1 text-tertiary transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-focus"
+          className="typography-body-md-medium -my-3 flex min-h-11 items-center rounded-4 pl-1 text-tertiary transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-focus"
         >
           더보기
           <span className="grid size-4 place-items-center">
@@ -44,9 +47,10 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
         {isPending ? (
           <SkeletonList count={4}>
             {() => (
-              <li aria-hidden="true" className={cn(CARD_CLASS, 'bg-primary-black p-1.75 pb-2.5')}>
-                <Skeleton className="aspect-161/215 w-full rounded-12" />
-                <Skeleton className="mt-2 h-4 w-2/3 rounded-4" />
+              <li aria-hidden="true" className={CARD_CLASS}>
+                <Skeleton className={IMAGE_FRAME_CLASS} />
+                <Skeleton className="mt-2 h-5 w-2/3 rounded-4" />
+                <Skeleton className="mt-0.5 h-4 w-1/3 rounded-4" />
               </li>
             )}
           </SkeletonList>
@@ -59,25 +63,28 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
             >
               <Link
                 to={`/artwork/${artwork.artworkId}`}
-                className="group block overflow-hidden rounded-12 bg-primary-black text-quaternary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
+                className="group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
               >
-                <span className="block p-1.75">
-                  <OptimizedImage
-                    src={artwork.artworkImageUrl}
-                    alt={`${artwork.artworkName} 작품`}
-                    displayWidth={220}
-                    skeleton
-                    frameClassName="aspect-161/215 w-full rounded-12"
-                    className="transition-transform duration-slow ease-standard group-hover:scale-103"
-                  />
-                </span>
-                <span className="block px-3 pb-2.5">
+                <OptimizedImage
+                  src={artwork.artworkImageUrl}
+                  alt={`${artwork.artworkName} 작품`}
+                  displayWidth={220}
+                  skeleton
+                  frameClassName={IMAGE_FRAME_CLASS}
+                  className="transition-transform duration-slow ease-standard group-hover:scale-103"
+                />
+                <span className="block pt-2">
                   <span className="typography-body-lg-semibold block truncate">
                     {artwork.artworkName}
                   </span>
-                  <span className="typography-body-md-medium block truncate">
-                    {artwork.artistName}
-                  </span>
+                  <ArtistByline
+                    names={
+                      artwork.artists?.length
+                        ? artwork.artists.map(({ name }) => name)
+                        : [artwork.artistName]
+                    }
+                    className="typography-body-md-medium text-secondary"
+                  />
                 </span>
               </Link>
             </li>
