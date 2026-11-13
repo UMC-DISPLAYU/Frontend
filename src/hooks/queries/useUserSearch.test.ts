@@ -42,7 +42,7 @@ it.each([
       data: { resultType: 'FAIL', error: { code, message: '서버 메시지' } },
     });
   };
-  if (empty) await expect(search()).resolves.toEqual([]);
+  if (empty) await expect(search()).resolves.toBeNull();
   else await expect(search()).rejects.toMatchObject({ name: 'ApiError', code, status });
 });
 
@@ -51,13 +51,13 @@ it('네트워크 실패를 유지하고 정상 결과를 전달한다', async ()
     throw new AxiosError('Network Error', 'ERR_NETWORK', config);
   };
   await expect(search()).rejects.toBeInstanceOf(ApiError);
-  const users = [{ userId: 1, nickname: 'nickname' }];
+  const user = { userId: 1, name: '이름', nickname: 'nickname' };
   axiosInstance.defaults.adapter = async (config) => ({
     config,
     headers: {},
     status: 200,
     statusText: '',
-    data: { resultType: 'SUCCESS', success: { data: users } },
+    data: { resultType: 'SUCCESS', success: { data: user } },
   });
-  await expect(search()).resolves.toEqual(users);
+  await expect(search()).resolves.toEqual(user);
 });

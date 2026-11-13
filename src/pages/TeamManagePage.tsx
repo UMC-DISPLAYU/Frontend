@@ -1,215 +1,44 @@
-import { useState } from 'react';
-
 import { useParams } from 'react-router-dom';
 
-import SearchIcon from '@/assets/exhibition-register/search.svg';
-import { ErrorView, LoadingView } from '@/components/common';
-import { InviteLinkSection, type Member, MemberRow } from '@/components/team-manage';
-import { ExhibitionHeader } from '@/components/ui';
+import { WorkHeader } from '@/components/exhibition-work';
+import { PageContainer } from '@/components/layout';
+import { InviteLinkCard, NicknameInviteCard, TeamMemberSection } from '@/components/team-manage';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
-import {
-  useCreateDisplayInvitationLink,
-  useDisableDisplayInvitationLink,
-  useDisplayMembers,
-  useInviteDisplayMember,
-} from '@/hooks/queries/useDisplayMembers';
-import { useUserSearch } from '@/hooks/queries/useUserSearch';
-import { useFlowBack } from '@/hooks/useFlowBack';
-import { useDisplayInvitationPolicy } from '@/hooks/usePolicy';
-import { getErrorMessage } from '@/utils/error';
-import { hasPermission } from '@/utils/hasPermission';
-
-/*
- * 링크 생성 응답(invitationUrl)은 그대로 쓰고, 전시 상세의 invitationToken으로 복원할 때만 조립합니다.
- * 경로는 스웨거의 초대 조회 API(GET /display/invitation/{token})와 같은 형태를 씁니다.
- */
-const buildInviteLink = (token: string) => `${window.location.origin}/display/invitation/${token}`;
+import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 
 export function TeamManage() {
-  const flowBack = useFlowBack();
   const { displayId: displayIdParam } = useParams();
-  const displayId = Number(displayIdParam ?? 0);
+  const displayId = Number(displayIdParam);
 
-  const [query, setQuery] = useState('');
-  const keyword = query.trim();
-
+  // 대표자 권한 가드가 전시 상세를 먼저 불러온 뒤에 그려진다
   const { data: display } = useDisplayDetail(displayId);
-  const { data: memberList, isLoading: membersLoading } = useDisplayMembers(displayId);
-  const {
-    data: searchResults = [],
-    isFetching: searching,
-    error: searchError,
-    refetch: retrySearch,
-  } = useUserSearch(keyword);
-  const displayInvitationPolicy = useDisplayInvitationPolicy(
-    display ?? {
-      ownerUserId: 0,
-      teamMembers: [],
-    },
-  );
-  const canCreateInvitation = Boolean(display) && hasPermission(displayInvitationPolicy, 'create');
-
-  const invite = useInviteDisplayMember(displayId);
-  const createLink = useCreateDisplayInvitationLink(displayId);
-  const disableLink = useDisableDisplayInvitationLink(displayId);
-
-  /*
-   * 초대 링크는 전시 상세의 invitationToken/invitationDisabledAt으로 판단합니다.
-   * 링크를 켤 때 토큰이 없으면 새로 발급받습니다.
-   */
-  const token = display?.invitationToken ?? '';
-  const linkEnabled = Boolean(token) && !display?.invitationDisabledAt;
-  // 방금 발급받은 링크는 서버가 준 URL을 그대로 쓰고, 없으면 전시 상세의 토큰으로 만듭니다.
-  const inviteLink = linkEnabled ? (createLink.data?.invitationUrl ?? buildInviteLink(token)) : '';
-
-  const toggleLink = (next: boolean) => {
-    if (next) createLink.mutate();
-    else disableLink.mutate();
-  };
-
-  /*
-   * 스웨거 TeamMemberResponse에는 이름/프로필 이미지가 없어 displayNickname과 role만 사용합니다.
-   * 프로필 이미지가 없으므로 기본 프로필 아이콘이 표시됩니다.
-   * 대표자 판정은 전시 상세의 ownerUserId와 대조합니다.
-   */
-  const ownerUserId = (display as { ownerUserId?: number } | undefined)?.ownerUserId;
-  const members: Member[] = (memberList?.members ?? [])
-    .map((member) => {
-      const isPending = member.accepted === false;
-
-      return {
-        id: String(member.teamMemberId),
-        name: member.displayNickname,
-        nickname: isPending ? '아직 초대를 수락하지 않았어요' : member.displayNickname,
-        status:
-          member.role === 'LEADER' || member.userId === ownerUserId
-            ? 'owner'
-            : isPending
-              ? 'pending'
-              : member.artistVerified
-                ? 'member'
-                : 'unverified',
-      } satisfies Member;
-    })
-    .sort((a, b) => (a.status === 'owner' ? -1 : b.status === 'owner' ? 1 : 0));
-
-  const [invitedUserIds, setInvitedUserIds] = useState<Set<number>>(new Set());
-
-  const handleInvite = (userId: number) => {
-    setInvitedUserIds((prev) => new Set(prev).add(userId));
-    invite.mutate(userId, {
-      onError: () => {
-        setInvitedUserIds((prev) => {
-          const next = new Set(prev);
-          next.delete(userId);
-          return next;
-        });
-      },
-    });
-  };
-
-  /* 검색 결과의 초대 버튼 라벨을 정하기 위해 이미 팀원인 사람과 초대 대기 중인 사람을 구분합니다. */
-  const memberUserIds = new Set(
-    (memberList?.members ?? [])
-      .filter((member) => member.accepted !== false)
-      .map((member) => member.userId),
-  );
-  const pendingUserIds = new Set(
-    (memberList?.members ?? [])
-      .filter((member) => member.accepted === false)
-      .map((member) => member.userId),
-  );
-
-  const isSearching = keyword.length > 0;
+  const members = useDisplayMembers(displayId);
+  const { data: me } = useUserMe();
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-md bg-page pb-safe-bottom">
-      <ExhibitionHeader title="팀원 초대/관리" onBack={() => flowBack()} />
-
-      <main className="px-5">
-        {canCreateInvitation && (
-          <div className="flex items-center gap-2 rounded-xl bg-box px-5 py-2.5 shadow-[inset_1px_1px_1px_0px_rgba(0,0,0,0.10),inset_-1px_-1px_1px_0px_rgba(255,255,255,1)] mb-3">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="닉네임 검색"
-              className="typo-body-sm-regular w-full bg-transparent text-main outline-none placeholder:text-faint"
-            />
-            <img src={SearchIcon} className="size-5 shrink-0" alt="search" />
-          </div>
-        )}
-
-        {canCreateInvitation && (
-          <InviteLinkSection
-            inviteLink={inviteLink}
-            enabled={linkEnabled}
-            onToggle={toggleLink}
-            onRefresh={() => createLink.mutate()}
-            pending={createLink.isPending || disableLink.isPending}
-          />
-        )}
-
-        {canCreateInvitation && isSearching ? (
-          <div className="mt-6 flex flex-col gap-3">
-            <span className="typo-body-sm-bold text-main">검색 결과</span>
-            {searching ? (
-              <LoadingView fullScreen={false} message="검색 중..." />
-            ) : searchError ? (
-              <ErrorView
-                fullScreen={false}
-                message={getErrorMessage(searchError, '사용자를 검색하지 못했어요.')}
-                onRetry={() => {
-                  void retrySearch();
-                }}
-              />
-            ) : (
-              <>
-                <ul className="flex flex-col gap-2.5">
-                  {searchResults.map((user) => {
-                    const isMember = memberUserIds.has(user.userId);
-                    const isPendingOrInvited =
-                      pendingUserIds.has(user.userId) || invitedUserIds.has(user.userId);
-
-                    return (
-                      <MemberRow
-                        key={user.userId}
-                        member={{
-                          id: String(user.userId),
-                          name: user.nickname,
-                          nickname: '',
-                          status: 'unverified',
-                        }}
-                        onInvite={() => handleInvite(user.userId)}
-                        inviteDisabled={isMember || isPendingOrInvited || invite.isPending}
-                        inviteLabel={isMember ? '팀원' : isPendingOrInvited ? '초대완료' : '초대'}
-                      />
-                    );
-                  })}
-                </ul>
-                {searchResults.length === 0 && (
-                  <p className="typo-body-xs-regular py-8 text-center text-faint">
-                    검색 결과가 없어요.
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="mt-6 flex flex-col gap-3">
-            <span className="typo-body-sm-bold text-main">팀원</span>
-            <ul className="flex flex-col gap-2.5">
-              {members.map((member) => (
-                <MemberRow key={member.id} member={member} />
-              ))}
-            </ul>
-            {!membersLoading && members.length === 0 && (
-              <p className="typo-body-xs-regular py-8 text-center text-faint">
-                아직 팀원이 없어요.
-              </p>
-            )}
-          </div>
-        )}
-      </main>
-    </div>
+    <PageContainer variant="form" className="bg-primary-white pb-7 text-primary">
+      <WorkHeader title="팀원 관리" />
+      <div className="mt-1 flex items-baseline gap-2.5">
+        <h2 className="typography-body-xl-semibold shrink-0">팀원 초대</h2>
+        <p className="typography-body-md-medium min-w-0 text-tertiary">
+          함께 전시를 준비할 팀원을 초대해보세요
+        </p>
+      </div>
+      <InviteLinkCard
+        displayId={displayId}
+        invitationToken={display?.invitationToken}
+        invitationDisabledAt={display?.invitationDisabledAt}
+      />
+      <NicknameInviteCard displayId={displayId} team={members.data} />
+      <TeamMemberSection
+        displayId={displayId}
+        myUserId={me?.id}
+        team={members.data}
+        isPending={members.isPending}
+        error={members.error}
+        onRetry={() => void members.refetch()}
+      />
+    </PageContainer>
   );
 }
