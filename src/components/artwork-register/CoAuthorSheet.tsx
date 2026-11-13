@@ -102,7 +102,8 @@ export function CoAuthorSheet({ open, candidates, value, onClose, onDone }: CoAu
             aria-selected={tab === key}
             onClick={() => changeTab(key)}
             className={cn(
-              'typography-body-lg-semibold h-10 rounded-circle transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+              // 보이는 높이는 프로토타입 40px, 누르는 영역은 위아래 2px 씩 넓혀 44px
+              'typography-body-lg-semibold relative h-10 rounded-circle transition duration-fast ease-standard after:absolute after:inset-x-0 after:-inset-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
               tab === key ? 'bg-primary-black text-base-white' : 'text-secondary',
             )}
           >
