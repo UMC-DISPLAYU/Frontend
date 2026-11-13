@@ -1,3 +1,4 @@
+import { addressHandlers } from './handlers/address';
 import { agreementHandlers } from './handlers/agreement';
 import { archiveHandlers } from './handlers/archive';
 import { artistHandlers } from './handlers/artist';
@@ -28,4 +29,5 @@ export const handlers = [
   ...displayContentHandlers,
   ...fileHandlers,
   ...personalArtworkHandlers,
+  ...addressHandlers,
 ];
