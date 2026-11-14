@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
 
-import MoreIcon from '@/assets/display-management/MoreIcon.svg';
 import { cn } from '@/utils/cn';
 
 export interface DisplayCardAction {
@@ -19,10 +18,12 @@ export function DisplayCardMenu({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
 
   useEffect(() => {
     if (!open) return;
+    menuRef.current?.querySelector('button')?.focus();
     const onPointerDown = (event: PointerEvent) => {
       if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
     };
@@ -42,7 +43,7 @@ export function DisplayCardMenu({
   return (
     <div
       ref={containerRef}
-      className="absolute -top-px right-0"
+      className="absolute top-2 right-1.5 z-2"
       onBlur={(event) => {
         // Safari 는 버튼을 눌러도 포커스를 주지 않아 relatedTarget 이 비어 있다. 이때 닫으면 메뉴 클릭이 사라진다
         if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) {
@@ -54,33 +55,39 @@ export function DisplayCardMenu({
         ref={triggerRef}
         type="button"
         aria-label={`${displayTitle} 메뉴`}
+        aria-haspopup="menu"
         aria-expanded={open}
-        aria-controls={menuId}
+        aria-controls={open ? menuId : undefined}
         onClick={() => setOpen(!open)}
-        className="flex size-11 items-center justify-center rounded-circle transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
+        className="grid size-10 place-items-center rounded-full text-[#18181b] transition-colors duration-200 hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
-        <img src={MoreIcon} alt="" />
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5.5 fill-current">
+          <circle cx="5.5" cy="12" r="1.3" />
+          <circle cx="12" cy="12" r="1.3" />
+          <circle cx="18.5" cy="12" r="1.3" />
+        </svg>
       </button>
       {open && (
+        // 프로토타입은 메뉴를 카드 기준 위 44px · 오른쪽 10px 에 둔다. 버튼 틀(위 8 · 오른쪽 6) 기준으로 옮긴 값이다
         <div
+          ref={menuRef}
           id={menuId}
+          role="menu"
           aria-label={`${displayTitle} 메뉴`}
-          className="absolute top-11 right-2.75 w-36 rounded-12 border border-primary bg-primary-white shadow-card"
+          className="absolute top-9 right-1 z-30 w-41 rounded-[12px] border border-[#d4d4d8] bg-[#fff] py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-[opacity,translate] duration-200 ease-standard starting:-translate-y-1 starting:opacity-0"
         >
           {actions.map((action) => (
             <button
               key={action.label}
               type="button"
+              role="menuitem"
               onClick={() => {
                 setOpen(false);
                 action.onSelect();
               }}
-              // 디자인 높이는 40px 이라 터치 영역(44px)은 메뉴 바깥쪽으로 after 를 넓혀 맞춘다
               className={cn(
-                'typography-body-md-medium relative block h-10 w-full px-3.5 text-left transition duration-fast ease-standard after:absolute after:inset-0 first:rounded-t-12 first:after:-top-1 last:rounded-b-12 last:after:-bottom-1 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
-                action.destructive
-                  ? 'text-error hover:bg-error-subtle'
-                  : 'text-primary hover:bg-secondary',
+                'block h-11 w-full px-4 text-left text-[14px] leading-[1.4] font-medium tracking-[-0.03em] transition-colors duration-150 hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+                action.destructive ? 'text-[#fb2c36]' : 'text-[#18181b]',
               )}
             >
               {action.label}
