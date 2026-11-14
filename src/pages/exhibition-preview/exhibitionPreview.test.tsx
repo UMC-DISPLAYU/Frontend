@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ArtworkDetailShell } from '@/components/artworkdetailpage/ArtworkDetailShell';
 import { ArtworkPreviewGuestbook } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
+import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
 
@@ -177,6 +178,9 @@ describe('작품 미리보기', () => {
     expect(page.type).toBe(ArtworkDetailShell);
     expect(page.props).toMatchObject({ isPreview: true, hideBack: true, onBack });
     expect(asElement(page.props.guestbook as ReactNode).type).toBe(ArtworkPreviewGuestbook);
+    const meta = asElement(page.props.label as ReactNode);
+    expect(meta.type).toBe(ArtworkMeta);
+    expect(meta.props.exhibitionPath).toBe('/exhibition/7/preview');
     const bottomBar = nodes(page.props.bottomBar as ReactNode)[0];
     expect(bottomBar.props.disabled).toBe(true);
     expect(asElement(bottomBar.props.saveButton as ReactNode).props.disabled).toBe(true);
@@ -200,6 +204,7 @@ describe('작품 미리보기', () => {
     const page = asElement(ArtworkDetailPage());
     expect(page.type).toBe(ArtworkDetailShell);
     expect(page.props).toMatchObject({ isPreview: false, hideBack: false });
+    expect(asElement(page.props.label as ReactNode).props.exhibitionPath).toBeUndefined();
     (page.props.onBack as () => void)();
     expect(h.flowBack).toHaveBeenCalledOnce();
   });

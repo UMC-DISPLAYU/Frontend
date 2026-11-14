@@ -2,7 +2,7 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { DetailBackButton } from '@/components/common/detail';
+import { DetailBackButton, DetailTabNav } from '@/components/common/detail';
 
 import { ArtworkDetailShell } from './ArtworkDetailShell';
 import { ArtworkViewer } from './ArtworkViewer';
@@ -21,7 +21,7 @@ vi.mock('@/components/common/detail', () => ({
     activeTab: 'guestbook',
     selectTab: vi.fn(),
     sentinelRef: { current: null },
-    isStuck: false,
+    isStuck: true,
   }),
 }));
 vi.mock('@/components/ui/Skeleton', () => ({ Skeleton: () => null, SkeletonText: () => null }));
@@ -60,11 +60,13 @@ describe('작품 상세 뒤로가기', () => {
     const tree = render({ isPreview: true, hideBack: true });
     expect(tree.find((node) => node.type === DetailBackButton)).toBeUndefined();
     expect(tree.find((node) => node.type === ArtworkViewer)?.props.isPreview).toBe(false);
+    expect(tree.find((node) => node.type === DetailTabNav)?.props.isStuck).toBe(false);
   });
 
   it('공개 전 전시의 공개 작품 상세는 모바일 · 데스크톱 뒤로가기를 그대로 둔다', () => {
     const tree = render({ isPreview: true });
     expect(tree.find((node) => node.type === DetailBackButton)).toBeDefined();
+    expect(tree.find((node) => node.type === DetailTabNav)?.props.isStuck).toBe(true);
     expect(tree.find((node) => node.type === ArtworkViewer)?.props.isPreview).toBe(true);
   });
 

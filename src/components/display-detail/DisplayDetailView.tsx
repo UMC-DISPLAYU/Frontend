@@ -123,7 +123,8 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
             activeTab={activeTab}
             onTabChange={selectTab}
             sentinelRef={sentinelRef}
-            isStuck={isStuck}
+            // 뒤로가기 버튼이 없으면 탭 줄 왼쪽에 자리를 비우지 않는다
+            isStuck={isStuck && !previewMode}
           />
 
           <div

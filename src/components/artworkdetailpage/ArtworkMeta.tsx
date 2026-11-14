@@ -18,6 +18,8 @@ type Props = {
   exhibitionState: ExhibitionState | null;
   shareImageUrl?: string;
   isPreview: boolean;
+  /* 소속 전시 줄이 갈 주소. 없으면 공개 전시 상세 */
+  exhibitionPath?: string;
 };
 
 export function ArtworkMeta({
@@ -26,6 +28,7 @@ export function ArtworkMeta({
   exhibitionState,
   shareImageUrl,
   isPreview,
+  exhibitionPath,
 }: Props) {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
@@ -62,6 +65,7 @@ export function ArtworkMeta({
             organizer={artwork.exhibitionOrganizer}
             posterUrl={artwork.exhibitionThumbnail}
             state={exhibitionState}
+            to={exhibitionPath}
           />
         }
         actions={

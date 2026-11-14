@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
@@ -14,8 +15,9 @@ export function DisplayPreviewPage() {
   const displayId = parseDisplayId(displayIdParam);
   const goBack = usePreviewBack(`/exhibition/${displayIdParam}/work`);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
+  const { showSkeleton } = useSkeleton(isPending && displayId !== null);
 
-  if (isPending && displayId !== null) return <DisplayDetailSkeleton />;
+  if (showSkeleton) return <DisplayDetailSkeleton />;
 
   if (!display || displayId === null) {
     return (

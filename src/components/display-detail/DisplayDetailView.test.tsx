@@ -3,14 +3,14 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { DetailBackButton, DetailPreviewBanner } from '@/components/common/detail';
+import { DetailBackButton, DetailPreviewBanner, DetailTabNav } from '@/components/common/detail';
 
 import { DisplayDetailView } from './DisplayDetailView';
 import { IntroPanel } from './IntroPanel';
 import { PosterCarousel } from './PosterCarousel';
 import { WorksPanel } from './WorksPanel';
 
-const h = vi.hoisted(() => ({ activeTab: 'works' }));
+const h = vi.hoisted(() => ({ activeTab: 'works', isStuck: true }));
 
 vi.mock('@/components/common/detail', () => ({
   DetailBackButton: () => null,
@@ -22,7 +22,7 @@ vi.mock('@/components/common/detail', () => ({
     activeTab: h.activeTab,
     selectTab: vi.fn(),
     sentinelRef: { current: null },
-    isStuck: false,
+    isStuck: h.isStuck,
   }),
 }));
 vi.mock('@/components/ui/Skeleton', () => ({ Skeleton: () => null, SkeletonText: () => null }));
@@ -66,6 +66,8 @@ describe('전시 상세 미리보기 모드', () => {
     expect(find(tree, DetailPreviewBanner)).toBeDefined();
     expect(find(tree, DetailBackButton)).toBeUndefined();
     expect(find(tree, PosterCarousel)?.props.isPreview).toBe(false);
+    // 탭 줄이 붙어도 뒤로가기 자리를 비우지 않는다
+    expect(find(tree, DetailTabNav)?.props.isStuck).toBe(false);
   });
 
   it('작품 카드는 전시 미리보기에서 왔다는 표시와 함께 작품 미리보기 주소로 간다', () => {
@@ -91,6 +93,7 @@ describe('전시 상세 미리보기 모드', () => {
     const tree = nodes(DisplayDetailView({ display: publicDisplay, onBack: vi.fn() }));
     expect(find(tree, DetailPreviewBanner)).toBeUndefined();
     expect(find(tree, DetailBackButton)).toBeDefined();
+    expect(find(tree, DetailTabNav)?.props.isStuck).toBe(true);
     expect(find(tree, WorksPanel)?.props.artworkPath).toBeUndefined();
     expect(find(tree, IntroPanel)?.props.contentPath).toBeUndefined();
     expect(find(tree, PosterCarousel)?.props.isPreview).toBe(false);

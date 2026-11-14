@@ -11,13 +11,15 @@ type Props = {
   organizer: string;
   posterUrl: string;
   state: ExhibitionState | null;
+  /* 누르면 갈 주소. 없으면 공개 전시 상세 */
+  to?: string;
 };
 
-export function ArtworkExhibitionRow({ displayId, title, organizer, posterUrl, state }: Props) {
+export function ArtworkExhibitionRow({ displayId, title, organizer, posterUrl, state, to }: Props) {
   return (
     <div className="pt-5">
       <Link
-        to={`/display/${displayId}`}
+        to={to ?? `/display/${displayId}`}
         aria-label={`소속 전시 보기: ${title}`}
         className="group flex items-center gap-3 border-y border-bg-tertiary py-4"
       >
