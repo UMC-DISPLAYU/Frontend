@@ -40,7 +40,9 @@
 
   /* Typography */
   --font-family-heading: 'Aldrich', sans-serif;
-  --font-family-body: 'Pretendard', system-ui, sans-serif;
+  --font-family-body:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Noto Sans KR', sans-serif;
 
   --font-size-heading-3xl: 32px;
   --font-size-heading-2xl: 24px;
