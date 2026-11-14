@@ -32,6 +32,27 @@ export function getStackPhotoIndex(tops: number[], anchor: number, line: number)
   return index;
 }
 
+/*
+ * 작품 이름표에 보일 작가 목록: 대표 작가 다음에 공동 작업자.
+ * 대표 작가와 계정이 같은 공동 작업자만 뺀다. 이름만 입력한 공동 작업자(userId 없음)는 대표 작가 계정이 없어도 남긴다
+ */
+export function getArtworkArtists({
+  artistUserId,
+  artistName,
+  coAuthors,
+}: {
+  artistUserId?: number | null;
+  artistName: string;
+  coAuthors?: { userId?: number | null; name: string }[] | null;
+}) {
+  return [
+    { userId: artistUserId ?? undefined, name: artistName || '작가 미상' },
+    ...(coAuthors ?? [])
+      .filter((coAuthor) => coAuthor.userId == null || coAuthor.userId !== artistUserId)
+      .map((coAuthor) => ({ userId: coAuthor.userId ?? undefined, name: coAuthor.name })),
+  ];
+}
+
 /* 소개글·작업과정이 모두 없는 작품은 소개 탭을 빼고 방명록만 보여줍니다. */
 export function hasArtworkIntro({
   content,

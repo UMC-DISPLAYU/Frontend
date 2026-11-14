@@ -4,6 +4,7 @@ import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkBottomBar } from '@/components/artworkdetailpage/ArtworkActions';
 import type { ArtworkArtist } from '@/components/artworkdetailpage/ArtworkArtists';
 import {
+  getArtworkArtists,
   getProcessImages,
   hasArtworkIntro,
 } from '@/components/artworkdetailpage/artworkDetail.utils';
@@ -104,12 +105,11 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
     isArchived: detail.isArchived ?? false,
   };
 
-  const artists: ArtworkArtist[] = [
-    { userId: detail.artistUserId, name: artistDisplayName || '작가 미상' },
-    ...(detail.coAuthors ?? [])
-      .filter((coAuthor) => coAuthor.userId !== detail.artistUserId)
-      .map((coAuthor) => ({ userId: coAuthor.userId ?? undefined, name: coAuthor.name })),
-  ];
+  const artists: ArtworkArtist[] = getArtworkArtists({
+    artistUserId: detail.artistUserId,
+    artistName: artistDisplayName,
+    coAuthors: detail.coAuthors,
+  });
 
   /* 뷰어는 작품 이미지만 씁니다. 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
   const artworkImages = (detail.images ?? []).filter((image) => image.imageType !== 'WORK_PROCESS');
