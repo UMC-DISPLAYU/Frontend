@@ -214,7 +214,7 @@ export function ArtworkRegisterForm({
               className="mt-4"
               label="작품 이미지"
               required
-              help={`첫 번째 사진이 대표 이미지예요\nJPG, PNG, WEBP · 장당 최대 ${MAX_ARTWORK_IMAGE_MB}MB`}
+              help={`첫 번째 사진이 대표 이미지예요\nJPG, PNG, WEBP, HEIC · 장당 최대 ${MAX_ARTWORK_IMAGE_MB}MB\n영상은 1개까지 · MP4, MOV, WEBM · 3분 이내 · 500MB 이하`}
               addLabel="사진 추가"
               uploads={artworkImages}
               representative

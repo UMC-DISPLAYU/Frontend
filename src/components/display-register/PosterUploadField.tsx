@@ -28,15 +28,17 @@ import { PosterCropSheet } from './PosterCropSheet';
 import type { PosterItem, PosterUploads } from './usePosterUploads';
 
 const ADD_TILE_CLASS = cn(
-  'typography-body-md-medium grid shrink-0 place-content-center justify-items-center gap-2 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
+  'typography-body-md-medium grid shrink-0 cursor-pointer place-content-center justify-items-center gap-2 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
   FOCUS_CLASS,
 );
 
 function PosterHelp() {
   return (
     <p className="typography-body-md-medium mt-1 text-secondary">
-      JPG, PNG, WEBP · 장당 최대 {MAX_POSTER_FILE_MB}MB
+      JPG, PNG, WEBP, HEIC · 장당 최대 {MAX_POSTER_FILE_MB}MB
       <br />큰 그래픽은 JPG 고화질로 내보내 주세요
+      <br />
+      영상은 1개까지 · MP4, MOV, WEBM · 30초 이내 · 200MB 이하
     </p>
   );
 }

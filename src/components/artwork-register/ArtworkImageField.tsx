@@ -278,7 +278,7 @@ export function ArtworkImageField({
                 type="button"
                 onClick={openPicker}
                 className={cn(
-                  'typography-body-md-medium grid h-30 w-24 shrink-0 snap-start place-content-center justify-items-center gap-1 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
+                  'typography-body-md-medium grid h-30 w-24 shrink-0 cursor-pointer snap-start place-content-center justify-items-center gap-1 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
                   FOCUS_CLASS,
                 )}
               >
