@@ -31,7 +31,7 @@ export function JoinedMemberList({ members, myUserId, onOpenMenu }: JoinedMember
                 key={member.teamMemberId ?? member.userId}
                 className="flex items-center gap-[11px] py-[11.5px]"
               >
-                <MemberAvatar tone={role} />
+                <MemberAvatar />
                 {/* 전시 작가명 아래에 기본 닉네임(프로토타입 .nm b · small) */}
                 <div className="min-w-0 flex-1">
                   <p className="inline-flex max-w-full items-center gap-1.5 text-[14px] leading-[1.4] font-semibold">

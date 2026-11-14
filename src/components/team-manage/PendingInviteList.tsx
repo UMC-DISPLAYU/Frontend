@@ -15,12 +15,12 @@ export function PendingInviteList({ members }: { members: DisplayMemberEntryDto[
   return (
     <>
       <ul className="pt-1.5">
-        {members.map((member, index) => (
+        {members.map((member) => (
           <li
             key={member.teamMemberId ?? member.userId}
             className="flex items-center gap-[11px] border-b border-[#f0f0f3] py-[14.5px]"
           >
-            <MemberAvatar tone={index % 2 === 0 ? 'pendingAlt' : 'pending'} />
+            <MemberAvatar />
             {/* 초대 대기는 기본 닉네임으로 보여 준다(프로토타입) */}
             <span className="min-w-0 flex-1 truncate text-[14px] leading-[1.4] font-semibold">
               {member.nickname ?? member.displayNickname}

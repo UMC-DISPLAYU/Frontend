@@ -72,7 +72,7 @@ export function TeamDelegatedPage() {
 function DelegatedMember({ name, role }: { name: string; role: TeamRole }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-      <MemberAvatar tone={role} />
+      <MemberAvatar />
       <span className="typography-body-md-semibold w-full max-w-30 truncate">{name}</span>
       <RoleBadge role={role} />
     </div>

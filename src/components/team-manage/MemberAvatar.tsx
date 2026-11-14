@@ -1,32 +1,14 @@
 import { cn } from '@/utils/cn';
 
 import { AvatarGlyph } from './TeamIcons';
-import type { TeamRole } from './teamMembers';
 
-/** 초대 대기는 두 가지 색을 번갈아 쓴다(프로토타입) */
-export type MemberAvatarTone = TeamRole | 'pending' | 'pendingAlt';
-
-const TONE_CLASS: Record<MemberAvatarTone, string> = {
-  owner: 'bg-[#dbeafe]',
-  manager: 'bg-[#dcfce7]',
-  member: 'bg-[#f0f0f3]',
-  pending: 'bg-[#f0f0f3]',
-  pendingAlt: 'bg-[#fee2e2]',
-};
-
-interface MemberAvatarProps {
-  tone: MemberAvatarTone;
-  /** 기본 46px */
-  className?: string;
-}
-
-export function MemberAvatar({ tone, className }: MemberAvatarProps) {
+/* 기본 프로필: 역할 · 상태와 상관없이 회색 원 + 흰 사람 모양 하나로 통일한다(디자인 확정) */
+export function MemberAvatar({ className }: { className?: string }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        'relative block size-11.5 shrink-0 overflow-hidden rounded-full text-[#fafafa]',
-        TONE_CLASS[tone],
+        'relative block size-11.5 shrink-0 overflow-hidden rounded-full bg-[#f0f0f3] text-[#fafafa]',
         className,
       )}
     >
