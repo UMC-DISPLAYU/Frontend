@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import {
   BIG_LINK_CLASS,
@@ -72,9 +72,20 @@ export function DisplayRegisterCompletePage() {
   const { displayId } = useParams();
   const basePath = `/exhibition/${displayId}`;
 
+  const { state } = useLocation();
+  // 내 전시 관리에서 등록을 시작했으면 바로 뒤 기록이 내 전시 관리다. 그때는 새로 쌓지 않고 돌아가야 뒤로가기에 같은 화면이 두 번 나오지 않는다
+  const isPrevDisplayManagement =
+    (state as { prevPath?: string } | null)?.prevPath === DISPLAY_MANAGEMENT_PATH;
+
+  const goDisplayManagement = () => {
+    if (isPrevDisplayManagement) navigate(-1);
+    else navigate(DISPLAY_MANAGEMENT_PATH, { replace: true });
+  };
+
   // 팀원 화면의 뒤로가기(<)가 내 전시 관리로 가도록, 완료 화면 기록을 내 전시 관리로 바꾼 뒤 팀원 화면을 쌓는다
   const goTeam = async () => {
-    await navigate(DISPLAY_MANAGEMENT_PATH, { replace: true });
+    if (isPrevDisplayManagement) await navigate(-1);
+    else await navigate(DISPLAY_MANAGEMENT_PATH, { replace: true });
     navigate(`${basePath}/team`);
   };
 
@@ -162,7 +173,15 @@ export function DisplayRegisterCompletePage() {
 
           <div className="flex-1" />
           <DisplayRegisterCta className={cn(RISE_CLASS, 'delay-[620ms] duration-500')}>
-            <Link to={DISPLAY_MANAGEMENT_PATH} replace className={BIG_LINK_CLASS}>
+            <Link
+              to={DISPLAY_MANAGEMENT_PATH}
+              replace
+              onClick={(event) => {
+                event.preventDefault();
+                goDisplayManagement();
+              }}
+              className={BIG_LINK_CLASS}
+            >
               내 전시 관리로 이동
             </Link>
           </DisplayRegisterCta>

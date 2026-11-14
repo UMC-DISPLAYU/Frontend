@@ -85,7 +85,8 @@ export function DisplayRegisterArtistPage() {
           backIndex < currentIndex
         ) {
           await navigate(backIndex - currentIndex);
-          navigate(completedPath);
+          // 완료 화면이 바로 뒤 기록이 어디인지 알아야 내 전시 관리 기록을 겹쳐 쌓지 않는다
+          navigate(completedPath, { state: { prevPath: window.location.pathname } });
           return;
         }
 
