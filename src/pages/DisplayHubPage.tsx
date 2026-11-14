@@ -49,7 +49,7 @@ function DisplayHubSkeleton() {
   return (
     <main aria-label="전시 관리를 불러오는 중" aria-busy="true" className={GRID_CLASS}>
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-33 rounded-12" />
+        <Skeleton className="h-36.25 rounded-12" />
         <Skeleton className="h-22 rounded-12" />
       </div>
       <div className="flex flex-col gap-3">

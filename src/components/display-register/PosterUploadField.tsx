@@ -17,7 +17,7 @@ import type { PosterItem, PosterUploads } from './usePosterUploads';
 const FOCUS_CLASS =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 const ADD_TILE_CLASS = cn(
-  'flex shrink-0 flex-col items-center justify-center gap-1 rounded-12 border border-primary bg-primary-white transition duration-fast ease-standard hover:bg-secondary active:scale-99',
+  'flex shrink-0 flex-col items-center justify-center gap-1 border border-primary bg-primary-white transition duration-fast ease-standard hover:bg-secondary active:scale-99',
   FOCUS_CLASS,
 );
 
@@ -93,7 +93,7 @@ function PosterThumb({
   return (
     <div
       aria-busy={isUploading}
-      className="relative h-26.25 w-21 shrink-0 overflow-hidden rounded-12 bg-secondary"
+      className="relative h-26.25 w-21 shrink-0 overflow-hidden bg-secondary"
     >
       {isRepresentative && item.crop ? (
         // 썸네일(4:5)과 카드(402:568) 비율이 달라, 카드 비율 상자를 가운데 두고 넘치는 위아래를 잘라 보여준다
@@ -214,7 +214,7 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
           <>
             <div
               aria-hidden="true"
-              className="typography-title-xs flex h-30 w-24 shrink-0 items-center justify-center rounded-12 bg-error-subtle text-error"
+              className="typography-title-xs flex h-30 w-24 shrink-0 items-center justify-center bg-error-subtle text-error"
             >
               !
             </div>

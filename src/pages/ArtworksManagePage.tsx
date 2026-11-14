@@ -139,13 +139,13 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
       {isPending ? (
         <div
           aria-label="전시작을 불러오는 중"
-          className="mt-3 grid grid-cols-2 gap-3 tablet:grid-cols-3 desktop:grid-cols-4"
+          className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3 desktop:grid-cols-4"
         >
           <SkeletonList count={6}>
             {() => (
-              <div className="rounded-12 bg-secondary p-1.75">
-                <Skeleton className="aspect-3/4 rounded-12" />
-                <Skeleton className="mt-2 h-10 rounded-8" />
+              <div>
+                <Skeleton className="aspect-3/4" />
+                <Skeleton className="mt-2 h-9 rounded-8" />
               </div>
             )}
           </SkeletonList>

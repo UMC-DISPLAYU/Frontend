@@ -117,7 +117,7 @@ export function ManageScreen({
               전시작 추가
             </button>
           )}
-          <ul className="grid grid-cols-2 gap-3 tablet:grid-cols-3 desktop:grid-cols-4">
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3 desktop:grid-cols-4">
             {works.map((work, index) => (
               <li key={work.id} className="min-w-0 animate-rise" style={staggerStyle(index)}>
                 <WorkRow

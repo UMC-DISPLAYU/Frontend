@@ -261,7 +261,7 @@ function DisplayRegisterIntroForm() {
               className="overflow-hidden rounded-12 border border-primary bg-primary-white"
             >
               {!isOtherGroup && (
-                <p className="typography-body-xl-regular min-h-14 bg-secondary p-4 text-secondary">
+                <p className="typography-body-xl-regular flex min-h-13.5 items-center bg-secondary px-4 py-2 text-secondary">
                   {schoolName}
                 </p>
               )}
@@ -270,7 +270,7 @@ function DisplayRegisterIntroForm() {
                 maxLength={40}
                 autoComplete="off"
                 placeholder="학과(학부)명, 학회명, 동아리명"
-                className="typography-body-xl-regular block w-full border-t border-primary bg-transparent p-4 text-primary outline-none first:border-t-0 placeholder:text-tertiary"
+                className="typography-body-xl-regular block h-13.75 w-full border-t border-primary bg-transparent px-4 text-primary outline-none first:border-t-0 placeholder:text-tertiary"
                 {...register('department')}
               />
             </div>

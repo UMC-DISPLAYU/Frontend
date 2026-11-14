@@ -5,7 +5,7 @@ import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton } from '@/components/ui';
 import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
-const POSTER_FRAME_CLASS = 'aspect-175/262 w-full bg-secondary';
+const POSTER_FRAME_CLASS = 'aspect-402/568 w-full bg-secondary';
 
 type ExploreExhibitionCardProps = {
   exhibition: DisplayListItemDto;

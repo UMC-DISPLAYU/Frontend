@@ -125,7 +125,7 @@ export function ProfilePhotoField({
       ) : (
         <button
           aria-label="프로필 사진 등록"
-          className="typography-body-md-medium flex size-full flex-col items-center justify-center gap-1 rounded-12 border border-primary bg-primary-white text-secondary transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
+          className="typography-body-md-medium flex size-full flex-col items-center justify-center gap-1 border border-primary bg-primary-white text-secondary transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
           disabled={disabled}
           onClick={pick}
           type="button"

@@ -107,7 +107,7 @@ function SortablePhotoItem({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn('relative aspect-square min-w-0', isDragging && 'z-10 opacity-70')}
+      className={cn('relative aspect-3/4 min-w-0', isDragging && 'z-10 opacity-70')}
     >
       <div className="animate-rise" style={staggerStyle(index)}>
         <OptimizedImage
@@ -115,7 +115,7 @@ function SortablePhotoItem({
           alt={photo.alt ?? `섹션 사진 ${index + 1}`}
           displayWidth={208}
           skeleton
-          frameClassName="aspect-square w-full rounded-12"
+          frameClassName="aspect-3/4 w-full"
         />
       </div>
       {isEditing && (
@@ -129,7 +129,7 @@ function SortablePhotoItem({
             disabled={!canReorder || disabled}
             className={cn(
               buttonClass,
-              'absolute inset-0 size-full rounded-12 text-interactive-inverse focus-visible:outline-focus-inverse disabled:bg-transparent disabled:text-interactive-inverse',
+              'absolute inset-0 size-full text-interactive-inverse focus-visible:outline-focus-inverse disabled:bg-transparent disabled:text-interactive-inverse',
               canReorder && !disabled && 'touch-none cursor-grab active:cursor-grabbing',
             )}
           >
@@ -174,9 +174,7 @@ export function InteriorPhotosPage() {
           <Skeleton className="h-20 w-full rounded-12" />
           <Skeleton className="h-44 w-full rounded-12" />
           <div className="grid grid-cols-3 gap-2.5">
-            <SkeletonList count={6}>
-              {() => <Skeleton className="aspect-square rounded-12" />}
-            </SkeletonList>
+            <SkeletonList count={6}>{() => <Skeleton className="aspect-3/4" />}</SkeletonList>
           </div>
         </main>
       </PageContainer>
@@ -567,7 +565,7 @@ function InteriorPhotos({
             <SortableContext items={photos.map(getPhotoSortableId)} strategy={rectSortingStrategy}>
               <ul className="grid grid-cols-3 gap-2.5">
                 {!isEditingPhotos && canCreateContent && (
-                  <li className="aspect-square">
+                  <li className="aspect-3/4">
                     <button
                       type="button"
                       onClick={() => {
@@ -577,7 +575,7 @@ function InteriorPhotos({
                       disabled={photos.length >= MAX_CONTENT_IMAGES || isPhotoActionPending}
                       className={cn(
                         buttonClass,
-                        'typography-body-md-medium flex size-full flex-col items-center justify-center gap-1 rounded-12 border border-primary hover:bg-secondary',
+                        'typography-body-md-medium flex size-full flex-col items-center justify-center gap-1 border border-primary hover:bg-secondary',
                       )}
                     >
                       <img src={PhotoAddIcon} alt="" />

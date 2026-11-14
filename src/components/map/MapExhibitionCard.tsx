@@ -1,7 +1,5 @@
 import { Link } from 'react-router-dom';
 
-import calendarIcon from '@/assets/icons/CalendarIcon.svg';
-import locationIcon from '@/assets/icons/LocationIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
 
@@ -30,7 +28,7 @@ export function MapExhibitionCard({
   onClick,
 }: MapExhibitionCardProps) {
   const className = cn(
-    'relative grid h-31 w-full grid-cols-[86px_minmax(0,1fr)] overflow-hidden rounded-12 border bg-interactive-primary text-left text-[#d4d4d8] transition-[border-color,scale] duration-base ease-standard hover:border-[#3f3f46] active:scale-99',
+    'relative grid h-31 w-full grid-cols-[86px_minmax(0,1fr)] overflow-hidden border bg-interactive-primary text-left text-[#d4d4d8] transition-[border-color,scale] duration-base ease-standard hover:border-[#3f3f46] active:scale-99',
     selected
       ? 'border-2 border-interactive-inverse hover:border-interactive-inverse'
       : 'border-[#27272a]',
@@ -44,7 +42,7 @@ export function MapExhibitionCard({
           displayWidth={86}
           alt=""
           draggable={false}
-          className="absolute inset-0 size-full object-cover outline -outline-offset-1 outline-[rgba(255,255,255,.1)]"
+          className="absolute inset-0 size-full object-cover"
         />
       </span>
       <span className="flex min-w-0 flex-col justify-between p-3">
@@ -57,14 +55,8 @@ export function MapExhibitionCard({
           ) : null}
         </span>
         <span className="typography-body-md-medium grid gap-0.5 text-tertiary">
-          <span className="flex min-w-0 items-center gap-0.5">
-            <img alt="" className="size-3.5 shrink-0" src={calendarIcon} />
-            <span className="truncate">{period}</span>
-          </span>
-          <span className="flex min-w-0 items-center gap-0.5">
-            <img alt="" className="size-3.5 shrink-0" src={locationIcon} />
-            <span className="truncate">{location}</span>
-          </span>
+          <span className="min-w-0 truncate">{period}</span>
+          <span className="min-w-0 truncate">{location}</span>
         </span>
         {distance ? (
           <span className="typography-body-md-medium absolute top-3 right-3 inline-flex h-6.25 items-center rounded-circle bg-[rgba(255,255,255,.12)] px-2.25 tabular-nums">

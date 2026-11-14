@@ -24,14 +24,14 @@ export function ContentCard({ content, onClick, editing = false, onDelete }: Con
         {content.thumbnail ? (
           <OptimizedImage
             src={content.thumbnail}
-            displayWidth={96}
+            displayWidth={72}
             alt=""
             skeleton
-            frameClassName="size-24 shrink-0 rounded-12"
+            frameClassName="h-24 w-18 shrink-0"
             className="transition-transform duration-base ease-standard group-hover:scale-103"
           />
         ) : (
-          <span className="grid size-24 shrink-0 place-items-center rounded-12 bg-secondary">
+          <span className="grid h-24 w-18 shrink-0 place-items-center bg-secondary">
             <img src={SectionPhotoIcon} alt="" />
           </span>
         )}

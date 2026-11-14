@@ -54,7 +54,7 @@ export function DisplayEditDraftGate({
       ) : (
         <div aria-busy="true" className="flex flex-col gap-6 pt-16">
           <Skeleton className="h-1 w-full rounded-circle" />
-          <Skeleton className="h-26.25 w-21 rounded-12" />
+          <Skeleton className="h-26.25 w-21" />
           <Skeleton className="h-12 w-full rounded-8" />
           <Skeleton className="h-32 w-full rounded-12" />
         </div>

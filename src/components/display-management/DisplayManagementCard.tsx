@@ -1,6 +1,4 @@
 import type { DisplayPublishStatus } from '@/api/dto';
-import CalendarIcon from '@/assets/display-management/CalendarIcon.svg';
-import LocationIcon from '@/assets/display-management/LocationIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import {
@@ -81,7 +79,7 @@ export function DisplayManagementCard({
         alt=""
         displayWidth={96}
         skeleton
-        frameClassName="aspect-4/5 w-24 shrink-0 rounded-12 bg-secondary"
+        frameClassName="aspect-402/568 w-24 shrink-0 bg-secondary"
         className="transition-transform duration-base ease-standard group-hover:scale-103"
       />
 
@@ -118,17 +116,11 @@ export function DisplayManagementCard({
           </button>
         </h3>
         {ex.org && <p className="typography-body-lg-medium truncate text-secondary">{ex.org}</p>}
-        <p className="typography-body-lg-medium flex items-center gap-1 text-secondary">
-          <img src={CalendarIcon} alt="" className="shrink-0" />
-          <span className="truncate">
-            {ex.startDate && ex.endDate ? formatDisplayPeriod(ex.startDate, ex.endDate) : ex.period}
-          </span>
+        <p className="typography-body-lg-medium truncate text-secondary">
+          {ex.startDate && ex.endDate ? formatDisplayPeriod(ex.startDate, ex.endDate) : ex.period}
         </p>
         {ex.place && (
-          <p className="typography-body-lg-medium flex items-center gap-1 text-secondary">
-            <img src={LocationIcon} alt="" className="shrink-0" />
-            <span className="truncate">{ex.place}</span>
-          </p>
+          <p className="typography-body-lg-medium truncate text-secondary">{ex.place}</p>
         )}
       </div>
 
