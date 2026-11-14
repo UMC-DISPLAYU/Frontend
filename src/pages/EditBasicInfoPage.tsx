@@ -14,9 +14,8 @@ import {
   ArtistVerifyHeader,
   ArtistVerifyInput,
 } from '@/components/artist-verify';
-import { ConfirmDialog, ErrorView, ProfilePhotoField } from '@/components/common';
+import { ConfirmDialog, ErrorView, ProfileAvatar, ProfilePhotoField } from '@/components/common';
 import { PageContainer } from '@/components/layout';
-import { ProfileAvatar } from '@/components/mypage';
 import { Skeleton } from '@/components/ui';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
@@ -189,7 +188,7 @@ function EditBasicInfoForm({ userMe }: { userMe: UserProfileDto }) {
           <ProfilePhotoField
             disabled={isSaving}
             onChange={handlePhotoChange}
-            placeholder={<ProfileAvatar size={80} />}
+            placeholder={<ProfileAvatar className="size-20" displayWidth={80} outlined />}
             shape="circle"
             src={photoPreview}
           />

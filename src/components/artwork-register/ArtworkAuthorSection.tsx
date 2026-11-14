@@ -2,9 +2,9 @@ import { useId } from 'react';
 
 import RemoveIcon from '@/assets/artwork-register/RemoveIcon.svg';
 import PlusIcon from '@/assets/display-register/PlusIcon.svg';
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 
 import type { ArtworkPerson } from './artworkRegister.types';
-import { AuthorAvatar } from './AuthorAvatar';
 
 interface ArtworkAuthorSectionProps {
   author: ArtworkPerson;
@@ -45,12 +45,12 @@ export function ArtworkAuthorSection({
       </div>
       <div className="overflow-hidden rounded-12 border border-primary bg-primary-white">
         <div className="flex items-center gap-3 p-4">
-          <AuthorAvatar />
+          <ProfileAvatar className="bg-info-subtle" />
           <PersonText person={author} />
         </div>
         {coAuthors.map((person) => (
           <div key={person.key} className="flex items-center gap-3 border-t border-primary p-4">
-            <AuthorAvatar />
+            <ProfileAvatar className="bg-info-subtle" />
             <PersonText person={person} />
             <button
               type="button"

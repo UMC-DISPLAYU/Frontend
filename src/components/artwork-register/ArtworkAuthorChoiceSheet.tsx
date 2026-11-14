@@ -1,11 +1,11 @@
 import { useId, useState } from 'react';
 
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { Overlay } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
 import { MAX_PROXY_AUTHOR_NAME_LENGTH } from './artworkRegister.constants';
 import type { ArtworkTeamCandidate } from './artworkRegister.types';
-import { AuthorAvatar } from './AuthorAvatar';
 import { type CandidatesStatus, type ProxyTab, resolveDefaultProxyTab } from './proxyAuthor';
 import { TeamCandidatesState } from './TeamCandidatesState';
 
@@ -188,7 +188,7 @@ export function ArtworkAuthorChoiceSheet({
                       key={candidate.userId}
                       className="flex cursor-pointer items-center gap-3 border-b border-bg-tertiary py-3 has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-focus"
                     >
-                      <AuthorAvatar />
+                      <ProfileAvatar className="bg-info-subtle" />
                       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className="typography-body-lg-semibold truncate text-primary">
                           {candidate.name}

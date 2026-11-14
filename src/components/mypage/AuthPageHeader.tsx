@@ -1,7 +1,7 @@
 import { Bookmark, ChevronLeft, ExternalLink } from 'lucide-react';
 
 import Share from '@/assets/mypage/share.svg';
-import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import type { ArtistProfile, TabKey } from '@/types/mypage';
 import { cn } from '@/utils/cn';
@@ -44,13 +44,11 @@ export function AuthPageHeader({
 
       <div className="px-5 pt-5 pb-2.75 flex flex-col gap-3.5">
         <div className="flex items-center">
-          <img
-            className="size-20 rounded-full border-[2.67px] border-line object-cover shrink-0"
-            src={profile.avatar || FALLBACK_PROFILE_IMAGE}
+          <ProfileAvatar
             alt={profile.name}
-            onError={(event) => {
-              event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
-            }}
+            className="size-20 border-[2.67px] border-line"
+            displayWidth={80}
+            src={profile.avatar}
           />
           <div className="flex-1 min-w-0 px-4 flex flex-col gap-1.5">
             <span className="w-fit inline-flex items-center px-1.5 py-0.5 bg-sky-100 rounded-full">
