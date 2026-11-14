@@ -123,13 +123,12 @@ describe('전시 상태', () => {
 });
 
 describe('뒤로가기', () => {
+  // 헤더는 WorkBar 로 그린다: 넘긴 뒤로가기 동작과 이름을 확인한다
   const back = () => {
     const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
-    const button = nodes(page).find((node) =>
-      String(node.props['aria-label'] ?? '').endsWith('돌아가기'),
-    )!;
-    (button.props.onClick as () => void)();
-    return button.props['aria-label'];
+    const bar = nodes(page).find((node) => 'backLabel' in node.props)!;
+    (bar.props.onBack as () => void)();
+    return bar.props.backLabel;
   };
 
   it.each([

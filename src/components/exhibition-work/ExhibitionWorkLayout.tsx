@@ -37,6 +37,33 @@ export function WorkHeader({ title, onBack }: { title: string; onBack?: () => vo
   );
 }
 
+/* 프로토타입 `.bar`: 높이 56 · 뒤로가기 44(아이콘 x20) · 제목 20 Bold, 넓은 화면(.wide)은 900px 이상 24 */
+export function WorkBar({
+  title,
+  onBack,
+  backLabel = '뒤로가기',
+  wide = false,
+}: {
+  title: string;
+  onBack: () => void;
+  backLabel?: string;
+  wide?: boolean;
+}) {
+  return (
+    <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
+      <button
+        type="button"
+        aria-label={backLabel}
+        onClick={onBack}
+        className="grid size-11 place-items-center rounded-circle transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
+      >
+        <WorkIcon name="back" />
+      </button>
+      <h1 className={cn('text-[20px] font-bold', wide && 'desktop:text-[24px]')}>{title}</h1>
+    </header>
+  );
+}
+
 /*
  * 상세 응답의 status 는 공개 상태(DRAFT · PENDING_REVIEW · REJECTED · PUBLISHED)다.
  * 프로토타입 `.sumc .st`: 준비 중 검정 · 심사 중 파랑 · 반려 빨강 · 공개 중 초록(점 7 · 글자 12 SemiBold)
@@ -111,17 +138,12 @@ export function ExhibitionWorkLayout({
         fillHeight
         className="max-w-120 pt-[max(8px,env(safe-area-inset-top))] tablet:max-w-168 tablet:pt-10 desktop:max-w-list"
       >
-        <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            aria-label={isOwner ? '전시 관리로 돌아가기' : '내 전시 관리로 돌아가기'}
-            onClick={onBack ?? backToList}
-            className="grid size-11 place-items-center rounded-circle transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
-          >
-            <WorkIcon name="back" />
-          </button>
-          <h1 className="text-[20px] font-bold desktop:text-[24px]">전시 작업</h1>
-        </header>
+        <WorkBar
+          title="전시 작업"
+          onBack={onBack ?? backToList}
+          backLabel={isOwner ? '전시 관리로 돌아가기' : '내 전시 관리로 돌아가기'}
+          wide
+        />
 
         {/* 900px 이상은 2단(프로토타입 11-15 `.body.split`): 왼쪽 전시 요약 380 · 사이 56 · 오른쪽 탭 · 목록 */}
         <div className="flex-1 desktop:grid desktop:grid-cols-[380px_minmax(0,1fr)] desktop:items-start desktop:gap-x-14">
