@@ -31,7 +31,8 @@ export function ExhibitionListView({ items, showRank, animateIn }: ExhibitionLis
       ref={ref}
       role="group"
       aria-label="전시 리스트"
-      className="relative flex snap-x snap-mandatory items-start gap-3 overflow-x-auto overscroll-x-contain px-[calc(50%-var(--list-w)/2)] pt-4 [--list-w:min(340px,calc(100vw-var(--home-pad)*2))] [scrollbar-width:none] tablet:[--list-w:360px] [&::-webkit-scrollbar]:hidden"
+      // 768+ 는 카드 3장이 포스터형 칸 높이를 채우도록 높이를 정하고, 폭 · 썸네일은 그 높이에서 비율로 잡는다(360:124, 포스터 402:568)
+      className="relative flex snap-x snap-mandatory items-start gap-3 overflow-x-auto overscroll-x-contain px-[calc(50%-var(--list-w)/2)] pt-4 [--list-w:min(340px,calc(100vw-var(--home-pad)*2))] [scrollbar-width:none] tablet:[--list-h:148px] tablet:[--list-w:calc(var(--list-h)*360/124)] min-[68.75rem]:gap-4 min-[68.75rem]:[--list-h:172px] [&::-webkit-scrollbar]:hidden"
     >
       {columns.map((column, columnIndex) => {
         const isActive = columnIndex === activeIndex;
@@ -40,7 +41,7 @@ export function ExhibitionListView({ items, showRank, animateIn }: ExhibitionLis
           <div
             key={column[0].displayId}
             className={cn(
-              'grid w-(--list-w) flex-none snap-center gap-3 transition-opacity duration-slow ease-standard',
+              'grid w-(--list-w) flex-none snap-center gap-3 transition-opacity min-[68.75rem]:gap-4 duration-slow ease-standard',
               columnIndex !== highlightIndex && 'opacity-40',
             )}
           >
@@ -59,13 +60,13 @@ export function ExhibitionListView({ items, showRank, animateIn }: ExhibitionLis
                     event.preventDefault();
                     scrollToIndex(columnIndex);
                   }}
-                  className="relative grid h-31 grid-cols-[86px_minmax(0,1fr)] overflow-hidden border border-icon-secondary bg-interactive-primary text-quaternary shadow-card transition duration-fast ease-standard hover:border-secondary focus-visible:outline-2 focus-visible:outline-focus-inverse active:scale-99"
+                  className="relative grid h-31 grid-cols-[86px_minmax(0,1fr)] overflow-hidden border border-icon-secondary bg-interactive-primary text-quaternary shadow-card transition duration-fast ease-standard hover:border-secondary focus-visible:outline-2 focus-visible:outline-focus-inverse active:scale-99 tablet:h-(--list-h) tablet:grid-cols-[calc(var(--list-h)*402/568)_minmax(0,1fr)]"
                 >
                   <span className="relative bg-[#797979]">
                     <OptimizedImage
                       src={item.posterImageUrl}
                       alt=""
-                      displayWidth={86}
+                      displayWidth={122}
                       className="absolute inset-0 size-full object-cover"
                     />
                     <span
@@ -75,20 +76,22 @@ export function ExhibitionListView({ items, showRank, animateIn }: ExhibitionLis
                     {rank && (
                       <span
                         aria-hidden="true"
-                        className="typography-title-xl absolute -bottom-0.5 left-2.5 text-interactive-inverse"
+                        className="typography-title-xl absolute -bottom-0.5 left-2.5 text-interactive-inverse tablet:left-3 min-[68.75rem]:left-3.5"
                       >
                         {rank}
                       </span>
                     )}
                   </span>
-                  <div className="flex min-w-0 flex-col justify-between p-3">
-                    <div className="grid gap-0.5">
-                      <span className="typography-body-xl-semibold truncate">{item.title}</span>
-                      <span className="typography-body-md-medium truncate">
+                  <div className="flex min-w-0 flex-col justify-between p-3 tablet:p-4 min-[68.75rem]:p-5">
+                    <div className="grid gap-0.5 tablet:gap-1">
+                      <span className="typography-body-xl-semibold tablet:typography-body-xxl-semibold truncate">
+                        {item.title}
+                      </span>
+                      <span className="typography-body-md-medium min-[68.75rem]:typography-body-lg-medium truncate tablet:text-disable">
                         {item.organization}
                       </span>
                     </div>
-                    <div className="grid gap-0.5 text-tertiary">
+                    <div className="grid gap-0.5 text-tertiary tablet:gap-1">
                       <p className="typography-body-md-regular2 truncate">{item.period}</p>
                       {item.place && (
                         <p className="typography-body-md-medium truncate">{item.place}</p>
