@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { arrayMove } from '@dnd-kit/sortable';
+
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type { PosterCropRect } from '@/contexts/exhibitionRegisterDraftState';
 import { useUploadImage } from '@/hooks/queries/useFile';
@@ -132,10 +134,7 @@ export function usePosterUploads({
       const to = prev.findIndex((item) => item.id === overId);
       if (from < 0 || to < 0 || from === to) return prev;
 
-      const next = [...prev];
-      const [moved] = next.splice(from, 1);
-      next.splice(to, 0, moved);
-      return next;
+      return arrayMove(prev, from, to);
     });
   }, []);
 

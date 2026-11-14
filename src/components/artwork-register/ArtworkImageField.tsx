@@ -5,7 +5,7 @@ import {
   DndContext,
   type DragEndEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
   useSensor,
   useSensors,
@@ -196,8 +196,8 @@ export function ArtworkImageField({
   const { items, maxImages } = uploads;
   const representativeImage = representative ? items[0] : undefined;
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    // 짧게 밀면 가로 스크롤, 길게 누르면 끌기
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    // 터치는 짧게 밀면 가로 스크롤, 길게 누르면 끌기(PointerSensor 는 터치도 바로 잡아 스크롤을 막는다)
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
