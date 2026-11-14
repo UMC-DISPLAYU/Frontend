@@ -5,6 +5,8 @@ type VerificationStep = 'school' | 'email' | 'code' | 'profile';
 
 interface VerificationState {
   school: string;
+  /** 목록에서 학교를 골랐는지. 입력만 한 상태에서는 이메일 칸이 비활성이다 */
+  isSchoolSelected: boolean;
   email: string;
   code: string;
   emailGeneration: number;
@@ -15,6 +17,7 @@ interface VerificationState {
 
 type VerificationAction =
   | { type: 'SET_SCHOOL'; payload: string }
+  | { type: 'SELECT_SCHOOL'; payload: string }
   | { type: 'SET_EMAIL'; payload: string }
   | { type: 'SET_CODE'; payload: string }
   | { type: 'COMPLETE_STEP'; payload: VerificationStep }
@@ -23,6 +26,7 @@ type VerificationAction =
 
 export const initialState: VerificationState = {
   school: '',
+  isSchoolSelected: false,
   email: '',
   code: '',
   emailGeneration: 0,
@@ -31,20 +35,33 @@ export const initialState: VerificationState = {
   errorMessage: null,
 };
 
+const resetSchool = (
+  state: VerificationState,
+  school: string,
+  isSchoolSelected: boolean,
+): VerificationState => ({
+  ...state,
+  school,
+  isSchoolSelected,
+  completedSteps: new Set(),
+  failedStep: null,
+  errorMessage: null,
+  email: '',
+  code: '',
+});
+
 export function verificationReducer(
   state: VerificationState,
   action: VerificationAction,
 ): VerificationState {
   switch (action.type) {
-    case 'SET_SCHOOL': {
-      const newState = { ...state, school: action.payload };
-      newState.completedSteps = new Set();
-      newState.failedStep = null;
-      newState.errorMessage = null;
-      newState.email = '';
-      newState.code = '';
-      return newState;
-    }
+    case 'SET_SCHOOL':
+      return resetSchool(state, action.payload, false);
+
+    case 'SELECT_SCHOOL':
+      // 이미 고른 학교를 다시 고르면 입력한 이메일을 지우지 않는다
+      if (state.isSchoolSelected && state.school === action.payload) return state;
+      return resetSchool(state, action.payload, true);
 
     case 'SET_EMAIL': {
       const newState = { ...state, email: action.payload };

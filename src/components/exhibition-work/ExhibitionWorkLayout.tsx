@@ -4,9 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import BackIcon from '@/assets/exhibition-work/BackIcon.svg';
-import CalendarIcon from '@/assets/exhibition-work/CalendarIcon.svg';
 import ChevronIcon from '@/assets/exhibition-work/ChevronIcon.svg';
-import LocationIcon from '@/assets/exhibition-work/LocationIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { PageContainer } from '@/components/layout';
 import { useFlowBack } from '@/hooks/useFlowBack';
@@ -63,14 +61,14 @@ export function ExhibitionWorkLayout({
     <PageContainer variant="list" fillHeight className="bg-primary-white pb-10 text-primary">
       <WorkHeader title="전시 작업" onBack={onBack} />
       <div className="mb-4 flex items-center gap-3 rounded-12 border border-primary p-3">
-        <div className="h-26.25 w-21 shrink-0 overflow-hidden rounded-12 bg-secondary">
+        <div className="aspect-402/568 w-21 shrink-0 overflow-hidden bg-secondary">
           <OptimizedImage
             src={display.images[0]?.imageUrl}
             alt={`${display.title} 포스터`}
             displayWidth={84}
             skeleton
             loading="eager"
-            frameClassName="h-full w-full rounded-12"
+            frameClassName="h-full w-full"
             className="object-cover"
           />
         </div>
@@ -96,13 +94,9 @@ export function ExhibitionWorkLayout({
           <p className="typography-body-md-medium truncate text-secondary">
             {[display.organization, display.department].filter(Boolean).join(' ')}
           </p>
-          <p className="typography-body-md-medium flex items-center gap-1 text-secondary">
-            <img src={CalendarIcon} alt="" />
-            {period}
-          </p>
-          <p className="typography-body-md-medium flex min-w-0 items-center gap-1 text-secondary">
-            <img src={LocationIcon} alt="" />
-            <span className="truncate">{display.location.placeName}</span>
+          <p className="typography-body-md-medium truncate text-secondary">{period}</p>
+          <p className="typography-body-md-medium truncate text-secondary">
+            {display.location.placeName}
           </p>
         </div>
       </div>

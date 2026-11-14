@@ -73,3 +73,33 @@ it('실패는 입력과 유효 기간을 유지하고 재발송 성공 후에만
   state = verificationReducer(state, { type: 'COMPLETE_STEP', payload: 'code' });
   expect(state.completedSteps.has('code')).toBe(true);
 });
+
+it('학교는 목록에서 골라야 선택된 것으로 보고, 다시 입력하면 선택과 이메일이 풀린다', () => {
+  expect(initialState.isSchoolSelected).toBe(false);
+
+  let state = verificationReducer(initialState, { type: 'SET_SCHOOL', payload: '한빛' });
+  expect(state.isSchoolSelected).toBe(false);
+
+  state = verificationReducer(state, { type: 'SELECT_SCHOOL', payload: '한빛대학교' });
+  expect(state.school).toBe('한빛대학교');
+  expect(state.isSchoolSelected).toBe(true);
+
+  state = verificationReducer(state, { type: 'SET_EMAIL', payload: 'a@hanbit.ac.kr' });
+  state = verificationReducer(state, { type: 'COMPLETE_STEP', payload: 'email' });
+
+  const reselected = verificationReducer(state, {
+    type: 'SELECT_SCHOOL',
+    payload: '한빛대학교',
+  });
+  expect(reselected).toBe(state);
+
+  const changed = verificationReducer(state, { type: 'SELECT_SCHOOL', payload: '새봄대학교' });
+  expect(changed.isSchoolSelected).toBe(true);
+  expect(changed.email).toBe('');
+  expect(changed.completedSteps.size).toBe(0);
+
+  const edited = verificationReducer(state, { type: 'SET_SCHOOL', payload: '한빛대학' });
+  expect(edited.isSchoolSelected).toBe(false);
+  expect(edited.email).toBe('');
+  expect(edited.completedSteps.size).toBe(0);
+});

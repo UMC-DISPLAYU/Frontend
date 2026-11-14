@@ -73,7 +73,7 @@ export function useArtistVerifyFlow() {
   const isCodeConfirmed = state.completedSteps.has('code');
   const isVerifying = sendMail.isPending || resendMail.isPending || confirmCode.isPending;
   const isSaving = createArtistProfile.isPending;
-  const canSendMail = Boolean(state.school.trim() && state.email.trim());
+  const canSendMail = Boolean(state.isSchoolSelected && state.school.trim() && state.email.trim());
   const hasInput = Boolean(
     state.school.trim() || state.email.trim() || artistName.trim() || selectedFields.length,
   );
@@ -169,6 +169,8 @@ export function useArtistVerifyFlow() {
     code: state.code,
     emailGeneration: state.emailGeneration,
     setSchool: (value: string) => dispatch({ type: 'SET_SCHOOL', payload: value }),
+    selectSchool: (value: string) => dispatch({ type: 'SELECT_SCHOOL', payload: value }),
+    isSchoolSelected: state.isSchoolSelected,
     setEmail: (value: string) => dispatch({ type: 'SET_EMAIL', payload: value }),
     setCode: (value: string) => dispatch({ type: 'SET_CODE', payload: value }),
     schoolSuggestions: schoolQuery.data ?? [],

@@ -170,7 +170,7 @@ export function DisplayManagementPage() {
           <SkeletonList count={4}>
             {() => (
               <li>
-                <Skeleton className="h-38.5 rounded-12" />
+                <Skeleton className="h-42.5 rounded-12" />
               </li>
             )}
           </SkeletonList>

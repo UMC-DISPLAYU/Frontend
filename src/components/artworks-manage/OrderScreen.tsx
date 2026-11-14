@@ -105,7 +105,7 @@ export function OrderScreen({ works, disabled = false, onReorder, onDone }: Orde
         }}
       >
         <SortableContext items={works.map((work) => work.id)} strategy={rectSortingStrategy}>
-          <ul className="grid grid-cols-2 gap-3 tablet:grid-cols-3 desktop:grid-cols-4">
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3 desktop:grid-cols-4">
             {works.map((work, index) => (
               <SortableWork key={work.id} work={work} index={index} disabled={disabled} />
             ))}
