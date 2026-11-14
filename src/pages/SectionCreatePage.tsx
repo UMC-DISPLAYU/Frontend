@@ -46,7 +46,7 @@ export function SectionCreatePage() {
   const { data: display, isPending, isError, refetch } = useDisplayDetail(displayId);
   const backPath = `/exhibition/${displayId}/work?tab=contents`;
 
-  if (isPending) return <LoadingView message="전시 정보를 불러오는 중..." />;
+  if (isPending) return <LoadingView />;
   if (isError || !display) {
     return <ErrorView message="전시 정보를 불러오지 못했어요." onRetry={() => void refetch()} />;
   }
