@@ -125,7 +125,6 @@ export function ArtworkCard({
                   <div
                     onClick={(event) => event.stopPropagation()}
                     className="absolute right-2 top-12 z-50 w-36 rounded-[14px] border border-[#C4C4C4] bg-[#FCFCFC] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)]"
-                    style={{ fontFamily: 'Pretendard' }}
                   >
                     {isPersonalArtwork ? (
                       <>
