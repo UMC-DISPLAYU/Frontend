@@ -143,7 +143,7 @@ export function CoAuthorSheet({
                     onClick={() => togglePick(candidate.userId)}
                     className="flex w-full items-center gap-3 py-3 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus disabled:cursor-default disabled:opacity-45"
                   >
-                    <ProfileAvatar className="bg-info-subtle" />
+                    <ProfileAvatar />
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="typography-body-lg-semibold truncate text-primary">
                         {candidate.name}
@@ -216,7 +216,7 @@ export function CoAuthorSheet({
                     onClick={() => setTypedNames((prev) => prev.filter((item) => item !== name))}
                     className="flex w-full items-center gap-3 py-3 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
                   >
-                    <ProfileAvatar className="bg-info-subtle" />
+                    <ProfileAvatar />
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="typography-body-lg-semibold truncate text-primary">
                         {name}

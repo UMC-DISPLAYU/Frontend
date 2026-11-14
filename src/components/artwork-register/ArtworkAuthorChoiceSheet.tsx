@@ -188,7 +188,7 @@ export function ArtworkAuthorChoiceSheet({
                       key={candidate.userId}
                       className="flex cursor-pointer items-center gap-3 border-b border-bg-tertiary py-3 has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-focus"
                     >
-                      <ProfileAvatar className="bg-info-subtle" />
+                      <ProfileAvatar />
                       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className="typography-body-lg-semibold truncate text-primary">
                           {candidate.name}

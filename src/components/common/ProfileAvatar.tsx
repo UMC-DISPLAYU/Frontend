@@ -12,7 +12,7 @@ type ProfileAvatarProps = {
   displayWidth?: number;
   /** 원 안쪽 1px 테두리. 흰 사람 모양이 흰 바탕에 묻혀 반달처럼 보이지 않게 한다(마이 프로토타입) */
   outlined?: boolean;
-  /** 크기 · 바탕색 덮어쓰기. 기본 46px */
+  /** 크기 덮어쓰기(기본 46px). 바탕은 디자인 확정대로 항상 회색이다 */
   className?: string;
 };
 

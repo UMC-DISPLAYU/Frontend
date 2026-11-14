@@ -45,12 +45,12 @@ export function ArtworkAuthorSection({
       </div>
       <div className="overflow-hidden rounded-12 border border-primary bg-primary-white">
         <div className="flex items-center gap-3 p-4">
-          <ProfileAvatar className="bg-info-subtle" />
+          <ProfileAvatar />
           <PersonText person={author} />
         </div>
         {coAuthors.map((person) => (
           <div key={person.key} className="flex items-center gap-3 border-t border-primary p-4">
-            <ProfileAvatar className="bg-info-subtle" />
+            <ProfileAvatar />
             <PersonText person={person} />
             <button
               type="button"
