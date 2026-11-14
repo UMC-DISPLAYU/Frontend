@@ -34,6 +34,14 @@ describe('toEditArtistProfileDefaults', () => {
     expect(values.instagram).toBe('old_id');
     expect(values.portfolio).toBe('');
   });
+
+  it('아이디로 읽히지 않는 Instagram 값은 지우지 않고 그대로 보여 준다', () => {
+    const values = toEditArtistProfileDefaults({
+      ...profile,
+      instagramLink: 'https://instagram.com/some.user.',
+    });
+    expect(values.instagram).toBe('https://instagram.com/some.user.');
+  });
 });
 
 describe('toUpdateArtistProfileBody', () => {

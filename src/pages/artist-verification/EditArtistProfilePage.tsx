@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -72,6 +72,8 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhotoUrl);
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
+  // 업로드 뒤 저장만 실패했으면 다시 저장할 때 같은 사진을 또 올리지 않는다
+  const uploadedPhotoRef = useRef<{ file: File; url: string } | null>(null);
   const isPhotoChanged = photoPreview !== initialPhotoUrl;
 
   useEffect(() => {
@@ -107,9 +109,18 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
   const onSubmit = async (values: EditArtistProfileFormValues) => {
     if (isSaving) return;
     try {
-      const profileImageUrl = photoFile
-        ? await uploadImage.mutateAsync({ file: photoFile, domain: 'profile' })
-        : photoPreview;
+      let profileImageUrl = photoPreview;
+      if (photoFile) {
+        const uploaded =
+          uploadedPhotoRef.current?.file === photoFile
+            ? uploadedPhotoRef.current
+            : {
+                file: photoFile,
+                url: await uploadImage.mutateAsync({ file: photoFile, domain: 'profile' }),
+              };
+        uploadedPhotoRef.current = uploaded;
+        profileImageUrl = uploaded.url;
+      }
 
       await updateMyArtistProfile.mutateAsync(
         toUpdateArtistProfileBody(values, {
@@ -126,7 +137,8 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
 
   return (
     <ArtistVerifyLayout>
-      <main className="flex flex-1 flex-col">
+      {/* Layout 이 이미 <main> 으로 감싼다 */}
+      <div className="flex flex-1 flex-col">
         <VerifyHeader onBack={handleBack} title="작가 프로필 수정" />
 
         <form
@@ -249,7 +261,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
             </VerifyBottomButton>
           </VerifyBottomBar>
         </form>
-      </main>
+      </div>
 
       <ConfirmDialog
         cancelLabel="계속 수정"

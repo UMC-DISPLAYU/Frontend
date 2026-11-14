@@ -87,8 +87,8 @@ export function AuthPage() {
       </header>
       <DetailTopBar className="top-0" />
 
-      {/* 프로토타입 여백은 20 → 32(768px~)이고 900px 이상에서 40 으로 늘지 않는다 */}
-      <main className="mx-auto max-w-310 px-5 tablet:px-8 desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
+      {/* Layout 이 이미 <main> 으로 감싼다. 프로토타입 여백은 20 → 32(768px~)이고 900px 이상에서 40 으로 늘지 않는다 */}
+      <div className="mx-auto max-w-310 px-5 tablet:px-8 desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
         <div className="desktop:sticky desktop:top-24">
           {header ? (
             <ArtistProfileHeader
@@ -158,7 +158,7 @@ export function AuthPage() {
             </>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
