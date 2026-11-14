@@ -100,7 +100,7 @@ export function DisplayManagementCard({
         />
       </div>
 
-      <div className="grid min-w-0 content-start gap-0.5 pr-7 wrap-break-word">
+      <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-7 wrap-break-word">
         <p className="flex items-center gap-1.5 text-[12px] leading-[1.4] font-medium text-[#3f3f47]">
           <span
             className={cn(

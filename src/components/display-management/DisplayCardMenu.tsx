@@ -66,6 +66,7 @@ export function DisplayCardMenu({
         }
       }}
     >
+      {/* 보이는 크기는 프로토타입 40px 그대로 두고 누르는 영역만 44px 로 넓힌다 */}
       <button
         ref={triggerRef}
         type="button"
@@ -74,7 +75,7 @@ export function DisplayCardMenu({
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => setOpen(!open)}
-        className="grid size-10 place-items-center rounded-full text-[#18181b] transition-colors duration-200 hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className="relative grid size-10 place-items-center rounded-full text-[#18181b] after:absolute after:-inset-0.5 transition-colors duration-200 hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5.5 fill-current">
           <circle cx="5.5" cy="12" r="1.3" />
