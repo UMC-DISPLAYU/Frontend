@@ -53,7 +53,7 @@ export function DisplayArtistNameSheet({
           type="submit"
           form={formId}
           disabled={!isValid || isSaving}
-          className="-mt-1.5 mb-1.5 flex h-11 w-full items-center justify-center rounded-12 bg-interactive-primary text-[16px] leading-[1.4] font-semibold tracking-[-0.03em] text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable disabled:active:scale-100 tablet:mb-0"
+          className="mt-1 mb-1.5 flex h-12 w-full items-center justify-center rounded-12 bg-interactive-primary text-[16px] leading-[1.4] font-semibold tracking-[-0.03em] text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable disabled:active:scale-100 tablet:mb-0"
         >
           {isSaving ? '저장 중…' : '수정 완료'}
         </button>
