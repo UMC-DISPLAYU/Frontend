@@ -6,6 +6,7 @@ import type { DisplayDetailDto } from '@/api/dto';
 import BackIcon from '@/assets/exhibition-work/BackIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { PageContainer } from '@/components/layout';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { cn } from '@/utils/cn';
 import { getDisplayStatusLabel } from '@/utils/mypage';
@@ -86,8 +87,16 @@ export function ExhibitionWorkLayout({
   children: ReactNode;
 }) {
   const navigate = useNavigate();
-  const flowBack = useFlowBack();
+  const { data: userMe } = useUserMe();
   const tabId = useId();
+  /*
+   * 프로토타입 works.html: 뒤로가기는 기록을 되돌리지 않고 정해진 곳으로 간다.
+   * 대표자는 전시 관리, 관리자 · 팀원은 내 전시 관리. 대표자를 위임하고 이 화면에 온 경우에도
+   * 이미 들어갈 수 없는 화면(팀원 관리)으로 돌아가지 않는다
+   */
+  const isOwner = userMe !== undefined && display.ownerUserId === userMe.id;
+  const backToList = () =>
+    navigate(isOwner ? `/exhibition/${display.displayId}/manage` : '/display-management');
   const changeTab = (tab: WorkTab) => {
     if (onTabChange) onTabChange(tab);
     else navigate(`/exhibition/${display.displayId}/work?tab=${tab}`, { replace: true });
@@ -105,8 +114,8 @@ export function ExhibitionWorkLayout({
         <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
           <button
             type="button"
-            aria-label="뒤로가기"
-            onClick={onBack ?? flowBack}
+            aria-label={isOwner ? '전시 관리로 돌아가기' : '내 전시 관리로 돌아가기'}
+            onClick={onBack ?? backToList}
             className="grid size-11 place-items-center rounded-circle transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
           >
             <WorkIcon name="back" />
