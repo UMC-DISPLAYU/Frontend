@@ -14,7 +14,8 @@ import {
   DisplayPermissionGuard,
   FlowRoute,
   GuardedFlowStep,
-  PersonalArtworkPermissionGuard,
+  // 개인 작품 등록 · 수정은 진입점이 정해질 때까지 노출하지 않는다 (#463)
+  // PersonalArtworkPermissionGuard,
 } from './components/guards/RoutePermissionGuards';
 // 배럴로 가져오면 받은 초대 시트 코드까지 첫 번들에 실린다
 import { ReceivedInvitationsRedirect } from './components/invitation/ReceivedInvitationsRedirect';
@@ -133,10 +134,11 @@ const TeamManage = lazyPage(() => import('./pages/TeamManagePage'), 'TeamManage'
 const TeamDelegatedPage = lazyPage(() => import('./pages/TeamDelegatedPage'), 'TeamDelegatedPage');
 const SettingPage = lazyPage(() => import('./pages/Settingpage'), 'SettingPage');
 const EditBasicInfoPage = lazyPage(() => import('./pages/EditBasicInfoPage'), 'EditBasicInfoPage');
-const PersonalArtworkRegisterPage = lazyPage(
-  () => import('./pages/personal-artworks-register'),
-  'PersonalArtworkRegisterPage',
-);
+// 개인 작품 등록 · 수정은 진입점이 정해질 때까지 노출하지 않는다 (#463)
+// const PersonalArtworkRegisterPage = lazyPage(
+//   () => import('./pages/personal-artworks-register'),
+//   'PersonalArtworkRegisterPage',
+// );
 const MyReviewPage = lazyPage(() => import('./pages/MyReviewPage'), 'MyReviewPage');
 // 라운지는 당분간 노출하지 않는다 (#442)
 // const MyActivityPage = lazyPage(() => import('./pages/MyActivityPage'), 'MyActivityPage');
@@ -426,24 +428,25 @@ export const router = createBrowserRouter([
                   </ArtistPermissionGuard>
                 ),
               },
-              {
-                path: 'personal-artworks/new',
-                element: (
-                  <PersonalArtworkPermissionGuard action="create">
-                    <PersonalArtworkRegisterPage />
-                  </PersonalArtworkPermissionGuard>
-                ),
-              },
-              {
-                path: 'personal-artworks/:personalArtworkId/edit',
-                loader: validateNumericId('personalArtworkId'),
-                errorElement: <NotFound />,
-                element: (
-                  <PersonalArtworkPermissionGuard action="create">
-                    <PersonalArtworkRegisterPage />
-                  </PersonalArtworkPermissionGuard>
-                ),
-              },
+              // 개인 작품 등록 · 수정은 진입점이 정해질 때까지 노출하지 않는다 (#463)
+              // {
+              //   path: 'personal-artworks/new',
+              //   element: (
+              //     <PersonalArtworkPermissionGuard action="create">
+              //       <PersonalArtworkRegisterPage />
+              //     </PersonalArtworkPermissionGuard>
+              //   ),
+              // },
+              // {
+              //   path: 'personal-artworks/:personalArtworkId/edit',
+              //   loader: validateNumericId('personalArtworkId'),
+              //   errorElement: <NotFound />,
+              //   element: (
+              //     <PersonalArtworkPermissionGuard action="create">
+              //       <PersonalArtworkRegisterPage />
+              //     </PersonalArtworkPermissionGuard>
+              //   ),
+              // },
               // 받은 초대는 마이 화면의 시트다. 초대 링크 · 기존 설정 화면이 보내는 이 경로는 마이로 보내 시트를 연다
               { path: 'invitation-request', element: <ReceivedInvitationsRedirect /> },
               { path: 'my-review', element: <MyReviewPage /> },
