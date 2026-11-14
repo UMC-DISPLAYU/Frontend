@@ -14,7 +14,6 @@ export interface Work {
 export type Content = {
   id: number;
   title: string;
-  description: string;
   photoCount: number;
   thumbnail?: string;
 };

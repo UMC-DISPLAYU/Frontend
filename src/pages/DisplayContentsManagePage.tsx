@@ -4,14 +4,12 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 
 import {
   ContentDeleteConfirmDialog,
-  ContentEditSheet,
   ContentList,
   MAX_DISPLAY_SECTIONS,
 } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
 import { ExhibitionWorkLayout, WorkIcon } from '@/components/exhibition-work';
 import {
-  useCreateContentCategory,
   useDeleteContentCategory,
   useReorderContentCategories,
 } from '@/hooks/queries/useContentCategories';
@@ -47,15 +45,12 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
   const canReorder = hasPermission(displayContentPolicy, 'reorder');
   const canEditList = canEditCategory || canDeleteCategory || canReorder;
 
-  const createMutation = useCreateContentCategory(displayId);
   const deleteMutation = useDeleteContentCategory(displayId);
   const reorderMutation = useReorderContentCategories(displayId);
 
   const [editMode, setEditMode] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
   const [deleting, setDeleting] = useState<Content | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   // 끌어서 바꾼 순서. 저장 뒤 전시 상세를 다시 불러오면(목록이 바뀌면) 서버 순서를 그대로 쓴다
   const [ordered, setOrdered] = useState<{ base: unknown; contents: Content[] } | null>(null);
@@ -65,35 +60,12 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
     categories?.map((cat) => ({
       id: cat.categoryId,
       title: cat.name,
-      description: cat.description || '',
       photoCount: cat.contents.length,
       thumbnail: cat.contents[0]?.imageUrl,
     })) ?? [];
   const contents = ordered && ordered.base === categories ? ordered.contents : fetchedContents;
   const isEditingList = editMode && contents.length > 0 && canEditList;
   const sectionPath = (categoryId: number) => `/exhibition/${displayId}/contents/${categoryId}`;
-
-  const openEditor = () => {
-    setSaveError(null);
-    setCreateOpen(true);
-  };
-
-  // 프로토타입: 섹션을 추가하면 바로 섹션 편집 화면으로 넘어간다. 시트가 쌓은 기록은 대체한다
-  const handleSave = (values: { title: string; description: string }) => {
-    if (createMutation.isPending) return;
-    setSaveError(null);
-    createMutation.mutate(
-      { name: values.title, description: values.description },
-      {
-        onSuccess: ({ categoryId }) => {
-          setCreateOpen(false);
-          navigate(sectionPath(categoryId), { replace: true });
-        },
-        onError: (error) =>
-          setSaveError(getErrorMessage(error, '섹션을 추가하지 못했어요. 다시 시도해주세요.')),
-      },
-    );
-  };
 
   const handleDelete = () => {
     if (!deleting || deleteMutation.isPending) return;
@@ -181,7 +153,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
       {canAdd && (
         <button
           type="button"
-          onClick={openEditor}
+          onClick={() => navigate(`/exhibition/${displayId}/contents/new`)}
           className={`${ADD_BUTTON} ${contents.length > 0 ? 'mt-3' : 'mt-2'}`}
         >
           <WorkIcon name="plus" className="size-5" strokeWidth={2.2} />
@@ -204,13 +176,6 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
             : undefined
         }
         onReorder={handleReorder}
-      />
-      <ContentEditSheet
-        open={createOpen}
-        isSaving={createMutation.isPending}
-        errorMessage={saveError}
-        onClose={() => setCreateOpen(false)}
-        onSave={handleSave}
       />
       <ContentDeleteConfirmDialog
         open={deleteOpen}

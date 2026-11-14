@@ -1,6 +1,5 @@
-// 프로토타입 섹션 추가 · 섹션 편집: 제목 30자, 설명 100자
+// 프로토타입 섹션 추가 · 섹션 편집: 제목 30자
 export const SECTION_TITLE_MAX_LENGTH = 30;
-export const SECTION_DESCRIPTION_MAX_LENGTH = 100;
 
 // 프로토타입: 전시작이 50개가 되면 전시작 추가 버튼을 숨긴다
 export const MAX_DISPLAY_ARTWORKS = 50;

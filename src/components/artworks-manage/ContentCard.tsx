@@ -17,7 +17,7 @@ interface ContentCardProps {
 }
 
 /*
- * 프로토타입 works.html `.srow`: 대표 사진 72×96 · 제목 16 SemiBold · 설명 12(두 줄) · 사진 수는 아래에 붙인다.
+ * 프로토타입 works.html `.srow`: 대표 사진 72×96 · 제목 16 SemiBold · 사진 수는 아래에 붙인다(설명은 11-15에 삭제).
  * 편집 모드는 오른쪽에 삭제 · 손잡이(각 32, 아이콘 24, 간격 8)를 두고 손잡이로만 끈다
  */
 export function ContentCard({
@@ -46,11 +46,6 @@ export function ContentCard({
       </span>
       <span className="flex min-w-0 flex-col">
         <span className="text-[16px] font-semibold break-words">{content.title}</span>
-        {content.description && (
-          <span className="mt-1 line-clamp-2 text-[12px] font-medium text-[#3f3f47]">
-            {content.description}
-          </span>
-        )}
         <span className="mt-auto text-[12px] font-medium text-[#3f3f47] tabular-nums">
           사진 {content.photoCount}/{MAX_CONTENT_IMAGES}
         </span>

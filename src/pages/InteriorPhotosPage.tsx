@@ -1,24 +1,30 @@
 import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import {
   type ContentEditValues,
+  isSectionPhotoFile,
   moveItemByKey,
-  SECTION_DESCRIPTION_MAX_LENGTH,
+  SECTION_PAGE_CLASS,
+  SECTION_PHOTO_GRID,
+  SECTION_PHOTO_TYPES,
   SECTION_TITLE_MAX_LENGTH,
+  SECTION_TOOL_BUTTON,
+  SectionAddPhotoButton,
   sectionEditSchema,
   SectionFieldLabel,
   sectionInputClass,
-  sectionTextareaClass,
+  SectionPhotoCount,
+  SectionPhotoNote,
+  SectionPhotoTile,
   useLiveSort,
 } from '@/components/artworks-manage';
 import { ErrorView } from '@/components/common';
-import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { WorkBar, WorkIcon } from '@/components/exhibition-work';
+import { WorkBar } from '@/components/exhibition-work';
 import { PageContainer } from '@/components/layout';
 import { Skeleton, SkeletonList } from '@/components/ui';
 import {
@@ -38,10 +44,8 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { useCurrentPolicyUser, useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { policies } from '@/policies/policies';
 import { toast } from '@/stores/toastStore';
-import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
-import { staggerStyle } from '@/utils/stagger';
 
 type Photo = {
   id: string | number;
@@ -50,22 +54,13 @@ type Photo = {
   userId?: number;
 };
 
-const SUPPORTED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const MAX_PHOTO_FILE_SIZE = 20 * 1024 * 1024;
-const focusRing =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]';
-const TOOL_BUTTON = `inline-flex h-8 items-center pl-2 text-[12px] font-semibold disabled:cursor-default disabled:text-[#d4d4d8] ${focusRing}`;
-/* 프로토타입 section.html `.page`: 폭 480 · 768px 이상 672, 위 여백 8(safe area) · 768px 이상 40, 모든 글자 자간 -0.03em */
-const PAGE_CLASS =
-  'max-w-120 pt-[max(8px,env(safe-area-inset-top))] text-[14px] leading-[1.4] font-medium text-[#18181b] tablet:max-w-168 tablet:pt-10 [&_*]:tracking-[-0.03em]';
-/* 프로토타입 `.pgrid`: 3열 · 640px 이상 4열, 간격 10 */
-const PHOTO_GRID = 'mt-1 grid grid-cols-3 gap-2.5 pb-8 min-[640px]:grid-cols-4';
-
 interface SortablePhotoItemProps {
   photo: Photo;
   index: number;
   isEditing: boolean;
   canReorder: boolean;
+  /* 마지막 한 장은 지울 수 없다(사진 1장 이상 필수, 프로토타입 11-15) */
+  canRemoveAny: boolean;
   disabled: boolean;
   dragging: boolean;
   displayDetail: DisplayDetailDto;
@@ -74,15 +69,12 @@ interface SortablePhotoItemProps {
   onMoveByKey: (key: string) => boolean;
 }
 
-/*
- * 프로토타입 section.html `.pgrid.edit .ph`: 편집 모드에서는 사진 칸 어디를 눌러도 끈다(삭제 버튼 제외).
- * 끄는 칸은 제자리에서 흐려지고(.ph.drag 투명도 .55) 다른 칸 위로 가면 바로 자리를 바꾼다
- */
 function SortablePhotoItem({
   photo,
   index,
   isEditing,
   canReorder,
+  canRemoveAny,
   disabled,
   dragging,
   displayDetail,
@@ -92,58 +84,22 @@ function SortablePhotoItem({
 }: SortablePhotoItemProps) {
   const displayContentPolicy = useDisplayContentPolicy(displayDetail, photo);
   const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
-  const canDrag = isEditing && canReorder && !disabled;
 
   return (
-    <li
-      data-sort-id={photo.id}
-      tabIndex={canDrag ? 0 : undefined}
-      aria-label={canDrag ? `사진 ${index + 1}, 방향키로 순서 이동` : undefined}
+    <SectionPhotoTile
+      id={photo.id}
+      src={photo.url}
+      alt={photo.alt}
+      index={index}
+      editing={isEditing}
+      canDrag={isEditing && canReorder && !disabled}
+      canDelete={canDeleteContent && canRemoveAny}
+      dragging={dragging}
+      disabled={disabled}
       onPointerDown={onPointerDown}
-      onKeyDown={(event) => {
-        if (canDrag && onMoveByKey(event.key)) event.preventDefault();
-      }}
-      className={cn(
-        'relative aspect-3/4 min-w-0 overflow-hidden bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]',
-        isEditing && 'touch-none select-none',
-        canDrag && 'cursor-grab active:cursor-grabbing',
-        dragging && 'opacity-55',
-      )}
-    >
-      <div className="h-full animate-rise" style={staggerStyle(index)}>
-        <OptimizedImage
-          src={photo.url}
-          alt={photo.alt ?? `사진 ${index + 1}`}
-          displayWidth={208}
-          skeleton
-          draggable={false}
-          frameClassName="h-full w-full"
-          className="object-cover"
-        />
-      </div>
-      {isEditing && (
-        <>
-          <span
-            aria-hidden="true"
-            className="absolute top-1.5 left-1.5 grid size-6 place-items-center rounded-circle bg-[rgba(0,0,0,.55)] text-[10px] font-semibold text-[#fff] tabular-nums"
-          >
-            {index + 1}
-          </span>
-          {canDeleteContent && (
-            <button
-              type="button"
-              data-sort-ignore
-              disabled={disabled}
-              onClick={() => onRemove(photo.id)}
-              aria-label={`사진 ${index + 1} 삭제`}
-              className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-circle bg-[rgba(0,0,0,.55)] text-[#fff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fff] disabled:opacity-40"
-            >
-              <WorkIcon name="close" className="size-3.5" strokeWidth={2.2} />
-            </button>
-          )}
-        </>
-      )}
-    </li>
+      onMoveByKey={onMoveByKey}
+      onRemove={() => onRemove(photo.id)}
+    />
   );
 }
 
@@ -158,12 +114,12 @@ export function InteriorPhotosPage() {
   if (isPending) {
     return (
       <div className="min-h-dvh bg-[#fff]">
-        <PageContainer variant="form" className={PAGE_CLASS}>
+        <PageContainer variant="form" className={SECTION_PAGE_CLASS}>
           <WorkBar title="섹션 편집" onBack={flowBack} />
           <main aria-label="섹션을 불러오는 중" aria-busy="true" className="space-y-6 pt-3">
             <Skeleton className="h-[71px] w-full rounded-4" />
             <Skeleton className="h-40 w-full rounded-12" />
-            <div className={PHOTO_GRID}>
+            <div className={SECTION_PHOTO_GRID}>
               <SkeletonList count={6}>
                 {() => <Skeleton className="aspect-3/4 rounded-0" />}
               </SkeletonList>
@@ -187,7 +143,6 @@ export function InteriorPhotosPage() {
     <InteriorPhotos
       key={categoryId}
       title={category.name}
-      description={category.description ?? ''}
       displayId={displayId}
       categoryId={categoryId}
       initialPhotos={category.contents.map((content) => ({
@@ -206,7 +161,6 @@ export function InteriorPhotosPage() {
 
 interface InteriorPhotosProps {
   title: string;
-  description: string;
   displayId: number;
   categoryId: number;
   initialPhotos: Photo[];
@@ -219,7 +173,6 @@ interface InteriorPhotosProps {
 
 function InteriorPhotos({
   title,
-  description,
   displayId,
   categoryId,
   initialPhotos,
@@ -236,7 +189,7 @@ function InteriorPhotos({
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savingDetailsRef = useRef(false);
-  const savedRef = useRef<ContentEditValues>({ title, description });
+  const savedRef = useRef<ContentEditValues>({ title });
   // 저장 중에 다른 칸을 고치고 벗어나면 끝난 뒤 한 번 더 저장한다
   const resaveRef = useRef(false);
   const leaveSaveRef = useRef<() => void>(() => undefined);
@@ -251,16 +204,14 @@ function InteriorPhotos({
   const {
     register,
     handleSubmit,
-    control,
     reset,
     setError,
     setValue,
     formState: { errors },
   } = useForm<ContentEditValues>({
     resolver: zodResolver(sectionEditSchema),
-    defaultValues: { title, description },
+    defaultValues: { title },
   });
-  const currentDescription = useWatch({ control, name: 'description' }) ?? '';
   const isBusy = isUploadingPhotos || imageUpload.isUploading || createImage.isPending;
   const isSavingOrder = reorderImages.isPending;
   const isPhotoActionPending = isBusy || isSavingOrder || deleteImage.isPending;
@@ -279,16 +230,12 @@ function InteriorPhotos({
       resaveRef.current = true;
       return;
     }
-    if (
-      values.title === savedRef.current.title &&
-      values.description === savedRef.current.description
-    )
-      return;
+    if (values.title === savedRef.current.title) return;
     savingDetailsRef.current = true;
     try {
       await updateCategory.mutateAsync({
         categoryId,
-        body: { name: values.title, description: values.description },
+        body: { name: values.title },
       });
       savedRef.current = values;
       reset(values);
@@ -319,9 +266,7 @@ function InteriorPhotos({
     if (!canCreateContent || photoActionRef.current || isPhotoActionPending) return;
     const files = e.target.files;
     if (!files?.length) return;
-    const validFiles = Array.from(files).filter(
-      (file) => SUPPORTED_PHOTO_TYPES.includes(file.type) && file.size <= MAX_PHOTO_FILE_SIZE,
-    );
+    const validFiles = Array.from(files).filter(isSectionPhotoFile);
     setRejectedPhotoCount(files.length - validFiles.length);
     setActionError(null);
     const remainingSlots = Math.max(MAX_CONTENT_IMAGES - photos.length, 0);
@@ -374,7 +319,8 @@ function InteriorPhotos({
   };
 
   const handleRemove = (id: string | number) => {
-    if (photoActionRef.current || isPhotoActionPending) return;
+    // 사진은 1장 이상 필수라 마지막 한 장은 지우지 않는다(프로토타입 11-15)
+    if (photoActionRef.current || isPhotoActionPending || photos.length < 2) return;
     const targetPhoto = photos.find((photo) => photo.id === id);
     if (
       !targetPhoto ||
@@ -387,6 +333,8 @@ function InteriorPhotos({
     setActionError(null);
     const previous = photos;
     setPhotos(previous.filter((photo) => photo.id !== id));
+    // 한 장만 남으면 편집할 것이 없어 편집 모드를 닫는다
+    if (previous.length - 1 < 2) setIsEditingPhotos(false);
     deleteImage.mutate(Number(id), {
       onSuccess: () => {
         photoActionRef.current = false;
@@ -440,7 +388,7 @@ function InteriorPhotos({
 
   return (
     <div className="min-h-dvh bg-[#fff]">
-      <PageContainer variant="form" className={PAGE_CLASS}>
+      <PageContainer variant="form" className={SECTION_PAGE_CLASS}>
         <WorkBar title="섹션 편집" onBack={onBack} />
         <main className="flex-1">
           <form
@@ -478,42 +426,6 @@ function InteriorPhotos({
                 </p>
               )}
             </div>
-            <div className="mt-6">
-              <SectionFieldLabel htmlFor="section-description" optional>
-                섹션 설명
-              </SectionFieldLabel>
-              <textarea
-                {...register('description')}
-                onBlur={(event) => {
-                  void register('description').onBlur(event);
-                  void autoSave();
-                }}
-                id="section-description"
-                readOnly={!canEditCategory}
-                maxLength={SECTION_DESCRIPTION_MAX_LENGTH}
-                aria-invalid={Boolean(errors.description)}
-                aria-describedby={
-                  errors.description ? 'section-description-error' : 'section-description-count'
-                }
-                placeholder="섹션 설명을 입력해주세요"
-                className={`${sectionTextareaClass} h-32`}
-              />
-              <p
-                id="section-description-count"
-                className="mt-2 text-right text-[12px] font-medium text-[#71717b] tabular-nums"
-              >
-                {currentDescription.length} / {SECTION_DESCRIPTION_MAX_LENGTH}
-              </p>
-              {errors.description && (
-                <p
-                  id="section-description-error"
-                  role="alert"
-                  className="text-[12px] font-medium text-[#fb2c36]"
-                >
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
             {errors.root && (
               <p role="alert" className="mt-2 text-[12px] font-medium text-[#fb2c36]">
                 {errors.root.message}
@@ -528,16 +440,15 @@ function InteriorPhotos({
                   순서 변경과 삭제는 자동으로 저장돼요
                 </p>
               ) : (
-                <h2 className="text-[14px] font-semibold tabular-nums">
-                  사진 {photos.length}/{MAX_CONTENT_IMAGES}
-                </h2>
+                <SectionPhotoCount count={photos.length} max={MAX_CONTENT_IMAGES} />
               )}
-              {(canEditPhotos || isEditingPhotos) && (photos.length > 0 || isEditingPhotos) && (
+              {/* 프로토타입 11-15: 한 장뿐이면 옮기거나 지울 것이 없어 편집을 두지 않는다 */}
+              {(canEditPhotos || isEditingPhotos) && (photos.length > 1 || isEditingPhotos) && (
                 <button
                   type="button"
                   disabled={isPhotoActionPending}
                   onClick={handlePhotoEdit}
-                  className={TOOL_BUTTON}
+                  className={SECTION_TOOL_BUTTON}
                 >
                   {isSavingOrder ? '저장 중' : isEditingPhotos ? '완료' : '편집'}
                 </button>
@@ -546,46 +457,22 @@ function InteriorPhotos({
             <input
               ref={fileInputRef}
               type="file"
-              accept={SUPPORTED_PHOTO_TYPES.join(',')}
+              accept={SECTION_PHOTO_TYPES.join(',')}
               multiple
               onChange={handleFileChange}
               className="hidden"
               aria-label="섹션 사진 추가"
             />
-            {(rejectedPhotoCount > 0 || actionError) && (
-              <div
-                role="alert"
-                className="mt-3 flex items-start gap-2.5 rounded-12 bg-[#f4f4f5] px-3.5 py-3"
-              >
-                <WorkIcon name="info" className="mt-px size-4.5 text-[#71717b]" />
-                <div className="min-w-0 text-[12px] leading-[1.4] font-medium whitespace-pre-line text-[#3f3f47]">
-                  {rejectedPhotoCount > 0 && (
-                    <p>
-                      <b className="block font-semibold text-[#18181b]">
-                        {rejectedPhotoCount}장은 올리지 못했어요
-                      </b>
-                      지원하지 않는 형식이거나 20MB를 넘는 파일이에요
-                    </p>
-                  )}
-                  {actionError && <p>{actionError}</p>}
-                </div>
-              </div>
-            )}
-            <ul className={PHOTO_GRID}>
+            <SectionPhotoNote rejectedCount={rejectedPhotoCount} message={actionError} />
+            <ul className={SECTION_PHOTO_GRID}>
               {!isEditingPhotos && canCreateContent && photos.length < MAX_CONTENT_IMAGES && (
-                <li className="aspect-3/4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (canCreateContent && !isPhotoActionPending) fileInputRef.current?.click();
-                    }}
-                    disabled={isPhotoActionPending}
-                    className={`grid size-full content-center justify-items-center gap-1.5 border border-[#d4d4d8] text-[12px] font-medium transition-colors duration-fast hover:bg-[#f4f4f5] disabled:cursor-default disabled:text-[#d4d4d8] ${focusRing}`}
-                  >
-                    <WorkIcon name="plus" className="size-6.5" strokeWidth={1.6} />
-                    {isBusy ? '업로드 중' : '사진 추가'}
-                  </button>
-                </li>
+                <SectionAddPhotoButton
+                  busy={isBusy}
+                  disabled={isPhotoActionPending}
+                  onClick={() => {
+                    if (canCreateContent && !isPhotoActionPending) fileInputRef.current?.click();
+                  }}
+                />
               )}
               {sortedPhotos.map((photo, index) => (
                 <SortablePhotoItem
@@ -594,6 +481,7 @@ function InteriorPhotos({
                   index={index}
                   isEditing={isEditingPhotos}
                   canReorder={canReorder}
+                  canRemoveAny={photos.length > 1}
                   disabled={isPhotoActionPending}
                   dragging={draggingPhotoId === photo.id}
                   displayDetail={displayDetail}
