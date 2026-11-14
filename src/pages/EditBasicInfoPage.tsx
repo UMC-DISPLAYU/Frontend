@@ -195,13 +195,8 @@ function EditBasicInfoForm({ userMe }: { userMe: UserProfileDto }) {
               <ProfilePhotoField
                 disabled={isSaving}
                 onChange={handlePhotoChange}
-                placeholder={
-                  // 프로토타입 기본 프로필: 흰 사람 모양 아래에 깔리는 옅은 안쪽 테두리(rgba(0,0,0,.06))
-                  <ProfileAvatar
-                    className="size-20 text-[#fff] shadow-[inset_0_0_0_1px_rgba(0,0,0,.06)]"
-                    displayWidth={80}
-                  />
-                }
+                // 기본 프로필은 팀원 관리와 같게 외곽선 없이 둔다(사용자 결정)
+                placeholder={<ProfileAvatar className="size-20" displayWidth={80} />}
                 shape="circle"
                 src={photoPreview}
               />
