@@ -136,9 +136,9 @@ const TeamDelegatedPage = lazyPage(() => import('./pages/TeamDelegatedPage'), 'T
 const DisplayAcceptPage = lazyPage(() => import('./pages/DisplayAcceptPage'), 'DisplayAcceptPage');
 const SettingPage = lazyPage(() => import('./pages/Settingpage'), 'SettingPage');
 const EditBasicInfoPage = lazyPage(() => import('./pages/EditBasicInfoPage'), 'EditBasicInfoPage');
-const PersonalArtworksRegister = lazyPage(
+const PersonalArtworkRegisterPage = lazyPage(
   () => import('./pages/personal-artworks-register'),
-  'PersonalArtworksRegister',
+  'PersonalArtworkRegisterPage',
 );
 const InvitationRequestPage = lazyPage(
   () => import('./pages/InvitationRequestPage'),
@@ -152,10 +152,6 @@ const DisplayInvitationLinkPage = lazyPage(
   () => import('./pages/DisplayInvitationLinkPage'),
   'DisplayInvitationLinkPage',
 );
-const ExhibitionRegisterComplete = lazyPage(
-  () => import('./pages/RegisterCompletePage'),
-  'ExhibitionRegisterComplete',
-);
 const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound');
 
 const validateNumericId =
@@ -167,36 +163,6 @@ const validateNumericId =
     }
     return null;
   };
-
-const artworkRegisterFlowSteps = [
-  {
-    path: '/artworks/add/choice',
-    step: 'artwork-choice',
-  },
-  {
-    path: '/artworks/add/artist',
-    step: 'artwork-author-select',
-    required: ['artwork-choice'],
-    fallback: '/artworks/add/choice',
-  },
-  {
-    path: '/artworks/add/artist/direct',
-    step: 'artwork-author-direct',
-    required: ['artwork-choice'],
-    fallback: '/artworks/add/choice',
-  },
-  {
-    path: '/artworks/add/basic',
-    step: 'artwork-basic',
-    fallback: '/artworks/add/choice',
-  },
-  {
-    path: '/artworks/add/participants',
-    step: 'artwork-participants',
-    required: ['artwork-basic'],
-    fallback: '/artworks/add/choice',
-  },
-];
 
 export const router = createBrowserRouter([
   {
@@ -425,9 +391,6 @@ export const router = createBrowserRouter([
                   },
                   {
                     path: 'artworks',
-                    element: (
-                      <FlowRoute initialFlow="artwork-register" steps={artworkRegisterFlowSteps} />
-                    ),
                     children: [
                       {
                         index: true,
@@ -438,43 +401,7 @@ export const router = createBrowserRouter([
                         ),
                       },
                       {
-                        path: 'add',
-                        element: <Navigate to="choice" replace />,
-                      },
-                      {
-                        path: 'add/choice',
-                        element: (
-                          <ArtworkPermissionGuard action="create">
-                            <ArtworkRegisterPage />
-                          </ArtworkPermissionGuard>
-                        ),
-                      },
-                      {
-                        path: 'add/artist',
-                        element: (
-                          <ArtworkPermissionGuard action="create">
-                            <ArtworkRegisterPage />
-                          </ArtworkPermissionGuard>
-                        ),
-                      },
-                      {
-                        path: 'add/artist/direct',
-                        element: (
-                          <ArtworkPermissionGuard action="create">
-                            <ArtworkRegisterPage />
-                          </ArtworkPermissionGuard>
-                        ),
-                      },
-                      {
-                        path: 'add/basic',
-                        element: (
-                          <ArtworkPermissionGuard action="create">
-                            <ArtworkRegisterPage />
-                          </ArtworkPermissionGuard>
-                        ),
-                      },
-                      {
-                        path: 'add/participants',
+                        path: 'new',
                         element: (
                           <ArtworkPermissionGuard action="create">
                             <ArtworkRegisterPage />
@@ -493,14 +420,6 @@ export const router = createBrowserRouter([
                       },
                     ],
                   },
-                  {
-                    path: 'complete',
-                    element: (
-                      <ArtworkPermissionGuard action="create">
-                        <ExhibitionRegisterComplete />
-                      </ArtworkPermissionGuard>
-                    ),
-                  },
                 ],
               },
 
@@ -515,18 +434,20 @@ export const router = createBrowserRouter([
                 ),
               },
               {
-                path: 'personal-artworks/register',
+                path: 'personal-artworks/new',
                 element: (
                   <PersonalArtworkPermissionGuard action="create">
-                    <PersonalArtworksRegister />
+                    <PersonalArtworkRegisterPage />
                   </PersonalArtworkPermissionGuard>
                 ),
               },
               {
-                path: 'personal-artworks/complete',
+                path: 'personal-artworks/:personalArtworkId/edit',
+                loader: validateNumericId('personalArtworkId'),
+                errorElement: <NotFound />,
                 element: (
                   <PersonalArtworkPermissionGuard action="create">
-                    <ExhibitionRegisterComplete />
+                    <PersonalArtworkRegisterPage />
                   </PersonalArtworkPermissionGuard>
                 ),
               },

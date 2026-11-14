@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { GetArtworkDetailResponseDataDto } from '@/api/dto';
-import { getArtworkDetail, likeArtwork, unlikeArtwork } from '@/api/endpoints';
+import { getArtworkDetail, getArtworkForEdit, likeArtwork, unlikeArtwork } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
 export const useArtworkDetail = (artworkId: number) =>
   useQuery({
@@ -10,6 +11,17 @@ export const useArtworkDetail = (artworkId: number) =>
     queryFn: () => getArtworkDetail(artworkId),
     enabled: Number.isFinite(artworkId) && artworkId > 0,
   });
+
+// GET /v1/artworks/:artworkId/edit - 대표자 · 작가 · 공동 작가만 조회할 수 있다
+export const useArtworkForEdit = (artworkId: number) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  return useQuery({
+    queryKey: queryKeys.displayArtworks.edit(artworkId),
+    queryFn: () => getArtworkForEdit(artworkId),
+    enabled: !!accessToken && Number.isFinite(artworkId) && artworkId > 0,
+  });
+};
 
 /* 스웨거 기준 POST는 좋아요 추가, DELETE는 취소입니다. */
 export const useToggleArtworkLike = (artworkId: number) => {

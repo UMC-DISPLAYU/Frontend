@@ -88,8 +88,37 @@ const displayToListItem = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   isArchived: false,
 });
 
+/*
+ * 전시 팀원. 101은 대표자(나) · 작가 인증한 팀원 · 작가 인증 전 팀원 · 초대 대기 팀원을 두어
+ * 작품 등록의 대신 등록 · 공동 작가 시트를 목에서 확인할 수 있게 한다.
+ */
+const MOCK_TEAM_MEMBERS: Record<number, unknown[]> = {
+  101: [
+    { teamMemberId: 1011, userId: 1, displayNickname: '디스플레이유', role: 'TEAM_LEADER' },
+    { teamMemberId: 1012, userId: 201, displayNickname: '이정우', role: 'TEAM_MEM' },
+    { teamMemberId: 1013, userId: 203, displayNickname: '김서연', role: 'TEAM_MEM' },
+    {
+      teamMemberId: 1014,
+      userId: 204,
+      displayNickname: '박지훈',
+      role: 'TEAM_MEM',
+      artistVerified: false,
+    },
+    {
+      teamMemberId: 1015,
+      userId: 205,
+      displayNickname: '한도윤',
+      role: 'TEAM_MEM',
+      accepted: false,
+    },
+  ].map((member) => ({ accepted: true, loggedIn: true, artistVerified: true, ...member })),
+};
+
 const displayToDetail = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   ...displayToListItem(display),
+  ...(MOCK_TEAM_MEMBERS[display.displayId] && {
+    teamMembers: MOCK_TEAM_MEMBERS[display.displayId],
+  }),
   /*
    * MSW는 메모리에만 상태를 두기 때문에 새로고침하면 발급했던 토큰이 사라집니다.
    * 초대 링크를 새 탭에서 열어볼 수 있도록 전시마다 고정 토큰을 미리 심어둡니다.

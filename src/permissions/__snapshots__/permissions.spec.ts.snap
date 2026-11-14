@@ -111,19 +111,21 @@ exports[`권한 테이블 무결성 > 전체 역할 × 권한 결과 스냅샷 1
   },
   {
     "allowed": [
+      "displayOwner",
       "artworkCreator",
       "artworkCollaborator",
     ],
-    "condition": "전시 소속인 && (작품 생성자 || 공동작업자)",
+    "condition": "(작가 인증 && 전시 소유자) || (전시 소속인 && (작품 생성자 || 공동작업자))",
     "permission": "artwork:edit",
     "when": null,
   },
   {
     "allowed": [
+      "displayOwner",
       "artworkCreator",
       "artworkCollaborator",
     ],
-    "condition": "전시 소속인 && (작품 생성자 || 공동작업자)",
+    "condition": "(작가 인증 && 전시 소유자) || (전시 소속인 && (작품 생성자 || 공동작업자))",
     "permission": "artwork:delete",
     "when": null,
   },

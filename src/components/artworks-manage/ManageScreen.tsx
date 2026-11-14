@@ -8,6 +8,7 @@ import type { Work } from '@/types/artworkManage';
 import { hasPermission } from '@/utils/hasPermission';
 import { staggerStyle } from '@/utils/stagger';
 
+import { MAX_DISPLAY_ARTWORKS } from './constants';
 import { WorkActionSheet } from './WorkActionSheet';
 import { WorkCard } from './WorkCard';
 
@@ -106,7 +107,7 @@ export function ManageScreen({
         )
       ) : (
         <>
-          {canCreate && (
+          {canCreate && works.length < MAX_DISPLAY_ARTWORKS && (
             <button
               type="button"
               onClick={onAdd}

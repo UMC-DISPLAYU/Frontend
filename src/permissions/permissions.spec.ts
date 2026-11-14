@@ -173,13 +173,13 @@ const MATRIX: Record<string, Rule[]> = {
     },
     {
       permission: 'artwork:edit',
-      desc: '전시 소속인 && (작품 생성자 || 공동작업자)',
-      allow: ['artworkCreator', 'artworkCollaborator'],
+      desc: '(작가 인증 && 전시 소유자) || (전시 소속인 && (작품 생성자 || 공동작업자))',
+      allow: ['displayOwner', 'artworkCreator', 'artworkCollaborator'],
     },
     {
       permission: 'artwork:delete',
-      desc: '전시 소속인 && (작품 생성자 || 공동작업자)',
-      allow: ['artworkCreator', 'artworkCollaborator'],
+      desc: '(작가 인증 && 전시 소유자) || (전시 소속인 && (작품 생성자 || 공동작업자))',
+      allow: ['displayOwner', 'artworkCreator', 'artworkCollaborator'],
     },
     {
       permission: 'artwork:reorder',
