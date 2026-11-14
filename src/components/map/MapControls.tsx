@@ -1,4 +1,4 @@
-import { Focus, Locate, Minus, Plus } from 'lucide-react';
+import { Locate, Minus, Plus } from 'lucide-react';
 
 import { cn } from '@/utils/cn';
 
@@ -16,7 +16,6 @@ interface MapControlsProps {
   isLocating: boolean;
   onZoomIn: () => void;
   onZoomOut: () => void;
-  onFitAll: () => void;
   onLocate: () => void;
 }
 
@@ -28,7 +27,6 @@ export function MapControls({
   isLocating,
   onZoomIn,
   onZoomOut,
-  onFitAll,
   onLocate,
 }: MapControlsProps) {
   return (
@@ -55,15 +53,6 @@ export function MapControls({
           <Minus aria-hidden className="size-6" strokeWidth={2} />
         </button>
       </div>
-      <button
-        type="button"
-        aria-label="전시 전체 보기"
-        title="전시 전체 보기"
-        onClick={onFitAll}
-        className={cn(buttonClassName, 'rounded-circle', FLOAT_SHADOW)}
-      >
-        <Focus aria-hidden className="size-6" strokeWidth={1.8} />
-      </button>
       <button
         type="button"
         aria-label={isLocationDenied ? '내 위치 (위치 권한이 꺼져 있어요)' : '내 위치'}
