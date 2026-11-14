@@ -1,0 +1,39 @@
+/* 전시 관리 화면 전용 모션. 값은 프로토타입(hub.html · flow.css)과 같다. 동작 줄이기는 index.css 전역 규칙이 처리한다. */
+
+@keyframes display-hub-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes display-hub-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes display-hub-done-ring {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+}
+
+@keyframes display-hub-done-halo {
+  from {
+    opacity: 0.22;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+}
+
+@keyframes display-hub-done-draw {
+  from {
+    stroke-dashoffset: 28;
+  }
+}
