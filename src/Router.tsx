@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react';
 
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 
+import { handleStaleChunkError } from '@/utils/staleChunkReload';
+
 import { RootRedirect } from './components/auth/RootRedirect';
 import { LoadingView } from './components/common';
 import { AuthGuard } from './components/guards/AuthGuard';
@@ -20,7 +22,6 @@ import {
 // 배럴로 가져오면 받은 초대 시트 코드까지 첫 번들에 실린다
 import { ReceivedInvitationsRedirect } from './components/invitation/ReceivedInvitationsRedirect';
 import { Layout, RootLayout } from './components/layout';
-import { reloadForStaleChunkInBrowser } from './utils/staleChunkReload';
 
 const lazyPage = <T extends Record<string, unknown>>(
   importFn: () => Promise<T>,
@@ -28,11 +29,7 @@ const lazyPage = <T extends Record<string, unknown>>(
 ) => {
   const LazyComponent = lazy(() =>
     importFn()
-      .catch((error: unknown) => {
-        // 새로고침되는 동안 에러 화면 대신 로딩 화면을 유지한다
-        if (reloadForStaleChunkInBrowser()) return new Promise<never>(() => {});
-        throw error;
-      })
+      .catch(handleStaleChunkError)
       .then((mod) => ({
         default: mod[exportName] as unknown as React.ComponentType,
       })),
