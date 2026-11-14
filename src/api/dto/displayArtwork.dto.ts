@@ -406,7 +406,7 @@ export interface ArtworkSearchItemDto {
   artworkName: string;
   artworkImageUrl: string;
   /* 작품 카드에 표시하는 전시 작가명. 대표 작가가 첫 번째이고 공동 작가가 이어진다 */
-  artists: ArtworkCoAuthorDto[];
+  artists?: ArtworkCoAuthorDto[] | null;
   displayId: number;
 }
 

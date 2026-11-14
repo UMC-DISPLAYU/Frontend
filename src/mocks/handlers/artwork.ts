@@ -28,6 +28,16 @@ const toCoAuthorList = (
   ];
 };
 
+// 목 작품 데이터는 예전 분야 값(CRAFT · DESIGN · FASHION)을 써서 탐색 분야 값과 맞춰 본다
+const MOCK_ARTWORK_FIELD_ALIASES: Record<string, string> = {
+  CRAFTS: 'CRAFT',
+  GRAPHIC: 'DESIGN',
+  BRANDING: 'DESIGN',
+  PRODUCT: 'DESIGN',
+  UXUI: 'DESIGN',
+  OTHERS: 'FASHION',
+};
+
 export const artworkHandlers = [
   ...paths('/api/v1/artworks').map((path) =>
     http.get(path, ({ request }) => {
@@ -133,7 +143,7 @@ export const artworkHandlers = [
           // 작품 탭의 전시 유형 · 상태 필터는 작품이 속한 전시 기준이다
           if (type && display.displayType !== type) return false;
           if (status && display.status !== status) return false;
-          if (field && artwork.type !== field) return false;
+          if (field && artwork.type !== (MOCK_ARTWORK_FIELD_ALIASES[field] ?? field)) return false;
           // 작품명 · 전시 작가명(공동 작가 포함)으로 찾는다
           return matchesSearchWord(searchWord, [
             artwork.artworkName,
@@ -152,7 +162,7 @@ export const artworkHandlers = [
         artworkId: artwork.artworkId,
         artworkName: artwork.artworkName,
         artworkImageUrl: artwork.artworkImageUrl,
-        artists: artwork.artists,
+        artists: artwork.artists ?? [{ userId: null, name: artwork.artistName ?? '' }],
         displayId: artwork.displayId,
       }));
       const nextCursor = cursor + size < matched.length ? String(cursor + size) : null;

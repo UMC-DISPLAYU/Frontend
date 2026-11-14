@@ -78,8 +78,8 @@ export function ExploreFilterMenu({
           // 보이는 크기는 그대로 두고 누르는 영역만 44px 로 넓힌다
           'after:absolute after:inset-x-0',
           isChip
-            ? 'h-9 gap-1 rounded-full border pr-3 pl-3.5 transition-[background-color,border-color,color,scale] duration-200 after:-inset-y-1 active:scale-96'
-            : 'h-8 gap-0.5 pl-2 text-[#18181b] transition-colors duration-200 after:-inset-y-1.5',
+            ? 'h-9 gap-1 rounded-full border pr-3 pl-3.5 transition-[background-color,border-color,color,scale] duration-fast after:-inset-y-1 active:scale-96'
+            : 'h-8 gap-0.5 pl-2 text-[#18181b] transition-colors duration-fast after:-inset-y-1.5',
           isChip &&
             (isApplied
               ? 'border-[#18181b] bg-[#18181b] text-[#fff]'

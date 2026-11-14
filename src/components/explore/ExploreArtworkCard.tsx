@@ -14,7 +14,7 @@ type ExploreArtworkCardProps = {
 };
 
 export function ExploreArtworkCard({ artwork }: ExploreArtworkCardProps) {
-  const artistNames = artwork.artists.map((artist) => artist.name);
+  const artistNames = (artwork.artists ?? []).map((artist) => artist.name);
 
   return (
     <Link className={CARD_CLASS} to={`/artwork/${artwork.artworkId}`}>

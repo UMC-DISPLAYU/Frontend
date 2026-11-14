@@ -139,6 +139,7 @@ export function ExplorePage() {
           {isExhibitionView ? (
             <ExploreResultGrid
               getKey={(exhibition) => exhibition.displayId}
+              key="exhibition"
               itemObject="전시를"
               pages={exhibitionPages}
               renderItem={(exhibition) => <ExploreExhibitionCard exhibition={exhibition} />}
@@ -148,6 +149,7 @@ export function ExplorePage() {
           ) : (
             <ExploreResultGrid
               getKey={(artwork) => artwork.artworkId}
+              key="artwork"
               itemObject="작품을"
               pages={artworkPages}
               renderItem={(artwork) => <ExploreArtworkCard artwork={artwork} />}
