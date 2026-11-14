@@ -6,7 +6,12 @@
  * - 닉네임: 아래 MOCK_NICKNAMES 값을 입력하면 해당 응답을 돌려준다.
  * - 주소 검색: 아래 MOCK_ADDRESS_KEYWORD가 들어간 검색어를 입력하면 예시 주소를 돌려준다.
  */
-export type MockScenario = 'agreements-fail' | 'agreements-empty' | 'agreements-slow';
+export type MockScenario =
+  | 'agreements-fail'
+  | 'agreements-empty'
+  | 'agreements-slow'
+  /** 작가 인증 전 사용자: 작가 인증 안내 모달 확인용(예: `/home?mock=artist-unverified` → 전시 등록하기) */
+  | 'artist-unverified';
 
 export const hasMockScenario = (scenario: MockScenario) =>
   new URLSearchParams(window.location.search).getAll('mock').includes(scenario);

@@ -1,4 +1,4 @@
-import { createElement, useState } from 'react';
+import { createElement, useCallback, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -32,27 +32,42 @@ export function useLoginRequiredModal(redirectPath?: string) {
   };
 }
 
-const DEFAULT_ARTIST_VERIFICATION_DESCRIPTION = '작가 인증을 하면 이 기능을 이용할 수 있어요.';
+// 프로토타입(my.html) "새 전시 등록" 인증 안내 문구. 홈 · 내 전시 관리 · 설정의 전시 등록에서 쓴다
+const DEFAULT_ARTIST_VERIFICATION_TITLE = '전시를 등록하려면\n작가 인증이 필요해요';
+const DEFAULT_ARTIST_VERIFICATION_DESCRIPTION = '학교 이메일로 인증한 뒤\n전시를 등록할 수 있어요';
 
-export function useArtistVerificationRequiredModal(
-  description: string = DEFAULT_ARTIST_VERIFICATION_DESCRIPTION,
-) {
+type ArtistVerificationModalOptions = {
+  title?: string;
+  description?: string;
+  /** 나중에 · 배경 탭 · ESC · 뒤로가기로 닫을 때. 들어갈 수 없는 화면(가드)에서 다른 곳으로 보낼 때 쓴다 */
+  onCancel?: () => void;
+};
+
+export function useArtistVerificationRequiredModal({
+  title = DEFAULT_ARTIST_VERIFICATION_TITLE,
+  description = DEFAULT_ARTIST_VERIFICATION_DESCRIPTION,
+  onCancel,
+}: ArtistVerificationModalOptions = {}) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  const artistVerificationModal = isOpen
-    ? createElement(ArtistVerificationModal, {
-        description,
-        onConfirm: () => {
-          setIsOpen(false);
-          navigate('/artist-verification');
-        },
-        onCancel: () => setIsOpen(false),
-      })
-    : null;
+  const artistVerificationModal = createElement(ArtistVerificationModal, {
+    open: isOpen,
+    title,
+    description,
+    onConfirm: () => {
+      // 모달이 쌓은 history 기록을 인증 화면으로 바꿔, 뒤로가기 때 모달 기록이 남지 않게 한다.
+      // 닫기는 useOverlayHistory 가 기록이 바뀐 것을 보고 처리하므로 여기서 open 을 끄지 않는다(navigate(-1) 과 경쟁)
+      void navigate('/artist-verification', { replace: true });
+    },
+    onCancel: () => {
+      setIsOpen(false);
+      onCancel?.();
+    },
+  });
 
-  return {
-    artistVerificationModal,
-    openArtistVerificationModal: () => setIsOpen(true),
-  };
+  // PermissionGuard 가 effect 의존성으로 쓰므로 참조를 유지한다(닫은 뒤 다시 열리지 않게)
+  const openArtistVerificationModal = useCallback(() => setIsOpen(true), []);
+
+  return { artistVerificationModal, openArtistVerificationModal };
 }
