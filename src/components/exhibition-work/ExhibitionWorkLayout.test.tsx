@@ -6,13 +6,16 @@ import type { DisplayDetailDto } from '@/api/dto';
 
 import { ExhibitionWorkLayout } from './ExhibitionWorkLayout';
 
-const mocks = vi.hoisted(() => ({ navigate: vi.fn(), focus: vi.fn() }));
+const mocks = vi.hoisted(() => ({ navigate: vi.fn(), focus: vi.fn(), userId: 1 }));
 vi.mock('react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react')>()),
   useId: () => 'work-tabs',
 }));
 vi.mock('react-router-dom', () => ({ Link: 'a', useNavigate: () => mocks.navigate }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
+vi.mock('@/hooks/queries/useUserProfile', () => ({
+  useUserMe: () => ({ data: { id: mocks.userId } }),
+}));
 vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: 'img' }));
 vi.mock('@/components/layout', () => ({ PageContainer: 'main' }));
 
@@ -31,6 +34,7 @@ const display = {
   title: '전시',
   status: 'UPCOMING',
   period: { startDate: '2026-11-01', endDate: '2026-11-30' },
+  ownerUserId: 1,
   images: [],
   location: { placeName: '전시장' },
 } as unknown as DisplayDetailDto;
@@ -116,4 +120,26 @@ describe('전시 상태', () => {
     expect(String(badge!.props.className)).toContain('font-semibold');
     expect(tree.some((node) => String(node.props.className ?? '').includes(dot))).toBe(true);
   });
+});
+
+describe('뒤로가기', () => {
+  // 헤더는 WorkBar 로 그린다: 넘긴 뒤로가기 동작과 이름을 확인한다
+  const back = () => {
+    const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
+    const bar = nodes(page).find((node) => 'backLabel' in node.props)!;
+    (bar.props.onBack as () => void)();
+    return bar.props.backLabel;
+  };
+
+  it.each([
+    [1, '/exhibition/7/manage', '전시 관리로 돌아가기'],
+    [2, '/display-management', '내 전시 관리로 돌아가기'],
+  ])(
+    '사용자 %i 는 %s 로 간다(대표자는 전시 관리, 위임 뒤 · 관리자 · 팀원은 내 전시 관리)',
+    (userId, path, label) => {
+      mocks.userId = userId;
+      expect(back()).toBe(label);
+      expect(mocks.navigate).toHaveBeenLastCalledWith(path);
+    },
+  );
 });

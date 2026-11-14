@@ -190,7 +190,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
   return embedded ? (
     panel
   ) : (
-    <ExhibitionWorkLayout display={displayDetail} activeTab="contents" onBack={() => flowBack()}>
+    <ExhibitionWorkLayout display={displayDetail} activeTab="contents">
       {panel}
     </ExhibitionWorkLayout>
   );

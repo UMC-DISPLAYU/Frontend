@@ -243,7 +243,6 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
     <ExhibitionWorkLayout
       display={display!}
       activeTab="artworks"
-      onBack={flowBack}
       onTabChange={(tab) => {
         if (tab === 'artworks') return;
         navigate(`/exhibition/${displayId}/work?tab=${tab}`, { replace: true });
