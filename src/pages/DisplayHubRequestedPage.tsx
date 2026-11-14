@@ -69,10 +69,6 @@ export function DisplayHubRequestedPage() {
               </div>
             ))}
           </dl>
-          {/* 프로토타입은 dl 기본 아래 여백(14px)에 안내 문구 위 여백 16px 이 더해져 30px 이 된다 */}
-          <p className="typography-body-md-medium mt-[30px] text-center text-tertiary">
-            승인 결과는 알림으로 알려드릴 예정이에요
-          </p>
 
           <DisplayHubBottomBar className="animate-rise" style={riseStyle(500, 620)}>
             <Link to="/display-management" replace className={getDisplayHubButtonClass('primary')}>
