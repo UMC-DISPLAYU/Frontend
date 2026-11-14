@@ -42,12 +42,15 @@ const NAV_ITEMS = [
 
 const SLIDE = 'transition-transform duration-base ease-emphasized will-change-transform';
 
-export function Navbar() {
+/** activePath: 냅바 경로가 아닌 화면에서 선택해 보여 줄 칸(useShowNavbar) */
+export function Navbar({ activePath }: { activePath?: string }) {
   const { pathname } = useLocation();
   const accessToken = useAuthStore((state) => state.accessToken);
   const { loginModal, openLoginModal } = useLoginRequiredModal('/my');
 
-  const activeIndex = NAV_ITEMS.findIndex(({ end, path }) => matchPath({ end, path }, pathname));
+  const activeIndex = NAV_ITEMS.findIndex(({ end, path }) =>
+    matchPath({ end, path }, activePath ?? pathname),
+  );
 
   return (
     // view-transition-name: 페이지 전환 스냅샷에서 냅바를 따로 떼어 알약 이동이 끊기지 않게 한다(index.css)

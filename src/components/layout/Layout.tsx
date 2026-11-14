@@ -14,6 +14,7 @@ export function Layout() {
   const location = useLocation();
   const matches = useMatches();
   const [manualNavbarHidden, setManualNavbarHidden] = useState(false);
+  const [navbarActivePath, setNavbarActivePath] = useState<string | null>(null);
   const isKeyboardOpen = useIsKeyboardOpen();
 
   // 로그인 후 복귀 경로가 있는 경우 이동 처리
@@ -31,7 +32,8 @@ export function Layout() {
 
   const shouldShowNavbar =
     (showNavbarPaths.some((path) => location.pathname.startsWith(path)) ||
-      exactNavbarPaths.some((path) => location.pathname === path)) &&
+      exactNavbarPaths.some((path) => location.pathname === path) ||
+      navbarActivePath !== null) &&
     !isRouteHandleNavbarHidden &&
     !manualNavbarHidden;
 
@@ -44,6 +46,7 @@ export function Layout() {
     () => ({
       isNavbarHidden: !isNavbarVisible,
       setNavbarHidden: setManualNavbarHidden,
+      setNavbarActivePath,
     }),
     [isNavbarVisible],
   );
@@ -55,7 +58,7 @@ export function Layout() {
           <Outlet />
         </main>
 
-        {isNavbarVisible && <Navbar />}
+        {isNavbarVisible && <Navbar activePath={navbarActivePath ?? undefined} />}
       </div>
     </FooterContext.Provider>
   );
