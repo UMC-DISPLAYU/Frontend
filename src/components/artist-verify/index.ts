@@ -1,11 +1,6 @@
 export { ACTIVITY_FIELDS, type ActivityFieldCode } from './activityFields';
 export { ActivityFieldSelector } from './ActivityFieldSelector';
-export { ArtistVerifyActionButton } from './ArtistVerifyActionButton';
-export { ArtistVerifyBottomBar, ArtistVerifyBottomButton } from './ArtistVerifyBottomButton';
 export { ArtistVerifyComplete } from './ArtistVerifyComplete';
-export { ArtistVerifyField, ArtistVerifyLabel } from './ArtistVerifyField';
-export { ArtistVerifyHeader } from './ArtistVerifyHeader';
-export { ArtistVerifyInput } from './ArtistVerifyInput';
 export { ArtistVerifyLayout } from './ArtistVerifyLayout';
 export { ArtistVerifyLeaveOverlay } from './ArtistVerifyLeaveOverlay';
 export { PROFILE_FIELD_CLASS, ProfileLinkField, ProfileOptionalLabel } from './ProfileEditFields';
