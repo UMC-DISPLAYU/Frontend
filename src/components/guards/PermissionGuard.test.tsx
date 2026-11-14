@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   locationState: undefined as unknown,
   artistPolicy: { view: () => true } as PermissionMap<'view'>,
   openArtistVerificationModal: vi.fn(),
+  navigate: vi.fn(),
+  artistModalOptions: undefined as { onCancel?: () => void } | undefined,
 }));
 
 vi.mock('@/stores/authStore', () => ({
@@ -46,6 +48,7 @@ vi.mock('react-router-dom', () => ({
     <div data-testid="navigate" data-replace={String(replace)} data-to={to} />
   ),
   useLocation: () => ({ pathname: '/target', state: mocks.locationState }),
+  useNavigate: () => mocks.navigate,
 }));
 
 vi.mock('@/hooks/usePolicy', () => ({
@@ -53,10 +56,16 @@ vi.mock('@/hooks/usePolicy', () => ({
 }));
 
 vi.mock('@/hooks/usePermissionRequiredModal', () => ({
-  useArtistVerificationRequiredModal: () => ({
-    artistVerificationModal: <div>Artist Verification Modal</div>,
-    openArtistVerificationModal: mocks.openArtistVerificationModal,
-  }),
+  useArtistVerificationRequiredModal: (
+    _description?: string,
+    options?: { onCancel?: () => void },
+  ) => {
+    mocks.artistModalOptions = options;
+    return {
+      artistVerificationModal: <div>Artist Verification Modal</div>,
+      openArtistVerificationModal: mocks.openArtistVerificationModal,
+    };
+  },
 }));
 
 function artworkPolicy(
@@ -189,5 +198,21 @@ describe('PermissionGuard', () => {
 
     expect(element.props.children.props.children).toBe('Artist Verification Modal');
     expect(mocks.openArtistVerificationModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('작가 인증 모달을 닫으면 들어갈 수 없는 화면에 남기지 않고 홈으로 replace 이동한다', () => {
+    mocks.artistPolicy = { view: () => false };
+    mocks.navigate.mockClear();
+
+    PermissionGuard({
+      resource: 'artist',
+      action: 'view',
+      fallback: '/403',
+      children: <div>Artist Content</div>,
+    });
+    mocks.artistModalOptions?.onCancel?.();
+
+    expect(mocks.navigate).toHaveBeenCalledTimes(1);
+    expect(mocks.navigate).toHaveBeenCalledWith('/home', { replace: true });
   });
 });

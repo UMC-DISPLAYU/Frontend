@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect } from 'react';
 
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common/ErrorView';
 import { LoadingView } from '@/components/common/LoadingView';
@@ -42,12 +42,16 @@ export function PermissionGuard<Resource extends PolicyResource>({
   children,
 }: PermissionGuardProps<Resource>) {
   const location = useLocation();
+  const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
   const waitingForUser = useIsUserMePending();
   const { error, refetch } = useUserMe();
   const artistPolicy = useArtistPolicy();
+  // 이 화면은 인증 없이 보여줄 내용이 없어, 모달을 닫으면 로그인 안내(AuthGuard)처럼 홈으로 보낸다
   const { artistVerificationModal, openArtistVerificationModal } =
-    useArtistVerificationRequiredModal();
+    useArtistVerificationRequiredModal(undefined, {
+      onCancel: () => void navigate('/home', { replace: true }),
+    });
 
   const satisfiesState = hasRequiredState(location.state, requireState);
   const resolvedPolicy = resource === 'artist' ? artistPolicy : policy;

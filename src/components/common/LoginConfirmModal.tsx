@@ -15,7 +15,7 @@ type LoginConfirmModalProps = {
 };
 
 const SOCIAL_BUTTON =
-  'relative flex h-13.5 w-full cursor-pointer items-center justify-center rounded-12 typography-body-xl-semibold transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-[.98] disabled:cursor-default disabled:bg-secondary disabled:text-disable';
+  'relative flex h-13.5 w-full cursor-pointer items-center justify-center rounded-12 typography-body-xl-semibold transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98 disabled:cursor-default disabled:bg-secondary disabled:text-disable';
 
 export function LoginConfirmModal({
   open,

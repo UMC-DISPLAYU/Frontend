@@ -11,7 +11,7 @@ type Props = {
 };
 
 const ACTION_BUTTON =
-  'typography-body-lg-semibold h-11 cursor-pointer rounded-12 transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-[.98]';
+  'typography-body-lg-semibold h-11 cursor-pointer rounded-12 transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98';
 
 export function ArtistVerificationModal({ open, description, onConfirm, onCancel }: Props) {
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -48,7 +48,7 @@ export function ArtistVerificationModal({ open, description, onConfirm, onCancel
             onClick={onConfirm}
             className={cn(
               ACTION_BUTTON,
-              'bg-[#18181b] text-interactive-inverse hover:bg-[#2f2f35]',
+              'bg-interactive-primary text-interactive-inverse hover:bg-[#2f2f35]',
             )}
           >
             작가 인증하기
