@@ -15,6 +15,7 @@ import {
   buildCreateArtworkRequest,
   buildUpdateArtworkRequest,
   CoAuthorSheet,
+  DIRECT_INPUT_CAPTION,
   EMPTY_ARTWORK_REGISTER_VALUES,
   parseProxyAuthor,
   type ProxyAuthor,
@@ -182,9 +183,13 @@ function ArtworkRegisterContent({
   );
 }
 
-const authorCaption = (userId: number | null | undefined, myUserId: number | undefined) => {
-  if (typeof userId !== 'number') return '작가 · 직접 입력';
-  return userId === myUserId ? '작가 · 나' : '작가 · 팀원';
+// 프로토타입: 작가명 아래 줄은 기본 닉네임. 팀원 API 에는 계정 닉네임이 없어 팀원은 역할을 보여준다
+const authorCaption = (
+  userId: number | null | undefined,
+  me: { userId: number | undefined; nickname: string },
+) => {
+  if (typeof userId !== 'number') return DIRECT_INPUT_CAPTION;
+  return userId === me.userId ? me.nickname || '나' : '팀원';
 };
 
 function ArtworkRegisterRoute() {
@@ -214,6 +219,7 @@ function ArtworkRegisterRoute() {
     members?.find((member) => member.userId === myUserId)?.displayNickname?.trim() ||
     userMeQuery.data?.nickname?.trim() ||
     '';
+  const me = { userId: myUserId, nickname: userMeQuery.data?.nickname?.trim() ?? '' };
 
   const queries = [
     userMeQuery,
@@ -250,7 +256,7 @@ function ArtworkRegisterRoute() {
         author={{
           key: 'author',
           name: previous.artistName,
-          caption: authorCaption(previous.artistUserId, myUserId),
+          caption: authorCaption(previous.artistUserId, me),
           userId: previous.artistUserId ?? undefined,
         }}
         initialCoAuthors={(previous.coAuthors ?? []).map((coAuthor) =>
@@ -290,15 +296,15 @@ function ArtworkRegisterRoute() {
     ? {
         key: 'author',
         name: proxyMember.displayNickname,
-        caption: authorCaption(proxyMember.userId, myUserId),
+        caption: authorCaption(proxyMember.userId, me),
         userId: proxyMember.userId,
       }
     : proxy?.kind === 'name'
-      ? { key: 'author', name: proxy.name, caption: authorCaption(undefined, myUserId) }
+      ? { key: 'author', name: proxy.name, caption: authorCaption(undefined, me) }
       : {
           key: 'author',
           name: myName,
-          caption: authorCaption(myUserId, myUserId),
+          caption: authorCaption(myUserId, me),
           userId: myUserId,
         };
 

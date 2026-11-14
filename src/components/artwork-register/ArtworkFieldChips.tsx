@@ -38,11 +38,7 @@ export function ArtworkFieldChips({
   };
 
   return (
-    <div
-      role="group"
-      aria-labelledby={labelId}
-      className="mt-2 grid grid-cols-4 gap-1.5 tablet:grid-cols-6"
-    >
+    <div role="group" aria-labelledby={labelId} className="mt-2 grid grid-cols-4 gap-1.5">
       {ARTWORK_FIELD_OPTIONS.map(({ label }) => {
         const isSelected = selected.includes(label);
 

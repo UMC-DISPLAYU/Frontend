@@ -215,7 +215,7 @@ export function ArtworkRegisterForm({
               label="작품 이미지"
               required
               help={`첫 번째 사진이 대표 이미지예요\nJPG, PNG, WEBP, HEIC · 장당 최대 ${MAX_ARTWORK_IMAGE_MB}MB\n영상은 1개까지 · MP4, MOV, WEBM · 3분 이내 · 500MB 이하`}
-              addLabel="사진 추가"
+              addLabel="사진·영상 추가"
               uploads={artworkImages}
               representative
               limitMessage={`작품 이미지는 최대 ${MAX_ARTWORK_IMAGES}장까지 올릴 수 있어요`}
@@ -232,7 +232,7 @@ export function ArtworkRegisterForm({
                 <input
                   id={`${formId}-title`}
                   maxLength={MAX_ARTWORK_TITLE_LENGTH}
-                  placeholder="입력해 주세요"
+                  placeholder="입력해주세요"
                   className={INPUT_CLASS}
                   {...register('title')}
                 />
@@ -247,7 +247,7 @@ export function ArtworkRegisterForm({
               <textarea
                 id={`${formId}-intro`}
                 maxLength={MAX_ARTWORK_INTRO_LENGTH}
-                placeholder="입력해 주세요"
+                placeholder="입력해주세요"
                 className="typography-body-xl-regular mt-2 block h-32 w-full resize-none rounded-12 border border-primary bg-primary-white px-4 py-3.5 text-primary outline-none transition-colors duration-fast ease-standard placeholder:text-tertiary focus:border-[#18181b]"
                 {...register('intro')}
               />
@@ -312,16 +312,13 @@ export function ArtworkRegisterForm({
               </div>
               <div className="min-w-0">
                 <label htmlFor={`${formId}-material`} className={LABEL_CLASS}>
-                  <span>
-                    재료 / 매체
-                    {REQUIRED_MARK}
-                  </span>
+                  <span>재료 / 매체 {OPTIONAL_MARK}</span>
                 </label>
                 <div className={UNDERLINE_CLASS}>
                   <input
                     id={`${formId}-material`}
                     maxLength={MAX_ARTWORK_MATERIAL_LENGTH}
-                    placeholder="입력해 주세요"
+                    placeholder="입력해주세요"
                     className={INPUT_CLASS}
                     {...register('material')}
                   />
@@ -337,7 +334,7 @@ export function ArtworkRegisterForm({
                 <input
                   id={`${formId}-size`}
                   maxLength={MAX_ARTWORK_SIZE_LENGTH}
-                  placeholder="90 × 120 cm"
+                  placeholder="입력해주세요"
                   className={INPUT_CLASS}
                   {...register('size')}
                 />

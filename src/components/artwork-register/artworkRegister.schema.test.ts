@@ -33,9 +33,13 @@ describe('artworkRegisterSchema', () => {
     expect(result.size).toBe('90 cm');
   });
 
-  it('작품명 · 재료 / 매체가 공백뿐이면 막는다', () => {
+  it('작품명이 공백뿐이면 막는다', () => {
     expect(firstMessage({ title: '   ' })).toBe('작품명을 입력해주세요.');
-    expect(firstMessage({ material: ' ' })).toBe('재료 / 매체를 입력해주세요.');
+  });
+
+  it('재료 / 매체는 선택이라 비워도 된다', () => {
+    expect(firstMessage({ material: '' })).toBeNull();
+    expect(firstMessage({ material: ' ' })).toBeNull();
   });
 
   it('작품분야는 1개 이상 3개 이하만 받는다', () => {
