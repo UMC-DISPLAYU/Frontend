@@ -1,9 +1,9 @@
-import { type FocusEvent, useId, useState } from 'react';
+import { type FocusEvent, type KeyboardEvent, useId, useState } from 'react';
 
-import searchIcon from '@/assets/icons/SearchBoldIcon.svg';
-
-import { ArtistVerifyField } from './ArtistVerifyField';
-import { ArtistVerifyInput } from './ArtistVerifyInput';
+import { SearchIcon } from './ArtistVerifyIcons';
+import { TAP_BASE } from './artistVerifyStyles';
+import { VerifyField } from './VerifyField';
+import { VerifyInput } from './VerifyInput';
 
 type SchoolSearchFieldProps = {
   value: string;
@@ -11,11 +11,26 @@ type SchoolSearchFieldProps = {
   onSelect: (value: string) => void;
   suggestions: { name: string }[];
   isLoading?: boolean;
-  /** 이메일 인증이 끝나면 학교를 바꿀 수 없다. */
-  locked?: boolean;
+  /** 목록에서 학교를 고른 상태. 고른 뒤에는 포커스해도 목록을 다시 열지 않는다 */
+  selected?: boolean;
 };
 
-const listItemClass = 'typography-body-xl-regular flex h-11 w-full items-center px-3 text-left';
+const messageClass = 'px-3 py-3.5 text-[14px] text-[#71717b]';
+
+/* 검색어와 겹치는 부분을 굵게(프로토타입 mark) */
+function HighlightedName({ name, keyword }: { name: string; keyword: string }) {
+  const index = keyword ? name.indexOf(keyword) : -1;
+  if (index < 0) return name;
+  return (
+    <>
+      {name.slice(0, index)}
+      <mark className="bg-transparent font-semibold text-inherit">
+        {name.slice(index, index + keyword.length)}
+      </mark>
+      {name.slice(index + keyword.length)}
+    </>
+  );
+}
 
 export function SchoolSearchField({
   value,
@@ -23,75 +38,109 @@ export function SchoolSearchField({
   onSelect,
   suggestions,
   isLoading = false,
-  locked = false,
+  selected = false,
 }: SchoolSearchFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [rawActiveIndex, setActiveIndex] = useState(-1);
   const listId = useId();
-  const showList = !locked && isOpen && value.trim().length > 0;
+  const keyword = value.trim();
+  const showList = isOpen && keyword.length > 0;
+  const options = isLoading ? [] : suggestions;
+  // 검색 결과가 바뀌어 고른 위치가 목록 밖으로 나가면 선택이 없는 것으로 본다
+  const activeIndex = rawActiveIndex < options.length ? rawActiveIndex : -1;
+  const optionId = (index: number) => `${listId}-option-${index}`;
+
+  const close = () => {
+    setIsOpen(false);
+    setActiveIndex(-1);
+  };
+
+  const pick = (name: string) => {
+    close();
+    onSelect(name);
+  };
 
   const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
-    if (!event.currentTarget.contains(event.relatedTarget)) setIsOpen(false);
+    if (!event.currentTarget.contains(event.relatedTarget)) close();
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!showList || event.nativeEvent.isComposing) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!options.length) return;
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      const next = (activeIndex + step + options.length) % options.length;
+      setActiveIndex(next);
+      document.getElementById(optionId(next))?.scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const target = options[activeIndex >= 0 ? activeIndex : options.length === 1 ? 0 : -1];
+      if (target) pick(target.name);
+    } else if (event.key === 'Escape') {
+      close();
+    }
   };
 
   return (
-    <ArtistVerifyField htmlFor="school" label="대학교">
+    <VerifyField className="mt-5" htmlFor="school" label="대학교">
       <div className="relative" onBlur={handleBlur}>
-        <ArtistVerifyInput
+        <VerifyInput
+          aria-activedescendant={showList && activeIndex >= 0 ? optionId(activeIndex) : undefined}
           aria-autocomplete="list"
           aria-controls={listId}
           aria-expanded={showList}
           autoComplete="off"
+          enterKeyHint="search"
           id="school"
           onChange={(event) => {
             setIsOpen(true);
+            setActiveIndex(-1);
             onChange(event.target.value);
           }}
-          onFocus={() => setIsOpen(true)}
-          placeholder="학교명"
-          readOnly={locked}
-          right={locked ? null : <img alt="" className="size-6 shrink-0" src={searchIcon} />}
+          onFocus={() => {
+            if (!selected) setIsOpen(true);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder="학교명을 검색해주세요"
+          right={<SearchIcon className="size-[22px] shrink-0" />}
           role="combobox"
+          spellCheck={false}
           value={value}
         />
 
         {showList ? (
-          <ul
-            className="absolute inset-x-0 top-full z-20 mt-1 flex max-h-70.5 flex-col overflow-y-auto rounded-12 border border-primary bg-primary-white py-2 shadow-card"
+          <div
+            aria-label="대학교 검색 결과"
+            className="absolute inset-x-0 top-[calc(100%+8px)] z-20 max-h-[288px] animate-[artist-verify-pop_.2s_cubic-bezier(.16,1,.3,1)] overflow-y-auto overscroll-contain rounded-[12px] border border-[#d4d4d8] bg-[#fff] py-1.5 shadow-[0_12px_32px_rgba(0,0,0,.08)]"
             id={listId}
+            // 목록을 누를 때 입력칸 포커스가 빠져 목록이 먼저 닫히지 않게 한다
+            onMouseDown={(event) => event.preventDefault()}
             role="listbox"
           >
             {isLoading ? (
-              <li className={`${listItemClass} text-tertiary`} role="none">
-                검색 중...
-              </li>
-            ) : suggestions.length > 0 ? (
-              suggestions.map((school) => (
-                // option 안에 버튼을 넣으면 스크린리더가 버튼을 무시할 수 있어 버튼 자체를 option 으로 둔다
-                <li key={school.name} role="none">
-                  <button
-                    aria-selected={school.name === value}
-                    className={`${listItemClass} cursor-pointer text-primary`}
-                    onClick={() => {
-                      setIsOpen(false);
-                      onSelect(school.name);
-                    }}
-                    // 버튼이 포커스를 가져가면 input blur로 목록이 먼저 닫혀 클릭이 무시된다
-                    onMouseDown={(event) => event.preventDefault()}
-                    role="option"
-                    type="button"
-                  >
-                    {school.name}
-                  </button>
-                </li>
+              <p className={messageClass}>검색 중...</p>
+            ) : options.length > 0 ? (
+              options.map((school, index) => (
+                <button
+                  aria-selected={index === activeIndex}
+                  className={`${TAP_BASE} block h-11 w-full px-3 text-left text-[14px] font-medium transition-[background-color] duration-150 hover:bg-[#f4f4f5] [@media(hover:hover)]:aria-selected:bg-[#f4f4f5]`}
+                  id={optionId(index)}
+                  key={school.name}
+                  onClick={() => pick(school.name)}
+                  role="option"
+                  tabIndex={-1}
+                  type="button"
+                >
+                  <HighlightedName keyword={keyword} name={school.name} />
+                </button>
               ))
             ) : (
-              <li className={`${listItemClass} text-tertiary`} role="none">
-                검색 결과가 없어요
-              </li>
+              <p className={messageClass}>검색 결과가 없어요</p>
             )}
-          </ul>
+          </div>
         ) : null}
       </div>
-    </ArtistVerifyField>
+    </VerifyField>
   );
 }

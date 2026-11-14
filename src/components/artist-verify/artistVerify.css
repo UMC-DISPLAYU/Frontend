@@ -1,0 +1,63 @@
+/* 프로토타입과 같은 Pretendard Variable(v1.3.9). 작가 인증 화면에서만 이 글꼴 이름을 쓴다 */
+@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+
+/* 작가 인증 화면 전용 모션. 값은 프로토타입(verify.html)과 같다. 동작 줄이기는 index.css 전역 규칙이 처리한다. */
+
+@keyframes artist-verify-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes artist-verify-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes artist-verify-nudge {
+  30% {
+    transform: translateX(-3px);
+  }
+  65% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes artist-verify-ring {
+  from {
+    transform: scale(0.72);
+    opacity: 0;
+  }
+}
+
+@keyframes artist-verify-halo {
+  from {
+    opacity: 0.22;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+}
+
+@keyframes artist-verify-draw {
+  from {
+    stroke-dashoffset: 26;
+  }
+}
+
+@keyframes artist-verify-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* 최대 개수를 넘겨 누른 분야 카드. ActivityFieldSelector 가 클래스를 붙였다 뗀다 */
+.artist-verify-nudge {
+  animation: artist-verify-nudge 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
