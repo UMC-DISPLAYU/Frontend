@@ -4,6 +4,7 @@ import {
   computeFocusScrollDelta,
   computeKeyboardInset,
   detectKeyboardOpen,
+  didViewportShrink,
   getBottomObstructionHeight,
   isTextEditableElement,
   removeBottomObstruction,
@@ -97,6 +98,22 @@ describe('computeFocusScrollDelta', () => {
         targetBottom: 320,
       }),
     ).toBe(0);
+  });
+});
+
+describe('didViewportShrink', () => {
+  it('키보드가 올라와 보이는 영역이 줄면 true', () => {
+    expect(didViewportShrink(800, 500)).toBe(true);
+  });
+
+  it('다른 탭에서 돌아와 높이가 같거나 커지면 false', () => {
+    expect(didViewportShrink(759, 759)).toBe(false);
+    expect(didViewportShrink(500, 800)).toBe(false);
+  });
+
+  it('1px 이하 반올림 오차는 무시한다', () => {
+    expect(didViewportShrink(759.5, 759)).toBe(false);
+    expect(didViewportShrink(759, 757)).toBe(true);
   });
 });
 
