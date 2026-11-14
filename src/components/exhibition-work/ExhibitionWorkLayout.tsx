@@ -164,7 +164,8 @@ export function ExhibitionWorkLayout({
         <div
           role="tablist"
           aria-label="전시 작업"
-          className="mt-4 grid auto-cols-fr grid-flow-col border-b border-[#f0f0f3] desktop:max-w-120"
+          // 탭 줄은 프로토타입이 아니라 사용자 지시로 예전 모양(화면 폭 전체 · 높이 48 · 밑줄 2)을 쓴다
+          className="mt-4 flex border-b border-primary"
         >
           {(['artworks', 'contents'] as const).map((tab) => (
             <button
@@ -191,10 +192,10 @@ export function ExhibitionWorkLayout({
                 document.getElementById(`${tabId}-${next}`)?.focus();
               }}
               className={cn(
-                'relative h-11 text-[14px] transition-colors duration-fast focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]',
+                'typography-body-lg-medium -mb-px h-12 flex-1 border-b-2 transition-colors duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 activeTab === tab
-                  ? 'font-semibold text-[#18181b] after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-[#18181b]'
-                  : 'font-medium text-[#71717b]',
+                  ? 'typography-body-lg-semibold border-interactive-selected text-primary'
+                  : 'border-transparent text-secondary',
               )}
             >
               {tab === 'artworks' ? '전시작' : '전시 콘텐츠'}
