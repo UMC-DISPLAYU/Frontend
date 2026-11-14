@@ -41,11 +41,13 @@ export function SchoolSearchField({
   selected = false,
 }: SchoolSearchFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
+  const [rawActiveIndex, setActiveIndex] = useState(-1);
   const listId = useId();
   const keyword = value.trim();
   const showList = isOpen && keyword.length > 0;
   const options = isLoading ? [] : suggestions;
+  // 검색 결과가 바뀌어 고른 위치가 목록 밖으로 나가면 선택이 없는 것으로 본다
+  const activeIndex = rawActiveIndex < options.length ? rawActiveIndex : -1;
   const optionId = (index: number) => `${listId}-option-${index}`;
 
   const close = () => {

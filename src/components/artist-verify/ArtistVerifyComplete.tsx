@@ -32,13 +32,13 @@ export function ArtistVerifyComplete({ onGoProfile, onDone }: ArtistVerifyComple
               strokeWidth={2.4}
             />
           </div>
-          <h2
+          <h1
             className="mt-6 animate-[artist-verify-up_.5s_.3s_cubic-bezier(.16,1,.3,1)_both] text-[20px] font-bold outline-none"
             ref={titleRef}
             tabIndex={-1}
           >
             작가 인증이 완료되었어요
-          </h2>
+          </h1>
           <p className="mt-2 animate-[artist-verify-up_.5s_.36s_cubic-bezier(.16,1,.3,1)_both] text-[14px] font-normal text-[#71717b]">
             전시 등록, 전시작 등록, 작가 프로필 관리가 가능해요!
           </p>
