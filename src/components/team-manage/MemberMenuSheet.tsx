@@ -45,13 +45,13 @@ export function MemberMenuSheet({ open, member, onClose, onSelect }: MemberMenuS
           const isDanger = action === 'kick';
 
           return (
-            <li key={action}>
+            <li key={action} className="border-b border-[#f0f0f3] last:border-b-0">
               <button
                 ref={index === 0 ? firstActionRef : undefined}
                 type="button"
                 onClick={() => onSelect(action)}
                 className={cn(
-                  'flex h-13 w-full items-center justify-between border-b border-[#f0f0f3] text-left text-[16px] leading-[1.4] font-medium tracking-[-0.03em] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]',
+                  'flex h-13 w-full items-center justify-between text-left text-[16px] leading-[1.4] font-medium tracking-[-0.03em] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]',
                   isDanger ? 'text-[#fb2c36]' : 'text-[#18181b]',
                 )}
               >
