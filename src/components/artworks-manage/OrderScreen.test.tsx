@@ -1,30 +1,13 @@
-import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
-import { DndContext, KeyboardSensor } from '@dnd-kit/core';
-import {
-  rectSortingStrategy,
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from '@dnd-kit/sortable';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { expect, it, vi } from 'vitest';
 
 import type { Work } from '@/types/artworkManage';
 
 import { OrderScreen } from './OrderScreen';
+import { moveItem, moveItemByKey } from './useLiveSort';
 
-const h = vi.hoisted(() => ({ sensor: vi.fn(), reorder: vi.fn() }));
-vi.mock('@dnd-kit/core', () => ({
-  DndContext: () => null,
-  closestCenter: vi.fn(),
-  PointerSensor: vi.fn(),
-  KeyboardSensor: vi.fn(),
-  useSensor: h.sensor,
-  useSensors: (...sensors: unknown[]) => sensors,
-}));
-vi.mock('@dnd-kit/sortable', async (original) => ({
-  ...(await original<typeof import('@dnd-kit/sortable')>()),
-  SortableContext: () => null,
-}));
+vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: () => null }));
 
 const works: Work[] = [1, 2, 3].map((id) => ({
   id,
@@ -35,48 +18,51 @@ const works: Work[] = [1, 2, 3].map((id) => ({
   place: '',
   owner: '',
 }));
-type Element = ReactElement<Record<string, unknown>>;
-const nodes = (node: ReactNode): Element[] =>
-  Children.toArray(node).flatMap((child) =>
-    isValidElement<Record<string, unknown>>(child)
-      ? [child, ...nodes(child.props.children as ReactNode)]
-      : [],
-  );
-const render = (disabled = false) =>
-  nodes(OrderScreen({ works, disabled, onReorder: h.reorder, onDone: vi.fn() }));
-const drag = (active: number, over: number | null, disabled = false) =>
-  (
-    render(disabled).find((node) => node.type === DndContext)!.props.onDragEnd as (
-      event: unknown,
-    ) => void
-  )({ active: { id: active }, over: over === null ? null : { id: over } });
+const ids = (items: Work[] | null) => items?.map((work) => work.id);
 
-beforeEach(() => vi.clearAllMocks());
-
-it('그리드에 맞는 키보드 좌표와 정렬 전략을 연결한다', () => {
-  const tree = render();
-  expect(h.sensor).toHaveBeenCalledWith(KeyboardSensor, {
-    coordinateGetter: sortableKeyboardCoordinates,
-  });
-  const sortable = tree.find((node) => node.type === SortableContext)!;
-  expect(sortable.props.strategy).toBe(rectSortingStrategy);
-  expect(sortable.props.items).toEqual([1, 2, 3]);
-});
-
-it('첫 작품을 마지막 위치에 놓으면 전체 ID 순서를 한 번 변경한다', () => {
-  drag(1, 3);
-  expect(h.reorder).toHaveBeenCalledOnce();
-  expect(h.reorder.mock.calls[0][0].map((work: Work) => work.id)).toEqual([2, 3, 1]);
-  expect(works.map((work) => work.id)).toEqual([1, 2, 3]);
+it.each([
+  ['뒤 카드 위로 끌면 그 자리로', 1, 3, [2, 3, 1]],
+  ['앞 카드 위로 끌면 그 자리로', 3, 1, [3, 1, 2]],
+  ['옆 카드와 자리를 바꾼다', 2, 3, [1, 3, 2]],
+] as const)('%s 옮긴다(프로토타입 sortable)', (_, dragged, over, expected) => {
+  expect(ids(moveItem(works, dragged, over))).toEqual(expected);
+  expect(ids(works)).toEqual([1, 2, 3]);
 });
 
 it.each([
-  [1, null, false],
-  [1, 1, false],
-  [9, 1, false],
-  [1, 9, false],
-  [1, 3, true],
-] as const)('드래그 %i → %s, 저장 중 %s인 무효 이동은 무시한다', (active, over, disabled) => {
-  drag(active, over, disabled);
-  expect(h.reorder).not.toHaveBeenCalled();
+  [1, 1],
+  [9, 1],
+  [1, 9],
+])('끄는 카드 %i를 %i 위에 두어도 바뀌지 않으면 같은 배열을 돌려준다', (dragged, over) => {
+  expect(moveItem(works, dragged, over)).toBe(works);
+});
+
+it.each([
+  ['ArrowRight', 1, [2, 1, 3]],
+  ['ArrowDown', 2, [1, 3, 2]],
+  ['ArrowLeft', 3, [1, 3, 2]],
+  ['ArrowUp', 2, [2, 1, 3]],
+] as const)('방향키 %s로 작품 %i를 한 칸 옮긴다', (key, id, expected) => {
+  expect(ids(moveItemByKey(works, id, key))).toEqual(expected);
+});
+
+it.each([
+  ['ArrowLeft', 1],
+  ['ArrowRight', 3],
+  ['Enter', 2],
+])('끝에서 더 가거나(%s · %i) 방향키가 아니면 옮기지 않는다', (key, id) => {
+  expect(moveItemByKey(works, id, key)).toBeNull();
+});
+
+it('순서 편집은 카드마다 번호를 보이고 카드 전체를 끌 수 있게 한다', () => {
+  const html = renderToStaticMarkup(
+    <OrderScreen works={works} onReorder={vi.fn()} onDone={vi.fn()} />,
+  );
+  expect(html).toContain('끌어서 순서를 바꾸면 자동으로 저장돼요');
+  expect(html.match(/data-sort-id="\d"/g)).toEqual([
+    'data-sort-id="1"',
+    'data-sort-id="2"',
+    'data-sort-id="3"',
+  ]);
+  expect(html).toContain('aria-label="2번째, 작품 2"');
 });

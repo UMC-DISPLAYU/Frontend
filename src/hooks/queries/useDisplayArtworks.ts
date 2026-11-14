@@ -69,13 +69,18 @@ export const useUpdateDisplayArtwork = (displayId: number) => {
 };
 
 // PUT /v1/artworks/order
+// 다시 불러오기까지 기다린 뒤 끝나게 한다. 그 사이 다음 순서 변경이 들어오면 앞선 결과가 덮어써 순서가 튄다
 export const useUpdateArtworkOrder = (displayId: number) => {
-  const invalidate = useInvalidateDisplayArtworks(displayId);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (orderedArtworkIds: number[]) =>
       updateArtworkOrder(displayId, { displayId, orderedArtworkIds }),
-    onSuccess: invalidate,
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) }),
+      ]),
   });
 };
 

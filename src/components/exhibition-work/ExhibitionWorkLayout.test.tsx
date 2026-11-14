@@ -1,4 +1,5 @@
-import type { ReactElement } from 'react';
+import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayDetailDto } from '@/api/dto';
@@ -14,6 +15,16 @@ vi.mock('react-router-dom', () => ({ Link: 'a', useNavigate: () => mocks.navigat
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
 vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: 'img' }));
 vi.mock('@/components/layout', () => ({ PageContainer: 'main' }));
+
+type Element = ReactElement<Record<string, unknown>>;
+const nodes = (node: ReactNode): Element[] =>
+  Children.toArray(node).flatMap((child) =>
+    isValidElement<Record<string, unknown>>(child)
+      ? [child, ...nodes(child.props.children as ReactNode)]
+      : [],
+  );
+const tabsOf = (page: ReactNode) =>
+  nodes(page).find((node) => node.props.role === 'tablist')!.props.children as Element[];
 
 const display = {
   displayId: 7,
@@ -39,10 +50,10 @@ describe('전시 작업 탭', () => {
       onTabChange: changeTab,
       children: null,
     });
-    const tabs = page.props.children[2].props.children as ReactElement[];
+    const tabs = tabsOf(page);
     expect(tabs.map((tab) => tab.props.tabIndex)).toEqual([0, -1]);
     const preventDefault = vi.fn();
-    tabs[0].props.onKeyDown({ key: 'ArrowRight', preventDefault });
+    (tabs[0].props.onKeyDown as (event: unknown) => void)({ key: 'ArrowRight', preventDefault });
     expect(preventDefault).toHaveBeenCalledOnce();
     expect(changeTab).toHaveBeenLastCalledWith('contents');
     expect(document.getElementById).toHaveBeenCalledWith('work-tabs-contents');
@@ -52,9 +63,59 @@ describe('전시 작업 탭', () => {
 
   it('기존 별도 관리 경로에서 탭을 누르면 전시 작업의 해당 탭으로 이동한다', () => {
     const page = ExhibitionWorkLayout({ display, activeTab: 'contents', children: null });
-    page.props.children[2].props.children[0].props.onClick();
+    (tabsOf(page)[0].props.onClick as () => void)();
     expect(mocks.navigate).toHaveBeenCalledWith('/exhibition/7/work?tab=artworks', {
       replace: true,
     });
+  });
+});
+
+describe('전시 요약 카드', () => {
+  it('전시 미리보기는 권한으로 막힌 미리보기 주소를 새 탭으로 연다', () => {
+    const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
+    const preview = nodes(page).find((node) => node.props.to === '/exhibition/7/preview')!;
+    expect(preview.props.target).toBe('_blank');
+    expect(preview.props.rel).toBe('noopener noreferrer');
+  });
+
+  it('일정은 앞에만 연도를 붙이고 끝 연도는 다를 때만 붙인다', () => {
+    const texts = (dates: { startDate: string; endDate: string }) =>
+      nodes(
+        ExhibitionWorkLayout({
+          display: { ...display, period: dates as DisplayDetailDto['period'] },
+          activeTab: 'artworks',
+          children: null,
+        }),
+      )
+        .map((node) => node.props.children)
+        .filter((child): child is string => typeof child === 'string');
+    expect(texts({ startDate: '2026-11-01', endDate: '2026-11-30' })).toContain('2026.11.01–11.30');
+    expect(texts({ startDate: '2026-12-20', endDate: '2027-01-05' })).toContain(
+      '2026.12.20–2027.01.05',
+    );
+    expect(texts({ startDate: '2026-11-01', endDate: '2026-11-01' })).toContain('2026.11.01');
+  });
+});
+
+describe('전시 상태', () => {
+  it.each([
+    ['DRAFT', '준비 중', 'bg-[#18181b]'],
+    ['PENDING_REVIEW', '심사 중', 'bg-[#3b82f6]'],
+    ['REJECTED', '반려', 'bg-[#fb2c36]'],
+    ['PUBLISHED', '공개 중', 'bg-[#00c758]'],
+  ])('공개 상태 %s 는 "%s"로 보이고 점 색은 %s(프로토타입)', (status, label, dot) => {
+    const tree = nodes(
+      ExhibitionWorkLayout({
+        display: { ...display, status },
+        activeTab: 'artworks',
+        children: null,
+      }),
+    );
+    const badge = tree.find((node) =>
+      Children.toArray(node.props.children as ReactNode).includes(label),
+    );
+    expect(badge).toBeDefined();
+    expect(String(badge!.props.className)).toContain('font-semibold');
+    expect(tree.some((node) => String(node.props.className ?? '').includes(dot))).toBe(true);
   });
 });
