@@ -15,6 +15,9 @@ const FALLBACK_TITLES: Record<PolicyTermKey, string> = {
 
 const BODY_TEXT = 'text-[15px] leading-[24.75px] font-normal';
 
+/* 크기·굵기만 지정하면 글꼴이 시스템 글꼴로 떨어지므로 typography-* 유틸리티와 같은 글꼴을 지정한다 */
+const FONT_FAMILY = 'font-[family-name:var(--primitive-typography-font-family-typeface-1)]';
+
 /** 바로 앞 블록에 따라 위 간격이 달라진다(피그마 약관 상세 프레임 기준). */
 const spacingBefore = (block: PolicyBlock, prev?: PolicyBlock) => {
   if (!prev) return 'pt-6';
@@ -64,7 +67,9 @@ function PolicyBlockView({ block, termKey }: { block: PolicyBlock; termKey: Poli
       );
     case 'caption':
       return (
-        <p className="text-[13px] leading-[19.5px] font-semibold text-[#8a94a6]">{block.text}</p>
+        <p className="text-[13px] leading-[19.5px] font-semibold tracking-[0.025em] text-[#8a94a6]">
+          {block.text}
+        </p>
       );
     case 'heading':
       return (
@@ -128,7 +133,12 @@ export function TermDetailScreen({
 }) {
   return (
     <>
-      <header className="sticky top-0 z-10 -mx-gutter flex h-14 shrink-0 items-center gap-2 border-b border-[#e5e7eb] bg-[#ffffff] px-4">
+      <header
+        className={cn(
+          FONT_FAMILY,
+          'sticky top-0 z-10 -mx-gutter flex h-14 shrink-0 items-center gap-2 border-b border-[#e5e7eb] bg-[#ffffff] px-4',
+        )}
+      >
         <button
           type="button"
           onClick={onBack}
@@ -144,7 +154,7 @@ export function TermDetailScreen({
 
       {agreement ? (
         /* 피그마 본문 좌우 여백 24px = px-gutter(20px) + px-1 */
-        <main className="flex-1 bg-[#ffffff] px-1 pt-5 pb-8">
+        <main className={cn(FONT_FAMILY, 'flex-1 bg-[#ffffff] px-1 pt-5 pb-8')}>
           <p className="text-[11.5px] leading-[17.25px] font-normal text-[#8a94a6]">
             시행일 {formatEffectiveDate(agreement.effectiveDate)} · 버전 {agreement.version}
           </p>
