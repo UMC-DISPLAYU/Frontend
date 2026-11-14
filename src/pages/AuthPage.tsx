@@ -23,7 +23,9 @@ import { staggerStyle } from '@/utils/stagger';
 
 const EXHIBITION_LIMIT = 3;
 const WORK_LIMIT = 6;
-const EXHIBITION_LIST_CLASS = 'mt-3 divide-y divide-bg-tertiary';
+// 프로토타입: 행 아래 구분선(마지막 행 제외) + 행 사이 12px
+const EXHIBITION_LIST_CLASS =
+  'mt-3 [&>li]:border-b [&>li]:border-bg-tertiary [&>li+li]:mt-3 [&>li:last-child]:border-b-0';
 const WORK_GRID_CLASS =
   'mt-3 grid grid-cols-2 gap-x-4 gap-y-5 px-1 desktop:grid-cols-3 desktop:gap-x-5 desktop:gap-y-7 desktop:px-0';
 
@@ -70,8 +72,9 @@ export function AuthPage() {
       {loginModal}
 
       {/* 768px 미만은 뒤로가기만, 이상은 로고 · 검색 헤더 */}
-      <header className="sticky top-0 z-30 border-b border-bg-tertiary bg-primary-white pt-safe-area-top tablet:hidden">
-        <div className="flex h-14 items-center pl-3">
+      {/* 프로토타입처럼 높이 56(선 포함)이고 위 여백은 기기 safe area 만 둔다 */}
+      <header className="sticky top-0 z-30 border-b border-bg-tertiary bg-primary-white pt-[env(safe-area-inset-top)] tablet:hidden">
+        <div className="flex h-[55px] items-center pl-3">
           <button
             aria-label="뒤로가기"
             className="grid size-10 place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-94"
@@ -84,7 +87,8 @@ export function AuthPage() {
       </header>
       <DetailTopBar className="top-0" />
 
-      <main className="mx-auto max-w-310 px-gutter desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
+      {/* 프로토타입 여백은 20 → 32(768px~)이고 900px 이상에서 40 으로 늘지 않는다 */}
+      <main className="mx-auto max-w-310 px-5 tablet:px-8 desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
         <div className="desktop:sticky desktop:top-24">
           {header ? (
             <ArtistProfileHeader
@@ -118,7 +122,7 @@ export function AuthPage() {
               </div>
             </div>
           ) : !hasExhibitions && !hasWorks ? (
-            <p className="typography-body-lg-medium py-14 text-center text-tertiary">
+            <p className="typography-body-lg-regular desktop:typography-body-xl-regular py-14 text-center text-tertiary">
               아직 디유에 올린 전시와 작품이 없어요
             </p>
           ) : (

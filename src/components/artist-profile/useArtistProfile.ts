@@ -24,15 +24,21 @@ const STATE_BY_LABEL: Record<string, ExhibitionState> = {
 // 전시 중 → 전시 예정 → 종료 순서. 같은 상태 안에서는 응답 순서를 따른다
 const STATE_RANK: Record<ExhibitionState, number> = { ongoing: 0, upcoming: 1, ended: 2 };
 
-/* 작가 프로필은 링크를 하나만 저장한다. 인스타그램 주소면 Instagram, 그 밖은 Portfolio 로 보여준다 */
-function toProfileLinks(value?: string | null): ArtistProfileLink[] {
-  if (!value?.trim()) return [];
-  if (isInstagramUrl(value)) {
-    const link = toInstagramLink(value);
-    return link ? [{ name: 'Instagram', ...link }] : [];
-  }
-  const link = toWebsiteLink(value);
-  return link ? [{ name: 'Portfolio', ...link }] : [];
+/* Instagram → Portfolio 순서. instagramLink 칸이 생기기 전에는 externalLink 에 인스타그램 주소를 저장하기도 했다 */
+function toProfileLinks({
+  instagramLink,
+  externalLink,
+}: {
+  instagramLink?: string | null;
+  externalLink?: string | null;
+}): ArtistProfileLink[] {
+  const isLegacyInstagram = isInstagramUrl(externalLink);
+  const instagram = toInstagramLink(instagramLink || (isLegacyInstagram ? externalLink : null));
+  const portfolio = isLegacyInstagram ? null : toWebsiteLink(externalLink);
+  return [
+    ...(instagram ? [{ name: 'Instagram', ...instagram }] : []),
+    ...(portfolio ? [{ name: 'Portfolio', ...portfolio }] : []),
+  ];
 }
 
 export function useArtistProfile(userId: number) {
@@ -69,7 +75,7 @@ export function useArtistProfile(userId: number) {
       subtitle: [profile.schoolName, ...fieldLabels].filter(Boolean).join(' · '),
       bio: profile.introduction?.trim() ?? '',
       photoUrl: profile.profileImageUrl || null,
-      links: toProfileLinks(profile.externalLink || profile.portfolioUrl),
+      links: toProfileLinks(profile),
     };
   }, [profile]);
 

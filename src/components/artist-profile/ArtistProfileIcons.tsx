@@ -2,7 +2,8 @@ import type { SVGProps } from 'react';
 
 type IconProps = SVGProps<SVGSVGElement>;
 
-function OutlineIcon({ children, strokeWidth = 2, ...props }: IconProps) {
+/* 프로토타입(artist.html) .i: 20px · 선 1.7. 이름 옆 행동 버튼(연필 · 북마크)만 선 2 */
+function OutlineIcon({ children, strokeWidth = 1.7, ...props }: IconProps) {
   return (
     <svg
       aria-hidden="true"
@@ -23,7 +24,7 @@ function OutlineIcon({ children, strokeWidth = 2, ...props }: IconProps) {
 
 export function BackIcon(props: IconProps) {
   return (
-    <OutlineIcon height="24" width="24" {...props}>
+    <OutlineIcon {...props}>
       <path d="m15 5-7 7 7 7" />
     </OutlineIcon>
   );
@@ -31,7 +32,7 @@ export function BackIcon(props: IconProps) {
 
 export function PencilIcon(props: IconProps) {
   return (
-    <OutlineIcon {...props}>
+    <OutlineIcon strokeWidth={2} {...props}>
       <path d="m4 20 1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z" />
       <path d="m14.5 6.5 3 3" />
     </OutlineIcon>
@@ -40,7 +41,7 @@ export function PencilIcon(props: IconProps) {
 
 export function BookmarkIcon(props: IconProps) {
   return (
-    <OutlineIcon {...props}>
+    <OutlineIcon strokeWidth={2} {...props}>
       <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-3.8L6 20V5a1 1 0 0 1 1-1z" />
     </OutlineIcon>
   );

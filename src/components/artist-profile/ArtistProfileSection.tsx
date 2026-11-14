@@ -23,7 +23,7 @@ export function ArtistProfileSection<T>({
   const visibleItems = isExpanded ? items : items.slice(0, limit);
 
   return (
-    <section aria-labelledby={titleId} className="pt-8 first:desktop:pt-0">
+    <section aria-labelledby={titleId} className="pt-7 first:pt-8 desktop:first:pt-0">
       <h2
         className="typography-body-xxl-semibold flex items-baseline gap-1.5 text-primary"
         id={titleId}
