@@ -160,6 +160,7 @@ const MyReviewPage = lazyPage(() => import('./pages/MyReviewPage'), 'MyReviewPag
 // 라운지는 당분간 노출하지 않는다 (#442)
 // const MyActivityPage = lazyPage(() => import('./pages/MyActivityPage'), 'MyActivityPage');
 const NewOnboardingPage = lazyPage(() => import('./pages/onboarding'), 'NewOnboardingPage');
+const BrandPage = lazyPage(() => import('./pages/BrandPage'), 'BrandPage');
 const DisplayInvitationLinkPage = lazyPage(
   () => import('./pages/DisplayInvitationLinkPage'),
   'DisplayInvitationLinkPage',
@@ -511,6 +512,13 @@ export const router = createBrowserRouter([
       {
         path: '/map',
         element: <MapPage />,
+        errorElement: <RouteErrorView />,
+      },
+
+      // 브랜드 홍보 페이지는 프로토타입에 냅바 · 푸터가 없어 Layout 밖에 둔다
+      {
+        path: '/brand',
+        element: <BrandPage />,
         errorElement: <RouteErrorView />,
       },
 
