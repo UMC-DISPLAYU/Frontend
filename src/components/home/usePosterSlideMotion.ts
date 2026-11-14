@@ -129,8 +129,8 @@ function startScrollPaint(rail: HTMLElement, parts: SlideParts[]) {
     rail.removeEventListener('scroll', onScroll);
     observer.disconnect();
     parts.forEach(({ poster, info, sideShade, activeShade }) => {
-      for (const element of [poster, info, sideShade, activeShade])
-        element?.removeAttribute('style');
+      for (const element of [poster, info]) element?.style.removeProperty('transform');
+      for (const element of [sideShade, activeShade]) element?.style.removeProperty('opacity');
     });
   };
 }
@@ -142,28 +142,41 @@ export function usePosterSlideMotion(railRef: RefObject<HTMLElement>, itemsKey: 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const parts = collectParts(rail);
+    let animations: Animation[] | null = null;
     let stopPaint: (() => void) | null = null;
-    let animations = startScrollLinked(rail, parts);
-    if (!animations) stopPaint = startScrollPaint(rail, parts);
+    let verify = 0;
 
-    // 칸 폭 · 간격이 바뀌면(브레이크포인트) 범위를 다시 잡는다
-    let width = rail.clientWidth;
-    const observer = new ResizeObserver(() => {
-      if (!animations || rail.clientWidth === width) return;
-      width = rail.clientWidth;
-      animations.forEach((animation) => animation.cancel());
-      animations = startScrollLinked(rail, parts);
-      if (!animations) stopPaint = startScrollPaint(rail, parts);
-    });
-    observer.observe(rail);
-
-    // 지원한다고 나와도 타임라인이 꺼져 있으면 시간이 잡히지 않는다. 그러면 직접 그리는 방식으로 바꾼다
-    const verify = window.setTimeout(() => {
-      if (!animations?.length || animations[0].currentTime !== null) return;
-      animations.forEach((animation) => animation.cancel());
+    const fallBackToPaint = () => {
+      animations?.forEach((animation) => animation.cancel());
       animations = null;
       stopPaint = startScrollPaint(rail, parts);
-    }, 400);
+    };
+    const start = () => {
+      animations = startScrollLinked(rail, parts);
+      if (!animations) {
+        fallBackToPaint();
+        return;
+      }
+      // 지원한다고 나와도 타임라인이 꺼져 있으면 시간이 잡히지 않는다. 그러면 직접 그리는 방식으로 바꾼다
+      window.clearTimeout(verify);
+      verify = window.setTimeout(() => {
+        if (animations?.some((animation) => animation.currentTime !== null)) return;
+        fallBackToPaint();
+      }, 400);
+    };
+    start();
+
+    // 칸 폭 · 간격이 바뀌면(브레이크포인트) 범위를 다시 잡는다. 직접 그리는 방식은 스스로 다시 잰다
+    let { span } = measure(rail, parts);
+    const observer = new ResizeObserver(() => {
+      if (!animations) return;
+      const next = measure(rail, parts).span;
+      if (next === span) return;
+      span = next;
+      animations.forEach((animation) => animation.cancel());
+      start();
+    });
+    observer.observe(rail);
 
     return () => {
       window.clearTimeout(verify);
