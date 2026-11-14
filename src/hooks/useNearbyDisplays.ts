@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { GetDisplayMapRequestDto } from '@/api/dto';
+import type { DisplayMapMarkerDto } from '@/api/dto';
 import { getDisplayMap } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
 /**
- * 지도 중심 좌표 + 반경으로 주변 전시를 조회하는 훅.
- * 실제 API (/v1/display/map)를 사용합니다.
+ * 지도에 찍을 전시를 모두 조회하는 훅 (/v1/display/map).
+ * 핀은 범위 안 전시가 전부 있어야 하므로 전체 범위를 페이지 끝까지 받는다.
  */
 
 export interface NearbyDisplay {
@@ -23,14 +23,6 @@ export interface NearbyDisplay {
   isArchived: boolean;
 }
 
-export interface NearbyParams {
-  southLatitude: number;
-  westLongitude: number;
-  northLatitude: number;
-  eastLongitude: number;
-  searchWord?: string | null;
-}
-
 /**
  * 전시 상태 판단 (시작일/종료일 기준)
  */
@@ -44,39 +36,53 @@ function getDisplayStatus(startDate: string, endDate: string): string {
   return '전시 중';
 }
 
-async function fetchNearbyDisplays(params: NearbyParams): Promise<NearbyDisplay[]> {
-  const requestDto: GetDisplayMapRequestDto = {
-    southLatitude: params.southLatitude,
-    westLongitude: params.westLongitude,
-    northLatitude: params.northLatitude,
-    eastLongitude: params.eastLongitude,
-    searchWord: params.searchWord || undefined,
-  };
+const WORLD_BOUNDS = {
+  southLatitude: -90,
+  westLongitude: -180,
+  northLatitude: 90,
+  eastLongitude: 180,
+};
+// 서버가 받는 최대 페이지 크기
+const PAGE_SIZE = 100;
+// 서버가 다음 페이지를 계속 돌려주는 경우를 막는 안전장치 (최대 5,000개)
+const MAX_PAGES = 50;
 
-  const response = await getDisplayMap(requestDto);
+const toNearbyDisplay = (marker: DisplayMapMarkerDto): NearbyDisplay => ({
+  displayId: marker.displayId,
+  title: marker.title,
+  posterImageUrl: marker.posterImageUrl,
+  status: getDisplayStatus(marker.startDate, marker.endDate),
+  schoolDepartmentName: marker.schoolDepartmentName,
+  startDate: marker.startDate,
+  endDate: marker.endDate,
+  locationName: marker.locationName,
+  latitude: marker.latitude,
+  longitude: marker.longitude,
+  isArchived: marker.isArchived ?? false,
+});
 
-  // API 응답(DisplayMapMarkerDto)을 NearbyDisplay 형태로 변환
-  return response.markers.map((marker) => ({
-    displayId: marker.displayId,
-    title: marker.title,
-    posterImageUrl: marker.posterImageUrl,
-    status: getDisplayStatus(marker.startDate, marker.endDate),
-    schoolDepartmentName: marker.schoolDepartmentName,
-    startDate: marker.startDate,
-    endDate: marker.endDate,
-    locationName: marker.locationName,
-    latitude: marker.latitude,
-    longitude: marker.longitude,
-    isArchived: marker.isArchived ?? false,
-  }));
+export async function fetchAllMapDisplays(): Promise<NearbyDisplay[]> {
+  const markers = new Map<number, DisplayMapMarkerDto>();
+  let cursor: number | undefined;
+
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const { markers: pageMarkers, pagination } = await getDisplayMap({
+      ...WORLD_BOUNDS,
+      size: PAGE_SIZE,
+      cursor,
+    });
+    pageMarkers.forEach((marker) => markers.set(marker.displayId, marker));
+    if (!pagination.hasNext || pagination.nextCursor == null) break;
+    cursor = pagination.nextCursor;
+  }
+
+  return [...markers.values()].map(toNearbyDisplay);
 }
 
-export function useNearbyDisplays(params: NearbyParams | null) {
+export function useMapDisplays() {
   return useQuery({
-    queryKey: queryKeys.displays.nearby(params),
-    queryFn: () => fetchNearbyDisplays(params!),
-    enabled: params !== null, // 지도 첫 idle 전에는 호출 안 함
-    placeholderData: (prev) => prev, // 지도 이동 중 목록이 깜빡이지 않게 이전 값 유지
-    staleTime: 10_000,
+    queryKey: queryKeys.displays.mapMarkers(),
+    queryFn: fetchAllMapDisplays,
+    staleTime: 60_000,
   });
 }
