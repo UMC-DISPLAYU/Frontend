@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { type NearbyParams, useNearbyDisplays } from '@/hooks/useNearbyDisplays';
+import { useMapDisplays } from '@/hooks/queries/useMapDisplays';
 import { formatDate } from '@/utils/date';
 
 import {
@@ -43,16 +43,6 @@ export const matchesMapFilters = (
     query,
   );
 
-const toNearbyParams = (snapshot: MapSnapshot | null): NearbyParams | null =>
-  snapshot
-    ? {
-        southLatitude: snapshot.south,
-        westLongitude: snapshot.west,
-        northLatitude: snapshot.north,
-        eastLongitude: snapshot.east,
-      }
-    : null;
-
 interface UseMapExhibitionsOptions {
   snapshot: MapSnapshot | null;
   insets: ViewInsets;
@@ -62,7 +52,7 @@ interface UseMapExhibitionsOptions {
 }
 
 /**
- * 지도 범위의 전시를 받아 화면용으로 바꾼다.
+ * 지도에 찍을 전시를 모두 받아 화면용으로 바꾼다. 목록(inView)은 그중 보이는 범위만 보여준다.
  * 종료된 전시는 지도에 보이지 않는다(프로토타입 정책).
  */
 export function useMapExhibitions({
@@ -72,8 +62,7 @@ export function useMapExhibitions({
   statusFilters,
   myLocation,
 }: UseMapExhibitionsOptions) {
-  const nearbyParams = useMemo(() => toNearbyParams(snapshot), [snapshot]);
-  const { data, isLoading, error, refetch } = useNearbyDisplays(nearbyParams);
+  const { data, isLoading, error, refetch } = useMapDisplays();
 
   const exhibitions = useMemo<MapExhibition[]>(
     () =>
@@ -117,17 +106,17 @@ export function useMapExhibitions({
   );
 
   const inView = useMemo(() => {
-    const visible = snapshot
-      ? filterInView(
-          matched.map((exhibition) => ({
-            exhibition,
-            latitude: exhibition.position.lat,
-            longitude: exhibition.position.lng,
-          })),
-          snapshot,
-          insets,
-        ).map(({ exhibition }) => exhibition)
-      : matched;
+    // 지도 범위를 알기 전에는 "이 지역" 목록을 비워 두고 불러오는 중으로 보여준다
+    if (!snapshot) return [];
+    const visible = filterInView(
+      matched.map((exhibition) => ({
+        exhibition,
+        latitude: exhibition.position.lat,
+        longitude: exhibition.position.lng,
+      })),
+      snapshot,
+      insets,
+    ).map(({ exhibition }) => exhibition);
 
     if (!myLocation) return visible;
     return [...visible].sort((a, b) => (a.distanceMeters ?? 0) - (b.distanceMeters ?? 0));
@@ -139,7 +128,7 @@ export function useMapExhibitions({
     inView,
     statusCounts,
     hasData: data !== undefined,
-    isLoading,
+    isLoading: isLoading || !snapshot,
     error,
     refetch,
   };

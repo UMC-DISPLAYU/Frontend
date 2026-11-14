@@ -1,8 +1,9 @@
 import { type FormEvent, useId, useState } from 'react';
 
 import type { AddressSearchResultDto } from '@/api/dto';
-import { Skeleton, SkeletonList } from '@/components/ui';
+import { SkeletonList, SkeletonText } from '@/components/ui';
 import { useAddressSearch } from '@/hooks/queries/useAddressSearch';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { cn } from '@/utils/cn';
 
 import { FOCUS_CLASS } from './displayRegister.styles';
@@ -78,6 +79,8 @@ export function AddressSearchView({
   const [query, setQuery] = useState('');
   const { data: results, isPending, isError, refetch } = useAddressSearch(query);
   const hasQuery = query.length > 0;
+  // 검색어가 없으면 쿼리가 꺼져 있어 isPending 이 계속 true 다
+  const { showSkeleton } = useSkeleton(hasQuery && isPending);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -87,13 +90,20 @@ export function AddressSearchView({
   const renderBody = () => {
     if (!hasQuery) return <AddressExamples />;
 
-    if (isPending) {
+    // isPending 도 함께 봐야 아래에서 results 가 있는 것으로 좁혀진다
+    if (showSkeleton || isPending) {
       return (
-        <div aria-busy="true" className="mt-6 flex flex-col gap-4">
+        <ul aria-busy="true" className="mt-6">
           <SkeletonList count={3}>
-            {() => <Skeleton className="h-24 w-full rounded-8" />}
+            {() => (
+              <li className="flex flex-col gap-2 border-b border-primary py-4">
+                <SkeletonText className="typography-body-md-semibold w-12" />
+                <SkeletonText className="typography-body-lg-medium w-3/4" />
+                <SkeletonText className="typography-body-lg-medium w-2/3" />
+              </li>
+            )}
           </SkeletonList>
-        </div>
+        </ul>
       );
     }
 

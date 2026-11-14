@@ -22,6 +22,10 @@ const h = vi.hoisted(() => ({
   addImages: vi.fn(),
   reset: vi.fn(),
   setError: vi.fn(),
+  setValue: vi.fn(),
+  toast: vi.fn(),
+  effects: [] as (() => unknown)[],
+  values: { title: '전시 전경' },
 }));
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
@@ -36,43 +40,41 @@ vi.mock('react', async (original) => ({
     ];
   },
   useRef: (initial: unknown) => h.refs[h.ri++] ?? (h.refs[h.ri - 1] = { current: initial }),
+  useEffect: (effect: () => unknown) => h.effects.push(effect),
 }));
 vi.mock('react-hook-form', () => ({
   useForm: () => ({
     register: () => ({}),
-    handleSubmit: (handler: unknown) => handler,
+    handleSubmit: (handler: (values: unknown) => unknown) => (values?: unknown) =>
+      handler(values ?? h.values),
     control: {},
     reset: h.reset,
     setError: h.setError,
+    setValue: h.setValue,
     formState: { errors: {}, isDirty: true, isSubmitting: false },
   }),
   useWatch: () => '섹션 설명',
 }));
 vi.mock('react-router-dom', () => ({ useParams: () => ({ displayId: '7', categoryId: '9' }) }));
-vi.mock('@dnd-kit/core', () => ({
-  DndContext: () => null,
-  closestCenter: vi.fn(),
-  PointerSensor: vi.fn(),
-  TouchSensor: vi.fn(),
-  KeyboardSensor: vi.fn(),
-  useSensors: vi.fn(),
-  useSensor: vi.fn(),
+vi.mock('@/components/artworks-manage', async () => ({
+  ...(await import('@/components/artworks-manage/contentEdit.schema')),
+  ...(await import('@/components/artworks-manage/constants')),
+  ...(await import('@/components/artworks-manage/useLiveSort')),
+  ...(await import('@/components/artworks-manage/SectionPhotos')),
+  ...(await import('@/components/artworks-manage/sectionPhotos.constants')),
+  SectionFieldLabel: () => null,
+  sectionInputClass: '',
 }));
-vi.mock('@dnd-kit/sortable', async (original) => ({
-  ...(await original<typeof import('@dnd-kit/sortable')>()),
-  SortableContext: () => null,
-  useSortable: () => ({ attributes: {}, listeners: {} }),
-}));
-vi.mock(
-  '@/components/artworks-manage',
-  async () => import('@/components/artworks-manage/contentEdit.schema'),
-);
-vi.mock('@/components/common', () => ({ BottomFixedBar: () => null, ErrorView: () => null }));
+vi.mock('@/components/common', () => ({ ErrorView: () => null }));
 vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: () => null }));
-vi.mock('@/components/exhibition-work', () => ({ WorkHeader: () => null }));
+vi.mock('@/components/exhibition-work', () => ({ WorkBar: () => null, WorkIcon: () => null }));
 vi.mock('@/components/layout', () => ({ PageContainer: () => null }));
 vi.mock('@/components/ui', () => ({ Skeleton: () => null, SkeletonList: () => null }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
+// 컴포넌트를 함수로 직접 호출하는 테스트라 훅 상태 없이 isPending 을 그대로 쓴다
+vi.mock('@/hooks/useSkeleton', () => ({
+  useSkeleton: (isPending: boolean) => ({ showSkeleton: isPending, skeletonProps: {} }),
+}));
 vi.mock('@/hooks/usePolicy', async () => {
   const { policies } = await import('@/policies/policies');
   return {
@@ -117,7 +119,7 @@ vi.mock('@/hooks/useImageUpload', () => ({
     clearImages: vi.fn(),
   }),
 }));
-vi.mock('@/stores/toastStore', () => ({ toast: vi.fn() }));
+vi.mock('@/stores/toastStore', () => ({ toast: h.toast }));
 
 type Element = ReactElement<Record<string, unknown>>;
 const nodes = (node: ReactNode): Element[] =>
@@ -126,14 +128,6 @@ const nodes = (node: ReactNode): Element[] =>
       ? [child, ...nodes(child.props.children as ReactNode)]
       : [],
   );
-const textContent = (node: ReactNode): string =>
-  Children.toArray(node)
-    .map((child) =>
-      isValidElement<Record<string, unknown>>(child)
-        ? textContent(child.props.children as ReactNode)
-        : String(child),
-    )
-    .join('');
 const render = () => {
   h.si = 0;
   h.ri = 0;
@@ -146,17 +140,51 @@ const click = (tree: Element[], label: string) => {
 };
 const photos = (tree: Element[]) => tree.filter((node) => 'photo' in node.props);
 const photoIds = () => photos(render()).map((node) => (node.props.photo as { id: number }).id);
+// 프로토타입 방식 끌기: 사진 칸을 누르고 다른 칸 위로 옮긴 뒤 손을 뗀다(문서 이벤트 · elementFromPoint 를 흉내 낸다)
 const drag = (activeId: string, overId: string | null, tree = render()) => {
-  (tree.find((node) => 'onDragEnd' in node.props)!.props.onDragEnd as (event: unknown) => void)({
-    active: { id: activeId },
-    over: overId === null ? null : { id: overId },
+  const item = photos(tree).find(
+    (node) => String((node.props.photo as { id: number }).id) === activeId,
+  );
+  if (!item) return;
+  const listeners: Record<string, (event?: unknown) => void> = {};
+  const list = {};
+  vi.stubGlobal('document', {
+    addEventListener: (type: string, listener: (event?: unknown) => void) => {
+      listeners[type] = listener;
+    },
+    removeEventListener: vi.fn(),
+    elementFromPoint: () =>
+      overId === null
+        ? null
+        : { closest: () => ({ dataset: { sortId: overId }, parentElement: list }) },
   });
+  (item.props.onPointerDown as (event: unknown) => void)({
+    button: 0,
+    preventDefault: vi.fn(),
+    target: { closest: () => null },
+    currentTarget: { closest: () => ({ parentElement: list }) },
+  });
+  listeners.pointermove?.({ clientX: 0, clientY: 0 });
+  listeners.pointerup?.();
+  vi.unstubAllGlobals();
 };
-const alertText = () =>
-  render()
-    .filter((node) => node.props.role === 'alert')
-    .map(textContent)
+// 업로드 · 저장 실패 안내는 SectionPhotoNote 로 넘긴 값으로 읽는다
+const alertText = () => {
+  const note = render().find((node) => 'rejectedCount' in node.props);
+  if (!note) return '';
+  const { rejectedCount, message } = note.props as {
+    rejectedCount: number;
+    message?: string | null;
+  };
+  return [
+    rejectedCount > 0
+      ? `${rejectedCount}장은 올리지 못했어요\n지원하지 않는 형식이거나 20MB를 넘는 파일이에요`
+      : '',
+    message ?? '',
+  ]
+    .filter(Boolean)
     .join('\n');
+};
 const selectFiles = (files: { name: string; type: string; size: number }[]) => {
   const input = render().find((node) => node.props.type === 'file')!;
   return (input.props.onChange as (event: unknown) => Promise<void>)({ target: { files } });
@@ -168,11 +196,12 @@ const remove = (id: number) => {
 const submit = (tree: Element[]) =>
   tree.find((node) => node.type === 'form')!.props.onSubmit as (values: {
     title: string;
-    description: string;
   }) => Promise<void>;
 const failure = new ApiError('server', { status: 500 });
 
 beforeEach(() => {
+  h.effects = [];
+  h.values = { title: '전시 전경' };
   h.states = [];
   h.refs = [];
   h.reorderPending = false;
@@ -279,7 +308,7 @@ it('삭제한 사진은 즉시 순서 저장에 실패해도 되살리지 않는
   h.reorder.mock.calls[0][1].onError(failure);
   expect(photoIds()).toEqual([1, 3]);
   expect(photos(render()).every((node) => node.props.isEditing === true)).toBe(true);
-  expect(render().some((node) => node.props.role === 'alert')).toBe(true);
+  expect(alertText()).not.toBe('');
 });
 
 it('팀원은 자기 사진만 삭제하고 완료 시 순서 API를 호출하지 않는다', () => {
@@ -301,17 +330,27 @@ it('팀원은 자기 사진만 삭제하고 완료 시 순서 API를 호출하�
   expect(photos(tree).every((node) => node.props.isEditing === false)).toBe(true);
 });
 
-it('사진 삭제 실패는 사진을 복원하며 마지막 사진 삭제 후 빈 순서는 저장하지 않는다', () => {
-  h.contents = h.contents.slice(0, 1);
+it('사진 삭제 실패는 사진을 복원한다', () => {
   click(render(), '편집');
   remove(1);
   h.remove.mock.calls[0][1].onError(failure);
-  expect(photoIds()).toEqual([1]);
+  expect(photoIds()).toEqual([1, 2, 3]);
+  expect(alertText()).toContain('서버');
+});
+
+it('사진은 1장 이상 필수라 마지막 한 장은 지울 수 없고, 한 장이면 편집을 두지 않는다', () => {
+  h.contents = h.contents.slice(0, 2);
+  click(render(), '편집');
   remove(1);
-  h.remove.mock.calls[1][1].onSuccess();
-  click(render(), '완료');
-  expect(photoIds()).toEqual([]);
-  expect(h.reorder).not.toHaveBeenCalled();
+  h.remove.mock.calls[0][1].onSuccess();
+  expect(photoIds()).toEqual([2]);
+  expect(photos(render()).every((node) => node.props.isEditing === false)).toBe(true);
+  expect(render().some((node) => node.type === 'button' && node.props.children === '편집')).toBe(
+    false,
+  );
+  remove(2);
+  expect(h.remove).toHaveBeenCalledTimes(1);
+  expect(photos(render())[0].props.canRemoveAny).toBe(false);
 });
 
 it('섹션 정보 실패는 초안을 유지하고 중복 저장을 막으며 성공 후에만 기준값을 갱신한다', async () => {
@@ -322,7 +361,7 @@ it('섹션 정보 실패는 초안을 유지하고 중복 저장을 막으며 �
         reject = fail;
       }),
   );
-  const values = { title: '새 제목', description: '새 설명' };
+  const values = { title: '새 제목' };
   const save = submit(render());
   const pending = save(values);
   await save(values);
@@ -337,14 +376,14 @@ it('섹션 정보 실패는 초안을 유지하고 중복 저장을 막으며 �
   await submit(render())(values);
   expect(h.save).toHaveBeenLastCalledWith({
     categoryId: 9,
-    body: { name: values.title, description: values.description },
+    body: { name: values.title },
   });
   expect(h.reset).toHaveBeenCalledWith(values);
 });
 
 it('섹션 편집 권한이 없으면 제출해도 저장하지 않는다', async () => {
   h.user = { id: 2, isArtistVerified: false };
-  await submit(render())({ title: '새 제목', description: '새 설명' });
+  await submit(render())({ title: '새 제목' });
   expect(h.save).not.toHaveBeenCalled();
 });
 
@@ -458,14 +497,72 @@ it('한 요청이 먼저 실패해도 모든 파일 처리가 끝날 때까지 �
   await Promise.resolve();
   await selectFiles([{ name: 'duplicate.png', type: 'image/png', size: 1024 }]);
   expect(h.upload).toHaveBeenCalledTimes(2);
-  const uploadButton = render().find(
-    (node) => node.type === 'button' && textContent(node).includes('업로드 중'),
-  );
+  const uploadButton = render().find((node) => 'busy' in node.props);
+  expect(uploadButton?.props.busy).toBe(true);
   expect(uploadButton?.props.disabled).toBe(true);
   finishUpload('/pending.png');
   await pending;
   expect(photoIds()).toEqual([1, 2, 3, 21]);
-  expect(
-    render().some((node) => node.type === 'button' && textContent(node).includes('업로드 중')),
-  ).toBe(false);
+  expect(render().find((node) => 'busy' in node.props)?.props.busy).toBe(false);
+});
+
+it('자동 저장은 제목이 그대로면 요청하지 않는다', async () => {
+  await submit(render())({ title: '전시 전경' });
+  expect(h.save).not.toHaveBeenCalled();
+});
+
+it('20장을 넘겨 고르면 넘친 사진은 올리지 않고 최대 장수를 안내한다', async () => {
+  h.contents = Array.from({ length: 19 }, (_, index) => ({
+    contentId: index + 1,
+    imageUrl: `/photo-${index}.jpg`,
+    userId: 1,
+  }));
+  await selectFiles([
+    { name: 'one.png', type: 'image/png', size: 1024 },
+    { name: 'two.png', type: 'image/png', size: 1024 },
+  ]);
+  expect(h.toast).toHaveBeenCalledWith('사진은 최대 20장까지 올릴 수 있어요');
+  expect(photoIds()).toHaveLength(20);
+});
+
+it('저장 중에 제목을 또 고치면 앞선 저장이 끝난 뒤 바뀐 값을 한 번 더 저장한다', async () => {
+  let finish!: () => void;
+  h.save.mockImplementationOnce(
+    () =>
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const save = submit(render());
+  const first = save({ title: '새 제목' });
+  h.values = { title: '더 새 제목' };
+  await save(h.values);
+  expect(h.save).toHaveBeenCalledTimes(1);
+  finish();
+  await first;
+  await Promise.resolve();
+  expect(h.save).toHaveBeenCalledTimes(2);
+  expect(h.save).toHaveBeenLastCalledWith({
+    categoryId: 9,
+    body: { name: '더 새 제목' },
+  });
+});
+
+it('입력칸을 벗어나지 않고 화면을 나가도 바뀐 제목을 저장한다', () => {
+  render();
+  h.values = { title: '바뀐 제목' };
+  // 섹션 편집 화면의 두 effect(나갈 때 저장) 다음에 사진 끌기 정리 effect 가 온다
+  const [syncLeaveSave, saveOnUnmount] = h.effects.slice(-3, -1);
+  syncLeaveSave();
+  (saveOnUnmount() as () => void)();
+  expect(h.save).toHaveBeenCalledWith({
+    categoryId: 9,
+    body: { name: '바뀐 제목' },
+  });
+});
+
+it('저장 중에도 제목 칸은 계속 입력할 수 있고, 설명 칸은 없다(프로토타입 11-15)', () => {
+  const tree = render();
+  expect(tree.find((node) => node.props.id === 'section-name')!.props.readOnly).toBe(false);
+  expect(tree.some((node) => node.props.id === 'section-description')).toBe(false);
 });

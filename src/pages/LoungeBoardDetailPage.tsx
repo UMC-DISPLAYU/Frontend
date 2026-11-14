@@ -175,9 +175,7 @@ export const LoungeBoardDetailPage = () => {
             </article>
 
             {/* 댓글 정보 섹션 */}
-            {isCommentsPending && (
-              <LoadingView fullScreen={false} message="댓글을 불러오는 중..." />
-            )}
+            {isCommentsPending && <LoadingView fullScreen={false} />}
 
             {visibleComments.length > 0 && (
               <section className="w-full flex flex-col">

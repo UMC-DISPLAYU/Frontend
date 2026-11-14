@@ -1,7 +1,6 @@
 import { type FormEvent, useId, useState } from 'react';
 
 import type { DisplayMemberEntryDto, UserSearchDto } from '@/api/dto';
-import SearchIcon from '@/assets/team-manage/SearchIcon.svg';
 import { useInviteDisplayMember } from '@/hooks/queries/useDisplayMembers';
 import { useUserSearch } from '@/hooks/queries/useUserSearch';
 import { toast } from '@/stores/toastStore';
@@ -9,6 +8,7 @@ import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 
 import { MemberAvatar } from './MemberAvatar';
+import { SearchIcon } from './TeamIcons';
 import { getInviteState, type InviteState, normalizeNickname } from './teamMembers';
 
 interface NicknameInviteCardProps {
@@ -42,7 +42,7 @@ export function NicknameInviteCard({ displayId, team }: NicknameInviteCardProps)
 
     if (search.isError) {
       return (
-        <p role="alert" className="typography-body-md-medium pt-3.5 text-error">
+        <p role="alert" className="mt-3 text-[12px] font-medium text-[#fb2c36]">
           {getErrorMessage(search.error, '닉네임을 검색하지 못했어요. 다시 시도해주세요.')}
         </p>
       );
@@ -50,9 +50,9 @@ export function NicknameInviteCard({ displayId, team }: NicknameInviteCardProps)
 
     if (!search.data) {
       return (
-        <div role="status" className="flex flex-col items-center gap-1 pt-3.5 pb-1.5 text-center">
-          <p className="typography-body-lg-semibold text-secondary">일치하는 닉네임이 없어요</p>
-          <p className="typography-body-md-medium text-tertiary">
+        <div role="status" className="grid justify-items-center gap-1 pt-6 pb-1.5 text-center">
+          <p className="text-[14px] font-semibold text-[#3f3f47]">일치하는 닉네임이 없어요</p>
+          <p className="text-[12px] font-medium text-[#71717b]">
             닉네임을 끝까지 정확히 입력했는지 확인해 주세요
           </p>
         </div>
@@ -63,10 +63,13 @@ export function NicknameInviteCard({ displayId, team }: NicknameInviteCardProps)
   };
 
   return (
-    <section aria-label="닉네임으로 초대" className="mt-2 rounded-12 border border-primary p-3">
-      <div className="flex items-center gap-2.5">
-        <h3 className="typography-body-lg-semibold shrink-0 text-primary">닉네임으로 초대</h3>
-        <p className="typography-body-md-medium min-w-0 text-tertiary">
+    <section
+      aria-label="닉네임으로 초대"
+      className="mt-3 rounded-[12px] border border-[#d4d4d8] bg-[#fff] px-4 pt-3.5 pb-4"
+    >
+      <div className="flex items-center gap-2">
+        <h3 className="shrink-0 text-[14px] font-semibold">닉네임으로 초대</h3>
+        <p className="min-w-0 text-[12px] font-medium text-[#71717b]">
           초대할 회원의 디유 닉네임을 검색해주세요
         </p>
       </div>
@@ -74,7 +77,7 @@ export function NicknameInviteCard({ displayId, team }: NicknameInviteCardProps)
         role="search"
         autoComplete="off"
         onSubmit={submit}
-        className="mt-2.5 flex h-9.5 items-center overflow-hidden rounded-8 border border-primary bg-interactive-inverse pl-5 transition-colors duration-fast ease-standard focus-within:border-interactive-primary"
+        className="mt-3 flex h-9.5 items-center overflow-hidden rounded-[8px] border border-[#d4d4d8] bg-[#fff] transition-colors duration-200 focus-within:border-[#18181b]"
       >
         <label htmlFor={inputId} className="sr-only">
           초대할 회원의 닉네임
@@ -92,14 +95,14 @@ export function NicknameInviteCard({ displayId, team }: NicknameInviteCardProps)
           autoCapitalize="off"
           spellCheck={false}
           enterKeyHint="search"
-          className="typography-body-md-medium min-w-0 flex-1 bg-transparent pr-2 text-primary outline-none placeholder:text-tertiary"
+          className="h-full min-w-0 flex-1 bg-transparent pr-2.5 pl-3 text-[12px] font-medium outline-none placeholder:font-normal placeholder:text-[#71717b]"
         />
         <button
           type="submit"
           aria-label="검색"
-          className="flex h-full w-9.5 shrink-0 items-center justify-center border-l border-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+          className="flex h-full w-9.5 shrink-0 items-center justify-center border-l border-[#d4d4d8] text-[#71717b] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]"
         >
-          <img src={SearchIcon} alt="" />
+          <SearchIcon className="size-5" />
         </button>
       </form>
       {renderResult()}
@@ -130,28 +133,26 @@ function SearchResult({
 
   return (
     <>
-      <div className="mt-2 flex min-h-13.5 items-center gap-2.5 pt-2">
-        <MemberAvatar tone="pending" className="size-9.5" />
-        <p className="typography-body-lg-semibold min-w-0 flex-1 truncate text-primary">
-          {user.nickname}
-        </p>
+      <div className="mt-3 flex items-center gap-3">
+        <MemberAvatar />
+        <p className="min-w-0 flex-1 truncate text-[14px] font-semibold">{user.nickname}</p>
         <button
           type="button"
           disabled={!canInvite}
           onClick={sendInvite}
           // 보이는 높이는 36px, 누르는 영역은 after 로 44px 까지 넓힌다
           className={cn(
-            'typography-body-md-semibold relative flex h-9 shrink-0 items-center justify-center rounded-8 px-4 transition duration-fast ease-standard after:absolute after:inset-x-0 after:-inset-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-default',
+            'relative inline-flex h-9 shrink-0 items-center justify-center rounded-[12px] px-4 text-[12px] font-semibold transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] after:absolute after:inset-x-0 after:-inset-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] disabled:cursor-default',
             state === 'invitable'
-              ? 'bg-primary-black text-interactive-inverse hover:bg-interactive-primary-hover active:scale-99 disabled:active:scale-100'
-              : 'bg-tertiary text-tertiary',
+              ? 'bg-[#18181b] text-[#fff] hover:bg-[#2f2f35] active:scale-[.98] disabled:active:scale-100'
+              : 'bg-[#f0f0f3] text-[#71717b]',
           )}
         >
           {INVITE_BUTTON_LABEL[state]}
         </button>
       </div>
       {state !== 'joined' && (
-        <p className="typography-body-md-medium pt-2.5 text-tertiary">
+        <p className="mt-2.5 text-[12px] font-medium text-[#3f3f47]">
           초대 후 작가 인증과 수락이 완료되어야 참여할 수 있어요
         </p>
       )}

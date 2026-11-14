@@ -35,6 +35,7 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 
@@ -225,6 +226,7 @@ function ArtworkRegisterRoute() {
   ];
   const failed = queries.find((query) => query.isError);
   const isPending = queries.some((query) => query.isPending);
+  const { showSkeleton } = useSkeleton(isPending);
   const title = isEdit ? '작품 수정' : '작품 등록';
 
   if (failed) {
@@ -236,7 +238,7 @@ function ArtworkRegisterRoute() {
     );
   }
 
-  if (isPending || !display) {
+  if (showSkeleton || !display) {
     return <ArtworkRegisterSkeleton title={title} withAuthor onBack={() => leave(workPath)} />;
   }
 

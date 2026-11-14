@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { createPortal } from 'react-dom';
 
 import googleIcon from '@/assets/onboarding/googleIcon.svg';
 import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
@@ -48,7 +49,8 @@ export function LoginConfirmModal({
 
   if (!open) return null;
 
-  return (
+  // top layer 에 올라가도 CSS 상속은 DOM 부모를 따른다. 냅바(pointer-events-none) 같은 부모 스타일을 물려받지 않게 body 로 뺀다
+  return createPortal(
     <dialog
       ref={dialogRef}
       aria-labelledby={titleId}
@@ -104,6 +106,7 @@ export function LoginConfirmModal({
       >
         비회원으로 계속 둘러보기
       </button>
-    </dialog>
+    </dialog>,
+    document.body,
   );
 }

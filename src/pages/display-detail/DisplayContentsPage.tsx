@@ -3,22 +3,33 @@ import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton, SkeletonList } from '@/components/ui/Skeleton';
+import { NotFoundView } from '@/components/error-page';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
-import { getErrorMessage } from '@/utils/error';
+import { useSkeleton } from '@/hooks/useSkeleton';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 /* 피그마 메모: 흰 화면에서 사진이 위에서 아래로 이어진다. 폭 362(좌우 20) · 사이 12 · 3:4 */
 const COLUMN = 'mx-auto w-full max-w-140';
-const PHOTO_FRAME = 'aspect-3/4 w-full overflow-hidden bg-tertiary';
+const PHOTO_SIZE = 'aspect-3/4 w-full';
+const PHOTO_FRAME = `${PHOTO_SIZE} overflow-hidden bg-tertiary`;
 
-export function DisplayContentsPage() {
+type DisplayContentsPageProps = {
+  /* 전시 미리보기에서 연 콘텐츠(/exhibition/:displayId/preview/contents)의 전시 번호와 뒤로가기 */
+  previewDisplayId?: string;
+  onBack?: () => void;
+};
+
+export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContentsPageProps = {}) {
   const flowBack = useFlowBack();
+  const goBack = onBack ?? (() => flowBack());
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const displayId = parseDisplayId(id);
+  const displayId = parseDisplayId(previewDisplayId ?? id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
   const categoryParam = searchParams.get('category');
   const categories = display?.contentCategories ?? [];
@@ -28,17 +39,15 @@ export function DisplayContentsPage() {
       ? categories[0]
       : categories.find((item) => item.categoryId === Number(categoryParam));
 
-  // 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
-  if (displayId === null || (!isPending && (!display || !category))) {
+  // 삭제된 전시 · 없는 콘텐츠 번호는 404. 그 밖에 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
+  if (displayId === null || isNotFoundError(error) || (display && !category)) {
+    return <NotFoundView />;
+  }
+  if (!isPending && !display) {
     return (
       <ErrorView
-        message={
-          error
-            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
-            : '전시 콘텐츠를 찾을 수 없어요'
-        }
-        onRetry={error ? () => void refetch() : () => flowBack()}
-        retryLabel={error ? '다시 시도' : '뒤로가기'}
+        message={getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')}
+        onRetry={() => void refetch()}
       />
     );
   }
@@ -52,20 +61,20 @@ export function DisplayContentsPage() {
           <button
             type="button"
             aria-label="뒤로가기"
-            onClick={() => flowBack()}
+            onClick={goBack}
             className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-94"
           >
             <ChevronLeft aria-hidden="true" size={24} strokeWidth={1.7} />
           </button>
-          {category ? (
+          {category && !showSkeleton ? (
             <div className="grid min-w-0">
               <h1 className="typography-body-xl-semibold truncate text-primary">{category.name}</h1>
               <p className="typography-body-md-medium truncate text-tertiary">{display?.title}</p>
             </div>
           ) : (
-            <div className="grid gap-1">
-              <Skeleton className="h-5 w-32 rounded-4" />
-              <Skeleton className="h-4 w-24 rounded-4" />
+            <div className="grid">
+              <SkeletonText className="typography-body-xl-semibold w-32" />
+              <SkeletonText className="typography-body-md-medium w-24" />
             </div>
           )}
         </div>
@@ -74,8 +83,9 @@ export function DisplayContentsPage() {
       <main
         aria-label="콘텐츠 사진"
         className={`${COLUMN} grid gap-3 px-gutter pt-5 pb-[max(40px,env(safe-area-inset-bottom))] tablet:px-0`}
+        {...skeletonProps}
       >
-        {category ? (
+        {category && !showSkeleton ? (
           photos.map((photo, index) => (
             <OptimizedImage
               key={photo.contentId}
@@ -90,7 +100,7 @@ export function DisplayContentsPage() {
             />
           ))
         ) : (
-          <SkeletonList count={2}>{() => <Skeleton className={PHOTO_FRAME} />}</SkeletonList>
+          <SkeletonList count={2}>{() => <Skeleton className={PHOTO_SIZE} />}</SkeletonList>
         )}
       </main>
     </div>

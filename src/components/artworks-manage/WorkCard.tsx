@@ -3,37 +3,40 @@ import type { ReactNode } from 'react';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import type { Work } from '@/types/artworkManage';
 
+/*
+ * 프로토타입 works.html `.wc`: 3:4 사진(모서리 없음) · 사진 아래 8 제목 14 SemiBold · 작가 12 Medium.
+ * 사진 위 버튼 · 칩은 overlay 로 받는다(관리: … 메뉴 · 내 작품, 순서 편집: 번호 · 손잡이)
+ */
 export function WorkCard({
   work,
   isMine = false,
-  children,
+  overlay,
 }: {
   work: Work;
   isMine?: boolean;
-  children?: ReactNode;
+  overlay?: ReactNode;
 }) {
   return (
-    <div className="group relative h-full text-primary">
-      <div className="relative aspect-3/4 overflow-hidden bg-secondary">
+    <div className="relative text-[#18181b]">
+      <div className="relative aspect-3/4 overflow-hidden bg-[#f4f4f5]">
         <OptimizedImage
           src={work.thumbnail}
           alt={work.title}
           displayWidth={260}
           skeleton
+          draggable={false}
           frameClassName="h-full w-full"
-          className="object-cover transition-transform duration-base ease-standard group-hover:scale-103"
+          className="object-cover select-none"
         />
         {isMine && (
-          <span className="typography-body-sm-medium absolute bottom-2 left-2 rounded-circle bg-primary-black/40 px-2 py-1 text-interactive-inverse">
+          <span className="absolute bottom-2 left-2 inline-flex h-6 items-center rounded-circle bg-[rgba(0,0,0,.5)] px-2.5 text-[12px] font-semibold text-[#fff] backdrop-blur-[6px]">
             내 작품
           </span>
         )}
+        {overlay}
       </div>
-      <div className="pt-2">
-        <p className="typography-body-lg-semibold truncate">{work.title}</p>
-        <p className="typography-body-md-medium truncate text-secondary">{work.artist}</p>
-      </div>
-      {children}
+      <p className="mt-2 truncate text-[14px] font-semibold">{work.title}</p>
+      <p className="truncate text-[12px] font-medium text-[#3f3f47]">{work.artist}</p>
     </div>
   );
 }
