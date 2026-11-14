@@ -10,8 +10,6 @@ import { AuthorAvatar } from './AuthorAvatar';
 interface ArtworkAuthorSectionProps {
   author: ArtworkPerson;
   coAuthors: ArtworkPerson[];
-  /** 다른 작가의 작품을 대신 등록할 때 실제 등록자(나)를 함께 보여준다 */
-  registrantName?: string;
   onAddCoAuthor: () => void;
   onRemoveCoAuthor: (key: string) => void;
 }
@@ -30,7 +28,6 @@ function PersonText({ person }: { person: ArtworkPerson }) {
 export function ArtworkAuthorSection({
   author,
   coAuthors,
-  registrantName,
   onAddCoAuthor,
   onRemoveCoAuthor,
 }: ArtworkAuthorSectionProps) {
@@ -66,11 +63,6 @@ export function ArtworkAuthorSection({
             </button>
           </div>
         ))}
-        {registrantName && (
-          <p className="typography-body-md-medium mt-1 px-4 text-secondary">
-            등록자 · {registrantName} (나)
-          </p>
-        )}
         <button
           type="button"
           onClick={onAddCoAuthor}

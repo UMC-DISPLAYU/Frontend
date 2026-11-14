@@ -51,7 +51,6 @@ interface ArtworkRegisterContentProps {
   ownerUserId?: number;
   myUserId?: number;
   author: ArtworkPerson;
-  registrantName?: string;
   initialCoAuthors: ArtworkPerson[];
   defaultValues: ArtworkRegisterValues;
   initialImages: ArtworkImageUrls;
@@ -64,7 +63,6 @@ function ArtworkRegisterContent({
   ownerUserId,
   myUserId,
   author,
-  registrantName,
   initialCoAuthors,
   defaultValues,
   initialImages,
@@ -152,7 +150,6 @@ function ArtworkRegisterContent({
           <ArtworkAuthorSection
             author={author}
             coAuthors={coAuthors}
-            registrantName={registrantName}
             onAddCoAuthor={() => {
               // 저장 중에 시트를 열면 저장 후 이동이 시트 기록만 닫고 이 화면에 남는다
               if (isSubmitting) return;
@@ -316,7 +313,6 @@ function ArtworkRegisterRoute() {
       ownerUserId={display.ownerUserId}
       myUserId={myUserId}
       author={author}
-      registrantName={proxy ? myName : undefined}
       initialCoAuthors={[]}
       defaultValues={EMPTY_ARTWORK_REGISTER_VALUES}
       initialImages={{ artworkUrls: [], processUrls: [] }}
