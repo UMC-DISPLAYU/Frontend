@@ -13,13 +13,11 @@ import {
 } from '@/components/artist-profile';
 import { ErrorView } from '@/components/common';
 import { DetailTopBar } from '@/components/common/detail';
-import { useShowNavbar } from '@/components/layout';
 import { SkeletonList } from '@/components/ui';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/stores/toastStore';
-import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 
@@ -40,8 +38,6 @@ export function AuthPage() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const artist = useArtistProfile(userId);
-  // 프로토타입: 내 작가 프로필은 마이에서 들어온 화면이라 냅바를 보여 주고 마이를 선택한다. 다른 작가는 냅바가 없다
-  useShowNavbar('/my', artist.isOwner);
   const { header, profileQuery } = artist;
 
   const handleToggleSave = () => {
@@ -75,8 +71,7 @@ export function AuthPage() {
   const isContentPending = artist.isExhibitionsPending || artist.isWorksPending;
 
   return (
-    // 프로토타입: 본문 아래 48, 냅바가 있는 내 프로필은 132(Layout 의 냅바 여백 72 + 60)
-    <div className={cn('min-h-dvh bg-primary-white', artist.isOwner ? 'pb-15' : 'pb-12')}>
+    <div className="min-h-dvh bg-primary-white pb-12">
       {loginModal}
 
       {/* 768px 미만은 뒤로가기만, 이상은 로고 · 검색 헤더 */}
