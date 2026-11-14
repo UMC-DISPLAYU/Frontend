@@ -2,6 +2,7 @@ import type { ReactNode, Ref } from 'react';
 
 import { ErrorView } from '@/components/common';
 import { SkeletonList } from '@/components/ui';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 
@@ -50,10 +51,11 @@ export function ExploreResultGrid<T>({
   triggerRef,
 }: ExploreResultGridProps<T>) {
   const hasItems = pages.some((page) => page.length > 0);
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
-  if (isPending) {
+  if (showSkeleton) {
     return (
-      <ul aria-busy="true" aria-label={`${itemObject} 불러오는 중`} className={GRID_CLASS}>
+      <ul {...skeletonProps} aria-label={`${itemObject} 불러오는 중`} className={GRID_CLASS}>
         <SkeletonList count={6}>
           {() => <li aria-hidden="true">{renderSkeleton()}</li>}
         </SkeletonList>
@@ -77,7 +79,7 @@ export function ExploreResultGrid<T>({
 
   return (
     <>
-      <ul className={GRID_CLASS}>
+      <ul {...skeletonProps} className={GRID_CLASS}>
         {pages.map((page) =>
           page.map((item, index) => (
             <li className="animate-rise" key={getKey(item)} style={staggerStyle(index)}>

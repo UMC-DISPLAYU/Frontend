@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonList } from '@/components/ui';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 
 import type { CandidatesStatus } from './proxyAuthor';
 
@@ -17,9 +17,9 @@ export function TeamCandidatesState({
           {() => (
             <div className="flex items-center gap-3 py-3">
               <Skeleton className="size-11.5 shrink-0 rounded-circle" />
-              <div className="flex flex-1 flex-col gap-1">
-                <Skeleton className="h-5 w-20 rounded-4" />
-                <Skeleton className="h-4 w-14 rounded-4" />
+              <div className="flex flex-1 flex-col gap-0.5">
+                <SkeletonText className="typography-body-lg-semibold w-20" />
+                <SkeletonText className="typography-body-md-medium w-14" />
               </div>
             </div>
           )}

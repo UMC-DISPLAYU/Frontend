@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 import type { ArtworkSearchItemDto } from '@/api/dto';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 
 import { ArtistByline } from './ArtistByline';
 import { CARD_CLASS, CARD_IMAGE_CLASS, CARD_TITLE_CLASS } from './exploreCardStyles';
@@ -41,8 +41,10 @@ export function ExploreArtworkCardSkeleton() {
   return (
     <>
       <Skeleton className={ARTWORK_FRAME_CLASS} />
-      <Skeleton className="mt-2 h-5 w-3/4 rounded-4" />
-      <Skeleton className="mt-0.5 h-4 w-1/2 rounded-4" />
+      <div className="pt-2">
+        <SkeletonText className="typography-body-lg-semibold w-7/10" />
+        <SkeletonText className="typography-body-md-medium w-1/2" />
+      </div>
     </>
   );
 }

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { http } from 'msw';
+import { delay, http } from 'msw';
 
 import { mockDb, okStatus } from '@/mocks/data/repository';
 import { teamOf } from '@/mocks/handlers/displayMember';
@@ -292,10 +292,29 @@ export const displayHandlers = [
   ),
   /*
    * 스웨거: 초대 토큰으로 전시 상세를 조회합니다(PUBLIC).
-   * 실서버는 만료/비활성 링크에 실패를 내려주지만, mock에서는 항상 성공을 반환합니다.
+   * 팀원 관리에서 켠 링크(mock-invitation-{displayId})만 성공하고, 꺼졌거나 모르는 토큰은 실서버처럼 실패한다.
+   * 화면 확인용: mock-loading 은 응답하지 않고(확인 중), mock-server-error 는 500 을 내려준다.
    */
   ...paths('/api/v1/display/invitation/{token}').map((path) =>
-    http.get(path, () => success('/api/v1/display/invitation/{token}', displayDetailResponse(101))),
+    http.get(path, async ({ params }) => {
+      const token = String(params.token);
+      const route = '/api/v1/display/invitation/{token}';
+
+      if (token === 'mock-loading') await delay('infinite');
+      if (token === 'mock-server-error') {
+        return fail(route, 500, 'INTERNAL_SERVER_ERROR', '서버 오류가 발생했어요.');
+      }
+
+      const display = mockDb.displays.find((entry: any) => entry.invitationToken === token);
+      if (!display) {
+        return fail(route, 404, 'INVALID_DISPLAY_INVITATION_TOKEN', '유효하지 않은 초대 링크예요.');
+      }
+      if (display.invitationDisabledAt) {
+        return fail(route, 409, 'DISPLAY_INVITATION_DISABLED', '비활성화된 초대 링크예요.');
+      }
+
+      return success(route, displayDetailResponse(display.displayId));
+    }),
   ),
   /* 스웨거: POST는 좋아요 추가, DELETE는 좋아요 취소입니다. */
   ...paths('/api/v1/display/like').map((path) =>

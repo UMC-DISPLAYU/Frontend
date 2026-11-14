@@ -16,6 +16,7 @@ import { DetailTopBar } from '@/components/common/detail';
 import { SkeletonList } from '@/components/ui';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
@@ -39,6 +40,12 @@ export function AuthPage() {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const artist = useArtistProfile(userId);
   const { header, profileQuery } = artist;
+
+  const hasExhibitions = artist.exhibitions.length > 0;
+  const hasWorks = artist.works.length > 0;
+  const isContentPending = artist.isExhibitionsPending || artist.isWorksPending;
+  const headerSkeleton = useSkeleton(profileQuery.isPending);
+  const contentSkeleton = useSkeleton(isContentPending && !hasExhibitions && !hasWorks);
 
   const handleToggleSave = () => {
     if (!accessToken) {
@@ -66,10 +73,6 @@ export function AuthPage() {
     );
   }
 
-  const hasExhibitions = artist.exhibitions.length > 0;
-  const hasWorks = artist.works.length > 0;
-  const isContentPending = artist.isExhibitionsPending || artist.isWorksPending;
-
   return (
     <div className="min-h-dvh bg-primary-white pb-12">
       {loginModal}
@@ -93,8 +96,8 @@ export function AuthPage() {
       {/* Layout 이 이미 <main> 으로 감싼다. 프로토타입 여백은 20 → 32(768px~)이고 900px 이상에서 40 으로 늘지 않는다 */}
       <div className="mx-auto max-w-310 px-5 tablet:px-8 desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
         {/* 헤더 64 + 위 여백 40 에 붙여, 스크롤을 시작해도 프로필이 따라 올라갔다 멈추지 않는다(프로토타입은 96) */}
-        <div className="desktop:sticky desktop:top-26">
-          {header ? (
+        <div {...headerSkeleton.skeletonProps} className="desktop:sticky desktop:top-26">
+          {header && !headerSkeleton.showSkeleton ? (
             <ArtistProfileHeader
               action={
                 artist.isOwner
@@ -113,13 +116,9 @@ export function AuthPage() {
           )}
         </div>
 
-        <div className="min-w-0">
-          {isContentPending && !hasExhibitions && !hasWorks ? (
-            <div
-              aria-busy="true"
-              aria-label="작가의 전시와 작품을 불러오는 중"
-              className="pt-8 desktop:pt-0"
-            >
+        <div {...contentSkeleton.skeletonProps} className="min-w-0">
+          {contentSkeleton.showSkeleton ? (
+            <div aria-label="작가의 전시와 작품을 불러오는 중" className="pt-8 desktop:pt-0">
               <SkeletonList count={2}>{() => <ArtistExhibitionRowSkeleton />}</SkeletonList>
               <div className={WORK_GRID_CLASS}>
                 <SkeletonList count={2}>{() => <ArtistWorkCardSkeleton />}</SkeletonList>

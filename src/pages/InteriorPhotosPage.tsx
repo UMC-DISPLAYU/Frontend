@@ -49,6 +49,7 @@ import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useCurrentPolicyUser, useDisplayContentPolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { policies } from '@/policies/policies';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
@@ -165,8 +166,9 @@ export function InteriorPhotosPage() {
   const categoryId = Number(paramCategoryId ?? 0);
   const { data: displayDetail, isPending, error } = useDisplayDetail(displayId);
   const displayContentPolicy = useDisplayContentPolicy(displayDetail);
+  const { showSkeleton } = useSkeleton(isPending);
 
-  if (isPending) {
+  if (showSkeleton) {
     return (
       <PageContainer variant="form" className="bg-primary-white">
         <WorkHeader title="섹션 편집" onBack={flowBack} />

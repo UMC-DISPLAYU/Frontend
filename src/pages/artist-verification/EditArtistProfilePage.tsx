@@ -19,11 +19,12 @@ import {
   VerifyInput,
 } from '@/components/artist-verify';
 import { ConfirmDialog, ErrorView, ProfilePhotoField } from '@/components/common';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 import { MAX_ARTIST_FIELDS } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
@@ -37,6 +38,7 @@ import { toEditArtistProfileDefaults, toUpdateArtistProfileBody } from './editAr
 
 export function EditArtistProfilePage() {
   const { data: artistProfile, isPending, isError, error, refetch } = useMyArtistProfile();
+  const { showSkeleton } = useSkeleton(isPending);
 
   if (isError && !artistProfile) {
     return (
@@ -47,12 +49,15 @@ export function EditArtistProfilePage() {
     );
   }
 
-  if (isPending || !artistProfile) {
+  if (showSkeleton || !artistProfile) {
     return (
       <ArtistVerifyLayout>
         <div aria-hidden="true" className="flex flex-col gap-5 pt-18">
           <Skeleton className="mx-auto h-33 w-29" />
-          <Skeleton className="h-16 w-full rounded-4" />
+          <div className="flex flex-col gap-1">
+            <SkeletonText className="typography-body-lg-semibold w-14" />
+            <Skeleton className="h-11.5 w-full" />
+          </div>
           <Skeleton className="h-36 w-full rounded-4" />
         </div>
       </ArtistVerifyLayout>

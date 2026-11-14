@@ -127,10 +127,14 @@
   - 오버레이 안에서 다른 페이지로 이동할 때는 `replace`로 이동한다.
   - 오버레이는 열릴 때 같은 URL로 history 기록을 쌓아 `location.key`·`location.state`가 바뀐다. 상태 초기화는 `pathname` 기준으로 한다.
   - 기존 `BottomSheet`·`ConfirmModal`·`AlertModal`은 legacy 화면용이다. 새 화면에서는 쓰지 않는다.
-- 로딩
+- 로딩: 디자인 로딩 스펙(11-14)을 따른다. 스피너 · shimmer는 쓰지 않는다. 150ms 안에 끝나면 아무것도 보이지 않고, 한 번 보이면 최소 400ms 유지한다.
   - React Query `isPending`(아직 데이터 없음)일 때만 스켈레톤을 띄운다. `isFetching`(다시 불러오는 중)일 때는 기존 데이터를 그대로 둔다.
-  - 스켈레톤은 카드 단위로, 실제 목록과 같은 그리드 안에서 `SkeletonList` + `Skeleton`(`@/components/ui`)으로 같은 크기·모서리를 맞춘다.
-  - 이미지는 `OptimizedImage`에 `skeleton`과 `frameClassName`(비율·크기·모서리, 필수)을 넘긴다. 로딩 중에는 shimmer, 완료되면 fade-in으로 나타난다.
+  - 분기는 `isPending` 대신 `useSkeleton(isPending)`(`@/hooks/useSkeleton`)의 `showSkeleton`으로 하고, 스켈레톤과 실제 목록이 번갈아 들어가는 같은 컨테이너에 `skeletonProps`를 펼친다(`aria-busy`, 스켈레톤 뒤 나타남 처리).
+  - 스켈레톤은 카드 단위로, 실제 목록과 같은 그리드 안에서 `SkeletonList`(`@/components/ui`)로 만든다. 카드마다 요소 하나를 돌려주면 물결 순서가 자동으로 들어간다.
+  - 사진 · 버튼 같은 덩어리는 `Skeleton`(실제와 같은 크기 · 비율 · 모서리), 글자 자리는 `SkeletonText`에 실제 글자와 같은 `typography-*`와 폭을 준다(줄 높이 안에 10px 막대, 모서리 0).
+  - 검은 바탕 위 스켈레톤은 감싸는 요소에 `skeleton-inverse`를 붙인다.
+  - 이미지는 `OptimizedImage`에 `skeleton`과 `frameClassName`(비율·크기·모서리, 필수)을 넘긴다. 회색 칸 위에 투명도 + 흐림으로 켜지고, 캐시된 사진은 바로 보이며, 실패하면 회색 칸이 남는다.
+  - 영역 가운데 로더는 `LoadingView`, 버튼 안 로더는 `Loader`(`@/components/ui`)를 쓴다. 문구는 넣지 않는다(`LoadingView`가 2.5초 뒤 "불러오는 중"을 보인다).
 - 토스트: `toast('저장했어요')`(`@/stores/toastStore`). 하단 가운데, 냅바 위에 3초 동안 뜬다. `Toaster`는 `RootLayout`에 붙어 있으므로 다시 마운트하지 않는다.
 - 목록 등장 애니메이션: 목록 아이템에 `className="animate-rise" style={staggerStyle(index)}`(`@/utils/stagger`)을 준다. 무한 스크롤은 페이지 안의 인덱스 또는 `startIndex`로 센다. 헤더·냅바·버튼·텍스트 같은 고정 UI에는 쓰지 않는다.
 

@@ -1,8 +1,12 @@
 import { useParams } from 'react-router-dom';
 
-import { WorkHeader } from '@/components/exhibition-work';
-import { PageContainer } from '@/components/layout';
-import { InviteLinkCard, NicknameInviteCard, TeamMemberSection } from '@/components/team-manage';
+import {
+  InviteLinkCard,
+  NicknameInviteCard,
+  TeamHeader,
+  TeamMemberSection,
+  TeamPage,
+} from '@/components/team-manage';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
@@ -17,11 +21,11 @@ export function TeamManage() {
   const { data: me } = useUserMe();
 
   return (
-    <PageContainer variant="form" className="bg-primary-white pb-7 text-primary">
-      <WorkHeader title="팀원 관리" />
-      <div className="mt-1 flex items-baseline gap-2.5">
-        <h2 className="typography-body-xl-semibold shrink-0">팀원 초대</h2>
-        <p className="typography-body-md-medium min-w-0 text-tertiary">
+    <TeamPage>
+      <TeamHeader title="팀원 관리" />
+      <div className="mt-3 flex items-baseline gap-2.5">
+        <h2 className="shrink-0 text-[16px] leading-[1.4] font-semibold">팀원 초대</h2>
+        <p className="min-w-0 text-[12px] leading-[1.4] font-medium text-[#71717b]">
           함께 전시를 준비할 팀원을 초대해보세요
         </p>
       </div>
@@ -39,6 +43,6 @@ export function TeamManage() {
         error={members.error}
         onRetry={() => void members.refetch()}
       />
-    </PageContainer>
+    </TeamPage>
   );
 }

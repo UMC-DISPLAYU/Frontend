@@ -22,7 +22,11 @@ export function getStaggerStep(
 
 /** 목록 아이템에 `animate-rise` 와 함께 쓴다. 예: `<li className="animate-rise" style={staggerStyle(i)}>` */
 export function staggerStyle(index: number, options?: StaggerOptions): CSSProperties {
+  const step = getStaggerStep(index, options);
+
   return {
-    animationDelay: `calc(var(--semantic-motion-stagger) * ${getStaggerStep(index, options)})`,
-  };
+    animationDelay: `calc(var(--semantic-motion-stagger) * ${step})`,
+    // 스켈레톤 뒤에 나타날 때(index.css 의 data-skeleton="revealed")는 이 순번으로 시차를 다시 계산한다
+    '--stagger-step': step,
+  } as CSSProperties;
 }

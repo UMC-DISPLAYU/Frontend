@@ -4,7 +4,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 // tailwind-merge 는 src/styles/tokens/theme.css 의 커스텀 토큰 이름을 모른다.
 // 등록하지 않으면 cn('px-5', 'px-gutter') 처럼 덮어쓸 때 두 클래스가 모두 남아 CSS 순서로 결과가 갈린다.
 // theme.css 에 토큰을 추가하면 여기도 함께 추가한다.
-const twMerge = extendTailwindMerge({
+const twMerge = extendTailwindMerge<'skeleton'>({
   extend: {
     theme: {
       animate: [
@@ -21,11 +21,11 @@ const twMerge = extendTailwindMerge({
         'toast-in',
         'toast-out',
         'rise',
-        'shimmer',
+        'image-reveal',
       ],
       breakpoint: ['tablet', 'desktop'],
       container: ['form', 'list'],
-      ease: ['standard', 'emphasized'],
+      ease: ['standard', 'emphasized', 'reveal'],
       radius: ['0', '4', '6', '8', '12', '16', '20', '24', 'circle'],
       shadow: ['xs', 'sm', 'md', 'lg', 'card'],
       spacing: [
@@ -39,6 +39,11 @@ const twMerge = extendTailwindMerge({
     },
     classGroups: {
       duration: [{ duration: ['fast', 'base', 'slow'] }],
+      skeleton: ['skeleton'],
+    },
+    // Skeleton 에 실제 틀 클래스(bg-* 포함)를 그대로 넘겨도 뒤에 붙는 skeleton 회색(· skeleton-inverse)이 이기게 한다
+    conflictingClassGroups: {
+      skeleton: ['bg-color'],
     },
   },
 });

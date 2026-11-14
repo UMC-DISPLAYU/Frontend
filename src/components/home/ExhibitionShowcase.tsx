@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import ChevronMapIcon from '@/assets/home/ChevronMapIcon.svg';
 import MapPinIcon from '@/assets/home/MapPinIcon.svg';
 import type { HomeExhibitionCard, HomeExhibitionTab } from '@/hooks/queries/useHome';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { useTabIndicator } from '@/hooks/useTabIndicator';
 import { cn } from '@/utils/cn';
 
@@ -43,8 +44,10 @@ export function ExhibitionShowcase({
   const isList = view === 'list';
   // 사용자가 탭을 바꿨을 때만 새 목록이 올라오며 나타난다(처음 열 때 · 주소로 들어올 때는 없음)
   const [animateIn, setAnimateIn] = useState(false);
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
   const pickTab = (next: HomeExhibitionTab) => {
+    if (next === tab) return;
     setAnimateIn(true);
     onTabChange(next);
   };
@@ -68,7 +71,7 @@ export function ExhibitionShowcase({
         </button>
       </StageMessage>
     );
-  } else if (isPending) {
+  } else if (showSkeleton) {
     stage = <PosterCarouselSkeleton />;
   } else if (!items?.length) {
     stage = (
@@ -153,7 +156,12 @@ export function ExhibitionShowcase({
         )}
       </div>
 
-      <div id={`${tabId}-panel`} role="tabpanel" aria-labelledby={`${tabId}-${tab}`}>
+      <div
+        {...skeletonProps}
+        id={`${tabId}-panel`}
+        role="tabpanel"
+        aria-labelledby={`${tabId}-${tab}`}
+      >
         {stage}
       </div>
 
