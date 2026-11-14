@@ -138,7 +138,7 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
       {isPending ? (
         <div
           aria-label="전시작을 불러오는 중"
-          className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 min-[640px]:grid-cols-3 desktop:grid-cols-4"
+          className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 min-[640px]:grid-cols-3"
         >
           <SkeletonList count={6}>
             {() => (
