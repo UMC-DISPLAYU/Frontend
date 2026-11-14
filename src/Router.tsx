@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react';
 
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 
+import { handleStaleChunkError } from '@/utils/staleChunkReload';
+
 import { RootRedirect } from './components/auth/RootRedirect';
 import { LoadingView } from './components/common';
 import { AuthGuard } from './components/guards/AuthGuard';
@@ -26,9 +28,11 @@ const lazyPage = <T extends Record<string, unknown>>(
   exportName: keyof T,
 ) => {
   const LazyComponent = lazy(() =>
-    importFn().then((mod) => ({
-      default: mod[exportName] as unknown as React.ComponentType,
-    })),
+    importFn()
+      .catch(handleStaleChunkError)
+      .then((mod) => ({
+        default: mod[exportName] as unknown as React.ComponentType,
+      })),
   );
 
   const PageComponent = () => (
