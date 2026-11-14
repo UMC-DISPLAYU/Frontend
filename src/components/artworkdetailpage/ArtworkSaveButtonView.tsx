@@ -19,7 +19,7 @@ export function ArtworkSaveButtonView({ saved, onClick, disabled = false, classN
       disabled={disabled}
       title={disabled ? '공개 전에는 사용할 수 없어요' : undefined}
       className={cn(
-        'typography-body-lg-semibold flex h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-12 transition duration-fast ease-standard active:scale-98 disabled:cursor-not-allowed disabled:opacity-45',
+        'typography-body-lg-semibold desktop:typography-body-xl-semibold flex h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-12 transition duration-fast ease-standard active:scale-98 disabled:cursor-not-allowed disabled:opacity-45',
         saved
           ? 'bg-tertiary text-primary'
           : 'bg-interactive-primary text-bg-primary-white hover:bg-interactive-primary-hover',

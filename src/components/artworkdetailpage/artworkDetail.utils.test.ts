@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { getProcessImages, getStackPhotoIndex, hasArtworkIntro } from './artworkDetail.utils';
+import {
+  getArtworkArtists,
+  getProcessImages,
+  getStackPhotoIndex,
+  hasArtworkIntro,
+} from './artworkDetail.utils';
 
 describe('hasArtworkIntro', () => {
   it('소개글·작업과정 중 하나라도 있으면 소개 탭을 둔다', () => {
@@ -55,5 +60,60 @@ describe('getStackPhotoIndex', () => {
   it('사진이 없거나 첫 장이 선 아래에 있으면 첫 장으로 둔다', () => {
     expect(getStackPhotoIndex([], anchor, line)).toBe(0);
     expect(getStackPhotoIndex([line + 100, line + 400], anchor, line)).toBe(0);
+  });
+});
+
+describe('getArtworkArtists', () => {
+  it('대표 작가와 계정이 같은 공동 작업자만 뺀다', () => {
+    expect(
+      getArtworkArtists({
+        artistUserId: 15,
+        artistName: '작가가',
+        coAuthors: [
+          { userId: 15, name: '작가가' },
+          { userId: 7, name: '작가나' },
+          { userId: null, name: '작가다' },
+        ],
+      }),
+    ).toEqual([
+      { userId: 15, name: '작가가' },
+      { userId: 7, name: '작가나' },
+      { userId: undefined, name: '작가다' },
+    ]);
+  });
+
+  it('대표 작가도 계정이 없을 때 이름만 입력한 공동 작업자를 지우지 않는다', () => {
+    expect(
+      getArtworkArtists({
+        artistUserId: null,
+        artistName: '작가라',
+        coAuthors: [
+          { userId: null, name: '작가마' },
+          { userId: null, name: '작가바' },
+        ],
+      }),
+    ).toEqual([
+      { userId: undefined, name: '작가라' },
+      { userId: undefined, name: '작가마' },
+      { userId: undefined, name: '작가바' },
+    ]);
+  });
+
+  it('프로필이 있는 작가를 먼저, 이름만 입력한 작가를 뒤에 둔다', () => {
+    expect(
+      getArtworkArtists({
+        artistUserId: null,
+        artistName: '작가가',
+        coAuthors: [
+          { userId: null, name: '작가나' },
+          { userId: 7, name: '작가다' },
+          { userId: 9, name: '작가라' },
+        ],
+      }).map((artist) => artist.name),
+    ).toEqual(['작가다', '작가라', '작가가', '작가나']);
+  });
+
+  it('작가 이름이 비면 작가 미상으로 둔다', () => {
+    expect(getArtworkArtists({ artistName: '' })[0].name).toBe('작가 미상');
   });
 });

@@ -65,8 +65,6 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
     .filter(Boolean);
   const share = {
     shareTitle: display.title,
-    shareDescription: display.subtitle ?? undefined,
-    shareImageUrl: posters[0],
     disabled: isPreview,
   };
   const saveButton = (
