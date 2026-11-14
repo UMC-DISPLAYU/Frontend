@@ -158,7 +158,6 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
           display={display}
           userId={userId}
           onAdd={handleAddArtwork}
-          onOpen={(work) => navigate(`/exhibition/${displayId}/artworks/${work.id}/preview`)}
           onEdit={(work) => navigate(`/exhibition/${displayId}/artworks/${work.id}/edit`)}
           onDelete={(work) => {
             deleteArtworkMutation.reset();

@@ -17,7 +17,8 @@ interface ManageScreenProps {
   works: Work[];
   display?: DisplayDetailDto;
   userId?: number;
-  onOpen: (work: Work) => void;
+  /* 카드를 눌렀을 때. 없으면 카드는 누를 수 없다(작품 미리보기는 별도 이슈에서 연결) */
+  onOpen?: (work: Work) => void;
   onEdit: (work: Work) => void;
   onDelete: (work: Work) => void;
   onEditOrder: () => void;
@@ -51,15 +52,19 @@ function WorkRow({
 
   return (
     <div className="relative transition-transform duration-base ease-[cubic-bezier(.16,1,.3,1)] hover:-translate-y-0.5">
-      {/* 카드를 누르면 작품 미리보기(프로토타입). … 메뉴는 버튼 안에 넣지 않고 위에 겹친다 */}
-      <button
-        type="button"
-        onClick={() => onOpen(work)}
-        aria-label={`${work.title} 작품 미리보기`}
-        className="block w-full touch-manipulation text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
-      >
+      {/* … 메뉴는 카드 버튼 안에 넣지 않고 위에 겹친다 */}
+      {onOpen ? (
+        <button
+          type="button"
+          onClick={() => onOpen(work)}
+          aria-label={`${work.title} 작품 미리보기`}
+          className="block w-full touch-manipulation text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
+        >
+          <WorkCard work={work} isMine={isMine} />
+        </button>
+      ) : (
         <WorkCard work={work} isMine={isMine} />
-      </button>
+      )}
       {(canEdit || canDelete) && (
         <WorkActionSheet
           work={work}

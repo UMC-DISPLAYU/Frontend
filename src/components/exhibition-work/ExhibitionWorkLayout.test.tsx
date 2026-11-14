@@ -71,11 +71,9 @@ describe('전시 작업 탭', () => {
 });
 
 describe('전시 요약 카드', () => {
-  it('전시 미리보기는 권한으로 막힌 미리보기 주소를 새 탭으로 연다', () => {
+  it('전시 미리보기는 미리보기 화면이 생기기 전까지 전시 상세로 간다', () => {
     const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
-    const preview = nodes(page).find((node) => node.props.to === '/exhibition/7/preview')!;
-    expect(preview.props.target).toBe('_blank');
-    expect(preview.props.rel).toBe('noopener noreferrer');
+    expect(nodes(page).some((node) => node.props.to === '/display/7')).toBe(true);
   });
 
   it('일정은 앞에만 연도를 붙이고 끝 연도는 다를 때만 붙인다', () => {

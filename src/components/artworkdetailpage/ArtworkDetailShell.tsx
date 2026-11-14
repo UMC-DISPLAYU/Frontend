@@ -23,8 +23,6 @@ type Props = {
   onBack: () => void;
   /* 공개 전 전시의 작품. 띠를 두고 900px 이상에서도 뒤로가기를 남긴다 */
   isPreview?: boolean;
-  /* 전시 작업에서 연 작품 미리보기: 900px 이상에서는 뒤로가기를 두지 않는다(사용자 결정) */
-  hideDesktopBack?: boolean;
   label: ReactNode;
   hasIntro: boolean;
   intro: ReactNode;
@@ -51,7 +49,6 @@ export function ArtworkDetailShell({
   title,
   onBack,
   isPreview = false,
-  hideDesktopBack = false,
   label,
   hasIntro,
   intro,
@@ -96,7 +93,7 @@ export function ArtworkDetailShell({
           onModeChange={changeMode}
           stageRef={stageRef}
           chrome={chrome}
-          isPreview={isPreview && !hideDesktopBack}
+          isPreview={isPreview}
           onBack={onBack}
         />
 
