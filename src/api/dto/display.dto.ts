@@ -59,6 +59,8 @@ export interface SearchDisplaysRequestDto {
   region?: string | null;
   field?: string | null;
   type?: string | null;
+  /* LATEST(최초 공개일 최신순) · POPULAR(좋아요 많은 순). 서버가 아직 받지 않아 무시된다 */
+  sort?: string | null;
   cursor: number;
   size: number;
 }

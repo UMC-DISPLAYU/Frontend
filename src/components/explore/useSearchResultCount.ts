@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 export const MAX_COUNT_PAGES = 5;
 
 type SearchResultCountParams = {
-  /** 검색어가 있고 전시 보기일 때만 센다 */
+  /** 검색어가 있을 때만 센다 */
   active: boolean;
   pageItemCounts: number[];
   hasNextPage: boolean;

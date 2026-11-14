@@ -29,7 +29,10 @@ export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
     queryFn: () => searchDisplays(params),
   });
 
-export const useInfiniteSearchDisplays = (params: Omit<SearchDisplaysRequestDto, 'cursor'>) =>
+export const useInfiniteSearchDisplays = ({
+  enabled = true,
+  ...params
+}: Omit<SearchDisplaysRequestDto, 'cursor'> & { enabled?: boolean }) =>
   useInfiniteQuery({
     queryKey: queryKeys.displays.search(params as SearchDisplaysRequestDto),
     // 검색어 · 필터를 바꾸는 동안 이전 결과를 두어 목록이 스켈레톤으로 깜빡이지 않게 한다
@@ -45,6 +48,7 @@ export const useInfiniteSearchDisplays = (params: Omit<SearchDisplaysRequestDto,
       lastPage.pagination?.hasNext && lastPage.pagination?.nextCursor !== null
         ? lastPage.pagination.nextCursor
         : undefined,
+    enabled,
   });
 
 export const useDisplayMap = (params: GetDisplayMapRequestDto) =>

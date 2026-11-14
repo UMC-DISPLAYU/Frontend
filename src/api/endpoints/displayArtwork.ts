@@ -18,6 +18,8 @@ import type {
   GetArtworkPreviewResponseDataDto,
   GetDisplayArtworksResponseDataDto,
   GetMyArtworkFeelingsResponseDataDto,
+  SearchArtworksRequestDto,
+  SearchArtworksResponseDataDto,
   UpdateArtworkFeelingRequestDto,
   UpdateArtworkFeelingResponseDataDto,
   UpdateArtworkOrderRequestDto,
@@ -124,6 +126,13 @@ export const getArtworkPreview = async (
   params: GetArtworkPreviewRequestDto = {},
 ): Promise<GetArtworkPreviewResponseDataDto> =>
   apiRequest('/v1/artworks/preview', { query: params });
+
+// GET /v1/artworks/search
+export const searchArtworks = async (
+  params: SearchArtworksRequestDto,
+  signal?: AbortSignal,
+): Promise<SearchArtworksResponseDataDto> =>
+  apiRequest('/v1/artworks/search', { query: params, signal });
 
 // POST /v1/artworks/:artworkId/feelings/:feelingId/reply
 export const createArtworkFeelingReply = async (

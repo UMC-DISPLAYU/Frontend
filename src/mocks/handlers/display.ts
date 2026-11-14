@@ -4,6 +4,7 @@ import { http } from 'msw';
 import { mockDb, okStatus } from '@/mocks/data/repository';
 import { teamOf } from '@/mocks/handlers/displayMember';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { compareBySort, matchesSearchWord } from '@/mocks/searchText';
 
 const now = () => new Date().toISOString();
 
@@ -445,11 +446,16 @@ export const displayHandlers = [
       const regionParams = getParams('region');
       const typeParams = getParams('type');
 
+      const sort = url.searchParams.get('sort');
+
       const allExhibitions = listDisplays().filter((display: any) => {
-        const matchesKeyword =
-          !keyword ||
-          display.title?.includes(keyword) ||
-          display.schoolDepartmentName?.includes(keyword);
+        // 탐색 정책: 전시명 · 학교명 · 세부 소속(학과 · 학회 · 동아리명)
+        const matchesKeyword = matchesSearchWord(keyword, [
+          display.title,
+          display.organization,
+          display.department,
+          display.schoolDepartmentName,
+        ]);
 
         const matchesField =
           fieldParams.length === 0 ||
@@ -476,6 +482,13 @@ export const displayHandlers = [
 
         return matchesKeyword && matchesField && matchesStatus && matchesRegion && matchesType;
       });
+      allExhibitions.sort(
+        compareBySort(
+          sort,
+          (display: any) => display.likeCount ?? 0,
+          (display: any) => [display.displayId],
+        ),
+      );
       const exhibitions = allExhibitions.slice(cursor, cursor + size);
       const nextCursor = cursor + size < allExhibitions.length ? cursor + size : null;
 

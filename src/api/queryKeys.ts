@@ -4,7 +4,10 @@ import type {
   GetDisplayMapRequestDto,
   SearchDisplaysRequestDto,
 } from '@/api/dto/display.dto';
-import type { GetArtworkPreviewRequestDto } from '@/api/dto/displayArtwork.dto';
+import type {
+  GetArtworkPreviewRequestDto,
+  SearchArtworksRequestDto,
+} from '@/api/dto/displayArtwork.dto';
 import type { GetLoungePostsRequestDto } from '@/api/dto/lounge.dto';
 import type { NearbyParams } from '@/hooks/useNearbyDisplays';
 
@@ -89,6 +92,8 @@ export const queryKeys = {
       [...queryKeys.displayArtworks.lists(), 'display', displayId] as const,
     preview: (params?: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params ?? {}] as const,
+    search: (params: Omit<SearchArtworksRequestDto, 'cursor'>) =>
+      [...queryKeys.displayArtworks.lists(), 'search', params] as const,
     me: () => [...queryKeys.displayArtworks.lists(), 'me'] as const,
     byUserId: (userId: number) => [...queryKeys.displayArtworks.lists(), 'user', userId] as const,
     byArtistUserId: (userId: number) =>

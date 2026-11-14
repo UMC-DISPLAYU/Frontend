@@ -3,6 +3,7 @@ import { type KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from
 import { useTabIndicator } from '@/hooks/useTabIndicator';
 import { cn } from '@/utils/cn';
 
+import { EXPLORE_BLEED_X_CLASS, EXPLORE_PAD_X_CLASS } from './exploreLayout';
 import type { ExploreOption } from './exploreOptions';
 
 type ExploreFieldTabsProps = {
@@ -80,12 +81,16 @@ export function ExploreFieldTabs({
       <div aria-hidden="true" className="invisible mt-3 -mb-px h-px" ref={sentinelRef} />
       <div
         className={cn(
-          'sticky top-0 z-20 -mx-gutter bg-primary-white after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:-z-10 after:h-px after:bg-tertiary after:opacity-0 after:transition-opacity after:duration-fast after:ease-standard',
+          'sticky top-0 z-30 bg-[#fff] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:-z-10 after:h-px after:bg-[#f0f0f3] after:opacity-0 after:transition-opacity after:duration-fast after:ease-standard',
+          EXPLORE_BLEED_X_CLASS,
           isStuck && 'after:opacity-100',
         )}
       >
         <div
-          className="overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className={cn(
+            'overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+            EXPLORE_PAD_X_CLASS,
+          )}
           ref={scrollerRef}
         >
           <div
@@ -101,8 +106,10 @@ export function ExploreFieldTabs({
                   aria-controls={panelId}
                   aria-selected={isSelected}
                   className={cn(
-                    'typography-body-xl-semibold h-10 shrink-0 cursor-pointer px-3 whitespace-nowrap transition duration-fast ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus active:scale-96',
-                    isSelected ? 'text-primary' : 'text-disable hover:text-tertiary',
+                    'typography-body-xl-semibold h-10 shrink-0 cursor-pointer px-3 whitespace-nowrap transition duration-fast ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b] active:scale-96',
+                    isSelected
+                      ? 'text-[#18181b]'
+                      : 'text-[#d4d4d8] [@media(hover:hover)]:hover:text-[#71717b]',
                   )}
                   id={tabId(index)}
                   key={option.label}
@@ -123,7 +130,7 @@ export function ExploreFieldTabs({
               <span
                 aria-hidden="true"
                 className={cn(
-                  'absolute bottom-0 left-0 h-0.5 bg-interactive-primary',
+                  'absolute bottom-0 left-0 h-0.5 bg-[#18181b]',
                   indicator.animate && 'transition-[translate,width] duration-base ease-standard',
                 )}
                 style={{ translate: `${indicator.x}px 0`, width: indicator.width }}
