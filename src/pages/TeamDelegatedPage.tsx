@@ -6,11 +6,9 @@ import CompleteIcon from '@/assets/display-hub/CompleteIcon.svg';
 import SwapArrowIcon from '@/assets/team-manage/SwapArrowIcon.svg';
 import {
   MemberAvatar,
-  RoleBadge,
   type TeamDelegatedState,
   TeamHeader,
   TeamPage,
-  type TeamRole,
 } from '@/components/team-manage';
 
 const isDelegatedState = (state: unknown): state is TeamDelegatedState =>
@@ -48,11 +46,11 @@ export function TeamDelegatedPage() {
           {`${state.newLeaderName}님이 새로운 대표자가 되었어요\n대표자 전용 전시 관리 접근은 종료됐어요`}
         </p>
         <div className="flex w-full items-center">
-          <DelegatedMember name={state.newLeaderName} role="owner" />
+          <DelegatedMember name={state.newLeaderName} />
           <span aria-hidden="true" className="flex h-5 w-5.5 shrink-0 items-center justify-center">
             <img src={SwapArrowIcon} alt="" />
           </span>
-          <DelegatedMember name={state.myName} role="manager" />
+          <DelegatedMember name={state.myName} />
         </div>
         <Link
           to={workPath}
@@ -69,12 +67,11 @@ export function TeamDelegatedPage() {
   );
 }
 
-function DelegatedMember({ name, role }: { name: string; role: TeamRole }) {
+function DelegatedMember({ name }: { name: string }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
       <MemberAvatar />
       <span className="typography-body-md-semibold w-full max-w-30 truncate">{name}</span>
-      <RoleBadge role={role} />
     </div>
   );
 }

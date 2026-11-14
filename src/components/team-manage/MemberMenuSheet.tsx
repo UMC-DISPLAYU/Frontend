@@ -4,7 +4,6 @@ import { Overlay } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
 import { getMemberActions, MEMBER_ACTION_COPY, type MemberAction } from './memberActions';
-import { RoleBadge } from './RoleBadge';
 import { ChevronIcon } from './TeamIcons';
 import type { TeamRole } from './teamMembers';
 
@@ -25,16 +24,13 @@ export function MemberMenuSheet({ open, member, onClose, onSelect }: MemberMenuS
       open={open}
       onClose={onClose}
       title={
-        <span className="mt-1 flex items-center justify-between gap-3 tracking-[-0.03em]">
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#71717b]">
-              선택한 팀원
-            </span>
-            <span className="truncate text-[20px] leading-[1.4] font-semibold text-[#18181b]">
-              {member?.name}
-            </span>
+        <span className="mt-1 flex min-w-0 flex-col gap-1 tracking-[-0.03em]">
+          <span className="text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#71717b]">
+            선택한 팀원
           </span>
-          {member && <RoleBadge role={member.role} />}
+          <span className="truncate text-[20px] leading-[1.4] font-semibold text-[#18181b]">
+            {member?.name}
+          </span>
         </span>
       }
       showCloseButton={false}

@@ -1,7 +1,6 @@
 import type { DisplayMemberEntryDto } from '@/api/dto';
 
 import { MemberAvatar } from './MemberAvatar';
-import { RoleBadge } from './RoleBadge';
 import { MoreIcon } from './TeamIcons';
 import { groupMembersByRole, TEAM_ROLE_LABEL } from './teamMembers';
 
@@ -34,10 +33,7 @@ export function JoinedMemberList({ members, myUserId, onOpenMenu }: JoinedMember
                 <MemberAvatar />
                 {/* 전시 작가명 아래에 기본 닉네임(프로토타입 .nm b · small) */}
                 <div className="min-w-0 flex-1">
-                  <p className="inline-flex max-w-full items-center gap-1.5 text-[14px] leading-[1.4] font-semibold">
-                    <span className="truncate">{name}</span>
-                    <RoleBadge role={role} />
-                  </p>
+                  <p className="truncate text-[14px] leading-[1.4] font-semibold">{name}</p>
                   {member.nickname && (
                     <p className="mt-[3px] truncate text-[12px] leading-[17px] font-medium text-[#3f3f47]">
                       {member.nickname}
