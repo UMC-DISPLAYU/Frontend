@@ -2,6 +2,7 @@
 import { http } from 'msw';
 
 import { mockDb, okStatus } from '@/mocks/data/repository';
+import { teamOf } from '@/mocks/handlers/displayMember';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const now = () => new Date().toISOString();
@@ -591,7 +592,8 @@ export const displayHandlers = [
          * 팀원으로 수락했는데도 계속 403이 뜹니다.
          */
         const display = findDisplay(invitation.displayId);
-        const members = display.teamMembers ?? [];
+        // 팀원 관리 목과 같은 팀에서 시작해야 수락 뒤 팀원 관리 화면에 대표자 · 팀원이 그대로 보인다
+        const members = teamOf(display);
         const inviteeUserId = invitation.inviteeUserId;
         const existingMember = members.find((member: any) => member.userId === inviteeUserId);
 

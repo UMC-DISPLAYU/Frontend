@@ -33,7 +33,7 @@ const member = (
  * 사용자는 닉네임 검색 목(searchableUsers)과 같은 사람이라 검색하면 `참여 중` · `초대 대기`로 보인다.
  * 초대 대기는 실서버처럼 teamMemberId 가 없다.
  */
-const teamOf = (display: any): any[] => {
+export const teamOf = (display: any): any[] => {
   if (!display.teamMembers?.length) {
     const base = display.displayId * 100;
     display.teamMembers = [

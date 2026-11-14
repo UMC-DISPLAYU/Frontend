@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ConfirmDialog, ErrorView } from '@/components/common';
+import { ReceivedInvitationsFlow, useReceivedInvitationsSheet } from '@/components/invitation';
 import { PageContainer } from '@/components/layout';
 import {
   ARCHIVE_PANEL_ID,
@@ -80,6 +81,7 @@ export function MyPage() {
   const artistSummary = useMyArtistSummary({ userId: user?.id, enabled: canViewArtist });
   const { data: invitationsData } = useMyDisplayInvitations();
   const invitationCount = invitationsData?.invitations?.length ?? 0;
+  const invitationsSheet = useReceivedInvitationsSheet();
 
   const archive = useMyArchive(activeTab);
   const unarchiveArtist = useUnarchiveArtist();
@@ -286,7 +288,7 @@ export function MyPage() {
                 count={invitationCount}
                 icon={<MailIcon />}
                 label="받은 초대"
-                to="/invitation-request"
+                onClick={invitationsSheet.open}
               />
             )}
             <MyActivityRow
@@ -325,6 +327,8 @@ export function MyPage() {
           schoolName={artistSummary.schoolName}
         />
       )}
+
+      <ReceivedInvitationsFlow onClose={invitationsSheet.close} open={invitationsSheet.isOpen} />
 
       <ConfirmDialog
         cancelLabel="나중에"
