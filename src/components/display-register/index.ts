@@ -3,6 +3,7 @@ export { buildCreateDisplayRequest } from './createDisplayRequest';
 export { buildUpdateDisplayRequest, isEditDraftChanged, toEditDraft } from './displayEditDraft';
 export { DisplayEditDraftGate } from './DisplayEditDraftGate';
 export { DisplayFieldChips } from './DisplayFieldChips';
+export { DisplayLinkField } from './DisplayLinkField';
 export { DisplayPeriodSheet } from './DisplayPeriodSheet';
 export { DisplayPickerButton } from './DisplayPickerButton';
 export {
@@ -10,6 +11,18 @@ export {
   OTHER_GROUP_DISPLAY_TYPE,
   toExhibitionFields,
 } from './displayRegister.constants';
+export {
+  BIG_BUTTON_CLASS,
+  BIG_LINK_CLASS,
+  COUNT_CLASS,
+  FIELD_CLASS,
+  FOCUS_CLASS,
+  HELP_CLASS,
+  INPUT_CLASS,
+  LABEL_CLASS,
+  REQUIRED_CLASS,
+  UNDERLINE_CLASS,
+} from './displayRegister.styles';
 export {
   displayRegisterArtistSchema,
   type DisplayRegisterArtistValues,
@@ -20,7 +33,9 @@ export {
   type DisplayRegisterBasicValues,
   MAX_PLACE_NAME_LENGTH,
 } from './displayRegisterBasic.schema';
+export { DisplayRegisterCta } from './DisplayRegisterCta';
 export { DisplayRegisterHeader } from './DisplayRegisterHeader';
+export { CheckIcon, ChevronRightIcon, LockIcon } from './DisplayRegisterIcons';
 export type { DisplayRegisterIntroValues } from './displayRegisterIntro.schema';
 export { displayRegisterIntroSchema } from './displayRegisterIntro.schema';
 export { DisplayRegisterProgress } from './DisplayRegisterProgress';

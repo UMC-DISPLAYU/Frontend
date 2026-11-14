@@ -43,7 +43,6 @@ export const artworkRegisterSchema = z.object({
   material: z
     .string()
     .trim()
-    .min(1, { message: '재료 / 매체를 입력해주세요.' })
     .max(MAX_ARTWORK_MATERIAL_LENGTH, {
       message: `재료 / 매체는 ${MAX_ARTWORK_MATERIAL_LENGTH}자까지 입력할 수 있어요.`,
     }),

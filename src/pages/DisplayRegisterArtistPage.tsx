@@ -4,13 +4,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Navigate, useNavigate } from 'react-router-dom';
 
-import { BottomFixedBar } from '@/components/common';
 import {
+  BIG_BUTTON_CLASS,
   buildCreateDisplayRequest,
   displayRegisterArtistSchema,
   type DisplayRegisterArtistValues,
+  DisplayRegisterCta,
   DisplayRegisterHeader,
+  HELP_CLASS,
+  INPUT_CLASS,
+  LABEL_CLASS,
   MAX_ARTIST_NAME_LENGTH,
+  REQUIRED_CLASS,
+  UNDERLINE_CLASS,
 } from '@/components/display-register';
 import { useFlowContext } from '@/components/guards/useFlowContext';
 import { PageContainer } from '@/components/layout';
@@ -79,7 +85,8 @@ export function DisplayRegisterArtistPage() {
           backIndex < currentIndex
         ) {
           await navigate(backIndex - currentIndex);
-          navigate(completedPath);
+          // 완료 화면이 바로 뒤 기록이 어디인지 알아야 내 전시 관리 기록을 겹쳐 쌓지 않는다
+          navigate(completedPath, { state: { prevPath: window.location.pathname } });
           return;
         }
 
@@ -92,57 +99,62 @@ export function DisplayRegisterArtistPage() {
   };
 
   return (
-    <PageContainer variant="form" className="bg-primary-white">
-      <DisplayRegisterHeader title="전시 작가명 설정" onBack={handleBack} />
+    // 프로토타입은 태블릿 · 데스크톱에서도 입력 칸 바깥까지 흰 화면이다
+    <div className="min-h-dvh bg-primary-white">
+      <PageContainer variant="form" className="bg-primary-white">
+        <DisplayRegisterHeader title="전시 작가명 설정" onBack={handleBack} />
 
-      <main className="flex flex-1 flex-col gap-8 pt-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="typography-body-xl-semibold text-primary">
-            이 전시에서 사용할 작가명을 입력해주세요
-          </h2>
-          <p className="typography-body-md-medium text-tertiary">
-            팀원 목록에 표시되고, 작품 등록 시 작가명으로 사용할 이름이에요
-          </p>
-        </div>
+        <main className="flex flex-1 flex-col">
+          <form
+            id="display-register-artist-form"
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex-1"
+          >
+            <h2 className="typography-body-xl-semibold mt-2 text-primary">
+              이 전시에서 사용할 작가명을 입력해주세요
+            </h2>
+            <p className={HELP_CLASS}>
+              팀원 목록에 표시되고, 작품 등록 시 작가명으로 사용할 이름이에요
+            </p>
 
-        <form
-          id="display-register-artist-form"
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-1"
-        >
-          <label htmlFor="display-artist-name" className="flex items-center gap-1">
-            <span className="typography-body-lg-semibold text-primary">전시 작가명</span>
-            <span aria-hidden="true" className="typography-body-md-medium text-info">
-              *
-            </span>
-          </label>
-          <div className="mt-2 border-b border-icon-tertiary px-3 transition duration-fast ease-standard focus-within:border-interactive-primary">
-            <input
-              id="display-artist-name"
-              maxLength={MAX_ARTIST_NAME_LENGTH}
-              autoComplete="off"
-              placeholder="이름 또는 활동명을 입력해주세요"
-              aria-describedby="display-artist-name-help"
-              className="typography-body-xl-regular h-10 w-full bg-transparent text-primary outline-none placeholder:text-tertiary"
-              {...register('artistName')}
-            />
-          </div>
-          <p id="display-artist-name-help" className="typography-body-sm-regular text-tertiary">
-            관람객에게도 보이는 이름이에요 실명을 권장하며, [내 전시 관리]에서 바꿀 수 있어요
-          </p>
-        </form>
-      </main>
+            <div className="mt-8">
+              <label htmlFor="display-artist-name" className={LABEL_CLASS}>
+                <span>
+                  전시 작가명
+                  <span aria-hidden="true" className={REQUIRED_CLASS}>
+                    *
+                  </span>
+                </span>
+              </label>
+              <div className={UNDERLINE_CLASS}>
+                <input
+                  id="display-artist-name"
+                  maxLength={MAX_ARTIST_NAME_LENGTH}
+                  autoComplete="off"
+                  placeholder="이름 또는 활동명을 입력해주세요"
+                  aria-describedby="display-artist-name-help"
+                  className={INPUT_CLASS}
+                  {...register('artistName')}
+                />
+              </div>
+              <p id="display-artist-name-help" className={HELP_CLASS}>
+                전시에 공개되는 이름이에요 실명을 권장하며, 나중에 바꿀 수 있어요
+              </p>
+            </div>
+          </form>
 
-      <BottomFixedBar container="form">
-        <button
-          form="display-register-artist-form"
-          type="submit"
-          disabled={!isValid || createDisplay.isPending || createDisplay.isSuccess}
-          className="typography-body-lg-semibold h-11 w-full rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-disable disabled:text-disable disabled:active:scale-100"
-        >
-          {createDisplay.isPending ? '전시를 준비하는 중…' : '전시 준비하기'}
-        </button>
-      </BottomFixedBar>
-    </PageContainer>
+          <DisplayRegisterCta>
+            <button
+              form="display-register-artist-form"
+              type="submit"
+              disabled={!isValid || createDisplay.isPending || createDisplay.isSuccess}
+              className={BIG_BUTTON_CLASS}
+            >
+              {createDisplay.isPending ? '전시를 준비하는 중…' : '전시 준비하기'}
+            </button>
+          </DisplayRegisterCta>
+        </main>
+      </PageContainer>
+    </div>
   );
 }

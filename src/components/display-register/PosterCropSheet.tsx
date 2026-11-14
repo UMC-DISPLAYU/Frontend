@@ -2,8 +2,6 @@ import { type KeyboardEvent, type PointerEvent, useRef, useState } from 'react';
 
 import { Overlay } from '@/components/ui';
 import type { PosterCropRect } from '@/contexts/exhibitionRegisterDraftState';
-
-import { POSTER_CARD_RATIO } from './displayRegister.constants';
 import {
   type CropHandle,
   cropImageStyle,
@@ -13,7 +11,9 @@ import {
   moveCrop,
   resizeCrop,
   scaleCrop,
-} from './posterCrop';
+} from '@/utils/cropBox';
+
+import { POSTER_CARD_RATIO } from './displayRegister.constants';
 
 const MIN_BOX_PX = 64;
 const KEYBOARD_STEP = 0.02;
@@ -163,18 +163,19 @@ export function PosterCropSheet({
       open={open}
       onClose={onClose}
       title="카드에 보이는 부분"
+      showCloseButton={false}
       description={
-        <span className="typography-body-md-medium text-tertiary">
+        <span className="typography-body-md-medium block text-secondary">
           카드와 홈에는 상자 안이 보여요
         </span>
       }
       footer={
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             disabled={!crop}
             onClick={() => setCrop(defaultCrop)}
-            className="typography-body-lg-semibold h-11 flex-1 rounded-12 bg-secondary text-primary transition duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+            className="typography-body-lg-semibold h-11 rounded-12 bg-[#f0f0f3] text-primary transition-[background-color,transform] duration-fast ease-standard hover:bg-[#e4e4e7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
           >
             처음대로
           </button>
@@ -182,17 +183,17 @@ export function PosterCropSheet({
             type="button"
             disabled={!crop}
             onClick={handleDone}
-            className="typography-body-lg-semibold h-11 flex-1 rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable disabled:active:scale-100"
+            className="typography-body-lg-semibold h-11 rounded-12 bg-[#18181b] text-base-white transition-[background-color,transform] duration-fast ease-standard enabled:hover:bg-[#2f2f35] enabled:active:scale-98 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8]"
           >
             완료
           </button>
         </div>
       }
     >
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <div
           ref={stageRef}
-          className="relative mx-auto touch-none overflow-hidden rounded-8 bg-secondary select-none"
+          className="relative mx-auto touch-none overflow-hidden rounded-8 bg-[#f4f4f5] select-none"
           style={{
             aspectRatio: imageRatio,
             width: `min(100%, calc(min(340px, 40dvh) * ${imageRatio}))`,
@@ -252,7 +253,7 @@ export function PosterCropSheet({
 
         <div className="flex items-center gap-3">
           <div
-            className="relative w-18 shrink-0 overflow-hidden rounded-8 bg-secondary"
+            className="relative w-18 shrink-0 overflow-hidden rounded-8 bg-[#f4f4f5]"
             style={{ aspectRatio: POSTER_CARD_RATIO }}
           >
             {crop && <img src={imageUrl} alt="" style={cropImageStyle(crop)} />}
