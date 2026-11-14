@@ -10,7 +10,7 @@ export const AGREEMENT_CODES: Record<PolicyTermKey, string> = {
 const REQUIRED_TERMS = ['service', 'privacy'] as const satisfies readonly PolicyTermKey[];
 const POLICY_TERMS = ['service', 'privacy', 'location'] as const satisfies readonly PolicyTermKey[];
 
-export const findAgreement = (agreements: AgreementDto[] | undefined, key: PolicyTermKey) =>
+const findAgreement = (agreements: AgreementDto[] | undefined, key: PolicyTermKey) =>
   agreements?.find((agreement) => agreement.code === AGREEMENT_CODES[key]);
 
 export const hasRequiredTerms = (terms: TermState) =>

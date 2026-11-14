@@ -1,6 +1,6 @@
 import { AgreementCheckIcon } from './AgreementCheckIcon';
 import { focusOnMount } from './focusOnMount';
-import type { PolicyTermKey, TermKey, TermState } from './onboarding.types';
+import type { TermKey, TermState } from './onboarding.types';
 import { OnboardingBottomButton } from './OnboardingBottomButton';
 import { OnboardingHeader } from './OnboardingHeader';
 import { ChevronRightIcon } from './OnboardingIcons';
@@ -12,7 +12,7 @@ const TERM_ROWS: { key: TermKey; label: string; required: boolean }[] = [
   { key: 'location', label: '위치기반서비스 이용약관', required: false },
 ];
 
-const hasDocument = (key: TermKey): key is PolicyTermKey => key !== 'over14';
+const hasDocument = (key: TermKey) => key !== 'over14';
 
 const CHECK_BUTTON_CLASS =
   'group flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-6 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
@@ -22,13 +22,11 @@ export function TermsAgreementScreen({
   onBack,
   onChange,
   onNext,
-  onOpenDetail,
 }: {
   terms: TermState;
   onBack: () => void;
   onChange: (terms: TermState) => void;
   onNext: () => void;
-  onOpenDetail: (key: PolicyTermKey) => void;
 }) {
   const allChecked = Object.values(terms).every(Boolean);
   const canProceed = TERM_ROWS.every(({ key, required }) => !required || terms[key]);
@@ -87,14 +85,13 @@ export function TermsAgreementScreen({
                 </button>
 
                 {hasDocument(key) ? (
-                  <button
-                    type="button"
-                    onClick={() => onOpenDetail(key)}
-                    aria-label={`${label} 보기`}
-                    className="-mr-2.5 grid size-11 shrink-0 cursor-pointer place-items-center rounded-6 text-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  /* 약관 상세 화면은 두지 않고 프로토타입처럼 화살표 모양만 남긴다 */
+                  <span
+                    aria-hidden="true"
+                    className="-mr-2.5 grid size-11 shrink-0 place-items-center text-tertiary"
                   >
                     <ChevronRightIcon className="size-6" />
-                  </button>
+                  </span>
                 ) : null}
               </li>
             ))}

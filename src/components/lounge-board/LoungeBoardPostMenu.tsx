@@ -39,10 +39,7 @@ export function LoungeBoardPostMenu({ post, onEdit, onDelete }: Props) {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
-          <div
-            className="absolute right-0 top-full z-50 mt-2 w-[100px] rounded-[14px] border border-[#C4C4C4] bg-[#FCFCFC] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)]"
-            style={{ fontFamily: 'Pretendard' }}
-          >
+          <div className="absolute right-0 top-full z-50 mt-2 w-[100px] rounded-[14px] border border-[#C4C4C4] bg-[#FCFCFC] shadow-[2px_4px_18px_0px_rgba(67,0,209,0.05)]">
             {canEdit && (
               <button
                 type="button"
