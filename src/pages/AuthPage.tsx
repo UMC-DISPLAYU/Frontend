@@ -49,7 +49,10 @@ export function AuthPage() {
 
     const mutation = artist.isSaved ? artist.unarchiveArtist : artist.archiveArtist;
     mutation.mutate(userId, {
-      onSuccess: () => toast(artist.isSaved ? '저장을 취소했어요' : '작가를 저장했어요'),
+      onSuccess: () =>
+        artist.isSaved
+          ? toast('저장을 취소했어요')
+          : toast('보관함에 저장했어요', { action: { label: '보기', to: '/my?tab=artist' } }),
       onError: (error) => toast(getErrorMessage(error, '작가를 저장하지 못했어요')),
     });
   };

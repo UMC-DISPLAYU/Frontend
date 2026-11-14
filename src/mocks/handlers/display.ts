@@ -407,6 +407,44 @@ export const displayHandlers = [
       }),
     ),
   ),
+  ...paths('/api/v1/display/artists/{userId}').map((path) =>
+    http.get(path, ({ params }) => {
+      const userId = Number(params.userId);
+      // 내 작가 페이지는 내 전시 중 공개된 것만, 다른 작가는 전시 중 · 예정 · 종료가 섞인 전시를 보여 준다
+      if (userId === mockDb.me.userId) {
+        return success('/api/v1/display/artists/{userId}', {
+          createdDisplays: listDisplays()
+            .slice(0, 1)
+            .map((display: any) => ({ ...myDisplayItem(display), isLeader: true })),
+          participatedDisplays: listDisplays()
+            .slice(4, 6)
+            .map((display: any) => ({ ...myDisplayItem(display), isLeader: false })),
+        });
+      }
+
+      const day = (offset: number) =>
+        new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+      const schedules = [
+        { displayStatus: 'DISPLAYING', startDate: day(-3), endDate: day(10) },
+        { displayStatus: 'UPCOMING', startDate: day(14), endDate: day(24) },
+        {},
+        {},
+      ];
+      const items = listDisplays()
+        .slice(1, 1 + schedules.length)
+        .map((display: any, index: number) => ({
+          ...myDisplayItem(display),
+          ...schedules[index],
+          displayNickname: `작가${userId}`,
+          artistName: `작가${userId}`,
+        }));
+
+      return success('/api/v1/display/artists/{userId}', {
+        createdDisplays: items.slice(0, 2).map((item: any) => ({ ...item, isLeader: true })),
+        participatedDisplays: items.slice(2).map((item: any) => ({ ...item, isLeader: false })),
+      });
+    }),
+  ),
   ...paths('/api/v1/display/{displayId}/exit').map((path) =>
     http.delete(path, () => noContent('/api/v1/display/{displayId}/exit')),
   ),

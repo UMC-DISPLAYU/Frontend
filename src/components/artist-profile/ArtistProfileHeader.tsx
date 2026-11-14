@@ -68,7 +68,7 @@ export function ArtistProfileHeader({
             </Link>
           ) : (
             <button
-              aria-label="작가 저장"
+              aria-label={action.isSaved ? '작가 저장 취소' : '작가 저장'}
               aria-pressed={action.isSaved}
               className={ACTION_CLASS}
               disabled={action.isPending}
