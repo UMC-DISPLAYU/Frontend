@@ -11,8 +11,8 @@ interface ContentCardProps {
   onClick: () => void;
   editing?: boolean;
   onDelete?: () => void;
-  /* 편집 모드 손잡이에 붙일 끌기 속성(dnd-kit) */
-  handleProps?: HTMLAttributes<HTMLSpanElement> & { ref?: (node: HTMLElement | null) => void };
+  /* 편집 모드 손잡이에 붙일 끌기 · 방향키 핸들러 */
+  handleProps?: HTMLAttributes<HTMLSpanElement>;
   dragging?: boolean;
 }
 
@@ -63,7 +63,10 @@ export function ContentCard({
     <div
       className={cn(
         'group relative grid w-full items-stretch gap-x-4 border-b border-[#f0f0f3] py-4',
-        editing ? 'grid-cols-[72px_minmax(0,1fr)_72px]' : 'grid-cols-[72px_minmax(0,1fr)_20px]',
+        // 프로토타입 `.slist.edit .srow`: 편집 모드 행은 잡는 손 모양 · 터치 스크롤 없음 · 글자 선택 없음
+        editing
+          ? 'cursor-grab grid-cols-[72px_minmax(0,1fr)_72px] touch-none select-none'
+          : 'grid-cols-[72px_minmax(0,1fr)_20px]',
         dragging && 'bg-[#f4f4f5] opacity-60',
       )}
     >

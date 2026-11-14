@@ -1,23 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
 
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  rectSortingStrategy,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
@@ -25,12 +7,14 @@ import { useParams } from 'react-router-dom';
 import type { DisplayDetailDto } from '@/api/dto';
 import {
   type ContentEditValues,
+  moveItemByKey,
   SECTION_DESCRIPTION_MAX_LENGTH,
   SECTION_TITLE_MAX_LENGTH,
   sectionEditSchema,
   SectionFieldLabel,
   sectionInputClass,
   sectionTextareaClass,
+  useLiveSort,
 } from '@/components/artworks-manage';
 import { ErrorView } from '@/components/common';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
@@ -66,7 +50,6 @@ type Photo = {
   userId?: number;
 };
 
-const getPhotoSortableId = (photo: Photo) => String(photo.id);
 const SUPPORTED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_PHOTO_FILE_SIZE = 20 * 1024 * 1024;
 const focusRing =
@@ -84,41 +67,47 @@ interface SortablePhotoItemProps {
   isEditing: boolean;
   canReorder: boolean;
   disabled: boolean;
+  dragging: boolean;
   displayDetail: DisplayDetailDto;
   onRemove: (id: string | number) => void;
+  onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
+  onMoveByKey: (key: string) => boolean;
 }
 
+/*
+ * 프로토타입 section.html `.pgrid.edit .ph`: 편집 모드에서는 사진 칸 어디를 눌러도 끈다(삭제 버튼 제외).
+ * 끄는 칸은 제자리에서 흐려지고(.ph.drag 투명도 .55) 다른 칸 위로 가면 바로 자리를 바꾼다
+ */
 function SortablePhotoItem({
   photo,
   index,
   isEditing,
   canReorder,
   disabled,
+  dragging,
   displayDetail,
   onRemove,
+  onPointerDown,
+  onMoveByKey,
 }: SortablePhotoItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: getPhotoSortableId(photo),
-    disabled: !isEditing || !canReorder || disabled,
-  });
   const displayContentPolicy = useDisplayContentPolicy(displayDetail, photo);
   const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
+  const canDrag = isEditing && canReorder && !disabled;
 
   return (
     <li
-      ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
+      data-sort-id={photo.id}
+      tabIndex={canDrag ? 0 : undefined}
+      aria-label={canDrag ? `사진 ${index + 1}, 방향키로 순서 이동` : undefined}
+      onPointerDown={onPointerDown}
+      onKeyDown={(event) => {
+        if (canDrag && onMoveByKey(event.key)) event.preventDefault();
+      }}
       className={cn(
-        'relative aspect-3/4 min-w-0 overflow-hidden bg-[#f4f4f5]',
-        isDragging && 'z-10 opacity-55',
+        'relative aspect-3/4 min-w-0 overflow-hidden bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]',
+        isEditing && 'touch-none select-none',
+        canDrag && 'cursor-grab active:cursor-grabbing',
+        dragging && 'opacity-55',
       )}
     >
       <div className="h-full animate-rise" style={staggerStyle(index)}>
@@ -134,26 +123,16 @@ function SortablePhotoItem({
       </div>
       {isEditing && (
         <>
-          {/* 프로토타입: 편집 모드에서는 사진 칸 어디를 눌러도 끌어서 옮긴다 */}
-          <button
-            ref={setActivatorNodeRef}
-            type="button"
-            {...attributes}
-            {...listeners}
-            aria-label={`사진 ${index + 1} 순서 이동`}
-            disabled={!canReorder || disabled}
-            className={cn(
-              'absolute inset-0 size-full select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#fff] disabled:cursor-default',
-              canReorder && !disabled && 'cursor-grab touch-none active:cursor-grabbing',
-            )}
+          <span
+            aria-hidden="true"
+            className="absolute top-1.5 left-1.5 grid size-6 place-items-center rounded-circle bg-[rgba(0,0,0,.55)] text-[10px] font-semibold text-[#fff] tabular-nums"
           >
-            <span className="absolute top-1.5 left-1.5 grid size-6 place-items-center rounded-circle bg-[rgba(0,0,0,.55)] text-[10px] font-semibold text-[#fff] tabular-nums">
-              {index + 1}
-            </span>
-          </button>
+            {index + 1}
+          </span>
           {canDeleteContent && (
             <button
               type="button"
+              data-sort-ignore
               disabled={disabled}
               onClick={() => onRemove(photo.id)}
               aria-label={`사진 ${index + 1} 삭제`}
@@ -292,11 +271,6 @@ function InteriorPhotos({
   const canEditPhotos =
     canReorder ||
     photos.some((photo) => policies.displayContent.deleteContent(policyUser, displayDetail, photo));
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
 
   // 프로토타입 자동 저장: 제목 · 설명은 입력칸을 벗어나거나 화면을 나갈 때 저장한다
   const saveDetails = async (values: ContentEditValues) => {
@@ -431,22 +405,10 @@ function InteriorPhotos({
     setIsEditingPhotos(!isEditingPhotos);
   };
 
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (
-      !isEditingPhotos ||
-      !canReorder ||
-      photoActionRef.current ||
-      isPhotoActionPending ||
-      !over
-    ) {
-      return;
-    }
-    const oldIndex = photos.findIndex((photo) => getPhotoSortableId(photo) === String(active.id));
-    const newIndex = photos.findIndex((photo) => getPhotoSortableId(photo) === String(over.id));
-    if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return;
-
+  // 프로토타입: 손을 뗄 때 바뀐 순서를 바로 저장한다
+  const handleReorder = (reordered: Photo[]) => {
+    if (!isEditingPhotos || !canReorder || photoActionRef.current || isPhotoActionPending) return;
     const previous = photos;
-    const reordered = arrayMove(photos, oldIndex, newIndex);
     photoActionRef.current = true;
     setActionError(null);
     setPhotos(reordered);
@@ -466,6 +428,15 @@ function InteriorPhotos({
       },
     );
   };
+
+  const photoSort = useLiveSort({
+    items: photos,
+    disabled: !isEditingPhotos || !canReorder || isPhotoActionPending,
+    onSort: handleReorder,
+  });
+  const sortedPhotos = photoSort.items;
+  const draggingPhotoId = photoSort.draggingId;
+  const startPhotoDrag = photoSort.startDrag;
 
   return (
     <div className="min-h-dvh bg-[#fff]">
@@ -600,47 +571,42 @@ function InteriorPhotos({
                 </div>
               </div>
             )}
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={photos.map(getPhotoSortableId)}
-                strategy={rectSortingStrategy}
-              >
-                <ul className={PHOTO_GRID}>
-                  {!isEditingPhotos && canCreateContent && photos.length < MAX_CONTENT_IMAGES && (
-                    <li className="aspect-3/4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (canCreateContent && !isPhotoActionPending)
-                            fileInputRef.current?.click();
-                        }}
-                        disabled={isPhotoActionPending}
-                        className={`grid size-full content-center justify-items-center gap-1.5 border border-[#d4d4d8] text-[12px] font-medium transition-colors duration-fast hover:bg-[#f4f4f5] disabled:cursor-default disabled:text-[#d4d4d8] ${focusRing}`}
-                      >
-                        <WorkIcon name="plus" className="size-6.5" strokeWidth={1.6} />
-                        {isBusy ? '업로드 중' : '사진 추가'}
-                      </button>
-                    </li>
-                  )}
-                  {photos.map((photo, index) => (
-                    <SortablePhotoItem
-                      key={photo.id}
-                      photo={photo}
-                      index={index}
-                      isEditing={isEditingPhotos}
-                      canReorder={canReorder}
-                      disabled={isPhotoActionPending}
-                      displayDetail={displayDetail}
-                      onRemove={handleRemove}
-                    />
-                  ))}
-                </ul>
-              </SortableContext>
-            </DndContext>
+            <ul className={PHOTO_GRID}>
+              {!isEditingPhotos && canCreateContent && photos.length < MAX_CONTENT_IMAGES && (
+                <li className="aspect-3/4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (canCreateContent && !isPhotoActionPending) fileInputRef.current?.click();
+                    }}
+                    disabled={isPhotoActionPending}
+                    className={`grid size-full content-center justify-items-center gap-1.5 border border-[#d4d4d8] text-[12px] font-medium transition-colors duration-fast hover:bg-[#f4f4f5] disabled:cursor-default disabled:text-[#d4d4d8] ${focusRing}`}
+                  >
+                    <WorkIcon name="plus" className="size-6.5" strokeWidth={1.6} />
+                    {isBusy ? '업로드 중' : '사진 추가'}
+                  </button>
+                </li>
+              )}
+              {sortedPhotos.map((photo, index) => (
+                <SortablePhotoItem
+                  key={photo.id}
+                  photo={photo}
+                  index={index}
+                  isEditing={isEditingPhotos}
+                  canReorder={canReorder}
+                  disabled={isPhotoActionPending}
+                  dragging={draggingPhotoId === photo.id}
+                  displayDetail={displayDetail}
+                  onRemove={handleRemove}
+                  onPointerDown={(event) => startPhotoDrag(event, photo.id)}
+                  onMoveByKey={(key) => {
+                    const next = moveItemByKey(photos, photo.id, key);
+                    if (next) handleReorder(next);
+                    return Boolean(next);
+                  }}
+                />
+              ))}
+            </ul>
             {photos.length === 0 && !canCreateContent && (
               <p className="py-6 text-[14px] text-[#3f3f47]">아직 등록된 사진이 없어요</p>
             )}

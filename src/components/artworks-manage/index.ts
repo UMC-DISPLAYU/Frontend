@@ -12,4 +12,5 @@ export { ContentList } from './ContentList';
 export { ManageScreen } from './ManageScreen';
 export { OrderScreen } from './OrderScreen';
 export { SectionFieldLabel, sectionInputClass, sectionTextareaClass } from './SectionFields';
+export { moveItem, moveItemByKey, useLiveSort } from './useLiveSort';
 export { WorkActionSheet } from './WorkActionSheet';

@@ -56,23 +56,10 @@ vi.mock('react-hook-form', () => ({
   useWatch: () => '섹션 설명',
 }));
 vi.mock('react-router-dom', () => ({ useParams: () => ({ displayId: '7', categoryId: '9' }) }));
-vi.mock('@dnd-kit/core', () => ({
-  DndContext: () => null,
-  closestCenter: vi.fn(),
-  PointerSensor: vi.fn(),
-  TouchSensor: vi.fn(),
-  KeyboardSensor: vi.fn(),
-  useSensors: vi.fn(),
-  useSensor: vi.fn(),
-}));
-vi.mock('@dnd-kit/sortable', async (original) => ({
-  ...(await original<typeof import('@dnd-kit/sortable')>()),
-  SortableContext: () => null,
-  useSortable: () => ({ attributes: {}, listeners: {} }),
-}));
 vi.mock('@/components/artworks-manage', async () => ({
   ...(await import('@/components/artworks-manage/contentEdit.schema')),
   ...(await import('@/components/artworks-manage/constants')),
+  ...(await import('@/components/artworks-manage/useLiveSort')),
   SectionFieldLabel: () => null,
   sectionInputClass: '',
   sectionTextareaClass: '',
@@ -156,11 +143,33 @@ const click = (tree: Element[], label: string) => {
 };
 const photos = (tree: Element[]) => tree.filter((node) => 'photo' in node.props);
 const photoIds = () => photos(render()).map((node) => (node.props.photo as { id: number }).id);
+// 프로토타입 방식 끌기: 사진 칸을 누르고 다른 칸 위로 옮긴 뒤 손을 뗀다(문서 이벤트 · elementFromPoint 를 흉내 낸다)
 const drag = (activeId: string, overId: string | null, tree = render()) => {
-  (tree.find((node) => 'onDragEnd' in node.props)!.props.onDragEnd as (event: unknown) => void)({
-    active: { id: activeId },
-    over: overId === null ? null : { id: overId },
+  const item = photos(tree).find(
+    (node) => String((node.props.photo as { id: number }).id) === activeId,
+  );
+  if (!item) return;
+  const listeners: Record<string, (event?: unknown) => void> = {};
+  const list = {};
+  vi.stubGlobal('document', {
+    addEventListener: (type: string, listener: (event?: unknown) => void) => {
+      listeners[type] = listener;
+    },
+    removeEventListener: vi.fn(),
+    elementFromPoint: () =>
+      overId === null
+        ? null
+        : { closest: () => ({ dataset: { sortId: overId }, parentElement: list }) },
   });
+  (item.props.onPointerDown as (event: unknown) => void)({
+    button: 0,
+    preventDefault: vi.fn(),
+    target: { closest: () => null },
+    currentTarget: { closest: () => ({ parentElement: list }) },
+  });
+  listeners.pointermove?.({ clientX: 0, clientY: 0 });
+  listeners.pointerup?.();
+  vi.unstubAllGlobals();
 };
 const alertText = () =>
   render()
@@ -527,7 +536,8 @@ it('저장 중에 다른 칸을 고치면 앞선 저장이 끝난 뒤 바뀐 값
 it('입력칸을 벗어나지 않고 화면을 나가도 바뀐 제목 · 설명을 저장한다', () => {
   render();
   h.values = { title: '전시 전경', description: '바뀐 설명' };
-  const [syncLeaveSave, saveOnUnmount] = h.effects.slice(-2);
+  // 섹션 편집 화면의 두 effect(나갈 때 저장) 다음에 사진 끌기 정리 effect 가 온다
+  const [syncLeaveSave, saveOnUnmount] = h.effects.slice(-3, -1);
   syncLeaveSave();
   (saveOnUnmount() as () => void)();
   expect(h.save).toHaveBeenCalledWith({
