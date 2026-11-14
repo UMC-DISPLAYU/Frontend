@@ -23,63 +23,186 @@
   }
 }
 
-/* Custom Loader */
-.loader {
-  width: 40px;
-  aspect-ratio: 1;
-  --c: no-repeat
-    linear-gradient(currentColor calc(50% - 10px), #0000 0 calc(50% + 10px), currentColor 0);
-  background:
-    var(--c) 0% 100%,
-    var(--c) 50% 100%,
-    var(--c) 100% 100%;
-  background-size: 19% calc(200% + 20px);
-  animation: l4 1s infinite linear;
+/*
+ * 로딩 — 디자인 LOADING-SPEC(11-14). 스켈레톤 · 사진 켜짐 · 로더(말줄임표).
+ * 공통: 시작 후 150ms(--semantic-motion-loading-delay) 안에 끝나면 아예 보이지 않는다.
+ */
+
+/* 스켈레톤 회색 칸: 투명도 100 → 35 → 100% 숨쉬기. SkeletonList 안에서는 칸마다 --skeleton-wave 만큼 늦게 시작해 물결처럼 번진다 */
+@utility skeleton {
+  background-color: var(--skeleton-color, var(--semantic-color-bg-secondary));
+  /* 숨쉬기는 반복 루프라 전환용 시간 토큰 대신 스펙 값 1.6s · 나타남 120ms 를 쓴다 */
+  animation:
+    fade-in 120ms ease-out var(--semantic-motion-loading-delay) both,
+    skeleton-breathe 1.6s ease-in-out
+      calc(
+        var(--semantic-motion-loading-delay) + 120ms + var(--skeleton-wave, 0) *
+          var(--semantic-motion-skeleton-wave)
+      )
+      infinite;
 }
 
-@keyframes l4 {
-  33% {
-    background-position:
-      0% 50%,
-      50% 100%,
-      100% 100%;
+/* 검은 바탕 위의 스켈레톤. 감싸는 요소에 붙이면 안쪽 회색 칸이 모두 어두운 회색이 된다 */
+@utility skeleton-inverse {
+  --skeleton-color: var(--semantic-color-bg-skeleton-inverse);
+}
+
+/*
+ * 스켈레톤을 보여 준 목록(useSkeleton 의 data-skeleton="revealed")이 실제 내용으로 바뀔 때:
+ * 막대가 있던 같은 자리에서 투명도만 200ms, 앞 6칸까지 30ms 씩 늦게 나타난다(올라오는 움직임 없음).
+ * staggerStyle 이 인라인으로 넣는 animation-delay 를 덮어야 해서 !important 를 쓴다.
+ */
+[data-skeleton='revealed'] .animate-rise {
+  animation: fade-in var(--semantic-motion-duration-fast) var(--semantic-motion-easing-reveal) both;
+  animation-delay: calc(
+    min(var(--stagger-step, 0), 5) * var(--semantic-motion-reveal-stagger)
+  ) !important;
+}
+
+/* 로더(말줄임표): 네모 점 3개가 하나씩 떨어져 눌렸다 펴지고, 머문 뒤 같이 사라짐. 1.9초 반복 */
+.loader-dots {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 24px;
+  animation: fade-in 1ms linear var(--semantic-motion-loading-delay) both;
+}
+.loader-dots > i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  transform-origin: 50% 100%;
+  opacity: 0;
+}
+.loader-dots > i:nth-child(1) {
+  animation: loader-dot-1 1.9s linear infinite;
+}
+.loader-dots > i:nth-child(2) {
+  animation: loader-dot-2 1.9s linear infinite;
+}
+.loader-dots > i:nth-child(3) {
+  animation: loader-dot-3 1.9s linear infinite;
+}
+/* 점마다 떨어지는 시점만 12%씩 늦고(떨어짐 → 바닥 → 눌림 → 펴짐), 머묾 · 사라짐은 셋이 같다 */
+@keyframes loader-dot-1 {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  3% {
+    opacity: 1;
+  }
+  13% {
+    opacity: 1;
+    transform: translateY(0) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  18% {
+    transform: translateY(0) scale(1.25, 0.6);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
+  }
+  26%,
+  80% {
+    opacity: 1;
+    transform: translateY(0) scale(1, 1);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(1, 1);
+  }
+}
+@keyframes loader-dot-2 {
+  0%,
+  12% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  12.01% {
+    opacity: 0;
+    transform: translateY(-14px);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  15% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  30% {
+    transform: translateY(0) scale(1.25, 0.6);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
+  }
+  38%,
+  80% {
+    opacity: 1;
+    transform: translateY(0) scale(1, 1);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(1, 1);
+  }
+}
+@keyframes loader-dot-3 {
+  0%,
+  24% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  24.01% {
+    opacity: 0;
+    transform: translateY(-14px);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  27% {
+    opacity: 1;
+  }
+  37% {
+    opacity: 1;
+    transform: translateY(0) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  42% {
+    transform: translateY(0) scale(1.25, 0.6);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
+  }
+  50%,
+  80% {
+    opacity: 1;
+    transform: translateY(0) scale(1, 1);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(1, 1);
+  }
+}
+/* 영역 가운데 로더가 2.5초 넘게 보이면 아래에 "불러오는 중"이 300ms 로 나타난다. 버튼 안 로더에는 쓰지 않는다 */
+.loader-hint {
+  animation: fade-in 300ms ease-out calc(var(--semantic-motion-loading-delay) + 2.5s) both;
+}
+@keyframes loader-blink {
+  0%,
+  100% {
+    opacity: 1;
   }
   50% {
-    background-position:
-      0% 0%,
-      50% 50%,
-      100% 100%;
-  }
-  66% {
-    background-position:
-      0% 0%,
-      50% 0%,
-      100% 50%;
-  }
-  100% {
-    background-position:
-      0% 0%,
-      50% 0%,
-      100% 0%;
+    opacity: 0.3;
   }
 }
-
-/* 스켈레톤: 실제 콘텐츠와 같은 크기 · 모서리를 붙여 쓴다(예: skeleton-shimmer aspect-3/4 rounded-12) */
-@utility skeleton-shimmer {
-  background-color: var(--semantic-color-bg-secondary);
-  background-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in srgb, var(--semantic-color-bg-primary-white) 70%, transparent) 50%,
-    transparent 100%
-  );
-  background-repeat: no-repeat;
-  background-size: 200% 100%;
-  animation: var(--animate-shimmer);
-
-  /* 동작 줄이기에서는 하이라이트가 한쪽 끝에 멈춰 보이지 않게 단색으로 둔다 */
-  @media (prefers-reduced-motion: reduce) {
-    background-image: none;
+/*
+ * 동작 줄이기에서도 로더는 멈추면 처리 중인지 알 수 없어, 디자인 스펙대로 떨어짐 없이 깜빡이기만 한다.
+ * 아래 전역 규칙(* !important)을 덮어야 해서 여기서만 예외로 다시 지정한다.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .loader-dots > i {
+    animation: loader-blink 1.2s ease-in-out infinite !important;
+    transform: none;
   }
 }
 

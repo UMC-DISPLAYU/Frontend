@@ -8,7 +8,7 @@ import {
   DetailTopBar,
   useDetailTab,
 } from '@/components/common/detail';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
 import { cn } from '@/utils/cn';
 
 import { type ArtworkDetailTabKey, artworkPanelId, artworkTabId } from './artworkDetail.utils';
@@ -144,10 +144,13 @@ export function ArtworkDetailSkeleton() {
       <DetailTopBar className="top-0" />
       <div className={LAYOUT}>
         <Skeleton className="aspect-402/554 min-[600px]:aspect-auto min-[600px]:h-[78vh] desktop:h-[min(78vh,820px)]" />
-        <div className="flex flex-col gap-3 px-gutter pt-6 desktop:px-0 desktop:pt-0">
-          <Skeleton className="h-7 w-2/3 rounded-4" />
-          <Skeleton className="h-6 w-1/3 rounded-4" />
-          <Skeleton className="h-5 w-1/2 rounded-4" />
+        {/* ArtworkLabel 과 같은 줄: 제목, 작가(h-8) · 규격, 전시 줄 */}
+        <div className="px-gutter pt-6 pb-3 desktop:px-0 desktop:pt-0">
+          <SkeletonText className="typography-title-xs desktop:typography-title-md w-2/3" />
+          <div className="mt-1 flex flex-col">
+            <SkeletonText className="typography-body-xl-semibold h-8 w-1/3" />
+            <SkeletonText className="typography-body-lg-medium w-1/2" />
+          </div>
           <Skeleton className="mt-3 h-20 w-full rounded-12" />
         </div>
       </div>

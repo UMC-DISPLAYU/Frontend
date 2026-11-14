@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import type { DisplayTeamMemberDto } from '@/api/dto';
 import { ErrorView } from '@/components/common/ErrorView';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton, SkeletonList } from '@/components/ui/Skeleton';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getExhibitionArtistName } from '@/utils/artist';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
@@ -23,17 +24,24 @@ const CARD_FRAME = 'aspect-3/4 w-full overflow-hidden bg-secondary';
 export function WorksPanel({ displayId, teamMembers, isPreview }: Props) {
   const { data, error, isPending, isError, refetch } = useDisplayArtworks(displayId);
   const artworks = data?.artworks ?? [];
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
   return (
-    <section aria-label="작품 미리보기" className="px-gutter pt-6 pb-10 desktop:px-0">
-      {isPending ? (
+    <section
+      aria-label="작품 미리보기"
+      className="px-gutter pt-6 pb-10 desktop:px-0"
+      {...skeletonProps}
+    >
+      {showSkeleton ? (
         <div className={GRID}>
           <SkeletonList count={4}>
             {() => (
               <div>
                 <Skeleton className={CARD_FRAME} />
-                <Skeleton className="mt-2 h-5 w-2/3 rounded-4" />
-                <Skeleton className="mt-0.5 h-4 w-1/3 rounded-4" />
+                <div className="pt-2">
+                  <SkeletonText className="typography-body-lg-semibold w-2/3" />
+                  <SkeletonText className="typography-body-md-medium mt-0.5 w-1/3" />
+                </div>
               </div>
             )}
           </SkeletonList>
