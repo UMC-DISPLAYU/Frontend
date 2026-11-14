@@ -75,7 +75,12 @@ export const useDeleteDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => deleteDisplay(displayId),
-    onSuccess: (_, displayId) => invalidateDisplayQueries(queryClient, displayId),
+    onSuccess: (_, displayId) => {
+      invalidateDisplayQueries(queryClient, displayId);
+      // 무효화만 하면 뒤로가기로 상세에 돌아왔을 때 받아 둔 상세가 먼저 그려진다. 지운 전시는 캐시에서 뺀다
+      queryClient.removeQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+    },
   });
 };
 

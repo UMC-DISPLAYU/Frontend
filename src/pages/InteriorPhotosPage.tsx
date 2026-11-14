@@ -24,6 +24,7 @@ import {
   useLiveSort,
 } from '@/components/artworks-manage';
 import { ErrorView } from '@/components/common';
+import { NotFoundView } from '@/components/error-page';
 import { WorkBar } from '@/components/exhibition-work';
 import { PageContainer } from '@/components/layout';
 import { Skeleton, SkeletonList } from '@/components/ui';
@@ -137,9 +138,7 @@ export function InteriorPhotosPage() {
   }
 
   const category = displayDetail.contentCategories?.find((cat) => cat.categoryId === categoryId);
-  if (!category) {
-    return <ErrorView message="해당 섹션을 찾을 수 없습니다." onRetry={flowBack} />;
-  }
+  if (!category) return <NotFoundView />;
 
   return (
     <InteriorPhotos

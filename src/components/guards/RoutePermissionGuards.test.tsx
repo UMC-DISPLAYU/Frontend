@@ -47,6 +47,9 @@ vi.mock('@/hooks/usePolicy', () => ({
   usePersonalArtworkPolicy: () => ({}),
 }));
 vi.mock('./PermissionGuard', () => ({ PermissionGuard: () => <div>정상 권한 판정</div> }));
+vi.mock('@/components/error-page', () => ({
+  NotFoundView: () => <div>페이지를 찾을 수 없어요</div>,
+}));
 beforeEach(() => {
   h.params = { displayId: '1', artworkId: '2' };
   for (const query of [h.display, h.member, h.artwork]) {
@@ -97,13 +100,24 @@ it('이미 전시 응답에 팀원이 있으면 불필요한 팀원 조회 오�
   expect(renderToStaticMarkup(guards[0]())).toContain('정상 권한 판정');
 });
 
-it.each([403, 404])('리소스의 HTTP %i 오류를 안내한다', (status) => {
-  h.display.error = new ApiError('error', { status });
-  expect(renderToStaticMarkup(guards[0]())).toContain(status === 403 ? '권한' : '찾을 수');
+it.each([403, 404])(
+  '리소스의 HTTP %i 오류(삭제 · 권한 없음)는 재시도 없이 404 화면을 보여 준다',
+  (status) => {
+    h.display.error = new ApiError('error', { status });
+    const html = renderToStaticMarkup(guards[0]());
+    expect(html).toContain('페이지를 찾을 수 없어요');
+    expect(html).not.toContain('다시 시도');
+  },
+);
+
+it('작품 조회가 404 면 404 화면을 보여 준다', () => {
+  h.display.data = { ownerUserId: 1, teamMembers: [] };
+  h.artwork.error = new ApiError('error', { status: 404 });
+  expect(renderToStaticMarkup(guards[4]())).toContain('페이지를 찾을 수 없어요');
 });
 
 it('잘못된 ID의 비활성 query를 영구 로딩으로 표시하지 않는다', () => {
   h.params.displayId = 'invalid';
   h.display.isPending = true;
-  expect(renderToStaticMarkup(guards[0]())).toContain('찾을 수');
+  expect(renderToStaticMarkup(guards[0]())).toContain('페이지를 찾을 수 없어요');
 });

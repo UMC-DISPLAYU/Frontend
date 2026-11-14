@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/api/apiError';
 import { ErrorView } from '@/components/common/ErrorView';
 import { LoadingView } from '@/components/common/LoadingView';
+import { NotFoundView } from '@/components/error-page';
 import type { PermissionMap } from '@/types/policy';
 
 import { PermissionGuard } from './PermissionGuard';
@@ -50,6 +51,8 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: '/target', state: mocks.locationState }),
   useNavigate: () => mocks.navigate,
 }));
+
+vi.mock('@/components/error-page', () => ({ NotFoundView: () => null }));
 
 vi.mock('@/hooks/usePolicy', () => ({
   useArtistPolicy: () => mocks.artistPolicy,
@@ -105,7 +108,7 @@ describe('PermissionGuard', () => {
     const element = PermissionGuard({
       resource: 'artwork',
       action: 'create',
-      fallback: '/403',
+      fallback: '/home',
       policy: artworkPolicy(true),
       children: <div>Permission Content</div>,
     });
@@ -119,16 +122,43 @@ describe('PermissionGuard', () => {
     const element = PermissionGuard({
       resource: 'artwork',
       action: 'create',
-      fallback: '/403',
+      fallback: '/home',
       policy: artworkPolicy(false),
       children: <div>Permission Content</div>,
     });
 
     expect(element.type).toBeTypeOf('function');
     expect(element.props).toMatchObject({
-      to: '/403',
+      to: '/home',
       replace: true,
     });
+  });
+
+  it('fallback이 없으면 권한이 없을 때 이동하지 않고 이 주소에서 404 화면을 보여 준다', () => {
+    mocks.locationState = undefined;
+
+    const element = PermissionGuard({
+      resource: 'artwork',
+      action: 'create',
+      policy: artworkPolicy(false),
+      children: <div>Permission Content</div>,
+    });
+
+    expect(element.type).toBe(NotFoundView);
+  });
+
+  it('fallback이 없으면 필수 location.state가 없을 때도 404 화면을 보여 준다', () => {
+    mocks.locationState = undefined;
+
+    const element = PermissionGuard({
+      resource: 'artwork',
+      action: 'create',
+      requireState: 'display',
+      policy: artworkPolicy(true),
+      children: <div>Permission Content</div>,
+    });
+
+    expect(element.type).toBe(NotFoundView);
   });
 
   it('필수 location.state가 없으면 권한이 있어도 fallback으로 replace 이동한다', () => {
@@ -138,13 +168,13 @@ describe('PermissionGuard', () => {
       resource: 'artwork',
       action: 'create',
       requireState: 'display',
-      fallback: '/403',
+      fallback: '/home',
       policy: artworkPolicy(true),
       children: <div>Permission Content</div>,
     });
 
     expect(element.props).toMatchObject({
-      to: '/403',
+      to: '/home',
       replace: true,
     });
   });
@@ -156,13 +186,13 @@ describe('PermissionGuard', () => {
       resource: 'artwork',
       action: 'create',
       requireState: ['display', 'artwork'],
-      fallback: '/403',
+      fallback: '/home',
       policy: artworkPolicy(true),
       children: <div>Permission Content</div>,
     });
 
     expect(element.props).toMatchObject({
-      to: '/403',
+      to: '/home',
       replace: true,
     });
   });
@@ -174,7 +204,7 @@ describe('PermissionGuard', () => {
       resource: 'artwork',
       action: 'create',
       requireState: ['display', 'artwork'],
-      fallback: '/403',
+      fallback: '/home',
       policy: artworkPolicy(true),
       children: <div>Permission Content</div>,
     });
@@ -189,7 +219,7 @@ describe('PermissionGuard', () => {
     const element = PermissionGuard({
       resource: 'artist',
       action: 'view',
-      fallback: '/403',
+      fallback: '/home',
       children: <div>Artist Content</div>,
     });
 
@@ -204,7 +234,7 @@ describe('PermissionGuard', () => {
     PermissionGuard({
       resource: 'artist',
       action: 'view',
-      fallback: '/403',
+      fallback: '/home',
       children: <div>Artist Content</div>,
     });
     mocks.artistModalOptions?.onCancel?.();

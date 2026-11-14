@@ -5,6 +5,10 @@ import { ApiError } from '@/api/apiError';
 export const isRequestCanceled = (error: unknown) =>
   axios.isCancel(error) || (error instanceof Error && error.name === 'AbortError');
 
+/** 없거나(삭제 포함) 볼 권한이 없는 리소스. 권한 없음도 있는지 알리지 않도록 404 화면을 보여 준다 */
+export const isNotFoundError = (error: unknown) =>
+  error instanceof ApiError && (error.status === 404 || error.status === 403);
+
 export const getErrorMessage = (error: unknown, fallback: string) => {
   if (isRequestCanceled(error)) return '';
   if (!(error instanceof Error)) return fallback;
