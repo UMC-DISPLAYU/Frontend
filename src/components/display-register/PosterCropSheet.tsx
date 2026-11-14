@@ -15,6 +15,8 @@ import {
 
 import { POSTER_CARD_RATIO } from './displayRegister.constants';
 
+/** 전시 상세의 포스터 칸 비율(프로토타입) */
+const DETAIL_RATIO = 402 / 568;
 const MIN_BOX_PX = 64;
 const KEYBOARD_STEP = 0.02;
 const ARROW_DELTAS: Record<string, [number, number]> = {
@@ -162,11 +164,12 @@ export function PosterCropSheet({
     <Overlay
       open={open}
       onClose={onClose}
-      title="카드에 보이는 부분"
+      title="썸네일 조정"
       showCloseButton={false}
       description={
-        <span className="typography-body-md-medium block text-secondary">
-          카드와 홈에는 상자 안이 보여요
+        // 프로토타입: 제목과 설명 사이 2px (Overlay 기본 6px 에서 4px 당긴다)
+        <span className="typography-body-md-medium -mt-1 block text-secondary">
+          탐색 목록과 홈에는 상자 안만 보여요
         </span>
       }
       footer={
@@ -196,7 +199,7 @@ export function PosterCropSheet({
           className="relative mx-auto touch-none overflow-hidden rounded-8 bg-[#f4f4f5] select-none"
           style={{
             aspectRatio: imageRatio,
-            width: `min(100%, calc(min(340px, 40dvh) * ${imageRatio}))`,
+            width: `min(100%, 420px, calc(min(340px, 40dvh) * ${imageRatio}))`,
           }}
         >
           <img
@@ -218,7 +221,7 @@ export function PosterCropSheet({
             <div
               role="group"
               tabIndex={0}
-              aria-label="카드에 보이는 부분. 끌어서 이동하고 모서리를 끌어 크기를 바꿔요. 방향키로 이동하고 + − 로 크기를 바꿔요"
+              aria-label="썸네일 조정. 끌어서 이동하고 모서리를 끌어 크기를 바꿔요. 방향키로 이동하고 + − 로 크기를 바꿔요"
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={endDrag}
@@ -251,21 +254,38 @@ export function PosterCropSheet({
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <div
-            className="relative w-18 shrink-0 overflow-hidden rounded-8 bg-[#f4f4f5]"
-            style={{ aspectRatio: POSTER_CARD_RATIO }}
-          >
-            {crop && <img src={imageUrl} alt="" style={cropImageStyle(crop)} />}
-          </div>
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <p className="typography-body-lg-semibold text-primary">카드에서는 이렇게 보여요</p>
-            <p className="typography-body-md-medium text-secondary">
-              {crop && isSameCrop(crop, defaultCrop)
-                ? '사진 가운데가 보여요'
-                : '고른 부분이 보여요'}
-            </p>
-          </div>
+        {/* 프로토타입 U-160: 목록(잘린 모습 + 제목 자리 회색 줄) | 상세(사진 전체) 두 칸으로 목록에서만 잘린다는 걸 보여 준다 */}
+        <div aria-hidden="true" className="flex items-start justify-center gap-6">
+          <figure className="grid justify-items-center gap-1.5">
+            <div
+              className="relative h-24 overflow-hidden bg-[#f4f4f5]"
+              style={{ aspectRatio: POSTER_CARD_RATIO }}
+            >
+              {crop && <img src={imageUrl} alt="" style={cropImageStyle(crop)} />}
+            </div>
+            <i className="block h-1.5 w-full rounded-[2px] bg-[#e4e4e7]" />
+            <i className="-mt-0.5 block h-1.5 w-3/5 justify-self-start rounded-[2px] bg-[#e4e4e7]" />
+            <figcaption className="typography-body-md-medium mt-0.5 text-secondary">
+              목록
+            </figcaption>
+          </figure>
+          <figure className="grid justify-items-center gap-1.5">
+            <div
+              className="grid h-24 place-items-center overflow-hidden bg-[#f4f4f5]"
+              style={{ aspectRatio: DETAIL_RATIO }}
+            >
+              <img
+                src={imageUrl}
+                alt=""
+                className="pointer-events-none block max-h-full max-w-full object-contain"
+              />
+            </div>
+            <i className="invisible block h-1.5 w-full" />
+            <i className="invisible -mt-0.5 block h-1.5 w-3/5" />
+            <figcaption className="typography-body-md-medium mt-0.5 text-secondary">
+              상세
+            </figcaption>
+          </figure>
         </div>
       </div>
     </Overlay>
