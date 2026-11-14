@@ -18,6 +18,10 @@ const RAIL_CLASS =
 const ARROW_CLASS =
   'absolute top-47.5 z-10 hidden size-11 place-items-center rounded-circle border border-icon-secondary bg-primary-black text-quaternary transition duration-fast ease-standard focus-visible:outline-2 cursor-pointer hover:bg-interactive-primary focus-visible:outline-focus-inverse active:scale-96 min-[68.75rem]:grid';
 
+// 프로토타입 .shade-active(11-14 D안): 포스터 60%부터 아주 옅게 시작해 맨 아래까지 계속 어두워지는 곡선(사인 ease-in, 점 11개)
+const ACTIVE_SHADE_GRADIENT =
+  'linear-gradient(rgb(0 0 0 / 0) 60%, rgb(0 0 0 / 0.012) 64%, rgb(0 0 0 / 0.049) 68%, rgb(0 0 0 / 0.109) 72%, rgb(0 0 0 / 0.191) 76%, rgb(0 0 0 / 0.293) 80%, rgb(0 0 0 / 0.412) 84%, rgb(0 0 0 / 0.546) 88%, rgb(0 0 0 / 0.691) 92%, rgb(0 0 0 / 0.844) 96%, #000)';
+
 interface PosterCarouselProps {
   items: HomeExhibitionCard[];
   showRank: boolean;
@@ -136,10 +140,8 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
                 <span
                   aria-hidden="true"
                   data-slide-part="active-shade"
-                  className={cn(
-                    'absolute inset-0 bg-[linear-gradient(transparent_74.77%,#000)] will-change-[opacity]',
-                    !isActive && 'opacity-0',
-                  )}
+                  className={cn('absolute inset-0 will-change-[opacity]', !isActive && 'opacity-0')}
+                  style={{ backgroundImage: ACTIVE_SHADE_GRADIENT }}
                 />
                 {rank && (
                   <span
