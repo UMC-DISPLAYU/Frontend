@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 
-import type { PosterCropRect } from '@/contexts/exhibitionRegisterDraftState';
+/** 사진 전체를 1로 본 보이는 부분(노출 범위 상자) */
+export type CropRect = { x: number; y: number; w: number; h: number };
 
 export type CropHandle = 'tl' | 'tr' | 'bl' | 'br';
 type Point = { x: number; y: number };
@@ -8,7 +9,7 @@ type Point = { x: number; y: number };
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 /** 사진 가운데를 비율에 맞춰 가장 크게 자른 상자. imageRatio 는 사진의 가로/세로다 */
-export function fitCrop(imageRatio: number, cropRatio: number): PosterCropRect {
+export function fitCrop(imageRatio: number, cropRatio: number): CropRect {
   if (imageRatio >= cropRatio) {
     const w = cropRatio / imageRatio;
     return { x: (1 - w) / 2, y: 0, w, h: 1 };
@@ -18,7 +19,7 @@ export function fitCrop(imageRatio: number, cropRatio: number): PosterCropRect {
   return { x: 0, y: (1 - h) / 2, w: 1, h };
 }
 
-export function moveCrop(crop: PosterCropRect, dx: number, dy: number): PosterCropRect {
+export function moveCrop(crop: CropRect, dx: number, dy: number): CropRect {
   return {
     ...crop,
     x: clamp(crop.x + dx, 0, 1 - crop.w),
@@ -28,13 +29,13 @@ export function moveCrop(crop: PosterCropRect, dx: number, dy: number): PosterCr
 
 /** 잡은 모서리의 반대쪽을 고정하고 비율을 유지한 채 크기를 바꾼다 */
 export function resizeCrop(
-  start: PosterCropRect,
+  start: CropRect,
   handle: CropHandle,
   point: Point,
   imageRatio: number,
   cropRatio: number,
   minWidth: number,
-): PosterCropRect {
+): CropRect {
   const isRight = handle[1] === 'r';
   const isBottom = handle[0] === 'b';
   const anchorX = isRight ? start.x : start.x + start.w;
@@ -54,12 +55,12 @@ export function resizeCrop(
 
 /** 키보드 조작용. 가운데를 유지한 채 factor 배로 크기를 바꾼다 */
 export function scaleCrop(
-  crop: PosterCropRect,
+  crop: CropRect,
   factor: number,
   imageRatio: number,
   cropRatio: number,
   minWidth: number,
-): PosterCropRect {
+): CropRect {
   const heightPerWidth = imageRatio / cropRatio;
   const w = clamp(crop.w * factor, minWidth, Math.min(1, 1 / heightPerWidth));
   const h = w * heightPerWidth;
@@ -72,13 +73,13 @@ export function scaleCrop(
   };
 }
 
-export function isSameCrop(a: PosterCropRect, b: PosterCropRect) {
+export function isSameCrop(a: CropRect, b: CropRect) {
   return (
     Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.w - b.w) + Math.abs(a.h - b.h) < 0.002
   );
 }
 
-export function isValidCrop(crop: PosterCropRect | null | undefined): crop is PosterCropRect {
+export function isValidCrop(crop: CropRect | null | undefined): crop is CropRect {
   if (!crop) return false;
   const values = [crop.x, crop.y, crop.w, crop.h];
 
@@ -94,7 +95,7 @@ export function isValidCrop(crop: PosterCropRect | null | undefined): crop is Po
 }
 
 /** position: relative · overflow: hidden 인 칸을 상자 부분만으로 채우는 이미지 스타일 */
-export function cropImageStyle(crop: PosterCropRect): CSSProperties {
+export function cropImageStyle(crop: CropRect): CSSProperties {
   return {
     position: 'absolute',
     maxWidth: 'none',

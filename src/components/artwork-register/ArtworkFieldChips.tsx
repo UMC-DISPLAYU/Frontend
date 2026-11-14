@@ -1,4 +1,3 @@
-import CheckIcon from '@/assets/display-register/CheckIcon.svg';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
@@ -7,6 +6,8 @@ import {
   exceedsArtworkFieldLimit,
   MAX_ARTWORK_FIELDS,
 } from './artworkRegister.constants';
+import { FOCUS_CLASS } from './artworkRegister.styles';
+import { CheckIcon } from './ArtworkRegisterIcons';
 
 interface ArtworkFieldChipsProps {
   labelId: string;
@@ -37,11 +38,7 @@ export function ArtworkFieldChips({
   };
 
   return (
-    <div
-      role="group"
-      aria-labelledby={labelId}
-      className="grid grid-cols-4 gap-1.5 tablet:grid-cols-6"
-    >
+    <div role="group" aria-labelledby={labelId} className="mt-2 grid grid-cols-4 gap-1.5">
       {ARTWORK_FIELD_OPTIONS.map(({ label }) => {
         const isSelected = selected.includes(label);
 
@@ -52,13 +49,14 @@ export function ArtworkFieldChips({
             aria-pressed={isSelected}
             onClick={() => toggle(label)}
             className={cn(
-              'typography-body-lg-medium flex h-11 min-w-0 items-center justify-center gap-1 rounded-8 border transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99',
+              'typography-body-lg-medium inline-flex h-11 min-w-0 items-center justify-center gap-1 rounded-8 border transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-97',
+              FOCUS_CLASS,
               isSelected
-                ? 'border-interactive-primary bg-interactive-primary text-interactive-inverse'
-                : 'border-primary bg-primary-white text-primary hover:bg-secondary',
+                ? 'border-[#18181b] bg-[#18181b] text-base-white'
+                : 'border-primary text-primary hover:bg-secondary',
             )}
           >
-            {isSelected && <img src={CheckIcon} alt="" className="size-4 shrink-0" />}
+            {isSelected && <CheckIcon strokeWidth={2.2} className="size-4" />}
             {label}
           </button>
         );

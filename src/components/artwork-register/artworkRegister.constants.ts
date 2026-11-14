@@ -13,8 +13,8 @@ export const MAX_ARTWORK_SIZE_LENGTH = 40;
 export const MAX_CO_AUTHOR_NAME_LENGTH = 20;
 export const MAX_PROXY_AUTHOR_NAME_LENGTH = 20;
 
-// 서버 types 가 최대 2개라 화면에서도 2개까지만 고른다
-export const MAX_ARTWORK_FIELDS = 2;
+// 프로토타입 · 사용자 요청: 작품분야는 3개까지 고른다
+export const MAX_ARTWORK_FIELDS = 3;
 
 // 서버 enum 이 화면의 12개 분야보다 적어 그래픽 · 브랜딩 · 제품 · 공간 · UXUI 는 DESIGN 으로 보낸다
 export const ARTWORK_FIELD_OPTIONS: readonly { label: string; value: ArtworkTypeDto }[] = [
@@ -57,7 +57,7 @@ export function toArtworkTypes(
 }
 
 /**
- * 고른 분야가 서버 한도(최대 2개)를 넘는지. 기타가 화면에 없는 서버 분야 여러 개를 대신하고 있으면
+ * 고른 분야가 한도(최대 3개)를 넘는지. 기타가 화면에 없는 서버 분야 여러 개를 대신하고 있으면
  * 보낼 때 그만큼 늘어나므로 바꾼 뒤의 서버 값 개수로도 센다
  */
 export function exceedsArtworkFieldLimit(

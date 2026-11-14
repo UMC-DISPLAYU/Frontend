@@ -1,13 +1,19 @@
 import { type KeyboardEvent, useId, useState } from 'react';
 
-import RemoveIcon from '@/assets/artwork-register/RemoveIcon.svg';
-import CheckIcon from '@/assets/display-register/CheckIcon.svg';
 import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { Overlay } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
 import { MAX_CO_AUTHOR_NAME_LENGTH } from './artworkRegister.constants';
+import {
+  BIG_BUTTON_CLASS,
+  INPUT_CLASS,
+  LABEL_CLASS,
+  REQUIRED_CLASS,
+  UNDERLINE_CLASS,
+} from './artworkRegister.styles';
 import type { ArtworkPerson, ArtworkTeamCandidate } from './artworkRegister.types';
+import { CheckIcon, CloseIcon } from './ArtworkRegisterIcons';
 import { DIRECT_INPUT_CAPTION, toNamedCoAuthor, toTeamCoAuthor } from './artworkTeam';
 import type { CandidatesStatus } from './proxyAuthor';
 import { TeamCandidatesState } from './TeamCandidatesState';
@@ -92,11 +98,7 @@ export function CoAuthorSheet({
       title="공동 작가 추가"
       showCloseButton={false}
       footer={
-        <button
-          type="button"
-          onClick={handleDone}
-          className="typography-body-lg-semibold h-11 w-full rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
-        >
+        <button type="button" onClick={handleDone} className={BIG_BUTTON_CLASS}>
           {tab === 'team' ? '완료' : '추가하기'}
         </button>
       }
@@ -155,14 +157,14 @@ export function CoAuthorSheet({
                     {!candidate.disabled && (
                       <span
                         className={cn(
-                          'typography-body-md-semibold flex shrink-0 items-center gap-1 rounded-20 border px-4 py-2 transition duration-fast ease-standard',
+                          'typography-body-md-semibold ml-auto inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-20 border px-4 transition-colors duration-fast',
                           isPicked
-                            ? 'border-interactive-primary bg-interactive-primary text-interactive-inverse'
+                            ? 'border-[#18181b] bg-[#18181b] text-base-white'
                             : 'border-primary text-primary',
                         )}
                       >
+                        {isPicked && <CheckIcon strokeWidth={2} className="size-4" />}
                         {isPicked ? '추가됨' : '추가'}
-                        {isPicked && <img src={CheckIcon} alt="" className="size-4" />}
                       </span>
                     )}
                   </button>
@@ -179,14 +181,16 @@ export function CoAuthorSheet({
         </div>
       ) : (
         <div role="tabpanel">
-          <div className="group mt-5 flex flex-col gap-1">
-            <label htmlFor={inputId} className="flex items-center gap-1">
-              <span className="typography-body-lg-semibold text-primary">공동 작가 이름</span>
-              <span aria-hidden="true" className="typography-body-lg-semibold text-error">
-                *
+          <div className="mt-5">
+            <label htmlFor={inputId} className={LABEL_CLASS}>
+              <span>
+                공동 작가 이름
+                <span aria-hidden="true" className={REQUIRED_CLASS}>
+                  *
+                </span>
               </span>
             </label>
-            <div className="border-b border-primary py-3 transition duration-fast ease-standard focus-within:border-interactive-primary">
+            <div className={UNDERLINE_CLASS}>
               <input
                 id={inputId}
                 value={nameInput}
@@ -197,10 +201,10 @@ export function CoAuthorSheet({
                 aria-describedby={helpId}
                 onChange={(event) => setNameInput(event.target.value)}
                 onKeyDown={handleNameKeyDown}
-                className="typography-body-xl-regular w-full bg-transparent text-primary outline-none placeholder:text-tertiary"
+                className={INPUT_CLASS}
               />
             </div>
-            <p id={helpId} className="typography-body-md-medium text-secondary">
+            <p id={helpId} className="typography-body-md-medium mt-1 text-secondary">
               이름만 표시돼요
               <br />
               프로필 연결과 편집 권한은 없어요
@@ -225,7 +229,7 @@ export function CoAuthorSheet({
                         {DIRECT_INPUT_CAPTION}
                       </span>
                     </span>
-                    <img src={RemoveIcon} alt="" className="size-5" />
+                    <CloseIcon className="ml-auto size-4.5 shrink-0 text-primary" />
                   </button>
                 </li>
               ))}

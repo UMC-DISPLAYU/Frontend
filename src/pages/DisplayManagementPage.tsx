@@ -16,7 +16,6 @@ import {
   useMyDisplays,
   useUpdateMyDisplayNickname,
 } from '@/hooks/queries/useMyDisplays';
-import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import { useSkeleton } from '@/hooks/useSkeleton';
@@ -31,7 +30,6 @@ const LIST_CLASS =
 
 export function DisplayManagementPage() {
   const navigate = useNavigate();
-  const flowBack = useFlowBack();
   const { data: displays, isPending, refetch } = useMyDisplays();
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
   const deleteDisplay = useDeleteDisplay();
@@ -204,7 +202,8 @@ export function DisplayManagementPage() {
           <button
             type="button"
             aria-label="뒤로가기"
-            onClick={flowBack}
+            // 프로토타입: 어디서 들어왔든 < 는 마이로 간다
+            onClick={() => navigate('/my')}
             className="grid size-11 place-items-center rounded-full transition-colors duration-200 hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             <svg
