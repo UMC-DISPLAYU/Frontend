@@ -56,7 +56,7 @@ export function ArtistVerifyLeaveOverlay({ open, onStay, onLeave }: ArtistVerify
       showCloseButton={false}
       size="sm"
       title={
-        <span className={`${PROTOTYPE_FONT} text-[20px] font-semibold tracking-[-0.03em]`}>
+        <span className={`${PROTOTYPE_FONT} text-[20px] font-bold tracking-[-0.03em]`}>
           작가 인증을 그만할까요?
         </span>
       }

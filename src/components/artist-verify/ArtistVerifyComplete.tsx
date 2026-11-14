@@ -33,7 +33,7 @@ export function ArtistVerifyComplete({ onGoProfile, onDone }: ArtistVerifyComple
             />
           </div>
           <h1
-            className="mt-6 animate-[artist-verify-up_.5s_.3s_cubic-bezier(.16,1,.3,1)_both] text-[20px] font-semibold outline-none"
+            className="mt-6 animate-[artist-verify-up_.5s_.3s_cubic-bezier(.16,1,.3,1)_both] text-[20px] font-bold outline-none"
             ref={titleRef}
             tabIndex={-1}
           >
