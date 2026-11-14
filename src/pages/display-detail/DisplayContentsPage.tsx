@@ -3,11 +3,12 @@ import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { NotFoundView } from '@/components/error-page';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 /* 피그마 메모: 흰 화면에서 사진이 위에서 아래로 이어진다. 폭 362(좌우 20) · 사이 12 · 3:4 */
@@ -38,17 +39,15 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
       ? categories[0]
       : categories.find((item) => item.categoryId === Number(categoryParam));
 
-  // 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
-  if (displayId === null || (!isPending && (!display || !category))) {
+  // 삭제된 전시 · 없는 콘텐츠 번호는 404. 그 밖에 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
+  if (displayId === null || isNotFoundError(error) || (display && !category)) {
+    return <NotFoundView />;
+  }
+  if (!isPending && !display) {
     return (
       <ErrorView
-        message={
-          error
-            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
-            : '전시 콘텐츠를 찾을 수 없어요'
-        }
-        onRetry={error ? () => void refetch() : goBack}
-        retryLabel={error ? '다시 시도' : '뒤로가기'}
+        message={getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')}
+        onRetry={() => void refetch()}
       />
     );
   }

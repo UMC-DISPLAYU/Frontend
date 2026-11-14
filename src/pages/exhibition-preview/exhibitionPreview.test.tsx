@@ -7,6 +7,7 @@ import { ArtworkPreviewGuestbook } from '@/components/artworkdetailpage/ArtworkG
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
+import { NotFoundView } from '@/components/error-page';
 
 import { ArtworkDetailPage } from '../ArtworkDetailPage';
 import { DisplayContentsPage } from '../display-detail/DisplayContentsPage';
@@ -46,6 +47,7 @@ vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams(h.search)],
 }));
 vi.mock('@/components/common', () => ({ ErrorView: () => null }));
+vi.mock('@/components/error-page', () => ({ NotFoundView: () => null }));
 vi.mock('../display-detail/DisplayContentsPage', () => ({ DisplayContentsPage: () => null }));
 vi.mock('@/components/display-detail', () => ({
   DisplayDetailSkeleton: () => null,
@@ -145,12 +147,19 @@ describe('전시 미리보기', () => {
     expect(asElement(DisplayPreviewPage()).type).toBe(DisplayDetailSkeleton);
   });
 
-  it('전시 번호가 숫자가 아니면 오류 화면을 보인다', () => {
+  it('전시 번호가 숫자가 아니면 404 화면을 보인다', () => {
     h.params = { displayId: 'abc' };
     h.display.isPending = true;
+    expect(asElement(DisplayPreviewPage()).type).toBe(NotFoundView);
+  });
+
+  it('불러오기에 실패하면 다시 시도 화면을 보인다', () => {
+    h.display.data = undefined;
+    h.display.error = new Error('network');
     const page = asElement(DisplayPreviewPage());
     expect(page.type).toBe(ErrorView);
-    expect(page.props.message).toBe('전시 정보를 찾을 수 없어요');
+    (page.props.onRetry as () => void)();
+    expect(h.display.refetch).toHaveBeenCalledOnce();
   });
 });
 
@@ -189,15 +198,12 @@ describe('작품 미리보기', () => {
   it('다른 전시의 작품이면 보여주지 않는다', () => {
     h.artwork.data = artworkOf(8);
     const onBack = vi.fn();
-    const page = asElement(ArtworkDetailPage({ previewDisplayId: 7, onBack }));
-    expect(page.type).toBe(ErrorView);
-    expect(page.props.message).toBe('작품 정보를 찾을 수 없습니다');
-    expect(page.props.onRetry).toBe(onBack);
+    expect(asElement(ArtworkDetailPage({ previewDisplayId: 7, onBack })).type).toBe(NotFoundView);
   });
 
   it('전시 정보가 없는 작품도 보여주지 않는다', () => {
     h.artwork.data = { ...artworkOf(7), exhibitionInfo: null };
-    expect(asElement(ArtworkDetailPage({ previewDisplayId: 7 })).type).toBe(ErrorView);
+    expect(asElement(ArtworkDetailPage({ previewDisplayId: 7 })).type).toBe(NotFoundView);
   });
 
   it('공개 작품 상세는 그대로 공개 화면이다', () => {

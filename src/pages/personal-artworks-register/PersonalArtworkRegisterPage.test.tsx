@@ -35,7 +35,6 @@ const h = vi.hoisted(() => ({
 }));
 
 vi.mock('react-router-dom', () => ({
-  Navigate: ({ to }: { to: string }) => <i data-navigate={to} />,
   useNavigate: () => h.navigate,
   useParams: () => h.params,
 }));
@@ -55,6 +54,7 @@ vi.mock('@/components/artwork-register', async () => ({
   useLeaveArtworkRegister: () => h.leave,
 }));
 vi.mock('@/components/common', () => ({ ErrorView: () => <p>error</p> }));
+vi.mock('@/components/error-page', () => ({ NotFoundView: () => <i data-not-found /> }));
 vi.mock('@/hooks/queries/usePersonalArtwork', () => ({
   usePersonalArtwork: () => h.artwork,
   useCreatePersonalArtwork: () => h.create,
@@ -142,10 +142,10 @@ describe('개인 작품 수정', () => {
     expect(render()).toContain('skeleton');
   });
 
-  it('본인 작품이 아니면 403 으로 보낸다', () => {
+  it('본인 작품이 아니면 이 주소에서 404 화면을 보여 준다', () => {
     h.canEdit = false;
 
-    expect(render()).toContain('data-navigate="/403"');
+    expect(render()).toContain('data-not-found');
   });
 
   it('수정 완료하면 감상 포인트를 지키고, 토스트 후 들어온 화면(없으면 작품 상세)으로 돌아간다', () => {

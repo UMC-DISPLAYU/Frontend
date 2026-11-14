@@ -13,13 +13,14 @@ import {
 } from '@/components/artist-profile';
 import { ErrorView } from '@/components/common';
 import { DetailTopBar } from '@/components/common/detail';
+import { NotFoundView } from '@/components/error-page';
 import { SkeletonList } from '@/components/ui';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/stores/toastStore';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 
 const EXHIBITION_LIMIT = 3;
@@ -63,6 +64,8 @@ export function AuthPage() {
       onError: (error) => toast(getErrorMessage(error, '작가를 저장하지 못했어요')),
     });
   };
+
+  if (isNotFoundError(profileQuery.error)) return <NotFoundView />;
 
   if (profileQuery.isError && !header) {
     return (

@@ -2,9 +2,10 @@ import { useParams } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
+import { NotFoundView } from '@/components/error-page';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useSkeleton } from '@/hooks/useSkeleton';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 import { usePreviewBack } from './usePreviewBack';
@@ -19,16 +20,13 @@ export function DisplayPreviewPage() {
 
   if (showSkeleton) return <DisplayDetailSkeleton />;
 
-  if (!display || displayId === null) {
+  if (displayId === null || isNotFoundError(error)) return <NotFoundView />;
+
+  if (!display) {
     return (
       <ErrorView
-        message={
-          error
-            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
-            : '전시 정보를 찾을 수 없어요'
-        }
-        onRetry={error ? () => void refetch() : goBack}
-        retryLabel={error ? '다시 시도' : '뒤로가기'}
+        message={getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')}
+        onRetry={() => void refetch()}
       />
     );
   }

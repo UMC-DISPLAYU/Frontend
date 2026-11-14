@@ -4,6 +4,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common/ErrorView';
 import { LoadingView } from '@/components/common/LoadingView';
+import { NotFoundView } from '@/components/error-page';
 import { useIsUserMePending, useUserMe } from '@/hooks/queries/useUserProfile';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArtistPolicy } from '@/hooks/usePolicy';
@@ -18,6 +19,7 @@ type PermissionGuardProps<Resource extends PolicyResource> = {
   resource: Resource;
   action: PolicyAction<Resource>;
   requireState?: LocationStateRequirement;
+  /** 들어갈 수 없을 때 보낼 경로. 없으면 이 주소에서 404 화면을 보여 준다(권한 없는 화면이 있는지 알리지 않는다) */
   fallback?: string;
   policy?: PermissionMap<PolicyAction<Resource>>;
   children: ReactNode;
@@ -37,7 +39,7 @@ export function PermissionGuard<Resource extends PolicyResource>({
   resource,
   action,
   requireState,
-  fallback = '/403',
+  fallback,
   policy,
   children,
 }: PermissionGuardProps<Resource>) {
@@ -80,17 +82,15 @@ export function PermissionGuard<Resource extends PolicyResource>({
       />
     );
 
-  if (!satisfiesState) {
-    return <Navigate to={fallback} replace />;
-  }
+  const denied = fallback ? <Navigate to={fallback} replace /> : <NotFoundView />;
+
+  if (!satisfiesState) return denied;
 
   if (shouldShowArtistModal) {
     return <>{artistVerificationModal}</>;
   }
 
-  if (!canEnter) {
-    return <Navigate to={fallback} replace />;
-  }
+  if (!canEnter) return denied;
 
   return <>{children}</>;
 }
