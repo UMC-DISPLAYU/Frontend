@@ -1,31 +1,30 @@
 import { type RefObject, useEffect } from 'react';
 
-// 스플래시 마크업 · 스타일 · 노출 판별은 index.html 에 있다. 값은 디자인 전달 문서(로딩 화면 SPEC 1-2 · 1-4)와 같다
-const HOLD_MS = 150;
+// 스플래시 마크업 · 스타일 · 노출 판별 · 로고 움직임은 index.html 에 있다. 값은 디자인 전달 문서(스플래시 SPEC 1-2 · 1-4)와 같다
 const MOVE_MS = 720;
-const PIECES_FALLBACK_MS = 1180;
+const LOGO_DONE_EVENT = 'du-splash-logo-done';
 
 // StrictMode 의 이펙트 두 번 실행 · 홈 재진입에도 한 번만 잇는다
 let handedOff = false;
 
 const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
-const waitForPieces = (splash: HTMLElement) => {
-  if (!('getAnimations' in splash)) return wait(PIECES_FALLBACK_MS - performance.now());
-  return Promise.all(
-    splash.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})),
-  );
-};
+// index.html 스크립트가 로고 완성 + 머묾(150ms)이 지나면 data-logo-done 을 붙이고 이벤트를 보낸다
+const waitForLogo = (splash: HTMLElement) =>
+  new Promise<void>((resolve) => {
+    if (splash.hasAttribute('data-logo-done')) {
+      resolve();
+      return;
+    }
+    splash.addEventListener(LOGO_DONE_EVENT, () => resolve(), { once: true });
+  });
 
 async function handOff(splash: HTMLElement, logo: HTMLImageElement) {
   const root = document.documentElement;
   const splashLogo = splash.querySelector('.sp-logo');
 
-  // 데이터는 기다리지 않는다. 조각이 다 자리 잡고 잠깐 머문 뒤, 헤더 로고가 그려질 수 있으면 잇는다
-  await Promise.all([
-    waitForPieces(splash).then(() => wait(HOLD_MS)),
-    logo.decode().catch(() => {}),
-  ]);
+  // 데이터는 기다리지 않는다. 로고가 완성되고 잠깐 머문 뒤, 헤더 로고가 그려질 수 있으면 잇는다
+  await Promise.all([waitForLogo(splash), logo.decode().catch(() => {})]);
   // 7초 안전장치가 먼저 걷어 낸 경우
   if (!splash.isConnected || !splashLogo) return;
 
