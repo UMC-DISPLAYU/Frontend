@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
 import { ChevronRightIcon } from './ArtistProfileIcons';
@@ -85,10 +85,11 @@ export function ArtistExhibitionRowSkeleton() {
   return (
     <div aria-hidden="true" className="grid grid-cols-[72px_minmax(0,1fr)] gap-x-4 py-4">
       <Skeleton className={POSTER_FRAME_CLASS} />
-      <div className="flex flex-col gap-1.5 self-center">
-        <Skeleton className="h-4 w-12 rounded-4" />
-        <Skeleton className="h-5 w-3/4 rounded-4" />
-        <Skeleton className="h-4 w-1/2 rounded-4" />
+      <div className="grid gap-0.5 self-center">
+        <SkeletonText className="typography-body-md-medium h-4.5 w-12" />
+        <SkeletonText className="typography-body-xl-semibold w-7/10" />
+        <SkeletonText className="typography-body-md-medium w-1/2" />
+        <SkeletonText className="typography-body-md-regular2 w-3/5" />
       </div>
     </div>
   );
@@ -136,8 +137,10 @@ export function ArtistWorkCardSkeleton() {
   return (
     <div aria-hidden="true">
       <Skeleton className={WORK_FRAME_CLASS} />
-      <Skeleton className="mt-1 h-5 w-3/4 rounded-4" />
-      <Skeleton className="mt-0.5 h-4 w-1/3 rounded-4" />
+      <div className="mt-1">
+        <SkeletonText className="typography-body-lg-semibold w-7/10" />
+        <SkeletonText className="typography-body-md-medium w-1/2" />
+      </div>
     </div>
   );
 }

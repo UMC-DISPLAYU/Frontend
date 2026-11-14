@@ -69,6 +69,10 @@ vi.mock('@/components/ui', () => ({
   SkeletonList: () => null,
 }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
+// 컴포넌트를 함수로 직접 호출하는 테스트라 훅 상태 없이 isPending 을 그대로 쓴다
+vi.mock('@/hooks/useSkeleton', () => ({
+  useSkeleton: (isPending: boolean) => ({ showSkeleton: isPending, skeletonProps: {} }),
+}));
 vi.mock('@/hooks/queries/useUserProfile', () => ({
   useUserMe: () => ({ data: { id: h.userId, isVerified: true } }),
 }));

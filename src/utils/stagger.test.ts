@@ -29,9 +29,10 @@ describe('getStaggerStep', () => {
 });
 
 describe('staggerStyle', () => {
-  it('stagger 토큰에 순번을 곱한 animationDelay 를 만든다', () => {
+  it('stagger 토큰에 순번을 곱한 animationDelay 와 순번 변수를 만든다', () => {
     expect(staggerStyle(2)).toEqual({
       animationDelay: 'calc(var(--semantic-motion-stagger) * 2)',
+      '--stagger-step': 2,
     });
   });
 });

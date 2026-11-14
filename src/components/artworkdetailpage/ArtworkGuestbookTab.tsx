@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DisplayDetailDto } from '@/api/dto';
 import { BottomCommentBar } from '@/components/common/BottomCommentBar';
 import { ErrorView } from '@/components/common/ErrorView';
-import { Skeleton, SkeletonList } from '@/components/ui/Skeleton';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import {
   useArtworkFeelings,
   useCreateArtworkFeeling,
@@ -11,6 +11,7 @@ import {
 } from '@/hooks/queries/useArtworkFeelings';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useFeelingPolicy, useFeelingReplyPolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -28,9 +29,9 @@ export function GuestbookSkeleton() {
       {() => (
         <div className="flex gap-3 pt-4 pb-2">
           <Skeleton className="size-8 shrink-0 rounded-circle" />
-          <div className="flex flex-1 flex-col gap-2">
-            <Skeleton className="h-5 w-1/3 rounded-4" />
-            <Skeleton className="h-5 w-full rounded-4" />
+          <div className="min-w-0 flex-1">
+            <SkeletonText className="typography-body-lg-semibold min-h-6 w-1/3" />
+            <SkeletonText className="typography-body-lg-regular mt-2 w-full" />
           </div>
         </div>
       )}
@@ -64,6 +65,7 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
     fetchNextPage,
     isFetchingNextPage,
   } = useArtworkFeelings(artworkId);
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
   const createFeeling = useCreateArtworkFeeling();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const feelingPolicy = useFeelingPolicy(display, undefined);
@@ -115,27 +117,28 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
   }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   return (
-    <div className="px-gutter py-2 desktop:px-0">
-      {isPending && <GuestbookSkeleton />}
+    <div className="px-gutter py-2 desktop:px-0" {...skeletonProps}>
+      {showSkeleton && <GuestbookSkeleton />}
 
-      {!isPending && !isError && feelings.length === 0 && (
+      {!showSkeleton && !isError && feelings.length === 0 && (
         <p className="typography-body-lg-medium py-10 text-center text-tertiary">
           아직 방명록이 없어요
         </p>
       )}
 
       <div className="flex flex-col">
-        {feelings.map((feeling) => (
-          <ArtworkFeelingCommentItem
-            key={feeling.feelingId}
-            artworkId={artworkId}
-            feeling={feeling}
-            display={display}
-            myUserId={myUserId}
-            activeReplyId={activeReplyId}
-            onReplyClick={handleReplyClick}
-          />
-        ))}
+        {!showSkeleton &&
+          feelings.map((feeling) => (
+            <ArtworkFeelingCommentItem
+              key={feeling.feelingId}
+              artworkId={artworkId}
+              feeling={feeling}
+              display={display}
+              myUserId={myUserId}
+              activeReplyId={activeReplyId}
+              onReplyClick={handleReplyClick}
+            />
+          ))}
       </div>
 
       <div ref={triggerRef} className="h-4" />

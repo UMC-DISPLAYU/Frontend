@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
 import { BookmarkIcon, ExternalLinkIcon, PencilIcon } from './ArtistProfileIcons';
@@ -140,10 +140,13 @@ export function ArtistProfileHeaderSkeleton() {
       className="grid grid-cols-[minmax(0,1fr)_116px] gap-x-4 pt-6 desktop:flex desktop:flex-col desktop:pt-0"
     >
       <div>
-        <Skeleton className="h-10 w-32 rounded-4" />
-        <Skeleton className="mt-1 h-5 w-48 rounded-4" />
-        <Skeleton className="mt-5 h-5 w-full rounded-4" />
-        <Skeleton className="mt-1 h-5 w-2/3 rounded-4" />
+        {/* 이름 줄은 옆의 저장 · 수정 버튼(44px) 높이를 따른다 */}
+        <div className="flex min-h-11 items-center">
+          <SkeletonText className="typography-title-md w-32 desktop:typography-title-xl" />
+        </div>
+        <SkeletonText className="typography-body-lg-medium mt-1 w-48" />
+        <SkeletonText className="typography-body-lg-regular mt-5 w-full desktop:typography-body-xl-regular" />
+        <SkeletonText className="typography-body-lg-regular w-2/3 desktop:typography-body-xl-regular" />
       </div>
       <Skeleton className={cn(PHOTO_FRAME_CLASS, 'desktop:order-first desktop:mb-5')} />
     </div>

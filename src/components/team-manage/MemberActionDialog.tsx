@@ -49,7 +49,7 @@ function KickMemberDialog({
       onClose={onCancel}
       title={copy.title}
       description={
-        <span className="typography-body-lg-regular mt-0.5 block text-tertiary">
+        <span className="mt-0.5 block text-[14px] leading-[1.4] font-normal tracking-[-0.03em] whitespace-pre-line text-[#71717b]">
           {copy.description}
         </span>
       }
@@ -65,7 +65,7 @@ function KickMemberDialog({
             ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
-            className="typography-body-lg-semibold h-11 flex-1 rounded-12 bg-secondary text-primary transition duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+            className="h-11 flex-1 cursor-pointer rounded-[12px] bg-[#f0f0f3] text-[14px] font-semibold tracking-[-0.03em] text-[#18181b] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#e4e4e7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.98]"
           >
             취소
           </button>
@@ -73,20 +73,20 @@ function KickMemberDialog({
             type="button"
             disabled={isPending}
             onClick={onConfirm}
-            className="typography-body-lg-semibold h-11 flex-1 rounded-12 bg-notice text-interactive-inverse transition duration-fast ease-standard hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable disabled:active:scale-100"
+            className="h-11 flex-1 cursor-pointer rounded-[12px] bg-[#fb2c36] text-[14px] font-semibold tracking-[-0.03em] text-[#fff] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#d63c41] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.98] disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8] disabled:active:scale-100"
           >
             {copy.confirmLabel}
           </button>
         </div>
       }
     >
-      <div className="flex flex-col gap-1 rounded-8 bg-error-subtle p-3">
-        <p className="typography-body-md-semibold text-error">작품 삭제 안내</p>
-        <p className="typography-body-md-medium whitespace-pre-line text-secondary">
+      <div className="mt-2 rounded-[12px] bg-[#ffe2e2] px-3.5 py-3 tracking-[-0.03em]">
+        <p className="text-[12px] leading-[1.4] font-semibold text-[#fb2c36]">작품 삭제 안내</p>
+        <p className="mt-0.5 text-[12px] leading-[1.4] font-medium whitespace-pre-line text-[#3f3f47]">
           {'작가로 등록된 작품이 있다면 함께 삭제돼요\n삭제된 작품은 복구할 수 없어요'}
         </p>
         {errorMessage && (
-          <p role="alert" className="typography-body-md-medium text-error">
+          <p role="alert" className="mt-1 text-[12px] leading-[1.4] font-medium text-[#fb2c36]">
             {errorMessage}
           </p>
         )}

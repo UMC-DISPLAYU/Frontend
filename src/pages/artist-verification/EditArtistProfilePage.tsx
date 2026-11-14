@@ -16,7 +16,7 @@ import {
 } from '@/components/artist-verify';
 import { ConfirmDialog, ErrorView, LinkInputField, ProfilePhotoField } from '@/components/common';
 import { PageContainer } from '@/components/layout';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 import {
   ARTIST_FIELD_MAP,
   ARTIST_FIELD_REVERSE_MAP,
@@ -27,6 +27,7 @@ import {
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 import { isInstagramUrl } from '@/utils/externalLink';
@@ -42,6 +43,7 @@ const FORM_ID = 'edit-artist-profile-form';
 
 export function EditArtistProfilePage() {
   const { data: artistProfile, isPending, isError, error, refetch } = useMyArtistProfile();
+  const { showSkeleton } = useSkeleton(isPending);
 
   if (isError && !artistProfile) {
     return (
@@ -52,12 +54,15 @@ export function EditArtistProfilePage() {
     );
   }
 
-  if (isPending || !artistProfile) {
+  if (showSkeleton || !artistProfile) {
     return (
       <PageContainer className="bg-primary-white" variant="form">
         <div aria-hidden="true" className="flex flex-col gap-5 pt-17">
           <Skeleton className="mx-auto h-33 w-29" />
-          <Skeleton className="h-16 w-full rounded-4" />
+          <div className="flex flex-col gap-1">
+            <SkeletonText className="typography-body-lg-semibold w-14" />
+            <Skeleton className="h-11.5 w-full" />
+          </div>
           <Skeleton className="h-36 w-full rounded-4" />
         </div>
       </PageContainer>
