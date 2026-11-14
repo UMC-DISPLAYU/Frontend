@@ -49,7 +49,9 @@ export function PermissionGuard<Resource extends PolicyResource>({
   const artistPolicy = useArtistPolicy();
   // 이 화면은 인증 없이 보여줄 내용이 없어, 모달을 닫으면 로그인 안내(AuthGuard)처럼 홈으로 보낸다
   const { artistVerificationModal, openArtistVerificationModal } =
-    useArtistVerificationRequiredModal(undefined, {
+    useArtistVerificationRequiredModal({
+      title: '이 화면을 보려면\n작가 인증이 필요해요',
+      description: '학교 이메일로 인증한 뒤\n이용할 수 있어요',
       onCancel: () => void navigate('/home', { replace: true }),
     });
 

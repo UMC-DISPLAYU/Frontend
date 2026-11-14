@@ -56,10 +56,7 @@ vi.mock('@/hooks/usePolicy', () => ({
 }));
 
 vi.mock('@/hooks/usePermissionRequiredModal', () => ({
-  useArtistVerificationRequiredModal: (
-    _description?: string,
-    options?: { onCancel?: () => void },
-  ) => {
+  useArtistVerificationRequiredModal: (options?: { onCancel?: () => void }) => {
     mocks.artistModalOptions = options;
     return {
       artistVerificationModal: <div>Artist Verification Modal</div>,

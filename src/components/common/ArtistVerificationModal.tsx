@@ -5,6 +5,8 @@ import { cn } from '@/utils/cn';
 
 type Props = {
   open: boolean;
+  /** 줄바꿈은 \n 으로 넣는다 */
+  title: string;
   description: string;
   onConfirm: () => void;
   /** 나중에 · 배경 탭 · ESC · 뒤로가기 */
@@ -20,7 +22,7 @@ const getEnterAnimation = (): DialogEnterAnimation => ({
 const ACTION_BUTTON =
   'inline-flex h-11 cursor-pointer items-center justify-center rounded-[12px] text-[14px] font-semibold [transition:background_.2s,transform_.2s_cubic-bezier(.16,1,.3,1)] active:scale-98';
 
-export function ArtistVerificationModal({ open, description, onConfirm, onCancel }: Props) {
+export function ArtistVerificationModal({ open, title, description, onConfirm, onCancel }: Props) {
   const titleId = useId();
   const descriptionId = useId();
   const { dialogRef, requestClose, handleCancel, handleBackdropClick } = useModalDialog(
@@ -41,8 +43,8 @@ export function ArtistVerificationModal({ open, description, onConfirm, onCancel
       onClick={handleBackdropClick}
       className="m-auto w-[min(322px,calc(100vw-80px))] max-w-none rounded-[20px] border-0 bg-[#fff] px-5 pt-6 pb-5 text-left text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#18181b] [&_*]:tracking-[-0.03em] backdrop:bg-[rgba(0,0,0,0.42)]"
     >
-      <h2 id={titleId} className="text-[20px] leading-[1.4] font-bold">
-        작가 인증이 필요해요
+      <h2 id={titleId} className="text-[20px] leading-[1.4] font-bold whitespace-pre-line">
+        {title}
       </h2>
       <p
         id={descriptionId}
