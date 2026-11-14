@@ -61,13 +61,6 @@ export const MoreIcon = ({ className }: IconProps) => (
   </LineIcon>
 );
 
-export const InfoIcon = ({ className }: IconProps) => (
-  <LineIcon className={className}>
-    <circle cx="12" cy="12" r="8.5" />
-    <path d="M12 11v5M12 8v.2" />
-  </LineIcon>
-);
-
 /* 프로토타입 i-avatar. 사람 모양이 원 아래로 잘리게 그린다 */
 export const AvatarGlyph = ({ className }: IconProps) => (
   <svg aria-hidden="true" viewBox="0 0 59.5 65.87" className={className}>

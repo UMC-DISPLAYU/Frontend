@@ -4,7 +4,6 @@ import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 
 import { MemberAvatar } from './MemberAvatar';
-import { InfoIcon } from './TeamIcons';
 
 interface PendingInviteListProps {
   displayId: number;
@@ -31,41 +30,33 @@ export function PendingInviteList({ displayId, members }: PendingInviteListProps
   }
 
   return (
-    <>
-      <ul className="pt-1.5">
-        {members.map((member) => {
-          // 초대 대기는 기본 닉네임으로 보여 준다(프로토타입)
-          const name = member.nickname ?? member.displayNickname;
+    <ul className="pt-1.5">
+      {members.map((member) => {
+        // 초대 대기는 기본 닉네임으로 보여 준다(프로토타입)
+        const name = member.nickname ?? member.displayNickname;
 
-          return (
-            <li
-              key={member.teamMemberId ?? member.userId}
-              className="flex items-center gap-[11px] border-b border-[#f0f0f3] py-[14.5px]"
+        return (
+          <li
+            key={member.teamMemberId ?? member.userId}
+            className="flex items-center gap-[11px] border-b border-[#f0f0f3] py-[14.5px]"
+          >
+            <MemberAvatar />
+            <span className="min-w-0 flex-1 truncate text-[14px] leading-[1.4] font-semibold">
+              {name}
+            </span>
+            <button
+              type="button"
+              aria-label={`${name} 초대 취소`}
+              disabled={cancel.isPending}
+              onClick={() => cancelInvite(member)}
+              // 보이는 높이는 33px, 누르는 영역은 after 로 44px 까지 넓힌다
+              className="relative shrink-0 py-2 pl-2 text-[12px] font-medium text-[#18181b] after:absolute after:inset-x-0 after:-inset-y-[5.5px] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] disabled:cursor-default disabled:no-underline"
             >
-              <MemberAvatar />
-              <span className="min-w-0 flex-1 truncate text-[14px] leading-[1.4] font-semibold">
-                {name}
-              </span>
-              <button
-                type="button"
-                aria-label={`${name} 초대 취소`}
-                disabled={cancel.isPending}
-                onClick={() => cancelInvite(member)}
-                // 보이는 높이는 33px, 누르는 영역은 after 로 44px 까지 넓힌다
-                className="relative shrink-0 py-2 pl-2 text-[12px] font-medium text-[#18181b] after:absolute after:inset-x-0 after:-inset-y-[5.5px] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] disabled:cursor-default disabled:no-underline"
-              >
-                초대 취소
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      <div className="mt-5 flex items-start gap-2.5 rounded-[12px] bg-[#f4f4f5] p-4">
-        <InfoIcon className="mt-px size-4.5 text-[#71717b]" />
-        <p className="text-[14px] leading-[1.4] font-medium whitespace-pre-line text-[#3f3f47]">
-          {'팀원 초대 수락을 기다리고 있어요\n대표자 위임과는 별개예요'}
-        </p>
-      </div>
-    </>
+              초대 취소
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
