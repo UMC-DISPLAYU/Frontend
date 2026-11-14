@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
 
 import { cn } from '@/utils/cn';
 
@@ -40,6 +40,15 @@ export function DisplayCardMenu({
     };
   }, [open]);
 
+  const handleMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    const items = [...event.currentTarget.querySelectorAll('button')];
+    const current = items.findIndex((item) => item === document.activeElement);
+    const step = event.key === 'ArrowDown' ? 1 : items.length - 1;
+    items[(current + step) % items.length]?.focus();
+  };
+
   return (
     <div
       ref={containerRef}
@@ -73,6 +82,7 @@ export function DisplayCardMenu({
           ref={menuRef}
           id={menuId}
           role="menu"
+          onKeyDown={handleMenuKeyDown}
           aria-label={`${displayTitle} 메뉴`}
           className="absolute top-9 right-1 z-30 w-41 rounded-[12px] border border-[#d4d4d8] bg-[#fff] py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-[opacity,translate] duration-200 ease-standard starting:-translate-y-1 starting:opacity-0"
         >

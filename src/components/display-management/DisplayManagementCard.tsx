@@ -85,9 +85,9 @@ export function DisplayManagementCard({
   return (
     <article
       className={cn(
-        'relative grid h-full grid-cols-[96px_minmax(0,1fr)] gap-x-4 rounded-[12px] border border-[#d4d4d8] bg-[#fff] p-4 transition-[border-color,scale] duration-300 ease-standard',
+        'relative grid h-full grid-cols-[96px_minmax(0,1fr)] gap-x-4 rounded-[12px] border border-[#d4d4d8] bg-[#fff] p-4 [&_*]:tracking-[-0.03em] transition-[border-color,scale] duration-300 ease-standard',
         // 프로토타입은 대표자 카드(전시 관리로 들어가는 카드)에만 커서 · 테두리 · 누름 효과를 준다
-        isLeader && 'cursor-pointer hover:border-[#a1a1aa] active:scale-[0.995]',
+        isLeader && 'hover:border-[#a1a1aa] active:scale-[0.995]',
       )}
     >
       <div className="relative aspect-402/568 w-24 overflow-hidden bg-[#000]">
@@ -100,7 +100,7 @@ export function DisplayManagementCard({
         />
       </div>
 
-      <div className="grid min-w-0 content-start gap-0.5 pr-7">
+      <div className="grid min-w-0 content-start gap-0.5 pr-7 wrap-break-word">
         <p className="flex items-center gap-1.5 text-[12px] leading-[1.4] font-medium text-[#3f3f47]">
           <span
             className={cn(

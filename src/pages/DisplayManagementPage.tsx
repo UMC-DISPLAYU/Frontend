@@ -130,7 +130,7 @@ export function DisplayManagementPage() {
     if (displays) {
       if (displays.length === 0) {
         return (
-          <div className="flex flex-col items-center pt-24 pb-10 text-center">
+          <div className="flex flex-col items-center pt-24 pb-10 text-center [&_*]:tracking-[-0.03em]">
             <p className="text-[16px] leading-[1.4] font-medium text-[#71717b]">
               참여 중인 전시가 없어요
             </p>
@@ -195,8 +195,7 @@ export function DisplayManagementPage() {
     <div className="min-h-dvh bg-[#fff]">
       <PageContainer
         variant="list"
-        fillHeight
-        className="max-w-[480px] pb-10 text-[#18181b] tablet:max-w-[672px] desktop:max-w-list"
+        className="max-w-[480px] pb-10 text-[#18181b] tablet:max-w-form desktop:max-w-list"
       >
         <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
           <button
@@ -218,9 +217,9 @@ export function DisplayManagementPage() {
           </h1>
         </header>
 
-        {/* 프로토타입은 글자마다 자기 크기의 -0.03em 자간을 준다. 부모에만 주면 px 로 굳어 상속된다 */}
-        <main className="[&_*]:tracking-[-0.03em]">
-          <div className="mt-[9px] flex items-center justify-between gap-3 desktop:mt-6 desktop:items-end">
+        <main>
+          {/* 프로토타입은 글자마다 자기 크기의 -0.03em 자간을 준다. 부모에만 주면 px 로 굳어 상속된다 */}
+          <div className="mt-[9px] flex items-center justify-between gap-3 desktop:mt-6 desktop:items-end [&_*]:tracking-[-0.03em]">
             <div className="min-w-0">
               <h2 className="text-[18px] leading-[1.4] font-semibold desktop:text-[24px]">
                 참여 중인 전시
