@@ -23,7 +23,7 @@ const isInvalidLinkError = (error: unknown) =>
 
 /* 프로토타입 큰 버튼(.big): 높이 48, 검정, 16px · 600 */
 const BIG_BUTTON_CLASS =
-  'mt-6 flex h-12 w-full items-center justify-center rounded-[12px] bg-[#18181b] text-[16px] font-semibold tracking-[-0.03em] text-[#fff] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#2f2f35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.99] disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8] disabled:active:scale-100';
+  'flex h-12 w-full items-center justify-center rounded-[12px] bg-[#18181b] text-[16px] font-semibold tracking-[-0.03em] text-[#fff] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#2f2f35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.99] disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8] disabled:active:scale-100';
 
 /*
  * 백엔드가 발급하는 초대 URL(/display/invitation/{token})의 착지 지점입니다.
@@ -80,7 +80,10 @@ export function DisplayInvitationLinkPage() {
   return <Navigate to={INVITATION_LIST_PATH} replace />;
 }
 
-/* 프로토타입 빈 상태(.none · .mnone)와 큰 버튼(.big) 값으로 만든 화면 가운데 안내 */
+/*
+ * 프로토타입 빈 상태(.none · .mnone) 안내를 가운데에 두고, 버튼은 다른 화면처럼 아래 .cta 자리에 붙인다.
+ * .page: 폰 최대 480 · 태블릿부터 672, .cta: sticky 아래, 위 20 · 아래 max(16px, safe area), 흰 그라데이션.
+ */
 function InvitationLinkState({
   title,
   description,
@@ -96,31 +99,39 @@ function InvitationLinkState({
   retryDisabled?: boolean;
   onRetry?: () => void;
 }) {
+  const hasButton = Boolean(onRetry || action);
+
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#fff] px-5 tablet:px-8 desktop:px-10">
-      <section
-        role={busy ? 'status' : undefined}
-        aria-busy={busy || undefined}
-        className="flex w-full max-w-[440px] flex-col items-center text-center tracking-[-0.03em] break-keep tablet:max-w-[592px]"
-      >
-        <h1 className="text-[16px] leading-[1.4] font-semibold tracking-[-0.03em] text-[#18181b]">
-          {title}
-        </h1>
-        <p className="mt-1 text-[14px] leading-[1.4] font-medium tracking-[-0.03em] text-[#71717b]">
-          {description}
-        </p>
-        {onRetry && (
-          <button
-            type="button"
-            disabled={retryDisabled}
-            onClick={onRetry}
-            className={BIG_BUTTON_CLASS}
-          >
-            다시 시도
-          </button>
+    <div className="min-h-dvh bg-[#fff]">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-5 tracking-[-0.03em] break-keep tablet:max-w-[672px] tablet:px-8 desktop:px-10">
+        <section
+          role={busy ? 'status' : undefined}
+          aria-busy={busy || undefined}
+          className="flex flex-1 flex-col items-center justify-center text-center"
+        >
+          <h1 className="text-[16px] leading-[1.4] font-semibold tracking-[-0.03em] text-[#18181b]">
+            {title}
+          </h1>
+          <p className="mt-1 text-[14px] leading-[1.4] font-medium tracking-[-0.03em] text-[#71717b]">
+            {description}
+          </p>
+        </section>
+        {hasButton && (
+          <div className="sticky bottom-0 z-5 bg-linear-to-b from-[rgba(255,255,255,0)] to-[#fff] to-28% pt-5 pb-[max(16px,env(safe-area-inset-bottom))]">
+            {onRetry && (
+              <button
+                type="button"
+                disabled={retryDisabled}
+                onClick={onRetry}
+                className={BIG_BUTTON_CLASS}
+              >
+                다시 시도
+              </button>
+            )}
+            {action}
+          </div>
         )}
-        {action}
-      </section>
+      </div>
     </div>
   );
 }
