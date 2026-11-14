@@ -44,7 +44,7 @@
 
 - `width=device-width, initial-scale=1, viewport-fit=cover` (현재 설정 유지)
 - 확대는 막지 않는다 (접근성)
-- 입력창 자동 확대는 기존 input `16px` 규칙(`src/styles/index.css`)으로 막는다
+- 입력창 자동 확대는 막지 않는다. 디자이너 결정으로 Safari 기본 동작을 따르므로, 글자가 16px보다 작은 입력창은 iOS에서 포커스할 때 확대된다 (전역 확대 방지 스타일은 #465에서 제거)
 
 ### Safe area
 

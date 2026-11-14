@@ -63,8 +63,7 @@ export function MapTopBar({
           <ChevronLeft aria-hidden className="size-6" strokeWidth={2} />
         </button>
         <form role="search" onSubmit={handleSubmit} className="relative h-11 min-w-0 flex-1">
-          {/* 전역 input 축소 규칙(iOS 확대 방지)은 16px 글자만 필요하므로 크기 보정은 풀어 둔다.
-              입력 중에 검색이 풀려도 포커스·키보드가 유지되도록 key로 다시 그리지 않는다 */}
+          {/* 입력 중에 검색이 풀려도 포커스·키보드가 유지되도록 key로 다시 그리지 않는다 */}
           <input
             type="search"
             name="q"
@@ -78,7 +77,7 @@ export function MapTopBar({
             autoComplete="off"
             enterKeyHint="search"
             className={cn(
-              'peer typography-body-xl-medium h-11 !w-full !transform-none rounded-circle bg-secondary pr-22 pl-5 text-primary !mr-0 placeholder:text-[#6b6b75] [&::-webkit-search-cancel-button]:hidden',
+              'peer typography-body-xl-medium h-11 w-full rounded-circle bg-secondary pr-22 pl-5 text-primary placeholder:text-[#6b6b75] [&::-webkit-search-cancel-button]:hidden',
               FLOAT_SHADOW,
             )}
           />

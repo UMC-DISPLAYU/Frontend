@@ -76,8 +76,6 @@ export function DisplayArtistNameSheet({
         <label htmlFor={inputId} className="typography-body-lg-semibold mt-5.5 block text-primary">
           전시 작가명 <span className="text-info">*</span>
         </label>
-        {/* 전역 입력창 축소 규칙(index.css)을 그대로 받으면 디자인의 16px · 44px 가 14px · 38.5px 로 줄어든다.
-            16px 그대로면 iOS 확대도 일어나지 않아 이 입력창만 축소를 푼다 */}
         <input
           id={inputId}
           {...register('artistName')}
@@ -86,7 +84,7 @@ export function DisplayArtistNameSheet({
           aria-required="true"
           aria-invalid={Boolean(errors.artistName)}
           aria-describedby={errors.artistName ? `${inputId}-error` : `${inputId}-help`}
-          className="typography-body-xl-regular mt-3.5 mr-0! h-11 w-full! transform-none! rounded-12 border border-primary bg-transparent px-3 text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          className="typography-body-xl-regular mt-3.5 h-11 w-full rounded-12 border border-primary bg-transparent px-3 text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         />
         {errors.artistName ? (
           <p

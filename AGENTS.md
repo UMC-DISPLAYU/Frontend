@@ -103,7 +103,7 @@
 - props·Query 데이터로 계산 가능한 값을 `useState`에 복사하거나 `useEffect`로 동기화하지 않는다.
 - `target="_blank"`에는 `rel="noopener noreferrer"`, `dangerouslySetInnerHTML`은 sanitize 후에만 사용한다.
 - 토큰·이메일·위치 등 민감 정보를 `console.log`에 남기지 않는다(`no-console` 경고 대상).
-- `src/styles/index.css`의 input `font-size: 16px` 규칙은 iOS Safari 입력 확대 방지용이다. 한 번 삭제했다가 되돌린 이력(#352 revert)이 있으니 지우지 않는다.
+- iOS Safari 입력 확대 방지 전역 스타일(`src/styles/index.css`의 input `font-size: 16px` 강제)은 제거했다(#465). 디자이너 결정으로 Safari 기본 동작을 따르므로, 입력창 글자가 16px보다 작으면 iOS가 포커스할 때 화면을 확대한다.
 
 ### 반응형 · 인터랙션 공용 코드
 
