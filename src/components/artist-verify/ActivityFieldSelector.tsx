@@ -1,8 +1,9 @@
 import {
-  EXHIBITION_FIELD_LABELS,
-  type ExhibitionField,
-  MAX_ARTIST_FIELDS,
-} from '@/constants/exhibition';
+  ARTIST_PROFILE_FIELD_LABELS,
+  ARTIST_PROFILE_FIELDS,
+  type ArtistProfileField,
+} from '@/constants/artistField';
+import { MAX_ARTIST_FIELDS } from '@/constants/exhibition';
 import { cn } from '@/utils/cn';
 
 import { CheckIcon } from './ArtistVerifyIcons';
@@ -12,26 +13,9 @@ import { VerifyLabel } from './VerifyField';
 
 const NUDGE_CLASS = 'artist-verify-nudge';
 
-/*
- * 프로토타입 분야(그래픽·브랜딩·제품·공간·UXUI)는 서버 enum에 없어 저장할 수 없다.
- * 서버가 받는 분야만 프로토타입 순서에 가깝게 배치한다.
- */
-const ACTIVITY_FIELD_ORDER: readonly ExhibitionField[] = [
-  'PAINTING',
-  'SCULPTURE',
-  'PHOTOGRAPHY',
-  'DESIGN',
-  'ILLUSTRATION',
-  'VIDEO',
-  'FASHION',
-  'ARCHITECTURE',
-  'CRAFT',
-  'ETC',
-];
-
 type ActivityFieldSelectorProps = {
-  selected: ExhibitionField[];
-  onChange: (fields: ExhibitionField[]) => void;
+  selected: ArtistProfileField[];
+  onChange: (fields: ArtistProfileField[]) => void;
   onMaxSelectExceeded: () => void;
 };
 
@@ -48,7 +32,7 @@ export function ActivityFieldSelector({
   onChange,
   onMaxSelectExceeded,
 }: ActivityFieldSelectorProps) {
-  const toggle = (field: ExhibitionField, button: HTMLButtonElement) => {
+  const toggle = (field: ArtistProfileField, button: HTMLButtonElement) => {
     if (selected.includes(field)) {
       onChange(selected.filter((item) => item !== field));
       return;
@@ -74,7 +58,7 @@ export function ActivityFieldSelector({
         className="mt-2.5 grid grid-cols-4 gap-1.5 tablet:grid-cols-6"
         role="group"
       >
-        {ACTIVITY_FIELD_ORDER.map((field) => {
+        {ARTIST_PROFILE_FIELDS.map((field) => {
           const isSelected = selected.includes(field);
           return (
             <button
@@ -94,7 +78,7 @@ export function ActivityFieldSelector({
               type="button"
             >
               {isSelected ? <CheckIcon className="size-4 shrink-0" strokeWidth={2.2} /> : null}
-              {EXHIBITION_FIELD_LABELS[field]}
+              {ARTIST_PROFILE_FIELD_LABELS[field]}
             </button>
           );
         })}

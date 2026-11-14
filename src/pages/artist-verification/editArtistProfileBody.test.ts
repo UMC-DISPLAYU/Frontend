@@ -25,6 +25,14 @@ describe('toEditArtistProfileDefaults', () => {
     });
   });
 
+  it('프로토타입 12개 분야만 남긴다(예전 디자인 · 패션 · 일러스트는 뺀다)', () => {
+    const values = toEditArtistProfileDefaults({
+      ...profile,
+      fields: ['GRAPHIC', 'DESIGN', 'UX_UI', 'FASHION'],
+    });
+    expect(values.fields).toEqual(['GRAPHIC', 'UX_UI']);
+  });
+
   it('예전처럼 링크 칸에 인스타그램 주소만 있으면 Instagram 칸으로 옮긴다', () => {
     const values = toEditArtistProfileDefaults({
       ...profile,
@@ -78,5 +86,13 @@ describe('toUpdateArtistProfileBody', () => {
     expect(body.externalLink).toBeNull();
     expect(body.instagramLink).toBeNull();
     expect(body).not.toHaveProperty('univName');
+  });
+
+  it('고른 분야 코드를 그대로 보낸다', () => {
+    const body = toUpdateArtistProfileBody(
+      { ...values, fields: ['GRAPHIC', 'BRANDING'] },
+      { profileImageUrl: null },
+    );
+    expect(body.fields).toEqual(['GRAPHIC', 'BRANDING']);
   });
 });

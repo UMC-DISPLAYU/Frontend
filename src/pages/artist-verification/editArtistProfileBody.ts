@@ -1,10 +1,5 @@
 import type { ArtistProfileDto, UpdateArtistProfileRequestDto } from '@/api/dto';
-import {
-  ARTIST_FIELD_MAP,
-  ARTIST_FIELD_REVERSE_MAP,
-  type ArtistFieldCode,
-  type ExhibitionField,
-} from '@/constants/exhibition';
+import { isArtistProfileField } from '@/constants/artistField';
 import { isInstagramUrl } from '@/utils/externalLink';
 import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
 
@@ -25,9 +20,7 @@ export const toEditArtistProfileDefaults = (
 
   return {
     artistName: profile.artistName ?? '',
-    fields: (profile.fields ?? [])
-      .map((code) => ARTIST_FIELD_REVERSE_MAP[code as ArtistFieldCode])
-      .filter((field): field is ExhibitionField => Boolean(field)),
+    fields: (profile.fields ?? []).filter(isArtistProfileField),
     introduction: profile.introduction ?? '',
     instagram:
       instagramIdOf(profile.instagramLink) ||
@@ -46,7 +39,7 @@ export const toUpdateArtistProfileBody = (
   profileImageUrl,
   artistName: values.artistName.trim(),
   introduction: values.introduction.trim(),
-  fields: values.fields.map((field) => ARTIST_FIELD_MAP[field]),
+  fields: values.fields,
   externalLink: hrefOf(parseWebsiteUrl(values.portfolio)),
   instagramLink: hrefOf(parseInstagramId(values.instagram)),
   ...(schoolName ? { univName: schoolName } : {}),

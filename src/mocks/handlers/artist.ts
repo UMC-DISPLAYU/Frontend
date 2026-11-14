@@ -124,7 +124,12 @@ export const artistHandlers = [
       const profile =
         userId === mockDb.me.userId
           ? myArtistProfile
-          : { ...myArtistProfile, artistName: `작가${userId}`, instagramLink: null };
+          : {
+              ...myArtistProfile,
+              artistName: `작가${userId}`,
+              instagramLink: null,
+              fields: ['GRAPHIC', 'BRANDING'],
+            };
 
       return success('/api/v1/artists/{userId}/artist-profile', toPublicProfile(profile));
     }),
