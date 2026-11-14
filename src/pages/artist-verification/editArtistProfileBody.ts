@@ -1,0 +1,46 @@
+import type { ArtistProfileDto, UpdateArtistProfileRequestDto } from '@/api/dto';
+import { isArtistProfileField } from '@/constants/artistField';
+import { isInstagramUrl } from '@/utils/externalLink';
+import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
+
+import type { EditArtistProfileFormValues } from './editArtistProfile.schema';
+
+/* 아이디로 읽히지 않는 값은 그대로 보여 준다. 빈칸으로 두면 다음 저장 때 말없이 지워진다 */
+const instagramIdOf = (link?: string | null) => {
+  const parsed = parseInstagramId(link ?? '');
+  return parsed.status === 'valid' ? parsed.value : (link ?? '');
+};
+
+/* instagramLink 칸이 생기기 전에는 링크 하나(externalLink)에 인스타그램 주소를 저장했다. 그 값은 Instagram 칸으로 옮긴다 */
+export const toEditArtistProfileDefaults = (
+  profile: ArtistProfileDto,
+): EditArtistProfileFormValues => {
+  const externalLink = profile.externalLink ?? '';
+  const isLegacyInstagram = isInstagramUrl(externalLink);
+
+  return {
+    artistName: profile.artistName ?? '',
+    fields: (profile.fields ?? []).filter(isArtistProfileField),
+    introduction: profile.introduction ?? '',
+    instagram:
+      instagramIdOf(profile.instagramLink) ||
+      (isLegacyInstagram ? instagramIdOf(externalLink) : ''),
+    portfolio: isLegacyInstagram ? '' : externalLink,
+  };
+};
+
+const hrefOf = (parsed: ReturnType<typeof parseWebsiteUrl>) =>
+  parsed.status === 'valid' ? parsed.href : null;
+
+export const toUpdateArtistProfileBody = (
+  values: EditArtistProfileFormValues,
+  { profileImageUrl, schoolName }: { profileImageUrl: string | null; schoolName?: string },
+): UpdateArtistProfileRequestDto => ({
+  profileImageUrl,
+  artistName: values.artistName.trim(),
+  introduction: values.introduction.trim(),
+  fields: values.fields,
+  externalLink: hrefOf(parseWebsiteUrl(values.portfolio)),
+  instagramLink: hrefOf(parseInstagramId(values.instagram)),
+  ...(schoolName ? { univName: schoolName } : {}),
+});

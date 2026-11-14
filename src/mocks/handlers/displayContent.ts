@@ -24,6 +24,30 @@ export const displayContentHandlers = [
       return created('/api/v1/display/{displayId}/content-categories', category);
     }),
   ),
+  // {categoryId} 핸들러보다 먼저 둬야 reorder 가 카테고리 id 로 잡히지 않는다
+  ...paths('/api/v1/display/{displayId}/content-categories/reorder').map((path) =>
+    http.patch(path, async ({ params, request }) => {
+      const display = findDisplay(toNumber(params.displayId, 101));
+      const { orderedCategoryIds = [] } = await readJson<{ orderedCategoryIds?: number[] }>(
+        request,
+      );
+      const byId = new Map<number, any>(
+        display.contentCategories.map((category: any) => [category.categoryId, category]),
+      );
+      const reordered = orderedCategoryIds
+        .map((categoryId) => byId.get(categoryId))
+        .filter((category): category is any => Boolean(category));
+      const rest = display.contentCategories.filter(
+        (category: any) => !orderedCategoryIds.includes(category.categoryId),
+      );
+      display.contentCategories = [...reordered, ...rest].map((category: any, index: number) => ({
+        ...category,
+        sortOrder: index + 1,
+      }));
+
+      return noContent('/api/v1/display/{displayId}/content-categories/reorder');
+    }),
+  ),
   ...paths('/api/v1/display/{displayId}/content-categories/{categoryId}').map((path) =>
     http.patch(path, async ({ params, request }) => {
       const display = findDisplay(toNumber(params.displayId, 101));

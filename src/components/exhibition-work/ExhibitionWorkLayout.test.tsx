@@ -7,13 +7,16 @@ import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishSta
 
 import { ExhibitionWorkLayout } from './ExhibitionWorkLayout';
 
-const mocks = vi.hoisted(() => ({ navigate: vi.fn(), focus: vi.fn() }));
+const mocks = vi.hoisted(() => ({ navigate: vi.fn(), focus: vi.fn(), userId: 1 }));
 vi.mock('react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react')>()),
   useId: () => 'work-tabs',
 }));
 vi.mock('react-router-dom', () => ({ Link: 'a', useNavigate: () => mocks.navigate }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
+vi.mock('@/hooks/queries/useUserProfile', () => ({
+  useUserMe: () => ({ data: { id: mocks.userId } }),
+}));
 vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: 'img' }));
 vi.mock('@/components/layout', () => ({ PageContainer: 'main' }));
 
@@ -32,6 +35,7 @@ const display = {
   title: '전시',
   status: 'UPCOMING',
   period: { startDate: '2026-11-01', endDate: '2026-11-30' },
+  ownerUserId: 1,
   images: [],
   location: { placeName: '전시장' },
 } as unknown as DisplayDetailDto;
@@ -72,11 +76,9 @@ describe('전시 작업 탭', () => {
 });
 
 describe('전시 요약 카드', () => {
-  it('전시 미리보기는 권한으로 막힌 미리보기 주소를 새 탭으로 연다', () => {
+  it('전시 미리보기는 미리보기 화면이 생기기 전까지 전시 상세로 간다', () => {
     const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
-    const preview = nodes(page).find((node) => node.props.to === '/exhibition/7/preview')!;
-    expect(preview.props.target).toBe('_blank');
-    expect(preview.props.rel).toBe('noopener noreferrer');
+    expect(nodes(page).some((node) => node.props.to === '/display/7')).toBe(true);
   });
 
   it('일정은 앞에만 연도를 붙이고 끝 연도는 다를 때만 붙인다', () => {

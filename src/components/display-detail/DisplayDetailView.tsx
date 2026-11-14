@@ -47,16 +47,11 @@ const TAB_LABEL: Record<DisplayDetailTabKey, string> = {
 type Props = {
   display: DisplayDetailDto;
   onBack: () => void;
-  /*
-   * 전시 작업에서 연 미리보기(/exhibition/:displayId/preview). 공개 여부와 상관없이 공개 전 모습으로 보이고,
-   * 900px 이상에서는 뒤로가기를 두지 않으며(사용자 결정), 작품을 누르면 작품 미리보기로 간다
-   */
-  previewMode?: boolean;
 };
 
-export function DisplayDetailView({ display, onBack, previewMode = false }: Props) {
+export function DisplayDetailView({ display, onBack }: Props) {
   const { activeTab, selectTab, sentinelRef, isStuck } = useDetailTab(DISPLAY_DETAIL_TABS);
-  const isPreview = previewMode || isPreviewDisplay(display);
+  const isPreview = isPreviewDisplay(display);
 
   const posters = (display.images ?? [])
     .slice()
@@ -102,7 +97,7 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
           images={posters.length > 0 ? posters : [FALLBACK_POSTER_IMAGE]}
           title={display.title}
           onBack={onBack}
-          isPreview={isPreview && !previewMode}
+          isPreview={isPreview}
         />
 
         <div className={SHEET}>
@@ -144,12 +139,6 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
                 displayId={display.displayId}
                 teamMembers={display.teamMembers}
                 isPreview={isPreview}
-                artworkPath={
-                  previewMode
-                    ? (artworkId) =>
-                        `/exhibition/${display.displayId}/artworks/${artworkId}/preview`
-                    : undefined
-                }
               />
             </div>
           )}

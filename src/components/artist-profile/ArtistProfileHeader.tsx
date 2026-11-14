@@ -50,7 +50,7 @@ export function ArtistProfileHeader({
     <section
       aria-label="작가 정보"
       className={cn(
-        'grid items-start gap-x-4 pt-6 desktop:flex desktop:flex-col desktop:items-stretch desktop:pt-0',
+        'grid grid-rows-[auto_1fr] items-start gap-x-4 pt-6 desktop:flex desktop:flex-col desktop:items-stretch desktop:pt-0',
         photo ? 'grid-cols-[minmax(0,1fr)_116px]' : 'grid-cols-1',
       )}
     >
@@ -68,7 +68,7 @@ export function ArtistProfileHeader({
             </Link>
           ) : (
             <button
-              aria-label="작가 저장"
+              aria-label={action.isSaved ? '작가 저장 취소' : '작가 저장'}
               aria-pressed={action.isSaved}
               className={ACTION_CLASS}
               disabled={action.isPending}
@@ -101,13 +101,13 @@ export function ArtistProfileHeader({
       )}
 
       {bio && (
-        <p className="typography-body-lg-regular col-start-1 row-start-2 mt-5 break-keep whitespace-pre-line text-primary desktop:typography-body-xl-regular">
+        <p className="typography-body-lg-regular col-start-1 row-start-2 mt-5 whitespace-pre-line text-primary [text-wrap:pretty] desktop:typography-body-xl-regular">
           {bio}
         </p>
       )}
 
       {links.length > 0 && (
-        <ul aria-label="작가 링크" className="col-span-full mt-5 border-t border-bg-tertiary">
+        <ul aria-label="작가 링크" className="col-span-full mt-7 border-t border-bg-tertiary">
           {links.map((link) => (
             <li className="border-b border-bg-tertiary" key={link.name}>
               <a
@@ -122,7 +122,7 @@ export function ArtistProfileHeader({
                     {link.label}
                   </span>
                 </span>
-                <ExternalLinkIcon className="shrink-0 text-icon-primary transition-transform duration-base ease-standard group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ExternalLinkIcon className="shrink-0 text-tertiary transition-transform duration-base ease-standard group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
                 <span className="sr-only">(새 창)</span>
               </a>
             </li>

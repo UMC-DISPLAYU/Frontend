@@ -163,7 +163,6 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
           display={display}
           userId={userId}
           onAdd={handleAddArtwork}
-          onOpen={(work) => navigate(`/exhibition/${displayId}/artworks/${work.id}/preview`)}
           onEdit={(work) => navigate(`/exhibition/${displayId}/artworks/${work.id}/edit`)}
           onDelete={(work) => {
             deleteArtworkMutation.reset();
@@ -249,7 +248,6 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
     <ExhibitionWorkLayout
       display={display!}
       activeTab="artworks"
-      onBack={flowBack}
       onTabChange={(tab) => {
         if (tab === 'artworks') return;
         navigate(`/exhibition/${displayId}/work?tab=${tab}`, { replace: true });

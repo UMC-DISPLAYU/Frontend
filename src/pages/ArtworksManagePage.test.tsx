@@ -246,10 +246,8 @@ it('메인 탭에서도 순서 편집을 그 자리에서 연다', () => {
   expect(render(true).some((node) => node.type === OrderScreen)).toBe(true);
 });
 
-it('카드를 누르면 작품 미리보기로 이동한다', () => {
-  const manage = get(ManageScreen);
-  (manage.props.onOpen as (work: Work) => void)((manage.props.works as Work[])[1]);
-  expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/artworks/2/preview');
+it('작품 미리보기 화면이 생기기 전까지 카드는 누를 수 없다', () => {
+  expect(get(ManageScreen).props.onOpen).toBeUndefined();
 });
 
 it('정렬 권한이 없는 팀원은 mode=order URL로도 정렬 화면을 열 수 없다', () => {

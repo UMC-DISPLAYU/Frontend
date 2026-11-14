@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   filterInView,
+  getFocusLevel,
   getNearestSnap,
   getNextSnapOnTap,
   getReachableSnaps,
@@ -105,5 +106,20 @@ describe('filterInView', () => {
   it('상단 바에 걸친 핀은 포스터가 보이므로 포함한다', () => {
     const items = [{ id: 'near-top', latitude: 37.92, longitude: 127.5 }];
     expect(filterInView(items, snapshot, insets)).toHaveLength(1);
+  });
+});
+
+describe('전시로 옮길 때 확대', () => {
+  it('지금 레벨이 한도보다 넓으면 한도까지 확대한다', () => {
+    expect(getFocusLevel(8, 5)).toBe(5);
+  });
+
+  it('한도와 같거나 더 가까이 보고 있으면 그대로 둔다', () => {
+    expect(getFocusLevel(5, 5)).toBeNull();
+    expect(getFocusLevel(3, 5)).toBeNull();
+  });
+
+  it('한도가 없으면(핀을 누를 때) 확대하지 않는다', () => {
+    expect(getFocusLevel(12, null)).toBeNull();
   });
 });

@@ -7,6 +7,7 @@ import BackIcon from '@/assets/exhibition-work/BackIcon.svg';
 import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { PageContainer } from '@/components/layout';
+import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { cn } from '@/utils/cn';
 import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
@@ -38,6 +39,33 @@ export function WorkHeader({ title, onBack }: { title: string; onBack?: () => vo
   );
 }
 
+/* 프로토타입 `.bar`: 높이 56 · 뒤로가기 44(아이콘 x20) · 제목 20 Bold, 넓은 화면(.wide)은 900px 이상 24 */
+export function WorkBar({
+  title,
+  onBack,
+  backLabel = '뒤로가기',
+  wide = false,
+}: {
+  title: string;
+  onBack: () => void;
+  backLabel?: string;
+  wide?: boolean;
+}) {
+  return (
+    <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
+      <button
+        type="button"
+        aria-label={backLabel}
+        onClick={onBack}
+        className="grid size-11 place-items-center rounded-circle transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
+      >
+        <WorkIcon name="back" />
+      </button>
+      <h1 className={cn('text-[20px] font-bold', wide && 'desktop:text-[24px]')}>{title}</h1>
+    </header>
+  );
+}
+
 /* 프로토타입 일정 표기: 앞에 연도, 끝 연도는 다를 때만 (2026.06.10–06.20) */
 const formatPeriod = ({ startDate, endDate }: DisplayDetailDto['period']) => {
   const dot = (date: string) => date.replace(/-/g, '.');
@@ -64,8 +92,16 @@ export function ExhibitionWorkLayout({
   children: ReactNode;
 }) {
   const navigate = useNavigate();
-  const flowBack = useFlowBack();
+  const { data: userMe } = useUserMe();
   const tabId = useId();
+  /*
+   * 프로토타입 works.html: 뒤로가기는 기록을 되돌리지 않고 정해진 곳으로 간다.
+   * 대표자는 전시 관리, 관리자 · 팀원은 내 전시 관리. 대표자를 위임하고 이 화면에 온 경우에도
+   * 이미 들어갈 수 없는 화면(팀원 관리)으로 돌아가지 않는다
+   */
+  const isOwner = userMe !== undefined && display.ownerUserId === userMe.id;
+  const backToList = () =>
+    navigate(isOwner ? `/exhibition/${display.displayId}/manage` : '/display-management');
   const changeTab = (tab: WorkTab) => {
     if (onTabChange) onTabChange(tab);
     else navigate(`/exhibition/${display.displayId}/work?tab=${tab}`, { replace: true });
@@ -79,17 +115,12 @@ export function ExhibitionWorkLayout({
         fillHeight
         className="max-w-120 pt-[max(8px,env(safe-area-inset-top))] tablet:max-w-168 tablet:pt-10 desktop:max-w-list"
       >
-        <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            aria-label="뒤로가기"
-            onClick={onBack ?? flowBack}
-            className="grid size-11 place-items-center rounded-circle transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
-          >
-            <WorkIcon name="back" />
-          </button>
-          <h1 className="text-[20px] font-bold desktop:text-[24px]">전시 작업</h1>
-        </header>
+        <WorkBar
+          title="전시 작업"
+          onBack={onBack ?? backToList}
+          backLabel={isOwner ? '전시 관리로 돌아가기' : '내 전시 관리로 돌아가기'}
+          wide
+        />
 
         {/* 900px 이상은 2단(프로토타입 11-15 `.body.split`): 왼쪽 전시 요약 380 · 사이 56 · 오른쪽 탭 · 목록 */}
         <div className="flex-1 desktop:grid desktop:grid-cols-[380px_minmax(0,1fr)] desktop:items-start desktop:gap-x-14">
@@ -117,9 +148,7 @@ export function ExhibitionWorkLayout({
                   />
                 )}
                 <Link
-                  to={`/exhibition/${display.displayId}/preview`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  to={`/display/${display.displayId}`}
                   className="group inline-flex items-center text-[12px] font-semibold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
                 >
                   전시 미리보기
