@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import 'pretendard/dist/web/static/pretendard-dynamic-subset.css';
+@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 @import '@fontsource/aldrich';
 /* legacy: 기존 화면용. 새 페이지로 교체된 뒤 폴더째 삭제한다 */
 @import './legacy/primitive.css';
@@ -10,6 +10,18 @@
 @import './tokens/semantic.css';
 @import './tokens/theme.css';
 @import './tokens/typography.css';
+
+/*
+ * 프로토타입과 같은 글꼴 렌더링. antialiased 가 없으면 Mac 에서 같은 굵기도 더 굵게 그려진다.
+ * typography-* 클래스가 없는 글씨도 시스템 글꼴로 떨어지지 않게 기본 글꼴을 둔다.
+ */
+@layer base {
+  body {
+    font-family: var(--primitive-typography-font-family-typeface-1);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
 
 /* Custom Loader */
 .loader {
