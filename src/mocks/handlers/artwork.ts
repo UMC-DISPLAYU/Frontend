@@ -2,11 +2,30 @@
 import { http } from 'msw';
 
 import { listResponse, mockDb, okStatus } from '@/mocks/data/repository';
-import { created, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const now = () => new Date().toISOString();
 const findArtwork = (artworkId: number) =>
   mockDb.artworks.find((artwork: any) => artwork.artworkId === artworkId) ?? mockDb.artworks[0];
+
+/* 요청의 coAuthors({ userIds, rawNames })를 응답 형식([{ userId, name }])으로 바꿉니다. */
+const toCoAuthorList = (
+  coAuthors: { userIds?: number[]; rawNames?: string[] } | undefined,
+  displayId: number,
+) => {
+  const teamMembers =
+    mockDb.displays.find((display: any) => display.displayId === displayId)?.teamMembers ?? [];
+
+  return [
+    ...(coAuthors?.userIds ?? []).map((userId) => ({
+      userId,
+      name:
+        teamMembers.find((member: any) => member.userId === userId)?.displayNickname ??
+        `팀원 ${userId}`,
+    })),
+    ...(coAuthors?.rawNames ?? []).map((name) => ({ userId: null, name })),
+  ];
+};
 
 export const artworkHandlers = [
   ...paths('/api/v1/artworks').map((path) =>
@@ -49,6 +68,9 @@ export const artworkHandlers = [
         size: body.size ?? '',
         point: body.point ?? '',
         images: body.images ?? [],
+        coAuthors: toCoAuthorList(body.coAuthors, Number(body.displayId ?? 101)),
+        // 전시작 목록이 공동 작가의 수정 · 삭제 권한을 판단하는 값
+        coAuthorUserIds: body.coAuthors?.userIds ?? [],
         artworkImageUrl: imageUrl,
         thumbnailUrl: imageUrl,
         imageUrl,
@@ -135,6 +157,65 @@ export const artworkHandlers = [
     http.get(path, ({ params }) =>
       success('/api/v1/artworks/{artworkId}', findArtwork(toNumber(params.artworkId, 1001))),
     ),
+  ),
+  // 수정 화면 조회: 관람용 상세와 달리 공동 작가 · Q&A 담당자 · 분야 목록(types)을 함께 내려준다
+  ...paths('/api/v1/artworks/{artworkId}/edit').map((path) =>
+    http.get(path, ({ params }) => {
+      const artwork = findArtwork(toNumber(params.artworkId, 1001));
+
+      return success('/api/v1/artworks/{artworkId}/edit', {
+        artworkId: artwork.artworkId,
+        displayId: artwork.displayId,
+        artworkName: artwork.artworkName ?? artwork.title,
+        content: artwork.content ?? '',
+        type: artwork.type,
+        types: artwork.types ?? (artwork.type ? [artwork.type] : []),
+        productionYear: artwork.productionYear,
+        materialMedia: artwork.materialMedia ?? artwork.material ?? '',
+        size: artwork.size ?? '',
+        point: artwork.point ?? '',
+        images: artwork.images ?? [],
+        artistName: artwork.artistName ?? artwork.artist,
+        artistUserId: artwork.artistUserId ?? null,
+        coAuthors: Array.isArray(artwork.coAuthors) ? artwork.coAuthors : [],
+        qaHandlerUserIds:
+          artwork.qaHandlerUserIds ?? (artwork.artistUserId ? [artwork.artistUserId] : []),
+      });
+    }),
+  ),
+  ...paths('/api/v1/artworks/{artworkId}').map((path) =>
+    http.patch(path, async ({ params, request }) => {
+      // 없는 작품을 고치면 다른 작품이 바뀌지 않게, id 가 정확히 같은 작품만 고친다
+      const artwork = mockDb.artworks.find(
+        (item: any) => item.artworkId === toNumber(params.artworkId),
+      );
+      if (!artwork) {
+        return fail(
+          '/api/v1/artworks/{artworkId}',
+          404,
+          'ARTWORK_NOT_FOUND',
+          '작품을 찾을 수 없습니다.',
+        );
+      }
+      const body = await readJson<Record<string, any>>(request);
+      const imageUrl = body.images?.[0]?.imageUrl ?? artwork.artworkImageUrl;
+      const coAuthors = toCoAuthorList(body.coAuthors, artwork.displayId);
+
+      Object.assign(artwork, body, {
+        title: body.artworkName ?? artwork.title,
+        material: body.materialMedia ?? artwork.material,
+        artworkImageUrl: imageUrl,
+        thumbnailUrl: imageUrl,
+        imageUrl,
+        coAuthors,
+        coAuthorUserIds: body.coAuthors?.userIds ?? [],
+      });
+
+      return success('/api/v1/artworks/{artworkId}', {
+        ...artwork,
+        coAuthorCount: coAuthors.length,
+      });
+    }),
   ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
     http.delete(path, ({ params }) => {

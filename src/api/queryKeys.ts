@@ -95,6 +95,7 @@ export const queryKeys = {
       [...queryKeys.displayArtworks.lists(), 'artist', userId] as const,
     details: () => [...queryKeys.displayArtworks.all, 'detail'] as const,
     detail: (artworkId: number) => [...queryKeys.displayArtworks.details(), artworkId] as const,
+    edit: (artworkId: number) => [...queryKeys.displayArtworks.detail(artworkId), 'edit'] as const,
   },
 
   personalArtworks: {

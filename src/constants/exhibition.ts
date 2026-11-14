@@ -160,5 +160,3 @@ export const ARTIST_FIELD_REVERSE_MAP: Record<ArtistFieldCode, ExhibitionField> 
 export const MAX_ARTIST_FIELDS = 2;
 
 export const MAX_POSTER_UPLOAD_IMAGES = 5;
-export const MAX_ARTWORK_UPLOAD_IMAGES = 20;
-export const MAX_ARTWORK_PROGRESS_IMAGES = 20;

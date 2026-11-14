@@ -82,13 +82,16 @@ export function isArtworkAuthor(user: User, artwork: ArtworkPolicyResource): boo
   );
 }
 
-// 작품 수정/삭제는 작가 인증을 받은 전시 소속인 중 작품을 만든 사람만 가능
+// 작품 수정/삭제는 작가 인증을 받은 전시 대표자이거나, 전시 소속인 중 작품을 만든 사람만 가능
 export function canManageArtwork(
   user: User,
   artwork: ArtworkPolicyResource,
   display: DisplayPolicyResource,
 ): boolean {
-  return isArtistVerified(user) && isDisplayMember(user, display) && isArtworkAuthor(user, artwork);
+  return (
+    canManageDisplay(user, display) ||
+    (isArtistVerified(user) && isDisplayMember(user, display) && isArtworkAuthor(user, artwork))
+  );
 }
 
 // 전시 게시물(감상평/리뷰) 삭제는 작성자 본인이거나 작가 인증을 받은 전시 소유자

@@ -1,1 +1,1 @@
-export { PersonalArtworksRegister } from './PersonalArtworksRegister';
+export { PersonalArtworkRegisterPage } from './PersonalArtworkRegisterPage';

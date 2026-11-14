@@ -10,6 +10,7 @@ import type {
   CreateExhibitionArtworkResponseDataDto,
   DeleteArtworkFeelingReplyResponseDataDto,
   DeleteArtworkResponseDataDto,
+  DisplayArtworkEditResponseDataDto,
   GetArtworkDetailResponseDataDto,
   GetArtworkFeelingsRequestDto,
   GetArtworkFeelingsResponseDataDto,
@@ -30,6 +31,11 @@ import { apiRequest } from '../client';
 export const getArtworkDetail = async (
   artworkId: number,
 ): Promise<GetArtworkDetailResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}`);
+
+// GET /v1/artworks/:artworkId/edit
+export const getArtworkForEdit = async (
+  artworkId: number,
+): Promise<DisplayArtworkEditResponseDataDto> => apiRequest(`/v1/artworks/${artworkId}/edit`);
 
 // GET /v1/artworks/:artworkId/feelings
 export const getArtworkFeelings = async (
