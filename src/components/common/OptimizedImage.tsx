@@ -8,7 +8,7 @@ type OptimizedImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   displayWidth: number;
   format?: ImageOptimizationFormat;
   /**
-   * true 면 다 불러올 때까지 스켈레톤(shimmer)을 보여주고, 완료되면 fade-in 한다.
+   * true 면 회색 칸 위에 사진이 투명도 + 흐림으로 켜진다(디자인 LOADING-SPEC 11-14). 실패하면 회색 칸이 그대로 남는다.
    * 이미지는 frame 을 꽉 채우므로 frameClassName 에 크기 · 비율 · 모서리를 꼭 준다(레이아웃 시프트 방지).
    */
   skeleton?: boolean;
@@ -21,7 +21,7 @@ type LoadStatus = 'loading' | 'loaded' | 'error';
 interface LoadState {
   src: string;
   status: Exclude<LoadStatus, 'loading'>;
-  /** 캐시에 있어 첫 렌더 때 이미 완료된 이미지. 깜빡이지 않게 fade-in 을 건너뛴다 */
+  /** 캐시에 있어 첫 렌더 때 이미 완료된 이미지. 회색 칸을 본 적이 없으니 애니메이션 없이 바로 보인다 */
   instant: boolean;
 }
 
@@ -74,18 +74,13 @@ export function OptimizedImage({
   const isInstant = loadState?.src === src && loadState.instant;
 
   return (
-    <span
-      className={cn(
-        'relative block overflow-hidden',
-        status === 'loading' && 'skeleton-shimmer',
-        status === 'error' && 'bg-secondary',
-        frameClassName,
-      )}
-    >
+    <span className={cn('relative block overflow-hidden bg-secondary', frameClassName)}>
       <img
         ref={(node) => {
           if (status === 'loading' && node?.complete && node.naturalWidth > 0) {
-            setLoadState({ src, status: 'loaded', instant: true });
+            // 스켈레톤을 보여 준 자리(useSkeleton)라면 캐시된 사진도 회색에서 갑자기 바뀌지 않게 켜지는 효과를 준다
+            const placeholderWasSeen = node.closest('[data-skeleton="revealed"]') !== null;
+            setLoadState({ src, status: 'loaded', instant: !placeholderWasSeen });
           }
         }}
         src={optimizedSrc}
@@ -99,7 +94,9 @@ export function OptimizedImage({
         className={cn(
           'absolute inset-0 size-full object-cover',
           status === 'loading' && 'opacity-0',
-          status === 'loaded' && !isInstant && 'animate-fade-in',
+          status === 'loaded' && !isInstant && 'animate-image-reveal',
+          // 깨진 이미지 아이콘 · 대체 글자 없이 회색 칸만 남긴다
+          status === 'error' && 'invisible',
           className,
         )}
         {...props}

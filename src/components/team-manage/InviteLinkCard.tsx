@@ -1,10 +1,9 @@
-import CopyDisabledIcon from '@/assets/team-manage/CopyDisabledIcon.svg';
-import CopyIcon from '@/assets/team-manage/CopyIcon.svg';
 import { useToggleDisplayInvitationLink } from '@/hooks/queries/useDisplayMembers';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 
+import { CopyIcon } from './TeamIcons';
 import { buildInviteLink } from './teamMembers';
 
 interface InviteLinkCardProps {
@@ -45,22 +44,17 @@ export function InviteLinkCard({
     <section
       aria-label="링크로 초대"
       className={cn(
-        'mt-2.5 rounded-12 border border-primary p-3.5',
-        enabled ? 'bg-icon-white' : 'bg-secondary',
+        'mt-3 rounded-[12px] border border-[#d4d4d8] px-4 pt-3.5 pb-4',
+        enabled ? 'bg-[#fff]' : 'bg-[#f4f4f5]',
       )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="typography-body-lg-semibold shrink-0 text-primary">링크로 초대</h3>
-          <span
-            className={cn(
-              'typography-body-sm-semibold',
-              enabled ? 'text-success' : 'text-tertiary',
-            )}
-          >
-            {enabled ? '링크 활성화' : '초대 링크 꺼짐'}
-          </span>
-        </div>
+      <div className="flex items-center gap-2">
+        <h3 className="text-[14px] font-semibold">링크로 초대</h3>
+        <span
+          className={cn('text-[10px] font-semibold', enabled ? 'text-[#00c758]' : 'text-[#71717b]')}
+        >
+          {enabled ? '링크 활성화' : '초대 링크 꺼짐'}
+        </span>
         <button
           type="button"
           role="switch"
@@ -68,57 +62,55 @@ export function InviteLinkCard({
           aria-label="초대 링크"
           disabled={toggle.isPending}
           onClick={changeEnabled}
-          // 보이는 크기는 40×20, 누르는 영역은 after 로 44×44 까지 넓힌다
+          // 보이는 크기는 44×26, 누르는 영역은 after 로 44×44 까지 넓힌다
           className={cn(
-            'relative h-5 w-10 shrink-0 rounded-circle transition-colors duration-fast ease-standard after:absolute after:-inset-x-0.5 after:-inset-y-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-default',
-            enabled ? 'bg-primary-black' : 'bg-primary-400',
+            'relative ml-auto h-6.5 w-11 shrink-0 rounded-full transition-colors duration-[250ms] after:absolute after:inset-x-0 after:-inset-y-[9px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] disabled:cursor-default',
+            enabled ? 'bg-[#18181b]' : 'bg-[#a1a1aa]',
           )}
         >
           <span
             aria-hidden="true"
             className={cn(
-              'absolute top-0.5 left-0.75 size-4 rounded-circle bg-icon-white transition-transform duration-fast ease-standard',
-              enabled && 'translate-x-4.75',
+              'absolute top-[3px] size-5 rounded-full bg-[#fff] transition-[left] duration-[250ms] ease-[cubic-bezier(.16,1,.3,1)]',
+              enabled ? 'left-[21px]' : 'left-[3px]',
             )}
           />
         </button>
       </div>
-      <p className="typography-body-md-medium pt-1.5 text-tertiary">
+      <p className="mt-1.5 text-[12px] font-medium text-[#71717b]">
         {enabled
           ? '링크를 공유하면 초대받은 사람이 이 전시에 참여할 수 있어요'
           : '초대 링크를 켜고 팀원을 초대해보세요'}
       </p>
-      <div className="flex gap-2 pt-2.5">
-        <p
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <input
+          type="text"
+          readOnly
+          value={enabled ? link : ''}
+          placeholder="초대 링크 꺼짐"
+          aria-label="초대 링크"
+          disabled={!enabled}
+          onFocus={(event) => event.currentTarget.select()}
           className={cn(
-            'typography-body-md-medium flex h-9 min-w-0 flex-1 items-center rounded-8 border border-primary px-2.5',
+            'h-10 min-w-0 truncate rounded-[8px] border px-3 text-[12px] font-medium outline-0 placeholder:text-[#757575]',
             enabled
-              ? 'bg-interactive-inverse text-interactive-primary-hover'
-              : 'bg-tertiary text-tertiary',
+              ? 'border-[#d4d4d8] bg-[#fff] text-[#18181b]'
+              : 'border-[#e4e4e7] bg-[#e4e4e7] text-[#71717b]',
           )}
-        >
-          <span className="sr-only">초대 링크 </span>
-          <span className="truncate select-all">{enabled ? link : '초대 링크 꺼짐'}</span>
-        </p>
+        />
         <button
           type="button"
           disabled={!canCopy}
           onClick={() => void copyLink()}
-          // 보이는 높이는 36px, 누르는 영역은 after 로 44px 까지 넓힌다
-          className="typography-body-md-semibold relative flex h-9 shrink-0 items-center gap-1 rounded-8 border border-interactive-selected bg-interactive-inverse px-2.5 text-primary transition duration-fast ease-standard after:absolute after:inset-x-0 after:-inset-y-1 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:border-disable disabled:bg-interactive-inverse disabled:text-tertiary disabled:active:scale-100"
+          // 보이는 높이는 40px, 누르는 영역은 after 로 44px 까지 넓힌다
+          className="relative inline-flex h-10 items-center gap-1.5 rounded-[8px] border border-[#18181b] bg-[#fff] px-3.5 text-[12px] font-semibold text-[#18181b] transition-colors duration-200 after:absolute after:inset-x-0 after:-inset-y-[3px] hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] disabled:cursor-default disabled:border-[#d4d4d8] disabled:text-[#d4d4d8] disabled:hover:bg-[#fff]"
         >
-          <span aria-hidden="true" className="relative size-4.25 shrink-0">
-            <img
-              src={canCopy ? CopyIcon : CopyDisabledIcon}
-              alt=""
-              className="absolute top-[2.33px] left-[2.5px]"
-            />
-          </span>
+          <CopyIcon className="size-4" />
           링크 복사
         </button>
       </div>
       {!enabled && (
-        <p className="typography-body-sm-regular pt-1.5 whitespace-pre-line text-tertiary">
+        <p className="mt-2 text-[12px] leading-[1.4] font-medium whitespace-pre-line text-[#71717b]">
           {'이 링크로 새로운 팀원이 참여할 수 없어요\n기존 팀원의 참여 상태는 유지돼요'}
         </p>
       )}

@@ -11,7 +11,7 @@ import {
 import { ManageScreen, OrderScreen } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
-import { Overlay, Skeleton, SkeletonList } from '@/components/ui';
+import { Overlay, Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
@@ -22,6 +22,7 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import type { Work } from '@/types/artworkManage';
 import { getErrorMessage } from '@/utils/error';
@@ -46,6 +47,7 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const [authorChoice, setAuthorChoice] = useState({ open: false, key: 0 });
 
   const { data, isPending, isError, refetch } = useDisplayArtworks(displayId);
+  const { showSkeleton } = useSkeleton(isPending);
   const {
     data: display,
     isPending: displayPending,
@@ -123,7 +125,7 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const openRegister = (proxy?: ProxyAuthor) =>
     navigate(buildArtworkRegisterPath(displayId, proxy), { replace: true });
 
-  if (!embedded && displayPending) return <LoadingView message="전시 정보를 불러오는 중..." />;
+  if (!embedded && displayPending) return <LoadingView />;
   if (!embedded && (displayError || !display))
     return <ErrorView message="전시 정보를 불러올 수 없습니다." onRetry={flowBack} />;
 
@@ -135,17 +137,20 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
           {getErrorMessage(updateOrder.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
         </p>
       )}
-      {isPending ? (
+      {showSkeleton ? (
         <div
           aria-label="전시작을 불러오는 중"
+          aria-busy="true"
           className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 min-[640px]:grid-cols-3"
         >
           <SkeletonList count={6}>
             {() => (
               <div>
                 <Skeleton className="aspect-3/4 rounded-0" />
-                <Skeleton className="mt-2 h-5 w-2/3 rounded-4" />
-                <Skeleton className="mt-0.5 h-4 w-1/3 rounded-4" />
+                <div className="pt-2">
+                  <SkeletonText className="typography-body-lg-semibold w-3/4" />
+                  <SkeletonText className="typography-body-md-medium w-1/2" />
+                </div>
               </div>
             )}
           </SkeletonList>

@@ -16,6 +16,7 @@ import { DetailTopBar } from '@/components/common/detail';
 import { SkeletonList } from '@/components/ui';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
@@ -37,6 +38,12 @@ export function AuthPage() {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const artist = useArtistProfile(userId);
   const { header, profileQuery } = artist;
+
+  const hasExhibitions = artist.exhibitions.length > 0;
+  const hasWorks = artist.works.length > 0;
+  const isContentPending = artist.isExhibitionsPending || artist.isWorksPending;
+  const headerSkeleton = useSkeleton(profileQuery.isPending);
+  const contentSkeleton = useSkeleton(isContentPending && !hasExhibitions && !hasWorks);
 
   const handleToggleSave = () => {
     if (!accessToken) {
@@ -61,10 +68,6 @@ export function AuthPage() {
     );
   }
 
-  const hasExhibitions = artist.exhibitions.length > 0;
-  const hasWorks = artist.works.length > 0;
-  const isContentPending = artist.isExhibitionsPending || artist.isWorksPending;
-
   return (
     <div className="min-h-dvh bg-primary-white pb-12">
       {loginModal}
@@ -85,8 +88,8 @@ export function AuthPage() {
       <DetailTopBar className="top-0" />
 
       <main className="mx-auto max-w-310 px-gutter desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
-        <div className="desktop:sticky desktop:top-24">
-          {header ? (
+        <div {...headerSkeleton.skeletonProps} className="desktop:sticky desktop:top-24">
+          {header && !headerSkeleton.showSkeleton ? (
             <ArtistProfileHeader
               action={
                 artist.isOwner
@@ -105,13 +108,9 @@ export function AuthPage() {
           )}
         </div>
 
-        <div className="min-w-0">
-          {isContentPending && !hasExhibitions && !hasWorks ? (
-            <div
-              aria-busy="true"
-              aria-label="작가의 전시와 작품을 불러오는 중"
-              className="pt-8 desktop:pt-0"
-            >
+        <div {...contentSkeleton.skeletonProps} className="min-w-0">
+          {contentSkeleton.showSkeleton ? (
+            <div aria-label="작가의 전시와 작품을 불러오는 중" className="pt-8 desktop:pt-0">
               <SkeletonList count={2}>{() => <ArtistExhibitionRowSkeleton />}</SkeletonList>
               <div className={WORK_GRID_CLASS}>
                 <SkeletonList count={2}>{() => <ArtistWorkCardSkeleton />}</SkeletonList>

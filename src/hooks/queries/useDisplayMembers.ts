@@ -2,6 +2,7 @@ import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tansta
 
 import type { ChangeDisplayMemberRoleRequestDto } from '@/api/dto';
 import {
+  cancelDisplayInvitation,
   changeDisplayMemberRole,
   createDisplayInvitation,
   disableDisplayInvitation,
@@ -74,6 +75,18 @@ export const useChangeDisplayMemberRole = (displayId: number) => {
       role: ChangeDisplayMemberRoleRequestDto['role'];
     }) => changeDisplayMemberRole(displayId, memberId, { role }),
     onSuccess: () => refetchTeam(queryClient, displayId),
+  });
+};
+
+export const useCancelDisplayInvitation = (displayId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (inviteeUserId: number) => cancelDisplayInvitation(displayId, inviteeUserId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.displayInvitations.all });
+      return refetchTeam(queryClient, displayId);
+    },
   });
 };
 

@@ -2,6 +2,7 @@ import { useRef } from 'react';
 
 import { ErrorView } from '@/components/common';
 import { SkeletonList } from '@/components/ui';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 
 import { FullSheet } from './FullSheet';
@@ -31,11 +32,12 @@ export function ReceivedInvitationsSheet({
   onAccept,
 }: ReceivedInvitationsSheetProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
   const renderBody = () => {
-    if (isPending) {
+    if (showSkeleton) {
       return (
-        <ul aria-busy="true" aria-label="받은 초대를 불러오는 중" className="mt-2">
+        <ul aria-label="받은 초대를 불러오는 중" className="mt-2">
           <SkeletonList count={2}>{() => <InvitationCardSkeleton />}</SkeletonList>
         </ul>
       );
@@ -91,7 +93,10 @@ export function ReceivedInvitationsSheet({
             </button>
             <h2 className="typography-body-xxl-semibold ml-1">받은 초대</h2>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-1 pb-[max(32px,env(safe-area-inset-bottom))]">
+          <div
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-1 pb-[max(32px,env(safe-area-inset-bottom))]"
+            {...skeletonProps}
+          >
             {renderBody()}
           </div>
         </>

@@ -18,7 +18,7 @@ export function ExhibitionWorkPage() {
   const { data: display, isPending, isError } = useDisplayDetail(Number(displayId));
   const { data: userMe } = useUserMe();
 
-  if (isPending) return <LoadingView message="전시 정보를 불러오는 중..." />;
+  if (isPending) return <LoadingView />;
   if (isError || !display)
     return <ErrorView message="전시 정보를 찾을 수 없습니다." onRetry={flowBack} />;
 

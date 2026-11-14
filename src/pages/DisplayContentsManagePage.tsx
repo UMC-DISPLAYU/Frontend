@@ -102,7 +102,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
     );
   }
 
-  if (isLoading) return <LoadingView message="전시 콘텐츠를 불러오는 중..." />;
+  if (isLoading) return <LoadingView />;
 
   if (isError || !displayDetail) {
     return (

@@ -4,6 +4,7 @@ import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
@@ -12,8 +13,9 @@ export function DisplayDetailPage() {
   const { id } = useParams<{ id: string }>();
   const displayId = parseDisplayId(id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
+  const { showSkeleton } = useSkeleton(isPending && displayId !== null);
 
-  if (isPending && displayId !== null) return <DisplayDetailSkeleton />;
+  if (showSkeleton) return <DisplayDetailSkeleton />;
 
   // 다시 불러오기만 실패하면(좋아요 · 저장 뒤 등) 받아 둔 상세를 그대로 보여준다
   if (!display || displayId === null) {

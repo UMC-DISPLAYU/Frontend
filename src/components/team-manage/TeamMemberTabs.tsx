@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from 'react';
 
+import { useTabIndicator } from '@/hooks/useTabIndicator';
 import { cn } from '@/utils/cn';
 
 import { getTeamTabIds, type TeamTab } from './teamMembers';
@@ -19,6 +20,8 @@ interface TeamMemberTabsProps {
 }
 
 export function TeamMemberTabs({ tab, onChange, counts, idPrefix }: TeamMemberTabsProps) {
+  // 탐색 탭처럼 밑줄 하나가 탭 사이를 미끄러지고, 밑줄은 글자 양옆 여백(px-3)까지 덮는다
+  const { listRef, indicator } = useTabIndicator<HTMLDivElement>(tab);
   const moveFocus = (event: KeyboardEvent<HTMLButtonElement>) => {
     const next =
       event.key === 'ArrowRight' ? 'pending' : event.key === 'ArrowLeft' ? 'joined' : null;
@@ -30,9 +33,10 @@ export function TeamMemberTabs({ tab, onChange, counts, idPrefix }: TeamMemberTa
 
   return (
     <div
+      ref={listRef}
       role="tablist"
       aria-label="팀원"
-      className="mt-1.5 flex h-12.25 items-end gap-5 border-b border-primary"
+      className="relative mt-6 flex border-b border-[#f0f0f3]"
     >
       {TABS.map(({ value, label }) => {
         const selected = tab === value;
@@ -50,16 +54,26 @@ export function TeamMemberTabs({ tab, onChange, counts, idPrefix }: TeamMemberTa
             onClick={() => onChange(value)}
             onKeyDown={moveFocus}
             className={cn(
-              'typography-body-lg-semibold relative -mb-px h-11.25 tabular-nums transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+              'h-11 shrink-0 cursor-pointer px-3 text-[16px] whitespace-nowrap tabular-nums transition duration-fast ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b] active:scale-96',
               selected
-                ? 'text-primary after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-primary-black'
-                : 'text-tertiary',
+                ? 'font-semibold text-[#18181b]'
+                : 'font-medium text-[#71717b] [@media(hover:hover)]:hover:text-[#3f3f47]',
             )}
           >
             {label} {counts?.[value]}
           </button>
         );
       })}
+      {indicator && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'absolute -bottom-px left-0 h-0.5 bg-[#18181b]',
+            indicator.animate && 'transition-[translate,width] duration-base ease-standard',
+          )}
+          style={{ translate: `${indicator.x}px 0`, width: indicator.width }}
+        />
+      )}
     </div>
   );
 }

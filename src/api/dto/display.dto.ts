@@ -520,6 +520,8 @@ export interface InviteDisplayMemberRequestDto {
 export interface DisplayMemberEntryDto extends DisplayTeamMemberDto {
   loggedIn: boolean;
   artistVerified: boolean;
+  /** 기본 닉네임. displayNickname(전시 작가명) 아래에 보여 준다. 아직 스웨거에 없어 없을 수 있다 */
+  nickname?: string;
 }
 
 /* 서버가 실제로 내려주는 원본 응답 — 참여 팀원과 초대 대기 팀원이 배열로 분리되어 있습니다. */

@@ -1,41 +1,4 @@
-<svg width="447" height="447" viewBox="0 0 447 447" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g filter="url(#filter0_ii_3858_36379)">
-<g clip-path="url(#clip0_3858_36379)">
-<rect width="447" height="447" rx="123.63" fill="#ECECF2"/>
-<g style="mix-blend-mode:hard-light">
-<path d="M232.478 169.396L248.643 169.397V277.139H328.024V169.397L344.318 169.396V270.553C344.318 272.858 343.832 275.053 342.862 277.138C341.891 279.168 340.556 280.952 338.858 282.488C337.159 284.025 335.157 285.232 332.852 286.11C330.607 286.988 328.211 287.427 325.663 287.427H251.133C248.585 287.427 246.158 286.988 243.853 286.11C241.608 285.232 239.637 284.025 237.938 282.488C236.239 280.952 234.904 279.168 233.934 277.138C232.963 275.053 232.478 272.858 232.478 270.553V169.396Z" fill="#06032D"/>
-<path d="M171.832 169.396C179.176 169.396 185.786 170.383 191.661 172.357C197.6 174.277 202.646 177.048 206.797 180.668C211.012 184.233 214.237 188.567 216.472 193.668C218.771 198.769 219.92 204.446 219.92 210.699V246.08C219.92 252.333 218.771 258.01 216.472 263.111C214.237 268.212 211.011 272.573 206.797 276.193C202.646 279.759 197.6 282.529 191.661 284.504C185.786 286.424 179.176 287.384 171.832 287.384H102V258.2H115.012V277.614H172.769C183.276 277.614 191.359 275.184 197.018 270.324C202.676 265.464 205.505 258.522 205.505 249.496V208.786C205.505 204.368 204.77 200.423 203.301 196.952C201.831 193.481 199.663 190.546 196.798 188.147C194.006 185.686 190.588 183.824 186.547 182.562C182.505 181.299 177.912 180.668 172.769 180.668H115.012V201.604H102V169.396H171.832Z" fill="#06032D"/>
-<path d="M108.604 282.544L108.604 237.876L139.582 206.897" stroke="#06032D" stroke-width="13.1364"/>
-</g>
-<g filter="url(#filter1_f_3858_36379)">
-<ellipse cx="222.439" cy="112.421" rx="116.112" ry="64.186" fill="#E7E6E7"/>
-</g>
-</g>
-</g>
-<defs>
-<filter id="filter0_ii_3858_36379" x="-6.12" y="-6.12" width="457.241" height="457.241" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset dx="-6.12" dy="-6.12"/>
-<feGaussianBlur stdDeviation="7.5"/>
-<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0"/>
-<feBlend mode="normal" in2="shape" result="effect1_innerShadow_3858_36379"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset dx="4.12109" dy="4.12109"/>
-<feGaussianBlur stdDeviation="8.24219"/>
-<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
-<feBlend mode="normal" in2="effect1_innerShadow_3858_36379" result="effect2_innerShadow_3858_36379"/>
-</filter>
-<filter id="filter1_f_3858_36379" x="-58.1045" y="-116.196" width="561.087" height="457.235" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<feGaussianBlur stdDeviation="82.2158" result="effect1_foregroundBlur_3858_36379"/>
-</filter>
-<clipPath id="clip0_3858_36379">
-<rect width="447" height="447" rx="123.63" fill="white"/>
-</clipPath>
-</defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<style>g{fill:#18181b}@media (prefers-color-scheme:dark){g{fill:#fff}}</style>
+<g transform="translate(2.000 15.197) scale(1.6488) translate(0 -2.2277)"><path d="M0 22.2812V2.29672H7.05864C14.0867 2.29672 17.7536 6.29972 17.7536 12.2889C17.7536 18.2782 14.0867 22.2812 7.05864 22.2812H0ZM4.95022 17.6976H7.05864C11.0616 17.6976 12.7422 15.6197 12.7422 12.2889C12.7422 8.9582 11.0616 6.88031 7.05864 6.88031H4.95022V17.6976Z"/><path transform="translate(-81.046 0)" d="M109.001 22.6094C103.501 22.6094 100.446 19.3703 100.446 14.2062V2.2277H105.396V14.2062C105.396 16.6507 106.526 18.0258 108.971 18.0258C111.477 18.0258 112.607 16.6813 112.607 14.2062V2.2277H117.435V14.2062C117.435 19.3398 114.41 22.6094 109.001 22.6094Z"/></g>
 </svg>
