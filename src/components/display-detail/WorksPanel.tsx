@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import type { DisplayTeamMemberDto } from '@/api/dto';
 import { ErrorView } from '@/components/common/ErrorView';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton, SkeletonList } from '@/components/ui/Skeleton';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getExhibitionArtistName } from '@/utils/artist';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
@@ -13,6 +14,8 @@ type Props = {
   displayId: number;
   teamMembers?: DisplayTeamMemberDto[];
   isPreview: boolean;
+  /* 작품 카드가 갈 주소. 없으면 공개 작품 상세 */
+  artworkPath?: (artworkId: number) => string;
 };
 
 const GRID = 'grid grid-cols-2 gap-x-3 gap-y-6 desktop:grid-cols-3';
@@ -20,20 +23,27 @@ const GRID = 'grid grid-cols-2 gap-x-3 gap-y-6 desktop:grid-cols-3';
 /* 피그마 `Card / 작품 · 검정`(카드 E): 틀 없이 사진(3:4), 사진 아래 8 · 제목↔작가 2 */
 const CARD_FRAME = 'aspect-3/4 w-full overflow-hidden bg-secondary';
 
-export function WorksPanel({ displayId, teamMembers, isPreview }: Props) {
+export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: Props) {
   const { data, error, isPending, isError, refetch } = useDisplayArtworks(displayId);
   const artworks = data?.artworks ?? [];
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
   return (
-    <section aria-label="작품 미리보기" className="px-gutter pt-6 pb-10 desktop:px-0">
-      {isPending ? (
+    <section
+      aria-label="작품 미리보기"
+      className="px-gutter pt-6 pb-10 desktop:px-0"
+      {...skeletonProps}
+    >
+      {showSkeleton ? (
         <div className={GRID}>
           <SkeletonList count={4}>
             {() => (
               <div>
                 <Skeleton className={CARD_FRAME} />
-                <Skeleton className="mt-2 h-5 w-2/3 rounded-4" />
-                <Skeleton className="mt-0.5 h-4 w-1/3 rounded-4" />
+                <div className="pt-2">
+                  <SkeletonText className="typography-body-lg-semibold w-2/3" />
+                  <SkeletonText className="typography-body-md-medium mt-0.5 w-1/3" />
+                </div>
               </div>
             )}
           </SkeletonList>
@@ -56,7 +66,7 @@ export function WorksPanel({ displayId, teamMembers, isPreview }: Props) {
           {artworks.map((artwork, index) => (
             <Link
               key={artwork.artworkId}
-              to={`/artwork/${artwork.artworkId}`}
+              to={artworkPath?.(artwork.artworkId) ?? `/artwork/${artwork.artworkId}`}
               style={staggerStyle(index)}
               className="group block animate-rise text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
             >

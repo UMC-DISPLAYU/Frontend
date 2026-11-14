@@ -26,7 +26,8 @@ interface ArtworkAuthorChoiceSheetProps {
 const FOCUS_CLASS =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
-const SMALL_DESCRIPTION_CLASS = 'typography-body-md-medium block text-secondary';
+// 프로토타입: 제목과 설명 사이 2px (Overlay 기본 6px 에서 4px 당긴다)
+const SMALL_DESCRIPTION_CLASS = 'typography-body-md-medium -mt-1 block text-secondary';
 
 function ChoiceOption({
   title,
@@ -106,7 +107,8 @@ export function ArtworkAuthorChoiceSheet({
         }
         showCloseButton={false}
       >
-        <div className="flex flex-col gap-3">
+        {/* 프로토타입: 설명과 첫 버튼 사이 20px(Overlay 기본 16px + 4px), 버튼 사이 8px */}
+        <div className="mt-1 flex flex-col gap-2">
           <ChoiceOption
             title="내 작품 등록하기"
             description="이 전시에서 사용하는 내 작가명으로 등록해요"

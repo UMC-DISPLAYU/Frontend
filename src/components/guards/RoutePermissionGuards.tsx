@@ -4,6 +4,7 @@ import { Outlet, useParams } from 'react-router-dom';
 
 import { ApiError } from '@/api/apiError';
 import { ErrorView } from '@/components/common/ErrorView';
+import { NotFoundView } from '@/components/error-page';
 import { FlowProvider } from '@/contexts/FlowContext';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
@@ -18,7 +19,7 @@ import {
   usePersonalArtworkPolicy,
 } from '@/hooks/usePolicy';
 import type { ArtworkPolicyResource, DisplayPolicyResource } from '@/policies/util';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 
 import { FlowGuard, type FlowStepDefinition } from './FlowGuard';
 import { PermissionGuard } from './PermissionGuard';
@@ -98,6 +99,9 @@ function GuardLoading() {
 }
 
 function ResourceError({ error, refetch }: Pick<ResourceQueryState<unknown>, 'error' | 'refetch'>) {
+  // 삭제됐거나 볼 수 없는 전시 · 작품은 다시 시도해도 같으므로 404 화면을 보여 준다
+  if (isNotFoundError(error)) return <NotFoundView />;
+
   return (
     <ErrorView
       message={getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')}
@@ -163,14 +167,14 @@ function useArtworkPolicyResource(): ResourceQueryState<ArtworkPolicyResource> {
 
 export function ArtistPermissionGuard({ children }: GuardChildrenProps) {
   return (
-    <PermissionGuard resource="artist" action="view" fallback="/403">
+    <PermissionGuard resource="artist" action="view">
       {children}
     </PermissionGuard>
   );
 }
 
 export function DisplayCreatePermissionGuard({
-  fallback = '/403',
+  fallback,
   children,
 }: GuardChildrenProps & { fallback?: string }) {
   const createPolicy = useDisplayCreatePolicy();
@@ -188,7 +192,7 @@ export function DisplayCreatePermissionGuard({
   );
 }
 
-export function DisplayPermissionGuard({ action, fallback = '/403', children }: DisplayGuardProps) {
+export function DisplayPermissionGuard({ action, fallback, children }: DisplayGuardProps) {
   const display = useDisplayPolicyResource();
   const policy = useDisplayPolicy(display.resource ?? { ownerUserId: 0, teamMembers: [] });
 
@@ -205,7 +209,7 @@ export function DisplayPermissionGuard({ action, fallback = '/403', children }: 
 
 export function DisplayContentPermissionGuard({
   action,
-  fallback = '/403',
+  fallback,
   children,
 }: DisplayContentGuardProps) {
   const display = useDisplayPolicyResource();
@@ -224,7 +228,7 @@ export function DisplayContentPermissionGuard({
 
 export function DisplayInvitationPermissionGuard({
   action,
-  fallback = '/403',
+  fallback,
   children,
 }: DisplayInvitationGuardProps) {
   const display = useDisplayPolicyResource();
@@ -250,7 +254,7 @@ export function DisplayInvitationPermissionGuard({
 
 export function PersonalArtworkPermissionGuard({
   action,
-  fallback = '/403',
+  fallback,
   children,
 }: PersonalArtworkGuardProps) {
   const policy = usePersonalArtworkPolicy();
@@ -264,7 +268,7 @@ export function PersonalArtworkPermissionGuard({
 
 export function DisplayArtistNamePermissionGuard({
   action,
-  fallback = '/403',
+  fallback,
   children,
 }: DisplayArtistNameGuardProps) {
   const display = useDisplayPolicyResource();
@@ -288,7 +292,7 @@ export function DisplayArtistNamePermissionGuard({
   );
 }
 
-export function ArtworkPermissionGuard({ action, fallback = '/403', children }: ArtworkGuardProps) {
+export function ArtworkPermissionGuard({ action, fallback, children }: ArtworkGuardProps) {
   const display = useDisplayPolicyResource();
   const artwork = useArtworkPolicyResource();
   const policy = useArtworkPolicy(display.resource ?? undefined, artwork.resource ?? undefined);

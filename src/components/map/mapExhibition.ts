@@ -1,4 +1,4 @@
-import type { NearbyDisplay } from '@/hooks/useNearbyDisplays';
+import type { NearbyDisplay } from '@/hooks/queries/useMapDisplays';
 import { parseServerDate } from '@/utils/date';
 
 export type MapExhibitionStatus = 'live' | 'soon';

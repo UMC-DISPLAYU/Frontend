@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { SessionChangedError } from '@/api/apiError';
 import type { DisplayArtworkEditResponseDataDto } from '@/api/dto';
@@ -15,6 +15,7 @@ import {
   buildCreateArtworkRequest,
   buildUpdateArtworkRequest,
   CoAuthorSheet,
+  DIRECT_INPUT_CAPTION,
   EMPTY_ARTWORK_REGISTER_VALUES,
   parseProxyAuthor,
   type ProxyAuthor,
@@ -34,6 +35,7 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 
@@ -50,7 +52,6 @@ interface ArtworkRegisterContentProps {
   ownerUserId?: number;
   myUserId?: number;
   author: ArtworkPerson;
-  registrantName?: string;
   initialCoAuthors: ArtworkPerson[];
   defaultValues: ArtworkRegisterValues;
   initialImages: ArtworkImageUrls;
@@ -63,13 +64,11 @@ function ArtworkRegisterContent({
   ownerUserId,
   myUserId,
   author,
-  registrantName,
   initialCoAuthors,
   defaultValues,
   initialImages,
   edit,
 }: ArtworkRegisterContentProps) {
-  const navigate = useNavigate();
   const leave = useLeaveArtworkRegister();
   const workPath = `/exhibition/${displayId}/work`;
   const [coAuthors, setCoAuthors] = useState(initialCoAuthors);
@@ -130,7 +129,8 @@ function ArtworkRegisterContent({
           { label: '작가', value: registered.authors },
           { label: '전시', value: displayTitle },
         ]}
-        onConfirm={() => navigate(workPath, { replace: true })}
+        // 들어온 전시 작업 기록으로 돌아간다(새로 쌓으면 전시 작업의 < 가 전시 작업으로 한 번 더 간다)
+        onConfirm={() => leave(workPath)}
       />
     );
   }
@@ -151,7 +151,6 @@ function ArtworkRegisterContent({
           <ArtworkAuthorSection
             author={author}
             coAuthors={coAuthors}
-            registrantName={registrantName}
             onAddCoAuthor={() => {
               // 저장 중에 시트를 열면 저장 후 이동이 시트 기록만 닫고 이 화면에 남는다
               if (isSubmitting) return;
@@ -182,9 +181,13 @@ function ArtworkRegisterContent({
   );
 }
 
-const authorCaption = (userId: number | null | undefined, myUserId: number | undefined) => {
-  if (typeof userId !== 'number') return '작가 · 직접 입력';
-  return userId === myUserId ? '작가 · 나' : '작가 · 팀원';
+// 프로토타입: 작가명 아래 줄은 기본 닉네임. 팀원 API 에는 계정 닉네임이 없어 팀원은 역할을 보여준다
+const authorCaption = (
+  userId: number | null | undefined,
+  me: { userId: number | undefined; nickname: string },
+) => {
+  if (typeof userId !== 'number') return DIRECT_INPUT_CAPTION;
+  return userId === me.userId ? me.nickname || '나' : '팀원';
 };
 
 function ArtworkRegisterRoute() {
@@ -209,10 +212,12 @@ function ArtworkRegisterRoute() {
   // 대신 등록은 대표자만 할 수 있다
   const proxy: ProxyAuthor | null = !isEdit && isOwner ? parseProxyAuthor(searchParams) : null;
   const members = membersQuery.data?.members;
+  // 전시 작가명이 비어 있으면(빈 문자열 포함) 기본 닉네임을 쓴다
   const myName =
-    members?.find((member) => member.userId === myUserId)?.displayNickname ??
-    userMeQuery.data?.nickname ??
+    members?.find((member) => member.userId === myUserId)?.displayNickname?.trim() ||
+    userMeQuery.data?.nickname?.trim() ||
     '';
+  const me = { userId: myUserId, nickname: userMeQuery.data?.nickname?.trim() ?? '' };
 
   const queries = [
     userMeQuery,
@@ -221,6 +226,7 @@ function ArtworkRegisterRoute() {
   ];
   const failed = queries.find((query) => query.isError);
   const isPending = queries.some((query) => query.isPending);
+  const { showSkeleton } = useSkeleton(isPending);
   const title = isEdit ? '작품 수정' : '작품 등록';
 
   if (failed) {
@@ -232,7 +238,7 @@ function ArtworkRegisterRoute() {
     );
   }
 
-  if (isPending || !display) {
+  if (showSkeleton || !display) {
     return <ArtworkRegisterSkeleton title={title} withAuthor onBack={() => leave(workPath)} />;
   }
 
@@ -249,7 +255,7 @@ function ArtworkRegisterRoute() {
         author={{
           key: 'author',
           name: previous.artistName,
-          caption: authorCaption(previous.artistUserId, myUserId),
+          caption: authorCaption(previous.artistUserId, me),
           userId: previous.artistUserId ?? undefined,
         }}
         initialCoAuthors={(previous.coAuthors ?? []).map((coAuthor) =>
@@ -289,15 +295,15 @@ function ArtworkRegisterRoute() {
     ? {
         key: 'author',
         name: proxyMember.displayNickname,
-        caption: authorCaption(proxyMember.userId, myUserId),
+        caption: authorCaption(proxyMember.userId, me),
         userId: proxyMember.userId,
       }
     : proxy?.kind === 'name'
-      ? { key: 'author', name: proxy.name, caption: authorCaption(undefined, myUserId) }
+      ? { key: 'author', name: proxy.name, caption: authorCaption(undefined, me) }
       : {
           key: 'author',
           name: myName,
-          caption: authorCaption(myUserId, myUserId),
+          caption: authorCaption(myUserId, me),
           userId: myUserId,
         };
 
@@ -309,7 +315,6 @@ function ArtworkRegisterRoute() {
       ownerUserId={display.ownerUserId}
       myUserId={myUserId}
       author={author}
-      registrantName={proxy ? myName : undefined}
       initialCoAuthors={[]}
       defaultValues={EMPTY_ARTWORK_REGISTER_VALUES}
       initialImages={{ artworkUrls: [], processUrls: [] }}

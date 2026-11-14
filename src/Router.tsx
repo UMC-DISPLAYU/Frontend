@@ -6,6 +6,7 @@ import { handleStaleChunkError } from '@/utils/staleChunkReload';
 
 import { RootRedirect } from './components/auth/RootRedirect';
 import { LoadingView } from './components/common';
+import { NotFoundView, RouteErrorView } from './components/error-page';
 import { AuthGuard } from './components/guards/AuthGuard';
 import {
   ArtistPermissionGuard,
@@ -73,7 +74,6 @@ const PersonalArtworkDetailPage = lazyPage(
 //   'LoungeBoardDetailPage',
 // );
 const PolicyPage = lazyPage(() => import('./pages/PolicyPage'), 'PolicyPage');
-const ForbiddenPage = lazyPage(() => import('./pages/ForbiddenPage'), 'ForbiddenPage');
 const MyPage = lazyPage(() => import('./pages/MyPage'), 'MyPage');
 const ArtistVerifyPage = lazyPage(() => import('./pages/artist-verification'), 'ArtistVerifyPage');
 const EditArtistProfilePage = lazyPage(
@@ -122,6 +122,18 @@ const DisplayContentsManagePage = lazyPage(
   () => import('./pages/DisplayContentsManagePage'),
   'DisplayContentsManagePage',
 );
+const DisplayPreviewPage = lazyPage(
+  () => import('./pages/exhibition-preview'),
+  'DisplayPreviewPage',
+);
+const ArtworkPreviewPage = lazyPage(
+  () => import('./pages/exhibition-preview'),
+  'ArtworkPreviewPage',
+);
+const ContentsPreviewPage = lazyPage(
+  () => import('./pages/exhibition-preview'),
+  'ContentsPreviewPage',
+);
 const ArtworksManagePage = lazyPage(
   () => import('./pages/ArtworksManagePage'),
   'ArtworksManagePage',
@@ -130,6 +142,7 @@ const ArtworkRegisterPage = lazyPage(
   () => import('./pages/artwork-register'),
   'ArtworkRegisterPage',
 );
+const SectionCreatePage = lazyPage(() => import('./pages/SectionCreatePage'), 'SectionCreatePage');
 const InteriorPhotosPage = lazyPage(
   () => import('./pages/InteriorPhotosPage'),
   'InteriorPhotosPage',
@@ -151,7 +164,6 @@ const DisplayInvitationLinkPage = lazyPage(
   () => import('./pages/DisplayInvitationLinkPage'),
   'DisplayInvitationLinkPage',
 );
-const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound');
 
 const validateNumericId =
   (paramName: string) =>
@@ -167,10 +179,13 @@ export const router = createBrowserRouter([
   {
     // 모든 라우트 공통(스크롤 복원 · 토스트 · 오버레이 기록 정리 · 키보드 추적). 냅바 · 푸터는 Layout 이 맡는다
     element: <RootLayout />,
+    errorElement: <RouteErrorView />,
     children: [
       {
         path: '/',
         element: <Layout />,
+        // 잘못된 id(loader 404) · 렌더 중 오류가 모두 여기로 올라온다. RootLayout(토스트 · 스크롤 복원)은 남긴다
+        errorElement: <RouteErrorView />,
         children: [
           // 🔓 공개 라우트 (비로그인 게스트 접근 가능)
           { index: true, element: <RootRedirect /> },
@@ -179,26 +194,22 @@ export const router = createBrowserRouter([
           {
             path: 'artist/:userId',
             loader: validateNumericId('userId'),
-            errorElement: <NotFound />,
             element: <AuthPage />,
           },
           { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
           {
             path: 'display/:id',
             loader: validateNumericId('id'),
-            errorElement: <NotFound />,
             element: <DisplayDetailPage />,
           },
           {
             path: 'artwork/:artworkId',
             loader: validateNumericId('artworkId'),
-            errorElement: <NotFound />,
             element: <ArtworkDetailPage />,
           },
           {
             path: 'display/:id/contents',
             loader: validateNumericId('id'),
-            errorElement: <NotFound />,
             element: <DisplayContentsPage />,
           },
           // 라운지는 당분간 노출하지 않는다 (#442)
@@ -207,7 +218,6 @@ export const router = createBrowserRouter([
           {
             path: 'personal-artworks/:personalArtworkId',
             loader: validateNumericId('personalArtworkId'),
-            errorElement: <NotFound />,
             element: <PersonalArtworkDetailPage />,
           },
           // 라운지는 당분간 노출하지 않는다 (#442)
@@ -215,12 +225,10 @@ export const router = createBrowserRouter([
           // {
           //   path: 'lounge/:category/:id',
           //   loader: validateNumericId('id'),
-          //   errorElement: <NotFound />,
           //   element: <LoungeBoardDetailPage />,
           //   handle: { hideNavbar: true },
           // },
           { path: 'policy', element: <PolicyPage /> },
-          { path: '403', element: <ForbiddenPage /> },
 
           // 🔒 보호된 라우트 (인증 필요 - AuthGuard Layout 적용)
           {
@@ -292,7 +300,6 @@ export const router = createBrowserRouter([
               {
                 path: 'exhibition/:displayId',
                 loader: validateNumericId('displayId'),
-                errorElement: <NotFound />,
                 element: (
                   <FlowRoute initialFlow="exhibition-edit">
                     <ExhibitionRegisterDraftRoute />
@@ -372,11 +379,37 @@ export const router = createBrowserRouter([
                       </DisplayPermissionGuard>
                     ),
                   },
+                  // 미리보기는 공개 전 전시도 보여주므로 전시 팀원만 연다
+                  {
+                    path: 'preview',
+                    element: (
+                      <DisplayPermissionGuard action="view">
+                        <DisplayPreviewPage />
+                      </DisplayPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'preview/contents',
+                    element: (
+                      <DisplayPermissionGuard action="view">
+                        <ContentsPreviewPage />
+                      </DisplayPermissionGuard>
+                    ),
+                  },
                   {
                     path: 'contents',
                     element: (
                       <DisplayContentPermissionGuard action="createContent">
                         <DisplayContentsManagePage />
+                      </DisplayContentPermissionGuard>
+                    ),
+                  },
+                  // 섹션 추가(전체 화면, 프로토타입 section.html?new=1)
+                  {
+                    path: 'contents/new',
+                    element: (
+                      <DisplayContentPermissionGuard action="createCategory">
+                        <SectionCreatePage />
                       </DisplayContentPermissionGuard>
                     ),
                   },
@@ -408,9 +441,17 @@ export const router = createBrowserRouter([
                         ),
                       },
                       {
+                        path: ':artworkId/preview',
+                        loader: validateNumericId('artworkId'),
+                        element: (
+                          <DisplayPermissionGuard action="view">
+                            <ArtworkPreviewPage />
+                          </DisplayPermissionGuard>
+                        ),
+                      },
+                      {
                         path: ':artworkId/edit',
                         loader: validateNumericId('artworkId'),
-                        errorElement: <NotFound />,
                         element: (
                           <ArtworkPermissionGuard action="edit">
                             <ArtworkRegisterPage />
@@ -444,7 +485,6 @@ export const router = createBrowserRouter([
               // {
               //   path: 'personal-artworks/:personalArtworkId/edit',
               //   loader: validateNumericId('personalArtworkId'),
-              //   errorElement: <NotFound />,
               //   element: (
               //     <PersonalArtworkPermissionGuard action="create">
               //       <PersonalArtworkRegisterPage />
@@ -471,16 +511,18 @@ export const router = createBrowserRouter([
       {
         path: '/map',
         element: <MapPage />,
+        errorElement: <RouteErrorView />,
       },
 
       {
         path: '/onboarding',
         element: <NewOnboardingPage />,
+        errorElement: <RouteErrorView />,
       },
 
       {
         path: '*',
-        element: <NotFound />,
+        element: <NotFoundView />,
       },
     ],
   },

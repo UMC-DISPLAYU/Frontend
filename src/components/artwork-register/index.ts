@@ -15,7 +15,7 @@ export {
   splitArtworkImages,
   toArtworkRegisterValues,
 } from './artworkRequest';
-export { toNamedCoAuthor, toTeamCandidates } from './artworkTeam';
+export { DIRECT_INPUT_CAPTION, toNamedCoAuthor, toTeamCandidates } from './artworkTeam';
 export { CoAuthorSheet } from './CoAuthorSheet';
 export {
   buildArtworkRegisterPath,

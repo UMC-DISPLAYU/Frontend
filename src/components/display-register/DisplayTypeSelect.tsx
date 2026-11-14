@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Check } from 'lucide-react';
-
-import SelectorIcon from '@/assets/display-register/SelectorIcon.svg';
 import { EXHIBITION_TYPE_LABELS } from '@/constants/exhibition';
 import { cn } from '@/utils/cn';
+
+import { FOCUS_CLASS } from './displayRegister.styles';
+import { CheckIcon, UpDownIcon } from './DisplayRegisterIcons';
 
 interface DisplayTypeSelectProps {
   labelId: string;
@@ -47,45 +47,47 @@ export function DisplayTypeSelect({ labelId, value, onChange }: DisplayTypeSelec
         aria-labelledby={labelId}
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          'flex w-full items-center gap-2 border-b py-3 text-left transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-          isOpen ? 'border-interactive-primary' : 'border-primary',
+          'mt-1 flex h-[49px] w-full items-center justify-between border-b border-primary text-left transition-colors duration-fast ease-standard focus-within:border-[#18181b]',
+          FOCUS_CLASS,
         )}
       >
         <span
           className={cn(
-            'typography-body-xl-regular min-w-0 flex-1',
-            value || isOpen ? 'text-primary' : 'text-tertiary',
+            'typography-body-xl-regular min-w-0 truncate',
+            value ? 'text-primary' : 'text-tertiary',
           )}
         >
           {value || '전시 유형'}
         </span>
-        <img src={SelectorIcon} alt="" className="size-6 shrink-0" />
+        <UpDownIcon className="size-5 shrink-0 text-primary" />
       </button>
       {isOpen && (
         <div
           role="listbox"
           aria-labelledby={labelId}
-          className="absolute inset-x-0 top-full z-10 mt-1.5 animate-fade-in overflow-hidden rounded-12 border border-primary bg-primary-white shadow-card"
+          className="absolute inset-x-0 top-[calc(100%+6px)] z-10 rounded-12 transition-[opacity,translate] duration-fast ease-standard starting:-translate-y-1 starting:opacity-0 border border-primary bg-primary-white py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.1)]"
         >
-          {EXHIBITION_TYPE_LABELS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              role="option"
-              aria-selected={option === value}
-              onClick={() => {
-                onChange(option);
-                setIsOpen(false);
-                triggerRef.current?.focus();
-              }}
-              className="typography-body-xl-regular flex h-13 w-full items-center gap-2 px-4 text-left text-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
-            >
-              <span className="min-w-0 flex-1">{option}</span>
-              {option === value && (
-                <Check aria-hidden="true" className="size-4.5 shrink-0 text-icon-primary" />
-              )}
-            </button>
-          ))}
+          {EXHIBITION_TYPE_LABELS.map((option) => {
+            const isSelected = option === value;
+
+            return (
+              <button
+                key={option}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => {
+                  onChange(option);
+                  setIsOpen(false);
+                  triggerRef.current?.focus();
+                }}
+                className="typography-body-xl-medium flex h-12 w-full items-center justify-between px-4 text-left text-primary transition-colors duration-[150ms] hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+              >
+                {option}
+                <CheckIcon className={cn('size-4.5', !isSelected && 'invisible')} />
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

@@ -19,19 +19,28 @@ import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab'
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import { ErrorView } from '@/components/common';
+import { NotFoundView } from '@/components/error-page';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { getExhibitionState } from '@/utils/exhibitionState';
 import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
-export function ArtworkDetailPage() {
+type ArtworkDetailPageProps = {
+  /* 전시 작업에서 연 작품 미리보기(/exhibition/:displayId/artworks/:artworkId/preview)의 전시 */
+  previewDisplayId?: number;
+  onBack?: () => void;
+};
+
+export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPageProps = {}) {
   const flowBack = useFlowBack();
+  const goBack = onBack ?? (() => flowBack());
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
 
@@ -43,32 +52,29 @@ export function ArtworkDetailPage() {
   );
 
   // 공개 전 여부를 알기 전에 버튼이 눌리거나 방명록을 부르지 않도록 전시 상세까지 기다린다
-  if ((isPending || isDisplayLoading) && Number.isFinite(artworkId) && artworkId > 0) {
-    return <ArtworkDetailSkeleton />;
-  }
+  const { showSkeleton } = useSkeleton(
+    (isPending || isDisplayLoading) && Number.isFinite(artworkId) && artworkId > 0,
+  );
+
+  if (showSkeleton) return <ArtworkDetailSkeleton />;
+
+  // 미리보기 주소의 전시와 작품이 속한 전시가 다르면 권한을 확인한 전시의 작품이 아니므로 보여주지 않는다
+  const isOtherDisplay =
+    previewDisplayId !== undefined && detail?.exhibitionInfo?.displayId !== previewDisplayId;
+
+  if (isNotFoundError(error) || (!error && (!detail || isOtherDisplay))) return <NotFoundView />;
 
   if (error || !detail) {
     return (
       <ErrorView
-        message={
-          error
-            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
-            : '작품 정보를 찾을 수 없습니다'
-        }
-        onRetry={
-          error
-            ? () => {
-                void refetch();
-              }
-            : () => flowBack()
-        }
-        retryLabel={error ? '다시 시도' : '뒤로가기'}
+        message={getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')}
+        onRetry={() => void refetch()}
       />
     );
   }
 
   const policyDisplay = (display ?? { ownerUserId: 0, teamMembers: [] }) as DisplayDetailDto;
-  const isPreview = display ? isPreviewDisplay(display) : false;
+  const isPreview = previewDisplayId !== undefined || (display ? isPreviewDisplay(display) : false);
 
   const artistDisplayName = getExhibitionArtistName(
     detail.artistName,
@@ -123,8 +129,9 @@ export function ArtworkDetailPage() {
       key={artworkId}
       images={viewerImages}
       title={detail.artworkName}
-      onBack={() => flowBack()}
+      onBack={goBack}
       isPreview={isPreview}
+      hideBack={previewDisplayId !== undefined}
       label={
         <ArtworkMeta
           artwork={artwork}
@@ -132,6 +139,7 @@ export function ArtworkDetailPage() {
           exhibitionState={getExhibitionState(display?.period)}
           shareImageUrl={orderedImages[0]}
           isPreview={isPreview}
+          previewMode={previewDisplayId !== undefined}
         />
       }
       hasIntro={hasArtworkIntro({

@@ -62,6 +62,7 @@ it.each([
         works={works}
         display={display}
         userId={id}
+        onOpen={vi.fn()}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
         onEditOrder={vi.fn()}
@@ -89,6 +90,7 @@ it.each([
       works={many}
       display={display}
       userId={1}
+      onOpen={vi.fn()}
       onEdit={vi.fn()}
       onDelete={vi.fn()}
       onEditOrder={vi.fn()}

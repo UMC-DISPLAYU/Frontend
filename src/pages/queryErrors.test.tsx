@@ -42,6 +42,7 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ state: null }),
   useSearchParams: () => [new URLSearchParams(), vi.fn()],
   Navigate: () => null,
+  Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
 }));
 vi.mock('@tanstack/react-query', async (original) => ({
   ...(await original<typeof import('@tanstack/react-query')>()),
@@ -80,6 +81,9 @@ vi.mock('@/components/layout', () => ({
   PageContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 vi.mock('@/components/ui', () => ({ SkeletonList: () => null }));
+vi.mock('@/components/error-page', () => ({
+  NotFoundView: () => <div>페이지를 찾을 수 없어요</div>,
+}));
 const nodes = (node: ReactNode): ReactElement<Record<string, unknown>>[] =>
   Children.toArray(node).flatMap((child) =>
     isValidElement<Record<string, unknown>>(child)
@@ -145,12 +149,28 @@ it('추가 페이지 실패는 기존 카드를 유지하고 추가 페이지만
   expect(h.query.refetch).not.toHaveBeenCalled();
 });
 
-it.each([403, 404, 500])('상세 HTTP %i를 구분하고 뒤로가기 대신 다시 조회한다', (status) => {
-  h.query.error = new ApiError('internal', { status });
+it.each([403, 404])(
+  '상세 HTTP %i(삭제 · 권한 없음)는 다시 시도 없이 404 화면을 보여 준다',
+  (status) => {
+    h.query.error = new ApiError('error', { status });
+    const html = renderToStaticMarkup(DisplayDetailPage());
+    expect(html).toContain('페이지를 찾을 수 없어요');
+    expect(html).not.toContain('다시 시도');
+  },
+);
+
+it('삭제된 전시는 받아 둔 상세가 있어도 다시 불러오기가 404 면 404 화면으로 바꾼다', () => {
+  h.query.data = { displayId: 1 };
+  h.query.error = new ApiError('deleted', { status: 404 });
+  const html = renderToStaticMarkup(DisplayDetailPage());
+  expect(html).toContain('페이지를 찾을 수 없어요');
+  expect(html).not.toContain('전시 상세');
+});
+
+it('상세 서버 장애는 뒤로가기 대신 다시 조회한다', () => {
+  h.query.error = new ApiError('internal', { status: 500 });
   const tree = DisplayDetailPage();
-  expect(renderToStaticMarkup(tree)).toContain(
-    status === 403 ? '권한' : status === 404 ? '찾을 수' : '서버',
-  );
+  expect(renderToStaticMarkup(tree)).toContain('서버');
   retry(tree);
   expect(h.query.refetch).toHaveBeenCalledTimes(1);
   expect(h.back).not.toHaveBeenCalled();
@@ -167,13 +187,10 @@ it('받아 둔 상세가 있으면 다시 불러오기가 실패해도 오류 �
   expect(html).not.toContain('서버');
 });
 
-it('잘못된 상세 ID에서는 비활성 query의 로딩 대신 뒤로가기를 제공한다', () => {
+it('잘못된 상세 ID에서는 비활성 query의 로딩 대신 404 화면을 보여 준다', () => {
   h.id = 'bad';
   h.query.isPending = true;
-  const tree = DisplayDetailPage();
-  expect(renderToStaticMarkup(tree)).toContain('뒤로가기');
-  retry(tree);
-  expect(h.back).toHaveBeenCalledTimes(1);
+  expect(renderToStaticMarkup(DisplayDetailPage())).toContain('페이지를 찾을 수 없어요');
 });
 
 it.each(['INVALID_DISPLAY_INVITATION_TOKEN', 'DISPLAY_INVITATION_DISABLED'])(
@@ -182,9 +199,9 @@ it.each(['INVALID_DISPLAY_INVITATION_TOKEN', 'DISPLAY_INVITATION_DISABLED'])(
     h.query.error = new ApiError('invalid', { status: 404, code });
     expect(renderToStaticMarkup(DisplayInvitationLinkPage())).toContain('유효하지 않은 초대 링크');
     h.query.error = new ApiError('server', { status: 500 });
-    const tree = DisplayInvitationLinkPage();
+    const tree = DisplayInvitationLinkPage() as ReactElement<{ onRetry: () => void }>;
     expect(renderToStaticMarkup(tree)).toContain('서버');
-    retry(tree);
+    tree.props.onRetry();
     expect(h.query.refetch).toHaveBeenCalledTimes(1);
   },
 );

@@ -7,6 +7,8 @@ import { cn } from '@/utils/cn';
 
 type Props = {
   display: DisplayDetailDto;
+  /* 콘텐츠 카드가 갈 주소. 없으면 공개 전시 콘텐츠 */
+  contentPath?: (categoryId: number) => string;
 };
 
 /* 섹션 사이 연한 구분선. 900px 이상은 본문 폭 끝까지 */
@@ -24,14 +26,17 @@ function IntroText({ content }: { content: string }) {
 }
 
 /* 피그마 메모: 인스타그램 게시물 첫 표지(3:4)를 자르지 않고 144×192로, 아래에 콘텐츠 제목 한 줄 */
-function ContentCards({ display }: Props) {
+function ContentCards({ display, contentPath }: Props) {
   return (
     <section aria-label="전시콘텐츠" className={cn(DIVIDER, 'mt-7 px-gutter pt-5.25 desktop:px-0')}>
       <div className="-mx-gutter flex snap-x snap-proximity scroll-px-gutter gap-3 overflow-x-auto px-gutter [scrollbar-width:none] desktop:mx-0 desktop:grid desktop:grid-cols-3 desktop:overflow-visible desktop:px-0 [&::-webkit-scrollbar]:hidden">
         {display.contentCategories.map((category) => (
           <Link
             key={category.categoryId}
-            to={`/display/${display.displayId}/contents?category=${category.categoryId}`}
+            to={
+              contentPath?.(category.categoryId) ??
+              `/display/${display.displayId}/contents?category=${category.categoryId}`
+            }
             className="group w-36 shrink-0 snap-start text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus desktop:w-auto"
           >
             <div className="relative">
@@ -63,11 +68,13 @@ function ContentCards({ display }: Props) {
   );
 }
 
-export function IntroPanel({ display }: Props) {
+export function IntroPanel({ display, contentPath }: Props) {
   return (
     <div className="pb-10">
       {display.content && <IntroText content={display.content} />}
-      {display.contentCategories.length > 0 && <ContentCards display={display} />}
+      {display.contentCategories.length > 0 && (
+        <ContentCards display={display} contentPath={contentPath} />
+      )}
     </div>
   );
 }

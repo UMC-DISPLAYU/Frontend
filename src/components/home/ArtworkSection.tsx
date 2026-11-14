@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import type { ArtworkPreviewItemDto } from '@/api/dto';
 import ChevronMoreIcon from '@/assets/home/ChevronMoreIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton, SkeletonList } from '@/components/ui';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { cn } from '@/utils/cn';
 
 import { ArtistByline } from './ArtistByline';
@@ -21,8 +22,10 @@ interface ArtworkSectionProps {
 }
 
 export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
+
   // 불러오지 못했거나 작품이 없으면 섹션째 숨긴다(홈의 보조 영역이라 빈 안내를 두지 않는다)
-  if (!isPending && !artworks?.length) return null;
+  if (!showSkeleton && !artworks?.length) return null;
 
   return (
     <section aria-labelledby="home-artworks-title" className={cn(HOME_INNER, 'py-5')}>
@@ -42,14 +45,19 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
       </div>
       <p className="typography-body-md-medium mt-0.5 text-tertiary">전시 속 작품을 만나보세요</p>
 
-      <ul className="-mr-(--home-pad) mt-4 flex snap-x snap-proximity gap-3 overflow-x-auto pr-(--home-pad) [scrollbar-width:none] tablet:mr-0 tablet:gap-4 tablet:pr-0 min-[68.75rem]:gap-6 [&::-webkit-scrollbar]:hidden">
-        {isPending ? (
+      <ul
+        {...skeletonProps}
+        className="-mr-(--home-pad) mt-4 flex snap-x snap-proximity gap-3 overflow-x-auto pr-(--home-pad) [scrollbar-width:none] tablet:mr-0 tablet:gap-4 tablet:pr-0 min-[68.75rem]:gap-6 [&::-webkit-scrollbar]:hidden"
+      >
+        {showSkeleton ? (
           <SkeletonList count={4}>
             {() => (
               <li aria-hidden="true" className={CARD_CLASS}>
                 <Skeleton className={IMAGE_FRAME_CLASS} />
-                <Skeleton className="mt-2 h-5 w-2/3 rounded-4" />
-                <Skeleton className="mt-0.5 h-4 w-1/3 rounded-4" />
+                <div className="pt-2">
+                  <SkeletonText className="typography-body-lg-semibold w-2/3" />
+                  <SkeletonText className="typography-body-md-medium w-1/2" />
+                </div>
               </li>
             )}
           </SkeletonList>

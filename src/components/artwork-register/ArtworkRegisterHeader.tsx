@@ -1,4 +1,5 @@
-import BackIcon from '@/assets/display-register/BackIcon.svg';
+import { FOCUS_CLASS } from './artworkRegister.styles';
+import { BackIcon } from './ArtworkRegisterIcons';
 
 interface ArtworkRegisterHeaderProps {
   title: string;
@@ -10,11 +11,11 @@ export function ArtworkRegisterHeader({ title, onBack }: ArtworkRegisterHeaderPr
     <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
       <button
         type="button"
-        aria-label="뒤로가기"
+        aria-label="뒤로"
         onClick={onBack}
-        className="flex size-11 items-center justify-center rounded-circle transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+        className={`grid size-11 place-items-center rounded-circle transition-colors duration-fast hover:bg-secondary ${FOCUS_CLASS}`}
       >
-        <img src={BackIcon} alt="" className="size-6" />
+        <BackIcon className="size-6 text-primary" />
       </button>
       <h1 className="typography-title-xs text-primary">{title}</h1>
     </header>

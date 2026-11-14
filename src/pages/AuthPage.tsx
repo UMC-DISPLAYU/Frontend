@@ -13,17 +13,21 @@ import {
 } from '@/components/artist-profile';
 import { ErrorView } from '@/components/common';
 import { DetailTopBar } from '@/components/common/detail';
+import { NotFoundView } from '@/components/error-page';
 import { SkeletonList } from '@/components/ui';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/stores/toastStore';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 
 const EXHIBITION_LIMIT = 3;
 const WORK_LIMIT = 6;
-const EXHIBITION_LIST_CLASS = 'mt-3 divide-y divide-bg-tertiary';
+// 프로토타입: 행 아래 구분선(마지막 행 제외) + 행 사이 12px
+const EXHIBITION_LIST_CLASS =
+  'mt-3 [&>li]:border-b [&>li]:border-bg-tertiary [&>li+li]:mt-3 [&>li:last-child]:border-b-0';
 const WORK_GRID_CLASS =
   'mt-3 grid grid-cols-2 gap-x-4 gap-y-5 px-1 desktop:grid-cols-3 desktop:gap-x-5 desktop:gap-y-7 desktop:px-0';
 
@@ -38,6 +42,12 @@ export function AuthPage() {
   const artist = useArtistProfile(userId);
   const { header, profileQuery } = artist;
 
+  const hasExhibitions = artist.exhibitions.length > 0;
+  const hasWorks = artist.works.length > 0;
+  const isContentPending = artist.isExhibitionsPending || artist.isWorksPending;
+  const headerSkeleton = useSkeleton(profileQuery.isPending);
+  const contentSkeleton = useSkeleton(isContentPending && !hasExhibitions && !hasWorks);
+
   const handleToggleSave = () => {
     if (!accessToken) {
       openLoginModal();
@@ -47,10 +57,15 @@ export function AuthPage() {
 
     const mutation = artist.isSaved ? artist.unarchiveArtist : artist.archiveArtist;
     mutation.mutate(userId, {
-      onSuccess: () => toast(artist.isSaved ? '저장을 취소했어요' : '작가를 저장했어요'),
+      onSuccess: () =>
+        artist.isSaved
+          ? toast('저장을 취소했어요')
+          : toast('보관함에 저장했어요', { action: { label: '보기', to: '/my?tab=artist' } }),
       onError: (error) => toast(getErrorMessage(error, '작가를 저장하지 못했어요')),
     });
   };
+
+  if (isNotFoundError(profileQuery.error)) return <NotFoundView />;
 
   if (profileQuery.isError && !header) {
     return (
@@ -61,17 +76,14 @@ export function AuthPage() {
     );
   }
 
-  const hasExhibitions = artist.exhibitions.length > 0;
-  const hasWorks = artist.works.length > 0;
-  const isContentPending = artist.isExhibitionsPending || artist.isWorksPending;
-
   return (
     <div className="min-h-dvh bg-primary-white pb-12">
       {loginModal}
 
       {/* 768px 미만은 뒤로가기만, 이상은 로고 · 검색 헤더 */}
-      <header className="sticky top-0 z-30 border-b border-bg-tertiary bg-primary-white pt-safe-area-top tablet:hidden">
-        <div className="flex h-14 items-center pl-3">
+      {/* 프로토타입처럼 높이 56(선 포함)이고 위 여백은 기기 safe area 만 둔다 */}
+      <header className="sticky top-0 z-30 border-b border-bg-tertiary bg-primary-white pt-[env(safe-area-inset-top)] tablet:hidden">
+        <div className="flex h-[55px] items-center pl-3">
           <button
             aria-label="뒤로가기"
             className="grid size-10 place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-94"
@@ -84,9 +96,11 @@ export function AuthPage() {
       </header>
       <DetailTopBar className="top-0" />
 
-      <main className="mx-auto max-w-310 px-gutter desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
-        <div className="desktop:sticky desktop:top-24">
-          {header ? (
+      {/* Layout 이 이미 <main> 으로 감싼다. 프로토타입 여백은 20 → 32(768px~)이고 900px 이상에서 40 으로 늘지 않는다 */}
+      <div className="mx-auto max-w-310 px-5 tablet:px-8 desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
+        {/* 헤더 64 + 위 여백 40 에 붙여, 스크롤을 시작해도 프로필이 따라 올라갔다 멈추지 않는다(프로토타입은 96) */}
+        <div {...headerSkeleton.skeletonProps} className="desktop:sticky desktop:top-26">
+          {header && !headerSkeleton.showSkeleton ? (
             <ArtistProfileHeader
               action={
                 artist.isOwner
@@ -105,20 +119,16 @@ export function AuthPage() {
           )}
         </div>
 
-        <div className="min-w-0">
-          {isContentPending && !hasExhibitions && !hasWorks ? (
-            <div
-              aria-busy="true"
-              aria-label="작가의 전시와 작품을 불러오는 중"
-              className="pt-8 desktop:pt-0"
-            >
+        <div {...contentSkeleton.skeletonProps} className="min-w-0">
+          {contentSkeleton.showSkeleton ? (
+            <div aria-label="작가의 전시와 작품을 불러오는 중" className="pt-8 desktop:pt-0">
               <SkeletonList count={2}>{() => <ArtistExhibitionRowSkeleton />}</SkeletonList>
               <div className={WORK_GRID_CLASS}>
                 <SkeletonList count={2}>{() => <ArtistWorkCardSkeleton />}</SkeletonList>
               </div>
             </div>
           ) : !hasExhibitions && !hasWorks ? (
-            <p className="typography-body-lg-medium py-14 text-center text-tertiary">
+            <p className="typography-body-lg-regular desktop:typography-body-xl-regular py-14 text-center text-tertiary">
               아직 디유에 올린 전시와 작품이 없어요
             </p>
           ) : (
@@ -154,7 +164,7 @@ export function AuthPage() {
             </>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
 } from '@/hooks/queries/usePersonalArtwork';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { usePersonalFeelingPolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -25,6 +26,7 @@ export function PersonalArtworkGuestbookTab({ artwork, myUserId }: Props) {
   const personalArtworkId = artwork.personalArtworkId;
   const { data, error, isPending, isError, refetch } =
     usePersonalArtworkFeelings(personalArtworkId);
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const feelingPolicy = usePersonalFeelingPolicy(undefined, artwork);
 
@@ -53,27 +55,28 @@ export function PersonalArtworkGuestbookTab({ artwork, myUserId }: Props) {
   );
 
   return (
-    <div className="px-gutter py-2 desktop:px-0">
-      {isPending && <GuestbookSkeleton />}
+    <div className="px-gutter py-2 desktop:px-0" {...skeletonProps}>
+      {showSkeleton && <GuestbookSkeleton />}
 
-      {!isPending && !isError && feelings.length === 0 && (
+      {!showSkeleton && !isError && feelings.length === 0 && (
         <p className="typography-body-lg-medium py-10 text-center text-tertiary">
           아직 방명록이 없어요
         </p>
       )}
 
       <div className="flex flex-col">
-        {feelings.map((feeling) => (
-          <PersonalFeelingCommentItem
-            key={feeling.personalFeelingId}
-            personalArtworkId={personalArtworkId}
-            feeling={feeling}
-            artwork={artwork}
-            myUserId={myUserId}
-            activeReplyId={activeReplyId}
-            onReplyClick={handleReplyClick}
-          />
-        ))}
+        {!showSkeleton &&
+          feelings.map((feeling) => (
+            <PersonalFeelingCommentItem
+              key={feeling.personalFeelingId}
+              personalArtworkId={personalArtworkId}
+              feeling={feeling}
+              artwork={artwork}
+              myUserId={myUserId}
+              activeReplyId={activeReplyId}
+              onReplyClick={handleReplyClick}
+            />
+          ))}
       </div>
 
       <div aria-hidden className="h-4" />

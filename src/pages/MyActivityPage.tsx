@@ -146,7 +146,7 @@ export function MyActivityPage() {
             ))}
 
             <div ref={triggerRef} className="h-4" />
-            {isFetchingNextPage && <LoadingView fullScreen={false} message="불러오는 중..." />}
+            {isFetchingNextPage && <LoadingView fullScreen={false} />}
           </div>
         )}
       </main>

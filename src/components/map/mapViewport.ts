@@ -27,6 +27,7 @@
  *
  * [전시를 고를 때]
  * - 핀을 누르면 one, 목록 카드를 누르면 mid로 바뀌고 지도가 그 전시로 이동한다
+ *   핀은 보던 확대 레벨 그대로 가운데로만 옮긴다. 목록 카드는 지금 레벨 5보다 넓게 보고 있으면 5까지 확대한다
  * - 선택이 풀리면 one은 mid로 돌아간다
  *
  * [제목·내용] (실험 중)
@@ -193,14 +194,19 @@ function getCenterForFocus(map: kakao.maps.Map, target: LatLng, insets: ViewInse
   );
 }
 
+/** 전시로 옮길 때 바꿀 확대 레벨. 그대로 두면 null (maxLevel이 null이면 확대하지 않는다) */
+export const getFocusLevel = (currentLevel: number, maxLevel: number | null) =>
+  maxLevel !== null && currentLevel > maxLevel ? maxLevel : null;
+
 export function focusOn(
   map: kakao.maps.Map,
   target: LatLng,
   insets: ViewInsets,
-  { maxLevel }: { maxLevel: number },
+  { maxLevel }: { maxLevel: number | null },
 ) {
-  if (map.getLevel() > maxLevel) {
-    map.setLevel(maxLevel, { anchor: new kakao.maps.LatLng(target.lat, target.lng) });
+  const level = getFocusLevel(map.getLevel(), maxLevel);
+  if (level !== null) {
+    map.setLevel(level, { anchor: new kakao.maps.LatLng(target.lat, target.lng) });
   }
   map.panTo(getCenterForFocus(map, target, insets));
 }

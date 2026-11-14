@@ -14,6 +14,8 @@ type Props = {
   onToggleLike: () => void;
   /* 공개 전 미리보기에서는 누를 수 없다 */
   disabled?: boolean;
+  /* 작가 이름을 눌러 프로필로 이동할지. 작품 미리보기에서는 이동하지 않는다 */
+  linkArtists?: boolean;
   /* 소속 전시 줄. 개인 작품에는 없습니다. */
   exhibition?: ReactNode;
   /* 900px 이상에서 이름표 아래에 놓이는 저장·공유 */
@@ -28,6 +30,7 @@ export function ArtworkLabel({
   likeCount,
   onToggleLike,
   disabled = false,
+  linkArtists = true,
   exhibition,
   actions,
 }: Props) {
@@ -60,7 +63,7 @@ export function ArtworkLabel({
       </div>
 
       <div className="mt-1 flex flex-col">
-        <ArtworkArtists artists={artists} />
+        <ArtworkArtists artists={artists} linkToProfile={linkArtists} />
         {spec && <p className="typography-body-lg-medium text-secondary">{spec}</p>}
       </div>
 

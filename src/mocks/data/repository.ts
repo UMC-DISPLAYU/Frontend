@@ -170,7 +170,11 @@ const displayToDetail = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
   })),
 });
 
-const artworkToDetail = (artwork: any) => ({
+// 전시작 관리의 "내 작품" 칩 확인용: 101번 전시의 첫 작품은 목 로그인 사용자(1)의 작품이다
+const mockArtistUserId = (artwork: any, isMine: boolean) =>
+  isMine ? 1 : 300 + (artwork.artworkId % 100);
+
+const artworkToDetail = (artwork: any, isMine = false) => ({
   artworkId: artwork.artworkId,
   id: artwork.artworkId,
   displayId: artwork.displayId,
@@ -179,9 +183,9 @@ const artworkToDetail = (artwork: any) => ({
   artist: artwork.artist,
   artistName: artwork.artist,
   /* 작가 프로필 조회와 작가 저장에 쓰는 계정 id. 작품별로 고정된 값을 부여합니다. */
-  artistUserId: 300 + (artwork.artworkId % 100),
+  artistUserId: mockArtistUserId(artwork, isMine),
   artists: [
-    { userId: 300 + (artwork.artworkId % 100), name: artwork.artist },
+    { userId: mockArtistUserId(artwork, isMine), name: artwork.artist },
     ...(artwork.artworkId % 3 === 0
       ? [
           { userId: null, name: '김서윤' },
@@ -273,7 +277,9 @@ export const mockDb: {
   searchableUsers: MOCK_SEARCHABLE_USERS,
   displays: MOCK_DISPLAY_DETAILS.map(displayToDetail),
   artworks: MOCK_DISPLAY_DETAILS.flatMap((display) =>
-    display.artworkSection.artworks.map(artworkToDetail),
+    display.artworkSection.artworks.map((artwork, index) =>
+      artworkToDetail(artwork, display.displayId === 101 && index === 0),
+    ),
   ),
   loungePosts: [
     {

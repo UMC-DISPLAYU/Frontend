@@ -1,5 +1,11 @@
 export { DisplayHubBlocks } from './DisplayHubBlocks';
+export { DisplayHubBottomBar } from './DisplayHubBottomBar';
+export { getDisplayHubButtonClass } from './displayHubButton';
+export { DisplayHubConfirmDialog } from './DisplayHubConfirmDialog';
+export { DisplayHubDoneRing } from './DisplayHubDoneRing';
+export { DisplayHubHeader } from './DisplayHubHeader';
+export { DisplayHubIcon } from './DisplayHubIcon';
 export { type DisplayHubStatus, getDisplayHubStatus } from './displayHubStatus';
-export { DisplayHubSummary } from './DisplayHubSummary';
+export { DisplayHubStatusBanner, DisplayHubSummary } from './DisplayHubSummary';
 export { DisplayHubVisibility } from './DisplayHubVisibility';
 export { DisplayPublishSteps } from './DisplayPublishSteps';
