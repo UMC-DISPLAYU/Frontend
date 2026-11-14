@@ -84,25 +84,28 @@ export function HomePage() {
     // Layout 이 냅바 자리로 main 에 준 아래 여백을 걷어내고, 프로토타입 하단 여백(132px)을 직접 둔다
     <div className={cn('-mb-navbar-clearance bg-primary-white pb-33', HOME_PAD_VARS)}>
       <HomeHeader />
-      <ExhibitionShowcase
-        tab={tab}
-        onTabChange={(next: HomeExhibitionTab) => setParam('tab', next === 'pop' ? null : next)}
-        view={view}
-        onViewChange={(next) => {
-          storeView(next);
-          setParam('view', next);
-        }}
-        items={exhibitions.data}
-        isPending={exhibitions.isPending}
-        isError={exhibitions.isError}
-        onRetry={() => void exhibitions.refetch()}
-      />
-      <div className="relative -mt-5 rounded-t-20 bg-primary-white">
-        <ArtworkSection artworks={artworks.data?.artworks} isPending={artworks.isPending} />
-        <div aria-hidden="true" className="h-3.5 bg-tertiary" />
-        <RegisterCallout onRegister={handleRegister} />
-        <div aria-hidden="true" className="h-px bg-tertiary" />
-        <HomeFooter />
+      {/* 스플래시가 끝날 때 아래에서 함께 올라오는 영역(검은 영역 + 흰 시트) */}
+      <div data-splash-sheet>
+        <ExhibitionShowcase
+          tab={tab}
+          onTabChange={(next: HomeExhibitionTab) => setParam('tab', next === 'pop' ? null : next)}
+          view={view}
+          onViewChange={(next) => {
+            storeView(next);
+            setParam('view', next);
+          }}
+          items={exhibitions.data}
+          isPending={exhibitions.isPending}
+          isError={exhibitions.isError}
+          onRetry={() => void exhibitions.refetch()}
+        />
+        <div className="relative -mt-5 rounded-t-20 bg-primary-white">
+          <ArtworkSection artworks={artworks.data?.artworks} isPending={artworks.isPending} />
+          <div aria-hidden="true" className="h-3.5 bg-tertiary" />
+          <RegisterCallout onRegister={handleRegister} />
+          <div aria-hidden="true" className="h-px bg-tertiary" />
+          <HomeFooter />
+        </div>
       </div>
       {loginModal}
       {artistVerificationModal}
