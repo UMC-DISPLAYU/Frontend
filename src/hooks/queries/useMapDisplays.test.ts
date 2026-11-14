@@ -78,6 +78,15 @@ describe('fetchAllMapDisplays', () => {
     expect(mocks.getDisplayMap).toHaveBeenCalledOnce();
   });
 
+  it('응답에 pagination이 없으면 한 페이지로 보고 끝낸다', async () => {
+    mocks.getDisplayMap.mockResolvedValueOnce({ markers: [marker(1), marker(2)] });
+
+    const displays = await fetchAllMapDisplays();
+
+    expect(mocks.getDisplayMap).toHaveBeenCalledOnce();
+    expect(displays.map((display) => display.displayId)).toEqual([1, 2]);
+  });
+
   it('서버가 같은 커서를 다시 주면 멈춘다', async () => {
     mocks.getDisplayMap.mockResolvedValueOnce(page([1], 7)).mockResolvedValueOnce(page([2], 7));
 

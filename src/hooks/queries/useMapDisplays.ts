@@ -71,7 +71,9 @@ export async function fetchAllMapDisplays(signal?: AbortSignal): Promise<NearbyD
       signal,
     );
     pageMarkers.forEach((marker) => markers.set(marker.displayId, marker));
-    const { hasNext, nextCursor } = pagination;
+    // 페이지 나눔 없이 한 번에 주도록 API가 바뀌어 pagination이 빠져도 한 페이지로 보고 끝낸다
+    const hasNext = pagination?.hasNext ?? false;
+    const nextCursor = pagination?.nextCursor;
     // 서버가 같은 커서를 다시 주면 같은 페이지만 반복되므로 멈춘다
     if (!hasNext || nextCursor == null || nextCursor === cursor) break;
     cursor = nextCursor;
