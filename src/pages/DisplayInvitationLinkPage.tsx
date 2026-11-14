@@ -23,7 +23,7 @@ const isInvalidLinkError = (error: unknown) =>
 
 /* 프로토타입 큰 버튼(.big): 높이 48, 검정, 16px · 600 */
 const BIG_BUTTON_CLASS =
-  'flex h-12 w-full items-center justify-center rounded-[12px] bg-[#18181b] text-[16px] font-semibold tracking-[-0.03em] text-[#fff] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#2f2f35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.99] disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8] disabled:active:scale-100';
+  'flex h-12 w-full cursor-pointer items-center justify-center rounded-[12px] bg-[#18181b] text-[16px] font-semibold tracking-[-0.03em] text-[#fff] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#2f2f35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.99] disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8] disabled:active:scale-100';
 
 /*
  * 백엔드가 발급하는 초대 URL(/display/invitation/{token})의 착지 지점입니다.

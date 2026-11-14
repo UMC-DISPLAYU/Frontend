@@ -51,7 +51,7 @@ export function MemberMenuSheet({ open, member, onClose, onSelect }: MemberMenuS
                 type="button"
                 onClick={() => onSelect(action)}
                 className={cn(
-                  'flex h-13 w-full items-center justify-between text-left text-[16px] leading-[1.4] font-medium tracking-[-0.03em] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]',
+                  'flex h-13 w-full cursor-pointer items-center justify-between text-left text-[16px] leading-[1.4] font-medium tracking-[-0.03em] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]',
                   isDanger ? 'text-[#fb2c36]' : 'text-[#18181b]',
                 )}
               >

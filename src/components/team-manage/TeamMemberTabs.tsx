@@ -46,7 +46,7 @@ export function TeamMemberTabs({ tab, onChange, counts, idPrefix }: TeamMemberTa
             onClick={() => onChange(value)}
             onKeyDown={moveFocus}
             className={cn(
-              'relative h-11 text-[16px] tabular-nums transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]',
+              'relative h-11 text-[16px] tabular-nums transition-[color] duration-200 ease-[ease] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]',
               selected
                 ? 'font-semibold text-[#18181b] after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-[#18181b]'
                 : 'font-medium text-[#71717b]',

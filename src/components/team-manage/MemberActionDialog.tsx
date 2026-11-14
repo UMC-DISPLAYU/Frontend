@@ -65,7 +65,7 @@ function KickMemberDialog({
             ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
-            className="h-11 flex-1 rounded-[12px] bg-[#f0f0f3] text-[14px] font-semibold tracking-[-0.03em] text-[#18181b] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#e4e4e7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.98]"
+            className="h-11 flex-1 cursor-pointer rounded-[12px] bg-[#f0f0f3] text-[14px] font-semibold tracking-[-0.03em] text-[#18181b] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#e4e4e7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.98]"
           >
             취소
           </button>
@@ -73,7 +73,7 @@ function KickMemberDialog({
             type="button"
             disabled={isPending}
             onClick={onConfirm}
-            className="h-11 flex-1 rounded-[12px] bg-[#fb2c36] text-[14px] font-semibold tracking-[-0.03em] text-[#fff] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#d63c41] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.98] disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8] disabled:active:scale-100"
+            className="h-11 flex-1 cursor-pointer rounded-[12px] bg-[#fb2c36] text-[14px] font-semibold tracking-[-0.03em] text-[#fff] transition-[background-color,transform] duration-200 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#d63c41] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-[.98] disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8] disabled:active:scale-100"
           >
             {copy.confirmLabel}
           </button>
