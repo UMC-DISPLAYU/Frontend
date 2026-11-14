@@ -143,16 +143,11 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
       label={
         <ArtworkMeta
           artwork={artwork}
-          // 미리보기에서는 전시 · 작품 미리보기 밖으로 나가지 않게 작가 프로필 링크를 두지 않는다(사용자 결정)
-          artists={
-            previewDisplayId === undefined
-              ? artists
-              : artists.map((artist) => ({ name: artist.name }))
-          }
+          artists={artists}
           exhibitionState={getExhibitionState(display?.period)}
           shareImageUrl={orderedImages[0]}
           isPreview={isPreview}
-          hideExhibition={previewDisplayId !== undefined}
+          previewMode={previewDisplayId !== undefined}
         />
       }
       hasIntro={hasArtworkIntro({

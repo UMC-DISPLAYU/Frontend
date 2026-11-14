@@ -180,9 +180,7 @@ describe('작품 미리보기', () => {
     expect(asElement(page.props.guestbook as ReactNode).type).toBe(ArtworkPreviewGuestbook);
     const meta = asElement(page.props.label as ReactNode);
     expect(meta.type).toBe(ArtworkMeta);
-    expect(meta.props.hideExhibition).toBe(true);
-    // 작가 프로필로 나가지 않는다
-    expect(meta.props.artists).toEqual([{ name: '작가 미상' }]);
+    expect(meta.props.previewMode).toBe(true);
     const bottomBar = nodes(page.props.bottomBar as ReactNode)[0];
     expect(bottomBar.props.disabled).toBe(true);
     expect(asElement(bottomBar.props.saveButton as ReactNode).props.disabled).toBe(true);
@@ -207,8 +205,7 @@ describe('작품 미리보기', () => {
     expect(page.type).toBe(ArtworkDetailShell);
     expect(page.props).toMatchObject({ isPreview: false, hideBack: false });
     const meta = asElement(page.props.label as ReactNode);
-    expect(meta.props.hideExhibition).toBe(false);
-    expect(meta.props.artists).toEqual([{ userId: 1, name: '작가 미상' }]);
+    expect(meta.props.previewMode).toBe(false);
     (page.props.onBack as () => void)();
     expect(h.flowBack).toHaveBeenCalledOnce();
   });
