@@ -84,7 +84,7 @@ export function DisplayArtistNameSheet({
           aria-required="true"
           aria-invalid={Boolean(errors.artistName)}
           aria-describedby={errors.artistName ? `${inputId}-error` : `${inputId}-help`}
-          className="mt-3.5 h-11 w-full rounded-12 border border-primary bg-transparent px-3 text-[16px] font-normal text-[#18181b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          className="mt-1 h-[47px] w-full rounded-none border-b border-[#d4d4d8] bg-transparent p-0 text-[16px] font-normal text-[#18181b] outline-none transition-colors duration-200 placeholder:text-[#71717b] focus:border-[#18181b]"
         />
         {errors.artistName ? (
           <p
