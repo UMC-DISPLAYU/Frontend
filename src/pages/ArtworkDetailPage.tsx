@@ -30,8 +30,15 @@ import { getErrorMessage } from '@/utils/error';
 import { getExhibitionState } from '@/utils/exhibitionState';
 import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
-export function ArtworkDetailPage() {
+type ArtworkDetailPageProps = {
+  /* 전시 작업에서 연 작품 미리보기(/exhibition/:displayId/artworks/:artworkId/preview)의 전시 */
+  previewDisplayId?: number;
+  onBack?: () => void;
+};
+
+export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPageProps = {}) {
   const flowBack = useFlowBack();
+  const goBack = onBack ?? (() => flowBack());
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
 
@@ -47,7 +54,11 @@ export function ArtworkDetailPage() {
     return <ArtworkDetailSkeleton />;
   }
 
-  if (error || !detail) {
+  // 미리보기 주소의 전시와 작품이 속한 전시가 다르면 권한을 확인한 전시의 작품이 아니므로 보여주지 않는다
+  const isOtherDisplay =
+    previewDisplayId !== undefined && detail?.exhibitionInfo?.displayId !== previewDisplayId;
+
+  if (error || !detail || isOtherDisplay) {
     return (
       <ErrorView
         message={
@@ -60,7 +71,7 @@ export function ArtworkDetailPage() {
             ? () => {
                 void refetch();
               }
-            : () => flowBack()
+            : goBack
         }
         retryLabel={error ? '다시 시도' : '뒤로가기'}
       />
@@ -68,7 +79,7 @@ export function ArtworkDetailPage() {
   }
 
   const policyDisplay = (display ?? { ownerUserId: 0, teamMembers: [] }) as DisplayDetailDto;
-  const isPreview = display ? isPreviewDisplay(display) : false;
+  const isPreview = previewDisplayId !== undefined || (display ? isPreviewDisplay(display) : false);
 
   const artistDisplayName = getExhibitionArtistName(
     detail.artistName,
@@ -123,8 +134,9 @@ export function ArtworkDetailPage() {
       key={artworkId}
       images={viewerImages}
       title={detail.artworkName}
-      onBack={() => flowBack()}
+      onBack={goBack}
       isPreview={isPreview}
+      hideDesktopBack={previewDisplayId !== undefined}
       label={
         <ArtworkMeta
           artwork={artwork}

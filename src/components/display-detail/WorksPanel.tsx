@@ -13,6 +13,8 @@ type Props = {
   displayId: number;
   teamMembers?: DisplayTeamMemberDto[];
   isPreview: boolean;
+  /* 작품 카드가 갈 주소. 없으면 공개 작품 상세 */
+  artworkPath?: (artworkId: number) => string;
 };
 
 const GRID = 'grid grid-cols-2 gap-x-3 gap-y-6 desktop:grid-cols-3';
@@ -20,7 +22,7 @@ const GRID = 'grid grid-cols-2 gap-x-3 gap-y-6 desktop:grid-cols-3';
 /* 피그마 `Card / 작품 · 검정`(카드 E): 틀 없이 사진(3:4), 사진 아래 8 · 제목↔작가 2 */
 const CARD_FRAME = 'aspect-3/4 w-full overflow-hidden bg-secondary';
 
-export function WorksPanel({ displayId, teamMembers, isPreview }: Props) {
+export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: Props) {
   const { data, error, isPending, isError, refetch } = useDisplayArtworks(displayId);
   const artworks = data?.artworks ?? [];
 
@@ -56,7 +58,7 @@ export function WorksPanel({ displayId, teamMembers, isPreview }: Props) {
           {artworks.map((artwork, index) => (
             <Link
               key={artwork.artworkId}
-              to={`/artwork/${artwork.artworkId}`}
+              to={artworkPath?.(artwork.artworkId) ?? `/artwork/${artwork.artworkId}`}
               style={staggerStyle(index)}
               className="group block animate-rise text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
             >

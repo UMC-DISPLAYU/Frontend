@@ -16,10 +16,11 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import DragIcon from '@/assets/exhibition-work/DragIcon.svg';
+import { WorkIcon } from '@/components/exhibition-work';
 import type { Work } from '@/types/artworkManage';
 import { cn } from '@/utils/cn';
 
+import { WORK_GRID } from './constants';
 import { WorkCard } from './WorkCard';
 
 interface OrderScreenProps {
@@ -29,46 +30,53 @@ interface OrderScreenProps {
   onDone: () => void;
 }
 
+/* 프로토타입 `.wgrid.edit`: 카드 어디를 눌러도 끌 수 있다. 왼쪽 위 번호, 오른쪽 위 손잡이 */
 function SortableWork({ work, index, disabled }: { work: Work; index: number; disabled: boolean }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: work.id, disabled });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: work.id,
+    disabled,
+  });
 
   return (
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn('relative min-w-0', isDragging && 'z-20 opacity-80')}
+      {...attributes}
+      {...listeners}
+      aria-label={`${index + 1}번째, ${work.title}`}
+      aria-roledescription="순서를 바꿀 수 있는 작품"
+      className={cn(
+        'relative min-w-0 cursor-grab touch-none select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:cursor-grabbing',
+        isDragging && 'z-10 scale-97 opacity-55',
+        disabled && 'cursor-default',
+      )}
     >
-      <WorkCard work={work}>
-        <span className="typography-body-lg-semibold absolute top-3 left-3 flex size-8 items-center justify-center rounded-circle bg-primary-black/40 text-interactive-inverse">
-          {index + 1}
-        </span>
-        <button
-          ref={setActivatorNodeRef}
-          type="button"
-          {...attributes}
-          {...listeners}
-          aria-label={`${work.title} 순서 이동`}
-          disabled={disabled}
-          className="absolute top-1.5 right-1.5 flex size-11 touch-none cursor-grab items-center justify-center rounded-circle focus-visible:outline-2 focus-visible:outline-focus-inverse active:cursor-grabbing disabled:cursor-default"
-        >
-          <img src={DragIcon} alt="" />
-        </button>
-      </WorkCard>
+      <WorkCard
+        work={work}
+        overlay={
+          <>
+            <span
+              aria-hidden="true"
+              className="absolute top-2 left-2 grid size-7 place-items-center rounded-circle bg-[rgba(0,0,0,.5)] text-[12px] font-semibold text-[#fff] tabular-nums"
+            >
+              {index + 1}
+            </span>
+            <span
+              aria-hidden="true"
+              className="absolute top-2 right-2 grid size-7 place-items-center rounded-circle bg-[rgba(255,255,255,.4)] text-[#fff]"
+            >
+              <WorkIcon name="lines" />
+            </span>
+          </>
+        }
+      />
     </li>
   );
 }
 
 export function OrderScreen({ works, disabled = false, onReorder, onDone }: OrderScreenProps) {
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -82,15 +90,16 @@ export function OrderScreen({ works, disabled = false, onReorder, onDone }: Orde
 
   return (
     <>
-      <div className="flex min-h-11 items-center justify-between gap-2">
-        <p className="typography-body-md-medium text-secondary">순서는 완료하면 저장돼요</p>
+      <div className="mt-1 flex min-h-10 items-center justify-between gap-3">
+        <p className="text-[12px] font-medium text-[#3f3f47]">
+          끌어서 순서를 바꾸면 자동으로 저장돼요
+        </p>
         <button
           type="button"
           onClick={onDone}
-          disabled={disabled}
-          className="typography-body-md-semibold -mr-3 min-h-11 min-w-11 rounded-8 px-3 text-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99 disabled:text-disable"
+          className="inline-flex h-8 items-center pl-2 text-[12px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
         >
-          {disabled ? '저장 중' : '완료'}
+          완료
         </button>
       </div>
       <DndContext
@@ -105,7 +114,7 @@ export function OrderScreen({ works, disabled = false, onReorder, onDone }: Orde
         }}
       >
         <SortableContext items={works.map((work) => work.id)} strategy={rectSortingStrategy}>
-          <ul className="grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3 desktop:grid-cols-4">
+          <ul className={cn(WORK_GRID, 'mt-3')}>
             {works.map((work, index) => (
               <SortableWork key={work.id} work={work} index={index} disabled={disabled} />
             ))}
