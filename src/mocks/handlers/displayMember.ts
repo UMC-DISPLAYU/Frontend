@@ -2,12 +2,15 @@
 import { http } from 'msw';
 
 import { mockDb } from '@/mocks/data/repository';
-import { fail, paths, readJson, success, toNumber } from '@/mocks/response';
+import { fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const MEMBERS_PATH = '/api/v1/display/{displayId}/members';
 const MEMBER_PATH = '/api/v1/display/{displayId}/members/{memberId}';
 const ROLE_PATH = '/api/v1/display/{displayId}/members/{memberId}/role';
 const LEADER_TRANSFER_PATH = '/api/v1/display/{displayId}/leader-transfer';
+// 초대 취소: 스웨거에 아직 없어 프론트에서 정한 경로(src/api/endpoints/display.ts 참고)
+const CANCEL_INVITATION_PATH =
+  '/api/v1/display-invitations/displays/{displayId}/users/{inviteeUserId}';
 
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
@@ -127,6 +130,29 @@ export const displayMemberHandlers = [
         removedUserId: target.userId,
         deletedArtworkCount: 0,
       });
+    }),
+  ),
+  // DELETE: 초대 취소. 아직 수락하지 않은 초대만 지운다
+  ...paths(CANCEL_INVITATION_PATH).map((path) =>
+    http.delete(path, ({ params }) => {
+      const display = findDisplay(toNumber(params.displayId, 101));
+      const inviteeUserId = toNumber(params.inviteeUserId);
+      const target = teamOf(display).find(
+        (entry) => entry.userId === inviteeUserId && entry.accepted === false,
+      );
+
+      if (!target) {
+        return fail(
+          CANCEL_INVITATION_PATH,
+          404,
+          'DISPLAY_INVITATION_NOT_FOUND',
+          '대기 중인 초대를 찾을 수 없어요.',
+        );
+      }
+
+      display.teamMembers = teamOf(display).filter((entry) => entry !== target);
+
+      return noContent(CANCEL_INVITATION_PATH);
     }),
   ),
   // POST: 대표자 위임. 즉시 바뀌고 이전 대표자는 관리자가 된다

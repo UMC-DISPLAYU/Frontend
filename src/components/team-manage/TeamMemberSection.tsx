@@ -127,7 +127,7 @@ export function TeamMemberSection({
   const renderPanel = () => {
     if (team) {
       return tab === 'pending' ? (
-        <PendingInviteList members={team.memberPending} />
+        <PendingInviteList displayId={displayId} members={team.memberPending} />
       ) : (
         <JoinedMemberList members={team.memberAccept} myUserId={myUserId} onOpenMenu={openMenu} />
       );
