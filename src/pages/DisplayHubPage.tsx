@@ -3,15 +3,19 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import type { UpdateDisplayReservationRequestDto } from '@/api/dto';
-import { BottomFixedBar, ConfirmDialog, ErrorView } from '@/components/common';
+import { ErrorView } from '@/components/common';
 import {
+  DISPLAY_HUB_BOTTOM_BAR_CLASS,
   DisplayHubBlocks,
+  DisplayHubConfirmDialog,
+  DisplayHubHeader,
   type DisplayHubStatus,
+  DisplayHubStatusBanner,
   DisplayHubSummary,
   DisplayHubVisibility,
+  getDisplayHubButtonClass,
   getDisplayHubStatus,
 } from '@/components/display-hub';
-import { WorkHeader } from '@/components/exhibition-work';
 import { PageContainer } from '@/components/layout';
 import { Skeleton } from '@/components/ui';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
@@ -28,10 +32,21 @@ import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 
+// 프로토타입 hub.html: 폰 · 태블릿은 한 줄로 쌓고, 노트북(900~)은 왼쪽에 요약 · 상태 · 버튼, 오른쪽에 나머지를 둔다
 const GRID_CLASS =
-  'flex flex-col gap-6 pb-10 desktop:grid desktop:grid-cols-[380px_minmax(0,1fr)] desktop:items-start desktop:gap-14';
+  'flex flex-1 flex-col desktop:grid desktop:grid-cols-[380px_minmax(0,1fr)] desktop:grid-rows-[auto_auto_1fr] desktop:items-start desktop:gap-x-14 desktop:pt-2';
+const LEFT_TOP_CLASS = 'desktop:col-start-1 desktop:row-start-1';
+const LEFT_MIDDLE_CLASS = 'desktop:col-start-1 desktop:row-start-2';
+const RIGHT_CLASS = 'desktop:col-start-2 desktop:row-span-3 desktop:row-start-1';
 
 type HubDialog = 'publish' | 'hide' | 'cancel';
+
+const PUBLISH_NOTES = [
+  '작품이나 팀원이 없어도 요청할 수 있어요',
+  '심사 중에도 내용을 수정할 수 있어요',
+  '승인된 시점부터 관람객에게 공개돼요',
+  '공개 후에도 내용을 수정할 수 있어요',
+];
 
 const getHubAction = (
   status: DisplayHubStatus,
@@ -48,13 +63,11 @@ const getHubAction = (
 function DisplayHubSkeleton() {
   return (
     <main aria-label="전시 관리를 불러오는 중" aria-busy="true" className={GRID_CLASS}>
-      <div className="flex flex-col gap-4">
-        <Skeleton className="h-36.25 rounded-12" />
-        <Skeleton className="h-22 rounded-12" />
-      </div>
-      <div className="flex flex-col gap-3">
-        <Skeleton className="h-34 rounded-12" />
-        <Skeleton className="h-28 rounded-12" />
+      <Skeleton className={cn('mt-2 h-[147px] rounded-12', LEFT_TOP_CLASS)} />
+      <Skeleton className={cn('mt-4 h-[86px] rounded-12', LEFT_MIDDLE_CLASS)} />
+      <div className={cn('flex flex-col', RIGHT_CLASS)}>
+        <Skeleton className="mt-5 h-[143px] rounded-12 desktop:mt-0" />
+        <Skeleton className="mt-3 h-[124px] rounded-12" />
       </div>
     </main>
   );
@@ -138,20 +151,6 @@ export function DisplayHubPage() {
   };
 
   const hubAction = display ? getHubAction(status) : null;
-  const actionButton = hubAction ? (
-    <button
-      type="button"
-      onClick={() => setOpenDialog(hubAction.dialog)}
-      className={cn(
-        'typography-body-lg-semibold h-11 w-full rounded-12 transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99',
-        hubAction.isPrimary
-          ? 'bg-interactive-primary text-interactive-inverse hover:bg-interactive-primary-hover'
-          : 'bg-secondary text-primary hover:bg-tertiary',
-      )}
-    >
-      {hubAction.label}
-    </button>
-  ) : null;
 
   const renderContent = () => {
     if (display) {
@@ -159,15 +158,13 @@ export function DisplayHubPage() {
 
       return (
         <main className={GRID_CLASS}>
-          <div className="flex flex-col gap-6">
-            <DisplayHubSummary
-              display={display}
-              status={status}
-              rejectionReason={status === 'REJECTED' ? rejection?.rejectionReason : undefined}
-            />
-            {actionButton && <div className="hidden desktop:block">{actionButton}</div>}
-          </div>
-          <div className="flex flex-col gap-3">
+          <DisplayHubSummary display={display} status={status} className={LEFT_TOP_CLASS} />
+          <DisplayHubStatusBanner
+            status={status}
+            rejectionReason={status === 'REJECTED' ? rejection?.rejectionReason : undefined}
+            className={LEFT_MIDDLE_CLASS}
+          />
+          <div className={RIGHT_CLASS}>
             <DisplayHubBlocks
               display={display}
               artworkCount={artworks?.artworks?.length ?? 0}
@@ -180,11 +177,27 @@ export function DisplayHubPage() {
               startDate={display.period.startDate}
               disabled={reservation.isPending}
               onChange={changeReservation}
+              className="mt-8 desktop:mt-10"
             />
-            {actionButton && (
-              <div className="hidden pt-3 tablet:block desktop:hidden">{actionButton}</div>
-            )}
+            <div aria-hidden="true" className="h-6 desktop:hidden" />
           </div>
+          {hubAction && (
+            // 폰 · 태블릿은 화면 아래에 붙는 버튼(프로토타입 `.cta`), 노트북은 왼쪽 상태 안내 아래에 둔다
+            <div
+              className={cn(
+                DISPLAY_HUB_BOTTOM_BAR_CLASS,
+                'desktop:static desktop:col-start-1 desktop:row-start-3 desktop:mt-2 desktop:self-start desktop:bg-none desktop:pt-4 desktop:pb-0',
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => setOpenDialog(hubAction.dialog)}
+                className={getDisplayHubButtonClass(hubAction.isPrimary ? 'primary' : 'soft')}
+              >
+                {hubAction.label}
+              </button>
+            </div>
+          )}
         </main>
       );
     }
@@ -201,68 +214,68 @@ export function DisplayHubPage() {
   };
 
   return (
-    <PageContainer variant="form" className="bg-primary-white text-primary desktop:max-w-list">
-      <WorkHeader title="전시 관리" />
-      {renderContent()}
+    // 프로토타입은 넓은 화면에서도 콘텐츠 양옆이 흰색이라 페이지 전체를 흰 배경으로 감싼다
+    <div className="min-h-dvh bg-primary-white">
+      <PageContainer
+        variant="form"
+        className="typography-body-lg-medium max-w-[480px] text-primary desktop:max-w-list"
+      >
+        <DisplayHubHeader title="전시 관리" />
+        {renderContent()}
 
-      {actionButton && (
-        <div className="tablet:hidden">
-          <BottomFixedBar container="form">{actionButton}</BottomFixedBar>
-        </div>
-      )}
-
-      <ConfirmDialog
-        open={openDialog === 'publish'}
-        title="전시 등록을 요청할까요?"
-        description={
-          '· 작품이나 팀원이 없어도 요청할 수 있어요\n· 심사 중에도 내용을 수정할 수 있어요\n· 승인된 시점부터 관람객에게 공개돼요\n· 공개 후에도 내용을 수정할 수 있어요'
-        }
-        confirmLabel="등록 요청하기"
-        pendingLabel="요청 중…"
-        isPending={publish.isPending}
-        errorMessage={
-          publish.error
-            ? getErrorMessage(publish.error, '등록을 요청하지 못했어요. 다시 시도해주세요.')
-            : null
-        }
-        onCancel={closePublishDialog}
-        onConfirm={confirmPublish}
-      />
-      <ConfirmDialog
-        open={openDialog === 'hide'}
-        title="비공개로 전환할까요?"
-        description="전시가 준비 중 상태로 돌아가요"
-        warning={{
-          title: '다시 공개하려면 등록 요청이 필요해요',
-          description: '비공개 중에는 검색과 저장 보관함에서 보이지 않아요',
-        }}
-        confirmLabel="비공개로 전환"
-        pendingLabel="전환 중…"
-        isPending={hide.isPending}
-        errorMessage={
-          hide.error
-            ? getErrorMessage(hide.error, '비공개로 전환하지 못했어요. 다시 시도해주세요.')
-            : null
-        }
-        onCancel={closeHideDialog}
-        onConfirm={confirmHide}
-      />
-      <ConfirmDialog
-        open={openDialog === 'cancel'}
-        title="등록 요청을 취소할까요?"
-        description={'심사 요청을 철회하고 준비 중 상태로 돌아가요\n작성한 내용은 그대로 유지돼요'}
-        confirmLabel="요청 취소하기"
-        pendingLabel="취소 중…"
-        cancelLabel="돌아가기"
-        isPending={cancelReview.isPending}
-        errorMessage={
-          cancelReview.error
-            ? getErrorMessage(cancelReview.error, '요청을 취소하지 못했어요. 다시 시도해주세요.')
-            : null
-        }
-        onCancel={closeCancelDialog}
-        onConfirm={confirmCancelReview}
-      />
-    </PageContainer>
+        <DisplayHubConfirmDialog
+          open={openDialog === 'publish'}
+          title="전시 등록을 요청할까요?"
+          list={PUBLISH_NOTES}
+          confirmLabel="등록 요청하기"
+          pendingLabel="요청 중…"
+          isPending={publish.isPending}
+          errorMessage={
+            publish.error
+              ? getErrorMessage(publish.error, '등록을 요청하지 못했어요. 다시 시도해주세요.')
+              : null
+          }
+          onCancel={closePublishDialog}
+          onConfirm={confirmPublish}
+        />
+        <DisplayHubConfirmDialog
+          open={openDialog === 'hide'}
+          title="비공개로 전환할까요?"
+          description="전시가 준비 중 상태로 돌아가요"
+          warning={{
+            title: '다시 공개하려면 등록 요청이 필요해요',
+            description: '비공개 중에는 검색과 저장 보관함에서 보이지 않아요',
+          }}
+          confirmLabel="비공개로 전환"
+          pendingLabel="전환 중…"
+          isPending={hide.isPending}
+          errorMessage={
+            hide.error
+              ? getErrorMessage(hide.error, '비공개로 전환하지 못했어요. 다시 시도해주세요.')
+              : null
+          }
+          onCancel={closeHideDialog}
+          onConfirm={confirmHide}
+        />
+        <DisplayHubConfirmDialog
+          open={openDialog === 'cancel'}
+          title="등록 요청을 취소할까요?"
+          description={
+            '심사 요청을 철회하고 준비 중 상태로 돌아가요\n작성한 내용은 그대로 유지돼요'
+          }
+          confirmLabel="요청 취소하기"
+          pendingLabel="취소 중…"
+          cancelLabel="돌아가기"
+          isPending={cancelReview.isPending}
+          errorMessage={
+            cancelReview.error
+              ? getErrorMessage(cancelReview.error, '요청을 취소하지 못했어요. 다시 시도해주세요.')
+              : null
+          }
+          onCancel={closeCancelDialog}
+          onConfirm={confirmCancelReview}
+        />
+      </PageContainer>
+    </div>
   );
 }
