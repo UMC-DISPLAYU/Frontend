@@ -62,7 +62,9 @@ export function ArtistVerifyPage() {
     <ArtistVerifyLayout>
       <main className="flex flex-1 flex-col">
         <VerifyHeader onBack={handleBack} title="작가 인증" />
-        <p className="mt-2 text-[20px] leading-[1.4] font-bold">작가 인증 정보를 입력해주세요</p>
+        <p className="mt-2 text-[20px] leading-[1.4] font-semibold">
+          작가 인증 정보를 입력해주세요
+        </p>
 
         <form
           autoComplete="off"

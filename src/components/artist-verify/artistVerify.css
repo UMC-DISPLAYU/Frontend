@@ -1,3 +1,6 @@
+/* 프로토타입과 같은 Pretendard Variable(v1.3.9). 작가 인증 화면에서만 이 글꼴 이름을 쓴다 */
+@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+
 /* 작가 인증 화면 전용 모션. 값은 프로토타입(verify.html)과 같다. 동작 줄이기는 index.css 전역 규칙이 처리한다. */
 
 @keyframes artist-verify-rise {

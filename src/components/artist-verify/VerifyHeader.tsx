@@ -18,7 +18,7 @@ export function VerifyHeader({ title, onBack }: VerifyHeaderProps) {
       >
         <BackIcon className="size-6" />
       </button>
-      <h1 className="text-[20px] font-bold">{title}</h1>
+      <h1 className="text-[20px] font-semibold">{title}</h1>
     </header>
   );
 }

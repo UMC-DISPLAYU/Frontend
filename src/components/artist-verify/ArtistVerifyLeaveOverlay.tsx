@@ -2,7 +2,7 @@ import { useRef } from 'react';
 
 import { Overlay } from '@/components/ui';
 
-import { FOCUS_RING, PRESS_TRANSITION, TAP_BASE } from './artistVerifyStyles';
+import { FOCUS_RING, PRESS_TRANSITION, PROTOTYPE_FONT, TAP_BASE } from './artistVerifyStyles';
 
 type ArtistVerifyLeaveOverlayProps = {
   open: boolean;
@@ -10,7 +10,7 @@ type ArtistVerifyLeaveOverlayProps = {
   onLeave: () => void;
 };
 
-const buttonClass = `font-[family-name:var(--primitive-typography-font-family-typeface-1)] ${TAP_BASE} ${FOCUS_RING} ${PRESS_TRANSITION} h-11 rounded-[12px] text-[14px] leading-[1.4] font-semibold tracking-[-0.03em] active:scale-[.98]`;
+const buttonClass = `${PROTOTYPE_FONT} ${TAP_BASE} ${FOCUS_RING} ${PRESS_TRANSITION} h-11 rounded-[12px] text-[14px] leading-[1.4] font-semibold tracking-[-0.03em] active:scale-[.98]`;
 
 /*
  * 프로토타입처럼 모바일에서도 가운데 모달(폭 min(322px, 100vw - 80px), 위 24 · 옆 20 · 아래 20).
@@ -23,7 +23,9 @@ export function ArtistVerifyLeaveOverlay({ open, onStay, onLeave }: ArtistVerify
     <Overlay
       className="max-w-[min(322px,calc(100vw-80px))] pt-1"
       description={
-        <span className="mt-0.5 block text-[14px] font-normal tracking-[-0.03em] text-[#71717b]">
+        <span
+          className={`${PROTOTYPE_FONT} mt-0.5 block text-[14px] font-normal tracking-[-0.03em] text-[#71717b]`}
+        >
           입력한 내용은 저장되지 않아요.
         </span>
       }
@@ -53,7 +55,11 @@ export function ArtistVerifyLeaveOverlay({ open, onStay, onLeave }: ArtistVerify
       role="alertdialog"
       showCloseButton={false}
       size="sm"
-      title="작가 인증을 그만할까요?"
+      title={
+        <span className={`${PROTOTYPE_FONT} text-[20px] font-semibold tracking-[-0.03em]`}>
+          작가 인증을 그만할까요?
+        </span>
+      }
     />
   );
 }
