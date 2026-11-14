@@ -145,7 +145,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
   const canAdd = canCreateCategory && !isEditingList && contents.length < MAX_DISPLAY_SECTIONS;
 
   const panel = (
-    <div className="desktop:max-w-180">
+    <div>
       {contents.length > 0 && (
         <div className="mt-1 flex min-h-10 items-center justify-between gap-3">
           {isEditingList ? (
@@ -177,7 +177,19 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
           {getErrorMessage(reorderMutation.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
         </p>
       )}
+      {/* 프로토타입 11-15: 섹션 추가는 전시작 추가처럼 목록 위(도구 줄 아래 12, 목록과 4) */}
+      {canAdd && (
+        <button
+          type="button"
+          onClick={openEditor}
+          className={`${ADD_BUTTON} ${contents.length > 0 ? 'mt-3' : 'mt-2'}`}
+        >
+          <WorkIcon name="plus" className="size-5" strokeWidth={2.2} />
+          섹션 추가
+        </button>
+      )}
       <ContentList
+        className={canAdd ? 'mt-1' : undefined}
         contents={contents}
         editing={isEditingList}
         disabled={reorderMutation.isPending || !canReorder}
@@ -193,16 +205,6 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
         }
         onReorder={handleReorder}
       />
-      {canAdd && (
-        <button
-          type="button"
-          onClick={openEditor}
-          className={`${ADD_BUTTON} ${contents.length > 0 ? 'mt-5 mb-8' : 'mt-2'}`}
-        >
-          <WorkIcon name="plus" className="size-5" strokeWidth={2.2} />
-          섹션 추가
-        </button>
-      )}
       <ContentEditSheet
         open={createOpen}
         isSaving={createMutation.isPending}

@@ -1,4 +1,5 @@
 import type { Content } from '@/types';
+import { cn } from '@/utils/cn';
 import { staggerStyle } from '@/utils/stagger';
 
 import { ContentCard } from './ContentCard';
@@ -11,6 +12,7 @@ interface ContentListProps {
   onOpen: (content: Content) => void;
   onDelete?: (content: Content) => void;
   onReorder: (contents: Content[]) => void;
+  className?: string;
 }
 
 /*
@@ -25,6 +27,7 @@ export function ContentList({
   onOpen,
   onDelete,
   onReorder,
+  className,
 }: ContentListProps) {
   const { items, draggingId, startDrag } = useLiveSort({
     items: contents,
@@ -33,7 +36,8 @@ export function ContentList({
   });
 
   return (
-    <ul>
+    // 프로토타입 `.slist`: 아래 32
+    <ul className={cn('pb-8', className)}>
       {items.map((content, index) => (
         <li
           key={content.id}
