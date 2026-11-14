@@ -99,6 +99,20 @@ describe('getArtworkArtists', () => {
     ]);
   });
 
+  it('프로필이 있는 작가를 먼저, 이름만 입력한 작가를 뒤에 둔다', () => {
+    expect(
+      getArtworkArtists({
+        artistUserId: null,
+        artistName: '작가가',
+        coAuthors: [
+          { userId: null, name: '작가나' },
+          { userId: 7, name: '작가다' },
+          { userId: 9, name: '작가라' },
+        ],
+      }).map((artist) => artist.name),
+    ).toEqual(['작가다', '작가라', '작가가', '작가나']);
+  });
+
   it('작가 이름이 비면 작가 미상으로 둔다', () => {
     expect(getArtworkArtists({ artistName: '' })[0].name).toBe('작가 미상');
   });
