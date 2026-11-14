@@ -1,4 +1,10 @@
-import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
+import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 
 import { cn } from '@/utils/cn';
 
@@ -40,7 +46,7 @@ export function DisplayCardMenu({
     };
   }, [open]);
 
-  const handleMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleMenuKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
     event.preventDefault();
     const items = [...event.currentTarget.querySelectorAll('button')];
