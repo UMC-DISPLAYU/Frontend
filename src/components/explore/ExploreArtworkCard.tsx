@@ -4,6 +4,7 @@ import type { ArtworkSearchItemDto } from '@/api/dto';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton } from '@/components/ui';
 
+import { ArtistByline } from './ArtistByline';
 import { CARD_CLASS, CARD_IMAGE_CLASS, CARD_TITLE_CLASS } from './exploreCardStyles';
 
 const ARTWORK_FRAME_CLASS = 'aspect-161/215 w-full bg-[#f4f4f5]';
@@ -27,9 +28,10 @@ export function ExploreArtworkCard({ artwork }: ExploreArtworkCardProps) {
       />
       <span className="block pt-2">
         <span className={CARD_TITLE_CLASS}>{artwork.artworkName}</span>
-        <span className="block truncate text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#3f3f47]">
-          {artistNames.join(', ')}
-        </span>
+        <ArtistByline
+          className="text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#3f3f47]"
+          names={artistNames}
+        />
       </span>
     </Link>
   );
