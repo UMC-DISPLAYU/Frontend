@@ -1,4 +1,5 @@
-import type { ReactElement } from 'react';
+import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayDetailDto } from '@/api/dto';
@@ -14,6 +15,14 @@ vi.mock('react-router-dom', () => ({ Link: 'a', useNavigate: () => mocks.navigat
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
 vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: 'img' }));
 vi.mock('@/components/layout', () => ({ PageContainer: 'main' }));
+
+type Element = ReactElement<Record<string, unknown>>;
+const nodes = (node: ReactNode): Element[] =>
+  Children.toArray(node).flatMap((child) =>
+    isValidElement<Record<string, unknown>>(child)
+      ? [child, ...nodes(child.props.children as ReactNode)]
+      : [],
+  );
 
 const display = {
   displayId: 7,
@@ -48,6 +57,12 @@ describe('전시 작업 탭', () => {
     expect(document.getElementById).toHaveBeenCalledWith('work-tabs-contents');
     expect(mocks.focus).toHaveBeenCalledOnce();
     expect(mocks.navigate).not.toHaveBeenCalled();
+  });
+
+  it('전시 미리보기는 전시 팀원용 미리보기 주소를 새 탭으로 연다', () => {
+    const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
+    const preview = nodes(page).find((node) => node.props.to === '/exhibition/7/preview');
+    expect(preview?.props).toMatchObject({ target: '_blank', rel: 'noopener noreferrer' });
   });
 
   it('기존 별도 관리 경로에서 탭을 누르면 전시 작업의 해당 탭으로 이동한다', () => {

@@ -1,0 +1,217 @@
+import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { ArtworkDetailShell } from '@/components/artworkdetailpage/ArtworkDetailShell';
+import { ArtworkPreviewGuestbook } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
+import { ErrorView } from '@/components/common';
+import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
+
+import { ArtworkDetailPage } from '../ArtworkDetailPage';
+import { DisplayContentsPage } from '../display-detail/DisplayContentsPage';
+
+import { ArtworkPreviewPage } from './ArtworkPreviewPage';
+import { ContentsPreviewPage } from './ContentsPreviewPage';
+import { DisplayPreviewPage } from './DisplayPreviewPage';
+import { usePreviewBack } from './usePreviewBack';
+
+const h = vi.hoisted(() => ({
+  params: { displayId: '7', artworkId: '3' } as Record<string, string | undefined>,
+  search: '',
+  navigate: vi.fn(),
+  flowBack: vi.fn(),
+  display: {
+    data: undefined as unknown,
+    isPending: false,
+    isLoading: false,
+    error: null as Error | null,
+    refetch: vi.fn(),
+  },
+  artwork: {
+    data: undefined as unknown,
+    isPending: false,
+    error: null as Error | null,
+    refetch: vi.fn(),
+  },
+}));
+
+vi.mock('react', async (original) => ({
+  ...(await original<typeof import('react')>()),
+  useCallback: (callback: unknown) => callback,
+}));
+vi.mock('react-router-dom', () => ({
+  useParams: () => h.params,
+  useNavigate: () => h.navigate,
+  useSearchParams: () => [new URLSearchParams(h.search)],
+}));
+vi.mock('@/components/common', () => ({ ErrorView: () => null }));
+vi.mock('../display-detail/DisplayContentsPage', () => ({ DisplayContentsPage: () => null }));
+vi.mock('@/components/display-detail', () => ({
+  DisplayDetailSkeleton: () => null,
+  DisplayDetailView: () => null,
+}));
+vi.mock('@/components/artworkdetailpage/ArtworkDetailShell', () => ({
+  ArtworkDetailShell: () => null,
+  ArtworkDetailSkeleton: () => null,
+}));
+vi.mock('@/components/artworkdetailpage/ArtworkActions', () => ({ ArtworkBottomBar: () => null }));
+vi.mock('@/components/artworkdetailpage/ArtworkGuestbookTab', () => ({
+  ArtworkGuestbookTab: () => null,
+  ArtworkPreviewGuestbook: () => null,
+}));
+vi.mock('@/components/artworkdetailpage/ArtworkIntroTab', () => ({ ArtworkIntroTab: () => null }));
+vi.mock('@/components/artworkdetailpage/ArtworkMeta', () => ({ ArtworkMeta: () => null }));
+vi.mock('@/components/artworkdetailpage/ArtworkSaveButton', () => ({
+  ArtworkSaveButton: () => null,
+}));
+vi.mock('@/hooks/queries/useDisplayDetail', () => ({ useDisplayDetail: () => h.display }));
+vi.mock('@/hooks/queries/useArtworkDetail', () => ({ useArtworkDetail: () => h.artwork }));
+vi.mock('@/hooks/queries/useUserProfile', () => ({ useUserMe: () => ({ data: undefined }) }));
+vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.flowBack }));
+vi.mock('@/hooks/useSkeleton', () => ({
+  useSkeleton: (pending: boolean) => ({ showSkeleton: pending, skeletonProps: {} }),
+}));
+
+type Element = ReactElement<Record<string, unknown>>;
+const nodes = (node: ReactNode): Element[] =>
+  Children.toArray(node).flatMap((child) =>
+    isValidElement<Record<string, unknown>>(child)
+      ? [child, ...nodes(child.props.children as ReactNode)]
+      : [],
+  );
+const asElement = (node: ReactNode) => node as Element;
+
+const publicDisplay = {
+  displayId: 7,
+  status: 'PUBLISHED',
+  ownerUserId: 1,
+  teamMembers: [],
+  period: { startDate: '2026-11-01', endDate: '2026-11-30' },
+};
+const artworkOf = (displayId: number) => ({
+  artworkId: 3,
+  artworkName: '작품',
+  artistUserId: 1,
+  images: [],
+  exhibitionInfo: { displayId },
+});
+
+const setHistoryIndex = (idx: number | undefined) =>
+  vi.stubGlobal('window', { history: { state: idx === undefined ? null : { idx } } });
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.unstubAllGlobals();
+  h.params = { displayId: '7', artworkId: '3' };
+  h.search = '';
+  h.display.data = publicDisplay;
+  h.display.isPending = false;
+  h.display.isLoading = false;
+  h.display.error = null;
+  h.artwork.data = artworkOf(7);
+  h.artwork.isPending = false;
+  h.artwork.error = null;
+});
+
+describe('미리보기 뒤로가기', () => {
+  it('앱 안에서 들어왔으면 이전 화면으로 돌아간다', () => {
+    setHistoryIndex(2);
+    usePreviewBack('/exhibition/7/work')();
+    expect(h.navigate).toHaveBeenCalledWith(-1);
+  });
+
+  it.each([0, undefined])('돌아갈 기록이 없으면(idx=%s, 새 탭) 전시 작업으로 바꿔 간다', (idx) => {
+    setHistoryIndex(idx);
+    usePreviewBack('/exhibition/7/work')();
+    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/work', { replace: true });
+  });
+});
+
+describe('전시 미리보기', () => {
+  it('공개된 전시도 미리보기 모드로 보여주고, 뒤로가기는 전시 작업 기준이다', () => {
+    setHistoryIndex(0);
+    const page = asElement(DisplayPreviewPage());
+    expect(page.type).toBe(DisplayDetailView);
+    expect(page.props.previewMode).toBe(true);
+    expect(page.props.display).toBe(publicDisplay);
+    (page.props.onBack as () => void)();
+    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/work', { replace: true });
+  });
+
+  it('불러오는 중에는 상세 스켈레톤을 보인다', () => {
+    h.display.isPending = true;
+    h.display.data = undefined;
+    expect(asElement(DisplayPreviewPage()).type).toBe(DisplayDetailSkeleton);
+  });
+
+  it('전시 번호가 숫자가 아니면 오류 화면을 보인다', () => {
+    h.params = { displayId: 'abc' };
+    h.display.isPending = true;
+    const page = asElement(DisplayPreviewPage());
+    expect(page.type).toBe(ErrorView);
+    expect(page.props.message).toBe('전시 정보를 찾을 수 없어요');
+  });
+});
+
+describe('작품 미리보기', () => {
+  it('주소의 전시 번호와 전시 작업 뒤로가기를 작품 상세에 넘긴다', () => {
+    setHistoryIndex(0);
+    const page = asElement(ArtworkPreviewPage());
+    expect(page.type).toBe(ArtworkDetailPage);
+    expect(page.props.previewDisplayId).toBe(7);
+    (page.props.onBack as () => void)();
+    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/work', { replace: true });
+  });
+
+  it('전시 미리보기에서 들어왔으면(from=ex) 전시 미리보기 작품 탭으로 돌아간다', () => {
+    setHistoryIndex(0);
+    h.search = 'from=ex';
+    const page = asElement(ArtworkPreviewPage());
+    (page.props.onBack as () => void)();
+    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/preview?tab=works', { replace: true });
+  });
+
+  it('같은 전시의 작품은 공개 전 모습으로 보이고 뒤로가기 버튼을 숨긴다', () => {
+    const onBack = vi.fn();
+    const page = asElement(ArtworkDetailPage({ previewDisplayId: 7, onBack }));
+    expect(page.type).toBe(ArtworkDetailShell);
+    expect(page.props).toMatchObject({ isPreview: true, hideBack: true, onBack });
+    expect(asElement(page.props.guestbook as ReactNode).type).toBe(ArtworkPreviewGuestbook);
+    const bottomBar = nodes(page.props.bottomBar as ReactNode)[0];
+    expect(bottomBar.props.disabled).toBe(true);
+    expect(asElement(bottomBar.props.saveButton as ReactNode).props.disabled).toBe(true);
+  });
+
+  it('다른 전시의 작품이면 보여주지 않는다', () => {
+    h.artwork.data = artworkOf(8);
+    const onBack = vi.fn();
+    const page = asElement(ArtworkDetailPage({ previewDisplayId: 7, onBack }));
+    expect(page.type).toBe(ErrorView);
+    expect(page.props.message).toBe('작품 정보를 찾을 수 없습니다');
+    expect(page.props.onRetry).toBe(onBack);
+  });
+
+  it('전시 정보가 없는 작품도 보여주지 않는다', () => {
+    h.artwork.data = { ...artworkOf(7), exhibitionInfo: null };
+    expect(asElement(ArtworkDetailPage({ previewDisplayId: 7 })).type).toBe(ErrorView);
+  });
+
+  it('공개 작품 상세는 그대로 공개 화면이다', () => {
+    const page = asElement(ArtworkDetailPage());
+    expect(page.type).toBe(ArtworkDetailShell);
+    expect(page.props).toMatchObject({ isPreview: false, hideBack: false });
+    (page.props.onBack as () => void)();
+    expect(h.flowBack).toHaveBeenCalledOnce();
+  });
+});
+
+describe('전시 콘텐츠 미리보기', () => {
+  it('주소의 전시 번호를 넘기고, 돌아갈 기록이 없으면 전시 미리보기로 간다', () => {
+    setHistoryIndex(0);
+    const page = asElement(ContentsPreviewPage());
+    expect(page.type).toBe(DisplayContentsPage);
+    expect(page.props.previewDisplayId).toBe('7');
+    (page.props.onBack as () => void)();
+    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/preview', { replace: true });
+  });
+});
