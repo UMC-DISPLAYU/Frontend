@@ -20,7 +20,8 @@ export function ArtistVerificationModal({ open, description, onConfirm, onCancel
     <Overlay
       open={open}
       onClose={onCancel}
-      title="작가 인증이 필요해요"
+      // 공용 Overlay 제목은 700이지만 사용자 지시로 볼드를 빼 600으로 둔다
+      title={<span className="font-semibold">작가 인증이 필요해요</span>}
       description={
         <span className="typography-body-lg-regular mt-0.5 block whitespace-pre-line text-tertiary">
           {description}
