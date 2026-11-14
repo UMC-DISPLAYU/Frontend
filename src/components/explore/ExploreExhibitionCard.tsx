@@ -5,7 +5,9 @@ import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton } from '@/components/ui';
 import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
-const POSTER_FRAME_CLASS = 'aspect-402/568 w-full bg-secondary';
+import { CARD_CLASS, CARD_IMAGE_CLASS, CARD_TITLE_CLASS } from './exploreCardStyles';
+
+const POSTER_FRAME_CLASS = 'aspect-402/568 w-full bg-[#f4f4f5]';
 
 type ExploreExhibitionCardProps = {
   exhibition: DisplayListItemDto;
@@ -13,28 +15,26 @@ type ExploreExhibitionCardProps = {
 
 export function ExploreExhibitionCard({ exhibition }: ExploreExhibitionCardProps) {
   return (
-    <Link
-      className="group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
-      to={`/display/${exhibition.displayId}`}
-    >
+    <Link className={CARD_CLASS} to={`/display/${exhibition.displayId}`}>
       <OptimizedImage
         alt={`${exhibition.title} 포스터`}
-        className="transition-transform duration-slow ease-standard group-hover:scale-103"
+        className={CARD_IMAGE_CLASS}
         displayWidth={280}
         frameClassName={POSTER_FRAME_CLASS}
         skeleton
         src={exhibition.posterImageUrl}
       />
       <span className="block pt-2">
-        <span className="typography-body-lg-semibold block truncate">{exhibition.title}</span>
-        <span className="typography-body-md-medium block truncate text-secondary">
+        <span className={CARD_TITLE_CLASS}>{exhibition.title}</span>
+        <span className="block truncate text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#3f3f47]">
           {exhibition.schoolDepartmentName}
         </span>
-        <span className="typography-body-md-regular2 mt-1 block truncate text-tertiary">
+        {/* 숫자가 붙어 보이지 않게 날짜만 자간을 +1% 로 둔다(프로토타입 dt12) */}
+        <span className="mt-1 block truncate text-[12px] leading-[1.4] font-medium tracking-[0.01em] text-[#71717b]">
           {formatExhibitionPeriod(exhibition.startedAt, exhibition.endedAt)}
         </span>
         {exhibition.placeName ? (
-          <span className="typography-body-md-medium mt-0.5 block truncate text-tertiary">
+          <span className="mt-0.5 block truncate text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#71717b]">
             {exhibition.placeName}
           </span>
         ) : null}
