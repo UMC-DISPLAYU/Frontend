@@ -26,7 +26,7 @@ import {
   useMyArchive,
   useMyArtistSummary,
 } from '@/components/mypage';
-import { Skeleton, SkeletonList } from '@/components/ui';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import { useUnarchiveArtist } from '@/hooks/queries/useArchive';
 import { useLogout } from '@/hooks/queries/useAuth';
 import { useMyDisplayInvitations } from '@/hooks/queries/useDisplayInvitations';
@@ -34,6 +34,7 @@ import { useDeleteUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useArtistPolicy, useDisplayCreatePolicy } from '@/hooks/usePolicy';
 import { useReplaceSearchParams } from '@/hooks/useReplaceSearchParams';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import type { TabKey } from '@/types/mypage';
 import { cn } from '@/utils/cn';
@@ -94,6 +95,13 @@ export function MyPage() {
       : activeTab === 'artist'
         ? archive.artistsQuery
         : null;
+  const archiveQuery =
+    activeTab === 'exhibition'
+      ? archive.exhibitionsQuery
+      : activeTab === 'artwork'
+        ? archive.artworksQuery
+        : archive.artistsQuery;
+  const { showSkeleton, skeletonProps } = useSkeleton(archiveQuery.isPending);
   const triggerRef = useInfiniteScroll({
     hasNextPage: pagedQuery?.hasNextPage && !pagedQuery.isError,
     isFetchingNextPage: pagedQuery?.isFetchingNextPage ?? false,
@@ -152,12 +160,7 @@ export function MyPage() {
   const nickname = user?.nickname || user?.name || '';
 
   const renderArchiveList = () => {
-    const query =
-      activeTab === 'exhibition'
-        ? archive.exhibitionsQuery
-        : activeTab === 'artwork'
-          ? archive.artworksQuery
-          : archive.artistsQuery;
+    const query = archiveQuery;
     const items =
       activeTab === 'exhibition'
         ? archive.exhibitions
@@ -165,16 +168,16 @@ export function MyPage() {
           ? archive.artworks
           : archive.artists;
 
-    if (query.isPending) {
+    if (showSkeleton) {
       if (activeTab === 'artist') {
         return (
-          <div aria-busy="true" aria-label="저장한 작가를 불러오는 중" className="mt-2">
+          <div {...skeletonProps} aria-label="저장한 작가를 불러오는 중" className="mt-2">
             <SkeletonList count={4}>{() => <ArchiveArtistRowSkeleton />}</SkeletonList>
           </div>
         );
       }
       return (
-        <ul aria-busy="true" aria-label="보관함을 불러오는 중" className={cn('mt-4', GRID_CLASS)}>
+        <ul {...skeletonProps} aria-label="보관함을 불러오는 중" className={cn('mt-4', GRID_CLASS)}>
           <SkeletonList count={4}>
             {() => (
               <li aria-hidden="true">
@@ -215,7 +218,7 @@ export function MyPage() {
 
     if (activeTab === 'artist') {
       return (
-        <ul className="mt-2">
+        <ul {...skeletonProps} className="mt-2">
           {archive.artists.map(({ userId, view }, index) => (
             <li className="animate-rise" key={view.key} style={staggerStyle(index)}>
               <ArchiveArtistRow
@@ -230,7 +233,7 @@ export function MyPage() {
     }
 
     return (
-      <ul className={cn('mt-4', GRID_CLASS)}>
+      <ul {...skeletonProps} className={cn('mt-4', GRID_CLASS)}>
         {activeTab === 'exhibition'
           ? archive.exhibitions.map((exhibition, index) => (
               <li className="animate-rise" key={exhibition.key} style={staggerStyle(index)}>
@@ -265,7 +268,7 @@ export function MyPage() {
           ) : (
             <div aria-hidden="true" className="flex h-11 items-center gap-2">
               <Skeleton className="size-9 rounded-circle" />
-              <Skeleton className="h-6 w-24 rounded-4" />
+              <SkeletonText className="typography-body-xxl-semibold w-24" />
             </div>
           )}
 

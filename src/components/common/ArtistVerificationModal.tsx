@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { createPortal } from 'react-dom';
 
 import { type DialogEnterAnimation, useModalDialog } from '@/hooks/useModalDialog';
 import { cn } from '@/utils/cn';
@@ -33,7 +34,8 @@ export function ArtistVerificationModal({ open, title, description, onConfirm, o
 
   if (!open) return null;
 
-  return (
+  // top layer 에 올라가도 CSS 상속은 DOM 부모를 따른다. 냅바(pointer-events-none) 같은 부모 스타일을 물려받지 않게 body 로 뺀다
+  return createPortal(
     <dialog
       ref={dialogRef}
       role="alertdialog"
@@ -69,6 +71,7 @@ export function ArtistVerificationModal({ open, title, description, onConfirm, o
           작가 인증하기
         </button>
       </div>
-    </dialog>
+    </dialog>,
+    document.body,
   );
 }

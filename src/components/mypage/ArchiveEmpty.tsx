@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton, SkeletonList } from '@/components/ui';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
+import { useSkeleton } from '@/hooks/useSkeleton';
 
 import { ChevronRightIcon } from './MyPageIcons';
 
-const RAIL_FRAME_CLASS = 'aspect-3/4 w-full bg-tertiary';
+const RAIL_SIZE_CLASS = 'aspect-3/4 w-full';
+const RAIL_FRAME_CLASS = `${RAIL_SIZE_CLASS} bg-tertiary`;
 
 export type ArchiveRecommendation = {
   key: string;
@@ -33,6 +35,8 @@ export function ArchiveEmpty({
   recommendationLabel,
   isRecommendationPending,
 }: ArchiveEmptyProps) {
+  const { showSkeleton, skeletonProps } = useSkeleton(isRecommendationPending);
+
   return (
     <div>
       <div className="flex items-center justify-between gap-3 pt-6 pb-3">
@@ -45,17 +49,21 @@ export function ArchiveEmpty({
           <ChevronRightIcon />
         </Link>
       </div>
-      {(isRecommendationPending || recommendations.length > 0) && (
+      {(showSkeleton || recommendations.length > 0) && (
         <section aria-label={recommendationLabel}>
           {/* 화면 끝까지 넘겨 볼 수 있게 좌우 여백만큼 밖으로 뺀다 */}
-          <ul className="-mx-gutter flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {isRecommendationPending ? (
+          <ul
+            {...skeletonProps}
+            className="-mx-gutter flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {showSkeleton ? (
               <SkeletonList count={4}>
                 {() => (
                   <li aria-hidden="true" className="w-32 shrink-0">
-                    <Skeleton className={RAIL_FRAME_CLASS} />
-                    <Skeleton className="mt-2 h-5 w-3/4 rounded-4" />
-                    <Skeleton className="mt-0.5 h-4 w-1/2 rounded-4" />
+                    {/* 회색 칸은 스켈레톤 색(bg-secondary)을 쓰도록 틀의 bg-tertiary 를 빼고 크기만 맞춘다 */}
+                    <Skeleton className={RAIL_SIZE_CLASS} />
+                    <SkeletonText className="typography-body-lg-semibold mt-2 w-7/10" />
+                    <SkeletonText className="typography-body-md-medium w-1/2" />
                   </li>
                 )}
               </SkeletonList>

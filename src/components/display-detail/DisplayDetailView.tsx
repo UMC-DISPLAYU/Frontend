@@ -7,7 +7,7 @@ import {
   DetailTopBar,
   useDetailTab,
 } from '@/components/common/detail';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { cn } from '@/utils/cn';
 import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
@@ -171,10 +171,17 @@ export function DisplayDetailSkeleton() {
       <div className={LAYOUT}>
         <Skeleton className="aspect-402/568 min-[37.5rem]:mx-auto min-[37.5rem]:mt-6 min-[37.5rem]:max-w-120 desktop:mt-0 desktop:max-w-none" />
         <div className={SHEET}>
-          <div className="flex flex-col gap-2 px-gutter py-6 desktop:px-0 desktop:pt-0">
-            <Skeleton className="h-7 w-2/3 rounded-4" />
-            <Skeleton className="h-5 w-1/2 rounded-4" />
-            <Skeleton className="mt-3 h-19 w-40 rounded-4" />
+          {/* DisplaySummary 와 같은 줄: 제목 · 주최, 일정 · 운영 · 장소 */}
+          <div className="grid gap-5 px-gutter py-6 desktop:px-0 desktop:pt-0 desktop:pb-5">
+            <div>
+              <SkeletonText className="typography-title-xs w-2/3" />
+              <SkeletonText className="typography-body-lg-regular mt-1 w-1/2" />
+            </div>
+            <div className="grid gap-2">
+              <SkeletonText className="typography-body-lg-regular min-h-5 w-3/5" />
+              <SkeletonText className="typography-body-lg-regular min-h-5 w-2/5" />
+              <SkeletonText className="typography-body-lg-regular min-h-5 w-1/2" />
+            </div>
           </div>
         </div>
       </div>

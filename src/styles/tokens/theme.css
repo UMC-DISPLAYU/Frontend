@@ -152,6 +152,7 @@
   --transition-duration-slow: var(--semantic-motion-duration-slow);
   --ease-standard: var(--semantic-motion-easing-standard);
   --ease-emphasized: var(--semantic-motion-easing-emphasized);
+  --ease-reveal: var(--semantic-motion-easing-reveal);
 
   /* Animation — 들어올 때는 both(지연 중에도 시작 프레임 유지), 나갈 때는 forwards(끝 프레임 유지) */
   --animate-fade-in: fade-in var(--semantic-motion-duration-base)
@@ -182,8 +183,9 @@
     var(--semantic-motion-easing-standard) forwards;
   --animate-rise: rise var(--semantic-motion-duration-slow) var(--semantic-motion-easing-standard)
     both;
-  /* shimmer 는 반복 루프라 전환용 시간 토큰(fast · base · slow) 대신 1.5s 를 쓴다 */
-  --animate-shimmer: shimmer 1.5s linear infinite;
+  /* 사진이 켜질 때: 투명도 + 흐림 2px → 0 (로딩 스펙 11-14) */
+  --animate-image-reveal: image-reveal var(--semantic-motion-duration-fast)
+    var(--semantic-motion-easing-reveal) both;
 
   @keyframes fade-in {
     from {
@@ -259,12 +261,19 @@
       transform: translateY(12px);
     }
   }
-  @keyframes shimmer {
+  @keyframes image-reveal {
     from {
-      background-position: 150% 0;
+      opacity: 0;
+      filter: blur(2px);
     }
-    to {
-      background-position: -50% 0;
+  }
+  @keyframes skeleton-breathe {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
     }
   }
 }

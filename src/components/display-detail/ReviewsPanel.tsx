@@ -3,12 +3,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DisplayDetailDto } from '@/api/dto';
 import { BottomCommentBar } from '@/components/common/BottomCommentBar';
 import { ErrorView } from '@/components/common/ErrorView';
-import { Skeleton, SkeletonList } from '@/components/ui/Skeleton';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useCreateDisplayReviewReply } from '@/hooks/queries/useDisplayReviewReplies';
 import { useCreateDisplayReview, useDisplayReviews } from '@/hooks/queries/useDisplayReviews';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useDisplayReviewPolicy, useDisplayReviewReplyPolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -26,9 +27,9 @@ function ReviewSkeleton() {
       {() => (
         <div className="flex gap-3 pt-4 pb-2">
           <Skeleton className="size-8 shrink-0 rounded-circle" />
-          <div className="flex flex-1 flex-col gap-2">
-            <Skeleton className="h-5 w-1/3 rounded-4" />
-            <Skeleton className="h-5 w-full rounded-4" />
+          <div className="min-w-0 flex-1">
+            <SkeletonText className="typography-body-lg-semibold min-h-6 w-1/3" />
+            <SkeletonText className="typography-body-lg-regular mt-2 w-full" />
           </div>
         </div>
       )}
@@ -63,6 +64,7 @@ export function ReviewsPanel({ display }: Props) {
     fetchNextPage,
     isFetchingNextPage,
   } = useDisplayReviews(displayId);
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
   const { data: userMe } = useUserMe();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const reviewPolicy = useDisplayReviewPolicy(display);
@@ -112,27 +114,28 @@ export function ReviewsPanel({ display }: Props) {
   }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   return (
-    <section aria-label="전시 후기" className="px-gutter py-2 desktop:px-0">
-      {isPending && <ReviewSkeleton />}
+    <section aria-label="전시 후기" className="px-gutter py-2 desktop:px-0" {...skeletonProps}>
+      {showSkeleton && <ReviewSkeleton />}
 
-      {!isPending && !isError && reviews.length === 0 && (
+      {!showSkeleton && !isError && reviews.length === 0 && (
         <p className="typography-body-lg-medium py-10 text-center text-tertiary">
           아직 후기가 없어요
         </p>
       )}
 
       <div className="flex flex-col">
-        {reviews.map((review) => (
-          <DisplayReviewCommentItem
-            key={review.displayReviewId}
-            display={display}
-            displayId={displayId}
-            review={review}
-            myUserId={userMe?.id}
-            activeReplyId={replyState?.highlightId ?? null}
-            onReplyClick={handleReplyClick}
-          />
-        ))}
+        {!showSkeleton &&
+          reviews.map((review) => (
+            <DisplayReviewCommentItem
+              key={review.displayReviewId}
+              display={display}
+              displayId={displayId}
+              review={review}
+              myUserId={userMe?.id}
+              activeReplyId={replyState?.highlightId ?? null}
+              onReplyClick={handleReplyClick}
+            />
+          ))}
       </div>
 
       <div ref={triggerRef} className="h-4" />
