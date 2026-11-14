@@ -40,16 +40,16 @@ export function useArtistVerificationRequiredModal(
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  const artistVerificationModal = isOpen
-    ? createElement(ArtistVerificationModal, {
-        description,
-        onConfirm: () => {
-          setIsOpen(false);
-          navigate('/artist-verification');
-        },
-        onCancel: () => setIsOpen(false),
-      })
-    : null;
+  const artistVerificationModal = createElement(ArtistVerificationModal, {
+    open: isOpen,
+    description,
+    onConfirm: () => {
+      setIsOpen(false);
+      // 오버레이가 쌓은 history 기록을 인증 화면으로 바꿔, 뒤로가기 때 모달 기록이 남지 않게 한다
+      void navigate('/artist-verification', { replace: true });
+    },
+    onCancel: () => setIsOpen(false),
+  });
 
   return {
     artistVerificationModal,
