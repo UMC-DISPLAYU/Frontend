@@ -99,8 +99,8 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
                 data-slide-part="poster"
                 className={cn(
                   // 옆 칸 모습은 usePosterSlideMotion 이 스크롤에 맞춰 덮어쓴다. 클래스는 첫 화면 · 동작 줄이기용이다.
-                  // will-change 로 포스터를 한 장의 레이어로 만들어 축소할 때 가장자리가 따로 깎여 테두리처럼 보이지 않게 한다
-                  'relative block aspect-402/568 w-full origin-top overflow-hidden bg-[#797979] will-change-transform focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
+                  // 어둡게 덮는 막이 포스터 밖으로 2px 나가야 하므로 overflow 를 자르지 않는다(아래 막 주석 참고)
+                  'relative block aspect-402/568 w-full origin-top bg-[#797979] will-change-transform focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
                   !isActive && '[transform:translateY(calc(var(--poster-w)*14/232))_scale(0.9138)]',
                 )}
               >
@@ -111,11 +111,25 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
                   loading={index < 3 ? 'eager' : 'lazy'}
                   className="absolute inset-0 size-full object-cover"
                 />
+                {/*
+                  옆 칸을 어둡게 하는 막(프로토타입 .dim · .shade-side). 막은 포스터와 따로 그려지는 레이어라,
+                  축소된 포스터 가장자리 픽셀을 반만 덮어 사진 밝기가 1px 테두리처럼 새어 나온다.
+                  막을 2px 바깥까지 넓혀 가장자리를 다 덮는다(바깥은 검은 배경이라 보이지 않는다).
+                  그라데이션은 2px 안쪽부터 시작해 포스터 위에서는 프로토타입 값과 같다
+                */}
+                <span
+                  aria-hidden="true"
+                  data-slide-part="dim"
+                  className={cn(
+                    'absolute -inset-0.5 bg-[rgb(0_0_0/0.6)] will-change-[opacity]',
+                    isActive && 'opacity-0',
+                  )}
+                />
                 <span
                   aria-hidden="true"
                   data-slide-part="side-shade"
                   className={cn(
-                    'absolute inset-0 [background:linear-gradient(rgb(0_0_0/0.5),#000),rgb(0_0_0/0.6)] will-change-[opacity]',
+                    'absolute -inset-0.5 bg-[linear-gradient(rgb(0_0_0/0.5)_2px,#000_calc(100%-2px))] will-change-[opacity]',
                     isActive && 'opacity-0',
                   )}
                 />

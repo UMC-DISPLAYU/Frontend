@@ -6,7 +6,7 @@ import { type RefObject, useLayoutEffect } from 'react';
  * - ViewTimeline 을 지원하면(크롬 115+ · 사파리 26+) 스크롤 연동 애니메이션으로 메인 스레드와 무관하게 돌린다.
  * - 지원하지 않거나 실제로 돌지 않으면 스크롤 때마다 transform · opacity 만 직접 바꾼다.
  * - 동작 줄이기에서는 아무것도 하지 않는다. 칸 클래스(가운데 / 옆)로 모습이 바로 바뀐다.
- * 각 칸 안의 요소는 data-slide-part 로 찾는다: poster · info · side-shade · active-shade
+ * 각 칸 안의 요소는 data-slide-part 로 찾는다: poster · info · dim · side-shade · active-shade
  */
 
 // 프로토타입 --side: 옆 칸 포스터 비율. 위치는 포스터 폭 232 기준 14px 를 폭에 비례해 쓴다
@@ -24,6 +24,7 @@ interface SlideParts {
   slot: HTMLElement;
   poster: HTMLElement | null;
   info: HTMLElement | null;
+  dim: HTMLElement | null;
   sideShade: HTMLElement | null;
   activeShade: HTMLElement | null;
 }
@@ -36,6 +37,7 @@ const collectParts = (rail: HTMLElement): SlideParts[] =>
       slot,
       poster: part('poster'),
       info: part('info'),
+      dim: part('dim'),
       sideShade: part('side-shade'),
       activeShade: part('active-shade'),
     };
@@ -71,13 +73,14 @@ function startScrollLinked(rail: HTMLElement, parts: SlideParts[]) {
 
   const animations: Animation[] = [];
   try {
-    for (const { slot, poster, info, sideShade, activeShade } of parts) {
+    for (const { slot, poster, info, dim, sideShade, activeShade } of parts) {
       const timeline = new ViewTimelineCtor({ subject: slot, axis: 'inline' });
       const play = (element: HTMLElement | null, keyframes: Keyframe[]) => {
         if (element) animations.push(element.animate(keyframes, options(timeline)));
       };
       play(poster, [{ transform: side }, { transform: 'none' }, { transform: side }]);
       play(info, [{ transform: sideInfo }, { transform: 'none' }, { transform: sideInfo }]);
+      play(dim, [{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }]);
       play(sideShade, [{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }]);
       play(activeShade, [{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }]);
     }
@@ -97,14 +100,16 @@ function startScrollPaint(rail: HTMLElement, parts: SlideParts[]) {
 
   const paint = () => {
     const center = rail.scrollLeft + rail.clientWidth / 2;
-    parts.forEach(({ poster, info, sideShade, activeShade }, index) => {
+    parts.forEach(({ poster, info, dim, sideShade, activeShade }, index) => {
       const raw = Math.max(0, 1 - Math.abs(centers[index] - center) / geometry.span);
       const progress = Math.round(raw * 200) / 200;
       if (progress === last[index]) return;
       last[index] = progress;
       if (poster) poster.style.transform = posterTransform(geometry.offset, progress);
       if (info) info.style.transform = infoTransform(geometry.offset, progress);
-      if (sideShade) sideShade.style.opacity = (1 - progress).toFixed(3);
+      for (const element of [dim, sideShade]) {
+        if (element) element.style.opacity = (1 - progress).toFixed(3);
+      }
       if (activeShade) activeShade.style.opacity = progress.toFixed(3);
     });
   };
@@ -128,9 +133,11 @@ function startScrollPaint(rail: HTMLElement, parts: SlideParts[]) {
     cancelAnimationFrame(frame);
     rail.removeEventListener('scroll', onScroll);
     observer.disconnect();
-    parts.forEach(({ poster, info, sideShade, activeShade }) => {
+    parts.forEach(({ poster, info, dim, sideShade, activeShade }) => {
       for (const element of [poster, info]) element?.style.removeProperty('transform');
-      for (const element of [sideShade, activeShade]) element?.style.removeProperty('opacity');
+      for (const element of [dim, sideShade, activeShade]) {
+        element?.style.removeProperty('opacity');
+      }
     });
   };
 }
