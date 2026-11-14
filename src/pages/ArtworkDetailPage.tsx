@@ -24,6 +24,7 @@ import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
 import { getErrorMessage } from '@/utils/error';
@@ -43,9 +44,11 @@ export function ArtworkDetailPage() {
   );
 
   // 공개 전 여부를 알기 전에 버튼이 눌리거나 방명록을 부르지 않도록 전시 상세까지 기다린다
-  if ((isPending || isDisplayLoading) && Number.isFinite(artworkId) && artworkId > 0) {
-    return <ArtworkDetailSkeleton />;
-  }
+  const { showSkeleton } = useSkeleton(
+    (isPending || isDisplayLoading) && Number.isFinite(artworkId) && artworkId > 0,
+  );
+
+  if (showSkeleton) return <ArtworkDetailSkeleton />;
 
   if (error || !detail) {
     return (

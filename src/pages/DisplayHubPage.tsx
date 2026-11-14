@@ -24,6 +24,7 @@ import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useDisplayRejectionReason } from '@/hooks/queries/useDisplayRejectionReason';
 import { useUpdateDisplayReservation } from '@/hooks/queries/useDisplayReservation';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
@@ -66,6 +67,7 @@ export function DisplayHubPage() {
   const displayId = Number(displayIdParam);
 
   const { data: display, isPending, refetch } = useDisplayDetail(displayId);
+  const { showSkeleton } = useSkeleton(isPending);
   const { data: members } = useDisplayMembers(displayId);
   const { data: artworks } = useDisplayArtworks(displayId);
 
@@ -154,6 +156,8 @@ export function DisplayHubPage() {
   ) : null;
 
   const renderContent = () => {
+    if (showSkeleton) return <DisplayHubSkeleton />;
+
     if (display) {
       const contentOpen = reservation.isPending ? reservation.variables : display;
 
@@ -188,8 +192,6 @@ export function DisplayHubPage() {
         </main>
       );
     }
-
-    if (isPending) return <DisplayHubSkeleton />;
 
     return (
       <ErrorView

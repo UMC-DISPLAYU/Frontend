@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
 import { BookmarkIcon } from './MyPageIcons';
@@ -60,9 +60,12 @@ export function ArchiveExhibitionCardSkeleton() {
   return (
     <>
       <Skeleton className={POSTER_FRAME_CLASS} />
-      <Skeleton className="mt-2 h-5 w-3/4 rounded-4" />
-      <Skeleton className="mt-0.5 h-4 w-1/2 rounded-4" />
-      <Skeleton className="mt-1 h-4 w-2/3 rounded-4" />
+      <div className="pt-2">
+        <SkeletonText className="typography-body-lg-semibold w-7/10" />
+        <SkeletonText className="typography-body-md-medium w-1/2" />
+        <SkeletonText className="typography-body-md-regular2 mt-1 w-3/5" />
+        <SkeletonText className="typography-body-md-medium mt-0.5 w-2/5" />
+      </div>
     </>
   );
 }
@@ -103,8 +106,10 @@ export function ArchiveArtworkCardSkeleton() {
   return (
     <>
       <Skeleton className={ARTWORK_FRAME_CLASS} />
-      <Skeleton className="mt-2 h-5 w-3/4 rounded-4" />
-      <Skeleton className="mt-0.5 h-4 w-1/2 rounded-4" />
+      <div className="pt-2">
+        <SkeletonText className="typography-body-lg-semibold w-7/10" />
+        <SkeletonText className="typography-body-md-medium w-1/2" />
+      </div>
     </>
   );
 }
@@ -153,9 +158,9 @@ export function ArchiveArtistRow({ artist, isRemoving, onUnarchive }: ArchiveArt
 
 export function ArchiveArtistRowSkeleton() {
   return (
-    <div className="flex flex-col gap-1.5 border-b border-bg-tertiary py-4">
-      <Skeleton className="h-5.5 w-24 rounded-4" />
-      <Skeleton className="h-4 w-40 rounded-4" />
+    <div className="flex flex-col gap-0.5 border-b border-bg-tertiary py-4">
+      <SkeletonText className="typography-body-xl-semibold w-24" />
+      <SkeletonText className="typography-body-md-medium w-40" />
     </div>
   );
 }

@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 
 import type { DisplayMemberEntryDto } from '@/api/dto';
 import { ErrorView } from '@/components/common';
-import { Skeleton, SkeletonList } from '@/components/ui';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import {
   useChangeDisplayMemberRole,
   useRemoveDisplayMember,
   useTransferDisplayLeader,
 } from '@/hooks/queries/useDisplayMembers';
 import { useReplaceSearchParams } from '@/hooks/useReplaceSearchParams';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 
@@ -61,6 +62,7 @@ export function TeamMemberSection({
   const mutations = [changeRole, removeMember, transferLeader];
   const isMutating = mutations.some((mutation) => mutation.isPending);
   const mutationError = mutations.find((mutation) => mutation.error)?.error;
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
   const changeTab = (next: TeamTab) => {
     replaceSearchParams((prev) => {
@@ -125,7 +127,7 @@ export function TeamMemberSection({
   };
 
   const renderPanel = () => {
-    if (team) {
+    if (team && !showSkeleton) {
       return tab === 'pending' ? (
         <PendingInviteList members={team.memberPending} />
       ) : (
@@ -133,14 +135,14 @@ export function TeamMemberSection({
       );
     }
 
-    if (isPending) {
+    if (showSkeleton) {
       return (
-        <div aria-busy="true" aria-label="팀원을 불러오는 중" className="pt-2">
+        <div aria-label="팀원을 불러오는 중" className="pt-2">
           <SkeletonList count={3}>
             {() => (
               <div className="flex min-h-17.25 items-center gap-2.75">
                 <Skeleton className="size-11.5 shrink-0 rounded-circle" />
-                <Skeleton className="h-5 w-24 rounded-4" />
+                <SkeletonText className="typography-body-lg-semibold w-24" />
               </div>
             )}
           </SkeletonList>
@@ -167,7 +169,7 @@ export function TeamMemberSection({
         idPrefix={idPrefix}
         counts={team && { joined: team.memberAccept.length, pending: team.memberPending.length }}
       />
-      <div id={panelId} role="tabpanel" aria-labelledby={tabId}>
+      <div id={panelId} role="tabpanel" aria-labelledby={tabId} {...skeletonProps}>
         {renderPanel()}
       </div>
 

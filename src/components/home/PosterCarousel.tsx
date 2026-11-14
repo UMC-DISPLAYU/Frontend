@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import ChevronArrowIcon from '@/assets/home/ChevronArrowIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton, SkeletonList } from '@/components/ui';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
 import { cn } from '@/utils/cn';
 
@@ -197,19 +197,30 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
 
 export function PosterCarouselSkeleton() {
   return (
-    <div aria-hidden="true" className={cn(RAIL_CLASS, 'justify-center overflow-hidden px-0')}>
+    <div
+      aria-hidden="true"
+      className={cn(RAIL_CLASS, 'skeleton-inverse justify-center overflow-hidden px-0')}
+    >
       <SkeletonList count={3}>
         {(index) => (
           <div
             className={cn(
-              'flex w-(--poster-w) flex-none flex-col items-center gap-2',
+              'flex w-(--poster-w) flex-none flex-col items-center',
               index !== 1 &&
                 'origin-top [transform:translateY(calc(var(--poster-w)*14/232))_scale(0.9138)] opacity-40',
             )}
           >
             <Skeleton className="aspect-402/568 w-full" />
-            <Skeleton className="mt-1.5 h-5 w-2/3 rounded-4" />
-            <Skeleton className="h-4 w-1/2 rounded-4" />
+            <div className="grid w-full gap-2 pt-3.5">
+              <div className="grid gap-0.5">
+                <SkeletonText className="typography-body-xl-semibold mx-auto w-2/3" />
+                <SkeletonText className="typography-body-md-medium mx-auto w-1/2" />
+              </div>
+              <div className="grid gap-0.5">
+                <SkeletonText className="typography-body-md-regular2 mx-auto w-3/5" />
+                <SkeletonText className="typography-body-md-medium mx-auto w-2/5" />
+              </div>
+            </div>
           </div>
         )}
       </SkeletonList>

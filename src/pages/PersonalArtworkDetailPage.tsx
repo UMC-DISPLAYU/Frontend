@@ -18,6 +18,7 @@ import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { usePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 
 export function PersonalArtworkDetailPage() {
@@ -28,9 +29,11 @@ export function PersonalArtworkDetailPage() {
   const { data: artwork, isPending, error, refetch } = usePersonalArtwork(personalArtworkId);
   const { data: userMe } = useUserMe();
 
-  if (isPending && Number.isFinite(personalArtworkId) && personalArtworkId > 0) {
-    return <ArtworkDetailSkeleton />;
-  }
+  const { showSkeleton } = useSkeleton(
+    isPending && Number.isFinite(personalArtworkId) && personalArtworkId > 0,
+  );
+
+  if (showSkeleton) return <ArtworkDetailSkeleton />;
 
   if (error || !artwork) {
     return (

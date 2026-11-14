@@ -20,6 +20,7 @@ import {
 } from '@/hooks/queries/useMyDisplays';
 import { useArtistVerificationRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useDisplayCreatePolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import type { ExhibitionItem } from '@/types/mypage';
 import { getErrorMessage } from '@/utils/error';
@@ -31,6 +32,7 @@ const LIST_CLASS = 'grid grid-cols-1 gap-3 desktop:grid-cols-2 desktop:gap-4';
 export function DisplayManagementPage() {
   const navigate = useNavigate();
   const { data: displays, isPending, refetch } = useMyDisplays();
+  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
   const deleteDisplay = useDeleteDisplay();
   const exitDisplay = useExitDisplay();
   const updateNickname = useUpdateMyDisplayNickname();
@@ -126,6 +128,21 @@ export function DisplayManagementPage() {
   };
 
   const renderContent = () => {
+    // 스켈레톤과 실제 목록이 같은 자리의 ul 이라 React 가 같은 요소로 이어 쓰고, skeletonProps 가 그 위에서 바뀐다
+    if (showSkeleton) {
+      return (
+        <ul aria-label="전시 목록을 불러오는 중" className={LIST_CLASS} {...skeletonProps}>
+          <SkeletonList count={4}>
+            {() => (
+              <li>
+                <Skeleton className="h-42.5 rounded-12" />
+              </li>
+            )}
+          </SkeletonList>
+        </ul>
+      );
+    }
+
     if (displays) {
       if (displays.length === 0) {
         return (
@@ -143,7 +160,7 @@ export function DisplayManagementPage() {
       }
 
       return (
-        <ul className={LIST_CLASS}>
+        <ul className={LIST_CLASS} {...skeletonProps}>
           {displays.map((ex, index) => (
             // 애니메이션의 transform 이 카드마다 쌓임 맥락을 만들어, 메뉴가 열린 카드를 다음 카드보다 위로 올린다
             <li
@@ -160,20 +177,6 @@ export function DisplayManagementPage() {
               />
             </li>
           ))}
-        </ul>
-      );
-    }
-
-    if (isPending) {
-      return (
-        <ul aria-label="전시 목록을 불러오는 중" aria-busy="true" className={LIST_CLASS}>
-          <SkeletonList count={4}>
-            {() => (
-              <li>
-                <Skeleton className="h-42.5 rounded-12" />
-              </li>
-            )}
-          </SkeletonList>
         </ul>
       );
     }
