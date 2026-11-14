@@ -79,7 +79,9 @@ export function ExhibitionWorkLayout({
               {status}
             </p>
             <Link
-              to={`/display/${display.displayId}`}
+              to={`/exhibition/${display.displayId}/preview`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="typography-body-md-semibold group -my-3 -mr-1 flex min-h-11 items-center gap-2 rounded-8 px-1 transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
             >
               전시 미리보기

@@ -15,11 +15,18 @@ const COLUMN = 'mx-auto w-full max-w-140';
 const PHOTO_SIZE = 'aspect-3/4 w-full';
 const PHOTO_FRAME = `${PHOTO_SIZE} overflow-hidden bg-tertiary`;
 
-export function DisplayContentsPage() {
+type DisplayContentsPageProps = {
+  /* 전시 미리보기에서 연 콘텐츠(/exhibition/:displayId/preview/contents)의 전시 번호와 뒤로가기 */
+  previewDisplayId?: string;
+  onBack?: () => void;
+};
+
+export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContentsPageProps = {}) {
   const flowBack = useFlowBack();
+  const goBack = onBack ?? (() => flowBack());
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const displayId = parseDisplayId(id);
+  const displayId = parseDisplayId(previewDisplayId ?? id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
@@ -40,7 +47,7 @@ export function DisplayContentsPage() {
             ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
             : '전시 콘텐츠를 찾을 수 없어요'
         }
-        onRetry={error ? () => void refetch() : () => flowBack()}
+        onRetry={error ? () => void refetch() : goBack}
         retryLabel={error ? '다시 시도' : '뒤로가기'}
       />
     );
@@ -55,7 +62,7 @@ export function DisplayContentsPage() {
           <button
             type="button"
             aria-label="뒤로가기"
-            onClick={() => flowBack()}
+            onClick={goBack}
             className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-94"
           >
             <ChevronLeft aria-hidden="true" size={24} strokeWidth={1.7} />
