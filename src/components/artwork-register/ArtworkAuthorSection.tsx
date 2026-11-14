@@ -1,11 +1,11 @@
 import { useId } from 'react';
 
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { cn } from '@/utils/cn';
 
 import { FOCUS_CLASS } from './artworkRegister.styles';
 import type { ArtworkPerson } from './artworkRegister.types';
 import { CloseIcon, PlusIcon } from './ArtworkRegisterIcons';
-import { AuthorAvatar } from './AuthorAvatar';
 
 interface ArtworkAuthorSectionProps {
   author: ArtworkPerson;
@@ -43,12 +43,12 @@ export function ArtworkAuthorSection({
       </p>
       <div className="mt-3 overflow-hidden rounded-12 border border-primary">
         <div className="flex items-center gap-3 p-4">
-          <AuthorAvatar />
+          <ProfileAvatar />
           <PersonText person={author} />
         </div>
         {coAuthors.map((person) => (
           <div key={person.key} className="flex items-center gap-3 border-t border-primary p-4">
-            <AuthorAvatar />
+            <ProfileAvatar />
             <PersonText person={person} />
             <button
               type="button"

@@ -90,9 +90,9 @@ vi.mock('@/components/common', () => ({
   ConfirmDialog: () => null,
   ErrorView: () => null,
   LinkInputField: () => null,
+  ProfileAvatar: () => null,
   ProfilePhotoField: () => null,
 }));
-vi.mock('@/components/mypage', () => ({ ProfileAvatar: () => null }));
 vi.mock('@/components/ui', () => ({ ChipGroup: () => null, Skeleton: () => null }));
 vi.mock('@/stores/toastStore', () => ({ toast: h.toast }));
 vi.mock('@/components/artist-verification', () => ({

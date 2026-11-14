@@ -1,5 +1,6 @@
 import { type KeyboardEvent, useId, useState } from 'react';
 
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { Overlay } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
@@ -14,7 +15,6 @@ import {
 import type { ArtworkPerson, ArtworkTeamCandidate } from './artworkRegister.types';
 import { CheckIcon, CloseIcon } from './ArtworkRegisterIcons';
 import { DIRECT_INPUT_CAPTION, toNamedCoAuthor, toTeamCoAuthor } from './artworkTeam';
-import { AuthorAvatar } from './AuthorAvatar';
 import type { CandidatesStatus } from './proxyAuthor';
 import { TeamCandidatesState } from './TeamCandidatesState';
 
@@ -145,7 +145,7 @@ export function CoAuthorSheet({
                     onClick={() => togglePick(candidate.userId)}
                     className="flex w-full items-center gap-3 py-3 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus disabled:cursor-default disabled:opacity-45"
                   >
-                    <AuthorAvatar />
+                    <ProfileAvatar />
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="typography-body-lg-semibold truncate text-primary">
                         {candidate.name}
@@ -220,7 +220,7 @@ export function CoAuthorSheet({
                     onClick={() => setTypedNames((prev) => prev.filter((item) => item !== name))}
                     className="flex w-full items-center gap-3 py-3 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
                   >
-                    <AuthorAvatar />
+                    <ProfileAvatar />
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="typography-body-lg-semibold truncate text-primary">
                         {name}

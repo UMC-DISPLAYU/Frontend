@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 
 import Logo from '@/assets/home/Logo.svg';
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { usePresence } from '@/hooks/usePresence';
@@ -11,7 +12,6 @@ import { useScrollLock } from '@/hooks/useScrollLock';
 import { cn } from '@/utils/cn';
 
 import { ChevronRightIcon, CloseIcon } from './MyPageIcons';
-import { ProfileAvatar } from './ProfileAvatar';
 
 const FOOTER_LINK_CLASS =
   'relative rounded-4 after:absolute after:inset-x-0 after:-inset-y-3.5 transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-focus';
@@ -118,7 +118,7 @@ export function SettingsDrawer({
           onClick={() => goTo('/edit-basic-info')}
           type="button"
         >
-          <ProfileAvatar size={40} src={profileImageUrl} />
+          <ProfileAvatar className="size-10" displayWidth={40} outlined src={profileImageUrl} />
           <span className="typography-body-xxl-semibold min-w-0 flex-1 truncate">{nickname}</span>
           <ChevronRightIcon className="size-5 shrink-0 text-icon-primary" />
         </button>

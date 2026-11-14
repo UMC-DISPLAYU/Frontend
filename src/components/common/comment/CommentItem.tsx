@@ -3,11 +3,11 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { Heart } from 'lucide-react';
 
 import dotsIcon from '@/assets/comment/DotsIcon.svg';
-import userIcon from '@/assets/comment/UserIcon.svg';
 import { cn } from '@/utils/cn';
 
 import { ImageModal } from '../ImageModal';
 import { OptimizedImage } from '../OptimizedImage';
+import { ProfileAvatar } from '../ProfileAvatar';
 
 import type { CommentData } from './types';
 
@@ -32,29 +32,6 @@ type Props = {
 };
 
 const ACTION_TEXT_CLASS = 'typography-body-md-medium text-secondary';
-
-function CommentAvatar({ url }: { url?: string | null }) {
-  const [loadFailed, setLoadFailed] = useState(false);
-
-  if (url && !loadFailed) {
-    return (
-      <img
-        alt=""
-        src={url}
-        className="size-8 shrink-0 rounded-circle object-cover"
-        onError={() => setLoadFailed(true)}
-      />
-    );
-  }
-
-  return (
-    <span className="relative size-8 shrink-0 overflow-hidden rounded-circle bg-tertiary">
-      <span className="absolute top-[calc(50%+3px)] right-[-3.13%] left-[-3.13%] aspect-square -translate-y-1/2">
-        <img alt="" src={userIcon} className="absolute inset-[12.5%_15%_10%_15%] size-auto" />
-      </span>
-    </span>
-  );
-}
 
 function CommentMoreMenu({ onDelete }: { onDelete: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -206,7 +183,7 @@ export const CommentItem = memo(function CommentItem({
             isComposingReply && '-mx-2 rounded-8 bg-secondary px-2',
           )}
         >
-          <CommentAvatar url={comment.avatarUrl} />
+          <ProfileAvatar className="size-8" displayWidth={32} src={comment.avatarUrl} />
 
           <div className="min-w-0 flex-1">
             <div className="flex min-h-6 items-center gap-2">

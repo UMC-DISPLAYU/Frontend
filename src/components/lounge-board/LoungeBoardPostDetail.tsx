@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { LoungePostDetailDto } from '@/api/dto/lounge.dto';
 import { ImageModal } from '@/components/common/ImageModal';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { useLoungePostPolicy } from '@/hooks/usePolicy';
 import { formatFullDate } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
@@ -28,15 +28,7 @@ export function LoungeBoardPostDetail({ post, onEdit, onDelete }: Props) {
     <div className="w-full flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <OptimizedImage
-            alt=""
-            className="size-10 rounded-full shrink-0 object-cover"
-            src={post.writer.profileImageUrl || FALLBACK_PROFILE_IMAGE}
-            displayWidth={40}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = FALLBACK_PROFILE_IMAGE;
-            }}
-          />
+          <ProfileAvatar className="size-10" displayWidth={40} src={post.writer.profileImageUrl} />
           <div className="flex flex-col items-start gap-1">
             <p className="typo-body-sm-bold text-main">{post.writer.nickname}</p>
             <p className="typo-body-xs-regular text-faint">{formatFullDate(post.createdAt)}</p>

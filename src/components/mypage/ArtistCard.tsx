@@ -1,7 +1,6 @@
 import { Bookmark, ChevronRight } from 'lucide-react';
 
-import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { FALLBACK_PROFILE_IMAGE } from '@/constants';
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import type { ArtistItem } from '@/types/mypage';
 
 interface ArtistCardProps {
@@ -31,17 +30,7 @@ export function ArtistCard({ item, onUnarchive, onOpen }: ArtistCardProps) {
         {...openHandlers}
         className={`flex items-center gap-3.5 px-3 py-3.5 ${onOpen ? 'cursor-pointer' : ''}`}
       >
-        <div className="size-12 rounded-full bg-box200 overflow-hidden shrink-0">
-          <OptimizedImage
-            className="w-full h-full object-cover"
-            src={item.thumbnail || FALLBACK_PROFILE_IMAGE}
-            displayWidth={48}
-            alt={item.name}
-            onError={(event) => {
-              event.currentTarget.src = FALLBACK_PROFILE_IMAGE;
-            }}
-          />
-        </div>
+        <ProfileAvatar alt={item.name} className="size-12" displayWidth={48} src={item.thumbnail} />
 
         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
           <div className="typo-body-sm-bold text-main truncate">{item.name}</div>

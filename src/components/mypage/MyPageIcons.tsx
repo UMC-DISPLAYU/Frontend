@@ -90,13 +90,3 @@ export function BookmarkIcon(props: IconProps) {
     </OutlineIcon>
   );
 }
-
-// 피그마 `Avatar / 프로필 (무채색)`의 사람 모양. 프로필 사진이 없을 때 회색 원 안에 흰색으로 그린다
-export function AvatarSilhouette(props: IconProps) {
-  return (
-    <svg aria-hidden="true" fill="currentColor" viewBox="0 0 59.5 65.87" {...props}>
-      <ellipse cx="29.75" cy="15.94" rx="15.23" ry="15.94" />
-      <path d="M0 65.87C0 49.44 13.32 36.12 29.75 36.12S59.5 49.44 59.5 65.87z" />
-    </svg>
-  );
-}

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
+
 import { InboxIcon, MenuIcon } from './MyPageIcons';
-import { ProfileAvatar } from './ProfileAvatar';
 
 const TOOL_CLASS =
   'relative grid size-11 place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99';
@@ -30,7 +31,7 @@ export function MyPageTopBar({
           className="-m-1 shrink-0 rounded-circle p-1 transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus active:scale-96"
           to="/edit-basic-info"
         >
-          <ProfileAvatar size={36} src={profileImageUrl} />
+          <ProfileAvatar className="size-9" displayWidth={36} outlined src={profileImageUrl} />
         </Link>
         <p className="typography-body-xxl-semibold truncate text-primary">{nickname}</p>
       </div>
