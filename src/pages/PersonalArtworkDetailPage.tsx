@@ -14,12 +14,13 @@ import { PersonalArtworkIntroTab } from '@/components/artworkdetailpage/Personal
 import { PersonalArtworkMeta } from '@/components/artworkdetailpage/PersonalArtworkMeta';
 import { PersonalArtworkSaveButton } from '@/components/artworkdetailpage/PersonalArtworkSaveButton';
 import { ErrorView } from '@/components/common';
+import { NotFoundView } from '@/components/error-page';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { usePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 
 export function PersonalArtworkDetailPage() {
   const flowBack = useFlowBack();
@@ -35,22 +36,13 @@ export function PersonalArtworkDetailPage() {
 
   if (showSkeleton) return <ArtworkDetailSkeleton />;
 
+  if (isNotFoundError(error) || (!error && !artwork)) return <NotFoundView />;
+
   if (error || !artwork) {
     return (
       <ErrorView
-        message={
-          error
-            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
-            : '작품 정보를 찾을 수 없습니다'
-        }
-        onRetry={
-          error
-            ? () => {
-                void refetch();
-              }
-            : () => flowBack()
-        }
-        retryLabel={error ? '다시 시도' : '뒤로가기'}
+        message={getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')}
+        onRetry={() => void refetch()}
       />
     );
   }

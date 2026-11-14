@@ -19,6 +19,7 @@ import { ArtworkIntroTab } from '@/components/artworkdetailpage/ArtworkIntroTab'
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ArtworkSaveButton } from '@/components/artworkdetailpage/ArtworkSaveButton';
 import { ErrorView } from '@/components/common';
+import { NotFoundView } from '@/components/error-page';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
@@ -27,7 +28,7 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { getExhibitionState } from '@/utils/exhibitionState';
 import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
@@ -50,22 +51,13 @@ export function ArtworkDetailPage() {
 
   if (showSkeleton) return <ArtworkDetailSkeleton />;
 
+  if (isNotFoundError(error) || (!error && !detail)) return <NotFoundView />;
+
   if (error || !detail) {
     return (
       <ErrorView
-        message={
-          error
-            ? getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')
-            : '작품 정보를 찾을 수 없습니다'
-        }
-        onRetry={
-          error
-            ? () => {
-                void refetch();
-              }
-            : () => flowBack()
-        }
-        retryLabel={error ? '다시 시도' : '뒤로가기'}
+        message={getErrorMessage(error, '정보를 불러오지 못했어요. 다시 시도해주세요.')}
+        onRetry={() => void refetch()}
       />
     );
   }

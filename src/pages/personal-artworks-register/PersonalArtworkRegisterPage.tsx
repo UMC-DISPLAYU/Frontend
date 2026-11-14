@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { SessionChangedError } from '@/api/apiError';
 import type { PersonalArtworkResponseDataDto } from '@/api/dto';
@@ -18,6 +18,7 @@ import {
   useLeaveArtworkRegister,
 } from '@/components/artwork-register';
 import { ErrorView } from '@/components/common';
+import { NotFoundView } from '@/components/error-page';
 import {
   useCreatePersonalArtwork,
   usePersonalArtwork,
@@ -136,7 +137,7 @@ function PersonalArtworkEditPage({ personalArtworkId }: { personalArtworkId: num
     return <ArtworkRegisterSkeleton title="작품 수정" onBack={() => leave(detailPath)} />;
   }
 
-  if (!hasPermission(policy, 'edit')) return <Navigate to="/403" replace />;
+  if (!hasPermission(policy, 'edit')) return <NotFoundView />;
 
   return <PersonalArtworkRegisterContent key={personalArtworkId} previous={data} />;
 }
