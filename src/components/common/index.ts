@@ -17,4 +17,3 @@ export { LoadingView } from './LoadingView';
 export { LoginConfirmModal } from './LoginConfirmModal';
 export { LogoutConfirmModal } from './LogoutConfirmModal';
 export { ProfilePhotoField } from './ProfilePhotoField';
-export { ShareBottomSheet } from './ShareBottomSheet';

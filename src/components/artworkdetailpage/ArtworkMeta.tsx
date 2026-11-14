@@ -16,7 +16,6 @@ type Props = {
   artwork: ArtworkDetail;
   artists: ArtworkArtist[];
   exhibitionState: ExhibitionState | null;
-  shareImageUrl?: string;
   isPreview: boolean;
   /* 작품 미리보기: 소속 전시 줄을 두지 않고, 작가 이름을 눌러도 프로필로 가지 않는다(사용자 결정) */
   previewMode?: boolean;
@@ -26,7 +25,6 @@ export function ArtworkMeta({
   artwork,
   artists,
   exhibitionState,
-  shareImageUrl,
   isPreview,
   previewMode = false,
 }: Props) {
@@ -73,7 +71,6 @@ export function ArtworkMeta({
         actions={
           <ArtworkInlineActions
             shareTitle={artwork.artworkName}
-            shareImageUrl={shareImageUrl}
             disabled={isPreview}
             saveButton={
               <ArtworkSaveButton

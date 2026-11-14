@@ -11,7 +11,6 @@ import {
 } from '@/hooks/queries/useArtworkFeelings';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useFeelingPolicy, useFeelingReplyPolicy } from '@/hooks/usePolicy';
-import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -23,6 +22,7 @@ type Props = {
   myUserId?: number;
 };
 
+/* 개인 작품 방명록(PersonalArtworkGuestbookTab)이 쓰는 스켈레톤 */
 export function GuestbookSkeleton() {
   return (
     <SkeletonList count={3}>
@@ -65,7 +65,6 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
     fetchNextPage,
     isFetchingNextPage,
   } = useArtworkFeelings(artworkId);
-  const { showSkeleton, skeletonProps } = useSkeleton(isPending);
   const createFeeling = useCreateArtworkFeeling();
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const feelingPolicy = useFeelingPolicy(display, undefined);
@@ -117,28 +116,26 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
   }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
 
   return (
-    <div className="px-gutter py-2 desktop:px-0" {...skeletonProps}>
-      {showSkeleton && <GuestbookSkeleton />}
-
-      {!showSkeleton && !isError && feelings.length === 0 && (
+    <div className="px-gutter py-2 desktop:px-0" aria-busy={isPending || undefined}>
+      {/* 불러오는 동안에도 빈 안내를 먼저 둔다. 스켈레톤과 높이가 달라 탭을 바꿀 때 화면이 튀지 않게(사용자 결정) */}
+      {!isError && feelings.length === 0 && (
         <p className="typography-body-lg-medium py-10 text-center text-tertiary">
           아직 방명록이 없어요
         </p>
       )}
 
       <div className="flex flex-col">
-        {!showSkeleton &&
-          feelings.map((feeling) => (
-            <ArtworkFeelingCommentItem
-              key={feeling.feelingId}
-              artworkId={artworkId}
-              feeling={feeling}
-              display={display}
-              myUserId={myUserId}
-              activeReplyId={activeReplyId}
-              onReplyClick={handleReplyClick}
-            />
-          ))}
+        {feelings.map((feeling) => (
+          <ArtworkFeelingCommentItem
+            key={feeling.feelingId}
+            artworkId={artworkId}
+            feeling={feeling}
+            display={display}
+            myUserId={myUserId}
+            activeReplyId={activeReplyId}
+            onReplyClick={handleReplyClick}
+          />
+        ))}
       </div>
 
       <div ref={triggerRef} className="h-4" />

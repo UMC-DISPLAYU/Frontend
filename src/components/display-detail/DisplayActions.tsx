@@ -1,8 +1,7 @@
-import { type ReactNode, useRef, useState } from 'react';
+import { type ReactNode, useRef } from 'react';
 
 import { Bookmark, Share2 } from 'lucide-react';
 
-import { ShareBottomSheet } from '@/components/common/ShareBottomSheet';
 import { useArchiveExhibition, useUnarchiveExhibition } from '@/hooks/queries/useArchive';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArchivePolicy } from '@/hooks/usePolicy';
@@ -10,6 +9,7 @@ import { useBottomObstruction } from '@/hooks/useVirtualKeyboard';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
+import { shareLink } from '@/utils/share';
 
 type SaveProps = {
   displayId: number;
@@ -70,34 +70,22 @@ export function DisplaySaveButton({ displayId, saved, disabled = false, classNam
 
 type ShareProps = {
   shareTitle: string;
-  shareDescription?: string;
-  shareImageUrl?: string;
   disabled?: boolean;
 };
 
-function ShareButton({ shareTitle, shareDescription, shareImageUrl, disabled }: ShareProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
+/* 기기 기본 공유 창을 띄운다(프로토타입 share.js). 누를 때마다 새로 연다 */
+function ShareButton({ shareTitle, disabled }: ShareProps) {
   return (
-    <>
-      <button
-        type="button"
-        aria-label="공유"
-        onClick={() => setIsOpen(true)}
-        disabled={disabled}
-        title={disabled ? '공개 전에는 사용할 수 없어요' : undefined}
-        className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-12 border border-primary text-icon-primary transition-colors duration-fast ease-standard hover:bg-tertiary disabled:cursor-not-allowed disabled:opacity-45"
-      >
-        <Share2 aria-hidden="true" size={20} strokeWidth={1.7} />
-      </button>
-      <ShareBottomSheet
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        title={shareTitle}
-        description={shareDescription}
-        imageUrl={shareImageUrl}
-      />
-    </>
+    <button
+      type="button"
+      aria-label="공유"
+      onClick={() => void shareLink({ title: shareTitle })}
+      disabled={disabled}
+      title={disabled ? '공개 전에는 사용할 수 없어요' : undefined}
+      className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-12 border border-primary text-icon-primary transition-colors duration-fast ease-standard hover:bg-tertiary disabled:cursor-not-allowed disabled:opacity-45"
+    >
+      <Share2 aria-hidden="true" size={20} strokeWidth={1.7} />
+    </button>
   );
 }
 

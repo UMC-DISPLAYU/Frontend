@@ -11,10 +11,9 @@ import { PersonalArtworkSaveButton } from './PersonalArtworkSaveButton';
 
 type Props = {
   artwork: PersonalArtworkResponseDataDto;
-  shareImageUrl?: string;
 };
 
-export function PersonalArtworkMeta({ artwork, shareImageUrl }: Props) {
+export function PersonalArtworkMeta({ artwork }: Props) {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
 
@@ -44,7 +43,6 @@ export function PersonalArtworkMeta({ artwork, shareImageUrl }: Props) {
         actions={
           <ArtworkInlineActions
             shareTitle={artwork.artworkName}
-            shareImageUrl={shareImageUrl}
             saveButton={
               <PersonalArtworkSaveButton
                 personalArtworkId={artwork.personalArtworkId}

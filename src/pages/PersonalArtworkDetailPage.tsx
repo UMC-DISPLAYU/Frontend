@@ -60,7 +60,7 @@ export function PersonalArtworkDetailPage() {
       images={viewerImages}
       title={artwork.artworkName}
       onBack={() => flowBack()}
-      label={<PersonalArtworkMeta artwork={artwork} shareImageUrl={viewerImages[0]} />}
+      label={<PersonalArtworkMeta artwork={artwork} />}
       hasIntro={hasArtworkIntro({
         content: artwork.content,
         processImageCount: getProcessImages(artwork.images).length,
@@ -70,7 +70,6 @@ export function PersonalArtworkDetailPage() {
       bottomBar={
         <ArtworkBottomBar
           shareTitle={artwork.artworkName}
-          shareImageUrl={viewerImages[0]}
           saveButton={
             <PersonalArtworkSaveButton
               personalArtworkId={personalArtworkId}

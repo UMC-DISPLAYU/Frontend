@@ -129,6 +129,7 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
       key={artworkId}
       images={viewerImages}
       title={detail.artworkName}
+      subtitle={artists.map((artist) => artist.name).join(', ')}
       onBack={goBack}
       isPreview={isPreview}
       hideBack={previewDisplayId !== undefined}
@@ -137,7 +138,6 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
           artwork={artwork}
           artists={artists}
           exhibitionState={getExhibitionState(display?.period)}
-          shareImageUrl={orderedImages[0]}
           isPreview={isPreview}
           previewMode={previewDisplayId !== undefined}
         />
@@ -161,7 +161,6 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
       bottomBar={
         <ArtworkBottomBar
           shareTitle={detail.artworkName}
-          shareImageUrl={orderedImages[0]}
           disabled={isPreview}
           saveButton={
             <ArtworkSaveButton
