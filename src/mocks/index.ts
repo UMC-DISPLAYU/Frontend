@@ -1,3 +1,4 @@
+import { addressHandlers } from './handlers/address';
 import { agreementHandlers } from './handlers/agreement';
 import { archiveHandlers } from './handlers/archive';
 import { artistHandlers } from './handlers/artist';
@@ -5,6 +6,7 @@ import { artworkHandlers } from './handlers/artwork';
 import { authHandlers } from './handlers/auth';
 import { displayHandlers } from './handlers/display';
 import { displayContentHandlers } from './handlers/displayContent';
+import { displayMemberHandlers } from './handlers/displayMember';
 import { fileHandlers } from './handlers/file';
 import { healthHandlers } from './handlers/health';
 import { loungeHandlers } from './handlers/lounge';
@@ -20,6 +22,7 @@ export const handlers = [
   ...userHandlers,
   ...schoolVerificationHandlers,
   ...displayHandlers,
+  ...displayMemberHandlers,
   ...loungeHandlers,
   ...agreementHandlers,
   ...archiveHandlers,
@@ -28,4 +31,5 @@ export const handlers = [
   ...displayContentHandlers,
   ...fileHandlers,
   ...personalArtworkHandlers,
+  ...addressHandlers,
 ];

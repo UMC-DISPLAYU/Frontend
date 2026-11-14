@@ -492,18 +492,6 @@ export const displayHandlers = [
       ),
     ),
   ),
-  ...paths('/api/v1/display/{displayId}/members').map((path) =>
-    http.get(path, ({ params }) => {
-      const displayId = toNumber(params.displayId, 101);
-      const display = findDisplay(displayId);
-      const members = display.teamMembers ?? [];
-      return success('/api/v1/display/{displayId}/members', {
-        displayId,
-        memberAccept: members.filter((m: any) => m.accepted !== false),
-        memberPending: members.filter((m: any) => m.accepted === false),
-      });
-    }),
-  ),
   /*
    * 초대 링크 활성/비활성 상태는 전시 상세(invitationToken/invitationDisabledAt)로 판단하므로
    * 응답만 만들지 말고 mockDb의 전시 데이터에 실제로 반영해야 토글이 유지됩니다.
@@ -642,36 +630,6 @@ export const displayHandlers = [
       return success('/api/v1/display-invitations/{invitationId}/reject', {
         ...(invitation ?? { invitationId }),
         status: 'REJECTED',
-      });
-    }),
-  ),
-  ...paths('/api/v1/display/{displayId}/members').map((path) =>
-    http.get(path, ({ params }) => {
-      const displayId = toNumber(params.displayId, 101);
-      const display = findDisplay(displayId);
-      const rawMembers = (display.teamMembers ?? []).length
-        ? display.teamMembers
-        : [
-            {
-              teamMemberId: 150,
-              userId: mockDb.me.userId,
-              displayNickname: `${display.title}작가명`,
-              loggedIn: true,
-              artistVerified: true,
-              accepted: true,
-              role: display.isLeader ? 'TEAM_LEADER' : 'TEAM_MEM',
-            },
-          ];
-      const members = rawMembers.map((member: any) => ({
-        loggedIn: true,
-        artistVerified: false,
-        ...member,
-      }));
-
-      return success('/api/v1/display/{displayId}/members', {
-        displayId,
-        memberAccept: members.filter((member: any) => member.accepted !== false),
-        memberPending: members.filter((member: any) => member.accepted === false),
       });
     }),
   ),

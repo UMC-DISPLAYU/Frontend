@@ -130,6 +130,7 @@ const InteriorPhotosPage = lazyPage(
   'InteriorPhotosPage',
 );
 const TeamManage = lazyPage(() => import('./pages/TeamManagePage'), 'TeamManage');
+const TeamDelegatedPage = lazyPage(() => import('./pages/TeamDelegatedPage'), 'TeamDelegatedPage');
 const SettingPage = lazyPage(() => import('./pages/Settingpage'), 'SettingPage');
 const EditBasicInfoPage = lazyPage(() => import('./pages/EditBasicInfoPage'), 'EditBasicInfoPage');
 const PersonalArtworksRegister = lazyPage(
@@ -385,9 +386,18 @@ export const router = createBrowserRouter([
                   {
                     path: 'team',
                     element: (
-                      <DisplayInvitationPermissionGuard action="create">
+                      // 팀원 관리는 대표자만 들어오고, 관리자 · 팀원은 전시 작업으로 보낸다(프로토타입)
+                      <DisplayInvitationPermissionGuard action="create" fallback="../work">
                         <TeamManage />
                       </DisplayInvitationPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'team/delegated',
+                    element: (
+                      <DisplayPermissionGuard action="view">
+                        <TeamDelegatedPage />
+                      </DisplayPermissionGuard>
                     ),
                   },
                   {
