@@ -3,6 +3,7 @@ import './displayHub.css';
 import { Link } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
+import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
 
@@ -22,7 +23,6 @@ interface DisplayHubSummaryProps {
 }
 
 export function DisplayHubSummary({ display, status, className }: DisplayHubSummaryProps) {
-  const meta = DISPLAY_HUB_STATUS_META[status];
   const poster = display.images.find((image) => image.imageType === 'MAIN') ?? display.images[0];
 
   return (
@@ -45,16 +45,8 @@ export function DisplayHubSummary({ display, status, className }: DisplayHubSumm
           />
         </div>
         <div className="grid min-w-0 content-start gap-0.5">
-          <div className="flex items-center justify-between gap-2">
-            <p
-              className={cn(
-                'typography-body-md-semibold inline-flex items-center gap-1.5',
-                meta.labelClassName,
-              )}
-            >
-              <span aria-hidden="true" className={cn('size-2 rounded-circle', meta.dotClassName)} />
-              {meta.label}
-            </p>
+          <div className="flex items-center justify-between gap-2 text-primary">
+            <DisplayPublishStatusLabel status={status} />
             {/* 보이는 크기는 프로토타입 그대로 두고, 누르는 영역만 가상 요소로 위아래 44px 까지 넓힌다 */}
             <Link
               to={`/exhibition/${display.displayId}/preview`}

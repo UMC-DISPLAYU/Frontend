@@ -1,4 +1,4 @@
-import type { DisplayPublishStatus } from '@/api/dto';
+import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import {
@@ -8,25 +8,11 @@ import {
 } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
+import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { type DisplayCardAction, DisplayCardMenu } from './DisplayCardMenu';
 import { formatDisplayPeriod } from './formatDisplayPeriod';
-
-// 전시 관리에서는 공개 여부만 보여주고, 기간에 따른 전시 예정 · 종료는 보여주지 않는다(PM 확인)
-const PUBLISH_STATUS: Record<
-  DisplayPublishStatus,
-  { label: string; textClassName?: string; dotClassName: string }
-> = {
-  DRAFT: { label: '준비 중', dotClassName: 'bg-[#27272a]' },
-  PENDING_REVIEW: {
-    label: '심사 중',
-    textClassName: 'text-[#2563eb]',
-    dotClassName: 'bg-[#3b82f6]',
-  },
-  REJECTED: { label: '반려', textClassName: 'text-[#fb2c36]', dotClassName: 'bg-[#fb2c36]' },
-  PUBLISHED: { label: '공개 중', textClassName: 'text-[#00a846]', dotClassName: 'bg-[#00c758]' },
-};
 
 export function DisplayManagementCard({
   ex,
@@ -63,8 +49,9 @@ export function DisplayManagementCard({
 
   const isLeader = ex.isLeader ?? ex.isOwner ?? false;
   const role = isLeader ? '대표자' : '팀원';
+  // 전시 관리에서는 공개 여부만 보여주고, 기간에 따른 전시 예정 · 종료는 보여주지 않는다(PM 확인).
   // 예전 응답처럼 publishStatus 가 없으면 공개된 전시로 본다
-  const status = PUBLISH_STATUS[ex.publishStatus ?? 'PUBLISHED'] ?? PUBLISH_STATUS.PUBLISHED;
+  const status = isDisplayPublishStatus(ex.publishStatus) ? ex.publishStatus : 'PUBLISHED';
 
   const actions: DisplayCardAction[] = [];
   if (canEditArtistName) {
@@ -102,15 +89,7 @@ export function DisplayManagementCard({
 
       <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-7 wrap-break-word">
         <p className="flex items-center gap-1.5 text-[12px] leading-[1.4] font-medium text-[#3f3f47]">
-          <span
-            className={cn(
-              'inline-flex shrink-0 items-center gap-1.5 font-semibold',
-              status.textClassName,
-            )}
-          >
-            <span aria-hidden="true" className={cn('size-2 rounded-full', status.dotClassName)} />
-            {status.label}
-          </span>
+          <DisplayPublishStatusLabel status={status} className="shrink-0" />
           <span className="min-w-0">
             · {role}
             {artistName ? `(${artistName})` : ''}

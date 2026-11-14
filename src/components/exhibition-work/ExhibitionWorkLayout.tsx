@@ -4,11 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import BackIcon from '@/assets/exhibition-work/BackIcon.svg';
+import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { PageContainer } from '@/components/layout';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { cn } from '@/utils/cn';
+import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
 import { WorkIcon } from './WorkIcon';
@@ -64,30 +66,6 @@ export function WorkBar({
   );
 }
 
-/*
- * 상세 응답의 status 는 공개 상태(DRAFT · PENDING_REVIEW · REJECTED · PUBLISHED)다.
- * 프로토타입 `.sumc .st`: 준비 중 검정 · 심사 중 파랑 · 반려 빨강 · 공개 중 초록(점 7 · 글자 12 SemiBold)
- */
-const WORK_STATUS: Record<string, { label: string; dotClassName: string; textClassName: string }> =
-  {
-    DRAFT: { label: '준비 중', dotClassName: 'bg-[#18181b]', textClassName: '' },
-    PENDING_REVIEW: {
-      label: '심사 중',
-      dotClassName: 'bg-[#3b82f6]',
-      textClassName: 'text-[#2563eb]',
-    },
-    REJECTED: { label: '반려', dotClassName: 'bg-[#fb2c36]', textClassName: 'text-[#fb2c36]' },
-    PUBLISHED: { label: '공개 중', dotClassName: 'bg-[#00c758]', textClassName: 'text-[#00a846]' },
-  };
-
-// 모르는 값(목 데이터의 전시 기간 상태 등)은 기존 한글 라벨을 검정으로 보인다
-const getWorkStatus = (status: string) =>
-  WORK_STATUS[status] ?? {
-    label: getDisplayStatusLabel(status),
-    dotClassName: 'bg-[#18181b]',
-    textClassName: '',
-  };
-
 /* 프로토타입 일정 표기: 앞에 연도, 끝 연도는 다를 때만 (2026.06.10–06.20) */
 const formatPeriod = ({ startDate, endDate }: DisplayDetailDto['period']) => {
   const dot = (date: string) => date.replace(/-/g, '.');
@@ -128,7 +106,6 @@ export function ExhibitionWorkLayout({
     if (onTabChange) onTabChange(tab);
     else navigate(`/exhibition/${display.displayId}/work?tab=${tab}`, { replace: true });
   };
-  const status = getWorkStatus(display.status);
 
   return (
     // 프로토타입은 모든 요소에 자간 -0.03em 을 준다(글자 크기마다 따로 계산되게 자식마다 둔다)
@@ -161,18 +138,15 @@ export function ExhibitionWorkLayout({
             </div>
             <div className="grid min-w-0 content-start gap-0.5">
               <div className="flex items-center justify-between gap-2">
-                <p
-                  className={cn(
-                    'inline-flex items-center gap-1.5 text-[12px] font-semibold',
-                    status.textClassName,
-                  )}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={cn('size-[7px] rounded-circle', status.dotClassName)}
+                {isDisplayPublishStatus(display.status) ? (
+                  <DisplayPublishStatusLabel status={display.status} />
+                ) : (
+                  // 모르는 값(목 데이터의 전시 기간 상태 등)은 기존처럼 한글 라벨을 준비 중 모양으로 보인다
+                  <DisplayPublishStatusLabel
+                    status="DRAFT"
+                    label={getDisplayStatusLabel(display.status)}
                   />
-                  {status.label}
-                </p>
+                )}
                 <Link
                   to={`/display/${display.displayId}`}
                   className="group inline-flex items-center text-[12px] font-semibold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
