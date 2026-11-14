@@ -538,6 +538,43 @@ export interface DisplayMemberListResponseDataDto {
   memberPending: DisplayMemberEntryDto[];
 }
 
+/* 대표자는 TEAM_LEADER, 관리자는 MANAGER, 일반 팀원은 TEAM_MEM 입니다. */
+export type DisplayMemberRole = 'TEAM_LEADER' | 'MANAGER' | 'TEAM_MEM';
+
+export interface ChangeDisplayMemberRoleRequestDto {
+  role: Exclude<DisplayMemberRole, 'TEAM_LEADER'>;
+}
+
+export interface DisplayMemberRoleResponseDataDto {
+  displayId: number;
+  teamMemberId: number;
+  userId: number;
+  role: string;
+}
+
+export interface RemoveDisplayMemberResponseDataDto {
+  displayId: number;
+  removedMemberId: number;
+  removedUserId: number;
+  deletedArtworkCount: number;
+}
+
+export interface TransferDisplayLeaderRequestDto {
+  targetMemberId: number;
+}
+
+export interface DisplayLeaderTransferMemberDto {
+  teamMemberId: number;
+  userId: number;
+  role: string;
+}
+
+export interface DisplayLeaderTransferResponseDataDto {
+  displayId: number;
+  previousLeader: DisplayLeaderTransferMemberDto;
+  newLeader: DisplayLeaderTransferMemberDto;
+}
+
 export interface DisplayMemberInvitationResponseDataDto {
   invitationId: number;
   displayId: number;

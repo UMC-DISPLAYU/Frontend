@@ -5,8 +5,8 @@ import { searchUsers } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
 /*
- * 닉네임으로 사용자를 검색합니다.
- * 검색 결과 없음 코드만 빈 배열로 바꾸고 다른 실패는 화면에 전달합니다.
+ * 닉네임이 정확히 일치하는 사용자 한 명을 찾습니다.
+ * 검색 결과 없음 코드만 null로 바꾸고 다른 실패는 화면에 전달합니다.
  */
 export const useUserSearch = (nickname: string) => {
   const keyword = nickname.trim();
@@ -22,7 +22,7 @@ export const useUserSearch = (nickname: string) => {
           error.status === 404 &&
           error.code === 'USER_NICKNAME_NOT_FOUND'
         )
-          return [];
+          return null;
         throw error;
       }
     },

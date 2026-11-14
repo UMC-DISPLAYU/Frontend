@@ -91,31 +91,30 @@ export const userHandlers = [
     ),
   ),
   /*
-   * 스웨거 기준: 닉네임 부분 일치, 영문 대소문자 무시, 앞뒤 공백 제거,
-   * 닉네임 → userId 오름차순 정렬, 최대 20명.
-   * 본인(mockDb.me)은 초대 대상이 아니므로 결과에서 제외합니다.
+   * 스웨거 기준: 닉네임이 정확히 일치하는 사용자 한 명을 돌려주고, 없으면 404 USER_NICKNAME_NOT_FOUND.
+   * 본인도 검색된다(팀원 관리 화면에서 `참여 중`으로 보인다).
    */
   ...paths('/api/v1/users/search').map((path) =>
     http.get(path, ({ request }) => {
       const keyword = (new URL(request.url).searchParams.get('nickname') ?? '').trim();
+      const user = [mockDb.me, ...mockDb.searchableUsers].find(
+        (candidate: { nickname: string }) => candidate.nickname === keyword,
+      );
 
-      if (!keyword) {
-        return success('/api/v1/users/search', []);
+      if (!keyword || !user) {
+        return fail(
+          '/api/v1/users/search',
+          404,
+          'USER_NICKNAME_NOT_FOUND',
+          '해당 닉네임을 가진 사용자를 찾을 수 없습니다.',
+        );
       }
 
-      const users = mockDb.searchableUsers
-        .filter(
-          (user: { userId: number; nickname: string }) =>
-            user.userId !== mockDb.me.userId &&
-            user.nickname.toLowerCase().includes(keyword.toLowerCase()),
-        )
-        .sort(
-          (a: { userId: number; nickname: string }, b: { userId: number; nickname: string }) =>
-            a.nickname.localeCompare(b.nickname) || a.userId - b.userId,
-        )
-        .slice(0, 20);
-
-      return success('/api/v1/users/search', users);
+      return success('/api/v1/users/search', {
+        userId: user.userId,
+        name: user.name,
+        nickname: user.nickname,
+      });
     }),
   ),
 ];

@@ -1,5 +1,6 @@
 import type {
   CancelDisplayScreeningResponseDataDto,
+  ChangeDisplayMemberRoleRequestDto,
   CreateDisplayInvitationLinkResponseDataDto,
   CreateDisplayRequestDto,
   CreateDisplayResponseDataDto,
@@ -11,11 +12,13 @@ import type {
   DeleteDisplayReviewResponseDataDto,
   DisableDisplayInvitationLinkResponseDataDto,
   DisplayDetailDto,
+  DisplayLeaderTransferResponseDataDto,
   DisplayLikeStatusResponseDataDto,
   DisplayListResponseDataDto,
   DisplayMemberInvitationResponseDataDto,
   DisplayMemberListRawResponseDataDto,
   DisplayMemberListResponseDataDto,
+  DisplayMemberRoleResponseDataDto,
   DisplayRejectionReasonResponseDataDto,
   DisplayReviewLikeResponseDataDto,
   DisplayReviewReplyLikeResponseDataDto,
@@ -33,8 +36,10 @@ import type {
   HomeExhibitionDto,
   InviteDisplayMemberRequestDto,
   MyDisplayInvitationListResponseDataDto,
+  RemoveDisplayMemberResponseDataDto,
   SearchDisplaysRequestDto,
   ToggleDisplayLikeResponseDataDto,
+  TransferDisplayLeaderRequestDto,
   UpdateDisplayRequestDto,
   UpdateDisplayReservationRequestDto,
   UpdateDisplayReservationResponseDataDto,
@@ -201,6 +206,28 @@ export const getDisplayMembers = async (
     members: [...memberAccept, ...memberPending],
   };
 };
+
+// PATCH /v1/display/:displayId/members/:memberId/role
+export const changeDisplayMemberRole = async (
+  displayId: number,
+  memberId: number,
+  body: ChangeDisplayMemberRoleRequestDto,
+): Promise<DisplayMemberRoleResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/members/${memberId}/role`, { method: 'PATCH', body });
+
+// DELETE /v1/display/:displayId/members/:memberId
+export const removeDisplayMember = async (
+  displayId: number,
+  memberId: number,
+): Promise<RemoveDisplayMemberResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/members/${memberId}`, { method: 'DELETE' });
+
+// POST /v1/display/:displayId/leader-transfer
+export const transferDisplayLeader = async (
+  displayId: number,
+  body: TransferDisplayLeaderRequestDto,
+): Promise<DisplayLeaderTransferResponseDataDto> =>
+  apiRequest(`/v1/display/${displayId}/leader-transfer`, { method: 'POST', body });
 
 // POST /v1/display-invitations/displays/:displayId
 export const inviteDisplayMember = async (

@@ -111,8 +111,8 @@ export interface UserSearchDto {
   nickname: string;
 }
 
-/* 스웨거는 success에 UserSearchResponse 배열을 그대로 내려줍니다. */
-export type SearchUsersResponseDataDto = UserSearchDto[];
+/* 닉네임이 정확히 일치하는 사용자 한 명입니다. 없으면 404 USER_NICKNAME_NOT_FOUND 로 응답합니다. */
+export type SearchUsersResponseDataDto = UserSearchDto;
 
 export interface SchoolSearchRequestDto {
   keyword?: string;
