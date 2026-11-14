@@ -1,17 +1,22 @@
 import { type RefObject, useEffect, useRef } from 'react';
 
 const TAP_MOVE_TOLERANCE_PX = 8;
+// 카카오 지도는 마우스가 3px 넘게 움직이면 끌기를 시작한다. 그만큼 움직였으면 핀 click을 막는다
+const MOUSE_DRAG_THRESHOLD_PX = 3;
 const TAP_MAX_DURATION_MS = 500;
-const CLICK_SUPPRESS_MS = 300;
 
 interface PointerStart {
   pointerId: number;
   x: number;
   y: number;
   time: number;
+  threshold: number;
   onControl: boolean;
   moved: boolean;
 }
+
+const isOnControl = (target: EventTarget | null) =>
+  target instanceof Element && Boolean(target.closest('button, a'));
 
 /**
  * 지도 탭 판별(규칙은 mapViewport.ts 맨 위 "지도 바텀시트 규칙").
@@ -31,10 +36,13 @@ export function useMapTap(ref: RefObject<HTMLElement | null>, onTap: () => void)
 
     const activePointers = new Set<number>();
     let start: PointerStart | null = null;
-    let suppressClickUntil = 0;
+    let suppressNextClick = false;
 
     const handlePointerDown = (event: PointerEvent) => {
+      // 지도 밖(시트·상단 바)에서 손을 떼면 pointerup을 못 받으므로, 첫 손가락이 닿을 때 기록을 비운다
+      if (event.isPrimary) activePointers.clear();
       activePointers.add(event.pointerId);
+      suppressNextClick = false;
       if (activePointers.size > 1) {
         // 핀치를 하고 나면 핀이 눌리지 않게 한다
         if (start) start.moved = true;
@@ -45,14 +53,15 @@ export function useMapTap(ref: RefObject<HTMLElement | null>, onTap: () => void)
         x: event.clientX,
         y: event.clientY,
         time: event.timeStamp,
-        onControl: event.target instanceof Element && Boolean(event.target.closest('button, a')),
+        threshold: event.pointerType === 'mouse' ? MOUSE_DRAG_THRESHOLD_PX : TAP_MOVE_TOLERANCE_PX,
+        onControl: isOnControl(event.target),
         moved: false,
       };
     };
 
     const handlePointerMove = (event: PointerEvent) => {
-      if (!start || start.pointerId !== event.pointerId) return;
-      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_MOVE_TOLERANCE_PX) {
+      if (!start || start.moved || start.pointerId !== event.pointerId) return;
+      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > start.threshold) {
         start.moved = true;
       }
     };
@@ -65,7 +74,7 @@ export function useMapTap(ref: RefObject<HTMLElement | null>, onTap: () => void)
       start = null;
 
       if (gesture.moved) {
-        suppressClickUntil = event.timeStamp + CLICK_SUPPRESS_MS;
+        suppressNextClick = gesture.onControl;
         return;
       }
       if (!gesture.onControl && event.timeStamp - gesture.time <= TAP_MAX_DURATION_MS) {
@@ -79,10 +88,15 @@ export function useMapTap(ref: RefObject<HTMLElement | null>, onTap: () => void)
     };
 
     const handleClick = (event: MouseEvent) => {
-      if (event.timeStamp < suppressClickUntil) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
+      if (!suppressNextClick) return;
+      suppressNextClick = false;
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    // 프로토타입처럼 핀을 두 번 눌러도 지도가 확대되지 않게 한다
+    const handleDoubleClick = (event: MouseEvent) => {
+      if (isOnControl(event.target)) event.stopPropagation();
     };
 
     // 카카오 지도가 내부에서 이벤트 전파를 멈춰도 받을 수 있게 캡처 단계에서 듣는다
@@ -91,12 +105,14 @@ export function useMapTap(ref: RefObject<HTMLElement | null>, onTap: () => void)
     element.addEventListener('pointerup', handlePointerUp, true);
     element.addEventListener('pointercancel', handlePointerCancel, true);
     element.addEventListener('click', handleClick, true);
+    element.addEventListener('dblclick', handleDoubleClick, true);
     return () => {
       element.removeEventListener('pointerdown', handlePointerDown, true);
       element.removeEventListener('pointermove', handlePointerMove, true);
       element.removeEventListener('pointerup', handlePointerUp, true);
       element.removeEventListener('pointercancel', handlePointerCancel, true);
       element.removeEventListener('click', handleClick, true);
+      element.removeEventListener('dblclick', handleDoubleClick, true);
     };
   }, [ref]);
 }
