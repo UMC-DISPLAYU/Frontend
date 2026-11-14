@@ -1,3 +1,4 @@
+export * from './artistField';
 export * from './artwork';
 export * from './common';
 export * from './contents';
