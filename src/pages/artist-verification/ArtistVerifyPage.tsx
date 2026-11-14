@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -30,6 +31,7 @@ export function ArtistVerifyPage() {
   const flow = useArtistVerifyFlow();
   const { data: me } = useUserMe();
   const [isLeaveOverlayOpen, setIsLeaveOverlayOpen] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
 
   if (flow.isComplete) {
     return (
@@ -39,6 +41,12 @@ export function ArtistVerifyPage() {
       />
     );
   }
+
+  const handleSelectSchool = (school: string) => {
+    // 비활성이던 이메일 칸이 풀린 뒤에 포커스해야 하므로 먼저 반영한다
+    flushSync(() => flow.selectSchool(school));
+    emailInputRef.current?.focus();
+  };
 
   const handleBack = () => (flow.hasInput ? setIsLeaveOverlayOpen(true) : flowBack());
 
@@ -70,14 +78,16 @@ export function ArtistVerifyPage() {
               isLoading={flow.isSchoolLoading}
               locked={flow.isCodeConfirmed}
               onChange={flow.setSchool}
-              onSelect={flow.setSchool}
+              onSelect={handleSelectSchool}
               suggestions={flow.schoolSuggestions}
               value={flow.school}
             />
 
             <SchoolEmailField
               canSend={flow.canSendMail}
+              disabled={!flow.isSchoolSelected}
               error={flow.emailError}
+              inputRef={emailInputRef}
               isSending={flow.isSendingMail}
               onChange={flow.setEmail}
               onSend={flow.sendVerificationMail}
