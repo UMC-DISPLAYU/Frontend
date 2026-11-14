@@ -2,7 +2,7 @@ import { delay, http } from 'msw';
 
 import { mockDb } from '@/mocks/data/repository';
 import { fail, noContent, paths, readJson, success } from '@/mocks/response';
-import { hasMockScenario, MOCK_DELAY_MS, MOCK_NICKNAMES } from '@/mocks/scenario';
+import { MOCK_DELAY_MS, MOCK_NICKNAMES } from '@/mocks/scenario';
 
 /* 작품에 부여한 artistUserId(300번대)로 조회하면 해당 작품의 작가 정보를 돌려줍니다. */
 const findArtworkArtist = (userId: number) =>
@@ -30,12 +30,7 @@ const userArtistProfile = (userId = 1) => {
 
 export const userHandlers = [
   ...paths('/api/v1/users/me').map((path) =>
-    http.get(path, () =>
-      success(
-        '/api/v1/users/me',
-        hasMockScenario('artist-unverified') ? { ...mockDb.me, isVerified: false } : mockDb.me,
-      ),
-    ),
+    http.get(path, () => success('/api/v1/users/me', mockDb.me)),
   ),
   ...paths('/api/v1/users/me').map((path) =>
     http.patch(path, async ({ request }) => {
