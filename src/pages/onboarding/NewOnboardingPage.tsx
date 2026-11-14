@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { PageContainer } from '@/components/layout';
 import {
@@ -9,13 +9,13 @@ import {
   TermsAgreementScreen,
   type TermState,
 } from '@/components/onboarding';
+import { useAuthStore } from '@/stores/authStore';
 
+import { type OnboardingStep, resolveOnboardingStep } from './onboardingStep';
 import { hasRequiredTerms } from './signupAgreements';
 import { useOnboardingSignup } from './useOnboardingSignup';
 
-type Step = 'terms' | 'nickname' | 'done';
-
-type OnboardingHistoryState = { step?: Step } | null;
+type OnboardingHistoryState = { step?: OnboardingStep } | null;
 
 const INITIAL_TERMS: TermState = { over14: false, service: false, privacy: false, location: false };
 
@@ -24,18 +24,20 @@ export function NewOnboardingPage() {
   const location = useLocation();
   const [terms, setTerms] = useState<TermState>(INITIAL_TERMS);
   const signup = useOnboardingSignup(terms);
+  const isLoggedIn = useAuthStore((state) => Boolean(state.accessToken));
 
-  /*
-   * 단계는 history state 에 둬서 브라우저 뒤로가기로 이전 단계로 돌아간다(프로토타입 동작).
-   * 새로고침하면 약관 동의 상태가 사라지므로, 동의 없이 닉네임 단계로 오면 약관부터 보여준다.
-   */
+  /* 단계는 history state 에 둬서 브라우저 뒤로가기로 이전 단계로 돌아간다(프로토타입 동작) */
   const historyState = location.state as OnboardingHistoryState;
-  const requestedStep = historyState?.step ?? 'terms';
-  const step: Step =
-    requestedStep === 'nickname' && !hasRequiredTerms(terms) ? 'terms' : requestedStep;
+  const step = resolveOnboardingStep({
+    requestedStep: historyState?.step,
+    hasRequiredTerms: hasRequiredTerms(terms),
+    isLoggedIn,
+  });
 
   const goTo = (next: OnboardingHistoryState, options?: { replace?: boolean }) =>
     navigate({ pathname: location.pathname, search: location.search }, { ...options, state: next });
+
+  if (!step) return <Navigate replace to="/home" />;
 
   return (
     /* 프로토타입처럼 화면 전체를 흰 배경으로 두고, 모바일에서도 최대 480px 로 가운데 정렬한다 */
