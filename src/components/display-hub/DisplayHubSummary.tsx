@@ -3,7 +3,7 @@ import './displayHub.css';
 import { Link } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { DisplayStatusLabel } from '@/components/common/DisplayStatusLabel';
+import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
 
@@ -46,7 +46,7 @@ export function DisplayHubSummary({ display, status, className }: DisplayHubSumm
         </div>
         <div className="grid min-w-0 content-start gap-0.5">
           <div className="flex items-center justify-between gap-2 text-primary">
-            <DisplayStatusLabel status={status} />
+            <DisplayPublishStatusLabel status={status} />
             {/* 보이는 크기는 프로토타입 그대로 두고, 누르는 영역만 가상 요소로 위아래 44px 까지 넓힌다 */}
             <Link
               to={`/exhibition/${display.displayId}/preview`}

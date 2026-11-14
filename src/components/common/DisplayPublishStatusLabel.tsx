@@ -19,14 +19,18 @@ const STATUS_STYLE: Record<DisplayPublishStatus, StatusStyle> = {
   PUBLISHED: { label: '공개 중', dotClassName: 'bg-[#00c758]', textClassName: 'text-[#00a846]' },
 };
 
-interface DisplayStatusLabelProps {
+interface DisplayPublishStatusLabelProps {
   status: DisplayPublishStatus;
   /** 공개 상태가 아닌 값(전시 기간 상태 등)을 보일 때 문구만 바꾼다. 색은 `status` 를 따른다 */
   label?: string;
   className?: string;
 }
 
-export function DisplayStatusLabel({ status, label, className }: DisplayStatusLabelProps) {
+export function DisplayPublishStatusLabel({
+  status,
+  label,
+  className,
+}: DisplayPublishStatusLabelProps) {
   const style = STATUS_STYLE[status];
 
   return (

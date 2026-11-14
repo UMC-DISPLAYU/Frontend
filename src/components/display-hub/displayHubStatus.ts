@@ -1,5 +1,5 @@
 import type { DisplayPublishStatus } from '@/api/dto';
-import { isDisplayPublishStatus } from '@/components/common/displayPublishStatus';
+import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 
 export type DisplayHubStatus = DisplayPublishStatus;
 

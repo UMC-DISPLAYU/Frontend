@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import BackIcon from '@/assets/exhibition-work/BackIcon.svg';
-import { isDisplayPublishStatus } from '@/components/common/displayPublishStatus';
-import { DisplayStatusLabel } from '@/components/common/DisplayStatusLabel';
+import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { PageContainer } from '@/components/layout';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { cn } from '@/utils/cn';
+import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
 import { WorkIcon } from './WorkIcon';
@@ -108,10 +108,10 @@ export function ExhibitionWorkLayout({
             <div className="grid min-w-0 content-start gap-0.5">
               <div className="flex items-center justify-between gap-2">
                 {isDisplayPublishStatus(display.status) ? (
-                  <DisplayStatusLabel status={display.status} />
+                  <DisplayPublishStatusLabel status={display.status} />
                 ) : (
                   // 모르는 값(목 데이터의 전시 기간 상태 등)은 기존처럼 한글 라벨을 준비 중 모양으로 보인다
-                  <DisplayStatusLabel
+                  <DisplayPublishStatusLabel
                     status="DRAFT"
                     label={getDisplayStatusLabel(display.status)}
                   />

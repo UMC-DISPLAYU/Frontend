@@ -3,7 +3,7 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { DisplayStatusLabel } from '@/components/common/DisplayStatusLabel';
+import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 
 import { ExhibitionWorkLayout } from './ExhibitionWorkLayout';
 
@@ -106,7 +106,7 @@ describe('전시 상태', () => {
         activeTab: 'artworks',
         children: null,
       }),
-    ).find((node) => node.type === DisplayStatusLabel);
+    ).find((node) => node.type === DisplayPublishStatusLabel);
 
   it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED', 'PUBLISHED'])(
     '공개 상태 %s 는 공용 상태 라벨에 그대로 넘긴다',

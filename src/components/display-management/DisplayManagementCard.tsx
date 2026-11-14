@@ -1,5 +1,4 @@
-import { isDisplayPublishStatus } from '@/components/common/displayPublishStatus';
-import { DisplayStatusLabel } from '@/components/common/DisplayStatusLabel';
+import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import {
@@ -9,6 +8,7 @@ import {
 } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
+import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { type DisplayCardAction, DisplayCardMenu } from './DisplayCardMenu';
@@ -89,7 +89,7 @@ export function DisplayManagementCard({
 
       <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-7 wrap-break-word">
         <p className="flex items-center gap-1.5 text-[12px] leading-[1.4] font-medium text-[#3f3f47]">
-          <DisplayStatusLabel status={status} className="shrink-0" />
+          <DisplayPublishStatusLabel status={status} className="shrink-0" />
           <span className="min-w-0">
             · {role}
             {artistName ? `(${artistName})` : ''}

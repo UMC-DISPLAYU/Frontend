@@ -2,16 +2,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { describe, expect, it } from 'vitest';
 
-import { isDisplayPublishStatus } from './displayPublishStatus';
-import { DisplayStatusLabel } from './DisplayStatusLabel';
+import { DisplayPublishStatusLabel } from './DisplayPublishStatusLabel';
 
-describe('DisplayStatusLabel', () => {
+describe('DisplayPublishStatusLabel', () => {
   it.each([
     ['PENDING_REVIEW', '심사 중', 'bg-[#3b82f6]', 'text-[#2563eb]'],
     ['REJECTED', '반려', 'bg-[#fb2c36]', 'text-[#fb2c36]'],
     ['PUBLISHED', '공개 중', 'bg-[#00c758]', 'text-[#00a846]'],
   ] as const)('%s 는 "%s", 점 %s · 글자 %s(프로토타입 .st)', (status, label, dot, text) => {
-    const html = renderToStaticMarkup(<DisplayStatusLabel status={status} />);
+    const html = renderToStaticMarkup(<DisplayPublishStatusLabel status={status} />);
 
     expect(html).toContain(label);
     expect(html).toContain(dot);
@@ -21,7 +20,7 @@ describe('DisplayStatusLabel', () => {
   });
 
   it('준비 중은 글자색 클래스를 넣지 않아 놓인 자리의 글자색을 따른다', () => {
-    const html = renderToStaticMarkup(<DisplayStatusLabel status="DRAFT" />);
+    const html = renderToStaticMarkup(<DisplayPublishStatusLabel status="DRAFT" />);
 
     expect(html).toContain('준비 중');
     expect(html).toContain('bg-[#27272a]');
@@ -29,7 +28,9 @@ describe('DisplayStatusLabel', () => {
   });
 
   it('label 을 주면 문구만 바꾸고 색은 status 를 따른다', () => {
-    const html = renderToStaticMarkup(<DisplayStatusLabel status="DRAFT" label="전시 예정" />);
+    const html = renderToStaticMarkup(
+      <DisplayPublishStatusLabel status="DRAFT" label="전시 예정" />,
+    );
 
     expect(html).toContain('전시 예정');
     expect(html).not.toContain('준비 중');
@@ -38,17 +39,7 @@ describe('DisplayStatusLabel', () => {
 
   it('className 으로 바깥 클래스를 더한다', () => {
     expect(
-      renderToStaticMarkup(<DisplayStatusLabel status="PUBLISHED" className="shrink-0" />),
+      renderToStaticMarkup(<DisplayPublishStatusLabel status="PUBLISHED" className="shrink-0" />),
     ).toContain('shrink-0');
-  });
-});
-
-describe('isDisplayPublishStatus', () => {
-  it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED', 'PUBLISHED'])('%s 는 공개 상태다', (status) => {
-    expect(isDisplayPublishStatus(status)).toBe(true);
-  });
-
-  it.each([undefined, null, '', 'UPCOMING', 'published'])('%s 는 공개 상태가 아니다', (status) => {
-    expect(isDisplayPublishStatus(status)).toBe(false);
   });
 });
