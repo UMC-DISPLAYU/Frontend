@@ -233,9 +233,13 @@ export function ArtworkViewer({
     }
   };
 
-  // 900px 이상: 사진을 누르면 크게 보기(돋보기 커서). 버튼 · 링크를 누른 것은 빼고
+  // 900px 이상: 사진을 누르면 크게 보기(돋보기 커서). 버튼 · 링크 · 감상 방식 묶음(버튼 사이 여백 포함)을 누른 것은 빼고
   const handleStageClick = (event: MouseEvent<HTMLDivElement>) => {
-    if (!isWide() || (event.target as HTMLElement).closest('button, a')) return;
+    if (
+      !isWide() ||
+      (event.target as HTMLElement).closest('button, a, [role="group"][aria-label="감상 방식"]')
+    )
+      return;
     const image = (event.target as HTMLElement).closest('img');
     const stackIndex = image ? Array.from(stackRef.current?.children ?? []).indexOf(image) : -1;
     setBigStart(isStack && stackIndex >= 0 ? stackIndex : currentRef.current);

@@ -61,22 +61,34 @@ export function ArtworkBigView({ open, startIndex, images, title, subtitle, onCl
           : 0;
       setCurrent(readPhotoIndex(scroller, feedRef.current));
     };
+    // 닫으면 연 버튼으로 초점을 돌려준다
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     place();
     scroller?.focus({ preventScroll: true });
-    // 앞 사진들이 다 불러와지면 비율이 잡혀 위치가 바뀌므로 한 번 더 맞춘다
+    // 앞 사진들이 다 불러와지면 비율이 잡혀 위치가 바뀌므로 한 번 더 맞춘다. 그새 직접 스크롤했으면 두지 않는다
+    let hasUserScrolled = false;
+    const markUserScroll = () => {
+      hasUserScrolled = true;
+    };
+    const userScrollEvents = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
+    userScrollEvents.forEach((type) =>
+      scroller?.addEventListener(type, markUserScroll, { passive: true }),
+    );
     const before = Array.from(feedRef.current?.querySelectorAll('img') ?? []).slice(
       0,
       startIndex + 1,
     );
     let cancelled = false;
     void Promise.all(before.map((image) => image.decode().catch(() => undefined))).then(() => {
-      if (!cancelled) place();
+      if (!cancelled && !hasUserScrolled) place();
     });
     const frame = requestAnimationFrame(() => setIsShown(true));
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
+      userScrollEvents.forEach((type) => scroller?.removeEventListener(type, markUserScroll));
       setIsShown(false);
+      opener?.focus({ preventScroll: true });
     };
   }, [open, startIndex]);
 

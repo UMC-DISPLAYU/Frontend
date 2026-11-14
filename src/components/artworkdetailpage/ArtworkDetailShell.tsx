@@ -49,11 +49,11 @@ const TAB_LABEL: Record<ArtworkDetailTabKey, string> = { intro: '소개', guest:
 const LAYOUT =
   'mx-auto w-full max-w-310 desktop:grid desktop:h-[calc(100dvh-var(--detail-top))] desktop:grid-cols-[auto_minmax(380px,1fr)] desktop:items-start desktop:gap-x-18 desktop:px-8';
 /*
- * 900px 이상 정보 칸: 위 32 · 아래 64 안쪽 여백으로 따로 스크롤한다. 탭 줄은 위 여백만큼 올려(-32) 머리 바로 아래에 붙는다.
+ * 900px 이상 정보 칸: 위 32 · 아래 64 여백으로 따로 스크롤하고, 탭 줄은 칸 맨 위(머리 바로 아래)에 붙는다.
  * 프로토타입은 900px 이상 본문 글자가 16px 이라 탭 · 소개 · 방명록의 14px 글자를 16px 로 올린다(규격 줄 14px 은 그대로)
  */
 const INFO_COLUMN =
-  'min-w-0 desktop:h-full desktop:overflow-x-hidden desktop:overflow-y-auto desktop:overscroll-contain desktop:pt-8 desktop:pb-16 desktop:[--detail-top:-2rem]';
+  'min-w-0 desktop:h-full desktop:overflow-x-hidden desktop:overflow-y-auto desktop:overscroll-contain desktop:pb-16 desktop:[--detail-top:0rem]';
 const WIDE_BODY_TEXT =
   'desktop:[&_:is(.typography-body-lg-regular,.typography-body-lg-medium,.typography-body-lg-semibold)]:text-[16px]';
 const WIDE_TAB_TEXT = 'desktop:[&_[role=tab]]:text-[16px]';
@@ -138,7 +138,8 @@ export function ArtworkDetailShell({
         />
 
         <div ref={infoRef} className={cn(INFO_COLUMN, WIDE_TAB_TEXT)}>
-          {label}
+          {/* 위 32 여백은 칸 안쪽 여백 대신 이름표에 둔다. 탭 줄이 칸 맨 위(0)에 붙게 */}
+          <div className="desktop:pt-8">{label}</div>
 
           <DetailTabNav
             tabs={tabs}

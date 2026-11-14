@@ -98,6 +98,9 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
 
   const photos = category?.contents.slice().sort((a, b) => a.sortOrder - b.sortOrder) ?? [];
   const isReady = Boolean(category) && !showSkeleton;
+  const nextCover = nextCategory?.contents.reduce<
+    (typeof nextCategory.contents)[number] | undefined
+  >((first, item) => (!first || item.sortOrder < first.sortOrder ? item : first), undefined);
 
   // 다음 섹션은 같은 화면에서 이어 본다(뒤로가기는 전시 상세로)
   const openNext = () => {
@@ -156,10 +159,12 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
                   loading={index > 1 ? 'lazy' : 'eager'}
                   draggable={false}
                   style={{
-                    aspectRatio:
+                    // auto: 사진을 받으면 실제 비율을 따른다(프로토타입 img width · height 속성과 같은 동작)
+                    aspectRatio: `auto ${
                       photo.width > 0 && photo.height > 0
                         ? `${photo.width} / ${photo.height}`
-                        : FALLBACK_RATIO,
+                        : FALLBACK_RATIO
+                    }`,
                   }}
                   className="block h-auto w-full bg-[#f4f4f5] select-none [-webkit-user-drag:none]"
                 />
@@ -173,7 +178,7 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
                 className="group mx-5 mt-8 flex w-[calc(100%-40px)] cursor-pointer items-center gap-3 pt-5 text-left focus-visible:outline-2 focus-visible:outline-focus tablet:mx-auto tablet:w-[min(560px,100%)]"
               >
                 <OptimizedImage
-                  src={nextCategory.contents[0]?.imageUrl}
+                  src={nextCover?.imageUrl}
                   displayWidth={96}
                   alt=""
                   className="h-16 w-12 shrink-0 bg-[#f4f4f5] object-cover"
