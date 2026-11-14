@@ -80,14 +80,12 @@ export function JoinArtistNameSheet({
             *
           </span>
         </label>
-        {/* 전역 입력창 축소 규칙(index.css)을 그대로 받으면 디자인의 16px · 44px 가 14px · 38.5px 로 줄어든다.
-            16px 그대로면 iOS 확대도 일어나지 않아 이 입력창만 축소를 푼다 */}
         <input
           {...artistNameField}
           aria-describedby={`${inputId}-help`}
           aria-required="true"
           autoComplete="off"
-          className="typography-body-xl-regular mt-3.5 mr-0! h-11 w-full! transform-none! rounded-12 border border-primary bg-transparent px-3 text-primary outline-none transition duration-fast ease-standard focus:border-interactive-primary"
+          className="typography-body-xl-regular mt-3.5 h-11 w-full rounded-12 border border-primary bg-transparent px-3 text-primary outline-none transition duration-fast ease-standard focus:border-interactive-primary"
           id={inputId}
           maxLength={JOIN_ARTIST_NAME_MAX_LENGTH}
           placeholder="이름 또는 활동명을 입력해주세요"
