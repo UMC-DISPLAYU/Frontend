@@ -18,6 +18,8 @@ type Props = {
   exhibitionState: ExhibitionState | null;
   shareImageUrl?: string;
   isPreview: boolean;
+  /* 작품 미리보기: 소속 전시 줄을 두지 않고, 작가 이름을 눌러도 프로필로 가지 않는다(사용자 결정) */
+  previewMode?: boolean;
 };
 
 export function ArtworkMeta({
@@ -26,6 +28,7 @@ export function ArtworkMeta({
   exhibitionState,
   shareImageUrl,
   isPreview,
+  previewMode = false,
 }: Props) {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
@@ -55,14 +58,17 @@ export function ArtworkMeta({
         likeCount={likeCount}
         onToggleLike={handleLike}
         disabled={isPreview}
+        linkArtists={!previewMode}
         exhibition={
-          <ArtworkExhibitionRow
-            displayId={artwork.exhibitionId}
-            title={artwork.exhibitionTitle}
-            organizer={artwork.exhibitionOrganizer}
-            posterUrl={artwork.exhibitionThumbnail}
-            state={exhibitionState}
-          />
+          previewMode ? undefined : (
+            <ArtworkExhibitionRow
+              displayId={artwork.exhibitionId}
+              title={artwork.exhibitionTitle}
+              organizer={artwork.exhibitionOrganizer}
+              posterUrl={artwork.exhibitionThumbnail}
+              state={exhibitionState}
+            />
+          )
         }
         actions={
           <ArtworkInlineActions

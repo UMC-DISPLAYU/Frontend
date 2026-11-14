@@ -39,6 +39,8 @@
   --semantic-color-bg-info-subtle: var(--primitive-color-blue-100);
   --semantic-color-bg-warning-subtle: var(--primitive-color-yellow-100);
   --semantic-color-bg-disable: var(--primitive-color-zinc-100);
+  /* 검은 바탕 위의 스켈레톤 회색. 피그마에 시멘틱 변수가 없고 로딩 스펙(11-14)이 color/zinc/800 을 지정했다 */
+  --semantic-color-bg-skeleton-inverse: var(--primitive-color-zinc-800);
   --semantic-color-bg-notice: var(--primitive-color-red-500);
   /* 오버레이(시트 · 모달) 뒤 배경. 피그마에 변수는 없고, 화면의 Dim 레이어가
      bg/primary - black(#000000)에 레이어 투명도 42% 를 준 값이라 그대로 옮겼다.
@@ -122,6 +124,14 @@
   --semantic-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
   /* 목록 아이템이 순서대로 등장할 때 아이템 사이 간격 */
   --semantic-motion-stagger: 60ms;
+  /* 로딩(스켈레톤 · 로더 · 사진 켜짐) — 디자인 LOADING-SPEC(11-14) 값 */
+  --semantic-motion-easing-reveal: cubic-bezier(0.23, 1, 0.32, 1);
+  /* 이 안에 끝나면 스켈레톤 · 로더를 보이지 않는다. useSkeleton 의 LOADING_SHOW_DELAY_MS 와 같다 */
+  --semantic-motion-loading-delay: 150ms;
+  /* 스켈레톤 물결: (열 + 행) 한 칸마다 늦게 시작하는 간격 */
+  --semantic-motion-skeleton-wave: 200ms;
+  /* 스켈레톤이 실제 내용으로 바뀔 때 칸 사이 간격 */
+  --semantic-motion-reveal-stagger: 30ms;
 }
 
 /* 브레이크포인트 값은 theme.css 의 --breakpoint-tablet(48rem) · --breakpoint-desktop(56.25rem)과 같다.

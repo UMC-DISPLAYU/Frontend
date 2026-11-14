@@ -4,13 +4,11 @@ import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-route
 
 import CompleteIcon from '@/assets/display-hub/CompleteIcon.svg';
 import SwapArrowIcon from '@/assets/team-manage/SwapArrowIcon.svg';
-import { WorkHeader } from '@/components/exhibition-work';
-import { PageContainer } from '@/components/layout';
 import {
   MemberAvatar,
-  RoleBadge,
   type TeamDelegatedState,
-  type TeamRole,
+  TeamHeader,
+  TeamPage,
 } from '@/components/team-manage';
 
 const isDelegatedState = (state: unknown): state is TeamDelegatedState =>
@@ -35,9 +33,9 @@ export function TeamDelegatedPage() {
   if (!state) return <Navigate to={workPath} replace />;
 
   return (
-    <PageContainer variant="form" className="bg-primary-white text-primary">
+    <TeamPage>
       {/* 위임 뒤에는 대표자 전용인 전시 관리 · 팀원 관리로 돌아갈 수 없어 전시 작업으로 간다(프로토타입) */}
-      <WorkHeader title="팀원 관리" onBack={() => navigate(workPath, { replace: true })} />
+      <TeamHeader title="팀원 관리" onBack={() => navigate(workPath, { replace: true })} />
       <section aria-live="polite" className="flex flex-col items-center pt-18.5 pb-7 text-center">
         <img src={CompleteIcon} alt="" className="mb-4" />
         <h2 ref={headingRef} tabIndex={-1} className="typography-title-xs outline-none">
@@ -48,11 +46,11 @@ export function TeamDelegatedPage() {
           {`${state.newLeaderName}님이 새로운 대표자가 되었어요\n대표자 전용 전시 관리 접근은 종료됐어요`}
         </p>
         <div className="flex w-full items-center">
-          <DelegatedMember name={state.newLeaderName} role="owner" />
+          <DelegatedMember name={state.newLeaderName} />
           <span aria-hidden="true" className="flex h-5 w-5.5 shrink-0 items-center justify-center">
             <img src={SwapArrowIcon} alt="" />
           </span>
-          <DelegatedMember name={state.myName} role="manager" />
+          <DelegatedMember name={state.myName} />
         </div>
         <Link
           to={workPath}
@@ -65,16 +63,15 @@ export function TeamDelegatedPage() {
           관리자 권한으로 전시 작업을 이어갈 수 있어요
         </p>
       </section>
-    </PageContainer>
+    </TeamPage>
   );
 }
 
-function DelegatedMember({ name, role }: { name: string; role: TeamRole }) {
+function DelegatedMember({ name }: { name: string }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-      <MemberAvatar tone={role} />
+      <MemberAvatar />
       <span className="typography-body-md-semibold w-full max-w-30 truncate">{name}</span>
-      <RoleBadge role={role} />
     </div>
   );
 }

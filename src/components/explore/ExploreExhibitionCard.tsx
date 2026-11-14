@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 import type { DisplayListItemDto } from '@/api/dto';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
 import { CARD_CLASS, CARD_IMAGE_CLASS, CARD_TITLE_CLASS } from './exploreCardStyles';
@@ -47,10 +47,12 @@ export function ExploreExhibitionCardSkeleton() {
   return (
     <>
       <Skeleton className={POSTER_FRAME_CLASS} />
-      <Skeleton className="mt-2 h-5 w-3/4 rounded-4" />
-      <Skeleton className="mt-0.5 h-4 w-1/2 rounded-4" />
-      <Skeleton className="mt-1 h-4 w-2/3 rounded-4" />
-      <Skeleton className="mt-0.5 h-4 w-1/3 rounded-4" />
+      <div className="pt-2">
+        <SkeletonText className="typography-body-lg-semibold w-7/10" />
+        <SkeletonText className="typography-body-md-medium w-1/2" />
+        <SkeletonText className="typography-body-md-medium mt-1 w-3/5" />
+        <SkeletonText className="typography-body-md-medium mt-0.5 w-2/5" />
+      </div>
     </>
   );
 }

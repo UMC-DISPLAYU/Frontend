@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { http } from 'msw';
+import { delay, http } from 'msw';
 
 import { mockDb, okStatus } from '@/mocks/data/repository';
 import { teamOf } from '@/mocks/handlers/displayMember';
@@ -292,10 +292,29 @@ export const displayHandlers = [
   ),
   /*
    * 스웨거: 초대 토큰으로 전시 상세를 조회합니다(PUBLIC).
-   * 실서버는 만료/비활성 링크에 실패를 내려주지만, mock에서는 항상 성공을 반환합니다.
+   * 팀원 관리에서 켠 링크(mock-invitation-{displayId})만 성공하고, 꺼졌거나 모르는 토큰은 실서버처럼 실패한다.
+   * 화면 확인용: mock-loading 은 응답하지 않고(확인 중), mock-server-error 는 500 을 내려준다.
    */
   ...paths('/api/v1/display/invitation/{token}').map((path) =>
-    http.get(path, () => success('/api/v1/display/invitation/{token}', displayDetailResponse(101))),
+    http.get(path, async ({ params }) => {
+      const token = String(params.token);
+      const route = '/api/v1/display/invitation/{token}';
+
+      if (token === 'mock-loading') await delay('infinite');
+      if (token === 'mock-server-error') {
+        return fail(route, 500, 'INTERNAL_SERVER_ERROR', '서버 오류가 발생했어요.');
+      }
+
+      const display = mockDb.displays.find((entry: any) => entry.invitationToken === token);
+      if (!display) {
+        return fail(route, 404, 'INVALID_DISPLAY_INVITATION_TOKEN', '유효하지 않은 초대 링크예요.');
+      }
+      if (display.invitationDisabledAt) {
+        return fail(route, 409, 'DISPLAY_INVITATION_DISABLED', '비활성화된 초대 링크예요.');
+      }
+
+      return success(route, displayDetailResponse(display.displayId));
+    }),
   ),
   /* 스웨거: POST는 좋아요 추가, DELETE는 좋아요 취소입니다. */
   ...paths('/api/v1/display/like').map((path) =>
@@ -406,6 +425,44 @@ export const displayHandlers = [
           })),
       }),
     ),
+  ),
+  ...paths('/api/v1/display/artists/{userId}').map((path) =>
+    http.get(path, ({ params }) => {
+      const userId = Number(params.userId);
+      // 내 작가 페이지는 내 전시 중 공개된 것만, 다른 작가는 전시 중 · 예정 · 종료가 섞인 전시를 보여 준다
+      if (userId === mockDb.me.userId) {
+        return success('/api/v1/display/artists/{userId}', {
+          createdDisplays: listDisplays()
+            .slice(0, 1)
+            .map((display: any) => ({ ...myDisplayItem(display), isLeader: true })),
+          participatedDisplays: listDisplays()
+            .slice(4, 6)
+            .map((display: any) => ({ ...myDisplayItem(display), isLeader: false })),
+        });
+      }
+
+      const day = (offset: number) =>
+        new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+      const schedules = [
+        { displayStatus: 'DISPLAYING', startDate: day(-3), endDate: day(10) },
+        { displayStatus: 'UPCOMING', startDate: day(14), endDate: day(24) },
+        {},
+        {},
+      ];
+      const items = listDisplays()
+        .slice(1, 1 + schedules.length)
+        .map((display: any, index: number) => ({
+          ...myDisplayItem(display),
+          ...schedules[index],
+          displayNickname: `작가${userId}`,
+          artistName: `작가${userId}`,
+        }));
+
+      return success('/api/v1/display/artists/{userId}', {
+        createdDisplays: items.slice(0, 2).map((item: any) => ({ ...item, isLeader: true })),
+        participatedDisplays: items.slice(2).map((item: any) => ({ ...item, isLeader: false })),
+      });
+    }),
   ),
   ...paths('/api/v1/display/{displayId}/exit').map((path) =>
     http.delete(path, () => noContent('/api/v1/display/{displayId}/exit')),

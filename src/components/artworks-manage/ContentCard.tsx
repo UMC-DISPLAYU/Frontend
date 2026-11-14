@@ -1,86 +1,106 @@
-import OrderIcon from '@/assets/exhibition-work/OrderIcon.svg';
-import SectionChevronIcon from '@/assets/exhibition-work/SectionChevronIcon.svg';
-import SectionPhotoIcon from '@/assets/exhibition-work/SectionPhotoIcon.svg';
-import SectionTrashIcon from '@/assets/exhibition-work/SectionTrashIcon.svg';
+import type { HTMLAttributes } from 'react';
+
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { WorkIcon } from '@/components/exhibition-work';
+import { MAX_CONTENT_IMAGES } from '@/constants';
 import type { Content } from '@/types';
+import { cn } from '@/utils/cn';
 
 interface ContentCardProps {
   content: Content;
   onClick: () => void;
   editing?: boolean;
   onDelete?: () => void;
+  /* 편집 모드 손잡이에 붙일 끌기 · 방향키 핸들러 */
+  handleProps?: HTMLAttributes<HTMLSpanElement>;
+  dragging?: boolean;
 }
 
-export function ContentCard({ content, onClick, editing = false, onDelete }: ContentCardProps) {
-  return (
-    <div className="relative flex items-center border-b border-primary">
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={`${content.title}, 사진 ${content.photoCount}개 보기`}
-        className="group flex min-w-0 flex-1 items-center gap-4 rounded-12 py-4 text-left transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
-      >
+/*
+ * 프로토타입 works.html `.srow`: 대표 사진 72×96 · 제목 16 SemiBold · 사진 수는 아래에 붙인다(설명은 11-15에 삭제).
+ * 편집 모드는 오른쪽에 삭제 · 손잡이(각 32, 아이콘 24, 간격 8)를 두고 손잡이로만 끈다
+ */
+export function ContentCard({
+  content,
+  onClick,
+  editing = false,
+  onDelete,
+  handleProps,
+  dragging = false,
+}: ContentCardProps) {
+  const body = (
+    <>
+      <span className="grid h-24 w-18 place-items-center overflow-hidden bg-[#f4f4f5] text-[#18181b]">
         {content.thumbnail ? (
           <OptimizedImage
             src={content.thumbnail}
             displayWidth={72}
             alt=""
             skeleton
-            frameClassName="h-24 w-18 shrink-0"
-            className="transition-transform duration-base ease-standard group-hover:scale-103"
+            frameClassName="h-24 w-18"
+            className="object-cover"
           />
         ) : (
-          <span className="grid h-24 w-18 shrink-0 place-items-center bg-secondary">
-            <img src={SectionPhotoIcon} alt="" />
-          </span>
+          <WorkIcon name="image" className="size-5.5" />
         )}
-        <span className="flex h-24 min-w-0 flex-1 flex-col justify-between text-primary">
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="typography-body-xl-semibold truncate">{content.title}</span>
-            {content.description && (
-              <span className={`typography-body-md-medium line-clamp-2 ${editing ? 'pr-20' : ''}`}>
-                {content.description}
-              </span>
-            )}
-          </span>
-          <span className="typography-body-md-medium text-secondary">
-            사진 {content.photoCount}/20
-          </span>
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-[16px] font-semibold break-words">{content.title}</span>
+        <span className="mt-auto text-[12px] font-medium text-[#3f3f47] tabular-nums">
+          사진 {content.photoCount}/{MAX_CONTENT_IMAGES}
         </span>
-        {!editing && (
-          <span className="grid size-5 shrink-0 place-items-center">
-            <img
-              src={SectionChevronIcon}
-              alt=""
-              className="transition-transform duration-fast ease-standard group-hover:translate-x-0.5"
-            />
-          </span>
-        )}
-      </button>
-      {editing && (
-        <div className="absolute top-1/2 -right-3 flex -translate-y-1/2 items-center">
+      </span>
+    </>
+  );
+
+  // 편집 · 완료를 오가도 대표 사진이 다시 불러와지지 않게 틀은 같게 두고 오른쪽 칸과 누르는 영역만 바꾼다
+  return (
+    <div
+      className={cn(
+        'group relative grid w-full items-stretch gap-x-4 border-b border-[#f0f0f3] py-4',
+        // 프로토타입 `.slist.edit .srow`: 편집 모드 행은 잡는 손 모양 · 터치 스크롤 없음 · 글자 선택 없음
+        editing
+          ? 'cursor-grab grid-cols-[72px_minmax(0,1fr)_72px] touch-none select-none'
+          : 'grid-cols-[72px_minmax(0,1fr)_20px]',
+        dragging && 'bg-[#f4f4f5] opacity-60',
+      )}
+    >
+      {body}
+      {editing ? (
+        <span className="flex items-center justify-end gap-2 self-center">
           {onDelete && (
             <button
               type="button"
               onClick={onDelete}
-              aria-label={`${content.title} 섹션 삭제`}
-              className="grid size-11 place-items-center rounded-12 transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+              aria-label={`${content.title} 삭제`}
+              className="grid size-8 place-items-center rounded-circle text-[#18181b] transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
             >
-              <img src={SectionTrashIcon} alt="" />
+              <WorkIcon name="trash" />
             </button>
           )}
-          {/* shortcut: 섹션 순서 저장 API가 연결되면 드래그 핸들을 활성화한다. */}
+          <span
+            {...handleProps}
+            role="button"
+            tabIndex={0}
+            aria-label={`${content.title} 순서 이동`}
+            className="grid size-8 cursor-grab touch-none place-items-center text-[#18181b] select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:cursor-grabbing"
+          >
+            <WorkIcon name="lines" />
+          </span>
+        </span>
+      ) : (
+        <>
+          <WorkIcon
+            name="chev"
+            className="size-5 self-center transition-transform duration-base ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-[3px]"
+          />
           <button
             type="button"
-            disabled
-            aria-label={`${content.title} 섹션 순서 변경 (준비 중)`}
-            title="섹션 순서 변경은 아직 지원하지 않아요"
-            className="grid size-11 cursor-default place-items-center rounded-12"
-          >
-            <img src={OrderIcon} alt="" />
-          </button>
-        </div>
+            onClick={onClick}
+            aria-label={`${content.title}, 사진 ${content.photoCount}장 편집`}
+            className="absolute inset-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]"
+          />
+        </>
       )}
     </div>
   );

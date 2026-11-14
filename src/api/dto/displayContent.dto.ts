@@ -46,6 +46,11 @@ export type CreateContentImageResponseDto = {
   contentId: number;
 };
 
+// 스웨거에 아직 없는 API(섹션 순서 저장). 목 핸들러로 화면을 확인한다
+export type ReorderContentCategoriesRequestDto = {
+  orderedCategoryIds: number[];
+};
+
 export type ReorderContentImagesRequestDto = {
   orderedContentIds: number[];
 };

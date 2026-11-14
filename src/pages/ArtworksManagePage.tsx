@@ -11,7 +11,7 @@ import {
 import { ManageScreen, OrderScreen } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
-import { Overlay, Skeleton, SkeletonList } from '@/components/ui';
+import { Overlay, Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
@@ -22,6 +22,7 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import type { Work } from '@/types/artworkManage';
 import { getErrorMessage } from '@/utils/error';
@@ -41,10 +42,12 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   );
   const [deleting, setDeleting] = useState<Work | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [orderedWorks, setOrderedWorks] = useState<Work[] | null>(null);
+  // 순서 편집 결과. 저장 뒤 목록을 다시 불러오면(data 가 바뀌면) 서버 순서를 그대로 쓴다
+  const [ordered, setOrdered] = useState<{ base: unknown; works: Work[] } | null>(null);
   const [authorChoice, setAuthorChoice] = useState({ open: false, key: 0 });
 
   const { data, isPending, isError, refetch } = useDisplayArtworks(displayId);
+  const { showSkeleton } = useSkeleton(isPending);
   const {
     data: display,
     isPending: displayPending,
@@ -84,37 +87,29 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
       })),
     [data],
   );
-  const works = orderedWorks ?? fetchedWorks;
+  const works = ordered && ordered.base === data ? ordered.works : fetchedWorks;
 
   const handleDelete = () => {
     if (!deleting || deleteArtworkMutation.isPending) return;
     deleteArtworkMutation.mutate(deleting.id, {
       onSuccess: () => {
-        setOrderedWorks(null);
+        setOrdered(null);
         setConfirming(false);
         toast('작품을 삭제했어요');
       },
     });
   };
 
-  const saveOrder = (onSuccess: () => void) => {
+  // 프로토타입: 끌어서 놓을 때마다 바로 저장하고, 실패하면 직전 순서로 되돌린다
+  const handleReorder = (next: Work[]) => {
     if (updateOrder.isPending || !canReorder) return;
-    if (!orderedWorks) {
-      onSuccess();
-      return;
-    }
+    const previous = ordered;
+    setOrdered({ base: data, works: next });
     updateOrder.mutate(
-      orderedWorks.map((work) => work.id),
-      {
-        onSuccess: () => {
-          setOrderedWorks(null);
-          onSuccess();
-        },
-      },
+      next.map((work) => work.id),
+      { onError: () => setOrdered(previous) },
     );
   };
-
-  const handleOrderDone = () => saveOrder(() => setScreen('manage'));
 
   // 프로토타입: 팀원은 바로 작품 등록, 대표자는 먼저 누구의 작품인지 고른다
   const handleAddArtwork = () => {
@@ -130,22 +125,32 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const openRegister = (proxy?: ProxyAuthor) =>
     navigate(buildArtworkRegisterPath(displayId, proxy), { replace: true });
 
-  if (!embedded && displayPending) return <LoadingView message="전시 정보를 불러오는 중..." />;
+  if (!embedded && displayPending) return <LoadingView />;
   if (!embedded && (displayError || !display))
     return <ErrorView message="전시 정보를 불러올 수 없습니다." onRetry={flowBack} />;
 
   const panel = (
     <>
-      {isPending ? (
+      {/* 완료를 누른 뒤 저장이 실패해도(순서는 되돌아간다) 안내가 남도록 화면과 상관없이 둔다 */}
+      {updateOrder.error && (
+        <p role="alert" className="mt-3 text-[12px] font-medium text-[#fb2c36]">
+          {getErrorMessage(updateOrder.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
+        </p>
+      )}
+      {showSkeleton ? (
         <div
           aria-label="전시작을 불러오는 중"
-          className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3 desktop:grid-cols-4"
+          aria-busy="true"
+          className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 min-[640px]:grid-cols-3"
         >
           <SkeletonList count={6}>
             {() => (
               <div>
-                <Skeleton className="aspect-3/4" />
-                <Skeleton className="mt-2 h-9 rounded-8" />
+                <Skeleton className="aspect-3/4 rounded-0" />
+                <div className="pt-2">
+                  <SkeletonText className="typography-body-lg-semibold w-3/4" />
+                  <SkeletonText className="typography-body-md-medium w-1/2" />
+                </div>
               </div>
             )}
           </SkeletonList>
@@ -158,6 +163,7 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
           display={display}
           userId={userId}
           onAdd={handleAddArtwork}
+          onOpen={(work) => navigate(`/exhibition/${displayId}/artworks/${work.id}/preview`)}
           onEdit={(work) => navigate(`/exhibition/${displayId}/artworks/${work.id}/edit`)}
           onDelete={(work) => {
             deleteArtworkMutation.reset();
@@ -165,25 +171,16 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
             setConfirming(true);
           }}
           onEditOrder={() => {
-            if (embedded) {
-              navigate(`/exhibition/${displayId}/artworks?mode=order`);
-              return;
-            }
             updateOrder.reset();
             setScreen('order');
           }}
         />
       ) : (
         <>
-          {updateOrder.error && (
-            <p role="alert" className="typography-body-md-medium my-3 text-error">
-              {getErrorMessage(updateOrder.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
-            </p>
-          )}
           <OrderScreen
             works={works}
-            onReorder={setOrderedWorks}
-            onDone={handleOrderDone}
+            onReorder={handleReorder}
+            onDone={() => setScreen('manage')}
             disabled={updateOrder.isPending}
           />
         </>
@@ -252,13 +249,9 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
     <ExhibitionWorkLayout
       display={display!}
       activeTab="artworks"
-      onBack={isOrderScreen ? handleOrderDone : flowBack}
       onTabChange={(tab) => {
         if (tab === 'artworks') return;
-        const changeTab = () =>
-          navigate(`/exhibition/${displayId}/work?tab=${tab}`, { replace: true });
-        if (isOrderScreen) saveOrder(changeTab);
-        else changeTab();
+        navigate(`/exhibition/${displayId}/work?tab=${tab}`, { replace: true });
       }}
     >
       {panel}

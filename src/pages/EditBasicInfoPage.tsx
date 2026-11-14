@@ -16,10 +16,11 @@ import {
 } from '@/components/artist-verify';
 import { ConfirmDialog, ErrorView, ProfileAvatar, ProfilePhotoField } from '@/components/common';
 import { PageContainer } from '@/components/layout';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
@@ -35,6 +36,7 @@ const HELPER_ID = 'nickname-helper';
 
 export function EditBasicInfoPage() {
   const { data: userMe, isPending, isError, error, refetch } = useUserMe();
+  const { showSkeleton } = useSkeleton(isPending);
 
   if (isError && !userMe) {
     return (
@@ -45,12 +47,15 @@ export function EditBasicInfoPage() {
     );
   }
 
-  if (isPending || !userMe) {
+  if (showSkeleton || !userMe) {
     return (
       <PageContainer className="bg-primary-white" variant="form">
         <div aria-hidden="true" className="flex flex-col gap-5 pt-17">
           <Skeleton className="mx-auto size-20 rounded-circle" />
-          <Skeleton className="h-16 w-full rounded-4" />
+          <div className="flex flex-col gap-1">
+            <SkeletonText className="typography-body-lg-semibold w-12" />
+            <Skeleton className="h-11.5 w-full" />
+          </div>
         </div>
       </PageContainer>
     );

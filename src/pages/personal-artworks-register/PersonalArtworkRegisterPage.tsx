@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { SessionChangedError } from '@/api/apiError';
 import type { PersonalArtworkResponseDataDto } from '@/api/dto';
@@ -18,6 +18,7 @@ import {
   useLeaveArtworkRegister,
 } from '@/components/artwork-register';
 import { ErrorView } from '@/components/common';
+import { NotFoundView } from '@/components/error-page';
 import {
   useCreatePersonalArtwork,
   usePersonalArtwork,
@@ -25,6 +26,7 @@ import {
 } from '@/hooks/queries/usePersonalArtwork';
 import { useIsUserMePending, useUserMe } from '@/hooks/queries/useUserProfile';
 import { usePersonalArtworkPolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
@@ -119,6 +121,7 @@ function PersonalArtworkEditPage({ personalArtworkId }: { personalArtworkId: num
   const policy = usePersonalArtworkPolicy(data);
   const isUserPending = useIsUserMePending();
   const detailPath = `/personal-artworks/${personalArtworkId}`;
+  const { showSkeleton } = useSkeleton(isPending || isUserPending);
 
   if (isError) {
     return (
@@ -129,11 +132,12 @@ function PersonalArtworkEditPage({ personalArtworkId }: { personalArtworkId: num
     );
   }
 
-  if (isPending || isUserPending) {
+  // isPending 도 함께 봐야 아래에서 data 가 있는 것으로 좁혀진다(showSkeleton 은 isPending 이면 늘 true)
+  if (showSkeleton || isPending) {
     return <ArtworkRegisterSkeleton title="작품 수정" onBack={() => leave(detailPath)} />;
   }
 
-  if (!hasPermission(policy, 'edit')) return <Navigate to="/403" replace />;
+  if (!hasPermission(policy, 'edit')) return <NotFoundView />;
 
   return <PersonalArtworkRegisterContent key={personalArtworkId} previous={data} />;
 }
