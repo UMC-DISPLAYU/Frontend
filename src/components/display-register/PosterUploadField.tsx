@@ -124,7 +124,7 @@ function PosterThumb({
       {isRepresentative && !isUploading && !locked && (
         <button
           type="button"
-          aria-label="대표 포스터 카드에 보이는 부분 조정"
+          aria-label="대표 포스터 썸네일 조정"
           onClick={onAdjust}
           {...STOP_REORDER_PROPS}
           className={cn(

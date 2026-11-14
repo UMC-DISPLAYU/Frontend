@@ -108,7 +108,7 @@ function ImageTile({
       {isRepresentative && !isUploading && (
         <button
           type="button"
-          aria-label="대표 사진 카드에서 보이는 부분 조정"
+          aria-label="대표 사진 썸네일 조정"
           onClick={onAdjust}
           {...STOP_REORDER_PROPS}
           className={cn(
@@ -140,21 +140,52 @@ function ImageTile({
   );
 }
 
-/** 카드 썸네일(3:4)에서 대표 사진이 어떻게 보이는지 보여주고, 보이는 부분을 고르게 한다 */
-function CardPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust: () => void }) {
+/** 작품 상세의 사진 칸 비율(프로토타입) */
+const DETAIL_RATIO = 402 / 554;
+
+/**
+ * 대표 사진이 목록 썸네일(3:4)에서 어떻게 잘리는지와 상세에서는 전체가 보인다는 걸 두 칸으로 보여 주고,
+ * 썸네일에 보이는 부분을 고르게 한다(프로토타입 U-160)
+ */
+function ThumbnailPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust: () => void }) {
   return (
-    <div className="mt-3.5 flex items-center gap-3.5 rounded-12 bg-secondary p-3.5">
-      <div className="relative aspect-3/4 w-18 shrink-0 overflow-hidden bg-secondary">
-        <img
-          src={item.previewUrl}
-          alt=""
-          style={item.crop ? cropImageStyle(item.crop) : undefined}
-          className={cn('pointer-events-none select-none', !item.crop && 'size-full object-cover')}
-        />
+    <div className="mt-3.5 flex items-start gap-3.5 rounded-12 bg-secondary p-3.5">
+      <div aria-hidden="true" className="flex shrink-0 gap-2.5">
+        <figure className="grid content-start justify-items-center gap-1">
+          <div className="relative aspect-3/4 w-15 overflow-hidden bg-secondary">
+            <img
+              src={item.previewUrl}
+              alt=""
+              style={item.crop ? cropImageStyle(item.crop) : undefined}
+              className={cn(
+                'pointer-events-none select-none',
+                !item.crop && 'size-full object-cover',
+              )}
+            />
+          </div>
+          <i className="block h-1 w-full rounded-[2px] bg-[#d4d4d8]" />
+          <i className="block h-1 w-3/5 justify-self-start rounded-[2px] bg-[#d4d4d8]" />
+          <figcaption className="typography-body-sm-medium mt-0.5 text-secondary">목록</figcaption>
+        </figure>
+        <figure className="grid content-start justify-items-center gap-1">
+          <div
+            className="grid h-20 place-items-center overflow-hidden bg-[#f0f0f3]"
+            style={{ aspectRatio: DETAIL_RATIO }}
+          >
+            <img
+              src={item.previewUrl}
+              alt=""
+              className="pointer-events-none block max-h-full max-w-full object-contain"
+            />
+          </div>
+          <i className="invisible block h-1 w-full" />
+          <i className="invisible block h-1 w-3/5" />
+          <figcaption className="typography-body-sm-medium mt-0.5 text-secondary">상세</figcaption>
+        </figure>
       </div>
       <div className="typography-body-md-medium grid min-w-0 gap-0.5 text-secondary">
-        <b className="typography-body-lg-semibold text-primary">카드에서는 이렇게 보여요</b>
-        <span>{item.crop ? '고른 부분이 카드에 보여요' : '사진 가운데가 카드에 보여요'}</span>
+        <b className="typography-body-lg-semibold text-primary">썸네일은 이렇게 보여요</b>
+        <span>작품 상세에서는 사진 전체가 보여요</span>
         <button
           type="button"
           onClick={onAdjust}
@@ -163,7 +194,7 @@ function CardPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust: () 
             FOCUS_CLASS,
           )}
         >
-          보이는 부분 조정
+          썸네일 조정
         </button>
       </div>
     </div>
@@ -289,7 +320,10 @@ export function ArtworkImageField({
         </SortableContext>
       </DndContext>
       {representativeImage && (
-        <CardPreview item={representativeImage} onAdjust={() => openCrop(representativeImage)} />
+        <ThumbnailPreview
+          item={representativeImage}
+          onAdjust={() => openCrop(representativeImage)}
+        />
       )}
       {cropSession && (
         <ArtworkCropSheet
