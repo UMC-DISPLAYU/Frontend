@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { ApiError } from '@/api/apiError';
-import { ARTIST_FIELD_MAP, type ExhibitionField, MAX_ARTIST_FIELDS } from '@/constants/exhibition';
+import type { ActivityFieldCode } from '@/components/artist-verify';
+import { MAX_ARTIST_FIELDS } from '@/constants/exhibition';
 import {
   useConfirmVerificationEmail,
   useResendVerificationEmail,
@@ -40,6 +41,8 @@ const EMAIL_FIELD_ERROR_CODES = new Set([
   'INVALID_EMAIL_FORMAT',
 ]);
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const getClientErrorCode = (error: unknown) =>
   error instanceof ApiError && (!error.status || error.status < 500) ? error.code : undefined;
 
@@ -50,7 +53,7 @@ const getMessage = (error: unknown, fallback: string) => {
 
 export function useArtistVerifyFlow() {
   const [state, dispatch] = useReducer(verificationReducer, initialState);
-  const [selectedFields, setSelectedFields] = useState<ExhibitionField[]>([]);
+  const [selectedFields, setSelectedFields] = useState<ActivityFieldCode[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const savingRef = useRef(false);
   // 버튼이 비활성화되기 전에 연속으로 눌린 메일 발송 · 인증 확인 요청을 막는다
@@ -73,7 +76,9 @@ export function useArtistVerifyFlow() {
   const isCodeConfirmed = state.completedSteps.has('code');
   const isVerifying = sendMail.isPending || resendMail.isPending || confirmCode.isPending;
   const isSaving = createArtistProfile.isPending;
-  const canSendMail = Boolean(state.isSchoolSelected && state.school.trim() && state.email.trim());
+  const canSendMail = Boolean(
+    state.isSchoolSelected && state.school.trim() && EMAIL_PATTERN.test(state.email.trim()),
+  );
   const hasInput = Boolean(
     state.school.trim() || state.email.trim() || artistName.trim() || selectedFields.length,
   );
@@ -151,7 +156,7 @@ export function useArtistVerifyFlow() {
     try {
       await createArtistProfile.mutateAsync({
         artistName: values.artistName.trim(),
-        activityFields: selectedFields.map((field) => ARTIST_FIELD_MAP[field]),
+        activityFields: selectedFields,
       });
       setIsComplete(true);
     } catch (error) {
