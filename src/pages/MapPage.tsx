@@ -220,9 +220,12 @@ export function MapPage() {
     setSelection({ exhibition, via });
     setSnap(nextSnap);
     if (map) {
-      focusOn(map, exhibition.position, getInsetsFor(nextSnap, false), {
-        maxLevel: FOCUS_MAX_LEVEL,
-      });
+      focusOn(
+        map,
+        exhibition.position,
+        getInsetsFor(nextSnap, false),
+        via === 'pin' ? {} : { maxLevel: FOCUS_MAX_LEVEL },
+      );
     }
   };
 
