@@ -8,7 +8,7 @@ const POSTER_FRAME_CLASS = 'h-24 w-18 bg-secondary';
 const ROW_CLASS = 'mt-3 grid grid-cols-[72px_minmax(0,1fr)] gap-x-4';
 
 const BUTTON_CLASS =
-  'typography-body-lg-bold flex h-11 items-center justify-center rounded-12 transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99';
+  'typography-body-lg-semibold flex h-11 items-center justify-center rounded-12 transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99';
 
 interface InvitationCardProps {
   invitation: ReceivedInvitation;

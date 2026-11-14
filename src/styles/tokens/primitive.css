@@ -93,7 +93,9 @@
   --primitive-color-yellow-950: #432004;
 
   /* Typography */
-  --primitive-typography-font-family-typeface-1: 'Pretendard', system-ui, sans-serif;
+  --primitive-typography-font-family-typeface-1:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Noto Sans KR', sans-serif;
   --primitive-typography-font-family-typeface-2: 'Aldrich', sans-serif;
 
   --primitive-typography-font-weight-400: 400;
