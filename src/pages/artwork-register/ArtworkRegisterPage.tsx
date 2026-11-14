@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { SessionChangedError } from '@/api/apiError';
 import type { DisplayArtworkEditResponseDataDto } from '@/api/dto';
@@ -68,7 +68,6 @@ function ArtworkRegisterContent({
   initialImages,
   edit,
 }: ArtworkRegisterContentProps) {
-  const navigate = useNavigate();
   const leave = useLeaveArtworkRegister();
   const workPath = `/exhibition/${displayId}/work`;
   const [coAuthors, setCoAuthors] = useState(initialCoAuthors);
@@ -129,7 +128,8 @@ function ArtworkRegisterContent({
           { label: '작가', value: registered.authors },
           { label: '전시', value: displayTitle },
         ]}
-        onConfirm={() => navigate(workPath, { replace: true })}
+        // 들어온 전시 작업 기록으로 돌아간다(새로 쌓으면 전시 작업의 < 가 전시 작업으로 한 번 더 간다)
+        onConfirm={() => leave(workPath)}
       />
     );
   }
