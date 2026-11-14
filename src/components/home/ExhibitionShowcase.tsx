@@ -47,6 +47,7 @@ export function ExhibitionShowcase({
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
   const pickTab = (next: HomeExhibitionTab) => {
+    if (next === tab) return;
     setAnimateIn(true);
     onTabChange(next);
   };

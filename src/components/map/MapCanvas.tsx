@@ -110,7 +110,9 @@ export function MapCanvas({
                 yAnchor={0}
                 // 남쪽 핀이 북쪽 핀 위에 오도록 위도가 낮을수록 위에 쌓는다
                 zIndex={selected ? 100_000 : Math.round((90 - pin.position.lat) * 1000)}
-                clickable
+                // clickable이면 카카오가 핀 위에서 시작한 끌기를 지도로 넘기지 않는다.
+                // 핀 선택은 버튼 onClick으로, 끌고 난 뒤 click 막기는 useMapTap이 한다
+                clickable={false}
               >
                 <MapPin
                   title={pin.title}
