@@ -1,12 +1,11 @@
 import { useRef } from 'react';
 
-import ChevronIcon from '@/assets/exhibition-work/ChevronIcon.svg';
-import ChevronDangerIcon from '@/assets/team-manage/ChevronDangerIcon.svg';
 import { Overlay } from '@/components/ui';
 import { cn } from '@/utils/cn';
 
 import { getMemberActions, MEMBER_ACTION_COPY, type MemberAction } from './memberActions';
 import { RoleBadge } from './RoleBadge';
+import { ChevronIcon } from './TeamIcons';
 import type { TeamRole } from './teamMembers';
 
 interface MemberMenuSheetProps {
@@ -26,10 +25,12 @@ export function MemberMenuSheet({ open, member, onClose, onSelect }: MemberMenuS
       open={open}
       onClose={onClose}
       title={
-        <span className="flex items-center justify-between gap-3">
+        <span className="mt-1 flex items-center justify-between gap-3 tracking-[-0.03em]">
           <span className="flex min-w-0 flex-col gap-1">
-            <span className="typography-body-sm-regular text-tertiary">선택한 팀원</span>
-            <span className="typography-body-xxl-semibold truncate text-primary">
+            <span className="text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#71717b]">
+              선택한 팀원
+            </span>
+            <span className="truncate text-[20px] leading-[1.4] font-semibold text-[#18181b]">
               {member?.name}
             </span>
           </span>
@@ -39,7 +40,7 @@ export function MemberMenuSheet({ open, member, onClose, onSelect }: MemberMenuS
       showCloseButton={false}
       initialFocusRef={firstActionRef}
     >
-      <ul className="mt-5 border-t border-primary pb-4">
+      <ul className="mt-2 border-t border-[#f0f0f3] pb-4">
         {actions.map((action, index) => {
           const isDanger = action === 'kick';
 
@@ -50,14 +51,12 @@ export function MemberMenuSheet({ open, member, onClose, onSelect }: MemberMenuS
                 type="button"
                 onClick={() => onSelect(action)}
                 className={cn(
-                  'typography-body-lg-regular flex h-13 w-full items-center justify-between border-b border-primary text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
-                  isDanger ? 'text-error' : 'text-primary',
+                  'flex h-13 w-full items-center justify-between border-b border-[#f0f0f3] text-left text-[16px] leading-[1.4] font-medium tracking-[-0.03em] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]',
+                  isDanger ? 'text-[#fb2c36]' : 'text-[#18181b]',
                 )}
               >
                 {MEMBER_ACTION_COPY[action].menuLabel}
-                <span aria-hidden="true" className="flex size-5 items-center justify-center">
-                  <img src={isDanger ? ChevronDangerIcon : ChevronIcon} alt="" />
-                </span>
+                <ChevronIcon className="size-5" />
               </button>
             </li>
           );

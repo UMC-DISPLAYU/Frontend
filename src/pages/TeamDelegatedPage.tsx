@@ -4,12 +4,12 @@ import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-route
 
 import CompleteIcon from '@/assets/display-hub/CompleteIcon.svg';
 import SwapArrowIcon from '@/assets/team-manage/SwapArrowIcon.svg';
-import { WorkHeader } from '@/components/exhibition-work';
-import { PageContainer } from '@/components/layout';
 import {
   MemberAvatar,
   RoleBadge,
   type TeamDelegatedState,
+  TeamHeader,
+  TeamPage,
   type TeamRole,
 } from '@/components/team-manage';
 
@@ -35,9 +35,9 @@ export function TeamDelegatedPage() {
   if (!state) return <Navigate to={workPath} replace />;
 
   return (
-    <PageContainer variant="form" className="bg-primary-white text-primary">
+    <TeamPage>
       {/* 위임 뒤에는 대표자 전용인 전시 관리 · 팀원 관리로 돌아갈 수 없어 전시 작업으로 간다(프로토타입) */}
-      <WorkHeader title="팀원 관리" onBack={() => navigate(workPath, { replace: true })} />
+      <TeamHeader title="팀원 관리" onBack={() => navigate(workPath, { replace: true })} />
       <section aria-live="polite" className="flex flex-col items-center pt-18.5 pb-7 text-center">
         <img src={CompleteIcon} alt="" className="mb-4" />
         <h2 ref={headingRef} tabIndex={-1} className="typography-title-xs outline-none">
@@ -65,7 +65,7 @@ export function TeamDelegatedPage() {
           관리자 권한으로 전시 작업을 이어갈 수 있어요
         </p>
       </section>
-    </PageContainer>
+    </TeamPage>
   );
 }
 

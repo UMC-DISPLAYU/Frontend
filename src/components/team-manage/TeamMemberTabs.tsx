@@ -29,11 +29,7 @@ export function TeamMemberTabs({ tab, onChange, counts, idPrefix }: TeamMemberTa
   };
 
   return (
-    <div
-      role="tablist"
-      aria-label="팀원"
-      className="mt-1.5 flex h-12.25 items-end gap-5 border-b border-primary"
-    >
+    <div role="tablist" aria-label="팀원" className="mt-6 flex gap-5 border-b border-[#f0f0f3]">
       {TABS.map(({ value, label }) => {
         const selected = tab === value;
         const { tabId, panelId } = getTeamTabIds(idPrefix, value);
@@ -50,10 +46,10 @@ export function TeamMemberTabs({ tab, onChange, counts, idPrefix }: TeamMemberTa
             onClick={() => onChange(value)}
             onKeyDown={moveFocus}
             className={cn(
-              'typography-body-lg-semibold relative -mb-px h-11.25 tabular-nums transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+              'relative h-11 text-[16px] tabular-nums transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]',
               selected
-                ? 'text-primary after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-primary-black'
-                : 'text-tertiary',
+                ? 'font-semibold text-[#18181b] after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-[#18181b]'
+                : 'font-medium text-[#71717b]',
             )}
           >
             {label} {counts?.[value]}

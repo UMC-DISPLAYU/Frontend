@@ -1,8 +1,8 @@
 import type { DisplayMemberEntryDto } from '@/api/dto';
-import MoreIcon from '@/assets/team-manage/MoreIcon.svg';
 
 import { MemberAvatar } from './MemberAvatar';
 import { RoleBadge } from './RoleBadge';
+import { MoreIcon } from './TeamIcons';
 import { groupMembersByRole, TEAM_ROLE_LABEL } from './teamMembers';
 
 interface JoinedMemberListProps {
@@ -13,16 +13,14 @@ interface JoinedMemberListProps {
 
 export function JoinedMemberList({ members, myUserId, onOpenMenu }: JoinedMemberListProps) {
   return (
-    <div className="pt-0.5">
+    <div>
       {groupMembersByRole(members).map(({ role, members: group }) => (
         <section
           key={role}
           aria-label={TEAM_ROLE_LABEL[role]}
-          className="border-b border-primary last:border-b-0"
+          className="pt-2.5 [&+&]:border-t [&+&]:border-[#f0f0f3]"
         >
-          <h4 className="typography-body-md-semibold pt-2.5 text-tertiary">
-            {TEAM_ROLE_LABEL[role]}
-          </h4>
+          <h4 className="text-[12px] font-semibold text-[#71717b]">{TEAM_ROLE_LABEL[role]}</h4>
           {group.map((member) => {
             const name = member.displayNickname;
             // 대표자와 나 자신은 메뉴가 없다(프로토타입)
@@ -31,25 +29,31 @@ export function JoinedMemberList({ members, myUserId, onOpenMenu }: JoinedMember
             return (
               <div
                 key={member.teamMemberId ?? member.userId}
-                className="flex min-h-17.25 items-center"
+                className="flex items-center gap-[11px] py-[11.5px]"
               >
                 <MemberAvatar tone={role} />
-                <p className="flex min-w-0 flex-1 items-center gap-1.5 pr-2 pl-2.75">
-                  <span className="typography-body-lg-semibold max-w-33 truncate text-primary">
-                    {name}
-                  </span>
-                  <RoleBadge role={role} />
-                </p>
+                {/* 전시 작가명 아래에 기본 닉네임(프로토타입 .nm b · small) */}
+                <div className="min-w-0 flex-1">
+                  <p className="inline-flex max-w-full items-center gap-1.5 text-[14px] leading-[1.4] font-semibold">
+                    <span className="truncate">{name}</span>
+                    <RoleBadge role={role} />
+                  </p>
+                  {member.nickname && (
+                    <p className="mt-[3px] truncate text-[12px] leading-[17px] font-medium text-[#3f3f47]">
+                      {member.nickname}
+                    </p>
+                  )}
+                </div>
                 {hasMenu && (
                   <button
                     type="button"
                     aria-label={`${name} 메뉴`}
                     aria-haspopup="dialog"
                     onClick={() => onOpenMenu(member)}
-                    // 피그마처럼 점 세 개를 줄 오른쪽 끝에 맞추고, 누르는 영역(44)은 점을 가운데에 둔다
-                    className="-mr-3.5 flex size-11 shrink-0 items-center justify-center rounded-circle transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus active:scale-99"
+                    // 보이는 크기는 40, 누르는 영역은 after 로 44 까지 넓힌다
+                    className="relative flex size-10 shrink-0 items-center justify-center rounded-full transition-colors duration-200 after:absolute after:-inset-0.5 hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]"
                   >
-                    <img src={MoreIcon} alt="" />
+                    <MoreIcon />
                   </button>
                 )}
               </div>
