@@ -147,9 +147,7 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
           exhibitionState={getExhibitionState(display?.period)}
           shareImageUrl={orderedImages[0]}
           isPreview={isPreview}
-          exhibitionPath={
-            previewDisplayId !== undefined ? `/exhibition/${previewDisplayId}/preview` : undefined
-          }
+          hideExhibition={previewDisplayId !== undefined}
         />
       }
       hasIntro={hasArtworkIntro({
