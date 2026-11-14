@@ -92,7 +92,8 @@ export function AuthPage() {
 
       {/* Layout 이 이미 <main> 으로 감싼다. 프로토타입 여백은 20 → 32(768px~)이고 900px 이상에서 40 으로 늘지 않는다 */}
       <div className="mx-auto max-w-310 px-5 tablet:px-8 desktop:grid desktop:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-18 desktop:pt-10">
-        <div className="desktop:sticky desktop:top-24">
+        {/* 헤더 64 + 위 여백 40 에 붙여, 스크롤을 시작해도 프로필이 따라 올라갔다 멈추지 않는다(프로토타입은 96) */}
+        <div className="desktop:sticky desktop:top-26">
           {header ? (
             <ArtistProfileHeader
               action={
