@@ -4,25 +4,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { Overlay } from '@/components/ui';
-import type { Content } from '@/types';
 
-import { CONTENT_DESCRIPTION_MAX_LENGTH } from './constants';
+import { SECTION_DESCRIPTION_MAX_LENGTH, SECTION_TITLE_MAX_LENGTH } from './constants';
 import { contentEditSchema, type ContentEditValues } from './contentEdit.schema';
+import { SectionFieldLabel, sectionInputClass, sectionTextareaClass } from './SectionFields';
 
 interface ContentEditSheetProps {
-  content: Content;
   open: boolean;
-  mode?: 'create' | 'edit';
   isSaving?: boolean;
   errorMessage?: string | null;
   onClose: () => void;
-  onSave: (patch: ContentEditValues) => void;
+  onSave: (values: ContentEditValues) => void;
 }
 
+const EMPTY_VALUES: ContentEditValues = { title: '', description: '' };
+
+/*
+ * 프로토타입 works.html "섹션 추가" 시트: 제목(필수) · 설명(선택)을 먼저 받아 제목 없는 섹션이 생기지 않게 한다.
+ * 추가하면 섹션 편집 화면으로 넘어간다
+ */
 export function ContentEditSheet({
-  content,
   open,
-  mode = 'edit',
   isSaving = false,
   errorMessage,
   onClose,
@@ -40,27 +42,28 @@ export function ContentEditSheet({
   } = useForm<ContentEditValues>({
     resolver: zodResolver(contentEditSchema),
     mode: 'onChange',
-    defaultValues: { title: content.title, description: content.description },
+    defaultValues: EMPTY_VALUES,
   });
-  const description = useWatch({ control, name: 'description' });
+  const description = useWatch({ control, name: 'description' }) ?? '';
 
   useEffect(() => {
-    if (open) reset({ title: content.title, description: content.description });
-  }, [open, content.id, content.title, content.description, reset]);
+    if (open) reset(EMPTY_VALUES);
+  }, [open, reset]);
 
   return (
     <Overlay
       open={open}
-      title={mode === 'create' ? '섹션 추가' : '섹션 수정'}
+      title="섹션 추가"
       onClose={onClose}
+      showCloseButton={false}
       footer={
         <button
           type="submit"
           form={formId}
           disabled={!isValid || isSaving}
-          className="typography-body-lg-semibold mt-4 flex h-11 w-full items-center justify-center rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable disabled:active:scale-100"
+          className="grid h-12 w-full place-items-center rounded-12 bg-[#18181b] text-[16px] font-semibold tracking-[-0.03em] text-[#fff] transition duration-fast hover:bg-[#2f2f35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-99 disabled:cursor-default disabled:bg-[#f4f4f5] disabled:text-[#d4d4d8] disabled:active:scale-100"
         >
-          {isSaving ? '저장 중…' : mode === 'create' ? '추가하기' : '저장하기'}
+          {isSaving ? '추가하는 중' : '추가하기'}
         </button>
       }
     >
@@ -69,60 +72,52 @@ export function ContentEditSheet({
         onSubmit={handleSubmit((values) => {
           if (!isSaving) onSave(values);
         })}
-        className="flex flex-col gap-6 pt-2"
+        className="pt-1 text-[#18181b]"
       >
-        <div className="flex flex-col gap-2">
-          <label htmlFor={titleId} className="typography-body-lg-semibold text-primary">
-            섹션 제목 <span className="text-error">*</span>
-          </label>
-          <input
-            id={titleId}
-            {...register('title')}
-            placeholder="섹션 제목을 입력해주세요"
-            aria-required="true"
-            aria-invalid={!!errors.title}
-            aria-describedby={errors.title ? `${titleId}-error` : undefined}
-            className="typography-body-lg-regular min-h-11 w-full border-b border-primary bg-transparent py-3 text-primary placeholder:text-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
-          {errors.title && (
-            <p
-              id={`${titleId}-error`}
-              role="alert"
-              className="typography-body-md-medium text-error"
-            >
-              {errors.title.message}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor={descriptionId} className="typography-body-lg-semibold text-primary">
-            섹션 설명 <span className="typography-body-md-medium">· 선택</span>
-          </label>
+        <SectionFieldLabel htmlFor={titleId} required>
+          섹션 제목
+        </SectionFieldLabel>
+        <input
+          id={titleId}
+          {...register('title')}
+          maxLength={SECTION_TITLE_MAX_LENGTH}
+          placeholder="섹션 제목을 입력해주세요"
+          autoComplete="off"
+          aria-required="true"
+          aria-invalid={!!errors.title}
+          aria-describedby={errors.title ? `${titleId}-error` : undefined}
+          className={sectionInputClass}
+        />
+        {errors.title && (
+          <p
+            id={`${titleId}-error`}
+            role="alert"
+            className="mt-1 text-[12px] font-medium text-[#fb2c36]"
+          >
+            {errors.title.message}
+          </p>
+        )}
+        <div className="mt-6">
+          <SectionFieldLabel htmlFor={descriptionId} optional>
+            섹션 설명
+          </SectionFieldLabel>
           <textarea
             id={descriptionId}
             {...register('description')}
             placeholder="섹션 설명을 입력해주세요"
-            rows={4}
-            maxLength={CONTENT_DESCRIPTION_MAX_LENGTH}
-            aria-invalid={!!errors.description}
-            aria-describedby={errors.description ? `${descriptionId}-error` : undefined}
-            className="typography-body-lg-regular min-h-32 w-full resize-none rounded-12 border border-primary bg-transparent p-4 text-primary placeholder:text-tertiary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            maxLength={SECTION_DESCRIPTION_MAX_LENGTH}
+            aria-describedby={`${descriptionId}-count`}
+            className={`${sectionTextareaClass} h-25`}
           />
-          <p className="typography-body-md-medium text-right text-tertiary">
-            {description.length} / {CONTENT_DESCRIPTION_MAX_LENGTH}
+          <p
+            id={`${descriptionId}-count`}
+            className="mt-2 text-right text-[12px] font-medium tracking-[-0.03em] text-[#71717b] tabular-nums"
+          >
+            {description.length} / {SECTION_DESCRIPTION_MAX_LENGTH}
           </p>
-          {errors.description && (
-            <p
-              id={`${descriptionId}-error`}
-              role="alert"
-              className="typography-body-md-medium text-error"
-            >
-              {errors.description.message}
-            </p>
-          )}
         </div>
         {errorMessage && (
-          <p role="alert" className="typography-body-md-medium text-error">
+          <p role="alert" className="mt-2 text-[12px] font-medium text-[#fb2c36]">
             {errorMessage}
           </p>
         )}

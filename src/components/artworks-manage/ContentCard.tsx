@@ -1,87 +1,109 @@
-import OrderIcon from '@/assets/exhibition-work/OrderIcon.svg';
-import SectionChevronIcon from '@/assets/exhibition-work/SectionChevronIcon.svg';
-import SectionPhotoIcon from '@/assets/exhibition-work/SectionPhotoIcon.svg';
-import SectionTrashIcon from '@/assets/exhibition-work/SectionTrashIcon.svg';
+import type { HTMLAttributes } from 'react';
+
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { WorkIcon } from '@/components/exhibition-work';
+import { MAX_CONTENT_IMAGES } from '@/constants';
 import type { Content } from '@/types';
+import { cn } from '@/utils/cn';
 
 interface ContentCardProps {
   content: Content;
   onClick: () => void;
   editing?: boolean;
   onDelete?: () => void;
+  /* 편집 모드 손잡이에 붙일 끌기 속성(dnd-kit) */
+  handleProps?: HTMLAttributes<HTMLSpanElement> & { ref?: (node: HTMLElement | null) => void };
+  dragging?: boolean;
 }
 
-export function ContentCard({ content, onClick, editing = false, onDelete }: ContentCardProps) {
-  return (
-    <div className="relative flex items-center border-b border-primary">
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={`${content.title}, 사진 ${content.photoCount}개 보기`}
-        className="group flex min-w-0 flex-1 items-center gap-4 rounded-12 py-4 text-left transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
-      >
+/*
+ * 프로토타입 works.html `.srow`: 대표 사진 72×96 · 제목 16 SemiBold · 설명 12(두 줄) · 사진 수는 아래에 붙인다.
+ * 편집 모드는 오른쪽에 삭제 · 손잡이(각 32, 아이콘 24, 간격 8)를 두고 손잡이로만 끈다
+ */
+export function ContentCard({
+  content,
+  onClick,
+  editing = false,
+  onDelete,
+  handleProps,
+  dragging = false,
+}: ContentCardProps) {
+  const body = (
+    <>
+      <span className="grid h-24 w-18 place-items-center overflow-hidden bg-[#f4f4f5] text-[#18181b]">
         {content.thumbnail ? (
           <OptimizedImage
             src={content.thumbnail}
             displayWidth={72}
             alt=""
             skeleton
-            frameClassName="h-24 w-18 shrink-0"
-            className="transition-transform duration-base ease-standard group-hover:scale-103"
+            frameClassName="h-24 w-18"
+            className="object-cover"
           />
         ) : (
-          <span className="grid h-24 w-18 shrink-0 place-items-center bg-secondary">
-            <img src={SectionPhotoIcon} alt="" />
+          <WorkIcon name="image" className="size-5.5" />
+        )}
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-[16px] font-semibold break-words">{content.title}</span>
+        {content.description && (
+          <span className="mt-1 line-clamp-2 text-[12px] font-medium text-[#3f3f47]">
+            {content.description}
           </span>
         )}
-        <span className="flex h-24 min-w-0 flex-1 flex-col justify-between text-primary">
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="typography-body-xl-semibold truncate">{content.title}</span>
-            {content.description && (
-              <span className={`typography-body-md-medium line-clamp-2 ${editing ? 'pr-20' : ''}`}>
-                {content.description}
-              </span>
-            )}
-          </span>
-          <span className="typography-body-md-medium text-secondary">
-            사진 {content.photoCount}/20
-          </span>
+        <span className="mt-auto text-[12px] font-medium text-[#3f3f47] tabular-nums">
+          사진 {content.photoCount}/{MAX_CONTENT_IMAGES}
         </span>
-        {!editing && (
-          <span className="grid size-5 shrink-0 place-items-center">
-            <img
-              src={SectionChevronIcon}
-              alt=""
-              className="transition-transform duration-fast ease-standard group-hover:translate-x-0.5"
-            />
-          </span>
-        )}
+      </span>
+    </>
+  );
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={`${content.title}, 사진 ${content.photoCount}장 편집`}
+        className="group grid w-full cursor-pointer grid-cols-[72px_minmax(0,1fr)_20px] items-stretch gap-x-4 border-b border-[#f0f0f3] py-4 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]"
+      >
+        {body}
+        <WorkIcon
+          name="chev"
+          className="size-5 self-center transition-transform duration-base ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-[3px]"
+        />
       </button>
-      {editing && (
-        <div className="absolute top-1/2 -right-3 flex -translate-y-1/2 items-center">
-          {onDelete && (
-            <button
-              type="button"
-              onClick={onDelete}
-              aria-label={`${content.title} 섹션 삭제`}
-              className="grid size-11 place-items-center rounded-12 transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
-            >
-              <img src={SectionTrashIcon} alt="" />
-            </button>
-          )}
-          {/* shortcut: 섹션 순서 저장 API가 연결되면 드래그 핸들을 활성화한다. */}
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        'grid w-full grid-cols-[72px_minmax(0,1fr)_72px] items-stretch gap-x-4 border-b border-[#f0f0f3] py-4',
+        dragging && 'bg-[#f4f4f5] opacity-60',
+      )}
+    >
+      {body}
+      <span className="flex items-center justify-end gap-2 self-center">
+        {onDelete && (
           <button
             type="button"
-            disabled
-            aria-label={`${content.title} 섹션 순서 변경 (준비 중)`}
-            title="섹션 순서 변경은 아직 지원하지 않아요"
-            className="grid size-11 cursor-default place-items-center rounded-12"
+            onClick={onDelete}
+            aria-label={`${content.title} 삭제`}
+            className="grid size-8 place-items-center rounded-circle text-[#18181b] transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
           >
-            <img src={OrderIcon} alt="" />
+            <WorkIcon name="trash" />
           </button>
-        </div>
-      )}
+        )}
+        <span
+          {...handleProps}
+          role="button"
+          tabIndex={0}
+          aria-label={`${content.title} 순서 이동`}
+          className="grid size-8 cursor-grab touch-none place-items-center text-[#18181b] select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:cursor-grabbing"
+        >
+          <WorkIcon name="lines" />
+        </span>
+      </span>
     </div>
   );
 }

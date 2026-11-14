@@ -23,14 +23,18 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import PhotoAddIcon from '@/assets/exhibition-work/photo-add.svg';
-import PhotoDeleteIcon from '@/assets/exhibition-work/photo-delete.svg';
-import PhotoNoticeIcon from '@/assets/exhibition-work/photo-notice.svg';
-import PhotoNumberBackground from '@/assets/exhibition-work/photo-number.svg';
-import { contentEditSchema, type ContentEditValues } from '@/components/artworks-manage';
-import { BottomFixedBar, ErrorView } from '@/components/common';
+import {
+  contentEditSchema,
+  type ContentEditValues,
+  SECTION_DESCRIPTION_MAX_LENGTH,
+  SECTION_TITLE_MAX_LENGTH,
+  SectionFieldLabel,
+  sectionInputClass,
+  sectionTextareaClass,
+} from '@/components/artworks-manage';
+import { ErrorView } from '@/components/common';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { WorkHeader } from '@/components/exhibition-work';
+import { WorkBar, WorkIcon } from '@/components/exhibition-work';
 import { PageContainer } from '@/components/layout';
 import { Skeleton, SkeletonList } from '@/components/ui';
 import {
@@ -38,7 +42,6 @@ import {
   DEFAULT_CONTENT_IMAGE_WIDTH,
   MAX_CONTENT_IMAGES,
 } from '@/constants';
-import { CONTENT_DESCRIPTION_MAX_LENGTH } from '@/constants/artworkManage';
 import { useUpdateContentCategory } from '@/hooks/queries/useContentCategories';
 import {
   useCreateContentImage,
@@ -66,8 +69,14 @@ type Photo = {
 const getPhotoSortableId = (photo: Photo) => String(photo.id);
 const SUPPORTED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_PHOTO_FILE_SIZE = 20 * 1024 * 1024;
-const buttonClass =
-  'cursor-pointer transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-secondary disabled:text-disable';
+const focusRing =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]';
+const TOOL_BUTTON = `inline-flex h-8 items-center pl-2 text-[12px] font-semibold disabled:cursor-default disabled:text-[#d4d4d8] ${focusRing}`;
+/* 프로토타입 section.html `.page`: 폭 480 · 768px 이상 672, 위 여백 8(safe area) · 768px 이상 40, 모든 글자 자간 -0.03em */
+const PAGE_CLASS =
+  'max-w-120 pt-[max(8px,env(safe-area-inset-top))] text-[14px] leading-[1.4] font-medium text-[#18181b] tablet:max-w-168 tablet:pt-10 [&_*]:tracking-[-0.03em]';
+/* 프로토타입 `.pgrid`: 3열 · 640px 이상 4열, 간격 10 */
+const PHOTO_GRID = 'mt-1 grid grid-cols-3 gap-2.5 pb-8 min-[640px]:grid-cols-4';
 
 interface SortablePhotoItemProps {
   photo: Photo;
@@ -107,19 +116,25 @@ function SortablePhotoItem({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn('relative aspect-3/4 min-w-0', isDragging && 'z-10 opacity-70')}
+      className={cn(
+        'relative aspect-3/4 min-w-0 overflow-hidden bg-[#f4f4f5]',
+        isDragging && 'z-10 opacity-55',
+      )}
     >
-      <div className="animate-rise" style={staggerStyle(index)}>
+      <div className="h-full animate-rise" style={staggerStyle(index)}>
         <OptimizedImage
           src={photo.url}
-          alt={photo.alt ?? `섹션 사진 ${index + 1}`}
+          alt={photo.alt ?? `사진 ${index + 1}`}
           displayWidth={208}
           skeleton
-          frameClassName="aspect-3/4 w-full"
+          draggable={false}
+          frameClassName="h-full w-full"
+          className="object-cover"
         />
       </div>
       {isEditing && (
         <>
+          {/* 프로토타입: 편집 모드에서는 사진 칸 어디를 눌러도 끌어서 옮긴다 */}
           <button
             ref={setActivatorNodeRef}
             type="button"
@@ -128,13 +143,11 @@ function SortablePhotoItem({
             aria-label={`사진 ${index + 1} 순서 이동`}
             disabled={!canReorder || disabled}
             className={cn(
-              buttonClass,
-              'absolute inset-0 size-full text-interactive-inverse focus-visible:outline-focus-inverse disabled:bg-transparent disabled:text-interactive-inverse',
-              canReorder && !disabled && 'touch-none cursor-grab active:cursor-grabbing',
+              'absolute inset-0 size-full select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#fff] disabled:cursor-default',
+              canReorder && !disabled && 'cursor-grab touch-none active:cursor-grabbing',
             )}
           >
-            <img src={PhotoNumberBackground} alt="" className="absolute left-1.5 top-1.5" />
-            <span className="typography-body-md-semibold absolute left-1.5 top-1.5 grid size-8 place-items-center">
+            <span className="absolute top-1.5 left-1.5 grid size-6 place-items-center rounded-circle bg-[rgba(0,0,0,.55)] text-[10px] font-semibold text-[#fff] tabular-nums">
               {index + 1}
             </span>
           </button>
@@ -144,12 +157,9 @@ function SortablePhotoItem({
               disabled={disabled}
               onClick={() => onRemove(photo.id)}
               aria-label={`사진 ${index + 1} 삭제`}
-              className={cn(
-                buttonClass,
-                'absolute -right-0.5 top-0 flex size-11 items-center justify-center rounded-12 hover:bg-dim focus-visible:outline-focus-inverse disabled:bg-transparent disabled:opacity-40',
-              )}
+              className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-circle bg-[rgba(0,0,0,.55)] text-[#fff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fff] disabled:opacity-40"
             >
-              <img src={PhotoDeleteIcon} alt="" className="-translate-x-0.5" />
+              <WorkIcon name="close" className="size-3.5" strokeWidth={2.2} />
             </button>
           )}
         </>
@@ -168,16 +178,20 @@ export function InteriorPhotosPage() {
 
   if (isPending) {
     return (
-      <PageContainer variant="form" className="bg-primary-white">
-        <WorkHeader title="섹션 편집" onBack={flowBack} />
-        <main aria-label="섹션을 불러오는 중" aria-busy="true" className="space-y-6 py-5">
-          <Skeleton className="h-20 w-full rounded-12" />
-          <Skeleton className="h-44 w-full rounded-12" />
-          <div className="grid grid-cols-3 gap-2.5">
-            <SkeletonList count={6}>{() => <Skeleton className="aspect-3/4" />}</SkeletonList>
-          </div>
-        </main>
-      </PageContainer>
+      <div className="min-h-dvh bg-[#fff]">
+        <PageContainer variant="form" className={PAGE_CLASS}>
+          <WorkBar title="섹션 편집" onBack={flowBack} />
+          <main aria-label="섹션을 불러오는 중" aria-busy="true" className="space-y-6 pt-3">
+            <Skeleton className="h-[71px] w-full rounded-4" />
+            <Skeleton className="h-40 w-full rounded-12" />
+            <div className={PHOTO_GRID}>
+              <SkeletonList count={6}>
+                {() => <Skeleton className="aspect-3/4 rounded-0" />}
+              </SkeletonList>
+            </div>
+          </main>
+        </PageContainer>
+      </div>
     );
   }
 
@@ -243,6 +257,7 @@ function InteriorPhotos({
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savingDetailsRef = useRef(false);
+  const savedRef = useRef<ContentEditValues>({ title, description });
   const photoActionRef = useRef(false);
   const user = useCurrentPolicyUser();
   const scope = { displayId, categoryId };
@@ -257,7 +272,8 @@ function InteriorPhotos({
     control,
     reset,
     setError,
-    formState: { errors, isDirty, isSubmitting },
+    setValue,
+    formState: { errors, isSubmitting },
   } = useForm<ContentEditValues>({
     resolver: zodResolver(contentEditSchema),
     defaultValues: { title, description },
@@ -279,16 +295,22 @@ function InteriorPhotos({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  // 프로토타입 자동 저장: 제목 · 설명은 입력칸을 벗어나거나 화면을 나갈 때 저장한다
   const saveDetails = async (values: ContentEditValues) => {
     if (!canEditCategory || savingDetailsRef.current) return;
+    if (
+      values.title === savedRef.current.title &&
+      values.description === savedRef.current.description
+    )
+      return;
     savingDetailsRef.current = true;
     try {
       await updateCategory.mutateAsync({
         categoryId,
         body: { name: values.title, description: values.description },
       });
+      savedRef.current = values;
       reset(values);
-      toast('섹션 정보를 저장했어요');
     } catch (error) {
       setError('root', {
         message: getErrorMessage(error, '섹션 정보를 저장하지 못했어요. 다시 시도해주세요.'),
@@ -296,6 +318,15 @@ function InteriorPhotos({
     } finally {
       savingDetailsRef.current = false;
     }
+  };
+  // 제목을 비운 채 벗어나면 직전 제목으로 되돌린다(프로토타입)
+  const autoSave = () =>
+    handleSubmit(saveDetails, (formErrors) => {
+      if (formErrors.title) setValue('title', savedRef.current.title, { shouldValidate: true });
+    })();
+  const leave = () => {
+    void autoSave();
+    onBack();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -309,6 +340,8 @@ function InteriorPhotos({
     setActionError(null);
     const remainingSlots = Math.max(MAX_CONTENT_IMAGES - photos.length, 0);
     const filesToAdd = validFiles.slice(0, remainingSlots);
+    if (validFiles.length > remainingSlots)
+      toast(`사진은 최대 ${MAX_CONTENT_IMAGES}장까지 올릴 수 있어요`);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (filesToAdd.length === 0) return;
 
@@ -423,203 +456,185 @@ function InteriorPhotos({
   };
 
   return (
-    <PageContainer variant="form" className="bg-primary-white pb-10 text-primary">
-      <WorkHeader title="섹션 편집" onBack={onBack} />
-      <main className="pt-5">
-        <form
-          id="section-details"
-          onSubmit={(event) => handleSubmit(saveDetails)(event)}
-          className="space-y-6"
-          noValidate
-        >
-          <div className="space-y-2">
-            <label htmlFor="section-name" className="typography-body-lg-semibold">
-              섹션 제목{' '}
-              <span className="text-error" aria-hidden="true">
-                *
-              </span>
-            </label>
-            <input
-              {...register('title')}
-              id="section-name"
-              readOnly={!canEditCategory || isSubmitting}
-              required
-              aria-invalid={Boolean(errors.title)}
-              aria-describedby={errors.title ? 'section-name-error' : undefined}
-              placeholder="섹션 제목을 입력해주세요"
-              className="typography-body-xl-regular min-h-11 w-full border-b border-primary bg-transparent py-3 text-primary placeholder:text-tertiary focus-visible:outline-2 focus-visible:outline-focus"
-            />
-            {errors.title && (
-              <p
-                id="section-name-error"
-                role="alert"
-                className="typography-body-md-medium text-error"
-              >
-                {errors.title.message}
-              </p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="section-description" className="typography-body-lg-semibold">
-              섹션 설명 <span className="typography-body-md-medium text-tertiary">· 선택</span>
-            </label>
-            <textarea
-              {...register('description')}
-              id="section-description"
-              readOnly={!canEditCategory || isSubmitting}
-              maxLength={CONTENT_DESCRIPTION_MAX_LENGTH}
-              rows={4}
-              aria-invalid={Boolean(errors.description)}
-              aria-describedby={
-                errors.description ? 'section-description-error' : 'section-description-count'
-              }
-              placeholder="섹션 설명을 입력해주세요"
-              className="typography-body-xl-regular block min-h-32 w-full resize-y rounded-12 border border-primary bg-transparent p-4 text-primary placeholder:text-tertiary focus-visible:outline-2 focus-visible:outline-focus"
-            />
-            <p
-              id="section-description-count"
-              className="typography-body-md-medium text-right text-tertiary"
-            >
-              {currentDescription.length} / {CONTENT_DESCRIPTION_MAX_LENGTH}
-            </p>
-            {errors.description && (
-              <p
-                id="section-description-error"
-                role="alert"
-                className="typography-body-md-medium text-error"
-              >
-                {errors.description.message}
-              </p>
-            )}
-          </div>
-          {errors.root && (
-            <p role="alert" className="typography-body-lg-regular text-error">
-              {errors.root.message}
-            </p>
-          )}
-        </form>
-
-        <section aria-label="섹션 사진" className="mt-3">
-          <div
-            className={cn(
-              'flex min-h-11 items-center justify-between gap-2',
-              isEditingPhotos ? 'mb-1' : 'mb-3',
-            )}
+    <div className="min-h-dvh bg-[#fff]">
+      <PageContainer variant="form" className={PAGE_CLASS}>
+        <WorkBar title="섹션 편집" onBack={leave} />
+        <main className="flex-1">
+          <form
+            id="section-details"
+            onSubmit={(event) => handleSubmit(saveDetails)(event)}
+            noValidate
+            autoComplete="off"
           >
-            {isEditingPhotos ? (
-              <p className="typography-body-md-medium text-secondary">
-                순서 변경과 삭제는 자동으로 저장돼요
-              </p>
-            ) : (
-              <h2 className="typography-body-lg-semibold">
-                사진 {photos.length}/{MAX_CONTENT_IMAGES}
-              </h2>
-            )}
-            {(canEditPhotos || isEditingPhotos) && (photos.length > 0 || isEditingPhotos) && (
-              <button
-                type="button"
-                disabled={isPhotoActionPending}
-                onClick={handlePhotoEdit}
-                className={cn(
-                  buttonClass,
-                  'typography-body-md-semibold -mr-2 min-h-11 min-w-11 shrink-0 rounded-8 px-2 hover:bg-secondary',
-                  isEditingPhotos && 'typography-body-lg-semibold',
-                )}
-              >
-                {isSavingOrder ? '저장 중' : isEditingPhotos ? '완료' : '편집'}
-              </button>
-            )}
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={SUPPORTED_PHOTO_TYPES.join(',')}
-            multiple
-            onChange={handleFileChange}
-            className="hidden"
-            aria-label="섹션 사진 추가"
-          />
-          {(rejectedPhotoCount > 0 || actionError) && (
-            <div
-              role="alert"
-              className="mb-3 flex items-start gap-3 rounded-12 bg-secondary py-4 pl-4 pr-5"
-            >
-              <img src={PhotoNoticeIcon} alt="" className="shrink-0" />
-              <div className="typography-body-lg-regular min-w-0 whitespace-pre-line text-secondary">
-                {rejectedPhotoCount > 0 && (
-                  <p>
-                    {rejectedPhotoCount}장은 올리지 못했어요
-                    <br />
-                    지원하지 않는 형식이거나 20MB를 넘는 파일이에요
-                  </p>
-                )}
-                {actionError && <p>{actionError}</p>}
-              </div>
+            <div className="mt-3">
+              <SectionFieldLabel htmlFor="section-name" required>
+                섹션 제목
+              </SectionFieldLabel>
+              <input
+                {...register('title')}
+                onBlur={(event) => {
+                  void register('title').onBlur(event);
+                  void autoSave();
+                }}
+                id="section-name"
+                readOnly={!canEditCategory || isSubmitting}
+                required
+                maxLength={SECTION_TITLE_MAX_LENGTH}
+                aria-invalid={Boolean(errors.title)}
+                aria-describedby={errors.title ? 'section-name-error' : undefined}
+                placeholder="섹션 제목을 입력해주세요"
+                className={sectionInputClass}
+              />
+              {errors.title && (
+                <p
+                  id="section-name-error"
+                  role="alert"
+                  className="mt-1 text-[12px] font-medium text-[#fb2c36]"
+                >
+                  {errors.title.message}
+                </p>
+              )}
             </div>
-          )}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={photos.map(getPhotoSortableId)} strategy={rectSortingStrategy}>
-              <ul className="grid grid-cols-3 gap-2.5">
-                {!isEditingPhotos && canCreateContent && (
-                  <li className="aspect-3/4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (canCreateContent && !isPhotoActionPending)
-                          fileInputRef.current?.click();
-                      }}
-                      disabled={photos.length >= MAX_CONTENT_IMAGES || isPhotoActionPending}
-                      className={cn(
-                        buttonClass,
-                        'typography-body-md-medium flex size-full flex-col items-center justify-center gap-1 border border-primary hover:bg-secondary',
-                      )}
-                    >
-                      <img src={PhotoAddIcon} alt="" />
-                      {isBusy ? '업로드 중' : '사진 추가'}
-                    </button>
-                  </li>
-                )}
-                {photos.map((photo, index) => (
-                  <SortablePhotoItem
-                    key={photo.id}
-                    photo={photo}
-                    index={index}
-                    isEditing={isEditingPhotos}
-                    canReorder={canReorder}
-                    disabled={isPhotoActionPending}
-                    displayDetail={displayDetail}
-                    onRemove={handleRemove}
-                  />
-                ))}
-              </ul>
-            </SortableContext>
-          </DndContext>
-          {photos.length === 0 && !canCreateContent && (
-            <p className="typography-body-lg-regular py-6 text-secondary">
-              아직 등록된 사진이 없어요.
-            </p>
-          )}
-        </section>
-      </main>
-      {canEditCategory && isDirty && (
-        <BottomFixedBar container="form">
-          <button
-            form="section-details"
-            type="submit"
-            disabled={isSubmitting || updateCategory.isPending}
-            className={cn(
-              buttonClass,
-              'typography-body-lg-semibold min-h-11 w-full rounded-12 bg-interactive-primary px-4 text-interactive-inverse hover:bg-interactive-primary-hover active:bg-interactive-primary-press',
+            <div className="mt-6">
+              <SectionFieldLabel htmlFor="section-description" optional>
+                섹션 설명
+              </SectionFieldLabel>
+              <textarea
+                {...register('description')}
+                onBlur={(event) => {
+                  void register('description').onBlur(event);
+                  void autoSave();
+                }}
+                id="section-description"
+                readOnly={!canEditCategory || isSubmitting}
+                maxLength={SECTION_DESCRIPTION_MAX_LENGTH}
+                aria-invalid={Boolean(errors.description)}
+                aria-describedby={
+                  errors.description ? 'section-description-error' : 'section-description-count'
+                }
+                placeholder="섹션 설명을 입력해주세요"
+                className={`${sectionTextareaClass} h-32`}
+              />
+              <p
+                id="section-description-count"
+                className="mt-2 text-right text-[12px] font-medium text-[#71717b] tabular-nums"
+              >
+                {currentDescription.length} / {SECTION_DESCRIPTION_MAX_LENGTH}
+              </p>
+              {errors.description && (
+                <p
+                  id="section-description-error"
+                  role="alert"
+                  className="text-[12px] font-medium text-[#fb2c36]"
+                >
+                  {errors.description.message}
+                </p>
+              )}
+            </div>
+            {errors.root && (
+              <p role="alert" className="mt-2 text-[12px] font-medium text-[#fb2c36]">
+                {errors.root.message}
+              </p>
             )}
-          >
-            {isSubmitting ? '저장 중' : '섹션 정보 저장'}
-          </button>
-        </BottomFixedBar>
-      )}
-    </PageContainer>
+          </form>
+
+          <section aria-label="섹션 사진">
+            <div className="mt-3 flex h-11 items-center justify-between">
+              {isEditingPhotos ? (
+                <p className="text-[12px] font-medium text-[#3f3f47]">
+                  순서 변경과 삭제는 자동으로 저장돼요
+                </p>
+              ) : (
+                <h2 className="text-[14px] font-semibold tabular-nums">
+                  사진 {photos.length}/{MAX_CONTENT_IMAGES}
+                </h2>
+              )}
+              {(canEditPhotos || isEditingPhotos) && (photos.length > 0 || isEditingPhotos) && (
+                <button
+                  type="button"
+                  disabled={isPhotoActionPending}
+                  onClick={handlePhotoEdit}
+                  className={TOOL_BUTTON}
+                >
+                  {isSavingOrder ? '저장 중' : isEditingPhotos ? '완료' : '편집'}
+                </button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={SUPPORTED_PHOTO_TYPES.join(',')}
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+              aria-label="섹션 사진 추가"
+            />
+            {(rejectedPhotoCount > 0 || actionError) && (
+              <div
+                role="alert"
+                className="mt-3 flex items-start gap-2.5 rounded-12 bg-[#f4f4f5] px-3.5 py-3"
+              >
+                <WorkIcon name="info" className="mt-px size-4.5 text-[#71717b]" />
+                <div className="min-w-0 text-[12px] leading-[1.4] font-medium whitespace-pre-line text-[#3f3f47]">
+                  {rejectedPhotoCount > 0 && (
+                    <p>
+                      <b className="block font-semibold text-[#18181b]">
+                        {rejectedPhotoCount}장은 올리지 못했어요
+                      </b>
+                      지원하지 않는 형식이거나 20MB를 넘는 파일이에요
+                    </p>
+                  )}
+                  {actionError && <p>{actionError}</p>}
+                </div>
+              </div>
+            )}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={photos.map(getPhotoSortableId)}
+                strategy={rectSortingStrategy}
+              >
+                <ul className={PHOTO_GRID}>
+                  {!isEditingPhotos && canCreateContent && photos.length < MAX_CONTENT_IMAGES && (
+                    <li className="aspect-3/4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (canCreateContent && !isPhotoActionPending)
+                            fileInputRef.current?.click();
+                        }}
+                        disabled={isPhotoActionPending}
+                        className={`grid size-full content-center justify-items-center gap-1.5 border border-[#d4d4d8] text-[12px] font-medium transition-colors duration-fast hover:bg-[#f4f4f5] disabled:cursor-default disabled:text-[#d4d4d8] ${focusRing}`}
+                      >
+                        <WorkIcon name="plus" className="size-6.5" strokeWidth={1.6} />
+                        {isBusy ? '업로드 중' : '사진 추가'}
+                      </button>
+                    </li>
+                  )}
+                  {photos.map((photo, index) => (
+                    <SortablePhotoItem
+                      key={photo.id}
+                      photo={photo}
+                      index={index}
+                      isEditing={isEditingPhotos}
+                      canReorder={canReorder}
+                      disabled={isPhotoActionPending}
+                      displayDetail={displayDetail}
+                      onRemove={handleRemove}
+                    />
+                  ))}
+                </ul>
+              </SortableContext>
+            </DndContext>
+            {photos.length === 0 && !canCreateContent && (
+              <p className="py-6 text-[14px] text-[#3f3f47]">아직 등록된 사진이 없어요</p>
+            )}
+          </section>
+        </main>
+      </PageContainer>
+    </div>
   );
 }

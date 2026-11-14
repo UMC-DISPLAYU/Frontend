@@ -2,25 +2,31 @@ import { useState } from 'react';
 
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import SectionPlusIcon from '@/assets/exhibition-work/SectionPlusIcon.svg';
 import {
-  ContentCard,
   ContentDeleteConfirmDialog,
   ContentEditSheet,
+  ContentList,
+  MAX_DISPLAY_SECTIONS,
 } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
-import { ExhibitionWorkLayout } from '@/components/exhibition-work';
+import { ExhibitionWorkLayout, WorkIcon } from '@/components/exhibition-work';
 import {
   useCreateContentCategory,
   useDeleteContentCategory,
+  useReorderContentCategories,
 } from '@/hooks/queries/useContentCategories';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useDisplayContentPolicy } from '@/hooks/usePolicy';
-import { type Content, EMPTY_CONTENT } from '@/types';
+import type { Content } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
-import { staggerStyle } from '@/utils/stagger';
+
+const TOOL_BUTTON =
+  'inline-flex h-8 items-center pl-2 text-[12px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]';
+/* 프로토타입 `.addbtn`: 높이 44 · 모서리 12 · 아이콘 20(선 2.2) + 간격 8 */
+const ADD_BUTTON =
+  'flex h-11 w-full items-center justify-center gap-2 rounded-12 bg-[#18181b] text-[14px] font-semibold text-[#fff] transition duration-fast hover:bg-[#2f2f35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-99';
 
 export function DisplayContentsManagePage({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
@@ -38,10 +44,12 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
   const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
   const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
-  const canShowCategoryMenu = canEditCategory || canDeleteCategory;
+  const canReorder = hasPermission(displayContentPolicy, 'reorder');
+  const canEditList = canEditCategory || canDeleteCategory || canReorder;
 
   const createMutation = useCreateContentCategory(displayId);
   const deleteMutation = useDeleteContentCategory(displayId);
+  const reorderMutation = useReorderContentCategories(displayId);
 
   const [editMode, setEditMode] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -49,29 +57,42 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  // 끌어서 바꾼 순서. 저장 뒤 전시 상세를 다시 불러오면(목록이 바뀌면) 서버 순서를 그대로 쓴다
+  const [ordered, setOrdered] = useState<{ base: unknown; contents: Content[] } | null>(null);
 
-  const contents: Content[] =
-    displayDetail?.contentCategories?.map((cat) => ({
+  const categories = displayDetail?.contentCategories;
+  const fetchedContents: Content[] =
+    categories?.map((cat) => ({
       id: cat.categoryId,
       title: cat.name,
       description: cat.description || '',
       photoCount: cat.contents.length,
       thumbnail: cat.contents[0]?.imageUrl,
     })) ?? [];
-  const isEditingList = editMode && contents.length > 0 && canShowCategoryMenu;
-  const closeEditor = () => setCreateOpen(false);
+  const contents = ordered && ordered.base === categories ? ordered.contents : fetchedContents;
+  const isEditingList = editMode && contents.length > 0 && canEditList;
+  const sectionPath = (categoryId: number) => `/exhibition/${displayId}/contents/${categoryId}`;
+
   const openEditor = () => {
     setSaveError(null);
     setCreateOpen(true);
   };
 
-  const handleSave = (patch: { title: string; description: string }) => {
+  // 프로토타입: 섹션을 추가하면 바로 섹션 편집 화면으로 넘어간다. 시트가 쌓은 기록은 대체한다
+  const handleSave = (values: { title: string; description: string }) => {
     if (createMutation.isPending) return;
     setSaveError(null);
-    const body = { name: patch.title, description: patch.description };
-    const onError = (error: unknown) =>
-      setSaveError(getErrorMessage(error, '섹션 정보를 저장하지 못했어요. 다시 시도해주세요.'));
-    createMutation.mutate(body, { onSuccess: closeEditor, onError });
+    createMutation.mutate(
+      { name: values.title, description: values.description },
+      {
+        onSuccess: ({ categoryId }) => {
+          setCreateOpen(false);
+          navigate(sectionPath(categoryId), { replace: true });
+        },
+        onError: (error) =>
+          setSaveError(getErrorMessage(error, '섹션을 추가하지 못했어요. 다시 시도해주세요.')),
+      },
+    );
   };
 
   const handleDelete = () => {
@@ -80,11 +101,23 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
     deleteMutation.mutate(deleting.id, {
       onSuccess: () => {
         setDeleteOpen(false);
+        setOrdered(null);
         if (contents.length === 1) setEditMode(false);
       },
       onError: (error) =>
         setDeleteError(getErrorMessage(error, '섹션을 삭제하지 못했어요. 다시 시도해주세요.')),
     });
+  };
+
+  // 놓을 때마다 바로 저장하고, 실패하면 직전 순서로 되돌린다(프로토타입 "자동으로 저장돼요")
+  const handleReorder = (next: Content[]) => {
+    if (!canReorder || reorderMutation.isPending) return;
+    const previous = ordered;
+    setOrdered({ base: categories, contents: next });
+    reorderMutation.mutate(
+      next.map((content) => content.id),
+      { onError: () => setOrdered(previous) },
+    );
   };
 
   if (!isValidDisplayId) {
@@ -109,66 +142,71 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
     );
   }
 
+  const canAdd = canCreateCategory && !isEditingList && contents.length < MAX_DISPLAY_SECTIONS;
+
   const panel = (
-    <>
+    <div className="desktop:max-w-180">
       {contents.length > 0 && (
-        <div className="flex min-h-11 items-center justify-between gap-2">
+        <div className="mt-1 flex min-h-10 items-center justify-between gap-3">
           {isEditingList ? (
-            <p className="typography-body-md-medium text-secondary">
+            <p className="text-[12px] font-medium text-[#3f3f47]">
               순서 변경과 삭제는 자동으로 저장돼요
             </p>
           ) : (
-            <p className="typography-body-lg-semibold text-primary">섹션 {contents.length}</p>
+            <b className="text-[14px] font-semibold tabular-nums">
+              섹션 {contents.length}/{MAX_DISPLAY_SECTIONS}
+            </b>
           )}
-          {canShowCategoryMenu && (
+          {canEditList && (
             <button
               type="button"
-              onClick={() => setEditMode((previous) => !previous)}
-              aria-pressed={isEditingList}
-              className="typography-body-md-semibold -mr-3 flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-12 px-3 text-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+              onClick={() => {
+                reorderMutation.reset();
+                setEditMode((previous) => !previous);
+              }}
+              className={TOOL_BUTTON}
             >
               {isEditingList ? '완료' : '편집'}
             </button>
           )}
         </div>
       )}
-      <div>
-        {contents.map((content, index) => (
-          <div key={content.id} className="animate-rise" style={staggerStyle(index)}>
-            <ContentCard
-              content={content}
-              editing={isEditingList}
-              onClick={() => navigate(`/exhibition/${displayId}/contents/${content.id}`)}
-              onDelete={
-                canDeleteCategory
-                  ? () => {
-                      setDeleting(content);
-                      setDeleteError(null);
-                      setDeleteOpen(true);
-                    }
-                  : undefined
+      {isEditingList && reorderMutation.error && (
+        <p role="alert" className="text-[12px] font-medium text-[#fb2c36]">
+          {getErrorMessage(reorderMutation.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
+        </p>
+      )}
+      <ContentList
+        contents={contents}
+        editing={isEditingList}
+        disabled={reorderMutation.isPending || !canReorder}
+        onOpen={(content) => navigate(sectionPath(content.id))}
+        onDelete={
+          canDeleteCategory
+            ? (content) => {
+                setDeleting(content);
+                setDeleteError(null);
+                setDeleteOpen(true);
               }
-            />
-          </div>
-        ))}
-      </div>
-      {canCreateCategory && !isEditingList && (
+            : undefined
+        }
+        onReorder={handleReorder}
+      />
+      {canAdd && (
         <button
           type="button"
           onClick={openEditor}
-          className="typography-body-lg-semibold mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
+          className={`${ADD_BUTTON} ${contents.length > 0 ? 'mt-5 mb-8' : 'mt-2'}`}
         >
-          <img src={SectionPlusIcon} alt="" />
+          <WorkIcon name="plus" className="size-5" strokeWidth={2.2} />
           섹션 추가
         </button>
       )}
       <ContentEditSheet
-        content={EMPTY_CONTENT}
         open={createOpen}
-        mode="create"
         isSaving={createMutation.isPending}
         errorMessage={saveError}
-        onClose={closeEditor}
+        onClose={() => setCreateOpen(false)}
         onSave={handleSave}
       />
       <ContentDeleteConfirmDialog
@@ -178,7 +216,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
         onCancel={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
       />
-    </>
+    </div>
   );
 
   return embedded ? (

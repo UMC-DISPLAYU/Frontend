@@ -36,6 +36,31 @@ export function WorkHeader({ title, onBack }: { title: string; onBack?: () => vo
   );
 }
 
+/* 프로토타입 `.bar`: 높이 56 · 뒤로가기 44(아이콘 x20) · 제목 20 Bold, 넓은 화면(.wide)은 900px 이상 24 */
+export function WorkBar({
+  title,
+  onBack,
+  wide = false,
+}: {
+  title: string;
+  onBack: () => void;
+  wide?: boolean;
+}) {
+  return (
+    <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
+      <button
+        type="button"
+        aria-label="뒤로가기"
+        onClick={onBack}
+        className="grid size-11 place-items-center rounded-circle transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
+      >
+        <WorkIcon name="back" />
+      </button>
+      <h1 className={cn('text-[20px] font-bold', wide && 'desktop:text-[24px]')}>{title}</h1>
+    </header>
+  );
+}
+
 /* 프로토타입 일정 표기: 앞에 연도, 끝 연도는 다를 때만 (2026.06.10–06.20) */
 const formatPeriod = ({ startDate, endDate }: DisplayDetailDto['period']) => {
   const dot = (date: string) => date.replace(/-/g, '.');
@@ -79,17 +104,7 @@ export function ExhibitionWorkLayout({
         fillHeight
         className="max-w-120 pt-[max(8px,env(safe-area-inset-top))] tablet:max-w-168 tablet:pt-10 desktop:max-w-list"
       >
-        <header className="-ml-2.5 flex h-14 shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            aria-label="뒤로가기"
-            onClick={onBack ?? flowBack}
-            className="grid size-11 place-items-center rounded-circle transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
-          >
-            <WorkIcon name="back" />
-          </button>
-          <h1 className="text-[20px] font-bold desktop:text-[24px]">전시 작업</h1>
-        </header>
+        <WorkBar title="전시 작업" onBack={onBack ?? flowBack} wide />
 
         <div className="mt-2 grid animate-rise grid-cols-[82px_minmax(0,1fr)] gap-x-3.5 rounded-12 border border-[#d4d4d8] p-3">
           <div className="aspect-402/568 w-[82px] bg-[#f4f4f5]">

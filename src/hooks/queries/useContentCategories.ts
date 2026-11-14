@@ -4,6 +4,7 @@ import type { CreateContentCategoryRequestDto, UpdateContentCategoryRequestDto }
 import {
   createContentCategory,
   deleteContentCategory,
+  reorderContentCategories,
   updateContentCategory,
 } from '@/api/endpoints/displayContent';
 import { queryKeys } from '@/api/queryKeys';
@@ -39,6 +40,17 @@ export const useUpdateContentCategory = (displayId: number) => {
       categoryId: number;
       body: UpdateContentCategoryRequestDto;
     }) => updateContentCategory(displayId, categoryId, body),
+    onSuccess: invalidate,
+  });
+};
+
+// PATCH /v1/display/{displayId}/content-categories/reorder
+export const useReorderContentCategories = (displayId: number) => {
+  const invalidate = useInvalidateDisplayDetail(displayId);
+
+  return useMutation({
+    mutationFn: (orderedCategoryIds: number[]) =>
+      reorderContentCategories(displayId, { orderedCategoryIds }),
     onSuccess: invalidate,
   });
 };

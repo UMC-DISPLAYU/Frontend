@@ -22,6 +22,8 @@ const h = vi.hoisted(() => ({
   addImages: vi.fn(),
   reset: vi.fn(),
   setError: vi.fn(),
+  setValue: vi.fn(),
+  toast: vi.fn(),
 }));
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
@@ -44,6 +46,7 @@ vi.mock('react-hook-form', () => ({
     control: {},
     reset: h.reset,
     setError: h.setError,
+    setValue: h.setValue,
     formState: { errors: {}, isDirty: true, isSubmitting: false },
   }),
   useWatch: () => '섹션 설명',
@@ -63,13 +66,16 @@ vi.mock('@dnd-kit/sortable', async (original) => ({
   SortableContext: () => null,
   useSortable: () => ({ attributes: {}, listeners: {} }),
 }));
-vi.mock(
-  '@/components/artworks-manage',
-  async () => import('@/components/artworks-manage/contentEdit.schema'),
-);
-vi.mock('@/components/common', () => ({ BottomFixedBar: () => null, ErrorView: () => null }));
+vi.mock('@/components/artworks-manage', async () => ({
+  ...(await import('@/components/artworks-manage/contentEdit.schema')),
+  ...(await import('@/components/artworks-manage/constants')),
+  SectionFieldLabel: () => null,
+  sectionInputClass: '',
+  sectionTextareaClass: '',
+}));
+vi.mock('@/components/common', () => ({ ErrorView: () => null }));
 vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: () => null }));
-vi.mock('@/components/exhibition-work', () => ({ WorkHeader: () => null }));
+vi.mock('@/components/exhibition-work', () => ({ WorkBar: () => null, WorkIcon: () => null }));
 vi.mock('@/components/layout', () => ({ PageContainer: () => null }));
 vi.mock('@/components/ui', () => ({ Skeleton: () => null, SkeletonList: () => null }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
@@ -117,7 +123,7 @@ vi.mock('@/hooks/useImageUpload', () => ({
     clearImages: vi.fn(),
   }),
 }));
-vi.mock('@/stores/toastStore', () => ({ toast: vi.fn() }));
+vi.mock('@/stores/toastStore', () => ({ toast: h.toast }));
 
 type Element = ReactElement<Record<string, unknown>>;
 const nodes = (node: ReactNode): Element[] =>
@@ -468,4 +474,23 @@ it('한 요청이 먼저 실패해도 모든 파일 처리가 끝날 때까지 �
   expect(
     render().some((node) => node.type === 'button' && textContent(node).includes('업로드 중')),
   ).toBe(false);
+});
+
+it('자동 저장은 제목 · 설명이 그대로면 요청하지 않는다', async () => {
+  await submit(render())({ title: '전시 전경', description: '섹션 설명' });
+  expect(h.save).not.toHaveBeenCalled();
+});
+
+it('20장을 넘겨 고르면 넘친 사진은 올리지 않고 최대 장수를 안내한다', async () => {
+  h.contents = Array.from({ length: 19 }, (_, index) => ({
+    contentId: index + 1,
+    imageUrl: `/photo-${index}.jpg`,
+    userId: 1,
+  }));
+  await selectFiles([
+    { name: 'one.png', type: 'image/png', size: 1024 },
+    { name: 'two.png', type: 'image/png', size: 1024 },
+  ]);
+  expect(h.toast).toHaveBeenCalledWith('사진은 최대 20장까지 올릴 수 있어요');
+  expect(photoIds()).toHaveLength(20);
 });
