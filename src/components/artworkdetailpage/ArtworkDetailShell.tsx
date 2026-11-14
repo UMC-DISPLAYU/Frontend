@@ -23,6 +23,8 @@ type Props = {
   onBack: () => void;
   /* 공개 전 전시의 작품. 띠를 두고 900px 이상에서도 뒤로가기를 남긴다 */
   isPreview?: boolean;
+  /* 전시 작업에서 연 작품 미리보기: 뒤로가기 버튼을 두지 않는다(프로토타입 work.html .backa 숨김) */
+  hideBack?: boolean;
   label: ReactNode;
   hasIntro: boolean;
   intro: ReactNode;
@@ -49,6 +51,7 @@ export function ArtworkDetailShell({
   title,
   onBack,
   isPreview = false,
+  hideBack = false,
   label,
   hasIntro,
   intro,
@@ -74,16 +77,18 @@ export function ArtworkDetailShell({
       <DetailTopBar className={isPreview ? 'top-10' : 'top-0'} />
 
       {/* 높이 0인 sticky 칸이라 처음엔 사진 위(20, 16)에 있다가, 스크롤하면 화면 맨 위(768px 이상은 헤더 아래)에 붙는다 */}
-      <div className="sticky top-[calc(var(--detail-top)-max(16px,env(safe-area-inset-top)))] z-30 h-0 desktop:hidden">
-        <DetailBackButton
-          onBack={onBack}
-          {...chrome.holdProps}
-          className={cn(
-            'absolute top-[max(16px,env(safe-area-inset-top))] left-5',
-            isBackHidden && 'pointer-events-none opacity-0',
-          )}
-        />
-      </div>
+      {!hideBack && (
+        <div className="sticky top-[calc(var(--detail-top)-max(16px,env(safe-area-inset-top)))] z-30 h-0 desktop:hidden">
+          <DetailBackButton
+            onBack={onBack}
+            {...chrome.holdProps}
+            className={cn(
+              'absolute top-[max(16px,env(safe-area-inset-top))] left-5',
+              isBackHidden && 'pointer-events-none opacity-0',
+            )}
+          />
+        </div>
+      )}
 
       <div className={LAYOUT}>
         <ArtworkViewer
@@ -93,7 +98,7 @@ export function ArtworkDetailShell({
           onModeChange={changeMode}
           stageRef={stageRef}
           chrome={chrome}
-          isPreview={isPreview}
+          isPreview={isPreview && !hideBack}
           onBack={onBack}
         />
 
@@ -109,7 +114,8 @@ export function ArtworkDetailShell({
             activeTab={activeTab}
             onTabChange={selectTab}
             sentinelRef={sentinelRef}
-            isStuck={isStuck}
+            // 뒤로가기 버튼이 없으면 탭 줄 왼쪽에 자리를 비우지 않는다
+            isStuck={isStuck && !hideBack}
           />
 
           {hasIntro && (

@@ -16,11 +16,18 @@ const COLUMN = 'mx-auto w-full max-w-140';
 const PHOTO_SIZE = 'aspect-3/4 w-full';
 const PHOTO_FRAME = `${PHOTO_SIZE} overflow-hidden bg-tertiary`;
 
-export function DisplayContentsPage() {
+type DisplayContentsPageProps = {
+  /* 전시 미리보기에서 연 콘텐츠(/exhibition/:displayId/preview/contents)의 전시 번호와 뒤로가기 */
+  previewDisplayId?: string;
+  onBack?: () => void;
+};
+
+export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContentsPageProps = {}) {
   const flowBack = useFlowBack();
+  const goBack = onBack ?? (() => flowBack());
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const displayId = parseDisplayId(id);
+  const displayId = parseDisplayId(previewDisplayId ?? id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
 
@@ -54,7 +61,7 @@ export function DisplayContentsPage() {
           <button
             type="button"
             aria-label="뒤로가기"
-            onClick={() => flowBack()}
+            onClick={goBack}
             className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-94"
           >
             <ChevronLeft aria-hidden="true" size={24} strokeWidth={1.7} />

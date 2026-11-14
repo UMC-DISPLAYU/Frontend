@@ -16,7 +16,13 @@ const COLLAPSED_COUNT = 3;
 const ARTIST_CLASS =
   'typography-body-xl-semibold relative flex h-8 items-center gap-0.5 text-primary before:absolute before:inset-x-0 before:-inset-y-1.5';
 
-export function ArtworkArtists({ artists }: { artists: ArtworkArtist[] }) {
+type Props = {
+  artists: ArtworkArtist[];
+  /* 작품 미리보기는 화살표만 두고 프로필로 이동하지 않는다(사용자 결정) */
+  linkToProfile?: boolean;
+};
+
+export function ArtworkArtists({ artists, linkToProfile = true }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isCollapsed = artists.length >= COLLAPSE_FROM && !isExpanded;
@@ -26,7 +32,12 @@ export function ArtworkArtists({ artists }: { artists: ArtworkArtist[] }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3.5">
       {visibleArtists.map((artist, index) =>
-        artist.userId ? (
+        artist.userId && !linkToProfile ? (
+          <span key={`${artist.userId}-${index}`} className={ARTIST_CLASS}>
+            {artist.name}
+            <img src={chevronIcon} alt="" />
+          </span>
+        ) : artist.userId ? (
           <Link
             key={`${artist.userId}-${index}`}
             to={`/artist/${artist.userId}`}

@@ -66,6 +66,12 @@ describe('전시 작업 탭', () => {
     expect(mocks.navigate).not.toHaveBeenCalled();
   });
 
+  it('전시 미리보기는 전시 팀원용 미리보기 주소를 새 탭으로 연다', () => {
+    const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
+    const preview = nodes(page).find((node) => node.props.to === '/exhibition/7/preview');
+    expect(preview?.props).toMatchObject({ target: '_blank', rel: 'noopener noreferrer' });
+  });
+
   it('기존 별도 관리 경로에서 탭을 누르면 전시 작업의 해당 탭으로 이동한다', () => {
     const page = ExhibitionWorkLayout({ display, activeTab: 'contents', children: null });
     (tabsOf(page)[0].props.onClick as () => void)();
@@ -76,11 +82,6 @@ describe('전시 작업 탭', () => {
 });
 
 describe('전시 요약 카드', () => {
-  it('전시 미리보기는 미리보기 화면이 생기기 전까지 전시 상세로 간다', () => {
-    const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
-    expect(nodes(page).some((node) => node.props.to === '/display/7')).toBe(true);
-  });
-
   it('일정은 앞에만 연도를 붙이고 끝 연도는 다를 때만 붙인다', () => {
     const texts = (dates: { startDate: string; endDate: string }) =>
       nodes(

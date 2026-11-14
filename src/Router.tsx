@@ -122,6 +122,18 @@ const DisplayContentsManagePage = lazyPage(
   () => import('./pages/DisplayContentsManagePage'),
   'DisplayContentsManagePage',
 );
+const DisplayPreviewPage = lazyPage(
+  () => import('./pages/exhibition-preview'),
+  'DisplayPreviewPage',
+);
+const ArtworkPreviewPage = lazyPage(
+  () => import('./pages/exhibition-preview'),
+  'ArtworkPreviewPage',
+);
+const ContentsPreviewPage = lazyPage(
+  () => import('./pages/exhibition-preview'),
+  'ContentsPreviewPage',
+);
 const ArtworksManagePage = lazyPage(
   () => import('./pages/ArtworksManagePage'),
   'ArtworksManagePage',
@@ -367,6 +379,23 @@ export const router = createBrowserRouter([
                       </DisplayPermissionGuard>
                     ),
                   },
+                  // 미리보기는 공개 전 전시도 보여주므로 전시 팀원만 연다
+                  {
+                    path: 'preview',
+                    element: (
+                      <DisplayPermissionGuard action="view">
+                        <DisplayPreviewPage />
+                      </DisplayPermissionGuard>
+                    ),
+                  },
+                  {
+                    path: 'preview/contents',
+                    element: (
+                      <DisplayPermissionGuard action="view">
+                        <ContentsPreviewPage />
+                      </DisplayPermissionGuard>
+                    ),
+                  },
                   {
                     path: 'contents',
                     element: (
@@ -409,6 +438,15 @@ export const router = createBrowserRouter([
                           <ArtworkPermissionGuard action="create">
                             <ArtworkRegisterPage />
                           </ArtworkPermissionGuard>
+                        ),
+                      },
+                      {
+                        path: ':artworkId/preview',
+                        loader: validateNumericId('artworkId'),
+                        element: (
+                          <DisplayPermissionGuard action="view">
+                            <ArtworkPreviewPage />
+                          </DisplayPermissionGuard>
                         ),
                       },
                       {
