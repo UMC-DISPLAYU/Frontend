@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { fitCrop, isSameCrop, isValidCrop, moveCrop, resizeCrop, scaleCrop } from './posterCrop';
+import { fitCrop, isSameCrop, isValidCrop, moveCrop, resizeCrop, scaleCrop } from './cropBox';
 
 const CROP_RATIO = 0.75;
 

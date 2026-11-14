@@ -125,6 +125,20 @@ export function usePosterUploads({
     setItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  /** 끌어서 순서를 바꾼다. 맨 앞 포스터가 대표가 된다 */
+  const move = useCallback((activeId: string, overId: string) => {
+    setItems((prev) => {
+      const from = prev.findIndex((item) => item.id === activeId);
+      const to = prev.findIndex((item) => item.id === overId);
+      if (from < 0 || to < 0 || from === to) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }, []);
+
   const setCrop = useCallback((id: string, crop: PosterCropRect | null) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, crop } : item)));
   }, []);
@@ -138,6 +152,7 @@ export function usePosterUploads({
     addFiles,
     retry,
     remove,
+    move,
     setCrop,
   };
 }

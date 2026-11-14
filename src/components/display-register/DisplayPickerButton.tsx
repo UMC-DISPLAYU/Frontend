@@ -1,8 +1,9 @@
 import { useId } from 'react';
 
-import SearchIcon from '@/assets/display-register/SearchIcon.svg';
-import SelectorIcon from '@/assets/display-register/SelectorIcon.svg';
 import { cn } from '@/utils/cn';
+
+import { FOCUS_CLASS } from './displayRegister.styles';
+import { SearchIcon, UpDownIcon } from './DisplayRegisterIcons';
 
 interface DisplayPickerButtonProps {
   id?: string;
@@ -16,6 +17,7 @@ interface DisplayPickerButtonProps {
   onClick: () => void;
 }
 
+/** 프로토타입 .ul.pick — 높이 49, 값 16 / 400, 오른쪽 아이콘 20 */
 export function DisplayPickerButton({
   id,
   labelId,
@@ -27,6 +29,7 @@ export function DisplayPickerButton({
   onClick,
 }: DisplayPickerButtonProps) {
   const valueId = useId();
+  const Icon = icon === 'search' ? SearchIcon : UpDownIcon;
 
   return (
     <button
@@ -36,12 +39,15 @@ export function DisplayPickerButton({
       disabled={disabled}
       aria-labelledby={`${labelId} ${valueId}`}
       onClick={onClick}
-      className="flex w-full min-w-0 items-center gap-2 border-b border-primary py-3 text-left transition duration-fast ease-standard enabled:hover:border-interactive-primary disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      className={cn(
+        'mt-1 flex h-[49px] w-full min-w-0 items-center justify-between gap-2 border-b border-primary text-left transition-colors duration-fast ease-standard focus-within:border-[#18181b] disabled:cursor-default',
+        FOCUS_CLASS,
+      )}
     >
       <span
         id={valueId}
         className={cn(
-          'typography-body-xl-regular min-w-0 flex-1 truncate',
+          'typography-body-xl-regular min-w-0 truncate',
           value ? (disabled ? 'text-secondary' : 'text-primary') : 'text-tertiary',
         )}
       >
@@ -54,11 +60,7 @@ export function DisplayPickerButton({
           placeholder
         )}
       </span>
-      <img
-        src={icon === 'search' ? SearchIcon : SelectorIcon}
-        alt=""
-        className={cn('size-6 shrink-0', disabled && 'opacity-40')}
-      />
+      <Icon className={cn('size-5 shrink-0 text-primary', disabled && 'opacity-40')} />
     </button>
   );
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useUploadImage } from '@/hooks/queries/useFile';
+import type { CropRect } from '@/utils/cropBox';
 
 import { ARTWORK_IMAGE_ACCEPT_TYPES, MAX_ARTWORK_IMAGE_MB } from './artworkRegister.constants';
 
@@ -8,6 +9,8 @@ export type ArtworkImageItem = {
   id: string;
   previewUrl: string;
   uploadedUrl?: string;
+  /** 카드에 보이는 부분. 없으면 사진 가운데 */
+  crop?: CropRect | null;
 };
 
 export type AddArtworkImagesResult = {
@@ -152,6 +155,24 @@ export function useArtworkImageUploads({
     setItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  /** 끌어서 순서를 바꾼다. 맨 앞 사진이 대표가 된다 */
+  const move = useCallback((activeId: string, overId: string) => {
+    setItems((prev) => {
+      const from = prev.findIndex((item) => item.id === activeId);
+      const to = prev.findIndex((item) => item.id === overId);
+      if (from < 0 || to < 0 || from === to) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }, []);
+
+  const setCrop = useCallback((id: string, crop: CropRect | null) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, crop } : item)));
+  }, []);
+
   return {
     items,
     maxImages,
@@ -161,6 +182,8 @@ export function useArtworkImageUploads({
     addFiles,
     retry,
     remove,
+    move,
+    setCrop,
   };
 }
 

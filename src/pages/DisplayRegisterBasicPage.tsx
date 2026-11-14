@@ -5,22 +5,30 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import type { AddressSearchResultDto } from '@/api/dto';
-import { BottomFixedBar, LinkInputField } from '@/components/common';
 import {
   AddressSearchView,
+  BIG_BUTTON_CLASS,
   buildUpdateDisplayRequest,
   DisplayEditDraftGate,
+  DisplayLinkField,
   DisplayPeriodSheet,
   DisplayPickerButton,
   displayRegisterBasicSchema,
   type DisplayRegisterBasicValues,
+  DisplayRegisterCta,
   DisplayRegisterHeader,
   DisplayRegisterProgress,
   DisplayTimeSheet,
+  FIELD_CLASS,
   formatDotDate,
+  HELP_CLASS,
+  INPUT_CLASS,
+  LABEL_CLASS,
   MAX_PLACE_NAME_LENGTH,
   parseInstagramId,
   parseWebsiteUrl,
+  REQUIRED_CLASS,
+  UNDERLINE_CLASS,
 } from '@/components/display-register';
 import { PageContainer } from '@/components/layout';
 import type { ExhibitionRegisterDraft } from '@/contexts/exhibitionRegisterDraftState';
@@ -31,12 +39,10 @@ import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 
-const LABEL_CLASS = 'typography-body-lg-semibold text-primary';
-const HELP_CLASS = 'typography-body-md-medium text-secondary';
 // 수정 API 가 아직 주소 · 링크를 받지 않아 수정 화면에서는 잠근다
 const LOCKED_HELP = '지금은 수정할 수 없어요';
 const REQUIRED_MARK = (
-  <span aria-hidden="true" className="typography-body-lg-semibold text-error">
+  <span aria-hidden="true" className={REQUIRED_CLASS}>
     *
   </span>
 );
@@ -194,208 +200,217 @@ function DisplayRegisterBasicForm() {
   const website = parseWebsiteUrl(values.website ?? '');
 
   return (
-    <PageContainer variant="form" className="bg-primary-white">
-      <DisplayRegisterHeader
-        title={isAddressOpen ? '주소 검색' : '전시 기본 정보'}
-        onBack={isAddressOpen ? requestAddressClose : flowBack}
-      />
+    // 프로토타입은 태블릿 · 데스크톱에서도 입력 칸 바깥까지 흰 화면이다
+    <div className="min-h-dvh bg-primary-white">
+      <PageContainer variant="form" className="bg-primary-white">
+        <DisplayRegisterHeader
+          title={isAddressOpen ? '주소 검색' : '전시 기본 정보'}
+          onBack={isAddressOpen ? requestAddressClose : flowBack}
+        />
 
-      {isAddressOpen && <AddressSearchView onSelect={selectAddress} />}
+        {isAddressOpen && <AddressSearchView onSelect={selectAddress} />}
 
-      <main hidden={isAddressOpen} className="flex-1 pt-2">
-        <form
-          id="display-register-basic-form"
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-6 pb-6"
-        >
-          <DisplayRegisterProgress step={2} label="02 일정과 장소" />
-
-          <div className="flex flex-col gap-1">
-            <div id={periodLabelId} className="flex items-center gap-1">
-              <span className={LABEL_CLASS}>전시 기간</span>
-              {REQUIRED_MARK}
-            </div>
-            <div className="flex gap-3">
-              <DisplayPickerButton
-                labelId={periodLabelId}
-                placeholder="시작일"
-                value={values.startDate ? formatDotDate(values.startDate) : ''}
-                haspopup="dialog"
-                onClick={() => openSheet('period')}
-              />
-              <DisplayPickerButton
-                labelId={periodLabelId}
-                placeholder="종료일"
-                value={values.endDate ? formatDotDate(values.endDate) : ''}
-                haspopup="dialog"
-                onClick={() => openSheet('period')}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <div id={timeLabelId} className="flex items-center gap-1">
-              <span className={LABEL_CLASS}>운영 시간</span>
-              {REQUIRED_MARK}
-            </div>
-            <div className="flex gap-3">
-              <DisplayPickerButton
-                labelId={timeLabelId}
-                placeholder="시작 시간"
-                value={values.startTime ?? ''}
-                haspopup="dialog"
-                onClick={() => openSheet('time')}
-              />
-              <DisplayPickerButton
-                labelId={timeLabelId}
-                placeholder="종료 시간"
-                value={values.endTime ?? ''}
-                haspopup="dialog"
-                onClick={() => openSheet('time')}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label htmlFor="display-place-name" className="flex items-center gap-1">
-              <span className={LABEL_CLASS}>장소명 (상세 위치)</span>
-              {REQUIRED_MARK}
-            </label>
-            <div className="border-b border-primary py-3 transition duration-fast ease-standard focus-within:border-interactive-primary">
-              <input
-                id="display-place-name"
-                maxLength={MAX_PLACE_NAME_LENGTH}
-                autoComplete="off"
-                placeholder="입력해 주세요"
-                aria-describedby="display-place-name-help"
-                className="typography-body-xl-regular w-full bg-transparent text-primary outline-none placeholder:text-tertiary"
-                {...register('placeName')}
-              />
-            </div>
-            <p id="display-place-name-help" className={HELP_CLASS}>
-              찾아오기 쉽도록 건물·층·호수를 적어주세요
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <div id={addressLabelId} className="flex items-center gap-1">
-              <span className={LABEL_CLASS}>주소</span>
-              {REQUIRED_MARK}
-            </div>
-            <DisplayPickerButton
-              id={addressButtonId}
-              labelId={addressLabelId}
-              placeholder="주소 검색"
-              value={values.address ?? ''}
-              icon="search"
-              disabled={isEdit}
-              onClick={openAddress}
-            />
-            <p className={HELP_CLASS}>
-              {isEdit ? LOCKED_HELP : '검색 결과에서 전시 장소의 주소를 선택해주세요'}
-            </p>
-          </div>
-
-          <Controller
-            control={control}
-            name="instagram"
-            render={({ field }) => (
-              <LinkInputField
-                label="인스타그램"
-                parsed={instagram}
-                maxLength={60}
-                placeholder="아이디 (예: displayu)"
-                idleHelp="@ 없이 아이디만 적어주세요"
-                validHelp={
-                  instagram.status === 'valid' ? `instagram.com/${instagram.value} 로 연결돼요` : ''
-                }
-                errorMessage="아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)"
-                lockedHelp={LOCKED_HELP}
-                disabled={isEdit}
-                name={field.name}
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={() => {
-                  // @ 나 주소를 붙여 넣어도 아이디만 남긴다
-                  if (instagram.status === 'valid') field.onChange(instagram.value);
-                  field.onBlur();
-                }}
-              />
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="website"
-            render={({ field }) => (
-              <LinkInputField
-                label="웹사이트"
-                parsed={website}
-                maxLength={120}
-                inputMode="url"
-                placeholder="예) displayu.kr"
-                idleHelp="전시 사이트나 포트폴리오 주소를 적어주세요"
-                validHelp={
-                  website.status === 'valid' ? `${website.href.replace(/\/$/, '')} 로 연결돼요` : ''
-                }
-                errorMessage="주소 형식을 확인해 주세요 (예: displayu.kr)"
-                lockedHelp={LOCKED_HELP}
-                disabled={isEdit}
-                name={field.name}
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={() => {
-                  if (website.status === 'valid') field.onChange(website.value);
-                  field.onBlur();
-                }}
-              />
-            )}
-          />
-        </form>
-      </main>
-
-      {!isAddressOpen && (
-        <BottomFixedBar container="form">
-          <button
-            form="display-register-basic-form"
-            type="submit"
-            disabled={!isValid || updateDisplay.isPending}
-            className="typography-body-lg-semibold h-11 w-full rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99 disabled:cursor-default disabled:bg-disable disabled:text-disable disabled:active:scale-100"
+        <main hidden={isAddressOpen} className="flex flex-1 flex-col">
+          <form
+            id="display-register-basic-form"
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex-1"
           >
-            {isEdit ? (updateDisplay.isPending ? '저장하는 중…' : '수정 완료') : '다음'}
-          </button>
-        </BottomFixedBar>
-      )}
+            <DisplayRegisterProgress step={2} label="02 일정과 장소" />
 
-      {sheet && (
-        <>
-          <DisplayPeriodSheet
-            key={`period-${sheet.key}`}
-            open={isSheetOpen && sheet.kind === 'period'}
-            initialRange={{ start: values.startDate || null, end: values.endDate || null }}
-            allowPast={isEdit}
-            onClose={() => setIsSheetOpen(false)}
-            onConfirm={({ start, end }) => {
-              setValue('startDate', start, { shouldValidate: true, shouldDirty: true });
-              setValue('endDate', end, { shouldValidate: true, shouldDirty: true });
-              setIsSheetOpen(false);
-            }}
-          />
-          <DisplayTimeSheet
-            key={`time-${sheet.key}`}
-            open={isSheetOpen && sheet.kind === 'time'}
-            initialStart={values.startTime ?? ''}
-            initialEnd={values.endTime ?? ''}
-            onClose={() => setIsSheetOpen(false)}
-            onConfirm={({ start, end }) => {
-              setValue('startTime', start, { shouldValidate: true, shouldDirty: true });
-              setValue('endTime', end, { shouldValidate: true, shouldDirty: true });
-              setIsSheetOpen(false);
-            }}
-          />
-        </>
-      )}
-    </PageContainer>
+            <div className={FIELD_CLASS}>
+              <span id={periodLabelId} className={LABEL_CLASS}>
+                <span>
+                  전시 기간
+                  {REQUIRED_MARK}
+                </span>
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <DisplayPickerButton
+                  labelId={periodLabelId}
+                  placeholder="시작일"
+                  value={values.startDate ? formatDotDate(values.startDate) : ''}
+                  haspopup="dialog"
+                  onClick={() => openSheet('period')}
+                />
+                <DisplayPickerButton
+                  labelId={periodLabelId}
+                  placeholder="종료일"
+                  value={values.endDate ? formatDotDate(values.endDate) : ''}
+                  haspopup="dialog"
+                  onClick={() => openSheet('period')}
+                />
+              </div>
+            </div>
+
+            <div className={FIELD_CLASS}>
+              <span id={timeLabelId} className={LABEL_CLASS}>
+                <span>
+                  운영 시간
+                  {REQUIRED_MARK}
+                </span>
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <DisplayPickerButton
+                  labelId={timeLabelId}
+                  placeholder="시작 시간"
+                  value={values.startTime ?? ''}
+                  haspopup="dialog"
+                  onClick={() => openSheet('time')}
+                />
+                <DisplayPickerButton
+                  labelId={timeLabelId}
+                  placeholder="종료 시간"
+                  value={values.endTime ?? ''}
+                  haspopup="dialog"
+                  onClick={() => openSheet('time')}
+                />
+              </div>
+            </div>
+
+            <div className={FIELD_CLASS}>
+              <label htmlFor="display-place-name" className={LABEL_CLASS}>
+                <span>
+                  장소명 (상세 위치)
+                  {REQUIRED_MARK}
+                </span>
+              </label>
+              <div className={UNDERLINE_CLASS}>
+                <input
+                  id="display-place-name"
+                  maxLength={MAX_PLACE_NAME_LENGTH}
+                  autoComplete="off"
+                  placeholder="입력해 주세요"
+                  aria-describedby="display-place-name-help"
+                  className={INPUT_CLASS}
+                  {...register('placeName')}
+                />
+              </div>
+              <p id="display-place-name-help" className={HELP_CLASS}>
+                찾아오기 쉽도록 건물·층·호수를 적어주세요
+              </p>
+            </div>
+
+            <div className={FIELD_CLASS}>
+              <span id={addressLabelId} className={LABEL_CLASS}>
+                <span>
+                  주소
+                  {REQUIRED_MARK}
+                </span>
+              </span>
+              <DisplayPickerButton
+                id={addressButtonId}
+                labelId={addressLabelId}
+                placeholder="주소 검색"
+                value={values.address ?? ''}
+                icon="search"
+                disabled={isEdit}
+                onClick={openAddress}
+              />
+              <p className={HELP_CLASS}>
+                {isEdit ? LOCKED_HELP : '검색 결과에서 전시 장소의 주소를 선택해주세요'}
+              </p>
+            </div>
+
+            <Controller
+              control={control}
+              name="instagram"
+              render={({ field }) => (
+                <DisplayLinkField
+                  label="인스타그램"
+                  parsed={instagram}
+                  maxLength={60}
+                  placeholder="아이디 (예: displayu)"
+                  idleHelp="@ 없이 아이디만 적어주세요"
+                  validHelp={
+                    instagram.status === 'valid'
+                      ? `instagram.com/${instagram.value} 로 연결돼요`
+                      : ''
+                  }
+                  errorMessage="아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)"
+                  lockedHelp={LOCKED_HELP}
+                  disabled={isEdit}
+                  name={field.name}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={() => {
+                    // @ 나 주소를 붙여 넣어도 아이디만 남긴다
+                    if (instagram.status === 'valid') field.onChange(instagram.value);
+                    field.onBlur();
+                  }}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="website"
+              render={({ field }) => (
+                <DisplayLinkField
+                  label="웹사이트"
+                  parsed={website}
+                  maxLength={120}
+                  inputMode="url"
+                  placeholder="ex) displayu.kr"
+                  idleHelp="전시 사이트나 포트폴리오 주소를 적어주세요"
+                  validHelp={website.status === 'valid' ? `${website.href} 로 연결돼요` : ''}
+                  errorMessage="주소 형식을 확인해 주세요 (예: displayu.kr)"
+                  lockedHelp={LOCKED_HELP}
+                  disabled={isEdit}
+                  name={field.name}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={() => {
+                    if (website.status === 'valid') field.onChange(website.value);
+                    field.onBlur();
+                  }}
+                />
+              )}
+            />
+          </form>
+
+          <DisplayRegisterCta>
+            <button
+              form="display-register-basic-form"
+              type="submit"
+              disabled={!isValid || updateDisplay.isPending}
+              className={BIG_BUTTON_CLASS}
+            >
+              {isEdit ? (updateDisplay.isPending ? '저장하는 중…' : '수정 완료') : '다음'}
+            </button>
+          </DisplayRegisterCta>
+        </main>
+
+        {sheet && (
+          <>
+            <DisplayPeriodSheet
+              key={`period-${sheet.key}`}
+              open={isSheetOpen && sheet.kind === 'period'}
+              initialRange={{ start: values.startDate || null, end: values.endDate || null }}
+              allowPast={isEdit}
+              onClose={() => setIsSheetOpen(false)}
+              onConfirm={({ start, end }) => {
+                setValue('startDate', start, { shouldValidate: true, shouldDirty: true });
+                setValue('endDate', end, { shouldValidate: true, shouldDirty: true });
+                setIsSheetOpen(false);
+              }}
+            />
+            <DisplayTimeSheet
+              key={`time-${sheet.key}`}
+              open={isSheetOpen && sheet.kind === 'time'}
+              initialStart={values.startTime ?? ''}
+              initialEnd={values.endTime ?? ''}
+              onClose={() => setIsSheetOpen(false)}
+              onConfirm={({ start, end }) => {
+                setValue('startTime', start, { shouldValidate: true, shouldDirty: true });
+                setValue('endTime', end, { shouldValidate: true, shouldDirty: true });
+                setIsSheetOpen(false);
+              }}
+            />
+          </>
+        )}
+      </PageContainer>
+    </div>
   );
 }
 

@@ -1,78 +1,85 @@
-import { type ChangeEvent, useRef, useState } from 'react';
+import { type ChangeEvent, type KeyboardEvent, useRef, useState } from 'react';
 
-import CloseIcon from '@/assets/display-register/CloseIcon.svg';
-import PlusIcon from '@/assets/display-register/PlusIcon.svg';
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  horizontalListSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import { cn } from '@/utils/cn';
 
-import {
-  MAX_POSTER_FILE_MB,
-  POSTER_ACCEPT_TYPES,
-  POSTER_CARD_RATIO,
-} from './displayRegister.constants';
-import { cropImageStyle } from './posterCrop';
+import { MAX_POSTER_FILE_MB, POSTER_ACCEPT_TYPES } from './displayRegister.constants';
+import { COUNT_CLASS, FOCUS_CLASS, REQUIRED_CLASS } from './displayRegister.styles';
+import { CloseIcon, PlusIcon } from './DisplayRegisterIcons';
 import { PosterCropSheet } from './PosterCropSheet';
 import type { PosterItem, PosterUploads } from './usePosterUploads';
 
-const FOCUS_CLASS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 const ADD_TILE_CLASS = cn(
-  'flex shrink-0 flex-col items-center justify-center gap-1 border border-primary bg-primary-white transition duration-fast ease-standard hover:bg-secondary active:scale-99',
+  'typography-body-md-medium grid shrink-0 place-content-center justify-items-center gap-2 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
   FOCUS_CLASS,
 );
 
 function PosterHelp() {
   return (
-    <p className="typography-body-md-medium text-secondary">
+    <p className="typography-body-md-medium mt-1 text-secondary">
       JPG, PNG, WEBP · 장당 최대 {MAX_POSTER_FILE_MB}MB
       <br />큰 그래픽은 JPG 고화질로 내보내 주세요
     </p>
   );
 }
 
-function PosterLabel({ count }: { count?: number }) {
+function RequiredMark() {
   return (
-    <div className="flex items-center gap-1">
-      <span className="typography-body-lg-semibold text-primary">전시 포스터</span>
-      <span aria-hidden="true" className="typography-body-lg-semibold text-error">
-        *
+    <span aria-hidden="true" className={REQUIRED_CLASS}>
+      *
+    </span>
+  );
+}
+
+function UploadErrorBox({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="alert" className="mt-4 flex items-center gap-3 rounded-12 bg-[#ffe2e2] px-4 py-3.5">
+      <span
+        aria-hidden="true"
+        className="typography-body-lg-semibold grid size-6 shrink-0 place-items-center rounded-circle bg-[#fb2c36] text-base-white"
+      >
+        !
       </span>
-      {count !== undefined && (
-        <span className="typography-body-md-medium ml-auto text-tertiary">
-          {count} / {MAX_POSTER_UPLOAD_IMAGES}
+      <div className="min-w-0">
+        <b className="typography-body-lg-semibold block text-error">업로드하지 못했어요</b>
+        <span className="typography-body-md-medium block text-secondary">
+          네트워크 상태를 확인하고 다시 시도해주세요
         </span>
-      )}
+      </div>
+      <button
+        type="button"
+        onClick={onRetry}
+        className={cn(
+          'typography-body-md-semibold relative ml-auto h-8 shrink-0 rounded-8 bg-primary-white px-3 text-primary after:absolute after:-inset-1.5',
+          FOCUS_CLASS,
+        )}
+      >
+        다시 시도
+      </button>
     </div>
   );
 }
 
-const ERROR_COPY = {
-  upload: {
-    title: '업로드하지 못했어요',
-    description: '네트워크 상태를 확인하고 다시 시도해주세요',
-    action: '다시 시도',
-  },
-  file: {
-    title: '올릴 수 없는 파일이에요',
-    description: `JPG, PNG, WEBP 파일만 장당 ${MAX_POSTER_FILE_MB}MB까지 올릴 수 있어요`,
-    action: '다시 선택',
-  },
-} as const;
-
-function RetryButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'typography-body-md-semibold h-11 shrink-0 rounded-8 border border-primary bg-primary-white px-3 text-primary transition duration-fast ease-standard hover:bg-secondary active:scale-99',
-        FOCUS_CLASS,
-      )}
-    >
-      {label}
-    </button>
-  );
-}
+// 안쪽 버튼의 Enter · Space 가 포스터 끌기(키보드)로 이어지지 않게 한다
+const stopDragKey = (event: KeyboardEvent<HTMLButtonElement>) => event.stopPropagation();
 
 function PosterThumb({
   item,
@@ -89,65 +96,65 @@ function PosterThumb({
 }) {
   const isRepresentative = index === 0;
   const isUploading = !item.uploadedUrl;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+    disabled: locked,
+  });
 
   return (
     <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
       aria-busy={isUploading}
-      className="relative h-26.25 w-21 shrink-0 overflow-hidden bg-secondary"
+      {...attributes}
+      {...listeners}
+      aria-roledescription="순서를 바꿀 수 있는 포스터"
+      aria-label={`포스터 ${index + 1}${isRepresentative ? ', 대표' : ''}`}
+      className={cn(
+        'relative h-[105px] w-21 shrink-0 animate-rise snap-start overflow-hidden bg-[#f4f4f5] [animation-duration:350ms] [animation-fill-mode:backwards]',
+        !locked && 'cursor-grab active:cursor-grabbing',
+        isDragging && 'z-10 opacity-70',
+        FOCUS_CLASS,
+      )}
     >
-      {isRepresentative && item.crop ? (
-        // 썸네일(4:5)과 카드(402:568) 비율이 달라, 카드 비율 상자를 가운데 두고 넘치는 위아래를 잘라 보여준다
-        <div
-          className="absolute top-1/2 left-0 w-full -translate-y-1/2 overflow-hidden"
-          style={{ aspectRatio: POSTER_CARD_RATIO }}
+      <img
+        src={item.previewUrl}
+        alt=""
+        draggable={false}
+        className={cn('size-full object-cover', isUploading && 'opacity-50')}
+      />
+      {isRepresentative && !isUploading && !locked && (
+        <button
+          type="button"
+          aria-label="대표 포스터 카드에 보이는 부분 조정"
+          onClick={onAdjust}
+          onKeyDown={stopDragKey}
+          className={cn(
+            'typography-body-sm-semibold absolute right-1.5 bottom-1.5 h-5.5 rounded-6 bg-[rgba(255,255,255,0.92)] px-2 text-primary after:absolute after:-inset-x-1 after:-inset-y-2.75',
+            FOCUS_CLASS,
+          )}
         >
-          <img
-            src={item.previewUrl}
-            alt={`포스터 ${index + 1}`}
-            style={cropImageStyle(item.crop)}
-            className={cn(isUploading && 'opacity-50')}
-          />
-        </div>
-      ) : (
-        <img
-          src={item.previewUrl}
-          alt={`포스터 ${index + 1}`}
-          className={cn('size-full object-cover', isUploading && 'opacity-50')}
-        />
+          조정
+        </button>
+      )}
+      {isRepresentative && (
+        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1.5 left-1.5 inline-flex h-5 items-center rounded-4 bg-[#000] px-1.5 text-base-white">
+          대표
+        </span>
       )}
       {!locked && (
         <button
           type="button"
           aria-label={`포스터 ${index + 1} 삭제`}
           onClick={onRemove}
-          className={cn('absolute top-0 right-0 flex size-11 justify-end p-1', FOCUS_CLASS)}
-        >
-          <span className="flex size-6 items-center justify-center rounded-12 bg-primary-white">
-            <img src={CloseIcon} alt="" className="size-4" />
-          </span>
-        </button>
-      )}
-      {isRepresentative && (
-        <>
-          <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1 left-1 rounded-4 bg-primary-black px-1.5 py-0.5 text-base-white">
-            대표
-          </span>
-          {!isUploading && !locked && (
-            <button
-              type="button"
-              aria-label="대표 포스터 카드에 보이는 부분 조정"
-              onClick={onAdjust}
-              className={cn(
-                'absolute right-0 bottom-0 flex h-11 w-12 items-end justify-end p-1',
-                FOCUS_CLASS,
-              )}
-            >
-              <span className="typography-body-sm-semibold flex h-5.5 w-9 items-center justify-center rounded-6 bg-primary-white/92 text-primary">
-                조정
-              </span>
-            </button>
+          onKeyDown={stopDragKey}
+          className={cn(
+            'absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-circle bg-primary-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.15)] after:absolute after:-inset-2.5',
+            FOCUS_CLASS,
           )}
-        </>
+        >
+          <CloseIcon strokeWidth={2.4} className="size-3" />
+        </button>
       )}
     </div>
   );
@@ -164,7 +171,12 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
   const [cropSession, setCropSession] = useState<{ item: PosterItem; key: number } | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
   const { items, errorKind } = posters;
-  const errorCopy = errorKind && ERROR_COPY[errorKind];
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    // 짧게 밀면 가로 스크롤, 길게 누르면 끌기
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const openPicker = () => inputRef.current?.click();
   const handleRetry = () => {
@@ -174,6 +186,10 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
   const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
     posters.addFiles(Array.from(event.target.files ?? []));
     event.target.value = '';
+  };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (over && active.id !== over.id) posters.move(String(active.id), String(over.id));
   };
 
   const openCrop = (item: PosterItem) => {
@@ -191,96 +207,92 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
       onChange={handleFiles}
     />
   );
-
-  const cropSheet = cropSession && (
-    <PosterCropSheet
-      key={cropSession.key}
-      open={isCropOpen}
-      imageUrl={cropSession.item.previewUrl}
-      initialCrop={cropSession.item.crop ?? null}
-      onClose={() => setIsCropOpen(false)}
-      onDone={(crop) => {
-        posters.setCrop(cropSession.item.id, crop);
-        setIsCropOpen(false);
-      }}
-    />
-  );
+  const errorBox = errorKind && <UploadErrorBox onRetry={handleRetry} />;
 
   if (items.length === 0) {
     return (
-      <div className="flex items-start gap-4">
+      <div className="mt-6">
         {fileInput}
-        {errorCopy ? (
-          <>
-            <div
-              aria-hidden="true"
-              className="typography-title-xs flex h-30 w-24 shrink-0 items-center justify-center bg-error-subtle text-error"
-            >
-              !
-            </div>
-            <div role="alert" className="flex min-w-0 flex-1 flex-col items-start gap-1">
-              <p className="typography-body-lg-semibold text-error">{errorCopy.title}</p>
-              <p className="typography-body-md-medium text-secondary">{errorCopy.description}</p>
-              <div className="pt-1">
-                <RetryButton label={errorCopy.action} onClick={handleRetry} />
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <button type="button" onClick={openPicker} className={cn(ADD_TILE_CLASS, 'h-30 w-24')}>
-              <img src={PlusIcon} alt="" className="size-6" />
-              <span className="typography-body-md-medium text-secondary">포스터 업로드</span>
-            </button>
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <PosterLabel />
-              <PosterHelp />
-            </div>
-          </>
-        )}
+        <div className="flex items-start gap-4">
+          <button type="button" onClick={openPicker} className={cn(ADD_TILE_CLASS, 'h-30 w-24')}>
+            <PlusIcon strokeWidth={1.6} className="size-7" />
+            포스터 업로드
+          </button>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <span className="typography-body-lg-semibold block text-primary">
+              전시 포스터
+              <RequiredMark />
+            </span>
+            <PosterHelp />
+          </div>
+        </div>
+        {errorBox}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="mt-6">
       {!locked && fileInput}
-      <div className="flex flex-col gap-1">
-        <PosterLabel count={items.length} />
-        {locked ? (
-          <p className="typography-body-md-medium text-secondary">포스터는 지금 수정할 수 없어요</p>
-        ) : (
-          <PosterHelp />
-        )}
+      <div className="typography-body-lg-semibold flex justify-between text-primary">
+        <span>
+          전시 포스터
+          <RequiredMark />
+        </span>
+        <span className={COUNT_CLASS}>
+          {items.length} / {MAX_POSTER_UPLOAD_IMAGES}
+        </span>
       </div>
-      {errorCopy && (
-        <div role="alert" className="flex items-center gap-3 rounded-12 bg-error-subtle p-4">
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <p className="typography-body-lg-semibold text-error">{errorCopy.title}</p>
-            <p className="typography-body-md-medium text-secondary">{errorCopy.description}</p>
-          </div>
-          <RetryButton label={errorCopy.action} onClick={handleRetry} />
-        </div>
+      {locked ? (
+        <p className="typography-body-md-medium mt-1 text-secondary">
+          포스터는 지금 수정할 수 없어요
+        </p>
+      ) : (
+        <PosterHelp />
       )}
-      <div className="-mx-gutter flex scroll-px-gutter gap-2 overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {!locked && items.length < MAX_POSTER_UPLOAD_IMAGES && (
-          <button type="button" onClick={openPicker} className={cn(ADD_TILE_CLASS, 'h-26.25 w-21')}>
-            <img src={PlusIcon} alt="" className="size-6" />
-            <span className="typography-body-md-medium text-secondary">추가</span>
-          </button>
-        )}
-        {items.map((item, index) => (
-          <PosterThumb
-            key={item.id}
-            item={item}
-            index={index}
-            locked={locked}
-            onRemove={() => posters.remove(item.id)}
-            onAdjust={() => openCrop(item)}
-          />
-        ))}
-      </div>
-      {cropSheet}
+      {errorBox}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext
+          items={items.map((item) => item.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div className="-mx-gutter mt-3 flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {!locked && items.length < MAX_POSTER_UPLOAD_IMAGES && (
+              <button
+                type="button"
+                onClick={openPicker}
+                className={cn(ADD_TILE_CLASS, 'h-[105px] w-21 snap-start')}
+              >
+                <PlusIcon strokeWidth={1.6} className="size-6" />
+                추가
+              </button>
+            )}
+            {items.map((item, index) => (
+              <PosterThumb
+                key={item.id}
+                item={item}
+                index={index}
+                locked={locked}
+                onRemove={() => posters.remove(item.id)}
+                onAdjust={() => openCrop(item)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+      {cropSession && (
+        <PosterCropSheet
+          key={cropSession.key}
+          open={isCropOpen}
+          imageUrl={cropSession.item.previewUrl}
+          initialCrop={cropSession.item.crop ?? null}
+          onClose={() => setIsCropOpen(false)}
+          onDone={(crop) => {
+            posters.setCrop(cropSession.item.id, crop);
+            setIsCropOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

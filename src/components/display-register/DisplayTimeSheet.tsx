@@ -4,6 +4,7 @@ import { Overlay } from '@/components/ui';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
+import { BIG_BUTTON_CLASS } from './displayRegister.styles';
 import { isValidTimeRange, TIME_OPTIONS } from './displaySchedule';
 
 const DEFAULT_START = '10:00';
@@ -73,10 +74,10 @@ function TimeColumn({
               data-time={time}
               onClick={() => select(time)}
               className={cn(
-                'flex h-12 cursor-pointer snap-center items-center justify-center rounded-8 tabular-nums transition-colors duration-fast ease-standard',
+                'grid h-12 cursor-pointer snap-center place-items-center rounded-[10px] tabular-nums transition-colors duration-[150ms]',
                 isSelected
                   ? 'typography-body-lg-semibold bg-secondary text-primary'
-                  : 'typography-body-lg-medium text-secondary hover:bg-secondary',
+                  : 'typography-body-lg-medium text-secondary',
               )}
             >
               {time}
@@ -120,22 +121,19 @@ export function DisplayTimeSheet({
       open={open}
       onClose={onClose}
       title="운영 시간 선택"
+      showCloseButton={false}
       description={
-        <span className="typography-body-md-medium text-secondary">
+        <span className="typography-body-md-medium block text-secondary">
           일반적인 관람 시작·종료 시간을 선택해주세요
         </span>
       }
       footer={
-        <button
-          type="button"
-          onClick={handleConfirm}
-          className="typography-body-lg-semibold h-11 w-full rounded-12 bg-interactive-primary text-interactive-inverse transition duration-fast ease-standard hover:bg-interactive-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-99"
-        >
+        <button type="button" onClick={handleConfirm} className={BIG_BUTTON_CLASS}>
           선택 완료
         </button>
       }
     >
-      <div className="flex gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <TimeColumn label="시작 시간" value={start} onChange={setStart} />
         <TimeColumn label="종료 시간" value={end} onChange={setEnd} />
       </div>

@@ -9,20 +9,20 @@ interface DisplayRegisterProgressProps {
 
 export function DisplayRegisterProgress({ step, label }: DisplayRegisterProgressProps) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
+    <div className="mt-1">
+      <div className="flex justify-between">
         <p className="typography-body-md-semibold text-primary">{label}</p>
-        <p className="typography-body-md-medium text-secondary">
+        <p className="typography-body-md-medium text-secondary tabular-nums">
           {step} / {TOTAL_STEPS}
         </p>
       </div>
-      <div aria-hidden="true" className="flex gap-1">
+      <div aria-hidden="true" className="mt-2 grid grid-cols-2 gap-1">
         {Array.from({ length: TOTAL_STEPS }, (_, index) => (
-          <div
+          <i
             key={index}
             className={cn(
-              'h-1 flex-1 rounded-circle transition-colors duration-slow ease-standard',
-              index < step ? 'bg-interactive-primary' : 'bg-secondary',
+              'h-1 rounded-circle transition-colors duration-[400ms] ease-standard',
+              index < step ? 'bg-[#18181b]' : 'bg-[#e4e4e7]',
             )}
           />
         ))}

@@ -209,9 +209,10 @@ function ArtworkRegisterRoute() {
   // 대신 등록은 대표자만 할 수 있다
   const proxy: ProxyAuthor | null = !isEdit && isOwner ? parseProxyAuthor(searchParams) : null;
   const members = membersQuery.data?.members;
+  // 전시 작가명이 비어 있으면(빈 문자열 포함) 기본 닉네임을 쓴다
   const myName =
-    members?.find((member) => member.userId === myUserId)?.displayNickname ??
-    userMeQuery.data?.nickname ??
+    members?.find((member) => member.userId === myUserId)?.displayNickname?.trim() ||
+    userMeQuery.data?.nickname?.trim() ||
     '';
 
   const queries = [

@@ -1,15 +1,32 @@
-import { type ChangeEvent, useId, useRef, useState } from 'react';
+import { type ChangeEvent, type KeyboardEvent, useId, useRef, useState } from 'react';
 
-import CloseIcon from '@/assets/display-register/CloseIcon.svg';
-import PlusIcon from '@/assets/display-register/PlusIcon.svg';
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  horizontalListSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
+import { cropImageStyle } from '@/utils/cropBox';
 
+import { ArtworkCropSheet } from './ArtworkCropSheet';
 import { ARTWORK_IMAGE_ACCEPT_TYPES } from './artworkRegister.constants';
+import { FOCUS_CLASS, HELP_CLASS, OPTIONAL_CLASS, REQUIRED_CLASS } from './artworkRegister.styles';
+import { CloseIcon, PlusIcon } from './ArtworkRegisterIcons';
 import type { ArtworkImageItem, ArtworkImageUploads } from './useArtworkImageUploads';
-
-const FOCUS_CLASS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
 interface ArtworkImageFieldProps {
   label: string;
@@ -17,31 +34,35 @@ interface ArtworkImageFieldProps {
   help: string;
   addLabel: string;
   uploads: ArtworkImageUploads;
-  /** 작품 이미지: 첫 장을 대표 사진으로 표시하고, 실패 · 형식 오류를 칸 위 안내로 보여준다 */
+  /** 작품 이미지: 첫 장을 대표 사진으로 표시하고, 카드 미리보기 · 실패 안내를 보여준다 */
   representative?: boolean;
   limitMessage: string;
+  className?: string;
 }
+
+// 안쪽 버튼의 Enter · Space 가 사진 끌기(키보드)로 이어지지 않게 한다
+const stopDragKey = (event: KeyboardEvent<HTMLButtonElement>) => event.stopPropagation();
 
 function UploadErrorBox({ onRetry }: { onRetry: () => void }) {
   return (
-    <div role="alert" className="flex items-center gap-3 rounded-12 bg-error-subtle px-4 py-3.5">
+    <div role="alert" className="mt-3 flex items-center gap-3 rounded-12 bg-[#ffe2e2] px-4 py-3.5">
       <span
         aria-hidden="true"
-        className="typography-body-lg-semibold flex size-6 shrink-0 items-center justify-center rounded-circle bg-notice text-interactive-inverse"
+        className="typography-body-lg-semibold grid size-6 shrink-0 place-items-center rounded-circle bg-[#fb2c36] text-base-white"
       >
         !
       </span>
-      <div className="flex min-w-0 flex-col">
-        <p className="typography-body-lg-semibold text-error">업로드하지 못했어요</p>
-        <p className="typography-body-md-medium text-secondary">
+      <div className="min-w-0">
+        <b className="typography-body-lg-semibold block text-error">업로드하지 못했어요</b>
+        <span className="typography-body-md-medium block text-secondary">
           네트워크 상태를 확인하고 다시 시도해주세요
-        </p>
+        </span>
       </div>
       <button
         type="button"
         onClick={onRetry}
         className={cn(
-          'typography-body-md-semibold relative ml-auto h-8 shrink-0 rounded-8 bg-primary-white px-3 text-primary transition duration-fast ease-standard after:absolute after:-inset-1.5 hover:bg-secondary active:scale-99',
+          'typography-body-md-semibold relative ml-auto h-8 shrink-0 rounded-8 bg-primary-white px-3 text-primary after:absolute after:-inset-1.5',
           FOCUS_CLASS,
         )}
       >
@@ -56,27 +77,56 @@ function ImageTile({
   index,
   isRepresentative,
   onRemove,
+  onAdjust,
 }: {
   item: ArtworkImageItem;
   index: number;
   isRepresentative: boolean;
   onRemove: () => void;
+  onAdjust: () => void;
 }) {
   const isUploading = !item.uploadedUrl;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
 
   return (
     <div
-      role="listitem"
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
       aria-busy={isUploading}
-      className="relative h-30 w-24 shrink-0 animate-rise snap-start overflow-hidden bg-secondary"
+      {...attributes}
+      {...listeners}
+      aria-roledescription="순서를 바꿀 수 있는 사진"
+      aria-label={`사진 ${index + 1}${isRepresentative ? ', 대표 사진' : ''}`}
+      className={cn(
+        'relative h-30 w-24 shrink-0 animate-rise cursor-grab snap-start overflow-hidden bg-secondary [animation-duration:350ms] [animation-fill-mode:backwards] active:cursor-grabbing',
+        isDragging && 'z-10 opacity-70',
+        FOCUS_CLASS,
+      )}
     >
       <img
         src={item.previewUrl}
-        alt={`사진 ${index + 1}`}
+        alt=""
+        draggable={false}
         className={cn('size-full object-contain', isUploading && 'opacity-50')}
       />
+      {isRepresentative && !isUploading && (
+        <button
+          type="button"
+          aria-label="대표 사진 카드에서 보이는 부분 조정"
+          onClick={onAdjust}
+          onKeyDown={stopDragKey}
+          className={cn(
+            'typography-body-sm-semibold absolute right-1 bottom-1 h-5.5 rounded-6 bg-[rgba(255,255,255,0.92)] px-2 text-primary after:absolute after:-inset-x-1 after:-inset-y-2.75',
+            FOCUS_CLASS,
+          )}
+        >
+          조정
+        </button>
+      )}
       {isRepresentative && (
-        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1 left-1 rounded-4 bg-primary-black px-1.5 py-0.5 text-base-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)]">
+        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1 left-1 rounded-4 bg-[#000] px-1.5 py-0.5 text-base-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)]">
           대표 사진
         </span>
       )}
@@ -84,26 +134,43 @@ function ImageTile({
         type="button"
         aria-label={`${index + 1}번째 삭제`}
         onClick={onRemove}
-        className={cn('absolute top-0 right-0 flex size-11 justify-end p-1', FOCUS_CLASS)}
+        onKeyDown={stopDragKey}
+        className={cn(
+          'absolute top-1 right-1 grid size-6 place-items-center rounded-12 bg-primary-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.18)] after:absolute after:-inset-2.5',
+          FOCUS_CLASS,
+        )}
       >
-        <span className="flex size-6 items-center justify-center rounded-12 bg-primary-white shadow-[0_1px_4px_rgba(0,0,0,0.18)]">
-          <img src={CloseIcon} alt="" className="size-4" />
-        </span>
+        <CloseIcon strokeWidth={2.2} className="size-3.5" />
       </button>
     </div>
   );
 }
 
-/** 카드 썸네일은 사진 가운데를 3:4 로 자른 모습이라, 대표 사진이 어떻게 보이는지 미리 보여준다 */
-function CardPreview({ imageUrl }: { imageUrl: string }) {
+/** 카드 썸네일(3:4)에서 대표 사진이 어떻게 보이는지 보여주고, 보이는 부분을 고르게 한다 */
+function CardPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust: () => void }) {
   return (
-    <div className="flex items-center gap-3.5 rounded-12 bg-secondary p-3.5">
-      <div className="aspect-3/4 w-18 shrink-0 overflow-hidden bg-secondary">
-        <img src={imageUrl} alt="" className="size-full object-cover" />
+    <div className="mt-3.5 flex items-center gap-3.5 rounded-12 bg-secondary p-3.5">
+      <div className="relative aspect-3/4 w-18 shrink-0 overflow-hidden bg-secondary">
+        <img
+          src={item.previewUrl}
+          alt=""
+          style={item.crop ? cropImageStyle(item.crop) : undefined}
+          className={cn('pointer-events-none select-none', !item.crop && 'size-full object-cover')}
+        />
       </div>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <p className="typography-body-lg-semibold text-primary">카드에서는 이렇게 보여요</p>
-        <p className="typography-body-md-medium text-secondary">사진 가운데가 카드에 보여요</p>
+      <div className="typography-body-md-medium grid min-w-0 gap-0.5 text-secondary">
+        <b className="typography-body-lg-semibold text-primary">카드에서는 이렇게 보여요</b>
+        <span>{item.crop ? '고른 부분이 카드에 보여요' : '사진 가운데가 카드에 보여요'}</span>
+        <button
+          type="button"
+          onClick={onAdjust}
+          className={cn(
+            'typography-body-md-semibold mt-2 min-h-9 justify-self-start rounded-circle border border-primary bg-primary-white px-3.5 text-secondary transition-transform duration-fast ease-standard active:scale-96',
+            FOCUS_CLASS,
+          )}
+        >
+          보이는 부분 조정
+        </button>
       </div>
     </div>
   );
@@ -117,12 +184,23 @@ export function ArtworkImageField({
   uploads,
   representative = false,
   limitMessage,
+  className,
 }: ArtworkImageFieldProps) {
   const labelId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [hasRejectedFile, setHasRejectedFile] = useState(false);
+  const [cropSession, setCropSession] = useState<{ item: ArtworkImageItem; key: number } | null>(
+    null,
+  );
+  const [isCropOpen, setIsCropOpen] = useState(false);
   const { items, maxImages } = uploads;
   const representativeImage = representative ? items[0] : undefined;
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    // 짧게 밀면 가로 스크롤, 길게 누르면 끌기
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const openPicker = () => inputRef.current?.click();
 
@@ -141,8 +219,17 @@ export function ArtworkImageField({
     if (!uploads.retry()) openPicker();
   };
 
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (over && active.id !== over.id) uploads.move(String(active.id), String(over.id));
+  };
+
+  const openCrop = (item: ArtworkImageItem) => {
+    setCropSession((prev) => ({ item, key: (prev?.key ?? 0) + 1 }));
+    setIsCropOpen(true);
+  };
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className={className}>
       <input
         ref={inputRef}
         type="file"
@@ -151,59 +238,83 @@ export function ArtworkImageField({
         accept={ARTWORK_IMAGE_ACCEPT_TYPES.join(',')}
         onChange={handleFiles}
       />
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1">
-          <span id={labelId} className="typography-body-lg-semibold text-primary">
-            {label}
-          </span>
+      <div className="typography-body-lg-semibold flex items-center gap-1 text-primary">
+        <span id={labelId}>
+          {label}
           {required ? (
-            <span aria-hidden="true" className="typography-body-lg-semibold text-error">
+            <span aria-hidden="true" className={REQUIRED_CLASS}>
               *
             </span>
           ) : (
-            <span className="typography-body-md-medium text-secondary">· 선택</span>
+            <>
+              {' '}
+              <span className={OPTIONAL_CLASS}>· 선택</span>
+            </>
           )}
-          <span
-            aria-live="polite"
-            className="typography-body-md-medium ml-auto text-secondary tabular-nums"
-          >
-            {items.length}/{maxImages}
-          </span>
-        </div>
-        <p className="typography-body-md-medium whitespace-pre-line text-secondary">{help}</p>
+        </span>
+        <span
+          aria-live="polite"
+          className="typography-body-md-medium ml-auto text-secondary tabular-nums"
+        >
+          {items.length}/{maxImages}
+        </span>
       </div>
+      <p className={cn(HELP_CLASS, 'whitespace-pre-line')}>{help}</p>
       {representative && (uploads.hasUploadError || hasRejectedFile) && (
         <UploadErrorBox onRetry={handleRetry} />
       )}
-      <div
-        role="list"
-        aria-labelledby={labelId}
-        className="-mx-gutter flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {items.length < maxImages && (
-          <button
-            type="button"
-            onClick={openPicker}
-            className={cn(
-              'flex h-30 w-24 shrink-0 snap-start flex-col items-center justify-center gap-1 border border-primary bg-primary-white transition duration-fast ease-standard hover:bg-secondary active:scale-99',
-              FOCUS_CLASS,
-            )}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext
+          items={items.map((item) => item.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div
+            role="group"
+            aria-labelledby={labelId}
+            className="-mx-gutter mt-3 flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <img src={PlusIcon} alt="" className="size-6" />
-            <span className="typography-body-md-medium text-secondary">{addLabel}</span>
-          </button>
-        )}
-        {items.map((item, index) => (
-          <ImageTile
-            key={item.id}
-            item={item}
-            index={index}
-            isRepresentative={representative && index === 0}
-            onRemove={() => uploads.remove(item.id)}
-          />
-        ))}
-      </div>
-      {representativeImage && <CardPreview imageUrl={representativeImage.previewUrl} />}
+            {items.length < maxImages && (
+              <button
+                type="button"
+                onClick={openPicker}
+                className={cn(
+                  'typography-body-md-medium grid h-30 w-24 shrink-0 snap-start place-content-center justify-items-center gap-1 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
+                  FOCUS_CLASS,
+                )}
+              >
+                <PlusIcon strokeWidth={1.6} className="size-6 text-primary" />
+                {addLabel}
+              </button>
+            )}
+            {items.map((item, index) => (
+              <ImageTile
+                key={item.id}
+                item={item}
+                index={index}
+                isRepresentative={representative && index === 0}
+                onRemove={() => uploads.remove(item.id)}
+                onAdjust={() => openCrop(item)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+      {representativeImage && (
+        <CardPreview item={representativeImage} onAdjust={() => openCrop(representativeImage)} />
+      )}
+      {cropSession && (
+        <ArtworkCropSheet
+          key={cropSession.key}
+          open={isCropOpen}
+          imageUrl={cropSession.item.previewUrl}
+          initialCrop={cropSession.item.crop ?? null}
+          onClose={() => setIsCropOpen(false)}
+          onDone={(crop) => {
+            uploads.setCrop(cropSession.item.id, crop);
+            setIsCropOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
