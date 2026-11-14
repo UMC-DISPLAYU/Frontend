@@ -44,6 +44,8 @@ const DEFAULT_LEVEL = 8;
 const MIN_LEVEL = 1;
 const MAX_LEVEL = 14;
 const FOCUS_MAX_LEVEL = 5;
+// 핀을 누르면 확대하지 않고 가운데로만 옮긴다(사용자 결정)
+const PIN_FOCUS_MAX_LEVEL = null;
 const MY_LOCATION_MAX_LEVEL = 4;
 const IDLE_DEBOUNCE_MS = 250;
 
@@ -220,12 +222,9 @@ export function MapPage() {
     setSelection({ exhibition, via });
     setSnap(nextSnap);
     if (map) {
-      focusOn(
-        map,
-        exhibition.position,
-        getInsetsFor(nextSnap, false),
-        via === 'pin' ? {} : { maxLevel: FOCUS_MAX_LEVEL },
-      );
+      focusOn(map, exhibition.position, getInsetsFor(nextSnap, false), {
+        maxLevel: via === 'pin' ? PIN_FOCUS_MAX_LEVEL : FOCUS_MAX_LEVEL,
+      });
     }
   };
 
