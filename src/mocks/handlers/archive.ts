@@ -70,6 +70,7 @@ const archivedArtists = () => ({
     archiveArtistId: index + 1,
     artistId,
     userId: mockDb.me.userId,
+    artistUserId: artistId,
     artistName:
       artistId === mockDb.me.userId
         ? mockDb.me.nickname

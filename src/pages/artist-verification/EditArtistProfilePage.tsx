@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -7,30 +7,26 @@ import { useNavigate } from 'react-router-dom';
 import type { ArtistProfileDto } from '@/api/dto';
 import {
   ActivityFieldSelector,
-  ArtistVerifyBottomBar,
-  ArtistVerifyBottomButton,
-  ArtistVerifyField,
-  ArtistVerifyHeader,
-  ArtistVerifyHelperText,
-  ArtistVerifyInput,
+  ArtistVerifyLayout,
+  PROFILE_FIELD_CLASS,
+  ProfileLinkField,
+  ProfileOptionalLabel,
+  VerifyBottomBar,
+  VerifyBottomButton,
+  VerifyField,
+  VerifyHeader,
+  VerifyHelperText,
+  VerifyInput,
 } from '@/components/artist-verify';
-import { ConfirmDialog, ErrorView, LinkInputField, ProfilePhotoField } from '@/components/common';
-import { PageContainer } from '@/components/layout';
+import { ConfirmDialog, ErrorView, ProfilePhotoField } from '@/components/common';
 import { Skeleton, SkeletonText } from '@/components/ui';
-import {
-  ARTIST_FIELD_MAP,
-  ARTIST_FIELD_REVERSE_MAP,
-  type ArtistFieldCode,
-  type ExhibitionField,
-  MAX_ARTIST_FIELDS,
-} from '@/constants/exhibition';
+import { MAX_ARTIST_FIELDS } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
-import { isInstagramUrl } from '@/utils/externalLink';
 import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
 
 import {
@@ -38,8 +34,7 @@ import {
   type EditArtistProfileFormValues,
   editArtistProfileSchema,
 } from './editArtistProfile.schema';
-
-const FORM_ID = 'edit-artist-profile-form';
+import { toEditArtistProfileDefaults, toUpdateArtistProfileBody } from './editArtistProfileBody';
 
 export function EditArtistProfilePage() {
   const { data: artistProfile, isPending, isError, error, refetch } = useMyArtistProfile();
@@ -56,8 +51,8 @@ export function EditArtistProfilePage() {
 
   if (showSkeleton || !artistProfile) {
     return (
-      <PageContainer className="bg-primary-white" variant="form">
-        <div aria-hidden="true" className="flex flex-col gap-5 pt-17">
+      <ArtistVerifyLayout>
+        <div aria-hidden="true" className="flex flex-col gap-5 pt-18">
           <Skeleton className="mx-auto h-33 w-29" />
           <div className="flex flex-col gap-1">
             <SkeletonText className="typography-body-lg-semibold w-14" />
@@ -65,30 +60,12 @@ export function EditArtistProfilePage() {
           </div>
           <Skeleton className="h-36 w-full rounded-4" />
         </div>
-      </PageContainer>
+      </ArtistVerifyLayout>
     );
   }
 
   return <EditArtistProfileForm artistProfile={artistProfile} />;
 }
-
-const instagramIdOf = (link: string) => {
-  const parsed = parseInstagramId(link);
-  return parsed.status === 'valid' ? parsed.value : '';
-};
-
-const toDefaultValues = (profile: ArtistProfileDto): EditArtistProfileFormValues => {
-  const link = profile.externalLink || profile.portfolioUrl || '';
-  return {
-    artistName: profile.artistName ?? '',
-    fields: (profile.fields ?? [])
-      .map((code) => ARTIST_FIELD_REVERSE_MAP[code as ArtistFieldCode])
-      .filter((field): field is ExhibitionField => Boolean(field)),
-    introduction: profile.introduction ?? '',
-    instagram: isInstagramUrl(link) ? instagramIdOf(link) : '',
-    portfolio: isInstagramUrl(link) ? '' : link,
-  };
-};
 
 function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfileDto }) {
   const flowBack = useFlowBack();
@@ -100,6 +77,8 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhotoUrl);
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
+  // 업로드 뒤 저장만 실패했으면 다시 저장할 때 같은 사진을 또 올리지 않는다
+  const uploadedPhotoRef = useRef<{ file: File; url: string } | null>(null);
   const isPhotoChanged = photoPreview !== initialPhotoUrl;
 
   useEffect(() => {
@@ -113,7 +92,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
     handleSubmit,
     register,
   } = useForm<EditArtistProfileFormValues>({
-    defaultValues: toDefaultValues(artistProfile),
+    defaultValues: toEditArtistProfileDefaults(artistProfile),
     mode: 'onChange',
     resolver: zodResolver(editArtistProfileSchema),
   });
@@ -135,26 +114,25 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
   const onSubmit = async (values: EditArtistProfileFormValues) => {
     if (isSaving) return;
     try {
-      const profileImageUrl = photoFile
-        ? await uploadImage.mutateAsync({ file: photoFile, domain: 'profile' })
-        : photoPreview
-          ? undefined
-          : null;
-      const originalLink = artistProfile.externalLink || artistProfile.portfolioUrl || '';
+      let profileImageUrl = photoPreview;
+      if (photoFile) {
+        const uploaded =
+          uploadedPhotoRef.current?.file === photoFile
+            ? uploadedPhotoRef.current
+            : {
+                file: photoFile,
+                url: await uploadImage.mutateAsync({ file: photoFile, domain: 'profile' }),
+              };
+        uploadedPhotoRef.current = uploaded;
+        profileImageUrl = uploaded.url;
+      }
 
-      await updateMyArtistProfile.mutateAsync({
-        ...(isPhotoChanged ? { profileImageUrl } : {}),
-        artistName: values.artistName.trim(),
-        introduction: values.introduction.trim(),
-        fields: values.fields.map((field) => ARTIST_FIELD_MAP[field]),
-        // 서버 링크 칸이 하나뿐이라 Portfolio 만 저장한다. Instagram 은 서버에 칸이 생기면 함께 보낸다
-        ...(portfolio.status === 'valid'
-          ? { externalLink: portfolio.href }
-          : originalLink && !isInstagramUrl(originalLink)
-            ? { externalLink: null }
-            : {}),
-        ...(artistProfile.schoolName ? { univName: artistProfile.schoolName } : {}),
-      });
+      await updateMyArtistProfile.mutateAsync(
+        toUpdateArtistProfileBody(values, {
+          profileImageUrl,
+          schoolName: artistProfile.schoolName,
+        }),
+      );
       toast('프로필을 저장했어요');
       flowBack();
     } catch (error) {
@@ -163,129 +141,132 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
   };
 
   return (
-    <PageContainer className="bg-primary-white" variant="form">
-      <ArtistVerifyHeader onBack={handleBack} title="작가 프로필 수정" />
+    <ArtistVerifyLayout>
+      {/* Layout 이 이미 <main> 으로 감싼다 */}
+      <div className="flex flex-1 flex-col">
+        <VerifyHeader onBack={handleBack} title="작가 프로필 수정" />
 
-      <form
-        className="flex-1 pt-5 pb-6"
-        id={FORM_ID}
-        noValidate
-        onSubmit={(event) => handleSubmit(onSubmit)(event)}
-      >
-        <fieldset className="flex flex-col gap-5" disabled={isSaving}>
-          <ProfilePhotoField
-            disabled={isSaving}
-            onChange={handlePhotoChange}
-            shape="rect"
-            src={photoPreview}
-          />
-
-          <ArtistVerifyField htmlFor="artist-name" label="작가 프로필명">
-            <ArtistVerifyInput
-              aria-describedby={errors.artistName ? 'artist-name-error' : undefined}
-              autoComplete="off"
-              id="artist-name"
-              invalid={Boolean(errors.artistName)}
-              maxLength={15}
-              placeholder="작가 프로필명"
-              {...register('artistName')}
-            />
-            {errors.artistName?.message ? (
-              <ArtistVerifyHelperText error id="artist-name-error">
-                {errors.artistName.message}
-              </ArtistVerifyHelperText>
-            ) : null}
-          </ArtistVerifyField>
-
-          <Controller
-            control={control}
-            name="fields"
-            render={({ field }) => (
-              <ActivityFieldSelector
-                onChange={field.onChange}
-                onMaxSelectExceeded={() =>
-                  toast(`분야는 최대 ${MAX_ARTIST_FIELDS}개까지 선택할 수 있어요`)
-                }
-                selected={field.value}
-              />
-            )}
-          />
-
-          <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-1" htmlFor="introduction">
-              <span className="typography-body-lg-semibold text-primary">소개</span>
-              <span className="typography-body-md-medium text-secondary">· 선택</span>
-            </label>
-            <textarea
-              className="typography-body-xl-regular block max-h-56 min-h-32 w-full resize-none rounded-12 border border-primary bg-primary-white p-4 text-primary outline-none [field-sizing:content] placeholder:text-tertiary focus:border-interactive-primary"
-              id="introduction"
-              maxLength={ARTIST_INTRO_MAX}
-              placeholder="나를 소개해 주세요"
-              {...register('introduction')}
-            />
-            <p className="typography-body-md-medium text-right text-tertiary tabular-nums">
-              {introduction.length} / {ARTIST_INTRO_MAX}
-            </p>
-          </div>
-
-          <Controller
-            control={control}
-            name="instagram"
-            render={({ field }) => (
-              <LinkInputField
-                errorMessage="아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)"
-                idleHelp="@ 없이 아이디만 적어주세요"
-                label="Instagram"
-                maxLength={60}
-                name={field.name}
-                onBlur={() => {
-                  // @ 나 주소를 붙여 넣어도 아이디만 남긴다
-                  if (instagram.status === 'valid') field.onChange(instagram.value);
-                  field.onBlur();
-                }}
-                onChange={field.onChange}
-                parsed={instagram}
-                placeholder="아이디 (예: displayu)"
-                validHelp={
-                  instagram.status === 'valid' ? `instagram.com/${instagram.value} 로 연결돼요` : ''
-                }
-                value={field.value}
-              />
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="portfolio"
-            render={({ field }) => (
-              <LinkInputField
-                errorMessage="주소 형식을 확인해 주세요 (예: displayu.kr)"
-                idleHelp="작업 사이트나 포트폴리오 주소를 적어주세요"
-                inputMode="url"
-                label="Portfolio"
-                maxLength={120}
-                name={field.name}
-                onBlur={field.onBlur}
-                onChange={field.onChange}
-                parsed={portfolio}
-                placeholder="ex) displayu.kr"
-                validHelp={portfolio.status === 'valid' ? `${portfolio.href} 로 연결돼요` : ''}
-                value={field.value}
-              />
-            )}
-          />
-        </fieldset>
-      </form>
-
-      <ArtistVerifyBottomBar>
-        <ArtistVerifyBottomButton
-          disabled={!hasChanges || !isValid || isSaving}
-          form={FORM_ID}
-          type="submit"
+        <form
+          autoComplete="off"
+          className="flex flex-1 flex-col"
+          noValidate
+          onSubmit={(event) => handleSubmit(onSubmit)(event)}
         >
-          {isSaving ? '저장 중' : '저장'}
-        </ArtistVerifyBottomButton>
-      </ArtistVerifyBottomBar>
+          <fieldset className="flex-1" disabled={isSaving}>
+            <div className="mt-4">
+              <ProfilePhotoField
+                disabled={isSaving}
+                onChange={handlePhotoChange}
+                shape="rect"
+                src={photoPreview}
+              />
+            </div>
+
+            <VerifyField className="mt-5" htmlFor="artist-name" label="작가 프로필명">
+              <VerifyInput
+                aria-describedby={errors.artistName ? 'artist-name-error' : undefined}
+                autoComplete="off"
+                id="artist-name"
+                invalid={Boolean(errors.artistName)}
+                maxLength={15}
+                placeholder="작가 프로필명"
+                wrapperClassName="mt-2"
+                {...register('artistName')}
+              />
+              {errors.artistName?.message ? (
+                <VerifyHelperText error id="artist-name-error">
+                  {errors.artistName.message}
+                </VerifyHelperText>
+              ) : null}
+            </VerifyField>
+
+            <Controller
+              control={control}
+              name="fields"
+              render={({ field }) => (
+                <ActivityFieldSelector
+                  onChange={field.onChange}
+                  onMaxSelectExceeded={() =>
+                    toast(`분야는 최대 ${MAX_ARTIST_FIELDS}개까지 선택할 수 있어요`)
+                  }
+                  selected={field.value}
+                />
+              )}
+            />
+
+            <div className={PROFILE_FIELD_CLASS}>
+              <ProfileOptionalLabel htmlFor="introduction">소개</ProfileOptionalLabel>
+              <textarea
+                className="mt-2 block h-32 w-full resize-none rounded-[12px] border border-[#d4d4d8] bg-[#fff] px-4 py-3.5 text-[16px] leading-[1.4] font-normal text-[#18181b] outline-none transition-[border-color] duration-200 placeholder:text-[#71717b] focus:border-[#18181b]"
+                id="introduction"
+                maxLength={ARTIST_INTRO_MAX}
+                placeholder="나를 소개해 주세요"
+                {...register('introduction')}
+              />
+              <p className="mt-2 text-right text-[12px] font-medium text-[#71717b] tabular-nums">
+                {introduction.length} / {ARTIST_INTRO_MAX}
+              </p>
+            </div>
+
+            <Controller
+              control={control}
+              name="instagram"
+              render={({ field }) => (
+                <ProfileLinkField
+                  errorMessage="아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)"
+                  id="instagram"
+                  idleHelp="@ 없이 아이디만 적어주세요"
+                  label="Instagram"
+                  maxLength={60}
+                  name={field.name}
+                  onBlur={() => {
+                    // @ 나 주소를 붙여 넣어도 아이디만 남긴다
+                    if (instagram.status === 'valid') field.onChange(instagram.value);
+                    field.onBlur();
+                  }}
+                  onChange={field.onChange}
+                  parsed={instagram}
+                  placeholder="아이디 (예: displayu)"
+                  validHelp={
+                    instagram.status === 'valid'
+                      ? `instagram.com/${instagram.value} 로 연결돼요`
+                      : ''
+                  }
+                  value={field.value}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="portfolio"
+              render={({ field }) => (
+                <ProfileLinkField
+                  errorMessage="주소 형식을 확인해 주세요 (예: displayu.kr)"
+                  id="portfolio"
+                  idleHelp="작업 사이트나 포트폴리오 주소를 적어주세요"
+                  inputMode="url"
+                  label="Portfolio"
+                  maxLength={120}
+                  name={field.name}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
+                  parsed={portfolio}
+                  placeholder="ex) displayu.kr"
+                  validHelp={portfolio.status === 'valid' ? `${portfolio.href} 로 연결돼요` : ''}
+                  value={field.value}
+                />
+              )}
+            />
+          </fieldset>
+
+          <VerifyBottomBar>
+            <VerifyBottomButton disabled={!hasChanges || !isValid || isSaving} type="submit">
+              {isSaving ? '저장 중' : '저장'}
+            </VerifyBottomButton>
+          </VerifyBottomBar>
+        </form>
+      </div>
 
       <ConfirmDialog
         cancelLabel="계속 수정"
@@ -300,6 +281,6 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
         open={isLeaveOpen}
         title="수정을 그만할까요?"
       />
-    </PageContainer>
+    </ArtistVerifyLayout>
   );
 }

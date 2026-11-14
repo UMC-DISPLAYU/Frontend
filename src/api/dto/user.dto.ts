@@ -81,19 +81,22 @@ export interface ArtistProfileDto {
   introduction?: string | null;
   status?: string;
   schoolName?: string;
+  /* Portfolio 링크 */
   externalLink?: string | null;
-  portfolioUrl?: string | null;
+  instagramLink?: string | null;
   fields: string[];
 }
 
+/* 서버가 요청 전체로 덮어써서, 빠진 값(사진 · 소개 · 링크)은 지워진다. 바꾸지 않은 값도 현재 값을 보낸다 */
 export interface UpdateArtistProfileRequestDto {
-  /* null 이면 사진을 지운다 */
-  profileImageUrl?: string | null;
+  profileImageUrl: string | null;
   artistName: string;
-  introduction?: string;
+  introduction: string;
   fields: string[];
-  /* null 이면 링크를 지운다 */
-  externalLink?: string | null;
+  /* Portfolio 링크 */
+  externalLink: string | null;
+  instagramLink: string | null;
+  /* 없으면 서버가 기존 학교를 유지한다 */
   univName?: string;
 }
 
