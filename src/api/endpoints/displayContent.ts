@@ -3,6 +3,7 @@ import type {
   CreateContentCategoryResponseDto,
   CreateContentImageRequestDto,
   CreateContentImageResponseDto,
+  ReorderContentCategoriesRequestDto,
   ReorderContentImagesRequestDto,
   UpdateContentCategoryRequestDto,
   UpdateContentImageRequestDto,
@@ -27,6 +28,16 @@ export const updateContentCategory = async (
   body: UpdateContentCategoryRequestDto,
 ): Promise<void> =>
   apiRequest(`/v1/display/${displayId}/content-categories/${categoryId}`, {
+    method: 'PATCH',
+    body,
+  });
+
+// PATCH /v1/display/:displayId/content-categories/reorder
+export const reorderContentCategories = async (
+  displayId: number,
+  body: ReorderContentCategoriesRequestDto,
+): Promise<void> =>
+  apiRequest(`/v1/display/${displayId}/content-categories/reorder`, {
     method: 'PATCH',
     body,
   });

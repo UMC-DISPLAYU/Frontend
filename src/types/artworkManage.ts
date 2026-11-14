@@ -14,9 +14,6 @@ export interface Work {
 export type Content = {
   id: number;
   title: string;
-  description: string;
   photoCount: number;
   thumbnail?: string;
 };
-
-export const EMPTY_CONTENT: Content = { id: 0, title: '', description: '', photoCount: 0 };

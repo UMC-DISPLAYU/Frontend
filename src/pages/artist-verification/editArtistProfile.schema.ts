@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { type ExhibitionField, MAX_ARTIST_FIELDS } from '@/constants/exhibition';
+import type { ArtistProfileField } from '@/constants/artistField';
+import { MAX_ARTIST_FIELDS } from '@/constants/exhibition';
 import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
 
 export const ARTIST_INTRO_MAX = 100;
@@ -13,7 +14,7 @@ export const editArtistProfileSchema = z.object({
     .max(15, { message: '15자 이하로 입력해주세요' })
     .regex(/^[가-힣a-zA-Z0-9]+$/, { message: '한글, 영문, 숫자만 쓸 수 있어요' }),
   fields: z
-    .array(z.custom<ExhibitionField>())
+    .array(z.custom<ArtistProfileField>())
     .min(1, { message: '작가 분야를 1개 이상 골라주세요' })
     .max(MAX_ARTIST_FIELDS, { message: `분야는 최대 ${MAX_ARTIST_FIELDS}개까지 선택할 수 있어요` }),
   introduction: z.string().max(ARTIST_INTRO_MAX, {

@@ -38,25 +38,3 @@ export function ArtistVerifyField({ label, htmlFor, children, className }: Artis
     </div>
   );
 }
-
-type ArtistVerifyHelperTextProps = {
-  children?: ReactNode;
-  id?: string;
-  error?: boolean;
-};
-
-export function ArtistVerifyHelperText({
-  children,
-  id,
-  error = false,
-}: ArtistVerifyHelperTextProps) {
-  return (
-    <p
-      className={cn('typography-body-md-medium', error ? 'text-error' : 'text-secondary')}
-      id={id}
-      role={error ? 'alert' : undefined}
-    >
-      {children}
-    </p>
-  );
-}

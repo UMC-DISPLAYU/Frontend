@@ -123,7 +123,14 @@ const form = (tree: Element[]) =>
   tree.find((node) => node.type === 'form')!.props.onSubmit as (
     data: Record<string, unknown>,
   ) => Promise<void>;
-const values = { nickname: '작가', artistName: '작가', fields: ['PAINTING'], introduction: '소개' };
+const values = {
+  nickname: '작가',
+  artistName: '작가',
+  fields: ['PAINTING'],
+  introduction: '소개',
+  instagram: '',
+  portfolio: '',
+};
 const failure = new ApiError('server', { status: 500 });
 
 beforeEach(() => {

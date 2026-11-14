@@ -142,6 +142,7 @@ const ArtworkRegisterPage = lazyPage(
   () => import('./pages/artwork-register'),
   'ArtworkRegisterPage',
 );
+const SectionCreatePage = lazyPage(() => import('./pages/SectionCreatePage'), 'SectionCreatePage');
 const InteriorPhotosPage = lazyPage(
   () => import('./pages/InteriorPhotosPage'),
   'InteriorPhotosPage',
@@ -406,6 +407,15 @@ export const router = createBrowserRouter([
                     element: (
                       <DisplayContentPermissionGuard action="createContent">
                         <DisplayContentsManagePage />
+                      </DisplayContentPermissionGuard>
+                    ),
+                  },
+                  // 섹션 추가(전체 화면, 프로토타입 section.html?new=1)
+                  {
+                    path: 'contents/new',
+                    element: (
+                      <DisplayContentPermissionGuard action="createCategory">
+                        <SectionCreatePage />
                       </DisplayContentPermissionGuard>
                     ),
                   },
