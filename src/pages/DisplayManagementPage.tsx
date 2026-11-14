@@ -189,7 +189,8 @@ export function DisplayManagementPage() {
 
   return (
     <PageContainer variant="list" fillHeight className="bg-primary-white pb-10">
-      <WorkHeader title="내 전시 관리" />
+      {/* 프로토타입: 어디서 들어왔든 < 는 마이로 간다 */}
+      <WorkHeader title="내 전시 관리" onBack={() => navigate('/my')} />
 
       <main>
         <div className="flex items-center justify-between gap-3 pb-4.75">
