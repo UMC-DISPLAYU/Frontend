@@ -33,6 +33,6 @@ export function toReceivedInvitation(dto: MyDisplayInvitationDto): ReceivedInvit
 /** 참여 완료 화면의 기간. 프로토타입처럼 카드 표기의 ' - ' 를 ' – ' 로 바꾼다 */
 export const toCompletePeriod = (period: string) => period.replace(' - ', ' – ');
 
-/** 참여 완료의 "내 작품 등록하기". 팀원은 전시 작업의 작품 추가처럼 작품 정보 입력부터 시작한다 */
+/** 참여 완료의 "내 작품 등록하기". 팀원은 시트 없이 바로 작품 등록 화면으로 간다(프로토타입 works.html) */
 export const getArtworkRegisterPath = (displayId: number) =>
-  `/exhibition/${displayId}/artworks/add/basic`;
+  `/exhibition/${displayId}/artworks/new`;

@@ -69,6 +69,6 @@ describe('toCompletePeriod', () => {
   });
 });
 
-it('내 작품 등록하기는 그 전시의 작품 정보 입력으로 간다', () => {
-  expect(getArtworkRegisterPath(12)).toBe('/exhibition/12/artworks/add/basic');
+it('내 작품 등록하기는 그 전시의 작품 등록 화면으로 바로 간다', () => {
+  expect(getArtworkRegisterPath(12)).toBe('/exhibition/12/artworks/new');
 });
