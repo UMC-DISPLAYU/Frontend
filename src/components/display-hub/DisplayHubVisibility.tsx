@@ -58,14 +58,16 @@ function VisibilityField({ label, value, startDate, disabled, onChange }: Visibi
       <button
         ref={triggerRef}
         type="button"
-        aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-labelledby={`${labelId} ${valueId}`}
         aria-disabled={disabled}
         onClick={() => {
           if (!disabled) setIsOpen((prev) => !prev);
         }}
-        className="typography-body-xl-regular mt-1 flex h-11 w-full items-center justify-between border-b border-primary text-left text-primary transition-colors duration-fast ease-standard focus:border-interactive-primary focus-visible:rounded-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus aria-disabled:cursor-default"
+        className={cn(
+          'typography-body-xl-regular mt-1 flex h-11 w-full items-center justify-between border-b text-left text-primary transition-colors duration-fast ease-standard focus-visible:rounded-6 focus-visible:border-interactive-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus aria-disabled:cursor-default',
+          isOpen ? 'border-interactive-primary' : 'border-primary',
+        )}
       >
         <span id={valueId} className="min-w-0 truncate">
           {selected.label}
@@ -79,37 +81,36 @@ function VisibilityField({ label, value, startDate, disabled, onChange }: Visibi
       </p>
 
       {isOpen && (
-        <div
-          role="listbox"
+        <ul
           aria-labelledby={labelId}
           className="absolute top-[calc(100%+4px)] right-0 left-0 z-10 animate-[display-hub-pop_200ms_cubic-bezier(0.16,1,0.3,1)] rounded-12 border border-primary bg-primary-white py-1 shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
         >
           {OPTIONS.map((option) => {
             const isSelected = option.value === value;
             return (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                onClick={() => {
-                  setIsOpen(false);
-                  triggerRef.current?.focus();
-                  if (!isSelected) onChange(option.value);
-                }}
-                className={cn(
-                  'flex h-12 w-full items-center justify-between px-3.5 text-left text-primary transition-colors duration-150 hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
-                  isSelected
-                    ? 'typography-body-xl-semibold bg-secondary'
-                    : 'typography-body-xl-medium',
-                )}
-              >
-                {option.label}
-                {isSelected && <DisplayHubIcon name="check" className="size-4.5" />}
-              </button>
+              <li key={option.value}>
+                <button
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    setIsOpen(false);
+                    triggerRef.current?.focus();
+                    if (!isSelected) onChange(option.value);
+                  }}
+                  className={cn(
+                    'flex h-12 w-full items-center justify-between px-3.5 text-left text-primary transition-colors duration-150 hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+                    isSelected
+                      ? 'typography-body-xl-semibold bg-secondary'
+                      : 'typography-body-xl-medium',
+                  )}
+                >
+                  {option.label}
+                  {isSelected && <DisplayHubIcon name="check" className="size-4.5" />}
+                </button>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );

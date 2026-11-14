@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import {
-  DISPLAY_HUB_BOTTOM_BAR_CLASS,
+  DisplayHubBottomBar,
   DisplayHubDoneRing,
   DisplayPublishSteps,
   getDisplayHubButtonClass,
@@ -10,10 +10,11 @@ import {
 import { PageContainer } from '@/components/layout';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 
-// 완료 모션은 프로토타입(flow.css `.done`)과 같다: 링 → 체크 → 제목 · 설명 → 단계 · 요약 → 버튼 순서로 한 번만
-const EASE = 'cubic-bezier(0.16,1,0.3,1)';
+// 완료 모션은 프로토타입(flow.css `.done`)과 같다: 링 → 체크 → 제목 · 설명 → 단계 · 요약 → 버튼 순서로 한 번만.
+// 움직임(위로 12px + 투명도)은 animate-rise 와 같고, 길이 · 시작 시점만 프로토타입 값으로 바꾼다
 const riseStyle = (duration: number, delay: number): CSSProperties => ({
-  animation: `display-hub-done-up ${duration}ms ${delay}ms ${EASE} both`,
+  animationDuration: `${duration}ms`,
+  animationDelay: `${delay}ms`,
 });
 
 export function DisplayHubRequestedPage() {
@@ -36,33 +37,35 @@ export function DisplayHubRequestedPage() {
         <main className="flex flex-1 flex-col">
           <div className="pt-14 text-center">
             <DisplayHubDoneRing />
-            <h1 className="typography-title-xs mt-5" style={riseStyle(500, 300)}>
+            <h1 className="typography-title-xs mt-5 animate-rise" style={riseStyle(500, 300)}>
               등록을 요청했어요
             </h1>
             <p
-              className="typography-body-lg-regular mt-2 whitespace-pre-line text-secondary"
+              className="typography-body-lg-regular mt-2 animate-rise whitespace-pre-line text-secondary"
               style={riseStyle(500, 360)}
             >
               {'승인된 시점부터 관람객에게 자동으로 공개돼요\n심사 중에도 내용을 수정할 수 있어요'}
             </p>
           </div>
 
-          <div className="mt-8" style={riseStyle(550, 440)}>
+          <div className="mt-8 animate-rise" style={riseStyle(550, 440)}>
             <DisplayPublishSteps current={3} />
           </div>
 
           <dl
-            className="mt-8 grid gap-5 rounded-12 bg-secondary px-5 py-6"
+            className="mt-8 grid animate-rise gap-5 rounded-12 bg-secondary px-5 py-6"
             style={riseStyle(550, 440)}
           >
             {rows.map((row, index) => (
               <div
                 key={row.label}
-                className="flex items-baseline justify-between gap-4"
+                className="flex animate-rise items-baseline justify-between gap-4"
                 style={riseStyle(450, 500 + index * 50)}
               >
-                <dt className="typography-body-lg-medium text-secondary">{row.label}</dt>
-                <dd className="typography-body-lg-semibold text-right text-primary">{row.value}</dd>
+                <dt className="typography-body-lg-medium shrink-0 text-secondary">{row.label}</dt>
+                <dd className="typography-body-lg-semibold min-w-0 text-right break-words text-primary">
+                  {row.value}
+                </dd>
               </div>
             ))}
           </dl>
@@ -71,11 +74,11 @@ export function DisplayHubRequestedPage() {
             승인 결과는 알림으로 알려드릴 예정이에요
           </p>
 
-          <div className={DISPLAY_HUB_BOTTOM_BAR_CLASS} style={riseStyle(500, 620)}>
+          <DisplayHubBottomBar className="animate-rise" style={riseStyle(500, 620)}>
             <Link to="/display-management" replace className={getDisplayHubButtonClass('primary')}>
               내 전시 관리로 이동
             </Link>
-          </div>
+          </DisplayHubBottomBar>
         </main>
       </PageContainer>
     </div>

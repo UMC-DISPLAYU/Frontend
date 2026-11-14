@@ -55,11 +55,12 @@ export function DisplayHubSummary({ display, status, className }: DisplayHubSumm
               <span aria-hidden="true" className={cn('size-2 rounded-circle', meta.dotClassName)} />
               {meta.label}
             </p>
+            {/* 보이는 크기는 프로토타입 그대로 두고, 누르는 영역만 가상 요소로 위아래 44px 까지 넓힌다 */}
             <Link
               to={`/display/${display.displayId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="typography-body-md-semibold group inline-flex items-center gap-0.5 whitespace-nowrap text-primary focus-visible:rounded-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              className="typography-body-md-semibold group relative inline-flex items-center gap-0.5 whitespace-nowrap text-primary after:absolute after:-inset-x-1 after:-inset-y-3.5 after:content-[''] focus-visible:rounded-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               전시 미리보기
               <DisplayHubIcon
@@ -68,7 +69,9 @@ export function DisplayHubSummary({ display, status, className }: DisplayHubSumm
               />
             </Link>
           </div>
-          <h2 className="typography-body-xl-semibold mt-1 text-primary">{display.title}</h2>
+          <h2 className="typography-body-xl-semibold mt-1 break-words text-primary">
+            {display.title}
+          </h2>
           <p className="typography-body-md-medium text-secondary">
             {[display.organization, display.department].filter(Boolean).join(' ')}
           </p>

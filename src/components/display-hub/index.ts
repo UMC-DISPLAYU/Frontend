@@ -1,5 +1,6 @@
 export { DisplayHubBlocks } from './DisplayHubBlocks';
-export { DISPLAY_HUB_BOTTOM_BAR_CLASS, getDisplayHubButtonClass } from './displayHubButton';
+export { DisplayHubBottomBar } from './DisplayHubBottomBar';
+export { getDisplayHubButtonClass } from './displayHubButton';
 export { DisplayHubConfirmDialog } from './DisplayHubConfirmDialog';
 export { DisplayHubDoneRing } from './DisplayHubDoneRing';
 export { DisplayHubHeader } from './DisplayHubHeader';

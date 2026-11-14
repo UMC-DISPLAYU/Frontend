@@ -37,10 +37,3 @@
     stroke-dashoffset: 28;
   }
 }
-
-@keyframes display-hub-done-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}

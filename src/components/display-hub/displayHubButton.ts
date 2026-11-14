@@ -1,9 +1,5 @@
 import { cn } from '@/utils/cn';
 
-// 프로토타입 flow.css `.cta`: 화면 아래에 붙고, 위쪽은 흰색으로 서서히 덮는다
-export const DISPLAY_HUB_BOTTOM_BAR_CLASS =
-  'sticky bottom-0 z-5 mt-auto bg-[linear-gradient(to_bottom,rgba(255,255,255,0),#fff_28%)] pt-5 pb-safe-area-bottom';
-
 // 프로토타입 flow.css `.big` · `.big.soft`
 export const getDisplayHubButtonClass = (variant: 'primary' | 'soft') =>
   cn(

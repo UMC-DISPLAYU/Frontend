@@ -5,8 +5,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { UpdateDisplayReservationRequestDto } from '@/api/dto';
 import { ErrorView } from '@/components/common';
 import {
-  DISPLAY_HUB_BOTTOM_BAR_CLASS,
   DisplayHubBlocks,
+  DisplayHubBottomBar,
   DisplayHubConfirmDialog,
   DisplayHubHeader,
   type DisplayHubStatus,
@@ -183,11 +183,9 @@ export function DisplayHubPage() {
           </div>
           {hubAction && (
             // 폰 · 태블릿은 화면 아래에 붙는 버튼(프로토타입 `.cta`), 노트북은 왼쪽 상태 안내 아래에 둔다
-            <div
-              className={cn(
-                DISPLAY_HUB_BOTTOM_BAR_CLASS,
-                'desktop:static desktop:col-start-1 desktop:row-start-3 desktop:mt-2 desktop:self-start desktop:bg-none desktop:pt-4 desktop:pb-0',
-              )}
+            <DisplayHubBottomBar
+              staticOnDesktop
+              className="desktop:static desktop:col-start-1 desktop:row-start-3 desktop:mt-2 desktop:self-start desktop:bg-none desktop:pt-4 desktop:pb-0"
             >
               <button
                 type="button"
@@ -196,7 +194,7 @@ export function DisplayHubPage() {
               >
                 {hubAction.label}
               </button>
-            </div>
+            </DisplayHubBottomBar>
           )}
         </main>
       );
