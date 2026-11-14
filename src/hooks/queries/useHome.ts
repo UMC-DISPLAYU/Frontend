@@ -55,38 +55,33 @@ const toHomeCard = (display: HomeExhibitionDto): HomeExhibitionCard => ({
 });
 
 /**
- * 홈 전시 탭 목록. 선택한 탭의 쿼리만 켠다.
+ * 홈 전시 탭 목록. 프로토타입처럼 탭을 바꾸면 바로 보이도록 다섯 탭을 처음부터 함께 받아 두고, 선택한 탭의 결과를 돌려준다.
  * 캐시에는 원본 응답을 두고 select 로 바꾼다 — 탐색 화면과 같은 query key 를 쓰기 때문이다.
  */
 export const useHomeTabExhibitions = (tab: HomeExhibitionTab) => {
   const popular = useQuery({
     queryKey: queryKeys.displays.popular(),
     queryFn: () => getPopularDisplays(),
-    enabled: tab === 'pop',
     select: (displays) => displays.map(toHomeCard),
   });
   const graduation = useQuery({
     queryKey: queryKeys.displays.graduation(homeTabGraduationParams),
     queryFn: () => getGraduationDisplays(homeTabGraduationParams),
-    enabled: tab === 'grad',
     select: (displays) => displays.map(toHomeCard),
   });
   const closingSoon = useQuery({
     queryKey: queryKeys.displays.closingSoon(homeTabClosingSoonParams),
     queryFn: () => getClosingSoonDisplays(homeTabClosingSoonParams),
-    enabled: tab === 'end',
     select: (data) => data.exhibitions.map(toHomeCard),
   });
   const live = useQuery({
     queryKey: queryKeys.displays.search(homeTabLiveParams),
     queryFn: () => searchDisplays(homeTabLiveParams),
-    enabled: tab === 'live',
     select: (data) => data.exhibitions.map(toHomeCard),
   });
   const soon = useQuery({
     queryKey: queryKeys.displays.search(homeTabSoonParams),
     queryFn: () => searchDisplays(homeTabSoonParams),
-    enabled: tab === 'soon',
     select: (data) => data.exhibitions.map(toHomeCard),
   });
 
