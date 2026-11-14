@@ -2,6 +2,7 @@ import { delay, http } from 'msw';
 
 import { mockDb } from '@/mocks/data/repository';
 import { created, fail, paths, readJson, success } from '@/mocks/response';
+import { hasMockScenario } from '@/mocks/scenario';
 
 type MockArtistProfile = {
   artistId: number;
@@ -35,9 +36,21 @@ let myArtistProfile: MockArtistProfile = {
   status: 'ACTIVE',
 };
 
+// ?mock=artist-unverified 에서 작가 프로필을 만들었는지. 만들기 전에는 내 작가 프로필 조회가 404 다
+let createdInUnverifiedScenario = false;
+
 export const artistHandlers = [
   ...paths('/api/v1/artists/me/artist-profile').map((path) =>
-    http.get(path, () => success('/api/v1/artists/me/artist-profile', myArtistProfile)),
+    http.get(path, () =>
+      hasMockScenario('artist-unverified') && !createdInUnverifiedScenario
+        ? fail(
+            '/api/v1/artists/me/artist-profile',
+            404,
+            'ARTIST_PROFILE_NOT_FOUND',
+            '작가 프로필이 없습니다.',
+          )
+        : success('/api/v1/artists/me/artist-profile', myArtistProfile),
+    ),
   ),
   ...paths('/api/v1/artists/me/artist-profile').map((path) =>
     http.post(path, async ({ request }) => {
@@ -70,6 +83,7 @@ export const artistHandlers = [
         status: 'ACTIVE',
       };
       mockDb.me.isVerified = true;
+      createdInUnverifiedScenario = true;
 
       return created('/api/v1/artists/me/artist-profile', myArtistProfile);
     }),

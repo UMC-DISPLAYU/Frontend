@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 import {
   ArtistVerifyComplete,
@@ -18,7 +18,7 @@ import {
   VerifyHelperText,
   VerifyInput,
 } from '@/components/artist-verify';
-import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useMyArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 
 import { useArtistVerifyFlow } from './useArtistVerifyFlow';
@@ -30,6 +30,7 @@ export function ArtistVerifyPage() {
   const { data: me } = useUserMe();
   const [isLeaveOverlayOpen, setIsLeaveOverlayOpen] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const myArtistProfile = useMyArtistProfile();
 
   if (flow.isComplete) {
     return (
@@ -39,6 +40,12 @@ export function ArtistVerifyPage() {
       />
     );
   }
+
+  // 작가 프로필을 이미 만든 사람이 다시 들어오면(로그인 뒤 이전 버튼 등) 빈 입력 화면 대신 마이로 보낸다.
+  // isVerified 는 학교 이메일 인증만 끝나도 true 라서, 프로필을 만들기 전에 나간 사람이 막히지 않게 프로필 유무로 판단한다.
+  // 프로필은 마지막 제출에서만 생기고 그때는 위의 완료 화면이 먼저 그려진다
+  if (myArtistProfile.data) return <Navigate replace to="/my" />;
+  if (myArtistProfile.isLoading) return null;
 
   const handleSelectSchool = (school: string) => {
     // 비활성이던 이메일 칸이 풀린 뒤에 포커스해야 하므로 먼저 반영한다

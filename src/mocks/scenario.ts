@@ -3,10 +3,16 @@
  *
  * - 페이지 URL 쿼리: `/onboarding?mock=agreements-fail` 처럼 붙인다. 여러 개는 `?mock=a&mock=b`.
  *   MSW 브라우저 핸들러는 페이지에서 실행되므로 현재 페이지 주소를 읽을 수 있다.
+ * - `?mock=artist-unverified`: 작가 인증 전 사용자로 응답한다. 내 정보는 isVerified: false, 내 작가 프로필 조회는 404
+ *   (작가 프로필을 만들기 전까지). 작가 인증 화면 확인용.
  * - 닉네임: 아래 MOCK_NICKNAMES 값을 입력하면 해당 응답을 돌려준다.
  * - 주소 검색: 아래 MOCK_ADDRESS_KEYWORD가 들어간 검색어를 입력하면 예시 주소를 돌려준다.
  */
-export type MockScenario = 'agreements-fail' | 'agreements-empty' | 'agreements-slow';
+export type MockScenario =
+  | 'agreements-fail'
+  | 'agreements-empty'
+  | 'agreements-slow'
+  | 'artist-unverified';
 
 export const hasMockScenario = (scenario: MockScenario) =>
   new URLSearchParams(window.location.search).getAll('mock').includes(scenario);
