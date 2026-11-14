@@ -247,20 +247,14 @@ export function MapPage() {
     selectExhibition(exhibition, 'list');
   };
 
-  const fitToMatches = (targets: MapExhibition[], targetInsets = insets) => {
+  const fitToMatches = (targets: MapExhibition[]) => {
     if (map && targets.length > 0) {
       fitTo(
         map,
         targets.map((exhibition) => exhibition.position),
-        targetInsets,
+        insets,
       );
     }
-  };
-
-  const handleFitAll = () => {
-    const nextSnap = snap === 'one' ? 'mid' : snap;
-    setSelection(null);
-    fitToMatches(matched, getInsetsFor(nextSnap));
   };
 
   const handleToggleStatus = (status: MapExhibitionStatus) => {
@@ -399,7 +393,6 @@ export function MapPage() {
         isLocating={myLocation.isLocating}
         onZoomIn={() => map && zoomBy(map, -1, insets)}
         onZoomOut={() => map && zoomBy(map, 1, insets)}
-        onFitAll={handleFitAll}
         onLocate={myLocation.locate}
       />
 
