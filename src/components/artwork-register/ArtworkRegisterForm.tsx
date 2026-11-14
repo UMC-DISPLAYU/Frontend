@@ -294,10 +294,13 @@ export function ArtworkRegisterForm({
                 <div className={UNDERLINE_CLASS}>
                   <input
                     id={`${formId}-year`}
+                    type="text"
+                    // 모바일에서 문자 키보드 대신 숫자 키패드를 띄운다(iOS 는 pattern 도 함께 봐야 숫자 키패드가 뜬다)
                     inputMode="numeric"
                     pattern="[0-9]*"
+                    autoComplete="off"
                     maxLength={4}
-                    placeholder={String(new Date().getFullYear())}
+                    placeholder="YYYY"
                     className={INPUT_CLASS}
                     {...yearInput}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {
