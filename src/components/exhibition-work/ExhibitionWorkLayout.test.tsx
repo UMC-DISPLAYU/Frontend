@@ -96,3 +96,26 @@ describe('전시 요약 카드', () => {
     expect(texts({ startDate: '2026-11-01', endDate: '2026-11-01' })).toContain('2026.11.01');
   });
 });
+
+describe('전시 상태', () => {
+  it.each([
+    ['DRAFT', '준비 중', 'bg-[#18181b]'],
+    ['PENDING_REVIEW', '심사 중', 'bg-[#3b82f6]'],
+    ['REJECTED', '반려', 'bg-[#fb2c36]'],
+    ['PUBLISHED', '공개 중', 'bg-[#00c758]'],
+  ])('공개 상태 %s 는 "%s"로 보이고 점 색은 %s(프로토타입)', (status, label, dot) => {
+    const tree = nodes(
+      ExhibitionWorkLayout({
+        display: { ...display, status },
+        activeTab: 'artworks',
+        children: null,
+      }),
+    );
+    const badge = tree.find((node) =>
+      Children.toArray(node.props.children as ReactNode).includes(label),
+    );
+    expect(badge).toBeDefined();
+    expect(String(badge!.props.className)).toContain('font-semibold');
+    expect(tree.some((node) => String(node.props.className ?? '').includes(dot))).toBe(true);
+  });
+});

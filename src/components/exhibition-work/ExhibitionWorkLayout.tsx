@@ -61,6 +61,30 @@ export function WorkBar({
   );
 }
 
+/*
+ * 상세 응답의 status 는 공개 상태(DRAFT · PENDING_REVIEW · REJECTED · PUBLISHED)다.
+ * 프로토타입 `.sumc .st`: 준비 중 검정 · 심사 중 파랑 · 반려 빨강 · 공개 중 초록(점 7 · 글자 12 SemiBold)
+ */
+const WORK_STATUS: Record<string, { label: string; dotClassName: string; textClassName: string }> =
+  {
+    DRAFT: { label: '준비 중', dotClassName: 'bg-[#18181b]', textClassName: '' },
+    PENDING_REVIEW: {
+      label: '심사 중',
+      dotClassName: 'bg-[#3b82f6]',
+      textClassName: 'text-[#2563eb]',
+    },
+    REJECTED: { label: '반려', dotClassName: 'bg-[#fb2c36]', textClassName: 'text-[#fb2c36]' },
+    PUBLISHED: { label: '공개 중', dotClassName: 'bg-[#00c758]', textClassName: 'text-[#00a846]' },
+  };
+
+// 모르는 값(목 데이터의 전시 기간 상태 등)은 기존 한글 라벨을 검정으로 보인다
+const getWorkStatus = (status: string) =>
+  WORK_STATUS[status] ?? {
+    label: getDisplayStatusLabel(status),
+    dotClassName: 'bg-[#18181b]',
+    textClassName: '',
+  };
+
 /* 프로토타입 일정 표기: 앞에 연도, 끝 연도는 다를 때만 (2026.06.10–06.20) */
 const formatPeriod = ({ startDate, endDate }: DisplayDetailDto['period']) => {
   const dot = (date: string) => date.replace(/-/g, '.');
@@ -93,8 +117,7 @@ export function ExhibitionWorkLayout({
     if (onTabChange) onTabChange(tab);
     else navigate(`/exhibition/${display.displayId}/work?tab=${tab}`, { replace: true });
   };
-  const status = display.status === 'DRAFT' ? '준비 중' : getDisplayStatusLabel(display.status);
-  const isLive = display.status === 'DISPLAYING';
+  const status = getWorkStatus(display.status);
 
   return (
     // 프로토타입은 모든 요소에 자간 -0.03em 을 준다(글자 크기마다 따로 계산되게 자식마다 둔다)
@@ -125,17 +148,14 @@ export function ExhibitionWorkLayout({
                 <p
                   className={cn(
                     'inline-flex items-center gap-1.5 text-[12px] font-semibold',
-                    isLive && 'text-[#00a846]',
+                    status.textClassName,
                   )}
                 >
                   <span
                     aria-hidden="true"
-                    className={cn(
-                      'size-[7px] rounded-circle',
-                      isLive ? 'bg-[#00c758]' : 'bg-[#18181b]',
-                    )}
+                    className={cn('size-[7px] rounded-circle', status.dotClassName)}
                   />
-                  {status}
+                  {status.label}
                 </p>
                 <Link
                   to={`/exhibition/${display.displayId}/preview`}
