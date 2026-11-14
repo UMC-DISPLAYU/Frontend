@@ -5,19 +5,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { PageContainer } from '@/components/layout';
 import {
   NicknameScreen,
-  type PolicyTermKey,
   SignupCompleteScreen,
-  TermDetailScreen,
   TermsAgreementScreen,
   type TermState,
 } from '@/components/onboarding';
 
-import { findAgreement, hasRequiredTerms } from './signupAgreements';
+import { hasRequiredTerms } from './signupAgreements';
 import { useOnboardingSignup } from './useOnboardingSignup';
 
-type Step = 'terms' | 'termDetail' | 'nickname' | 'done';
+type Step = 'terms' | 'nickname' | 'done';
 
-type OnboardingHistoryState = { step?: Step; term?: PolicyTermKey } | null;
+type OnboardingHistoryState = { step?: Step } | null;
 
 const INITIAL_TERMS: TermState = { over14: false, service: false, privacy: false, location: false };
 
@@ -35,7 +33,6 @@ export function NewOnboardingPage() {
   const requestedStep = historyState?.step ?? 'terms';
   const step: Step =
     requestedStep === 'nickname' && !hasRequiredTerms(terms) ? 'terms' : requestedStep;
-  const selectedTerm = historyState?.term ?? 'service';
 
   const goTo = (next: OnboardingHistoryState, options?: { replace?: boolean }) =>
     navigate({ pathname: location.pathname, search: location.search }, { ...options, state: next });
@@ -49,18 +46,7 @@ export function NewOnboardingPage() {
             terms={terms}
             onChange={setTerms}
             onBack={() => navigate('/home')}
-            onOpenDetail={(term) => goTo({ step: 'termDetail', term })}
             onNext={() => goTo({ step: 'nickname' })}
-          />
-        ) : null}
-
-        {step === 'termDetail' ? (
-          <TermDetailScreen
-            termKey={selectedTerm}
-            agreement={findAgreement(signup.agreements, selectedTerm)}
-            isLoading={signup.isAgreementsLoading}
-            onRetry={() => void signup.refetchAgreements()}
-            onBack={() => navigate(-1)}
           />
         ) : null}
 

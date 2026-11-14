@@ -53,9 +53,6 @@ export function useOnboardingSignup(terms: TermState) {
   };
 
   return {
-    agreements: agreementsQuery.data,
-    isAgreementsLoading: agreementsQuery.isLoading,
-    refetchAgreements: agreementsQuery.refetch,
     submit,
     isSubmitting: signup.isPending,
     error,
