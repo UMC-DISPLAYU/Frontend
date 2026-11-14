@@ -107,11 +107,6 @@ export function computeFocusScrollDelta({
   return 0;
 }
 
-/** 보이는 영역 높이가 줄었는지(키보드가 올라오는 경우). 반올림 오차는 무시한다 */
-export function didViewportShrink(previousHeight: number, nextHeight: number): boolean {
-  return previousHeight - nextHeight > 1;
-}
-
 export function isTextEditableElement(element: Element | null): element is HTMLElement {
   if (!element) return false;
   if ((element as HTMLElement).isContentEditable) return true;
@@ -241,25 +236,14 @@ function scheduleEnsureVisible() {
   ensureVisibleTimer = setTimeout(ensureFocusedVisible, ENSURE_VISIBLE_DELAY);
 }
 
-function getViewportHeight() {
-  return window.visualViewport?.height ?? window.innerHeight;
-}
-
 function startTracking() {
   const vv = window.visualViewport;
 
-  let lastViewportHeight = getViewportHeight();
-
   // 키보드가 열리고 닫힐 때는 resize, iOS 에서 키보드가 열린 채 화면이 밀릴 때는 scroll 이 온다.
   // scroll 에서는 입력창 보정을 하지 않는다(사용자 스크롤을 되돌리지 않도록).
-  // 다른 탭에 갔다 돌아올 때도 resize 가 와서, 보이는 영역이 줄었을 때(키보드가 올라올 때)만 입력창 쪽으로 옮긴다.
   const handleResize = () => {
     scheduleUpdate();
-    const nextViewportHeight = getViewportHeight();
-    if (!document.hidden && didViewportShrink(lastViewportHeight, nextViewportHeight)) {
-      scheduleEnsureVisible();
-    }
-    lastViewportHeight = nextViewportHeight;
+    scheduleEnsureVisible();
   };
   const handleFocusIn = (event: FocusEvent) => {
     scheduleUpdate();
