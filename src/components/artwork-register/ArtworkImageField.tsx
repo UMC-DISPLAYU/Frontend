@@ -1,23 +1,14 @@
-import { type ChangeEvent, type KeyboardEvent, useId, useRef, useState } from 'react';
+import { type ChangeEvent, useId, useRef, useState } from 'react';
+
+import { DndContext } from '@dnd-kit/core';
+import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
 import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  horizontalListSortingStrategy,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-
+  type ReorderDragMode,
+  STOP_REORDER_PROPS,
+  useHorizontalReorder,
+  useHorizontalReorderItem,
+} from '@/hooks/useHorizontalReorder';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { cropImageStyle } from '@/utils/cropBox';
@@ -39,9 +30,6 @@ interface ArtworkImageFieldProps {
   limitMessage: string;
   className?: string;
 }
-
-// 안쪽 버튼의 Enter · Space 가 사진 끌기(키보드)로 이어지지 않게 한다
-const stopDragKey = (event: KeyboardEvent<HTMLButtonElement>) => event.stopPropagation();
 
 function UploadErrorBox({ onRetry }: { onRetry: () => void }) {
   return (
@@ -76,32 +64,38 @@ function ImageTile({
   item,
   index,
   isRepresentative,
+  dragMode,
+  canReorder,
   onRemove,
   onAdjust,
 }: {
   item: ArtworkImageItem;
   index: number;
   isRepresentative: boolean;
+  dragMode: ReorderDragMode;
+  canReorder: boolean;
   onRemove: () => void;
   onAdjust: () => void;
 }) {
   const isUploading = !item.uploadedUrl;
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item.id,
-  });
+  const {
+    setNodeRef,
+    style: reorderStyle,
+    className: reorderClassName,
+    itemProps: reorderProps,
+  } = useHorizontalReorderItem({ id: item.id, dragMode, disabled: !canReorder });
 
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Translate.toString(transform), transition }}
+      style={reorderStyle}
       aria-busy={isUploading}
-      {...attributes}
-      {...listeners}
+      {...reorderProps}
       aria-roledescription="순서를 바꿀 수 있는 사진"
       aria-label={`사진 ${index + 1}${isRepresentative ? ', 대표 사진' : ''}`}
       className={cn(
-        'relative h-30 w-24 shrink-0 animate-rise cursor-grab snap-start overflow-hidden bg-secondary [animation-duration:350ms] [animation-fill-mode:backwards] active:cursor-grabbing',
-        isDragging && 'z-10 opacity-70',
+        'relative h-30 w-24 shrink-0 animate-rise snap-start overflow-hidden bg-secondary [animation-duration:350ms] [animation-fill-mode:backwards]',
+        reorderClassName,
         FOCUS_CLASS,
       )}
     >
@@ -116,7 +110,7 @@ function ImageTile({
           type="button"
           aria-label="대표 사진 카드에서 보이는 부분 조정"
           onClick={onAdjust}
-          onKeyDown={stopDragKey}
+          {...STOP_REORDER_PROPS}
           className={cn(
             'typography-body-sm-semibold absolute right-1 bottom-1 h-5.5 rounded-6 bg-[rgba(255,255,255,0.92)] px-2 text-primary after:absolute after:-inset-x-1 after:-inset-y-2.75',
             FOCUS_CLASS,
@@ -134,7 +128,7 @@ function ImageTile({
         type="button"
         aria-label={`${index + 1}번째 삭제`}
         onClick={onRemove}
-        onKeyDown={stopDragKey}
+        {...STOP_REORDER_PROPS}
         className={cn(
           'absolute top-1 right-1 grid size-6 place-items-center rounded-12 bg-primary-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.18)] after:absolute after:-inset-2.5',
           FOCUS_CLASS,
@@ -195,12 +189,8 @@ export function ArtworkImageField({
   const [isCropOpen, setIsCropOpen] = useState(false);
   const { items, maxImages } = uploads;
   const representativeImage = representative ? items[0] : undefined;
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
-    // 터치는 짧게 밀면 가로 스크롤, 길게 누르면 끌기(PointerSensor 는 터치도 바로 잡아 스크롤을 막는다)
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const ids = items.map((item) => item.id);
+  const { dragMode, contextProps } = useHorizontalReorder({ onMove: uploads.move });
 
   const openPicker = () => inputRef.current?.click();
 
@@ -217,10 +207,6 @@ export function ArtworkImageField({
   const handleRetry = () => {
     setHasRejectedFile(false);
     if (!uploads.retry()) openPicker();
-  };
-
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (over && active.id !== over.id) uploads.move(String(active.id), String(over.id));
   };
 
   const openCrop = (item: ArtworkImageItem) => {
@@ -263,15 +249,16 @@ export function ArtworkImageField({
       {representative && (uploads.hasUploadError || hasRejectedFile) && (
         <UploadErrorBox onRetry={handleRetry} />
       )}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext
-          items={items.map((item) => item.id)}
-          strategy={horizontalListSortingStrategy}
-        >
+      <DndContext {...contextProps}>
+        <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
           <div
             role="group"
             aria-labelledby={labelId}
-            className="-mx-gutter mt-3 flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            // 프로토타입: 집힌 칸의 그림자 · 커지는 만큼 위아래 12px 여유를 둔다(아래는 -12px 로 자리 유지)
+            className={cn(
+              '-mx-gutter -mb-3 flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+              dragMode && 'snap-none',
+            )}
           >
             {items.length < maxImages && (
               <button
@@ -292,6 +279,8 @@ export function ArtworkImageField({
                 item={item}
                 index={index}
                 isRepresentative={representative && index === 0}
+                dragMode={dragMode}
+                canReorder={items.length > 1}
                 onRemove={() => uploads.remove(item.id)}
                 onAdjust={() => openCrop(item)}
               />

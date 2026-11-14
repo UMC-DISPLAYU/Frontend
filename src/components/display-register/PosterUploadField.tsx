@@ -1,24 +1,15 @@
-import { type ChangeEvent, type KeyboardEvent, useRef, useState } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  horizontalListSortingStrategy,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { DndContext } from '@dnd-kit/core';
+import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
+import {
+  type ReorderDragMode,
+  STOP_REORDER_PROPS,
+  useHorizontalReorder,
+  useHorizontalReorderItem,
+} from '@/hooks/useHorizontalReorder';
 import { cn } from '@/utils/cn';
 
 import { MAX_POSTER_FILE_MB, POSTER_ACCEPT_TYPES } from './displayRegister.constants';
@@ -80,42 +71,47 @@ function UploadErrorBox({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-// 안쪽 버튼의 Enter · Space 가 포스터 끌기(키보드)로 이어지지 않게 한다
-const stopDragKey = (event: KeyboardEvent<HTMLButtonElement>) => event.stopPropagation();
-
 function PosterThumb({
   item,
   index,
   locked,
+  dragMode,
+  canReorder,
   onRemove,
   onAdjust,
 }: {
   item: PosterItem;
   index: number;
   locked: boolean;
+  dragMode: ReorderDragMode;
+  canReorder: boolean;
   onRemove: () => void;
   onAdjust: () => void;
 }) {
   const isRepresentative = index === 0;
   const isUploading = !item.uploadedUrl;
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    setNodeRef,
+    style: reorderStyle,
+    className: reorderClassName,
+    itemProps: reorderProps,
+  } = useHorizontalReorderItem({
     id: item.id,
-    disabled: locked,
+    dragMode,
+    disabled: locked || !canReorder,
   });
 
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Translate.toString(transform), transition }}
+      style={reorderStyle}
       aria-busy={isUploading}
-      {...attributes}
-      {...listeners}
+      {...reorderProps}
       aria-roledescription="순서를 바꿀 수 있는 포스터"
       aria-label={`포스터 ${index + 1}${isRepresentative ? ', 대표' : ''}`}
       className={cn(
         'relative h-[105px] w-21 shrink-0 animate-rise snap-start overflow-hidden bg-[#f4f4f5] [animation-duration:350ms] [animation-fill-mode:backwards]',
-        !locked && 'cursor-grab active:cursor-grabbing',
-        isDragging && 'z-10 opacity-70',
+        reorderClassName,
         FOCUS_CLASS,
       )}
     >
@@ -130,7 +126,7 @@ function PosterThumb({
           type="button"
           aria-label="대표 포스터 카드에 보이는 부분 조정"
           onClick={onAdjust}
-          onKeyDown={stopDragKey}
+          {...STOP_REORDER_PROPS}
           className={cn(
             'typography-body-sm-semibold absolute right-1.5 bottom-1.5 h-5.5 rounded-6 bg-[rgba(255,255,255,0.92)] px-2 text-primary after:absolute after:-inset-x-1 after:-inset-y-2.75',
             FOCUS_CLASS,
@@ -149,7 +145,7 @@ function PosterThumb({
           type="button"
           aria-label={`포스터 ${index + 1} 삭제`}
           onClick={onRemove}
-          onKeyDown={stopDragKey}
+          {...STOP_REORDER_PROPS}
           className={cn(
             'absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-circle bg-primary-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.15)] after:absolute after:-inset-2.5',
             FOCUS_CLASS,
@@ -173,12 +169,8 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
   const [cropSession, setCropSession] = useState<{ item: PosterItem; key: number } | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
   const { items, errorKind } = posters;
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
-    // 터치는 짧게 밀면 가로 스크롤, 길게 누르면 끌기(PointerSensor 는 터치도 바로 잡아 스크롤을 막는다)
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  const ids = items.map((item) => item.id);
+  const { dragMode, contextProps } = useHorizontalReorder({ onMove: posters.move });
 
   const openPicker = () => inputRef.current?.click();
   const handleRetry = () => {
@@ -188,10 +180,6 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
   const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
     posters.addFiles(Array.from(event.target.files ?? []));
     event.target.value = '';
-  };
-
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (over && active.id !== over.id) posters.move(String(active.id), String(over.id));
   };
 
   const openCrop = (item: PosterItem) => {
@@ -253,12 +241,15 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
         <PosterHelp />
       )}
       {errorBox}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext
-          items={items.map((item) => item.id)}
-          strategy={horizontalListSortingStrategy}
-        >
-          <div className="-mx-gutter mt-3 flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <DndContext {...contextProps}>
+        <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
+          {/* 프로토타입: 집힌 칸의 그림자 · 커지는 만큼 위아래 12px 여유를 둔다(아래는 -12px 로 자리 유지) */}
+          <div
+            className={cn(
+              '-mx-gutter -mb-3 flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+              dragMode && 'snap-none',
+            )}
+          >
             {!locked && items.length < MAX_POSTER_UPLOAD_IMAGES && (
               <button
                 type="button"
@@ -275,6 +266,8 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
                 item={item}
                 index={index}
                 locked={locked}
+                dragMode={dragMode}
+                canReorder={items.length > 1}
                 onRemove={() => posters.remove(item.id)}
                 onAdjust={() => openCrop(item)}
               />
