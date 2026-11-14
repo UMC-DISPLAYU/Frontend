@@ -258,6 +258,8 @@
       (function () {
         var path = location.pathname;
         if (path !== '/' && path !== '/home') return;
+        // OAuth 콜백(?accessToken=)은 첫 진입이 아니다. 로그인 전 보던 화면으로 곧바로 돌아가므로 띄우지도 기록하지도 않는다
+        if (/[?&]accessToken=/.test(location.search)) return;
         // 저장소를 못 쓰면 한 번만 보여 줄 수 없으니 띄우지 않는다
         try {
           if (localStorage.getItem('du.splash')) return;
