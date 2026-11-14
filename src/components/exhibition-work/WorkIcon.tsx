@@ -23,13 +23,6 @@ const PATHS = {
       <path d="M12 11v5M12 8v.2" />
     </>
   ),
-  more: (
-    <>
-      <circle cx="5.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none" />
-      <circle cx="18.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
-    </>
-  ),
 } as const;
 
 export type WorkIconName = keyof typeof PATHS;

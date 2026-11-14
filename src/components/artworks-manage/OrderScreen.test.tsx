@@ -1,6 +1,6 @@
 import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
 
-import { DndContext, KeyboardSensor } from '@dnd-kit/core';
+import { DndContext, KeyboardSensor, TouchSensor } from '@dnd-kit/core';
 import {
   rectSortingStrategy,
   SortableContext,
@@ -16,7 +16,8 @@ const h = vi.hoisted(() => ({ sensor: vi.fn(), reorder: vi.fn() }));
 vi.mock('@dnd-kit/core', () => ({
   DndContext: () => null,
   closestCenter: vi.fn(),
-  PointerSensor: vi.fn(),
+  MouseSensor: vi.fn(),
+  TouchSensor: vi.fn(),
   KeyboardSensor: vi.fn(),
   useSensor: h.sensor,
   useSensors: (...sensors: unknown[]) => sensors,
@@ -55,6 +56,10 @@ beforeEach(() => vi.clearAllMocks());
 
 it('그리드에 맞는 키보드 좌표와 정렬 전략을 연결한다', () => {
   const tree = render();
+  // 터치는 길게 눌러야 끌려서 카드 위를 쓸어도 스크롤된다
+  expect(h.sensor).toHaveBeenCalledWith(TouchSensor, {
+    activationConstraint: { delay: 200, tolerance: 8 },
+  });
   expect(h.sensor).toHaveBeenCalledWith(KeyboardSensor, {
     coordinateGetter: sortableKeyboardCoordinates,
   });

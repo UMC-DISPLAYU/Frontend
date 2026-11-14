@@ -129,6 +129,12 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
 
   const panel = (
     <>
+      {/* 완료를 누른 뒤 저장이 실패해도(순서는 되돌아간다) 안내가 남도록 화면과 상관없이 둔다 */}
+      {updateOrder.error && (
+        <p role="alert" className="mt-3 text-[12px] font-medium text-[#fb2c36]">
+          {getErrorMessage(updateOrder.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
+        </p>
+      )}
       {isPending ? (
         <div
           aria-label="전시작을 불러오는 중"
@@ -166,11 +172,6 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
         />
       ) : (
         <>
-          {updateOrder.error && (
-            <p role="alert" className="mt-3 text-[12px] font-medium text-[#fb2c36]">
-              {getErrorMessage(updateOrder.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
-            </p>
-          )}
           <OrderScreen
             works={works}
             onReorder={handleReorder}

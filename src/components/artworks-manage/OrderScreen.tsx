@@ -3,7 +3,8 @@ import {
   DndContext,
   type DragEndEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -30,7 +31,7 @@ interface OrderScreenProps {
   onDone: () => void;
 }
 
-/* 프로토타입 `.wgrid.edit`: 카드 어디를 눌러도 끌 수 있다. 왼쪽 위 번호, 오른쪽 위 손잡이 */
+/* 프로토타입 `.wgrid.edit`: 카드 어디를 눌러도 끌 수 있다(터치는 길게 눌러서). 왼쪽 위 번호, 오른쪽 위 손잡이 */
 function SortableWork({ work, index, disabled }: { work: Work; index: number; disabled: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: work.id,
@@ -46,7 +47,7 @@ function SortableWork({ work, index, disabled }: { work: Work; index: number; di
       aria-label={`${index + 1}번째, ${work.title}`}
       aria-roledescription="순서를 바꿀 수 있는 작품"
       className={cn(
-        'relative min-w-0 cursor-grab touch-none select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:cursor-grabbing',
+        'relative min-w-0 cursor-grab touch-manipulation select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:cursor-grabbing',
         isDragging && 'z-10 scale-97 opacity-55',
         disabled && 'cursor-default',
       )}
@@ -75,8 +76,10 @@ function SortableWork({ work, index, disabled }: { work: Work; index: number; di
 }
 
 export function OrderScreen({ works, disabled = false, onReorder, onDone }: OrderScreenProps) {
+  // 터치는 길게 눌러야 끌린다. 카드가 화면을 채워도 쓸어 넘기면 스크롤된다
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
