@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
 import { cn } from '@/utils/cn';
-import { staggerStyle } from '@/utils/stagger';
 
 import { useCenteredScroll } from './useCenteredScroll';
+import { useSwapIn } from './useSwapIn';
 
 const COLUMN_SIZE = 3;
 
@@ -24,6 +24,7 @@ export function ExhibitionListView({ items, showRank, animateIn }: ExhibitionLis
   const { ref, activeIndex, highlightIndex, scrollToIndex } = useCenteredScroll<HTMLDivElement>(
     columns.length,
   );
+  useSwapIn(ref, animateIn);
 
   return (
     <div
@@ -41,9 +42,7 @@ export function ExhibitionListView({ items, showRank, animateIn }: ExhibitionLis
             className={cn(
               'grid w-(--list-w) flex-none snap-center gap-3 transition-opacity duration-slow ease-standard',
               columnIndex !== highlightIndex && 'opacity-40',
-              animateIn && 'animate-rise',
             )}
-            style={animateIn ? staggerStyle(columnIndex, { maxSteps: 4 }) : undefined}
           >
             {column.map((item, rowIndex) => {
               const rank = showRank ? columnIndex * COLUMN_SIZE + rowIndex + 1 : null;
@@ -62,13 +61,12 @@ export function ExhibitionListView({ items, showRank, animateIn }: ExhibitionLis
                   }}
                   className="relative grid h-31 grid-cols-[86px_minmax(0,1fr)] overflow-hidden border border-icon-secondary bg-interactive-primary text-quaternary shadow-card transition duration-fast ease-standard hover:border-secondary focus-visible:outline-2 focus-visible:outline-focus-inverse active:scale-99"
                 >
-                  <span className="relative bg-primary-400">
+                  <span className="relative bg-[#797979]">
                     <OptimizedImage
                       src={item.posterImageUrl}
                       alt=""
                       displayWidth={86}
-                      skeleton
-                      frameClassName="absolute inset-0"
+                      className="absolute inset-0 size-full object-cover"
                     />
                     <span
                       aria-hidden="true"

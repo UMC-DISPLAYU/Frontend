@@ -6,9 +6,10 @@ import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonList } from '@/components/ui';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
 import { cn } from '@/utils/cn';
-import { staggerStyle } from '@/utils/stagger';
 
 import { useCenteredScroll } from './useCenteredScroll';
+import { usePosterSlideMotion } from './usePosterSlideMotion';
+import { useSwapIn } from './useSwapIn';
 
 // 포스터 폭(--poster-w)은 ExhibitionShowcase 가 브레이크포인트별로 정한다
 const RAIL_CLASS =
@@ -28,6 +29,8 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
   const { ref, activeIndex, highlightIndex, scrollToIndex } = useCenteredScroll<HTMLDivElement>(
     items.length,
   );
+  usePosterSlideMotion(ref, items.map(({ displayId }) => displayId).join());
+  useSwapIn(ref, animateIn);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
@@ -86,41 +89,41 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
               key={item.displayId}
               aria-label={rank ? `순위 ${rank}: ${item.title}` : item.title}
               aria-current={isActive || undefined}
-              className={cn(
-                'flex w-(--poster-w) flex-none snap-center snap-always flex-col items-center',
-                animateIn && 'animate-rise',
-              )}
-              style={animateIn ? staggerStyle(index, { maxSteps: 4 }) : undefined}
+              className="flex w-(--poster-w) flex-none snap-center snap-always flex-col items-center"
             >
               <Link
                 to={`/display/${item.displayId}`}
                 aria-label={`전시 상세 보기: ${item.title}`}
                 tabIndex={isActive ? 0 : -1}
                 onClick={openOrCenter}
+                data-slide-part="poster"
                 className={cn(
-                  'relative block aspect-402/568 w-full origin-top overflow-hidden bg-primary-400 transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
-                  !isActive && 'translate-y-3.5 scale-91',
+                  // 옆 칸 모습은 usePosterSlideMotion 이 스크롤에 맞춰 덮어쓴다. 클래스는 첫 화면 · 동작 줄이기용이다.
+                  // will-change 로 포스터를 한 장의 레이어로 만들어 축소할 때 가장자리가 따로 깎여 테두리처럼 보이지 않게 한다
+                  'relative block aspect-402/568 w-full origin-top overflow-hidden bg-[#797979] will-change-transform focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse',
+                  !isActive && '[transform:translateY(calc(var(--poster-w)*14/232))_scale(0.9138)]',
                 )}
               >
                 <OptimizedImage
                   src={item.posterImageUrl}
                   alt=""
                   displayWidth={320}
-                  skeleton
                   loading={index < 3 ? 'eager' : 'lazy'}
-                  frameClassName="absolute inset-0"
+                  className="absolute inset-0 size-full object-cover"
                 />
                 <span
                   aria-hidden="true"
+                  data-slide-part="side-shade"
                   className={cn(
-                    'absolute inset-0 bg-primary-black transition-opacity duration-base ease-standard [mask-image:linear-gradient(rgb(0_0_0/0.8),#000)]',
+                    'absolute inset-0 [background:linear-gradient(rgb(0_0_0/0.5),#000),rgb(0_0_0/0.6)] will-change-[opacity]',
                     isActive && 'opacity-0',
                   )}
                 />
                 <span
                   aria-hidden="true"
+                  data-slide-part="active-shade"
                   className={cn(
-                    'absolute inset-0 bg-primary-black transition-opacity duration-base ease-standard [mask-image:linear-gradient(transparent_74.77%,#000)]',
+                    'absolute inset-0 bg-[linear-gradient(transparent_74.77%,#000)] will-change-[opacity]',
                     !isActive && 'opacity-0',
                   )}
                 />
@@ -128,7 +131,7 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
                   <span
                     aria-hidden="true"
                     className={cn(
-                      'typography-title-xl absolute bottom-3 left-4 transition duration-fast ease-standard',
+                      'typography-title-xl absolute bottom-3 left-4 [text-shadow:0_0_20px_rgb(0_0_0/0.25)] [transition:color_0.2s_ease-out,translate_0.25s_var(--ease-standard)]',
                       isHighlighted ? 'translate-y-1.5 text-quaternary' : 'text-tertiary',
                     )}
                   >
@@ -137,9 +140,10 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
                 )}
               </Link>
               <div
+                data-slide-part="info"
                 className={cn(
-                  'grid w-full gap-2 pt-3.5 text-center transition-transform duration-base ease-standard',
-                  !isActive && '-translate-y-3.5',
+                  'grid w-full gap-2 pt-3.5 text-center will-change-transform',
+                  !isActive && '[transform:translateY(calc(var(--poster-w)*-14/232))]',
                 )}
               >
                 <div
@@ -183,7 +187,8 @@ export function PosterCarouselSkeleton() {
           <div
             className={cn(
               'flex w-(--poster-w) flex-none flex-col items-center gap-2',
-              index !== 1 && 'translate-y-3.5 scale-91 opacity-40',
+              index !== 1 &&
+                'origin-top [transform:translateY(calc(var(--poster-w)*14/232))_scale(0.9138)] opacity-40',
             )}
           >
             <Skeleton className="aspect-402/568 w-full" />
