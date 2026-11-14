@@ -42,6 +42,7 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ state: null }),
   useSearchParams: () => [new URLSearchParams(), vi.fn()],
   Navigate: () => null,
+  Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
 }));
 vi.mock('@tanstack/react-query', async (original) => ({
   ...(await original<typeof import('@tanstack/react-query')>()),
@@ -182,9 +183,9 @@ it.each(['INVALID_DISPLAY_INVITATION_TOKEN', 'DISPLAY_INVITATION_DISABLED'])(
     h.query.error = new ApiError('invalid', { status: 404, code });
     expect(renderToStaticMarkup(DisplayInvitationLinkPage())).toContain('유효하지 않은 초대 링크');
     h.query.error = new ApiError('server', { status: 500 });
-    const tree = DisplayInvitationLinkPage();
+    const tree = DisplayInvitationLinkPage() as ReactElement<{ onRetry: () => void }>;
     expect(renderToStaticMarkup(tree)).toContain('서버');
-    retry(tree);
+    tree.props.onRetry();
     expect(h.query.refetch).toHaveBeenCalledTimes(1);
   },
 );

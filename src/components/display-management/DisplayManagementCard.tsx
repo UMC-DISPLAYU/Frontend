@@ -14,11 +14,18 @@ import { type DisplayCardAction, DisplayCardMenu } from './DisplayCardMenu';
 import { formatDisplayPeriod } from './formatDisplayPeriod';
 
 // 전시 관리에서는 공개 여부만 보여주고, 기간에 따른 전시 예정 · 종료는 보여주지 않는다(PM 확인)
-const PUBLISH_STATUS: Record<DisplayPublishStatus, { label: string; className?: string }> = {
-  DRAFT: { label: '준비 중' },
-  PENDING_REVIEW: { label: '심사 중', className: 'text-info' },
-  REJECTED: { label: '반려', className: 'text-error' },
-  PUBLISHED: { label: '공개 중', className: 'text-success' },
+const PUBLISH_STATUS: Record<
+  DisplayPublishStatus,
+  { label: string; textClassName?: string; dotClassName: string }
+> = {
+  DRAFT: { label: '준비 중', dotClassName: 'bg-[#27272a]' },
+  PENDING_REVIEW: {
+    label: '심사 중',
+    textClassName: 'text-[#2563eb]',
+    dotClassName: 'bg-[#3b82f6]',
+  },
+  REJECTED: { label: '반려', textClassName: 'text-[#fb2c36]', dotClassName: 'bg-[#fb2c36]' },
+  PUBLISHED: { label: '공개 중', textClassName: 'text-[#00a846]', dotClassName: 'bg-[#00c758]' },
 };
 
 export function DisplayManagementCard({
@@ -72,55 +79,69 @@ export function DisplayManagementCard({
     actions.push({ label: '전시 삭제하기', destructive: true, onSelect: onDelete });
   }
 
-  return (
-    <article className="group relative flex items-center gap-4 rounded-12 border border-primary bg-primary-white p-4 transition duration-fast ease-standard active:scale-99">
-      <OptimizedImage
-        src={ex.thumbnail}
-        alt=""
-        displayWidth={96}
-        skeleton
-        frameClassName="aspect-402/568 w-24 shrink-0 bg-secondary"
-        className="transition-transform duration-base ease-standard group-hover:scale-103"
-      />
+  const period =
+    ex.startDate && ex.endDate ? formatDisplayPeriod(ex.startDate, ex.endDate) : ex.period;
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <p className="flex min-h-5 items-center gap-1.5 pr-7">
+  return (
+    <article
+      className={cn(
+        'relative grid h-full grid-cols-[96px_minmax(0,1fr)] gap-x-4 rounded-[12px] border border-[#d4d4d8] bg-[#fff] p-4 [&_*]:tracking-[-0.03em] transition-[border-color,scale] duration-300 ease-standard',
+        // 프로토타입은 대표자 카드(전시 관리로 들어가는 카드)에만 커서 · 테두리 · 누름 효과를 준다
+        isLeader && 'hover:border-[#a1a1aa] active:scale-[0.995]',
+      )}
+    >
+      <div className="relative aspect-402/568 w-24 overflow-hidden bg-[#000]">
+        <OptimizedImage
+          src={ex.thumbnail}
+          alt=""
+          displayWidth={96}
+          skeleton
+          frameClassName="absolute inset-0"
+        />
+      </div>
+
+      <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-7 wrap-break-word">
+        <p className="flex items-center gap-1.5 text-[12px] leading-[1.4] font-medium text-[#3f3f47]">
           <span
             className={cn(
-              'typography-body-md-semibold flex shrink-0 items-center gap-1.5',
-              status.className ?? 'text-primary',
+              'inline-flex shrink-0 items-center gap-1.5 font-semibold',
+              status.textClassName,
             )}
           >
-            <span
-              aria-hidden="true"
-              className={cn(
-                'size-2 rounded-circle bg-current',
-                !status.className && 'text-icon-secondary',
-              )}
-            />
+            <span aria-hidden="true" className={cn('size-2 rounded-full', status.dotClassName)} />
             {status.label}
           </span>
-          <span className="typography-body-md-medium truncate text-secondary">
+          <span className="min-w-0">
             · {role}
             {artistName ? `(${artistName})` : ''}
           </span>
         </p>
-        <h3 className="typography-body-xl-semibold text-primary">
+        <h3 className="mt-1 text-[16px] leading-[1.4] font-semibold text-[#18181b] desktop:text-[18px]">
           {/* 카드 전체가 눌리도록 after 를 카드 크기로 늘린다. 메뉴 버튼은 그 위에 놓인다 */}
           <button
             type="button"
             onClick={onOpen}
-            className="block w-full cursor-pointer text-left outline-none after:absolute after:inset-0 after:rounded-12 focus-visible:after:outline-2 focus-visible:after:outline-focus"
+            className={cn(
+              'block w-full text-left outline-none after:absolute after:inset-0 after:rounded-[12px] focus-visible:after:outline-2 focus-visible:after:outline-focus',
+              isLeader ? 'cursor-pointer' : 'cursor-default',
+            )}
           >
-            <span className="block truncate">{ex.title}</span>
+            <span className="line-clamp-2">{ex.title}</span>
           </button>
         </h3>
-        {ex.org && <p className="typography-body-lg-medium truncate text-secondary">{ex.org}</p>}
-        <p className="typography-body-lg-medium truncate text-secondary">
-          {ex.startDate && ex.endDate ? formatDisplayPeriod(ex.startDate, ex.endDate) : ex.period}
-        </p>
+        {ex.org && <p className="text-[14px] leading-[1.4] font-medium text-[#3f3f47]">{ex.org}</p>}
+        {period && (
+          <p className="mt-0.5 text-[14px] leading-[1.4] font-medium text-[#3f3f47]">{period}</p>
+        )}
         {ex.place && (
-          <p className="typography-body-lg-medium truncate text-secondary">{ex.place}</p>
+          <p
+            className={cn(
+              'text-[14px] leading-[1.4] font-medium text-[#3f3f47]',
+              period ? 'mt-[3px]' : 'mt-0.5',
+            )}
+          >
+            {ex.place}
+          </p>
         )}
       </div>
 

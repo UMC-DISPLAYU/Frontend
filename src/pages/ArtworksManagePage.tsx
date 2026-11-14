@@ -11,7 +11,7 @@ import {
 import { ManageScreen, OrderScreen } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
-import { Overlay, Skeleton, SkeletonList } from '@/components/ui';
+import { Overlay, Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
@@ -22,6 +22,7 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
+import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import type { Work } from '@/types/artworkManage';
 import { getErrorMessage } from '@/utils/error';
@@ -45,6 +46,7 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const [authorChoice, setAuthorChoice] = useState({ open: false, key: 0 });
 
   const { data, isPending, isError, refetch } = useDisplayArtworks(displayId);
+  const { showSkeleton } = useSkeleton(isPending);
   const {
     data: display,
     isPending: displayPending,
@@ -130,22 +132,26 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const openRegister = (proxy?: ProxyAuthor) =>
     navigate(buildArtworkRegisterPath(displayId, proxy), { replace: true });
 
-  if (!embedded && displayPending) return <LoadingView message="전시 정보를 불러오는 중..." />;
+  if (!embedded && displayPending) return <LoadingView />;
   if (!embedded && (displayError || !display))
     return <ErrorView message="전시 정보를 불러올 수 없습니다." onRetry={flowBack} />;
 
   const panel = (
     <>
-      {isPending ? (
+      {showSkeleton ? (
         <div
           aria-label="전시작을 불러오는 중"
+          aria-busy="true"
           className="mt-3 grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3 desktop:grid-cols-4"
         >
           <SkeletonList count={6}>
             {() => (
               <div>
                 <Skeleton className="aspect-3/4" />
-                <Skeleton className="mt-2 h-9 rounded-8" />
+                <div className="pt-2">
+                  <SkeletonText className="typography-body-lg-semibold w-3/4" />
+                  <SkeletonText className="typography-body-md-medium w-1/2" />
+                </div>
               </div>
             )}
           </SkeletonList>

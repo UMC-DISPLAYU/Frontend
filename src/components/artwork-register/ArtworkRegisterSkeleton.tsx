@@ -1,5 +1,5 @@
 import { PageContainer } from '@/components/layout';
-import { Skeleton } from '@/components/ui';
+import { Skeleton, SkeletonText } from '@/components/ui';
 
 import { ArtworkRegisterHeader } from './ArtworkRegisterHeader';
 
@@ -25,21 +25,31 @@ export function ArtworkRegisterSkeleton({
       >
         {withAuthor && (
           <div className="flex flex-col gap-3">
-            <Skeleton className="h-11 w-48 rounded-4" />
+            <div className="flex flex-col gap-1">
+              <SkeletonText className="typography-body-xl-semibold w-10" />
+              <SkeletonText className="typography-body-md-medium w-48" />
+            </div>
             <Skeleton className="h-39 rounded-12" />
           </div>
         )}
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
-            <Skeleton className="h-5.5 w-16 rounded-4" />
-            <Skeleton className="h-14 w-56 rounded-4" />
+            <SkeletonText className="typography-body-xl-semibold w-16" />
+            <div className="flex flex-col gap-1">
+              <SkeletonText className="typography-body-lg-semibold w-20" />
+              <SkeletonText className="typography-body-md-medium w-40" />
+              <SkeletonText className="typography-body-md-medium w-48" />
+            </div>
             <div className="flex gap-2">
               <Skeleton className="h-30 w-24" />
               <Skeleton className="h-30 w-24" />
               <Skeleton className="h-30 w-24" />
             </div>
           </div>
-          <Skeleton className="h-17 rounded-4" />
+          <div className="flex flex-col gap-1">
+            <SkeletonText className="typography-body-lg-semibold w-14" />
+            <Skeleton className="h-11.5" />
+          </div>
           <Skeleton className="h-32 rounded-12" />
         </div>
       </div>
