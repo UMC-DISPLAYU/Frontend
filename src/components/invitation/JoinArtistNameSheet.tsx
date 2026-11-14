@@ -96,7 +96,7 @@ export function JoinArtistNameSheet({
           type="text"
         />
         <p
-          className="typography-body-sm-regular mt-2 whitespace-pre-line text-tertiary"
+          className="typography-body-md-medium mt-2 whitespace-pre-line text-tertiary"
           id={`${inputId}-help`}
         >
           {
