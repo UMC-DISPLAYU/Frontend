@@ -1,6 +1,8 @@
+import { useId } from 'react';
+
 import googleIcon from '@/assets/onboarding/googleIcon.svg';
 import kakaoIcon from '@/assets/onboarding/kakaoIcon.svg';
-import { Overlay } from '@/components/ui';
+import { type DialogEnterAnimation, useModalDialog } from '@/hooks/useModalDialog';
 import { cn } from '@/utils/cn';
 
 type LoginProvider = 'kakao' | 'google';
@@ -14,8 +16,21 @@ type LoginConfirmModalProps = {
   error?: string;
 };
 
+// 프로토타입 auth.js: 768px 미만은 아래에서 올라오는 바텀시트, 이상은 가운데 모달
+const EASE = 'cubic-bezier(.2,.8,.2,1)';
+const getEnterAnimation = (): DialogEnterAnimation =>
+  window.matchMedia('(min-width: 768px)').matches
+    ? {
+        keyframes: [{ opacity: 0, transform: 'translateY(8px) scale(.98)' }, {}],
+        options: { duration: 220, easing: EASE },
+      }
+    : {
+        keyframes: [{ transform: 'translateY(100%)' }, {}],
+        options: { duration: 300, easing: EASE },
+      };
+
 const SOCIAL_BUTTON =
-  'relative flex h-13.5 w-full cursor-pointer items-center justify-center rounded-12 typography-body-xl-semibold transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98 disabled:cursor-default disabled:bg-secondary disabled:text-disable';
+  'relative flex h-[54px] w-full cursor-pointer items-center justify-center gap-2 rounded-[12px] text-[16px] font-semibold [transition:transform_.15s,filter_.2s] active:scale-98 disabled:cursor-default disabled:bg-secondary disabled:text-disable';
 
 export function LoginConfirmModal({
   open,
@@ -24,35 +39,42 @@ export function LoginConfirmModal({
   isPending = false,
   error,
 }: LoginConfirmModalProps) {
+  const titleId = useId();
+  const { dialogRef, requestClose, handleCancel, handleBackdropClick } = useModalDialog(
+    open,
+    onClose,
+    getEnterAnimation,
+  );
+
+  if (!open) return null;
+
   return (
-    <Overlay
-      open={open}
-      onClose={onClose}
-      // 공용 Overlay 제목(700)과 달리 프로토타입 로그인 안내 제목은 600이다
-      title={<span className="font-semibold">로그인이 필요해요</span>}
-      size="sm"
-      showCloseButton={false}
-      // 프로토타입: 모달 폭 322px · 그림자, 바텀시트 하단 여백 20px + safe area
-      className="pb-[calc(20px+env(safe-area-inset-bottom))] tablet:max-w-80.5 tablet:shadow-[0_10px_40px_rgba(0,0,0,0.12)]"
-      footer={
-        // 터치 영역(44px)은 유지하고, 보이는 글자 위아래 간격은 프로토타입(버튼과 20px, 하단 24px)에 맞춘다
-        <button
-          type="button"
-          onClick={onClose}
-          className="typography-body-md-medium mx-auto -mt-3.5 -mb-2.5 flex min-h-11 cursor-pointer items-center px-2 text-tertiary underline underline-offset-3 focus-visible:outline-2 focus-visible:outline-focus"
-        >
-          비회원으로 계속 둘러보기
-        </button>
-      }
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onCancel={handleCancel}
+      onClick={handleBackdropClick}
+      className="fixed inset-x-0 top-auto bottom-0 m-0 w-full max-w-full rounded-t-[20px] border-0 bg-[#fff] px-5 pt-3 pb-[calc(20px+env(safe-area-inset-bottom))] text-left text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#18181b] [&_*]:tracking-[-0.03em] backdrop:bg-[rgba(0,0,0,0.45)] tablet:inset-0 tablet:m-auto tablet:w-[min(322px,calc(100vw-80px))] tablet:max-w-none tablet:rounded-[20px] tablet:pt-6 tablet:pb-5 tablet:shadow-[0_10px_40px_rgba(0,0,0,0.12)]"
     >
-      <div className="flex flex-col gap-2 pt-1">
+      <span
+        aria-hidden="true"
+        className="mx-auto mb-5 block h-1 w-9 rounded-[9999px] bg-[#e4e4e7] tablet:hidden"
+      />
+      <h2 id={titleId} className="text-[20px] leading-[1.4] font-semibold">
+        로그인이 필요해요
+      </h2>
+
+      <div className="mt-5 grid gap-2">
         <button
           type="button"
           disabled={isPending}
           onClick={() => onLogin('kakao')}
-          className={cn(SOCIAL_BUTTON, 'bg-kakao text-kakao hover:brightness-[.97]')}
+          className={cn(
+            SOCIAL_BUTTON,
+            'bg-[#fee500] text-[rgba(0,0,0,0.85)] hover:brightness-[.97]',
+          )}
         >
-          <img src={kakaoIcon} alt="" aria-hidden="true" className="absolute left-4.5 size-5" />
+          <img src={kakaoIcon} alt="" aria-hidden="true" className="absolute left-[18px] size-5" />
           카카오로 시작하기
         </button>
         <button
@@ -61,19 +83,27 @@ export function LoginConfirmModal({
           onClick={() => onLogin('google')}
           className={cn(
             SOCIAL_BUTTON,
-            'border border-primary bg-primary-white text-primary hover:bg-secondary',
+            'border border-[#d4d4d8] bg-[#fff] text-[#18181b] hover:bg-[#f4f4f5]',
           )}
         >
-          <img src={googleIcon} alt="" aria-hidden="true" className="absolute left-4.5 size-5" />
+          <img src={googleIcon} alt="" aria-hidden="true" className="absolute left-[18px] size-5" />
           Google로 시작하기
         </button>
       </div>
 
       {error && (
-        <p role="alert" className="typography-body-md-medium mt-3 text-center text-error">
+        <p role="alert" className="mt-3 text-center text-[12px] font-medium text-error">
           {error}
         </p>
       )}
-    </Overlay>
+
+      <button
+        type="button"
+        onClick={requestClose}
+        className="mx-auto mt-4 block cursor-pointer px-2 py-1 text-[12px] font-medium text-[#71717b] underline underline-offset-3"
+      >
+        비회원으로 계속 둘러보기
+      </button>
+    </dialog>
   );
 }
