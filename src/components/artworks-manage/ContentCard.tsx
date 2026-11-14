@@ -58,52 +58,52 @@ export function ContentCard({
     </>
   );
 
-  if (!editing) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={`${content.title}, 사진 ${content.photoCount}장 편집`}
-        className="group grid w-full cursor-pointer grid-cols-[72px_minmax(0,1fr)_20px] items-stretch gap-x-4 border-b border-[#f0f0f3] py-4 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]"
-      >
-        {body}
-        <WorkIcon
-          name="chev"
-          className="size-5 self-center transition-transform duration-base ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-[3px]"
-        />
-      </button>
-    );
-  }
-
+  // 편집 · 완료를 오가도 대표 사진이 다시 불러와지지 않게 틀은 같게 두고 오른쪽 칸과 누르는 영역만 바꾼다
   return (
     <div
       className={cn(
-        'grid w-full grid-cols-[72px_minmax(0,1fr)_72px] items-stretch gap-x-4 border-b border-[#f0f0f3] py-4',
+        'group relative grid w-full items-stretch gap-x-4 border-b border-[#f0f0f3] py-4',
+        editing ? 'grid-cols-[72px_minmax(0,1fr)_72px]' : 'grid-cols-[72px_minmax(0,1fr)_20px]',
         dragging && 'bg-[#f4f4f5] opacity-60',
       )}
     >
       {body}
-      <span className="flex items-center justify-end gap-2 self-center">
-        {onDelete && (
+      {editing ? (
+        <span className="flex items-center justify-end gap-2 self-center">
+          {onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              aria-label={`${content.title} 삭제`}
+              className="grid size-8 place-items-center rounded-circle text-[#18181b] transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
+            >
+              <WorkIcon name="trash" />
+            </button>
+          )}
+          <span
+            {...handleProps}
+            role="button"
+            tabIndex={0}
+            aria-label={`${content.title} 순서 이동`}
+            className="grid size-8 cursor-grab touch-none place-items-center text-[#18181b] select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:cursor-grabbing"
+          >
+            <WorkIcon name="lines" />
+          </span>
+        </span>
+      ) : (
+        <>
+          <WorkIcon
+            name="chev"
+            className="size-5 self-center transition-transform duration-base ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-[3px]"
+          />
           <button
             type="button"
-            onClick={onDelete}
-            aria-label={`${content.title} 삭제`}
-            className="grid size-8 place-items-center rounded-circle text-[#18181b] transition-colors duration-fast hover:bg-[#f4f4f5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
-          >
-            <WorkIcon name="trash" />
-          </button>
-        )}
-        <span
-          {...handleProps}
-          role="button"
-          tabIndex={0}
-          aria-label={`${content.title} 순서 이동`}
-          className="grid size-8 cursor-grab touch-none place-items-center text-[#18181b] select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:cursor-grabbing"
-        >
-          <WorkIcon name="lines" />
-        </span>
-      </span>
+            onClick={onClick}
+            aria-label={`${content.title}, 사진 ${content.photoCount}장 편집`}
+            className="absolute inset-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]"
+          />
+        </>
+      )}
     </div>
   );
 }

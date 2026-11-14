@@ -18,5 +18,3 @@ export type Content = {
   photoCount: number;
   thumbnail?: string;
 };
-
-export const EMPTY_CONTENT: Content = { id: 0, title: '', description: '', photoCount: 0 };

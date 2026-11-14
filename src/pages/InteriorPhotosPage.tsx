@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   closestCenter,
@@ -24,10 +24,10 @@ import { useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import {
-  contentEditSchema,
   type ContentEditValues,
   SECTION_DESCRIPTION_MAX_LENGTH,
   SECTION_TITLE_MAX_LENGTH,
+  sectionEditSchema,
   SectionFieldLabel,
   sectionInputClass,
   sectionTextareaClass,
@@ -258,6 +258,9 @@ function InteriorPhotos({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savingDetailsRef = useRef(false);
   const savedRef = useRef<ContentEditValues>({ title, description });
+  // 저장 중에 다른 칸을 고치고 벗어나면 끝난 뒤 한 번 더 저장한다
+  const resaveRef = useRef(false);
+  const leaveSaveRef = useRef<() => void>(() => undefined);
   const photoActionRef = useRef(false);
   const user = useCurrentPolicyUser();
   const scope = { displayId, categoryId };
@@ -273,9 +276,9 @@ function InteriorPhotos({
     reset,
     setError,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ContentEditValues>({
-    resolver: zodResolver(contentEditSchema),
+    resolver: zodResolver(sectionEditSchema),
     defaultValues: { title, description },
   });
   const currentDescription = useWatch({ control, name: 'description' }) ?? '';
@@ -297,7 +300,11 @@ function InteriorPhotos({
 
   // 프로토타입 자동 저장: 제목 · 설명은 입력칸을 벗어나거나 화면을 나갈 때 저장한다
   const saveDetails = async (values: ContentEditValues) => {
-    if (!canEditCategory || savingDetailsRef.current) return;
+    if (!canEditCategory) return;
+    if (savingDetailsRef.current) {
+      resaveRef.current = true;
+      return;
+    }
     if (
       values.title === savedRef.current.title &&
       values.description === savedRef.current.description
@@ -317,6 +324,10 @@ function InteriorPhotos({
       });
     } finally {
       savingDetailsRef.current = false;
+      if (resaveRef.current) {
+        resaveRef.current = false;
+        void autoSave();
+      }
     }
   };
   // 제목을 비운 채 벗어나면 직전 제목으로 되돌린다(프로토타입)
@@ -324,10 +335,11 @@ function InteriorPhotos({
     handleSubmit(saveDetails, (formErrors) => {
       if (formErrors.title) setValue('title', savedRef.current.title, { shouldValidate: true });
     })();
-  const leave = () => {
-    void autoSave();
-    onBack();
-  };
+  // 브라우저 뒤로가기 · 냅바처럼 입력칸을 벗어나지 않고 화면을 나가도 저장한다(프로토타입 pagehide 저장)
+  useEffect(() => {
+    leaveSaveRef.current = () => void autoSave();
+  });
+  useEffect(() => () => leaveSaveRef.current(), []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!canCreateContent || photoActionRef.current || isPhotoActionPending) return;
@@ -458,7 +470,7 @@ function InteriorPhotos({
   return (
     <div className="min-h-dvh bg-[#fff]">
       <PageContainer variant="form" className={PAGE_CLASS}>
-        <WorkBar title="섹션 편집" onBack={leave} />
+        <WorkBar title="섹션 편집" onBack={onBack} />
         <main className="flex-1">
           <form
             id="section-details"
@@ -477,7 +489,7 @@ function InteriorPhotos({
                   void autoSave();
                 }}
                 id="section-name"
-                readOnly={!canEditCategory || isSubmitting}
+                readOnly={!canEditCategory}
                 required
                 maxLength={SECTION_TITLE_MAX_LENGTH}
                 aria-invalid={Boolean(errors.title)}
@@ -506,7 +518,7 @@ function InteriorPhotos({
                   void autoSave();
                 }}
                 id="section-description"
-                readOnly={!canEditCategory || isSubmitting}
+                readOnly={!canEditCategory}
                 maxLength={SECTION_DESCRIPTION_MAX_LENGTH}
                 aria-invalid={Boolean(errors.description)}
                 aria-describedby={

@@ -24,6 +24,8 @@ const h = vi.hoisted(() => ({
   setError: vi.fn(),
   setValue: vi.fn(),
   toast: vi.fn(),
+  effects: [] as (() => unknown)[],
+  values: { title: '전시 전경', description: '섹션 설명' },
 }));
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
@@ -38,11 +40,13 @@ vi.mock('react', async (original) => ({
     ];
   },
   useRef: (initial: unknown) => h.refs[h.ri++] ?? (h.refs[h.ri - 1] = { current: initial }),
+  useEffect: (effect: () => unknown) => h.effects.push(effect),
 }));
 vi.mock('react-hook-form', () => ({
   useForm: () => ({
     register: () => ({}),
-    handleSubmit: (handler: unknown) => handler,
+    handleSubmit: (handler: (values: unknown) => unknown) => (values?: unknown) =>
+      handler(values ?? h.values),
     control: {},
     reset: h.reset,
     setError: h.setError,
@@ -179,6 +183,8 @@ const submit = (tree: Element[]) =>
 const failure = new ApiError('server', { status: 500 });
 
 beforeEach(() => {
+  h.effects = [];
+  h.values = { title: '전시 전경', description: '섹션 설명' };
   h.states = [];
   h.refs = [];
   h.reorderPending = false;
@@ -493,4 +499,45 @@ it('20장을 넘겨 고르면 넘친 사진은 올리지 않고 최대 장수를
   ]);
   expect(h.toast).toHaveBeenCalledWith('사진은 최대 20장까지 올릴 수 있어요');
   expect(photoIds()).toHaveLength(20);
+});
+
+it('저장 중에 다른 칸을 고치면 앞선 저장이 끝난 뒤 바뀐 값을 한 번 더 저장한다', async () => {
+  let finish!: () => void;
+  h.save.mockImplementationOnce(
+    () =>
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const save = submit(render());
+  const first = save({ title: '새 제목', description: '섹션 설명' });
+  h.values = { title: '새 제목', description: '새 설명' };
+  await save(h.values);
+  expect(h.save).toHaveBeenCalledTimes(1);
+  finish();
+  await first;
+  await Promise.resolve();
+  expect(h.save).toHaveBeenCalledTimes(2);
+  expect(h.save).toHaveBeenLastCalledWith({
+    categoryId: 9,
+    body: { name: '새 제목', description: '새 설명' },
+  });
+});
+
+it('입력칸을 벗어나지 않고 화면을 나가도 바뀐 제목 · 설명을 저장한다', () => {
+  render();
+  h.values = { title: '전시 전경', description: '바뀐 설명' };
+  const [syncLeaveSave, saveOnUnmount] = h.effects.slice(-2);
+  syncLeaveSave();
+  (saveOnUnmount() as () => void)();
+  expect(h.save).toHaveBeenCalledWith({
+    categoryId: 9,
+    body: { name: '전시 전경', description: '바뀐 설명' },
+  });
+});
+
+it('저장 중에도 제목 · 설명 칸은 계속 입력할 수 있다', () => {
+  const tree = render();
+  expect(tree.find((node) => node.props.id === 'section-name')!.props.readOnly).toBe(false);
+  expect(tree.find((node) => node.props.id === 'section-description')!.props.readOnly).toBe(false);
 });

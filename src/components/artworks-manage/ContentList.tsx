@@ -37,11 +37,17 @@ interface ContentListProps {
 
 function SortableContent({
   content,
+  index,
+  editing,
   disabled,
+  onOpen,
   onDelete,
 }: {
   content: Content;
+  index: number;
+  editing: boolean;
   disabled: boolean;
+  onOpen: (content: Content) => void;
   onDelete?: (content: Content) => void;
 }) {
   const {
@@ -52,19 +58,23 @@ function SortableContent({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: content.id, disabled });
+  } = useSortable({ id: content.id, disabled: !editing || disabled });
 
   return (
     <li
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn('relative bg-[#fff]', isDragging && 'z-10')}
+      style={{
+        ...staggerStyle(index),
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      className={cn('relative animate-rise bg-[#fff]', isDragging && 'z-10')}
     >
       <ContentCard
         content={content}
-        editing
+        editing={editing}
         dragging={isDragging}
-        onClick={() => undefined}
+        onClick={() => onOpen(content)}
         onDelete={onDelete ? () => onDelete(content) : undefined}
         handleProps={{ ref: setActivatorNodeRef, ...attributes, ...listeners }}
       />
@@ -72,7 +82,10 @@ function SortableContent({
   );
 }
 
-/* 프로토타입: 편집 모드에서 손잡이로 끌어 섹션 순서를 바꾸고, 놓을 때 바로 저장한다 */
+/*
+ * 프로토타입: 편집 모드에서 손잡이로 끌어 섹션 순서를 바꾸고, 놓을 때 바로 저장한다.
+ * 편집 · 완료를 오가도 목록을 다시 그리지 않게(사진 다시 불러오기 · 등장 애니메이션 반복 방지) 같은 틀을 쓴다
+ */
 export function ContentList({
   contents,
   editing,
@@ -94,18 +107,6 @@ export function ContentList({
     onReorder(arrayMove(contents, from, to));
   };
 
-  if (!editing) {
-    return (
-      <ul>
-        {contents.map((content, index) => (
-          <li key={content.id} className="animate-rise" style={staggerStyle(index)}>
-            <ContentCard content={content} onClick={() => onOpen(content)} />
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
   return (
     <DndContext
       sensors={sensors}
@@ -124,11 +125,14 @@ export function ContentList({
         strategy={verticalListSortingStrategy}
       >
         <ul>
-          {contents.map((content) => (
+          {contents.map((content, index) => (
             <SortableContent
               key={content.id}
               content={content}
+              index={index}
+              editing={editing}
               disabled={disabled}
+              onOpen={onOpen}
               onDelete={onDelete}
             />
           ))}

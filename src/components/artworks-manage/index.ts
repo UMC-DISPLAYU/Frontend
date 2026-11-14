@@ -6,7 +6,7 @@ export {
 } from './constants';
 export { ContentCard } from './ContentCard';
 export { ContentDeleteConfirmDialog } from './ContentDeleteConfirmDialog';
-export { contentEditSchema, type ContentEditValues } from './contentEdit.schema';
+export { contentEditSchema, type ContentEditValues, sectionEditSchema } from './contentEdit.schema';
 export { ContentEditSheet } from './ContentEditSheet';
 export { ContentList } from './ContentList';
 export { ManageScreen } from './ManageScreen';

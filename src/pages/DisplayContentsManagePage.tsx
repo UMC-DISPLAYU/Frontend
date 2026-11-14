@@ -161,7 +161,8 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
             <button
               type="button"
               onClick={() => {
-                reorderMutation.reset();
+                // 저장 중에 reset 하면 실패 시 되돌리기가 불리지 않으므로 편집을 시작할 때만 지운다
+                if (!isEditingList) reorderMutation.reset();
                 setEditMode((previous) => !previous);
               }}
               className={TOOL_BUTTON}
