@@ -3,6 +3,7 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayDetailDto } from '@/api/dto';
+import { DisplayStatusLabel } from '@/components/common/DisplayStatusLabel';
 
 import { ExhibitionWorkLayout } from './ExhibitionWorkLayout';
 
@@ -98,24 +99,27 @@ describe('전시 요약 카드', () => {
 });
 
 describe('전시 상태', () => {
-  it.each([
-    ['DRAFT', '준비 중', 'bg-[#18181b]'],
-    ['PENDING_REVIEW', '심사 중', 'bg-[#3b82f6]'],
-    ['REJECTED', '반려', 'bg-[#fb2c36]'],
-    ['PUBLISHED', '공개 중', 'bg-[#00c758]'],
-  ])('공개 상태 %s 는 "%s"로 보이고 점 색은 %s(프로토타입)', (status, label, dot) => {
-    const tree = nodes(
+  const statusLabelOf = (status: string) =>
+    nodes(
       ExhibitionWorkLayout({
         display: { ...display, status },
         activeTab: 'artworks',
         children: null,
       }),
-    );
-    const badge = tree.find((node) =>
-      Children.toArray(node.props.children as ReactNode).includes(label),
-    );
-    expect(badge).toBeDefined();
-    expect(String(badge!.props.className)).toContain('font-semibold');
-    expect(tree.some((node) => String(node.props.className ?? '').includes(dot))).toBe(true);
+    ).find((node) => node.type === DisplayStatusLabel);
+
+  it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED', 'PUBLISHED'])(
+    '공개 상태 %s 는 공용 상태 라벨에 그대로 넘긴다',
+    (status) => {
+      const label = statusLabelOf(status);
+      expect(label?.props.status).toBe(status);
+      expect(label?.props.label).toBeUndefined();
+    },
+  );
+
+  it('모르는 값(전시 기간 상태)은 한글 라벨을 준비 중 모양으로 보인다', () => {
+    const label = statusLabelOf('UPCOMING');
+    expect(label?.props.status).toBe('DRAFT');
+    expect(label?.props.label).toBe('전시 예정');
   });
 });

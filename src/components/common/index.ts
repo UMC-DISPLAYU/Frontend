@@ -6,6 +6,8 @@ export { BottomFixedBar } from './BottomFixedBar';
 export type { CommentData } from './comment';
 export { CommentItem } from './comment';
 export { ConfirmDialog } from './ConfirmDialog';
+export { isDisplayPublishStatus } from './displayPublishStatus';
+export { DisplayStatusLabel } from './DisplayStatusLabel';
 export { DrawingModal } from './DrawingModal';
 export { ErrorView } from './ErrorView';
 export { ExpandableText } from './ExpandableText';
