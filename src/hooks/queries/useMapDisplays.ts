@@ -61,19 +61,20 @@ const toNearbyDisplay = (marker: DisplayMapMarkerDto): NearbyDisplay => ({
   isArchived: marker.isArchived ?? false,
 });
 
-export async function fetchAllMapDisplays(): Promise<NearbyDisplay[]> {
+export async function fetchAllMapDisplays(signal?: AbortSignal): Promise<NearbyDisplay[]> {
   const markers = new Map<number, DisplayMapMarkerDto>();
   let cursor: number | undefined;
 
   for (let page = 0; page < MAX_PAGES; page += 1) {
-    const { markers: pageMarkers, pagination } = await getDisplayMap({
-      ...WORLD_BOUNDS,
-      size: PAGE_SIZE,
-      cursor,
-    });
+    const { markers: pageMarkers, pagination } = await getDisplayMap(
+      { ...WORLD_BOUNDS, size: PAGE_SIZE, cursor },
+      signal,
+    );
     pageMarkers.forEach((marker) => markers.set(marker.displayId, marker));
-    if (!pagination.hasNext || pagination.nextCursor == null) break;
-    cursor = pagination.nextCursor;
+    const { hasNext, nextCursor } = pagination;
+    // 서버가 같은 커서를 다시 주면 같은 페이지만 반복되므로 멈춘다
+    if (!hasNext || nextCursor == null || nextCursor === cursor) break;
+    cursor = nextCursor;
   }
 
   return [...markers.values()].map(toNearbyDisplay);
@@ -82,7 +83,6 @@ export async function fetchAllMapDisplays(): Promise<NearbyDisplay[]> {
 export function useMapDisplays() {
   return useQuery({
     queryKey: queryKeys.displays.mapMarkers(),
-    queryFn: fetchAllMapDisplays,
-    staleTime: 60_000,
+    queryFn: ({ signal }) => fetchAllMapDisplays(signal),
   });
 }

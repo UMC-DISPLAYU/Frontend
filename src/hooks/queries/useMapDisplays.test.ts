@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayMapMarkerDto, GetDisplayMapRequestDto } from '@/api/dto';
 
-import { fetchAllMapDisplays } from './useNearbyDisplays';
+import { fetchAllMapDisplays } from './useMapDisplays';
 
 const mocks = vi.hoisted(() => ({
   getDisplayMap: vi.fn(),
@@ -76,6 +76,26 @@ describe('fetchAllMapDisplays', () => {
     await fetchAllMapDisplays();
 
     expect(mocks.getDisplayMap).toHaveBeenCalledOnce();
+  });
+
+  it('서버가 같은 커서를 다시 주면 멈춘다', async () => {
+    mocks.getDisplayMap.mockResolvedValueOnce(page([1], 7)).mockResolvedValueOnce(page([2], 7));
+
+    await fetchAllMapDisplays();
+
+    expect(mocks.getDisplayMap).toHaveBeenCalledTimes(2);
+  });
+
+  it('받은 취소 신호를 모든 요청에 넘긴다', async () => {
+    const controller = new AbortController();
+    mocks.getDisplayMap.mockResolvedValueOnce(page([1], 1)).mockResolvedValueOnce(page([2], null));
+
+    await fetchAllMapDisplays(controller.signal);
+
+    expect(mocks.getDisplayMap.mock.calls.map(([, signal]) => signal)).toEqual([
+      controller.signal,
+      controller.signal,
+    ]);
   });
 
   it('서버가 다음 페이지를 끝없이 돌려줘도 50페이지에서 멈춘다', async () => {

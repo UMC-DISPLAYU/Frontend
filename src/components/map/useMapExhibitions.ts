@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useMapDisplays } from '@/hooks/useNearbyDisplays';
+import { useMapDisplays } from '@/hooks/queries/useMapDisplays';
 import { formatDate } from '@/utils/date';
 
 import {

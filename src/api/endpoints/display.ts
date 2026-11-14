@@ -83,7 +83,9 @@ export const searchDisplays = async (
 // GET /v1/display/map
 export const getDisplayMap = async (
   params: GetDisplayMapRequestDto,
-): Promise<GetDisplayMapResponseDataDto> => apiRequest('/v1/display/map', { query: params });
+  signal?: AbortSignal,
+): Promise<GetDisplayMapResponseDataDto> =>
+  apiRequest('/v1/display/map', { query: params, signal });
 
 // GET /v1/display/:displayId
 export const getDisplayDetail = async (displayId: number): Promise<DisplayDetailDto> =>
