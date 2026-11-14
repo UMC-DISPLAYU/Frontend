@@ -137,7 +137,7 @@ export function DisplayRegisterArtistPage() {
                 />
               </div>
               <p id="display-artist-name-help" className={HELP_CLASS}>
-                관람객에게도 보이는 이름이에요 실명을 권장하며, [내 전시 관리]에서 바꿀 수 있어요
+                전시에 공개되는 이름이에요 실명을 권장하며, 나중에 바꿀 수 있어요
               </p>
             </div>
           </form>
