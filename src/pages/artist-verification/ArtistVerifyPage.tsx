@@ -4,26 +4,24 @@ import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 
 import {
-  ActivityFieldSelector,
-  ArtistVerifyBottomBar,
-  ArtistVerifyBottomButton,
   ArtistVerifyComplete,
-  ArtistVerifyField,
-  ArtistVerifyHeader,
-  ArtistVerifyHelperText,
-  ArtistVerifyInput,
+  ArtistVerifyLayout,
   ArtistVerifyLeaveOverlay,
   SchoolEmailField,
   SchoolSearchField,
   VerificationCodeField,
+  VerifyBottomBar,
+  VerifyBottomButton,
+  VerifyField,
+  VerifyFieldChips,
+  VerifyHeader,
+  VerifyHelperText,
+  VerifyInput,
 } from '@/components/artist-verify';
-import { PageContainer } from '@/components/layout';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 
 import { useArtistVerifyFlow } from './useArtistVerifyFlow';
-
-const FORM_ID = 'artist-verify-form';
 
 export function ArtistVerifyPage() {
   const navigate = useNavigate();
@@ -61,95 +59,97 @@ export function ArtistVerifyPage() {
   };
 
   return (
-    <PageContainer className="bg-primary-white" variant="form">
-      <ArtistVerifyHeader onBack={handleBack} title="작가 인증" />
+    <ArtistVerifyLayout>
+      <main className="flex flex-1 flex-col">
+        <VerifyHeader onBack={handleBack} title="작가 인증" />
+        <p className="mt-2 text-[20px] leading-[1.4] font-bold">작가 인증 정보를 입력해주세요</p>
 
-      <form
-        className="flex-1 pt-3 pb-6"
-        id={FORM_ID}
-        noValidate
-        onSubmit={(event) => void flow.submit(event)}
-      >
-        <fieldset className="flex flex-col gap-5" disabled={flow.isSaving}>
-          <h2 className="typography-title-xs text-primary">작가 인증 정보를 입력해주세요</h2>
-
-          <fieldset className="contents" disabled={flow.isVerifying}>
-            <SchoolSearchField
-              isLoading={flow.isSchoolLoading}
-              locked={flow.isCodeConfirmed}
-              onChange={flow.setSchool}
-              onSelect={handleSelectSchool}
-              suggestions={flow.schoolSuggestions}
-              value={flow.school}
-            />
-
-            <SchoolEmailField
-              canSend={flow.canSendMail}
-              disabled={!flow.isSchoolSelected}
-              error={flow.emailError}
-              inputRef={emailInputRef}
-              isSending={flow.isSendingMail}
-              onChange={flow.setEmail}
-              onSend={flow.sendVerificationMail}
-              sent={flow.isMailSent}
-              value={flow.email}
-              verified={flow.isCodeConfirmed}
-            />
-
-            {flow.isMailSent && !flow.isCodeConfirmed ? (
-              <VerificationCodeField
-                error={flow.codeError}
-                isConfirming={flow.isConfirmingCode}
-                key={flow.emailGeneration}
-                onChange={flow.setCode}
-                onConfirm={flow.confirmVerificationCode}
-                value={flow.code}
+        <form
+          autoComplete="off"
+          className="flex flex-1 flex-col"
+          noValidate
+          onSubmit={(event) => void flow.submit(event)}
+        >
+          <fieldset className="flex-1" disabled={flow.isSaving}>
+            <fieldset className="contents" disabled={flow.isVerifying}>
+              <SchoolSearchField
+                isLoading={flow.isSchoolLoading}
+                onChange={flow.setSchool}
+                onSelect={handleSelectSchool}
+                selected={flow.isSchoolSelected}
+                suggestions={flow.schoolSuggestions}
+                value={flow.school}
               />
+
+              <SchoolEmailField
+                canSend={flow.canSendMail}
+                disabled={!flow.isSchoolSelected}
+                error={flow.emailError}
+                inputRef={emailInputRef}
+                isSending={flow.isSendingMail}
+                onChange={flow.setEmail}
+                onSend={flow.sendVerificationMail}
+                sent={flow.isMailSent}
+                value={flow.email}
+                verified={flow.isCodeConfirmed}
+              />
+
+              {flow.isMailSent && !flow.isCodeConfirmed ? (
+                <VerificationCodeField
+                  error={flow.codeError}
+                  isConfirming={flow.isConfirmingCode}
+                  key={flow.emailGeneration}
+                  onChange={flow.setCode}
+                  onConfirm={flow.confirmVerificationCode}
+                  value={flow.code}
+                />
+              ) : null}
+            </fieldset>
+
+            {flow.isCodeConfirmed ? (
+              <>
+                <VerifyField htmlFor="artist-name" label="작가 프로필명">
+                  <VerifyInput
+                    aria-describedby={flow.artistNameError ? 'artist-name-error' : undefined}
+                    autoComplete="off"
+                    // 이메일 인증이 끝나 이 칸이 나타나면 바로 입력할 수 있게 한다(프로토타입과 같음)
+                    autoFocus
+                    id="artist-name"
+                    invalid={Boolean(flow.artistNameError)}
+                    maxLength={20}
+                    placeholder="작가 프로필명"
+                    wrapperClassName="mt-2"
+                    {...flow.registerArtistName}
+                  />
+                  {flow.artistNameError ? (
+                    <VerifyHelperText error id="artist-name-error">
+                      {flow.artistNameError}
+                    </VerifyHelperText>
+                  ) : null}
+                </VerifyField>
+
+                <VerifyFieldChips
+                  onChange={flow.changeFields}
+                  onMaxSelectExceeded={flow.notifyMaxFieldsExceeded}
+                  selected={flow.selectedFields}
+                />
+              </>
             ) : null}
           </fieldset>
 
-          {flow.isCodeConfirmed ? (
-            <>
-              <ArtistVerifyField htmlFor="artist-name" label="작가 프로필명">
-                <ArtistVerifyInput
-                  aria-describedby={flow.artistNameError ? 'artist-name-error' : undefined}
-                  id="artist-name"
-                  invalid={Boolean(flow.artistNameError)}
-                  placeholder="작가 프로필명"
-                  {...flow.registerArtistName}
-                />
-                {flow.artistNameError ? (
-                  <ArtistVerifyHelperText error id="artist-name-error">
-                    {flow.artistNameError}
-                  </ArtistVerifyHelperText>
-                ) : null}
-              </ArtistVerifyField>
-
-              <ActivityFieldSelector
-                onChange={flow.changeFields}
-                onMaxSelectExceeded={flow.notifyMaxFieldsExceeded}
-                selected={flow.selectedFields}
-              />
-            </>
-          ) : null}
-        </fieldset>
-      </form>
-
-      <ArtistVerifyBottomBar>
-        <ArtistVerifyBottomButton
-          disabled={!flow.canSubmit || flow.isSaving}
-          form={FORM_ID}
-          type="submit"
-        >
-          {flow.isSaving ? '저장 중' : '인증 완료'}
-        </ArtistVerifyBottomButton>
-      </ArtistVerifyBottomBar>
+          <VerifyBottomBar>
+            <VerifyBottomButton disabled={!flow.canSubmit || flow.isSaving} type="submit">
+              {flow.isSaving ? '저장 중' : '인증 완료'}
+            </VerifyBottomButton>
+          </VerifyBottomBar>
+        </form>
+      </main>
 
       <ArtistVerifyLeaveOverlay
         onLeave={leave}
         onStay={() => setIsLeaveOverlayOpen(false)}
         open={isLeaveOverlayOpen}
       />
-    </PageContainer>
+    </ArtistVerifyLayout>
   );
 }

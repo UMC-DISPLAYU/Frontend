@@ -1,8 +1,8 @@
 import type { Ref } from 'react';
 
-import { ArtistVerifyActionButton } from './ArtistVerifyActionButton';
-import { ArtistVerifyField, ArtistVerifyHelperText } from './ArtistVerifyField';
-import { ArtistVerifyInput } from './ArtistVerifyInput';
+import { VerifyActionButton } from './VerifyActionButton';
+import { VerifyField, VerifyHelperText } from './VerifyField';
+import { VerifyInput } from './VerifyInput';
 
 type SchoolEmailFieldProps = {
   value: string;
@@ -36,12 +36,12 @@ export function SchoolEmailField({
     error ?? (verified ? '학교 이메일 인증이 완료됐어요' : sent ? '인증 메일을 발송했어요' : null);
 
   return (
-    <div className="flex items-start gap-2">
-      <ArtistVerifyField className="flex-1" htmlFor="school-email" label="학교 이메일">
-        <ArtistVerifyInput
+    <VerifyField htmlFor="school-email" label="학교 이메일">
+      <div className="mt-1 flex items-center gap-2">
+        <VerifyInput
           aria-describedby={helper ? HELPER_ID : undefined}
+          autoCapitalize="off"
           autoComplete="email"
-          className="disabled:cursor-default"
           disabled={disabled}
           id="school-email"
           inputMode="email"
@@ -50,20 +50,20 @@ export function SchoolEmailField({
           placeholder="school@univ.ac.kr"
           readOnly={verified}
           ref={inputRef}
+          type="email"
           value={value}
         />
-        {helper ? (
-          <ArtistVerifyHelperText error={Boolean(error)} id={HELPER_ID}>
-            {helper}
-          </ArtistVerifyHelperText>
-        ) : null}
-      </ArtistVerifyField>
-
-      {verified ? null : (
-        <ArtistVerifyActionButton disabled={!canSend || isSending} onClick={onSend}>
-          {sent ? '재발송' : '메일발송'}
-        </ArtistVerifyActionButton>
-      )}
-    </div>
+        {verified ? null : (
+          <VerifyActionButton disabled={!canSend || isSending} onClick={onSend}>
+            {sent ? '재발송' : '메일발송'}
+          </VerifyActionButton>
+        )}
+      </div>
+      {helper ? (
+        <VerifyHelperText error={Boolean(error)} id={HELPER_ID}>
+          {helper}
+        </VerifyHelperText>
+      ) : null}
+    </VerifyField>
   );
 }
