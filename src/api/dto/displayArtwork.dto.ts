@@ -1,4 +1,9 @@
-import type { ApiResponseDto, ImageResponseDto, OffsetPageRequestDto } from './common.dto';
+import type {
+  ApiResponseDto,
+  CursorPaginationDto,
+  ImageResponseDto,
+  OffsetPageRequestDto,
+} from './common.dto';
 
 export interface ArtworkImageDto extends ImageResponseDto {
   isThumbnail: boolean;
@@ -384,3 +389,30 @@ export interface GetMyArtworksResponseDataDto {
 }
 
 export type GetMyArtworksResponseDto = ApiResponseDto<GetMyArtworksResponseDataDto>;
+
+/* GET /v1/artworks/search: 탐색 작품 탭. type · status 는 작품이 속한 전시 기준이다 */
+export interface SearchArtworksRequestDto {
+  searchWord?: string | null;
+  field?: string | null;
+  type?: string | null;
+  status?: string | null;
+  sort?: string | null;
+  cursor?: string | null;
+  size: number;
+}
+
+export interface ArtworkSearchItemDto {
+  artworkId: number;
+  artworkName: string;
+  artworkImageUrl: string;
+  /* 작품 카드에 표시하는 전시 작가명. 대표 작가가 첫 번째이고 공동 작가가 이어진다 */
+  artists?: ArtworkCoAuthorDto[] | null;
+  displayId: number;
+}
+
+export interface SearchArtworksResponseDataDto {
+  artworks: ArtworkSearchItemDto[];
+  pagination: CursorPaginationDto<string>;
+}
+
+export type SearchArtworksResponseDto = ApiResponseDto<SearchArtworksResponseDataDto>;

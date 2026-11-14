@@ -5,6 +5,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/api/apiError';
 import { ErrorView } from '@/components/common/ErrorView';
+import { ExploreResultGrid } from '@/components/explore/ExploreResultGrid';
 
 import { DisplayDetailPage } from './display-detail/DisplayDetailPage';
 import { DisplayInvitationLinkPage } from './DisplayInvitationLinkPage';
@@ -48,6 +49,7 @@ vi.mock('@tanstack/react-query', async (original) => ({
 }));
 vi.mock('@/hooks/queries/useDisplayDetail', () => ({ useDisplayDetail: () => h.query }));
 vi.mock('@/hooks/queries/useDisplayBrowse', () => ({ useInfiniteSearchDisplays: () => h.query }));
+vi.mock('@/hooks/queries/useArtworkSearch', () => ({ useInfiniteSearchArtworks: () => h.query }));
 vi.mock('@/hooks/useInfiniteScroll', () => ({ useInfiniteScroll: h.scroll }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.back }));
 vi.mock('@/stores/authStore', () => ({ useAuthStore: () => h.token }));
@@ -62,6 +64,10 @@ vi.mock('@/components/display-detail', () => ({
 vi.mock('@/components/explore', async () => ({
   ...(await import('@/components/explore/exploreOptions')),
   ...(await import('@/components/explore/useExploreFilters')),
+  ...(await import('@/components/explore/exploreLayout')),
+  ...(await import('@/components/explore/ExploreResultGrid')),
+  ExploreArtworkCard: () => null,
+  ExploreArtworkCardSkeleton: () => null,
   ExploreExhibitionCard: () => <div>기존 전시 카드</div>,
   ExploreExhibitionCardSkeleton: () => null,
   ExploreFieldTabs: () => null,
@@ -80,8 +86,18 @@ const nodes = (node: ReactNode): ReactElement<Record<string, unknown>>[] =>
       ? [child, ...nodes(child.props.children as ReactNode)]
       : [],
   );
+// 결과 목록(ExploreResultGrid)은 훅이 없어 직접 불러 펼친 뒤 재시도 버튼을 찾는다
+const expand = (tree: ReactNode): ReactNode =>
+  nodes(tree).map((node) =>
+    node.type === ExploreResultGrid
+      ? ExploreResultGrid(node.props as Parameters<typeof ExploreResultGrid>[0])
+      : null,
+  );
 const retry = (tree: ReactNode) =>
-  (nodes(tree).find((node) => node.type === ErrorView)!.props.onRetry as () => void)();
+  (
+    [...nodes(tree), ...nodes(expand(tree))].find((node) => node.type === ErrorView)!.props
+      .onRetry as () => void
+  )();
 beforeEach(() => {
   Object.assign(h.query, {
     data: undefined,

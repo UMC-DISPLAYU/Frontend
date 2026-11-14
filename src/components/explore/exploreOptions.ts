@@ -43,7 +43,7 @@ export const STATUS_OPTIONS: readonly ExploreOption[] = [
   { label: '종료', value: 'ENDED' },
 ];
 
-// 검색 API가 아직 정렬을 받지 않아(전시 ID 내림차순 고정) 화면 상태로만 둔다.
+// 최신순 = 최초 공개일 최신순, 인기순 = 좋아요 많은 순(탐색 정책). 서버가 sort 를 받기 전까지 실서버는 전시 ID 내림차순이다
 export const SORT_OPTIONS: readonly ExploreOption[] = [
   { label: '최신순', value: 'LATEST' },
   { label: '인기순', value: 'POPULAR' },

@@ -74,18 +74,18 @@ export function ExploreFilterMenu({
         aria-expanded={isOpen}
         aria-haspopup="menu"
         className={cn(
-          'flex cursor-pointer items-center gap-0.5 whitespace-nowrap transition duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+          'typography-body-md-medium relative flex cursor-pointer items-center whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]',
           // 보이는 크기는 그대로 두고 누르는 영역만 44px 로 넓힌다
-          'typography-body-md-medium relative after:absolute after:inset-x-0',
+          'after:absolute after:inset-x-0',
           isChip
-            ? 'h-9 rounded-circle border pr-2.5 pl-3.5 after:-inset-y-1 active:scale-96'
-            : 'h-6 pl-2 text-primary after:-inset-y-2.5',
+            ? 'h-9 gap-1 rounded-full border pr-3 pl-3.5 transition-[background-color,border-color,color,scale] duration-fast after:-inset-y-1 active:scale-96'
+            : 'h-8 gap-0.5 pl-2 text-[#18181b] transition-colors duration-fast after:-inset-y-1.5',
           isChip &&
             (isApplied
-              ? 'border-interactive-primary bg-interactive-primary text-interactive-inverse'
+              ? 'border-[#18181b] bg-[#18181b] text-[#fff]'
               : isOpen
-                ? 'border-interactive-primary bg-primary-white text-primary'
-                : 'border-primary bg-primary-white text-primary hover:border-icon-tertiary'),
+                ? 'border-[#18181b] bg-[#fff] text-[#18181b]'
+                : 'border-[#d4d4d8] bg-[#fff] text-[#18181b] [@media(hover:hover)]:hover:border-[#71717b]'),
         )}
         onClick={() => setIsOpen((prev) => !prev)}
         ref={triggerRef}
@@ -94,7 +94,7 @@ export function ExploreFilterMenu({
         {isApplied || !isChip ? selectedLabel : label}
         <ExploreChevronIcon
           className={cn(
-            'size-5 shrink-0 transition-transform duration-base ease-standard',
+            'size-4.5 shrink-0 transition-transform duration-250 ease-standard',
             isOpen && 'rotate-180',
           )}
         />
@@ -104,8 +104,8 @@ export function ExploreFilterMenu({
         <div
           aria-label={label}
           className={cn(
-            'absolute top-full z-30 mt-1.5 flex min-w-40 animate-fade-in flex-col gap-0.5 rounded-12 border border-bg-tertiary bg-primary-white p-1.5 shadow-[0_5px_50px_rgba(0,0,0,0.1)]',
-            isChip ? 'left-0' : 'right-0',
+            'absolute top-11 z-40 min-w-[168px] transition-[opacity,translate,scale] duration-220 ease-standard starting:-translate-y-1 starting:scale-98 starting:opacity-0 rounded-[12px] border border-[#f0f0f3] bg-[#fff] p-2 shadow-[0_5px_50px_rgba(0,0,0,0.1)]',
+            isChip ? 'left-0 origin-top-left' : 'right-0 origin-top-right',
           )}
           id={menuId}
           onKeyDown={handleMenuKeyDown}
@@ -117,10 +117,10 @@ export function ExploreFilterMenu({
               <button
                 aria-checked={isSelected}
                 className={cn(
-                  'flex h-10 w-full cursor-pointer items-center rounded-8 px-3.5 text-left whitespace-nowrap text-primary transition-colors duration-fast ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+                  'flex h-[42px] w-full cursor-pointer items-center rounded-[8px] px-3 text-left whitespace-nowrap text-[#18181b] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#18181b]',
                   isSelected
-                    ? 'typography-body-lg-semibold bg-tertiary'
-                    : 'typography-body-lg-medium hover:bg-secondary',
+                    ? 'typography-body-lg-semibold bg-[#f0f0f3]'
+                    : 'typography-body-lg-medium [@media(hover:hover)]:hover:bg-[#f4f4f5]',
                 )}
                 key={option.label}
                 onClick={() => {
