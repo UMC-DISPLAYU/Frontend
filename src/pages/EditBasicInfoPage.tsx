@@ -7,15 +7,15 @@ import { useNavigate } from 'react-router-dom';
 import { ApiError } from '@/api/apiError';
 import type { UserProfileDto } from '@/api/dto';
 import {
-  ArtistVerifyActionButton,
-  ArtistVerifyBottomBar,
-  ArtistVerifyBottomButton,
-  ArtistVerifyField,
-  ArtistVerifyHeader,
-  ArtistVerifyInput,
+  ArtistVerifyLayout,
+  VerifyActionButton,
+  VerifyBottomBar,
+  VerifyBottomButton,
+  VerifyField,
+  VerifyHeader,
+  VerifyInput,
 } from '@/components/artist-verify';
 import { ConfirmDialog, ErrorView, ProfileAvatar, ProfilePhotoField } from '@/components/common';
-import { PageContainer } from '@/components/layout';
 import { Skeleton, SkeletonText } from '@/components/ui';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
@@ -31,7 +31,6 @@ import {
   NICKNAME_MAX,
 } from './editBasicInfo.schema';
 
-const FORM_ID = 'edit-basic-info-form';
 const HELPER_ID = 'nickname-helper';
 
 export function EditBasicInfoPage() {
@@ -49,15 +48,15 @@ export function EditBasicInfoPage() {
 
   if (showSkeleton || !userMe) {
     return (
-      <PageContainer className="bg-primary-white" variant="form">
-        <div aria-hidden="true" className="flex flex-col gap-5 pt-17">
+      <ArtistVerifyLayout>
+        <div aria-hidden="true" className="flex flex-col gap-5 pt-18">
           <Skeleton className="mx-auto size-20 rounded-circle" />
           <div className="flex flex-col gap-1">
-            <SkeletonText className="typography-body-lg-semibold w-12" />
-            <Skeleton className="h-11.5 w-full" />
+            <SkeletonText className="w-12 text-[14px] leading-[1.4] font-semibold" />
+            <Skeleton className="h-[47px] w-full" />
           </div>
         </div>
-      </PageContainer>
+      </ArtistVerifyLayout>
     );
   }
 
@@ -180,67 +179,81 @@ function EditBasicInfoForm({ userMe }: { userMe: UserProfileDto }) {
   };
 
   return (
-    <PageContainer className="bg-primary-white" variant="form">
-      <ArtistVerifyHeader onBack={handleBack} title="기본 정보 수정" />
+    <ArtistVerifyLayout>
+      {/* Layout 이 이미 <main> 으로 감싼다 */}
+      <div className="flex flex-1 flex-col">
+        <VerifyHeader onBack={handleBack} title="기본 정보 수정" />
 
-      <form
-        className="flex-1 pt-5 pb-6"
-        id={FORM_ID}
-        noValidate
-        onSubmit={(event) => handleSubmit(onSubmit)(event)}
-      >
-        <fieldset className="flex flex-col gap-5" disabled={isSaving}>
-          <ProfilePhotoField
-            disabled={isSaving}
-            onChange={handlePhotoChange}
-            placeholder={<ProfileAvatar className="size-20" displayWidth={80} outlined />}
-            shape="circle"
-            src={photoPreview}
-          />
-
-          <div className="flex items-start gap-2">
-            <ArtistVerifyField className="flex-1" htmlFor="nickname" label="닉네임">
-              <ArtistVerifyInput
-                aria-describedby={HELPER_ID}
-                autoCapitalize="none"
-                autoComplete="off"
-                id="nickname"
-                invalid={helper.tone === 'error'}
-                maxLength={NICKNAME_MAX}
-                placeholder="닉네임"
-                spellCheck={false}
-                {...register('nickname')}
+        <form
+          autoComplete="off"
+          className="flex flex-1 flex-col"
+          noValidate
+          onSubmit={(event) => handleSubmit(onSubmit)(event)}
+        >
+          <fieldset className="flex-1" disabled={isSaving}>
+            <div className="mt-4">
+              <ProfilePhotoField
+                disabled={isSaving}
+                onChange={handlePhotoChange}
+                placeholder={
+                  // 프로토타입 기본 프로필: 흰 사람 모양 아래에 깔리는 옅은 안쪽 테두리(rgba(0,0,0,.06))
+                  <ProfileAvatar
+                    className="size-20 text-[#fff] shadow-[inset_0_0_0_1px_rgba(0,0,0,.06)]"
+                    displayWidth={80}
+                  />
+                }
+                shape="circle"
+                src={photoPreview}
               />
+            </div>
+
+            <VerifyField className="mt-5" htmlFor="nickname" label="닉네임">
+              <div className="mt-1 flex items-center gap-2">
+                <VerifyInput
+                  aria-describedby={HELPER_ID}
+                  autoCapitalize="none"
+                  autoComplete="off"
+                  id="nickname"
+                  invalid={helper.tone === 'error'}
+                  maxLength={NICKNAME_MAX}
+                  placeholder="닉네임"
+                  spellCheck={false}
+                  {...register('nickname')}
+                />
+                <VerifyActionButton
+                  disabled={
+                    !isNicknameChanged ||
+                    !isNicknameShapeValid ||
+                    isChecked ||
+                    checkNickname.isPending
+                  }
+                  onClick={handleCheck}
+                >
+                  {isChecked ? '확인 완료' : '중복 확인'}
+                </VerifyActionButton>
+              </div>
               <p
                 aria-live="polite"
                 className={cn(
-                  'typography-body-md-medium',
-                  helper.tone === 'error' && 'text-error',
-                  helper.tone === 'success' && 'text-success',
-                  helper.tone === 'idle' && 'text-secondary',
+                  'mt-1 text-[12px] leading-[1.4] font-medium',
+                  helper.tone === 'error' && 'text-[#fb2c36]',
+                  helper.tone === 'success' && 'text-[#00c758]',
+                  helper.tone === 'idle' && 'text-[#3f3f47]',
                 )}
                 id={HELPER_ID}
               >
                 {helper.text}
               </p>
-            </ArtistVerifyField>
-            <ArtistVerifyActionButton
-              disabled={
-                !isNicknameChanged || !isNicknameShapeValid || isChecked || checkNickname.isPending
-              }
-              onClick={handleCheck}
-            >
-              {isChecked ? '확인 완료' : '중복 확인'}
-            </ArtistVerifyActionButton>
-          </div>
-        </fieldset>
-      </form>
+            </VerifyField>
+          </fieldset>
 
-      <ArtistVerifyBottomBar>
-        <ArtistVerifyBottomButton disabled={!canSave} form={FORM_ID} type="submit">
-          {isSaving ? '저장 중' : '저장'}
-        </ArtistVerifyBottomButton>
-      </ArtistVerifyBottomBar>
+          <VerifyBottomBar>
+            <VerifyBottomButton disabled={!canSave} type="submit">
+              {isSaving ? '저장 중' : '저장'}
+            </VerifyBottomButton>
+          </VerifyBottomBar>
+        </form>
+      </div>
 
       <ConfirmDialog
         cancelLabel="계속 수정"
@@ -255,6 +268,6 @@ function EditBasicInfoForm({ userMe }: { userMe: UserProfileDto }) {
         open={isLeaveOpen}
         title="수정을 그만할까요?"
       />
-    </PageContainer>
+    </ArtistVerifyLayout>
   );
 }
