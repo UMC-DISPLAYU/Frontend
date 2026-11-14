@@ -5,7 +5,6 @@ import ChevronMoreIcon from '@/assets/home/ChevronMoreIcon.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonList } from '@/components/ui';
 import { cn } from '@/utils/cn';
-import { staggerStyle } from '@/utils/stagger';
 
 import { ArtistByline } from './ArtistByline';
 import { HOME_INNER } from './homeLayout';
@@ -55,24 +54,21 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
             )}
           </SkeletonList>
         ) : (
-          artworks?.map((artwork, index) => (
-            <li
-              key={artwork.artworkId}
-              className={cn(CARD_CLASS, 'animate-rise')}
-              style={staggerStyle(index)}
-            >
+          // 프로토타입처럼 카드는 등장 애니메이션 없이 바로 그린다(한 장씩 올라오면 옆으로 넘길 때 뒤 카드가 비어 보인다)
+          artworks?.map((artwork) => (
+            <li key={artwork.artworkId} className={CARD_CLASS}>
               <Link
                 to={`/artwork/${artwork.artworkId}`}
                 className="group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
               >
-                <OptimizedImage
-                  src={artwork.artworkImageUrl}
-                  alt={`${artwork.artworkName} 작품`}
-                  displayWidth={220}
-                  skeleton
-                  frameClassName={IMAGE_FRAME_CLASS}
-                  className="transition-transform duration-slow ease-standard group-hover:scale-103"
-                />
+                <span className={cn('block overflow-hidden', IMAGE_FRAME_CLASS)}>
+                  <OptimizedImage
+                    src={artwork.artworkImageUrl}
+                    alt={`${artwork.artworkName} 작품`}
+                    displayWidth={220}
+                    className="size-full object-cover transition-transform duration-[700ms] ease-standard group-hover:scale-103"
+                  />
+                </span>
                 <span className="block pt-2">
                   <span className="typography-body-lg-semibold block truncate">
                     {artwork.artworkName}
