@@ -74,8 +74,8 @@ it.each([
 });
 
 it.each([
-  ['PENDING_REVIEW', 'text-info'],
-  ['REJECTED', 'text-error'],
+  ['PENDING_REVIEW', 'text-[#2563eb]'],
+  ['REJECTED', 'text-[#fb2c36]'],
 ] as const)('발행 상태가 %s이면 %s 색으로 표시한다', (publishStatus, colorClass) => {
   expect(render({ ...display, publishStatus })).toContain(colorClass);
 });
