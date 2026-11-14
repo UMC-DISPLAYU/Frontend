@@ -143,9 +143,7 @@ export function ExhibitionWorkLayout({
                   {status.label}
                 </p>
                 <Link
-                  to={`/exhibition/${display.displayId}/preview`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  to={`/display/${display.displayId}`}
                   className="group inline-flex items-center text-[12px] font-semibold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
                 >
                   전시 미리보기
