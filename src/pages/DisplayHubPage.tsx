@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import type { UpdateDisplayReservationRequestDto } from '@/api/dto';
-import { ErrorView } from '@/components/common';
+import { DisplaySummaryCard, ErrorView } from '@/components/common';
 import {
   DisplayHubBlocks,
   DisplayHubBottomBar,
@@ -11,7 +11,6 @@ import {
   DisplayHubHeader,
   type DisplayHubStatus,
   DisplayHubStatusBanner,
-  DisplayHubSummary,
   DisplayHubVisibility,
   getDisplayHubButtonClass,
   getDisplayHubStatus,
@@ -162,7 +161,7 @@ export function DisplayHubPage() {
 
       return (
         <main className={GRID_CLASS}>
-          <DisplayHubSummary display={display} status={status} className={LEFT_TOP_CLASS} />
+          <DisplaySummaryCard display={display} status={status} className={LEFT_TOP_CLASS} />
           <DisplayHubStatusBanner
             status={status}
             rejectionReason={status === 'REJECTED' ? rejection?.rejectionReason : undefined}
