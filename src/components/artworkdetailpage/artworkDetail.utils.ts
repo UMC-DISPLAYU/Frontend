@@ -82,7 +82,7 @@ export function getArtworkSpecText({
   materialMedia?: string | null;
 }) {
   return [
-    ARTWORK_TYPE_LABEL_MAP[type] ?? type,
+    ARTWORK_TYPE_LABEL_MAP[type],
     productionYear ? `${productionYear}` : null,
     size,
     materialMedia,

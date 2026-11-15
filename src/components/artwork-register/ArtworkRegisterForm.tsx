@@ -70,8 +70,6 @@ export interface ArtworkRegisterFormProps {
   onSubmit: (values: ArtworkRegisterValues, images: ArtworkImageUrls) => void;
   /** 돌아갈 화면 기록이 없을 때 이동할 경로 */
   leaveFallback: string;
-  /** 수정할 때 기존 서버 분야(화면에 없는 분야를 지키고 개수 한도를 맞추는 데 쓴다) */
-  previousTypes?: readonly string[];
   /** 작품 이미지에 영상을 받는지. 전시 작품만 받는다(개인 작품 API 는 영상 필드가 없다) */
   allowVideo?: boolean;
 }
@@ -86,7 +84,6 @@ export function ArtworkRegisterForm({
   isSubmitting,
   onSubmit,
   leaveFallback,
-  previousTypes,
   allowVideo = false,
 }: ArtworkRegisterFormProps) {
   const leave = useLeaveArtworkRegister();
@@ -286,7 +283,6 @@ export function ArtworkRegisterForm({
                   <ArtworkFieldChips
                     labelId={fieldLabelId}
                     selected={field.value}
-                    previousTypes={previousTypes}
                     onChange={field.onChange}
                   />
                 )}

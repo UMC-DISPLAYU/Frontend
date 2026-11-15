@@ -19,7 +19,6 @@ import {
   EMPTY_ARTWORK_REGISTER_VALUES,
   parseProxyAuthor,
   type ProxyAuthor,
-  readArtworkTypes,
   splitArtworkImages,
   toArtworkRegisterValues,
   toNamedCoAuthor,
@@ -145,7 +144,6 @@ function ArtworkRegisterContent({
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       leaveFallback={workPath}
-      previousTypes={edit ? readArtworkTypes(edit.previous) : undefined}
       allowVideo
       authorSection={
         <>

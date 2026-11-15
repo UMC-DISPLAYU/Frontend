@@ -223,7 +223,7 @@ export function buildUpdateArtworkRequest({
   previous,
 }: ExhibitionArtworkRequestInput): UpdateExhibitionArtworkRequestDto {
   const point = previous?.point?.trim();
-  const types = toArtworkTypes(values.fieldLabels, previous ? readArtworkTypes(previous) : []);
+  const types = toArtworkTypes(values.fieldLabels);
   const artworkCrop = toArtworkCropRequest(images.artworkCrop);
 
   return {
@@ -251,18 +251,14 @@ export function buildCreateArtworkRequest(
   return { displayId, ...buildUpdateArtworkRequest(input) };
 }
 
-/** 개인 작품 수정에서는 화면에 없는 감상 포인트 · 분야 · 사진 설명을 그대로 보낸다 */
+/** 개인 작품 수정에서는 화면에 없는 감상 포인트 · 사진 설명을 그대로 보낸다 */
 export function buildPersonalArtworkRequest(
   values: ArtworkRegisterValues,
   images: ArtworkImageUrls,
   previous?: PreviousArtworkInfo & { point?: string | null },
 ): PersonalArtworkRequestDto {
   const point = previous?.point?.trim();
-  const types = toArtworkTypes(
-    values.fieldLabels,
-    previous ? readArtworkTypes(previous) : [],
-    'personal',
-  );
+  const types = toArtworkTypes(values.fieldLabels, 'personal');
 
   return {
     ...toArtworkInfoRequest(values, images, previous),

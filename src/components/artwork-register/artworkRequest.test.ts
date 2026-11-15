@@ -265,34 +265,28 @@ describe('buildPersonalArtworkRequest', () => {
   });
 });
 
-describe('수정할 때 화면에 없는 분야 지키기', () => {
-  const withFallback: ArtworkRegisterValues = { ...values, fieldLabels: ['기타'] };
+describe('12개 밖의 분야 값', () => {
+  it('수정 화면에 보이지 않고, 저장할 때도 보내지 않는다', () => {
+    const edited = toArtworkRegisterValues({
+      artworkName: '작은 정원',
+      content: null,
+      type: 'DESIGN',
+      types: ['DESIGN', 'PAINTING', 'FASHION'],
+      productionYear: 2025,
+      materialMedia: null,
+      size: null,
+    });
 
-  it('화면에 없는 서버 분야(FASHION · COMPLEX)로 저장된 작품은 기타를 그대로 두면 원래 값을 보낸다', () => {
-    expect(
-      buildPersonalArtworkRequest(withFallback, images, { types: ['FASHION', 'COMPLEX'] }).types,
-    ).toEqual(['FASHION', 'COMPLEX']);
+    expect(edited.fieldLabels).toEqual(['회화']);
     expect(
       buildUpdateArtworkRequest({
-        values: withFallback,
+        values: edited,
         images,
         author: me,
         coAuthors: [],
-        previous: { point: null, qaHandlerUserIds: [1], type: 'FASHION' },
-      }).types,
-    ).toEqual(['FASHION']);
-  });
-
-  it('기타를 다른 분야로 바꾸거나 원래 값이 ETC 면 그대로 보낸다', () => {
-    expect(
-      buildPersonalArtworkRequest({ ...values, fieldLabels: ['회화'] }, images, {
-        types: ['FASHION'],
+        previous: { point: null, qaHandlerUserIds: [1], types: ['DESIGN', 'PAINTING', 'FASHION'] },
       }).types,
     ).toEqual(['PAINTING']);
-    expect(buildPersonalArtworkRequest(withFallback, images, { types: ['ETC'] }).types).toEqual([
-      'ETC',
-    ]);
-    expect(buildPersonalArtworkRequest(withFallback, images).types).toEqual(['ETC']);
   });
 });
 
