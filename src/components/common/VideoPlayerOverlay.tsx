@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { Overlay } from '@/components/ui';
 
-interface ArtworkVideoPlayerProps {
+interface VideoPlayerOverlayProps {
   open: boolean;
   src: string;
   thumbnailSrc: string;
@@ -10,14 +10,14 @@ interface ArtworkVideoPlayerProps {
   onClose: () => void;
 }
 
-/** 프로토타입 exhibition.html dialog.player: 영상 작품은 상세로 가지 않고 이 창에서 재생한다 */
-export function ArtworkVideoPlayer({
+/** 프로토타입 exhibition.html dialog.player: 영상 작품을 이 창에서 재생한다 */
+export function VideoPlayerOverlay({
   open,
   src,
   thumbnailSrc,
   title,
   onClose,
-}: ArtworkVideoPlayerProps) {
+}: VideoPlayerOverlayProps) {
   const [hasError, setHasError] = useState(false);
 
   return (

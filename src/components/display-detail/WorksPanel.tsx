@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import type { DisplayArtworkDto, DisplayTeamMemberDto } from '@/api/dto';
 import { ErrorView } from '@/components/common/ErrorView';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { VideoPlayerOverlay } from '@/components/common/VideoPlayerOverlay';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useSkeleton } from '@/hooks/useSkeleton';
@@ -13,7 +14,6 @@ import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 import { formatVideoDuration, readVideoDuration } from '@/utils/videoFile';
 
-import { ArtworkVideoPlayer } from './ArtworkVideoPlayer';
 import { PlayMarkIcon } from './PosterVideoSlide';
 
 type Props = {
@@ -161,7 +161,7 @@ export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: P
         </div>
       )}
       {playing?.artwork.artworkVideoUrl && (
-        <ArtworkVideoPlayer
+        <VideoPlayerOverlay
           key={playing.key}
           open={isPlayerOpen}
           src={playing.artwork.artworkVideoUrl}
