@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import type { DisplayDetailDto, DisplayPublishStatus } from '@/api/dto';
 import { cn } from '@/utils/cn';
+import { toDisplayImageCardUrl } from '@/utils/displayMedia';
 import { formatDisplayPeriod } from '@/utils/displayPeriod';
 
 import { DisplayPublishStatusLabel } from './DisplayPublishStatusLabel';
@@ -31,7 +32,7 @@ export function DisplaySummaryCard({
       <div className="mt-2 grid animate-[display-summary-rise_450ms_cubic-bezier(0.16,1,0.3,1)_backwards] grid-cols-[82px_minmax(0,1fr)] gap-x-3.5 rounded-12 border border-primary p-3">
         <div className="aspect-402/568 w-[82px] overflow-hidden bg-[#000]">
           <OptimizedImage
-            src={poster?.imageUrl}
+            src={poster ? toDisplayImageCardUrl(poster) : undefined}
             alt={`${display.title} 포스터`}
             displayWidth={82}
             skeleton

@@ -18,9 +18,10 @@ export type ContentImageDto = {
   sortOrder?: number;
 };
 
+/* imageUrls 는 1~20장. 빈 배열은 서버가 거절한다 */
 export type CreateContentCategoryRequestDto = {
   name: string;
-  description?: string;
+  imageUrls?: string[];
 };
 
 export type CreateContentCategoryResponseDto = {
@@ -29,7 +30,6 @@ export type CreateContentCategoryResponseDto = {
 
 export type UpdateContentCategoryRequestDto = {
   name: string;
-  description?: string;
 };
 
 /*
@@ -46,9 +46,14 @@ export type CreateContentImageResponseDto = {
   contentId: number;
 };
 
-// 스웨거에 아직 없는 API(섹션 순서 저장). 목 핸들러로 화면을 확인한다
+/* 전시의 모든 섹션 id 를 중복 없이 보낸다. 누락 · 중복 · 다른 전시 id 는 400 */
 export type ReorderContentCategoriesRequestDto = {
   orderedCategoryIds: number[];
+};
+
+export type ReorderContentCategoriesResponseDataDto = {
+  displayId: number;
+  categories: ContentCategoryDto[];
 };
 
 export type ReorderContentImagesRequestDto = {

@@ -19,6 +19,8 @@ export interface ExhibitionItem {
   endDate?: string;
   place: string;
   thumbnail: string;
+  /* 대표 포스터가 영상이면 true. thumbnail 은 썸네일이다 */
+  hasVideoPoster?: boolean;
   memo?: string;
   artistName?: string;
 }

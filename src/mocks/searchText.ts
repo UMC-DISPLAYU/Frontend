@@ -10,11 +10,11 @@ export const matchesSearchWord = (
   return targets.some((target) => target && normalize(target).includes(word));
 };
 
-/* 최신순은 최초 공개일 최신순, 인기순은 좋아요 많은 순 → 최초 공개일 최신순 → ID. 목은 공개일 대신 ID 를 쓴다 */
+/* 서버 정렬: LATEST 는 ID 내림차순, LIKES 는 좋아요 많은 순 → ID 내림차순 */
 export const compareBySort =
   <T>(sort: string | null, getLikes: (item: T) => number, getIds: (item: T) => number[]) =>
   (a: T, b: T) => {
-    if (sort === 'POPULAR') {
+    if (sort === 'LIKES') {
       const byLikes = getLikes(b) - getLikes(a);
       if (byLikes !== 0) return byLikes;
     }

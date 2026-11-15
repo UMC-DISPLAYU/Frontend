@@ -1,8 +1,8 @@
 import type { DisplayDetailDto, UpdateDisplayRequestDto } from '@/api/dto';
 import {
-  DISPLAY_FIELD_REVERSE_MAP,
   DISPLAY_TYPE_MAP,
   DISPLAY_TYPE_REVERSE_MAP,
+  toDisplayFieldValue,
 } from '@/constants/exhibition';
 import {
   type ExhibitionRegisterDraft,
@@ -10,7 +10,11 @@ import {
 } from '@/contexts/exhibitionRegisterDraftState';
 import { parseInstagramId } from '@/utils/linkInput';
 
-import { toDisplayAffiliation, toDisplayFields } from './createDisplayRequest';
+import {
+  toDisplayAffiliation,
+  toDisplayFields,
+  toPosterMediaRequest,
+} from './createDisplayRequest';
 import {
   DISPLAY_FIELD_OPTIONS,
   OTHER_GROUP_DISPLAY_TYPE,
@@ -21,11 +25,11 @@ const toTime = (time: string | null | undefined) => (time ?? '').slice(0, 5);
 
 /**
  * 서버 분야 값을 화면 분야 이름으로 바꾼다.
- * DESIGN 처럼 여러 이름이 같은 값을 쓰면 첫 이름(그래픽)으로, 화면에 없는 값(패션 등)은 뺀다
+ * 예전 표기(CRAFT 등)는 같은 분야로 보고, 새 목록에서 빠진 예전 분야(DESIGN · FASHION 등)는 뺀다
  */
 export function toFieldLabels(serverFields: string[]) {
   const labels = serverFields.flatMap((serverField) => {
-    const field = DISPLAY_FIELD_REVERSE_MAP[serverField];
+    const field = toDisplayFieldValue(serverField);
     const option = DISPLAY_FIELD_OPTIONS.find(({ value }) => value === field);
     return option ? [option.label] : [];
   });
@@ -49,7 +53,11 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
   return {
     ...INITIAL_EXHIBITION_REGISTER_DRAFT,
     editDisplayId: detail.displayId,
-    imageUrls: images.map((image) => image.imageUrl),
+    posters: images.map((image) => ({
+      url: image.imageUrl,
+      mediaType: image.mediaType ?? 'IMAGE',
+      thumbnailUrl: image.thumbnailUrl ?? null,
+    })),
     title: detail.title ?? '',
     subtitle: detail.subtitle ?? '',
     intro: detail.content ?? '',
@@ -73,7 +81,7 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
   };
 }
 
-/** 수정 API 가 받는 항목만 담는다. 필수값이 빠졌으면 null */
+/** 수정 API 가 받는 항목만 담는다. 포스터는 목록 전체를 보내 지운 포스터도 반영한다. 필수값이 빠졌으면 null */
 export function buildUpdateDisplayRequest(
   draft: ExhibitionRegisterDraft,
 ): UpdateDisplayRequestDto | null {
@@ -83,9 +91,10 @@ export function buildUpdateDisplayRequest(
   const { schoolOrOrganization, departmentOrClub } = toDisplayAffiliation(draft);
   const title = draft.title.trim();
   const placeName = draft.placeName.trim();
+  const posterMedia = toPosterMediaRequest(draft.posters);
 
   const hasRequired =
-    draft.imageUrls[0] &&
+    posterMedia &&
     type &&
     visibleFields.length > 0 &&
     title &&
@@ -100,7 +109,7 @@ export function buildUpdateDisplayRequest(
 
   return {
     title,
-    posterImageUrl: draft.imageUrls[0],
+    ...posterMedia,
     type,
     fields,
     schoolOrOrganization,
@@ -115,6 +124,7 @@ export function buildUpdateDisplayRequest(
 }
 
 const EDITABLE_KEYS = [
+  'posters',
   'title',
   'intro',
   'type',

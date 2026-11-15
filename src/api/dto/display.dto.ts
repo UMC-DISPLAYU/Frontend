@@ -4,6 +4,7 @@ import type {
   ImageResponseDto,
   OffsetPageRequestDto,
 } from './common.dto';
+import type { MediaTypeDto } from './file.dto';
 
 /* 인기 · 졸업전시 · 마감 임박 · 검색 목록이 공통으로 내려주는 전시 항목 */
 export interface HomeExhibitionDto {
@@ -18,6 +19,8 @@ export interface HomeExhibitionDto {
   isArchived: boolean;
   /* 장소가 없는 전시는 비어 올 수 있다 */
   placeName?: string | null;
+  /* 대표 포스터가 영상이면 영상 주소(posterImageUrl 은 썸네일), 아니면 null */
+  posterVideoUrl?: string | null;
 }
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
@@ -59,16 +62,25 @@ export interface SearchDisplaysRequestDto {
   region?: string | null;
   field?: string | null;
   type?: string | null;
-  /* LATEST(최초 공개일 최신순) · POPULAR(좋아요 많은 순). 서버가 아직 받지 않아 무시된다 */
-  sort?: string | null;
+  /* 생략하면 LATEST */
+  sort?: DisplaySearchSort | null;
   cursor: number;
+  /* LIKES 다음 페이지에서 응답 nextCursorLikeCount 를 nextCursor 와 함께 보낸다 */
+  cursorLikeCount?: number | null;
   size: number;
+}
+
+export type DisplaySearchSort = 'LATEST' | 'LIKES';
+
+export interface DisplayListPaginationDto extends CursorPaginationDto<number> {
+  /* 좋아요순(LIKES) 검색에서만 내려온다 */
+  nextCursorLikeCount?: number | null;
 }
 
 //
 export interface DisplayListResponseDataDto {
   exhibitions: DisplayListItemDto[];
-  pagination: CursorPaginationDto<number>;
+  pagination: DisplayListPaginationDto;
 }
 
 export type GetDisplaysResponseDto = ApiResponseDto<DisplayListResponseDataDto>;
@@ -83,6 +95,8 @@ export interface GetDisplayMapRequestDto {
   searchWord?: string;
   cursor?: number;
   size?: number;
+  /* true 면 범위 안 예정 · 진행 전시를 한 번에 받는다. size 는 무시되고 cursor 와 함께 보내면 400 */
+  all?: boolean;
 }
 
 export interface DisplayMapMarkerDto {
@@ -173,7 +187,11 @@ export interface DisplayPeriodDto {
   endTime: string;
 }
 
-export type DisplayImageDto = ImageResponseDto;
+/* VIDEO 면 imageUrl 은 영상 원본, thumbnailUrl 은 썸네일 이미지다 */
+export type DisplayImageDto = ImageResponseDto & {
+  mediaType?: MediaTypeDto;
+  thumbnailUrl?: string | null;
+};
 
 export interface DisplayContentDto {
   contentId: number;
@@ -385,10 +403,20 @@ export interface GetMyDisplayReviewsResponseDataDto {
 
 export type GetMyDisplayReviewsResponseDto = ApiResponseDto<GetMyDisplayReviewsResponseDataDto>;
 
+/* 포스터 한 장. VIDEO 면 thumbnailUrl 이 필수이고, IMAGE 면 보내지 않는다 */
+export interface DisplayMediaRequestDto {
+  imageUrl: string;
+  mediaType: MediaTypeDto;
+  thumbnailUrl?: string;
+}
+
 export interface CreateDisplayRequestDto {
   title: string;
-  posterImageUrl: string;
+  /* posterImageUrl · displayImageUrl 은 이미지 전용 옛 필드다. posterMedia · displayMedia 와 함께 보내면 400 */
+  posterImageUrl?: string;
   displayImageUrl?: string[];
+  posterMedia?: DisplayMediaRequestDto;
+  displayMedia?: DisplayMediaRequestDto[];
   type: string;
   fields: string[];
   region: string;
@@ -424,6 +452,9 @@ export interface UpdateDisplayRequestDto {
   displayId?: number;
   title?: string;
   posterImageUrl?: string;
+  /* 생략하면 그대로 두고, displayMedia 를 빈 배열로 보내면 추가 포스터를 모두 지운다 */
+  posterMedia?: DisplayMediaRequestDto;
+  displayMedia?: DisplayMediaRequestDto[];
   type?: string;
   fields?: string[];
   schoolOrOrganization?: string | null;
@@ -488,6 +519,8 @@ export interface MyDisplayDto {
   department: string;
   placeName: string;
   postImageUrl: string;
+  /* 대표 포스터가 영상이면 영상 주소(postImageUrl 은 썸네일), 아니면 null */
+  posterVideoUrl?: string | null;
   isLeader?: boolean;
   publishStatus?: DisplayPublishStatus;
   displayNickname?: string;
@@ -520,8 +553,10 @@ export interface InviteDisplayMemberRequestDto {
 export interface DisplayMemberEntryDto extends DisplayTeamMemberDto {
   loggedIn: boolean;
   artistVerified: boolean;
-  /** 기본 닉네임. displayNickname(전시 작가명) 아래에 보여 준다. 아직 스웨거에 없어 없을 수 있다 */
-  nickname?: string;
+  /** 기본 닉네임. displayNickname(전시 작가명) 아래에 보여 준다. 서버는 없으면 빈 문자열을 준다 */
+  nickname: string;
+  /** 초대 대기 항목의 초대 ID(초대 취소에 쓴다). 수락한 팀원은 null */
+  invitationId?: number | null;
 }
 
 /* 서버가 실제로 내려주는 원본 응답 — 참여 팀원과 초대 대기 팀원이 배열로 분리되어 있습니다. */
