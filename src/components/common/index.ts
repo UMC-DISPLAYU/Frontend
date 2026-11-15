@@ -7,6 +7,7 @@ export type { CommentData } from './comment';
 export { CommentItem } from './comment';
 export { ConfirmDialog } from './ConfirmDialog';
 export { DisplayPublishStatusLabel } from './DisplayPublishStatusLabel';
+export { DisplaySummaryCard } from './DisplaySummaryCard';
 export { DrawingModal } from './DrawingModal';
 export { ErrorView } from './ErrorView';
 export { ExpandableText } from './ExpandableText';

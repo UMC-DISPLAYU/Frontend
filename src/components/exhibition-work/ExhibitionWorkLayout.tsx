@@ -1,16 +1,14 @@
 import { type ReactNode, useId } from 'react';
 
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import BackIcon from '@/assets/exhibition-work/BackIcon.svg';
-import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
-import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { DisplaySummaryCard } from '@/components/common/DisplaySummaryCard';
 import { PageContainer } from '@/components/layout';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { cn } from '@/utils/cn';
-import { toDisplayImageCardUrl } from '@/utils/displayMedia';
 import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
@@ -67,14 +65,6 @@ export function WorkBar({
   );
 }
 
-/* 프로토타입 일정 표기: 앞에 연도, 끝 연도는 다를 때만 (2026.06.10–06.20) */
-const formatPeriod = ({ startDate, endDate }: DisplayDetailDto['period']) => {
-  const dot = (date: string) => date.replace(/-/g, '.');
-  if (!endDate || startDate === endDate) return dot(startDate);
-  const end = endDate.slice(0, 4) === startDate.slice(0, 4) ? dot(endDate).slice(5) : dot(endDate);
-  return `${dot(startDate)}–${end}`;
-};
-
 /*
  * 프로토타입 works.html 의 `.page.wide` 틀: 600px 미만 480, 768px 이상 672, 900px 이상 1160.
  * 넓은 화면에서도 양옆은 흰색이다(프로토타입 body #fff)
@@ -125,54 +115,16 @@ export function ExhibitionWorkLayout({
 
         {/* 900px 이상은 2단(프로토타입 11-15 `.body.split`): 왼쪽 전시 요약 380 · 사이 56 · 오른쪽 탭 · 목록 */}
         <div className="flex-1 desktop:grid desktop:grid-cols-[380px_minmax(0,1fr)] desktop:items-start desktop:gap-x-14">
-          <div className="mt-2 grid animate-rise grid-cols-[82px_minmax(0,1fr)] gap-x-3.5 rounded-12 border border-[#d4d4d8] p-3">
-            <div className="aspect-402/568 w-[82px] bg-[#f4f4f5]">
-              <OptimizedImage
-                src={display.images[0] ? toDisplayImageCardUrl(display.images[0]) : undefined}
-                alt={`${display.title} 포스터`}
-                displayWidth={82}
-                skeleton
-                loading="eager"
-                frameClassName="h-full w-full"
-                className="object-cover"
-              />
-            </div>
-            <div className="grid min-w-0 content-start gap-0.5">
-              <div className="flex items-center justify-between gap-2">
-                {isDisplayPublishStatus(display.status) ? (
-                  <DisplayPublishStatusLabel status={display.status} />
-                ) : (
-                  // 모르는 값(목 데이터의 전시 기간 상태 등)은 기존처럼 한글 라벨을 준비 중 모양으로 보인다
-                  <DisplayPublishStatusLabel
-                    status="DRAFT"
-                    label={getDisplayStatusLabel(display.status)}
-                  />
-                )}
-                <Link
-                  to={`/exhibition/${display.displayId}/preview`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group inline-flex items-center text-[12px] font-semibold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b]"
-                >
-                  전시 미리보기
-                  <WorkIcon
-                    name="chev"
-                    className="size-5 p-[3px] transition-transform duration-base ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-0.5"
-                  />
-                </Link>
-              </div>
-              <h2 className="mt-1 truncate text-[16px] font-semibold">{display.title}</h2>
-              <p className="truncate text-[12px] font-medium text-[#3f3f47]">
-                {[display.organization, display.department].filter(Boolean).join(' ')}
-              </p>
-              <p className="truncate text-[12px] font-medium tracking-[0.01em]! text-[#3f3f47]">
-                {formatPeriod(display.period)}
-              </p>
-              <p className="truncate text-[12px] font-medium text-[#3f3f47]">
-                {display.location.placeName}
-              </p>
-            </div>
-          </div>
+          {isDisplayPublishStatus(display.status) ? (
+            <DisplaySummaryCard display={display} status={display.status} />
+          ) : (
+            // 모르는 값(목 데이터의 전시 기간 상태 등)은 기존처럼 한글 라벨을 준비 중 모양으로 보인다
+            <DisplaySummaryCard
+              display={display}
+              status="DRAFT"
+              statusLabel={getDisplayStatusLabel(display.status)}
+            />
+          )}
 
           <div className="min-w-0">
             <div
