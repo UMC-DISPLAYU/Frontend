@@ -10,7 +10,9 @@ import {
 
 import { DetailBackButton } from '@/components/common/detail';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { VideoPlayerOverlay } from '@/components/common/VideoPlayerOverlay';
 import { cn } from '@/utils/cn';
+import { formatVideoDuration, readVideoDuration } from '@/utils/videoFile';
 
 import { ArtworkBigView } from './ArtworkBigView';
 import { getStackPhotoIndex, STACK_READING_LINE } from './artworkDetail.utils';
@@ -19,6 +21,8 @@ import type { ViewMode } from './useViewMode';
 
 type Props = {
   images: string[];
+  /* images 와 같은 순서. 영상인 칸은 영상 주소(images 는 썸네일) */
+  videoSrcs?: (string | undefined)[];
   title: string;
   /* 크게 보기 위 띠의 작가 이름 */
   subtitle?: string;
@@ -57,6 +61,51 @@ const VIEW_BUTTON_CLASS =
   'grid h-8 w-9 cursor-pointer place-items-center rounded-circle text-[#d4d4d8] transition-[background-color,color,scale] duration-fast ease-standard hover:text-white active:scale-94 aria-pressed:bg-[#18181b] aria-pressed:text-[#fafafa]';
 const scrollBehavior = (): ScrollBehavior => (prefersReducedMotion() ? 'auto' : 'smooth');
 
+function PlayMark({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={className}>
+      <path d="M7 4.8v14.4L19 12z" fill="currentColor" />
+    </svg>
+  );
+}
+
+/**
+ * 영상 칸 위 재생 버튼과 길이(전시 상세 영상 작품 카드와 같은 모양). 길이는 영상을 읽을 수 있을 때만 보인다.
+ * 칸 위 버튼이라 사진을 눌러 크게 보기가 열리는 동작(handleStageClick)에서 빠진다
+ */
+function VideoPlayButton({ src, onPlay }: { src: string; onPlay: () => void }) {
+  const [duration, setDuration] = useState<number | null>(null);
+
+  useEffect(() => {
+    let isCancelled = false;
+    void readVideoDuration(src).then((value) => {
+      if (!isCancelled) setDuration(value);
+    });
+    return () => {
+      isCancelled = true;
+    };
+  }, [src]);
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="영상 재생"
+        aria-haspopup="dialog"
+        onClick={onPlay}
+        className="absolute top-1/2 left-1/2 z-10 grid size-14 -translate-1/2 cursor-pointer place-items-center rounded-circle bg-[rgba(0,0,0,0.55)] text-base-white backdrop-blur-[10px] transition-[scale,background-color] duration-base ease-standard hover:scale-108 hover:bg-[rgba(0,0,0,0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <PlayMark className="ml-0.5 size-6" />
+      </button>
+      {duration !== null && (
+        <span className="typography-body-md-medium pointer-events-none absolute bottom-4 left-4 z-10 rounded-6 bg-[rgba(0,0,0,0.55)] px-1.75 py-0.5 text-base-white tabular-nums">
+          {formatVideoDuration(duration)}
+        </span>
+      )}
+    </>
+  );
+}
+
 function StackImage({ src, alt, eager }: { src: string; alt: string; eager: boolean }) {
   // 이미지가 뜨기 전에도 자리를 잡아 두어 장 사이 이동 위치가 틀어지지 않게 한다
   const [isLoaded, setIsLoaded] = useState(false);
@@ -80,6 +129,7 @@ function StackImage({ src, alt, eager }: { src: string; alt: string; eager: bool
 
 export function ArtworkViewer({
   images,
+  videoSrcs = [],
   title,
   subtitle,
   mode,
@@ -95,6 +145,17 @@ export function ArtworkViewer({
 
   const [current, setCurrent] = useState(0);
   const [bigStart, setBigStart] = useState<number | null>(null);
+  const [player, setPlayer] = useState<{ src: string; thumbnailSrc: string; key: number } | null>(
+    null,
+  );
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+
+  const openPlayer = (index: number) => {
+    const src = videoSrcs[index];
+    if (!src) return;
+    setPlayer((prev) => ({ src, thumbnailSrc: images[index], key: (prev?.key ?? 0) + 1 }));
+    setIsPlayerOpen(true);
+  };
   const paneRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const stackRef = useRef<HTMLDivElement>(null);
@@ -241,7 +302,10 @@ export function ArtworkViewer({
     )
       return;
     const image = (event.target as HTMLElement).closest('img');
-    const stackIndex = image ? Array.from(stackRef.current?.children ?? []).indexOf(image) : -1;
+    // 영상 칸은 사진을 한 겹 감싸 두므로 감싼 칸 기준으로 순서를 찾는다
+    const stackIndex = image
+      ? Array.from(stackRef.current?.children ?? []).findIndex((child) => child.contains(image))
+      : -1;
     setBigStart(isStack && stackIndex >= 0 ? stackIndex : currentRef.current);
   };
 
@@ -265,11 +329,11 @@ export function ArtworkViewer({
             <button
               key={`${src}-${index}`}
               type="button"
-              aria-label={`${index + 1}번째 이미지 보기`}
+              aria-label={`${index + 1}번째 ${videoSrcs[index] ? '영상' : '이미지'} 보기`}
               aria-current={index === current}
               onClick={() => selectThumb(index)}
               className={cn(
-                'h-16 w-12 shrink-0 cursor-pointer overflow-hidden border-2 transition-opacity duration-fast ease-standard',
+                'relative h-16 w-12 shrink-0 cursor-pointer overflow-hidden border-2 transition-opacity duration-fast ease-standard',
                 index === current
                   ? 'border-interactive-selected opacity-100'
                   : 'border-transparent opacity-55 hover:opacity-100',
@@ -281,6 +345,14 @@ export function ArtworkViewer({
                 alt=""
                 className="size-full object-cover"
               />
+              {videoSrcs[index] && (
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-0.5 left-0.5 grid size-4 place-items-center rounded-circle bg-[rgba(0,0,0,0.6)] text-base-white"
+                >
+                  <PlayMark className="size-2" />
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -386,14 +458,26 @@ export function ArtworkViewer({
 
           {isStack ? (
             <div ref={stackRef} aria-label="작품 이미지 이어보기">
-              {images.map((src, index) => (
-                <StackImage
-                  key={`${src}-${index}`}
-                  src={src}
-                  alt={altOf(index)}
-                  eager={index === 0}
-                />
-              ))}
+              {images.map((src, index) => {
+                const videoSrc = videoSrcs[index];
+                const image = (
+                  <StackImage
+                    key={`${src}-${index}`}
+                    src={src}
+                    alt={altOf(index)}
+                    eager={index === 0}
+                  />
+                );
+
+                return videoSrc ? (
+                  <div key={`${src}-${index}`} className={cn('relative', STACK_SCROLL_MARGIN)}>
+                    {image}
+                    <VideoPlayButton src={videoSrc} onPlay={() => openPlayer(index)} />
+                  </div>
+                ) : (
+                  image
+                );
+              })}
             </div>
           ) : (
             <div
@@ -409,7 +493,7 @@ export function ArtworkViewer({
               {images.map((src, index) => (
                 <div
                   key={`${src}-${index}`}
-                  className="h-full flex-[0_0_100%] snap-center bg-secondary"
+                  className="relative h-full flex-[0_0_100%] snap-center bg-secondary"
                 >
                   <OptimizedImage
                     src={src}
@@ -421,6 +505,9 @@ export function ArtworkViewer({
                     frameClassName="size-full"
                     className="object-contain select-none"
                   />
+                  {videoSrcs[index] && (
+                    <VideoPlayButton src={videoSrcs[index]} onPlay={() => openPlayer(index)} />
+                  )}
                 </div>
               ))}
             </div>
@@ -478,6 +565,16 @@ export function ArtworkViewer({
         subtitle={subtitle}
         onClose={closeBig}
       />
+      {player && (
+        <VideoPlayerOverlay
+          key={player.key}
+          open={isPlayerOpen}
+          src={player.src}
+          thumbnailSrc={player.thumbnailSrc}
+          title={title}
+          onClose={() => setIsPlayerOpen(false)}
+        />
+      )}
     </section>
   );
 }
