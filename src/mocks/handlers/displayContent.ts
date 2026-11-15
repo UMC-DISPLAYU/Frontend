@@ -2,30 +2,45 @@
 import { http } from 'msw';
 
 import { mockDb } from '@/mocks/data/repository';
-import { created, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
 
+const CATEGORIES_PATH = '/api/v1/display/{displayId}/content-categories';
+const REORDER_CATEGORIES_PATH = '/api/v1/display/{displayId}/content-categories/reorder';
+
 export const displayContentHandlers = [
-  ...paths('/api/v1/display/{displayId}/content-categories').map((path) =>
+  ...paths(CATEGORIES_PATH).map((path) =>
     http.post(path, async ({ params, request }) => {
       const display = findDisplay(toNumber(params.displayId, 101));
-      const body = await readJson<{ name?: string; description?: string | null }>(request);
+      const body = await readJson<{ name?: string; imageUrls?: string[] | null }>(request);
+      // 실서버: 생략 · null 은 빈 섹션, 빈 배열 · 20장 초과는 거절
+      if (body.imageUrls && (body.imageUrls.length === 0 || body.imageUrls.length > 20)) {
+        return fail(CATEGORIES_PATH, 400, 'COMMON400', '입력값이 올바르지 않습니다.');
+      }
+      const categoryId = Date.now();
       const category = {
-        categoryId: Date.now(),
+        categoryId,
         name: body.name ?? '새 콘텐츠',
-        description: body.description ?? null,
+        description: null,
         sortOrder: display.contentCategories.length + 1,
-        contents: [],
+        contents: (body.imageUrls ?? []).map((imageUrl, index) => ({
+          contentId: categoryId + index + 1,
+          imageUrl,
+          width: 1600,
+          height: 1600,
+          sortOrder: index + 1,
+          userId: mockDb.me.userId,
+        })),
       };
       display.contentCategories.push(category);
 
-      return created('/api/v1/display/{displayId}/content-categories', category);
+      return created(CATEGORIES_PATH, { displayId: display.displayId, ...category });
     }),
   ),
   // {categoryId} 핸들러보다 먼저 둬야 reorder 가 카테고리 id 로 잡히지 않는다
-  ...paths('/api/v1/display/{displayId}/content-categories/reorder').map((path) =>
+  ...paths(REORDER_CATEGORIES_PATH).map((path) =>
     http.patch(path, async ({ params, request }) => {
       const display = findDisplay(toNumber(params.displayId, 101));
       const { orderedCategoryIds = [] } = await readJson<{ orderedCategoryIds?: number[] }>(
@@ -34,18 +49,28 @@ export const displayContentHandlers = [
       const byId = new Map<number, any>(
         display.contentCategories.map((category: any) => [category.categoryId, category]),
       );
-      const reordered = orderedCategoryIds
-        .map((categoryId) => byId.get(categoryId))
-        .filter((category): category is any => Boolean(category));
-      const rest = display.contentCategories.filter(
-        (category: any) => !orderedCategoryIds.includes(category.categoryId),
-      );
-      display.contentCategories = [...reordered, ...rest].map((category: any, index: number) => ({
-        ...category,
+      // 실서버: 전시의 모든 섹션 id 를 중복 없이 보내야 한다(누락 · 중복 · 다른 전시 id 는 400)
+      const isValid =
+        orderedCategoryIds.length === byId.size &&
+        new Set(orderedCategoryIds).size === orderedCategoryIds.length &&
+        orderedCategoryIds.every((categoryId) => byId.has(categoryId));
+      if (!isValid) {
+        return fail(
+          REORDER_CATEGORIES_PATH,
+          400,
+          'INVALID_DISPLAY_CONTENT_CATEGORY_ORDER',
+          '섹션 순서가 올바르지 않습니다.',
+        );
+      }
+      display.contentCategories = orderedCategoryIds.map((categoryId, index) => ({
+        ...byId.get(categoryId),
         sortOrder: index + 1,
       }));
 
-      return noContent('/api/v1/display/{displayId}/content-categories/reorder');
+      return success(REORDER_CATEGORIES_PATH, {
+        displayId: display.displayId,
+        categories: display.contentCategories,
+      });
     }),
   ),
   ...paths('/api/v1/display/{displayId}/content-categories/{categoryId}').map((path) =>
