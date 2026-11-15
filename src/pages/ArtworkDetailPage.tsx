@@ -29,6 +29,7 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
+import { toDisplayImageCardUrl } from '@/utils/displayMedia';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { getExhibitionState } from '@/utils/exhibitionState';
 import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
@@ -111,12 +112,16 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
     coAuthors: detail.coAuthors,
   });
 
-  /* 뷰어는 작품 이미지만 씁니다. 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
+  /*
+   * 뷰어는 작품 이미지만 씁니다. 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다.
+   * 프로토타입 작품 상세에는 영상 재생이 없어 영상은 썸네일로 보입니다(영상 원본 주소는 이미지로 그릴 수 없다)
+   */
   const artworkImages = (detail.images ?? []).filter((image) => image.imageType !== 'WORK_PROCESS');
   const imageUrls = artworkImages
-    .map((image) => image.imageUrl)
+    .map(toDisplayImageCardUrl)
     .filter((imageUrl): imageUrl is string => Boolean(imageUrl));
-  const thumbnailUrl = artworkImages.find((image) => image.isThumbnail)?.imageUrl;
+  const thumbnailImage = artworkImages.find((image) => image.isThumbnail);
+  const thumbnailUrl = thumbnailImage ? toDisplayImageCardUrl(thumbnailImage) : undefined;
   const orderedImages = thumbnailUrl
     ? [thumbnailUrl, ...imageUrls.filter((imageUrl) => imageUrl !== thumbnailUrl)]
     : imageUrls;
