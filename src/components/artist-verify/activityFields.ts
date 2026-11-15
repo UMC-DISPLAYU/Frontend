@@ -1,7 +1,4 @@
-/*
- * 프로토타입 순서의 작가 분야 12개. 그래픽 · 브랜딩 · 제품 · 공간 · UXUI 는 아직 서버 값이 없어
- * 실서버에 보내면 저장에 실패한다(#470 "필요한 API").
- */
+/* 프로토타입 순서의 작가 분야 12개. 값은 서버 저장 · 응답 표준 값이다 */
 export const ACTIVITY_FIELDS = [
   { code: 'PAINTING', label: '회화' },
   { code: 'SCULPTURE', label: '조소' },
@@ -13,8 +10,8 @@ export const ACTIVITY_FIELDS = [
   { code: 'SPACE', label: '공간' },
   { code: 'ARCHITECTURE', label: '건축' },
   { code: 'UX_UI', label: 'UXUI' },
-  { code: 'CRAFT', label: '공예' },
-  { code: 'ETC', label: '기타' },
+  { code: 'CRAFTS', label: '공예' },
+  { code: 'OTHERS', label: '기타' },
 ] as const;
 
 export type ActivityFieldCode = (typeof ACTIVITY_FIELDS)[number]['code'];

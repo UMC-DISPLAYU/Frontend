@@ -21,7 +21,7 @@ export const FIELD_OPTIONS: readonly ExploreOption[] = [
   { label: '영상', value: 'VIDEO' },
   { label: '공간', value: 'SPACE' },
   { label: '건축', value: 'ARCHITECTURE' },
-  { label: 'UXUI', value: 'UXUI' },
+  { label: 'UXUI', value: 'UX_UI' },
   { label: '공예', value: 'CRAFTS' },
   { label: '기타', value: 'OTHERS' },
 ];
@@ -43,10 +43,10 @@ export const STATUS_OPTIONS: readonly ExploreOption[] = [
   { label: '종료', value: 'ENDED' },
 ];
 
-// 최신순 = 최초 공개일 최신순, 인기순 = 좋아요 많은 순(탐색 정책). 서버가 sort 를 받기 전까지 실서버는 전시 ID 내림차순이다
+// 서버 값: LATEST(등록순, 전시 ID 내림차순) · LIKES(좋아요 많은 순). 작품 검색은 정렬을 받지 않는다
 export const SORT_OPTIONS: readonly ExploreOption[] = [
   { label: '최신순', value: 'LATEST' },
-  { label: '인기순', value: 'POPULAR' },
+  { label: '인기순', value: 'LIKES' },
 ];
 
 const normalizeLabel = (label: string) => label.replace(/[\s·]/g, '');

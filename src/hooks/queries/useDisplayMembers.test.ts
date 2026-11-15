@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { queryKeys } from '@/api/queryKeys';
 
 import {
+  useCancelDisplayInvitation,
   useChangeDisplayMemberRole,
   useInviteDisplayMember,
   useRemoveDisplayMember,
@@ -13,6 +14,7 @@ import {
 const h = vi.hoisted(() => ({
   invalidateQueries: vi.fn(),
   api: {
+    cancelDisplayInvitation: vi.fn(),
     changeDisplayMemberRole: vi.fn(),
     createDisplayInvitation: vi.fn(),
     disableDisplayInvitation: vi.fn(),
@@ -126,5 +128,24 @@ describe('useTransferDisplayLeader', () => {
       queryKeys.displays.detail(7),
       queryKeys.displays.lists(),
     ]);
+  });
+});
+
+describe('useCancelDisplayInvitation', () => {
+  it('초대 ID 로 취소하고 팀원 목록 · 전시 상세 · 초대 목록을 다시 받는다', async () => {
+    h.invalidateQueries.mockResolvedValue(undefined);
+    const { mutationFn, onSuccess } = options(useCancelDisplayInvitation(7));
+
+    await mutationFn(31);
+    expect(h.api.cancelDisplayInvitation).toHaveBeenCalledWith(31);
+
+    await onSuccess();
+    expect(invalidatedKeys()).toEqual(
+      expect.arrayContaining([
+        queryKeys.displayInvitations.all,
+        queryKeys.displayMembers.byDisplayId(7),
+        queryKeys.displays.detail(7),
+      ]),
+    );
   });
 });

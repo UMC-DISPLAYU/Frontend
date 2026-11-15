@@ -1,5 +1,5 @@
 import type { ArtistProfileDto, UpdateArtistProfileRequestDto } from '@/api/dto';
-import { isArtistProfileField } from '@/constants/artistField';
+import { isArtistProfileField, toArtistProfileField } from '@/constants/artistField';
 import { isInstagramUrl } from '@/utils/externalLink';
 import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
 
@@ -20,7 +20,10 @@ export const toEditArtistProfileDefaults = (
 
   return {
     artistName: profile.artistName ?? '',
-    fields: (profile.fields ?? []).filter(isArtistProfileField),
+    // 조회는 저장된 예전 별칭(CRAFT · ETC 등)을 그대로 내려주므로 표준 값으로 바꿔 선택을 남긴다
+    fields: [...new Set((profile.fields ?? []).map(toArtistProfileField))].filter(
+      isArtistProfileField,
+    ),
     introduction: profile.introduction ?? '',
     instagram:
       instagramIdOf(profile.instagramLink) ||

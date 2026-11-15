@@ -127,15 +127,15 @@ it('검색 장애는 빈 결과가 아니며 재시도 성공 시 빈 결과/목
   expect(h.query.refetch).toHaveBeenCalledTimes(1);
   h.query.error = null;
   h.query.isError = false;
-  h.query.data = { pages: [{ exhibitions: [] }] };
+  h.query.data = { pages: [{ exhibitions: [], artworks: [] }] };
   tree = ExplorePage();
   expect(renderToStaticMarkup(tree)).toContain('검색 결과가 없어요');
-  h.query.data = { pages: [{ exhibitions: [{ displayId: 1 }] }] };
+  h.query.data = { pages: [{ exhibitions: [{ displayId: 1 }], artworks: [] }] };
   expect(renderToStaticMarkup(ExplorePage())).toContain('기존 전시 카드');
 });
 
 it('추가 페이지 실패는 기존 카드를 유지하고 추가 페이지만 다시 요청한다', () => {
-  h.query.data = { pages: [{ exhibitions: [{ displayId: 1 }] }] };
+  h.query.data = { pages: [{ exhibitions: [{ displayId: 1 }], artworks: [] }] };
   h.query.error = new ApiError('network', { transportCode: 'ERR_NETWORK' });
   h.query.isError = true;
   h.query.isFetchNextPageError = true;

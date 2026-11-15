@@ -2,15 +2,13 @@
 import { http } from 'msw';
 
 import { mockDb } from '@/mocks/data/repository';
-import { fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { fail, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const MEMBERS_PATH = '/api/v1/display/{displayId}/members';
 const MEMBER_PATH = '/api/v1/display/{displayId}/members/{memberId}';
 const ROLE_PATH = '/api/v1/display/{displayId}/members/{memberId}/role';
 const LEADER_TRANSFER_PATH = '/api/v1/display/{displayId}/leader-transfer';
-// 초대 취소: 스웨거에 아직 없어 프론트에서 정한 경로(src/api/endpoints/display.ts 참고)
-const CANCEL_INVITATION_PATH =
-  '/api/v1/display-invitations/displays/{displayId}/users/{inviteeUserId}';
+const CANCEL_INVITATION_PATH = '/api/v1/display-invitations/{invitationId}';
 
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
@@ -21,6 +19,7 @@ const member = (
   displayNickname: string,
   role: string,
   accepted = true,
+  invitationId: number | null = null,
 ) => ({
   teamMemberId,
   userId,
@@ -29,6 +28,7 @@ const member = (
   accepted,
   loggedIn: true,
   artistVerified: accepted,
+  invitationId,
 });
 
 /*
@@ -44,8 +44,8 @@ export const teamOf = (display: any): any[] => {
       member(base + 2, 205, '한도윤', 'MANAGER'),
       member(base + 3, 203, '김서연', 'TEAM_MEM'),
       member(base + 4, 204, '박지훈', 'TEAM_MEM'),
-      member(null, 209, 'chaerin_j', 'TEAM_MEM', false),
-      member(null, 210, 'quriosity', 'TEAM_MEM', false),
+      member(null, 209, 'chaerin_j', 'TEAM_MEM', false, base + 9),
+      member(null, 210, 'quriosity', 'TEAM_MEM', false, base + 10),
     ];
   }
 
@@ -133,16 +133,18 @@ export const displayMemberHandlers = [
       });
     }),
   ),
-  // DELETE: 초대 취소. 아직 수락하지 않은 초대만 지운다
+  // DELETE: 초대 취소. 대기 중인 초대만 취소되고 응답 status 는 CANCELLED 다
   ...paths(CANCEL_INVITATION_PATH).map((path) =>
     http.delete(path, ({ params }) => {
-      const display = findDisplay(toNumber(params.displayId, 101));
-      const inviteeUserId = toNumber(params.inviteeUserId);
-      const target = teamOf(display).find(
-        (entry) => entry.userId === inviteeUserId && entry.accepted === false,
+      const invitationId = toNumber(params.invitationId);
+      const display = mockDb.displays.find((item: any) =>
+        (item.teamMembers ?? []).some((entry: any) => entry.invitationId === invitationId),
+      );
+      const target = display?.teamMembers.find(
+        (entry: any) => entry.invitationId === invitationId && entry.accepted === false,
       );
 
-      if (!target) {
+      if (!display || !target) {
         return fail(
           CANCEL_INVITATION_PATH,
           404,
@@ -153,7 +155,15 @@ export const displayMemberHandlers = [
 
       display.teamMembers = teamOf(display).filter((entry) => entry !== target);
 
-      return noContent(CANCEL_INVITATION_PATH);
+      return success(CANCEL_INVITATION_PATH, {
+        invitationId,
+        displayId: display.displayId,
+        inviterUserId: mockDb.me.userId,
+        inviteeUserId: target.userId,
+        status: 'CANCELLED',
+        createdAt: new Date().toISOString(),
+        respondedAt: new Date().toISOString(),
+      });
     }),
   ),
   // POST: 대표자 위임. 즉시 바뀌고 이전 대표자는 관리자가 된다
