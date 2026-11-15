@@ -146,7 +146,7 @@ function ImageTile({
         </button>
       )}
       {isRepresentative && (
-        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1 left-1 rounded-4 bg-[#000] px-1.5 py-0.5 text-base-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)]">
+        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1 left-1 inline-flex h-5.5 items-center rounded-4 bg-[#000] px-1.5 text-base-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)]">
           대표 사진
         </span>
       )}
