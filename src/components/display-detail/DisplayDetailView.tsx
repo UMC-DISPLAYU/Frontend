@@ -10,6 +10,7 @@ import {
 import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { cn } from '@/utils/cn';
+import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
 import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
 import { DisplayBottomBar, DisplayInlineActions, DisplaySaveButton } from './DisplayActions';
@@ -61,8 +62,11 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
   const posters = (display.images ?? [])
     .slice()
     .sort((a, b) => Number(b.isThumbnail) - Number(a.isThumbnail) || a.sortOrder - b.sortOrder)
-    .map((image) => image.imageUrl)
-    .filter(Boolean);
+    .map((image) => ({
+      src: toDisplayImageCardUrl(image),
+      videoSrc: isVideoMedia(image) ? image.imageUrl : undefined,
+    }))
+    .filter((poster) => poster.src);
   const share = {
     shareTitle: display.title,
     disabled: isPreview,
@@ -99,7 +103,7 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
         )}
 
         <PosterCarousel
-          images={posters.length > 0 ? posters : [FALLBACK_POSTER_IMAGE]}
+          posters={posters.length > 0 ? posters : [{ src: FALLBACK_POSTER_IMAGE }]}
           title={display.title}
           onBack={onBack}
           isPreview={isPreview && !previewMode}

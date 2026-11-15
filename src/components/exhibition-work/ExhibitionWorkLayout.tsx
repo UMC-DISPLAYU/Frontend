@@ -10,6 +10,7 @@ import { PageContainer } from '@/components/layout';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { cn } from '@/utils/cn';
+import { toDisplayImageCardUrl } from '@/utils/displayMedia';
 import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
@@ -127,7 +128,7 @@ export function ExhibitionWorkLayout({
           <div className="mt-2 grid animate-rise grid-cols-[82px_minmax(0,1fr)] gap-x-3.5 rounded-12 border border-[#d4d4d8] p-3">
             <div className="aspect-402/568 w-[82px] bg-[#f4f4f5]">
               <OptimizedImage
-                src={display.images[0]?.imageUrl}
+                src={display.images[0] ? toDisplayImageCardUrl(display.images[0]) : undefined}
                 alt={`${display.title} 포스터`}
                 displayWidth={82}
                 skeleton
