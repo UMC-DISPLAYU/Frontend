@@ -158,7 +158,7 @@ function PosterThumb({
         </button>
       )}
       {isRepresentative && (
-        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1.5 left-1.5 inline-flex h-5 items-center rounded-4 bg-[#000] px-1.5 text-base-white">
+        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1.5 left-1.5 inline-flex h-5.5 items-center rounded-4 bg-[#000] px-1.5 text-base-white">
           대표
         </span>
       )}
