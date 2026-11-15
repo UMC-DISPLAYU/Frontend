@@ -81,13 +81,44 @@ describe('sanitizeArtworkYearInput', () => {
 });
 
 describe('작품분야 변환', () => {
-  it('같은 서버 값으로 가는 분야는 한 번만 보낸다', () => {
-    expect(toArtworkTypes(['그래픽', '브랜딩'])).toEqual(['DESIGN']);
-    expect(toArtworkTypes(['회화', '영상'])).toEqual(['PAINTING', 'MEDIA']);
+  it('전시 작품은 12개 분야를 신규 서버 값으로 하나씩 보낸다', () => {
+    expect(toArtworkTypes(['그래픽', '브랜딩', '제품'])).toEqual([
+      'GRAPHIC',
+      'BRANDING',
+      'PRODUCT',
+    ]);
+    expect(toArtworkTypes(['공간', 'UXUI', '영상'])).toEqual(['SPACE', 'UX_UI', 'VIDEO']);
+    expect(toArtworkTypes(['공예', '기타'])).toEqual(['CRAFTS', 'OTHERS']);
+  });
+
+  it('개인 작품은 예전 서버 값으로 보내고, 같은 값으로 가는 분야는 한 번만 보낸다', () => {
+    expect(toArtworkTypes(['그래픽', '브랜딩'], [], 'personal')).toEqual(['DESIGN']);
+    expect(toArtworkTypes(['회화', '영상', '공예'], [], 'personal')).toEqual([
+      'PAINTING',
+      'MEDIA',
+      'CRAFT',
+    ]);
+    expect(toArtworkTypes(['기타'], [], 'personal')).toEqual(['ETC']);
+  });
+
+  it('수정할 때 기존 분야가 보이던 이름을 그대로 두면 원래 값(예전 값 포함)을 다시 보낸다', () => {
+    expect(toArtworkTypes(['그래픽', '회화'], ['DESIGN', 'PAINTING'])).toEqual([
+      'DESIGN',
+      'PAINTING',
+    ]);
+    expect(toArtworkTypes(['브랜딩'], ['DESIGN'])).toEqual(['BRANDING']);
+    expect(toArtworkTypes(['기타'], ['FASHION', 'COMPLEX'])).toEqual(['FASHION', 'COMPLEX']);
+    expect(toArtworkTypes(['영상'], ['MEDIA'], 'personal')).toEqual(['MEDIA']);
   });
 
   it('서버 값을 분야 이름으로 되돌리고, 화면에 없는 값은 기타로 본다', () => {
     expect(toArtworkFieldLabels(['PAINTING', 'DESIGN'])).toEqual(['회화', '그래픽']);
+    expect(toArtworkFieldLabels(['BRANDING', 'UX_UI', 'CRAFTS'])).toEqual([
+      '브랜딩',
+      'UXUI',
+      '공예',
+    ]);
+    expect(toArtworkFieldLabels(['VIDEO', 'OTHERS'])).toEqual(['영상', '기타']);
     expect(toArtworkFieldLabels(['FASHION', 'COMPLEX'])).toEqual(['기타']);
     expect(toArtworkFieldLabels(['PAINTING', 'SCULPTURE', 'MEDIA', 'CRAFT'])).toEqual([
       '회화',

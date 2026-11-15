@@ -1,10 +1,15 @@
-import type { ArtworkTypeDto } from '@/api/dto';
+import type { ArtworkTypeDto, DisplayArtworkTypeDto } from '@/api/dto';
 
 export const MAX_ARTWORK_IMAGES = 10;
 export const MAX_PROCESS_IMAGES = 10;
 export const MAX_ARTWORK_IMAGE_MB = 20;
-// 업로드 API(presigned-url)가 HEIC 를 받지 않아 JPG · PNG · WEBP 만 고른다
-export const ARTWORK_IMAGE_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+// 업로드 API(presigned-url)가 HEIF 는 받지 않아 프로토타입 목록에서 빼고 고른다
+export const ARTWORK_IMAGE_ACCEPT_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+] as const;
 
 export const MAX_ARTWORK_TITLE_LENGTH = 60;
 export const MAX_ARTWORK_INTRO_LENGTH = 1500;
@@ -16,8 +21,26 @@ export const MAX_PROXY_AUTHOR_NAME_LENGTH = 20;
 // 프로토타입 · 사용자 요청: 작품분야는 3개까지 고른다
 export const MAX_ARTWORK_FIELDS = 3;
 
-// 서버 enum 이 화면의 12개 분야보다 적어 그래픽 · 브랜딩 · 제품 · 공간 · UXUI 는 DESIGN 으로 보낸다
-export const ARTWORK_FIELD_OPTIONS: readonly { label: string; value: ArtworkTypeDto }[] = [
+type ArtworkFieldOption<TValue extends string> = { label: string; value: TValue };
+
+/* 전시 작품 분야. 화면의 12개 분야와 서버 값이 하나씩 맞는다 */
+export const ARTWORK_FIELD_OPTIONS: readonly ArtworkFieldOption<DisplayArtworkTypeDto>[] = [
+  { label: '회화', value: 'PAINTING' },
+  { label: '조소', value: 'SCULPTURE' },
+  { label: '사진', value: 'PHOTOGRAPHY' },
+  { label: '그래픽', value: 'GRAPHIC' },
+  { label: '브랜딩', value: 'BRANDING' },
+  { label: '제품', value: 'PRODUCT' },
+  { label: '영상', value: 'VIDEO' },
+  { label: '공간', value: 'SPACE' },
+  { label: '건축', value: 'ARCHITECTURE' },
+  { label: 'UXUI', value: 'UX_UI' },
+  { label: '공예', value: 'CRAFTS' },
+  { label: '기타', value: 'OTHERS' },
+];
+
+// 개인 작품 API 는 아직 예전 10개 분야만 받아 그래픽 · 브랜딩 · 제품 · 공간 · UXUI 는 DESIGN 으로 보낸다
+const PERSONAL_ARTWORK_FIELD_OPTIONS: readonly ArtworkFieldOption<ArtworkTypeDto>[] = [
   { label: '회화', value: 'PAINTING' },
   { label: '조소', value: 'SCULPTURE' },
   { label: '사진', value: 'PHOTOGRAPHY' },
@@ -32,25 +55,55 @@ export const ARTWORK_FIELD_OPTIONS: readonly { label: string; value: ArtworkType
   { label: '기타', value: 'ETC' },
 ];
 
+export type ArtworkFieldTarget = 'display' | 'personal';
+
+const FIELD_OPTIONS_BY_TARGET = {
+  display: ARTWORK_FIELD_OPTIONS,
+  personal: PERSONAL_ARTWORK_FIELD_OPTIONS,
+} as const;
+
+/* 예전 분야 값이 보이는 이름. DESIGN 은 예전 화면이 그래픽으로 보여 주던 값이고, 없는 값(FASHION · COMPLEX 등)은 기타로 본다 */
+const LEGACY_FIELD_LABELS: Record<string, string> = {
+  DESIGN: '그래픽',
+  MEDIA: '영상',
+  CRAFT: '공예',
+  UXUI: 'UXUI',
+  ETC: '기타',
+};
+
 const FALLBACK_FIELD_LABEL = '기타';
 
-const SHOWN_FIELD_TYPES = new Set<string>(ARTWORK_FIELD_OPTIONS.map((option) => option.value));
-const isFallbackType = (type: string) => type === 'ETC' || !SHOWN_FIELD_TYPES.has(type);
+const toFieldLabel = (type: string) =>
+  ARTWORK_FIELD_OPTIONS.find((option) => option.value === type)?.label ??
+  LEGACY_FIELD_LABELS[type] ??
+  FALLBACK_FIELD_LABEL;
 
 /**
- * 고른 분야 이름을 서버 enum 으로 바꾼다. 같은 enum 은 한 번만 보낸다.
- * 화면에 없는 서버 분야(FASHION · COMPLEX 등)는 기타로 보이므로, 수정할 때 기타가 그대로면 원래 값을 보낸다
+ * 고른 분야 이름을 서버 값으로 바꾼다. 같은 값은 한 번만 보낸다.
+ * 수정할 때 기존 분야가 보이던 이름을 그대로 두면 원래 값(예전 값 포함)을 다시 보낸다.
+ * 서버가 예전 값은 새로 고르지 못하게 하고 이미 저장된 것만 유지하게 해서다
  */
 export function toArtworkTypes(
   labels: readonly string[],
+  previousTypes?: readonly string[],
+  target?: 'display',
+): DisplayArtworkTypeDto[];
+export function toArtworkTypes(
+  labels: readonly string[],
+  previousTypes: readonly string[],
+  target: 'personal',
+): ArtworkTypeDto[];
+export function toArtworkTypes(
+  labels: readonly string[],
   previousTypes: readonly string[] = [],
-): ArtworkTypeDto[] {
-  const previousFallback = previousTypes
-    .map((type) => type.trim())
-    .filter(isFallbackType) as ArtworkTypeDto[];
+  target: ArtworkFieldTarget = 'display',
+): string[] {
+  const previous = previousTypes.map((type) => type.trim()).filter(Boolean);
+  const options: readonly ArtworkFieldOption<string>[] = FIELD_OPTIONS_BY_TARGET[target];
   const values = labels.flatMap((label) => {
-    if (label === FALLBACK_FIELD_LABEL && previousFallback.length > 0) return previousFallback;
-    return ARTWORK_FIELD_OPTIONS.find((option) => option.label === label)?.value ?? [];
+    const kept = previous.filter((type) => toFieldLabel(type) === label);
+    if (kept.length > 0) return kept;
+    return options.find((option) => option.label === label)?.value ?? [];
   });
 
   return [...new Set(values)];
@@ -70,13 +123,9 @@ export function exceedsArtworkFieldLimit(
   );
 }
 
-/** 서버 enum 을 분야 이름으로 되돌린다. 화면에 없는 값(FASHION · COMPLEX 등)은 기타로 본다 */
+/** 서버 분야 값을 분야 이름으로 되돌린다 */
 export function toArtworkFieldLabels(types: readonly string[]): string[] {
-  const labels = types.map(
-    (type) =>
-      ARTWORK_FIELD_OPTIONS.find((option) => option.value === type.trim())?.label ??
-      FALLBACK_FIELD_LABEL,
-  );
+  const labels = types.map((type) => toFieldLabel(type.trim()));
 
   return [...new Set(labels)].slice(0, MAX_ARTWORK_FIELDS);
 }

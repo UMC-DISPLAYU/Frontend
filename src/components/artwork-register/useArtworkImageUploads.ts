@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 
 import { useUploadImage } from '@/hooks/queries/useFile';
-import type { CropRect } from '@/utils/cropBox';
+import { type CropRect, isValidCrop } from '@/utils/cropBox';
 
 import { ARTWORK_IMAGE_ACCEPT_TYPES, MAX_ARTWORK_IMAGE_MB } from './artworkRegister.constants';
 
@@ -60,10 +60,13 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size'>>(
  */
 export function useArtworkImageUploads({
   initialUrls,
+  initialCrop,
   maxImages,
   onUploadError,
 }: {
   initialUrls: string[];
+  /** 첫 장(대표 사진)에 저장돼 있던 썸네일 영역 */
+  initialCrop?: CropRect | null;
   maxImages: number;
   onUploadError?: () => void;
 }) {
@@ -72,6 +75,7 @@ export function useArtworkImageUploads({
       id: `initial-${index}`,
       previewUrl: url,
       uploadedUrl: url,
+      crop: index === 0 && isValidCrop(initialCrop) ? initialCrop : null,
     })),
   );
   const [failedFiles, setFailedFiles] = useState<File[]>([]);

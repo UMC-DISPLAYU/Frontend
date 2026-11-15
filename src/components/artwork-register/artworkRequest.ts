@@ -1,4 +1,5 @@
 import type {
+  ArtworkCropDto,
   ArtworkImageRequestDto,
   CreateExhibitionArtworkRequestDto,
   DisplayArtworkEditResponseDataDto,
@@ -8,6 +9,7 @@ import type {
   UpdateExhibitionArtworkRequestDto,
 } from '@/api/dto';
 import { DEFAULT_ARTWORK_IMAGE_HEIGHT, DEFAULT_ARTWORK_IMAGE_WIDTH } from '@/constants';
+import { type CropRect, isValidCrop } from '@/utils/cropBox';
 
 import { toArtworkFieldLabels, toArtworkTypes } from './artworkRegister.constants';
 import type { ArtworkRegisterValues } from './artworkRegister.schema';
@@ -16,6 +18,8 @@ import type { ArtworkPerson } from './artworkRegister.types';
 export interface ArtworkImageUrls {
   artworkUrls: string[];
   processUrls: string[];
+  /** 대표 사진(작품 이미지 첫 장)이 카드 썸네일에 보이는 영역. 없으면 사진 가운데 */
+  artworkCrop?: CropRect | null;
 }
 
 type ImageLike = Pick<ImageResponseDto, 'imageUrl' | 'sortOrder'> & {
@@ -100,24 +104,44 @@ export function readArtworkTypes(source: Pick<PreviousArtworkInfo, 'type' | 'typ
     .filter(Boolean);
 }
 
-/** 작품 정보 입력값을 등록 · 수정 요청 공통 필드로 바꾼다 */
-export function toArtworkInfoRequest(
+/** 작품 정보 입력값을 등록 · 수정 요청 공통 필드로 바꾼다(분야 제외) */
+function toArtworkInfoRequest(
   values: ArtworkRegisterValues,
   images: ArtworkImageUrls,
   previous?: PreviousArtworkInfo,
-): PersonalArtworkRequestDto {
-  const types = toArtworkTypes(values.fieldLabels, previous ? readArtworkTypes(previous) : []);
-
-  // 수정에서 비운 설명 · 규격이 지워지도록 빈 문자열도 그대로 보낸다
+) {
+  // 수정에서 비운 설명 · 재료 · 규격이 지워지도록 빈 문자열도 그대로 보낸다
   return {
     artworkName: values.title.trim(),
     content: values.intro.trim(),
-    type: types[0],
-    types,
     productionYear: Number(values.year),
     materialMedia: values.material.trim(),
     size: values.size.trim(),
     images: toArtworkImageRequests(images, previous?.images),
+  };
+}
+
+const CROP_DECIMAL_SCALE = 1e10;
+const floorCropValue = (value: number) =>
+  Math.floor(value * CROP_DECIMAL_SCALE) / CROP_DECIMAL_SCALE;
+
+/**
+ * 서버가 소수점 이하 10자리까지, x + w · y + h 가 1 이하인 값만 받아 내림으로 자른다.
+ * 올바르지 않은 영역은 보내지 않는다(생략하면 서버는 대표 사진이 같은 동안 기존 영역을 유지한다)
+ */
+export function toArtworkCropRequest(
+  crop: CropRect | null | undefined,
+): ArtworkCropDto | undefined {
+  if (!isValidCrop(crop)) return undefined;
+
+  const x = Math.min(floorCropValue(crop.x), 1);
+  const y = Math.min(floorCropValue(crop.y), 1);
+
+  return {
+    x,
+    y,
+    w: Math.max(Math.min(floorCropValue(crop.w), floorCropValue(1 - x)), 1 / CROP_DECIMAL_SCALE),
+    h: Math.max(Math.min(floorCropValue(crop.h), floorCropValue(1 - y)), 1 / CROP_DECIMAL_SCALE),
   };
 }
 
@@ -179,10 +203,15 @@ export function buildUpdateArtworkRequest({
   previous,
 }: ExhibitionArtworkRequestInput): UpdateExhibitionArtworkRequestDto {
   const point = previous?.point?.trim();
+  const types = toArtworkTypes(values.fieldLabels, previous ? readArtworkTypes(previous) : []);
+  const artworkCrop = toArtworkCropRequest(images.artworkCrop);
 
   return {
     ...toArtworkInfoRequest(values, images, previous),
+    type: types[0],
+    types,
     ...(point && { point }),
+    ...(artworkCrop && { artworkCrop }),
     artistName: author.name.trim(),
     ...(typeof author.userId === 'number' && { artistUserId: author.userId }),
     coAuthors: toCoAuthorsRequest(coAuthors),
@@ -209,8 +238,18 @@ export function buildPersonalArtworkRequest(
   previous?: PreviousArtworkInfo & { point?: string | null },
 ): PersonalArtworkRequestDto {
   const point = previous?.point?.trim();
+  const types = toArtworkTypes(
+    values.fieldLabels,
+    previous ? readArtworkTypes(previous) : [],
+    'personal',
+  );
 
-  return { ...toArtworkInfoRequest(values, images, previous), ...(point && { point }) };
+  return {
+    ...toArtworkInfoRequest(values, images, previous),
+    type: types[0],
+    types,
+    ...(point && { point }),
+  };
 }
 
 type ArtworkInfoSource = Pick<

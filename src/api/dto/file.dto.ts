@@ -7,6 +7,7 @@ export type PresignedContentTypeDto =
   | 'image/png'
   | 'image/webp'
   | 'image/gif'
+  | 'image/heic'
   | 'video/mp4'
   | 'video/quicktime'
   | 'video/webm';

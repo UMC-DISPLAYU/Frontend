@@ -14,7 +14,16 @@ export const ARTWORK_FIELD_MAP: Record<string, string> = {
   기타: 'ETC',
 };
 
-/* ARTWORK_FIELD_MAP의 역방향(영문 enum → 한글 라벨) 조회용입니다. */
-export const ARTWORK_TYPE_LABEL_MAP: Record<string, string> = Object.fromEntries(
-  Object.entries(ARTWORK_FIELD_MAP).map(([label, value]) => [value, label]),
-);
+/* ARTWORK_FIELD_MAP의 역방향(영문 enum → 한글 라벨)에 전시 작품의 신규 분야 값을 더한 조회용입니다. */
+export const ARTWORK_TYPE_LABEL_MAP: Record<string, string> = {
+  ...Object.fromEntries(Object.entries(ARTWORK_FIELD_MAP).map(([label, value]) => [value, label])),
+  GRAPHIC: '그래픽',
+  BRANDING: '브랜딩',
+  PRODUCT: '제품',
+  VIDEO: '영상',
+  SPACE: '공간',
+  UX_UI: 'UXUI',
+  UXUI: 'UXUI',
+  CRAFTS: '공예',
+  OTHERS: '기타',
+};

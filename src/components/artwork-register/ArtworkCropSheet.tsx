@@ -141,7 +141,8 @@ export function ArtworkCropSheet({
 
   const handleDone = () => {
     if (!crop) return;
-    onDone(isSameCrop(crop, defaultCrop) ? null : crop);
+    // 저장된 영역이 있던 사진은 가운데로 되돌려도 영역을 보내야 서버의 기존 영역이 바뀐다
+    onDone(isSameCrop(crop, defaultCrop) && !isValidCrop(initialCrop) ? null : crop);
   };
 
   const dims = crop && [

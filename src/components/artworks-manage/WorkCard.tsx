@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import type { Work } from '@/types/artworkManage';
+import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 
 /*
  * 프로토타입 works.html `.wc`: 3:4 사진(모서리 없음) · 사진 아래 8 제목 14 SemiBold · 작가 12 Medium.
@@ -22,11 +23,12 @@ export function WorkCard({
         <OptimizedImage
           src={work.thumbnail}
           alt={work.title}
-          displayWidth={260}
+          displayWidth={croppedDisplayWidth(260, work.thumbnailCrop)}
           skeleton
           draggable={false}
           frameClassName="h-full w-full"
           className="object-cover select-none"
+          style={savedCropImageStyle(work.thumbnailCrop)}
         />
         {isMine && (
           <span className="absolute bottom-2 left-2 inline-flex h-6 items-center rounded-circle bg-[rgba(0,0,0,.5)] px-2.5 text-[12px] font-semibold text-[#fff] backdrop-blur-[6px]">

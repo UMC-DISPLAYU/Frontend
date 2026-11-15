@@ -93,6 +93,7 @@ export function ArtworkRegisterForm({
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
   const artworkImages = useArtworkImageUploads({
     initialUrls: initialImages.artworkUrls,
+    initialCrop: initialImages.artworkCrop,
     maxImages: MAX_ARTWORK_IMAGES,
   });
   const processImages = useArtworkImageUploads({
@@ -189,6 +190,7 @@ export function ArtworkRegisterForm({
     onSubmit(data, {
       artworkUrls: artworkImages.uploadedUrls,
       processUrls: processImages.uploadedUrls,
+      artworkCrop: artworkImages.items[0]?.crop ?? null,
     });
   });
 

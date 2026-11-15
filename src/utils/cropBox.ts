@@ -105,3 +105,13 @@ export function cropImageStyle(crop: CropRect): CSSProperties {
     top: `${(-crop.y / crop.h) * 100}%`,
   };
 }
+
+/** 칸을 채우는 카드 이미지에 서버가 준 영역을 적용한다. 영역이 없거나 올바르지 않으면 사진 가운데(object-cover)를 그대로 쓴다 */
+export function savedCropImageStyle(crop: CropRect | null | undefined): CSSProperties | undefined {
+  return isValidCrop(crop) ? cropImageStyle(crop) : undefined;
+}
+
+/** 영역만큼 확대해 보이므로 요청할 이미지 폭도 그만큼 늘린다 */
+export function croppedDisplayWidth(displayWidth: number, crop: CropRect | null | undefined) {
+  return isValidCrop(crop) ? Math.round(displayWidth / crop.w) : displayWidth;
+}

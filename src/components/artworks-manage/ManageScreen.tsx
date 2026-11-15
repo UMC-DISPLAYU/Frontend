@@ -25,11 +25,16 @@ interface ManageScreenProps {
   onAdd: () => void;
 }
 
+// 대표 작가 계정이 없으면 계정이 있는 공동 작가 한 명을 대표 자리에 둔다(작품을 만든 사람인지만 보면 된다)
 function getArtworkPolicyResource(work: Work): ArtworkPolicyResource | undefined {
-  if (work.artistUserId === undefined) return undefined;
+  const artistUserIds = work.artistUserIds ?? [];
+  const artistUserId = work.artistUserId ?? artistUserIds[0];
+  if (artistUserId === undefined) return undefined;
   return {
-    artistUserId: work.artistUserId,
-    coAuthors: work.coAuthorUserIds?.map((userId) => ({ userId, name: '' })),
+    artistUserId,
+    coAuthors: artistUserIds
+      .filter((userId) => userId !== artistUserId)
+      .map((userId) => ({ userId, name: '' })),
   };
 }
 
@@ -48,7 +53,7 @@ function WorkRow({
   const canDelete = hasPermission(policy, 'delete');
   const isMine =
     userId !== undefined &&
-    (work.artistUserId === userId || Boolean(work.coAuthorUserIds?.includes(userId)));
+    (work.artistUserId === userId || Boolean(work.artistUserIds?.includes(userId)));
 
   return (
     <div className="relative transition-transform duration-base ease-[cubic-bezier(.16,1,.3,1)] hover:-translate-y-0.5">

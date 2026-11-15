@@ -89,7 +89,7 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
     content: detail.content,
     type: detail.type,
     productionYear: detail.productionYear,
-    materialMedia: detail.materialMedia,
+    materialMedia: detail.materialMedia ?? '',
     size: detail.size,
     point: detail.point,
     images: detail.images,
