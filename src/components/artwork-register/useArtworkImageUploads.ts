@@ -6,9 +6,11 @@ import { useUploadImage } from '@/hooks/queries/useFile';
 import { type CropRect, isValidCrop } from '@/utils/cropBox';
 
 import { ARTWORK_IMAGE_ACCEPT_TYPES, MAX_ARTWORK_IMAGE_MB } from './artworkRegister.constants';
+import { convertHeicToJpeg, isHeicFile } from './heicImage';
 
 export type ArtworkImageItem = {
   id: string;
+  /** HEIC 는 JPG 로 바꾸기 전까지 빈 값이다 */
   previewUrl: string;
   uploadedUrl?: string;
   /** 카드에 보이는 부분. 없으면 사진 가운데 */
@@ -25,15 +27,15 @@ export type AddArtworkImagesResult = {
 const createImageId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const isLocalPreview = (url: string) => url.startsWith('blob:');
 
-export const isAcceptableArtworkImage = (file: Pick<File, 'type' | 'size'>) =>
-  (ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) &&
+export const isAcceptableArtworkImage = (file: Pick<File, 'type' | 'size' | 'name'>) =>
+  ((ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) || isHeicFile(file)) &&
   file.size <= MAX_ARTWORK_IMAGE_MB * 1024 * 1024;
 
 /**
  * 프로토타입처럼 고른 순서대로 한 장씩 본다. 올릴 수 없는 파일은 건너뛰어 장수에 세지 않고,
  * 칸이 다 찬 뒤에 남은 파일이 있으면 overLimit 이다.
  */
-export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size'>>(
+export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'name'>>(
   files: readonly TFile[],
   currentCount: number,
   maxImages: number,
@@ -96,30 +98,53 @@ export function useArtworkImageUploads({
       itemsRef.current.forEach((item) => {
         if (isLocalPreview(item.previewUrl)) URL.revokeObjectURL(item.previewUrl);
       });
+      // 화면을 떠난 뒤 끝난 HEIC 변환이 미리보기를 만들지 않게 비운다
+      itemsRef.current = [];
     };
   }, []);
 
+  /** 바꾼 JPG 로 미리보기를 채운다. 그사이 지운 사진이면 false */
+  const replacePreview = useCallback((id: string, previewUrl: string) => {
+    if (!itemsRef.current.some((item) => item.id === id)) {
+      URL.revokeObjectURL(previewUrl);
+      return false;
+    }
+
+    const update = (prev: ArtworkImageItem[]) =>
+      prev.map((item) => (item.id === id ? { ...item, previewUrl } : item));
+    itemsRef.current = update(itemsRef.current);
+    setItems(update);
+    return true;
+  }, []);
+
   const startUpload = useCallback(
-    (item: ArtworkImageItem, file: File) => {
-      uploadImage({ file, domain: 'artwork' })
-        .then((uploadedUrl) => {
-          setItems((prev) =>
-            prev.map((image) => (image.id === item.id ? { ...image, uploadedUrl } : image)),
-          );
-        })
-        .catch(() => {
-          const wasRemoved = !itemsRef.current.some((image) => image.id === item.id);
+    async (item: ArtworkImageItem, file: File) => {
+      try {
+        let uploadFile = file;
+        if (isHeicFile(file)) {
+          uploadFile = await convertHeicToJpeg(file);
+          if (!replacePreview(item.id, URL.createObjectURL(uploadFile))) return;
+        }
 
-          URL.revokeObjectURL(item.previewUrl);
-          setItems((prev) => prev.filter((image) => image.id !== item.id));
-          if (wasRemoved) return;
+        const uploadedUrl = await uploadImage({ file: uploadFile, domain: 'artwork' });
+        setItems((prev) =>
+          prev.map((image) => (image.id === item.id ? { ...image, uploadedUrl } : image)),
+        );
+      } catch {
+        const current = itemsRef.current.find((image) => image.id === item.id);
 
-          const reportError = onUploadErrorRef.current;
-          if (reportError) reportError();
-          else setFailedFiles((prev) => [...prev, file]);
-        });
+        if (current && isLocalPreview(current.previewUrl)) {
+          URL.revokeObjectURL(current.previewUrl);
+        }
+        setItems((prev) => prev.filter((image) => image.id !== item.id));
+        if (!current) return;
+
+        const reportError = onUploadErrorRef.current;
+        if (reportError) reportError();
+        else setFailedFiles((prev) => [...prev, file]);
+      }
     },
-    [uploadImage],
+    [replacePreview, uploadImage],
   );
 
   const addFiles = useCallback(
@@ -133,13 +158,16 @@ export function useArtworkImageUploads({
       );
       const added = accepted.map((file) => ({
         file,
-        item: { id: createImageId(), previewUrl: URL.createObjectURL(file) },
+        item: {
+          id: createImageId(),
+          previewUrl: isHeicFile(file) ? '' : URL.createObjectURL(file),
+        },
       }));
 
       // 업로드 실패 콜백이 목록을 찾을 수 있도록 다음 렌더 전에 ref 에도 넣어 둔다
       itemsRef.current = [...itemsRef.current, ...added.map(({ item }) => item)];
       setItems((prev) => [...prev, ...added.map(({ item }) => item)]);
-      added.forEach(({ item, file }) => startUpload(item, file));
+      added.forEach(({ item, file }) => void startUpload(item, file));
 
       return { overLimit, rejectedCount };
     },

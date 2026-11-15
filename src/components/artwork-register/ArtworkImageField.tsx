@@ -14,7 +14,7 @@ import { cn } from '@/utils/cn';
 import { cropImageStyle } from '@/utils/cropBox';
 
 import { ArtworkCropSheet } from './ArtworkCropSheet';
-import { ARTWORK_IMAGE_ACCEPT_TYPES } from './artworkRegister.constants';
+import { ARTWORK_IMAGE_ACCEPT } from './artworkRegister.constants';
 import { FOCUS_CLASS, HELP_CLASS, OPTIONAL_CLASS, REQUIRED_CLASS } from './artworkRegister.styles';
 import { CloseIcon, PlusIcon } from './ArtworkRegisterIcons';
 import type { ArtworkImageItem, ArtworkImageUploads } from './useArtworkImageUploads';
@@ -99,12 +99,14 @@ function ImageTile({
         FOCUS_CLASS,
       )}
     >
-      <img
-        src={item.previewUrl}
-        alt=""
-        draggable={false}
-        className={cn('size-full object-contain', isUploading && 'opacity-50')}
-      />
+      {item.previewUrl && (
+        <img
+          src={item.previewUrl}
+          alt=""
+          draggable={false}
+          className={cn('size-full object-contain', isUploading && 'opacity-50')}
+        />
+      )}
       {isRepresentative && !isUploading && (
         <button
           type="button"
@@ -252,7 +254,7 @@ export function ArtworkImageField({
         type="file"
         hidden
         multiple
-        accept={ARTWORK_IMAGE_ACCEPT_TYPES.join(',')}
+        accept={ARTWORK_IMAGE_ACCEPT}
         onChange={handleFiles}
       />
       <div className="typography-body-lg-semibold flex items-center gap-1 text-primary">
@@ -319,7 +321,7 @@ export function ArtworkImageField({
           </div>
         </SortableContext>
       </DndContext>
-      {representativeImage && (
+      {representativeImage?.previewUrl && (
         <ThumbnailPreview
           item={representativeImage}
           onAdjust={() => openCrop(representativeImage)}

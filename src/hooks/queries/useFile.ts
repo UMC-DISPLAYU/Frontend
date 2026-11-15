@@ -14,7 +14,6 @@ const ALLOWED_IMAGE_CONTENT_TYPES: readonly PresignedContentTypeDto[] = [
   'image/png',
   'image/webp',
   'image/gif',
-  'image/heic',
 ];
 
 const isAllowedImageContentType = (type: string): type is PresignedContentTypeDto =>
