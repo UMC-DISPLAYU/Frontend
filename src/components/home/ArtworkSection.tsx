@@ -1,5 +1,3 @@
-import { useRef } from 'react';
-
 import { Link } from 'react-router-dom';
 
 import type { ArtworkPreviewItemDto } from '@/api/dto';
@@ -12,7 +10,6 @@ import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 
 import { ArtistByline } from './ArtistByline';
 import { HOME_INNER } from './homeLayout';
-import { useTapWhileScrolling } from './useTapWhileScrolling';
 
 // 폰에서는 2장 + 3번째가 조금 보이게(프로토타입 11-08): 폭 = (화면 폭 − 76px) / 2, 최대 175px
 const CARD_CLASS =
@@ -27,12 +24,9 @@ interface ArtworkSectionProps {
 
 export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
-  const listRef = useRef<HTMLUListElement>(null);
-  const isHidden = !showSkeleton && !artworks?.length;
-  useTapWhileScrolling(listRef, !isHidden);
 
   // 불러오지 못했거나 작품이 없으면 섹션째 숨긴다(홈의 보조 영역이라 빈 안내를 두지 않는다)
-  if (isHidden) return null;
+  if (!showSkeleton && !artworks?.length) return null;
 
   return (
     <section aria-labelledby="home-artworks-title" className={cn(HOME_INNER, 'py-5')}>
@@ -52,32 +46,36 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
       </div>
       <p className="typography-body-md-medium mt-0.5 text-tertiary">전시 속 작품을 만나보세요</p>
 
-      <ul
-        ref={listRef}
+      {/* 프로토타입 .art-row > a.art 와 같은 구조: 링크가 바로 슬라이드 칸이다 */}
+      <div
         {...skeletonProps}
         className="-mr-(--home-pad) mt-4 flex snap-x snap-proximity gap-3 overflow-x-auto pr-(--home-pad) [scrollbar-width:none] tablet:mr-0 tablet:gap-4 tablet:pr-0 min-[68.75rem]:gap-6 [&::-webkit-scrollbar]:hidden"
       >
         {showSkeleton ? (
           <SkeletonList count={4}>
             {() => (
-              <li aria-hidden="true" className={CARD_CLASS}>
+              <div aria-hidden="true" className={CARD_CLASS}>
                 <Skeleton className={IMAGE_FRAME_CLASS} />
                 <div className="pt-2">
                   <SkeletonText className="typography-body-lg-semibold w-2/3" />
                   <SkeletonText className="typography-body-md-medium w-1/2" />
                 </div>
-              </li>
+              </div>
             )}
           </SkeletonList>
         ) : (
           // 프로토타입처럼 카드는 등장 애니메이션 없이 바로 그린다(한 장씩 올라오면 옆으로 넘길 때 뒤 카드가 비어 보인다)
           artworks?.map((artwork) => (
-            <li key={artwork.artworkId} className={CARD_CLASS}>
-              <Link
-                to={`/artwork/${artwork.artworkId}`}
-                className="group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
-              >
-                <span className={cn('relative block overflow-hidden', IMAGE_FRAME_CLASS)}>
+            <Link
+              key={artwork.artworkId}
+              to={`/artwork/${artwork.artworkId}`}
+              className={cn(
+                CARD_CLASS,
+                'group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98',
+              )}
+            >
+              <div>
+                <div className={cn('relative overflow-hidden', IMAGE_FRAME_CLASS)}>
                   <OptimizedImage
                     src={artwork.artworkImageUrl}
                     alt={`${artwork.artworkName} 작품`}
@@ -85,25 +83,23 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
                     className="size-full object-cover transition-transform duration-[700ms] ease-standard group-hover:scale-103"
                     style={savedCropImageStyle(artwork.artworkCrop)}
                   />
-                </span>
-                <span className="block pt-2">
-                  <span className="typography-body-lg-semibold block truncate">
-                    {artwork.artworkName}
-                  </span>
-                  <ArtistByline
-                    names={
-                      artwork.artists?.length
-                        ? artwork.artists.map(({ name }) => name)
-                        : [artwork.artistName]
-                    }
-                    className="typography-body-md-medium text-secondary"
-                  />
-                </span>
-              </Link>
-            </li>
+                </div>
+              </div>
+              <div className="pt-2">
+                <b className="typography-body-lg-semibold block">{artwork.artworkName}</b>
+                <ArtistByline
+                  names={
+                    artwork.artists?.length
+                      ? artwork.artists.map(({ name }) => name)
+                      : [artwork.artistName]
+                  }
+                  className="typography-body-md-medium text-secondary"
+                />
+              </div>
+            </Link>
           ))
         )}
-      </ul>
+      </div>
     </section>
   );
 }
