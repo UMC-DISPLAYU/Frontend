@@ -116,6 +116,7 @@ const MOCK_TEAM_MEMBERS: Record<number, unknown[]> = {
       displayNickname: '한도윤',
       role: 'TEAM_MEM',
       accepted: false,
+      invitationId: 1015,
     },
   ].map((member) => ({ accepted: true, loggedIn: true, artistVerified: true, ...member })),
 };

@@ -3,7 +3,7 @@ import { http } from 'msw';
 
 import { listResponse, mockDb, okStatus } from '@/mocks/data/repository';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
-import { compareBySort, matchesSearchWord } from '@/mocks/searchText';
+import { matchesSearchWord } from '@/mocks/searchText';
 
 const now = () => new Date().toISOString();
 
@@ -37,16 +37,6 @@ const toCoAuthorList = (
     })),
     ...(coAuthors?.rawNames ?? []).map((name) => ({ userId: null, name })),
   ];
-};
-
-// 목 작품 데이터는 예전 분야 값(CRAFT · DESIGN · FASHION)을 써서 탐색 분야 값과 맞춰 본다
-const MOCK_ARTWORK_FIELD_ALIASES: Record<string, string> = {
-  CRAFTS: 'CRAFT',
-  GRAPHIC: 'DESIGN',
-  BRANDING: 'DESIGN',
-  PRODUCT: 'DESIGN',
-  UXUI: 'DESIGN',
-  OTHERS: 'FASHION',
 };
 
 export const artworkHandlers = [
@@ -138,50 +128,45 @@ export const artworkHandlers = [
     http.get(path, ({ request }) => {
       const url = new URL(request.url);
       const searchWord = url.searchParams.get('searchWord');
-      const field = url.searchParams.get('field');
       const type = url.searchParams.get('type');
       const status = url.searchParams.get('status');
-      const sort = url.searchParams.get('sort');
-      const cursor = Number(url.searchParams.get('cursor') ?? 0) || 0;
+      const page = Number(url.searchParams.get('page') ?? 0) || 0;
       const size = Number(url.searchParams.get('size') ?? 20);
 
       const matched = mockDb.artworks
-        .map((artwork: any) => ({
-          artwork,
-          display: mockDb.displays.find((display: any) => display.displayId === artwork.displayId),
-        }))
-        .filter(({ artwork, display }: any) => {
+        .filter((artwork: any) => {
+          const display = mockDb.displays.find((item: any) => item.displayId === artwork.displayId);
           if (!display) return false;
-          // 작품 탭의 전시 유형 · 상태 필터는 작품이 속한 전시 기준이다
+          // 전시 유형 · 상태 필터는 작품이 속한 전시 기준이다
           if (type && display.displayType !== type) return false;
           if (status && display.status !== status) return false;
-          if (field && artwork.type !== (MOCK_ARTWORK_FIELD_ALIASES[field] ?? field)) return false;
-          // 작품명 · 전시 작가명(공동 작가 포함)으로 찾는다
+          // 작품명 · 대표 · 공동 작가명으로 찾는다
           return matchesSearchWord(searchWord, [
             artwork.artworkName,
             ...(artwork.artists ?? []).map((artist: any) => artist.name),
           ]);
         })
-        .sort(
-          compareBySort(
-            sort,
-            ({ artwork }: any) => artwork.likeCount ?? 0,
-            ({ artwork }: any) => [artwork.displayId, artwork.artworkId],
-          ),
-        );
+        .sort((a: any, b: any) => b.artworkId - a.artworkId);
 
-      const artworks = matched.slice(cursor, cursor + size).map(({ artwork }: any) => ({
+      const start = page * size;
+      const artworks = matched.slice(start, start + size).map((artwork: any) => ({
         artworkId: artwork.artworkId,
         artworkName: artwork.artworkName,
+        artistName: artwork.artistName,
+        artistUserId: artwork.artistUserId,
         artworkImageUrl: artwork.artworkImageUrl,
+        imageWidth: artwork.imageWidth,
+        imageHeight: artwork.imageHeight,
+        exhibitionInfo: artwork.exhibitionInfo,
         artists: artwork.artists ?? [{ userId: null, name: artwork.artistName ?? '' }],
-        displayId: artwork.displayId,
+        artworkCrop: artwork.artworkCrop ?? null,
       }));
-      const nextCursor = cursor + size < matched.length ? String(cursor + size) : null;
 
       return success('/api/v1/artworks/search', {
         artworks,
-        pagination: { nextCursor, size: artworks.length, hasNext: nextCursor !== null },
+        page,
+        size,
+        isLast: start + size >= matched.length,
       });
     }),
   ),

@@ -238,18 +238,11 @@ export const inviteDisplayMember = async (
 ): Promise<DisplayMemberInvitationResponseDataDto> =>
   apiRequest(`/v1/display-invitations/displays/${displayId}`, { method: 'POST', body });
 
-/*
- * 초대 취소. 아직 스웨거에 없는 API라 기존 초대 API(POST /display-invitations/displays/:displayId)와
- * 짝이 맞는 경로로 정해 두었다. 서버에 생기면 경로를 맞춘다.
- */
-// DELETE /v1/display-invitations/displays/:displayId/users/:inviteeUserId
+// DELETE /v1/display-invitations/:invitationId
 export const cancelDisplayInvitation = async (
-  displayId: number,
-  inviteeUserId: number,
-): Promise<void> =>
-  apiRequest(`/v1/display-invitations/displays/${displayId}/users/${inviteeUserId}`, {
-    method: 'DELETE',
-  });
+  invitationId: number,
+): Promise<DisplayMemberInvitationResponseDataDto> =>
+  apiRequest(`/v1/display-invitations/${invitationId}`, { method: 'DELETE' });
 
 // GET /v1/display-invitations/me
 export const getMyDisplayInvitations = async (): Promise<MyDisplayInvitationListResponseDataDto> =>

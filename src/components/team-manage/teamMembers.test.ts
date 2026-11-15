@@ -19,6 +19,7 @@ const entry = (
   teamMemberId,
   userId,
   displayNickname: `user-${userId}`,
+  nickname: `nick-${userId}`,
   role,
   accepted,
   loggedIn: true,

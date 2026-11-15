@@ -1,8 +1,8 @@
 import type { DisplayDetailDto, UpdateDisplayRequestDto } from '@/api/dto';
 import {
-  DISPLAY_FIELD_REVERSE_MAP,
   DISPLAY_TYPE_MAP,
   DISPLAY_TYPE_REVERSE_MAP,
+  toDisplayFieldValue,
 } from '@/constants/exhibition';
 import {
   type ExhibitionRegisterDraft,
@@ -25,11 +25,11 @@ const toTime = (time: string | null | undefined) => (time ?? '').slice(0, 5);
 
 /**
  * 서버 분야 값을 화면 분야 이름으로 바꾼다.
- * DESIGN 처럼 여러 이름이 같은 값을 쓰면 첫 이름(그래픽)으로, 화면에 없는 값(패션 등)은 뺀다
+ * 예전 표기(CRAFT 등)는 같은 분야로 보고, 새 목록에서 빠진 예전 분야(DESIGN · FASHION 등)는 뺀다
  */
 export function toFieldLabels(serverFields: string[]) {
   const labels = serverFields.flatMap((serverField) => {
-    const field = DISPLAY_FIELD_REVERSE_MAP[serverField];
+    const field = toDisplayFieldValue(serverField);
     const option = DISPLAY_FIELD_OPTIONS.find(({ value }) => value === field);
     return option ? [option.label] : [];
   });

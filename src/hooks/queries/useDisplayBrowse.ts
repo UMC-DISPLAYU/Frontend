@@ -29,25 +29,30 @@ export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
     queryFn: () => searchDisplays(params),
   });
 
+type SearchDisplaysPageParam = Pick<SearchDisplaysRequestDto, 'cursor' | 'cursorLikeCount'>;
+
 export const useInfiniteSearchDisplays = ({
   enabled = true,
   ...params
-}: Omit<SearchDisplaysRequestDto, 'cursor'> & { enabled?: boolean }) =>
+}: Omit<SearchDisplaysRequestDto, 'cursor' | 'cursorLikeCount'> & { enabled?: boolean }) =>
   useInfiniteQuery({
     queryKey: queryKeys.displays.search(params as SearchDisplaysRequestDto),
     // 검색어 · 필터를 바꾸는 동안 이전 결과를 두어 목록이 스켈레톤으로 깜빡이지 않게 한다
     placeholderData: keepPreviousData,
-    queryFn: ({ pageParam = 0 }) =>
+    queryFn: ({ pageParam }) =>
       searchDisplays({
         ...params,
-        cursor: pageParam,
+        ...pageParam,
         size: params.size ?? 20,
       }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) =>
-      lastPage.pagination?.hasNext && lastPage.pagination?.nextCursor !== null
-        ? lastPage.pagination.nextCursor
-        : undefined,
+    initialPageParam: { cursor: 0 } as SearchDisplaysPageParam,
+    getNextPageParam: ({ pagination }): SearchDisplaysPageParam | undefined => {
+      if (!pagination?.hasNext || pagination.nextCursor == null) return undefined;
+      if (params.sort !== 'LIKES') return { cursor: pagination.nextCursor };
+      // 좋아요순은 같은 좋아요 수 안에서 ID 로 이어 받으므로 마지막 좋아요 수가 없으면 이어 받지 않는다
+      if (pagination.nextCursorLikeCount == null) return undefined;
+      return { cursor: pagination.nextCursor, cursorLikeCount: pagination.nextCursorLikeCount };
+    },
     enabled,
   });
 
