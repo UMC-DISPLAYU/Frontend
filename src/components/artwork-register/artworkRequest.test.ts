@@ -196,6 +196,8 @@ describe('artworkCrop', () => {
     expect(toArtworkCropRequest(null)).toBeUndefined();
     expect(toArtworkCropRequest({ x: 0, y: 0, w: 0, h: 1 })).toBeUndefined();
     expect(toArtworkCropRequest({ x: 0.5, y: 0, w: 0.6, h: 1 })).toBeUndefined();
+    // 허용 오차로 통과해도 내림한 뒤 너비가 0 이면 보내지 않는다
+    expect(toArtworkCropRequest({ x: 0.99999999999, y: 0, w: 1e-12, h: 1 })).toBeUndefined();
   });
 });
 

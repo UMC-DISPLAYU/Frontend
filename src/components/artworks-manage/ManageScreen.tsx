@@ -25,15 +25,13 @@ interface ManageScreenProps {
   onAdd: () => void;
 }
 
-// 대표 작가 계정이 없으면 계정이 있는 공동 작가 한 명을 대표 자리에 둔다(작품을 만든 사람인지만 보면 된다)
+// 작품 목록은 대표 · 공동 작가 계정 id 를 artistUserIds 하나로 준다. 작품을 만든 사람인지만 보면 되므로 대표 외는 공동 작가로 둔다
 function getArtworkPolicyResource(work: Work): ArtworkPolicyResource | undefined {
-  const artistUserIds = work.artistUserIds ?? [];
-  const artistUserId = work.artistUserId ?? artistUserIds[0];
-  if (artistUserId === undefined) return undefined;
+  if (work.artistUserId === undefined) return undefined;
   return {
-    artistUserId,
-    coAuthors: artistUserIds
-      .filter((userId) => userId !== artistUserId)
+    artistUserId: work.artistUserId,
+    coAuthors: (work.artistUserIds ?? [])
+      .filter((userId) => userId !== work.artistUserId)
       .map((userId) => ({ userId, name: '' })),
   };
 }

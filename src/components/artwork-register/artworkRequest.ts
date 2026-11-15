@@ -134,15 +134,12 @@ export function toArtworkCropRequest(
 ): ArtworkCropDto | undefined {
   if (!isValidCrop(crop)) return undefined;
 
-  const x = Math.min(floorCropValue(crop.x), 1);
-  const y = Math.min(floorCropValue(crop.y), 1);
+  const x = floorCropValue(crop.x);
+  const y = floorCropValue(crop.y);
+  const w = Math.min(floorCropValue(crop.w), floorCropValue(1 - x));
+  const h = Math.min(floorCropValue(crop.h), floorCropValue(1 - y));
 
-  return {
-    x,
-    y,
-    w: Math.max(Math.min(floorCropValue(crop.w), floorCropValue(1 - x)), 1 / CROP_DECIMAL_SCALE),
-    h: Math.max(Math.min(floorCropValue(crop.h), floorCropValue(1 - y)), 1 / CROP_DECIMAL_SCALE),
-  };
+  return w > 0 && h > 0 ? { x, y, w, h } : undefined;
 }
 
 /**

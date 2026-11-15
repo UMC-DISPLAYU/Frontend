@@ -136,3 +136,19 @@ it('대표 작가 계정이 없어도 계정이 있는 공동 작가는 자기 �
   );
   expect(html.includes('대표 작품 작품 관리')).toBe(true);
 });
+
+it('작가 계정이 하나도 없는 작품도 전시 대표자는 관리할 수 있다', () => {
+  h.user = { id: 1, isVerified: true };
+  const html = renderToStaticMarkup(
+    <ManageScreen
+      works={[{ ...works[0], artistUserId: null, artistUserIds: [] }]}
+      display={display}
+      userId={1}
+      onEdit={vi.fn()}
+      onDelete={vi.fn()}
+      onEditOrder={vi.fn()}
+      onAdd={vi.fn()}
+    />,
+  );
+  expect(html.includes('대표 작품 작품 관리')).toBe(true);
+});
