@@ -6,7 +6,7 @@ import type { DisplayDetailDto } from '@/api/dto';
 import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
-import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
+import { toDisplayImageCardUrl } from '@/utils/displayMedia';
 
 import { DisplayHubIcon } from './DisplayHubIcon';
 import {
@@ -34,7 +34,7 @@ export function DisplayHubSummary({ display, status, className }: DisplayHubSumm
           RISE_CLASS,
         )}
       >
-        <div className="relative aspect-402/568 w-[82px] overflow-hidden bg-[#000]">
+        <div className="aspect-402/568 w-[82px] overflow-hidden bg-[#000]">
           <OptimizedImage
             src={poster ? toDisplayImageCardUrl(poster) : undefined}
             alt={`${display.title} 포스터`}
@@ -44,17 +44,6 @@ export function DisplayHubSummary({ display, status, className }: DisplayHubSumm
             frameClassName="h-full w-full"
             className="object-cover"
           />
-          {poster && isVideoMedia(poster) && (
-            <span
-              role="img"
-              aria-label="영상 포스터"
-              className="absolute top-1.5 left-1.5 inline-flex h-5 items-center rounded-4 bg-[rgba(0,0,0,0.72)] px-1 text-base-white"
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="size-2.5">
-                <path d="M7 4.8v14.4L19 12z" fill="currentColor" />
-              </svg>
-            </span>
-          )}
         </div>
         <div className="grid min-w-0 content-start gap-0.5">
           <div className="flex items-center justify-between gap-2 text-primary">
