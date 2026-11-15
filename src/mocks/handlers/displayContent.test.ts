@@ -1,5 +1,5 @@
 import { setupServer } from 'msw/node';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, expect, it } from 'vitest';
 
 import { mockDb } from '@/mocks/data/repository';
 
@@ -11,6 +11,15 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
 
 const display = mockDb.displays[0];
+
+// 목 데이터는 모듈 상태라 테스트마다 섹션 목록을 되돌린다
+let savedCategories: unknown[] = [];
+beforeEach(() => {
+  savedCategories = [...display.contentCategories];
+});
+afterEach(() => {
+  display.contentCategories = savedCategories;
+});
 const BASE = `http://localhost/api/v1/display/${display.displayId}/content-categories`;
 
 const send = async (method: string, path: string, body: unknown) => {

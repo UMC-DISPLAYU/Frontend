@@ -7,6 +7,10 @@ import { created, fail, noContent, paths, readJson, success, toNumber } from '@/
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
 
+// 섹션과 사진을 한 번에 만들 때 id 가 겹치지 않게 하나씩 올린다
+let nextMockId = Date.now();
+const mockId = () => (nextMockId += 1);
+
 const CATEGORIES_PATH = '/api/v1/display/{displayId}/content-categories';
 const REORDER_CATEGORIES_PATH = '/api/v1/display/{displayId}/content-categories/reorder';
 
@@ -19,24 +23,30 @@ export const displayContentHandlers = [
       if (body.imageUrls && (body.imageUrls.length === 0 || body.imageUrls.length > 20)) {
         return fail(CATEGORIES_PATH, 400, 'COMMON400', '입력값이 올바르지 않습니다.');
       }
-      const categoryId = Date.now();
+      const name = body.name ?? '새 콘텐츠';
       const category = {
-        categoryId,
-        name: body.name ?? '새 콘텐츠',
+        categoryId: mockId(),
+        displayId: display.displayId,
+        name,
+        title: name,
         description: null,
         sortOrder: display.contentCategories.length + 1,
-        contents: (body.imageUrls ?? []).map((imageUrl, index) => ({
-          contentId: categoryId + index + 1,
-          imageUrl,
-          width: 1600,
-          height: 1600,
-          sortOrder: index + 1,
-          userId: mockDb.me.userId,
-        })),
+        contents: (body.imageUrls ?? []).map((imageUrl, index) => {
+          const contentId = mockId();
+          return {
+            contentId,
+            imageId: contentId,
+            imageUrl,
+            width: 1600,
+            height: 1600,
+            sortOrder: index + 1,
+            userId: mockDb.me.userId,
+          };
+        }),
       };
       display.contentCategories.push(category);
 
-      return created(CATEGORIES_PATH, { displayId: display.displayId, ...category });
+      return created(CATEGORIES_PATH, category);
     }),
   ),
   // {categoryId} 핸들러보다 먼저 둬야 reorder 가 카테고리 id 로 잡히지 않는다

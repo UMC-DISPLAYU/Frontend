@@ -46,8 +46,14 @@ export type CreateContentImageResponseDto = {
   contentId: number;
 };
 
+/* 전시의 모든 섹션 id 를 중복 없이 보낸다. 누락 · 중복 · 다른 전시 id 는 400 */
 export type ReorderContentCategoriesRequestDto = {
   orderedCategoryIds: number[];
+};
+
+export type ReorderContentCategoriesResponseDataDto = {
+  displayId: number;
+  categories: ContentCategoryDto[];
 };
 
 export type ReorderContentImagesRequestDto = {

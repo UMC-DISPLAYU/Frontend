@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateContentCategoryRequestDto, UpdateContentCategoryRequestDto } from '@/api/dto';
+import type { UpdateContentCategoryRequestDto } from '@/api/dto';
 import {
   createContentCategory,
   deleteContentCategory,
@@ -16,16 +16,6 @@ const useInvalidateDisplayDetail = (displayId: number) => {
   return () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
   };
-};
-
-// POST /v1/display/{displayId}/content-categories
-export const useCreateContentCategory = (displayId: number) => {
-  const invalidate = useInvalidateDisplayDetail(displayId);
-
-  return useMutation({
-    mutationFn: (body: CreateContentCategoryRequestDto) => createContentCategory(displayId, body),
-    onSuccess: invalidate,
-  });
 };
 
 // PATCH /v1/display/{displayId}/content-categories/{categoryId}
@@ -46,13 +36,14 @@ export const useUpdateContentCategory = (displayId: number) => {
 
 // PATCH /v1/display/{displayId}/content-categories/reorder
 // 다시 불러오기까지 기다린 뒤 끝나게 한다. 그 사이 다음 순서 변경이 들어오면 앞선 결과가 덮어써 순서가 튄다
+// 실패해도 다시 불러온다. 다른 사람이 섹션을 추가 · 삭제해 id 목록이 달라지면 서버가 400 으로 거절하기 때문
 export const useReorderContentCategories = (displayId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (orderedCategoryIds: number[]) =>
       reorderContentCategories(displayId, { orderedCategoryIds }),
-    onSuccess: () =>
+    onSettled: () =>
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) }),
   });
 };
@@ -75,6 +66,7 @@ export const useCreateSectionWithPhotos = (displayId: number) => {
   return useMutation({
     mutationFn: ({ title, imageUrls }: { title: string; imageUrls: string[] }) =>
       createContentCategory(displayId, { name: title, imageUrls }),
-    onSuccess: invalidate,
+    // 응답을 못 받아도 서버엔 저장됐을 수 있어 실패해도 다시 불러온다
+    onSettled: invalidate,
   });
 };
