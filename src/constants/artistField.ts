@@ -45,17 +45,10 @@ const ARTIST_PROFILE_FIELD_ALIASES: Record<string, ArtistProfileField> = {
   ETC: 'OTHERS',
 };
 
-const LEGACY_ARTIST_PROFILE_FIELD_LABELS: Record<string, string> = {
-  DESIGN: '디자인',
-  FASHION: '패션',
-  ILLUSTRATION: '일러스트',
-};
-
 export const toArtistProfileField = (code: string) => ARTIST_PROFILE_FIELD_ALIASES[code] ?? code;
 
-export const getArtistProfileFieldLabel = (code: string) => {
-  const field = toArtistProfileField(code);
-  return isArtistProfileField(field)
-    ? ARTIST_PROFILE_FIELD_LABELS[field]
-    : (LEGACY_ARTIST_PROFILE_FIELD_LABELS[code] ?? code);
-};
+/* 12개 분야만 보여 준다. 새 목록에서 빠진 예전 분야(DESIGN · FASHION · ILLUSTRATION 등)는 무시한다 */
+export const toArtistProfileFieldLabels = (codes: readonly string[] | null | undefined) =>
+  [...new Set((codes ?? []).map(toArtistProfileField))]
+    .filter(isArtistProfileField)
+    .map((field) => ARTIST_PROFILE_FIELD_LABELS[field]);

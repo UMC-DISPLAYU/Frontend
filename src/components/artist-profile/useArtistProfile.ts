@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { getArtistProfileFieldLabel } from '@/constants/artistField';
+import { toArtistProfileFieldLabels } from '@/constants/artistField';
 import {
   useArchiveArtist,
   useArchivedArtists,
@@ -67,8 +67,7 @@ export function useArtistProfile(userId: number) {
   const profile = profileQuery.data;
   const header = useMemo(() => {
     if (!profile) return null;
-    // 예전에 저장한 디자인 · 패션 · 일러스트는 예전 이름으로 보여 준다
-    const fieldLabels = [...new Set((profile.fields ?? []).map(getArtistProfileFieldLabel))];
+    const fieldLabels = toArtistProfileFieldLabels(profile.fields);
     return {
       name: profile.artistName || '작가',
       subtitle: [profile.schoolName, ...fieldLabels].filter(Boolean).join(' · '),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getArtistProfileFieldLabel, toArtistProfileField } from './artistField';
+import { toArtistProfileField, toArtistProfileFieldLabels } from './artistField';
 
 describe('작가 프로필 분야', () => {
   it.each([
@@ -14,18 +14,23 @@ describe('작가 프로필 분야', () => {
     expect(toArtistProfileField(code)).toBe(expected);
   });
 
-  it.each([
-    ['CRAFTS', '공예'],
-    ['CRAFT', '공예'],
-    ['OTHERS', '기타'],
-    ['ETC', '기타'],
-    ['UX_UI', 'UXUI'],
-    ['MEDIA', '영상'],
-    ['DESIGN', '디자인'],
-    ['FASHION', '패션'],
-    ['ILLUSTRATION', '일러스트'],
-    ['UNKNOWN', 'UNKNOWN'],
-  ])('%s 는 %s 로 보여 준다', (code, label) => {
-    expect(getArtistProfileFieldLabel(code)).toBe(label);
+  it('예전 별칭은 같은 분야 이름으로 보여 준다', () => {
+    expect(toArtistProfileFieldLabels(['CRAFT', 'ETC', 'MEDIA', 'UXUI'])).toEqual([
+      '공예',
+      '기타',
+      '영상',
+      'UXUI',
+    ]);
+  });
+
+  it('새 목록에서 빠진 예전 분야와 모르는 값은 무시한다', () => {
+    expect(
+      toArtistProfileFieldLabels(['DESIGN', 'PHOTOGRAPHY', 'FASHION', 'ILLUSTRATION', 'X']),
+    ).toEqual(['사진']);
+  });
+
+  it('별칭과 표준 값이 겹치면 한 번만 보여 준다', () => {
+    expect(toArtistProfileFieldLabels(['CRAFT', 'CRAFTS'])).toEqual(['공예']);
+    expect(toArtistProfileFieldLabels(undefined)).toEqual([]);
   });
 });
