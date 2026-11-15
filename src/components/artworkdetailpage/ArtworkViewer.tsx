@@ -10,7 +10,7 @@ import {
 
 import { DetailBackButton } from '@/components/common/detail';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
-import { VideoPlayerOverlay } from '@/components/common/VideoPlayerOverlay';
+import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { formatVideoDuration, readVideoDuration } from '@/utils/videoFile';
 
@@ -71,7 +71,7 @@ function PlayMark({ className }: { className?: string }) {
 
 /**
  * 영상 칸 위 재생 버튼과 길이(전시 상세 영상 작품 카드와 같은 모양). 길이는 영상을 읽을 수 있을 때만 보인다.
- * 칸 위 버튼이라 사진을 눌러 크게 보기가 열리는 동작(handleStageClick)에서 빠진다
+ * 누르면 그 칸에서 바로 재생한다. 칸 위 버튼이라 사진을 눌러 크게 보기가 열리는 동작(handleStageClick)에서 빠진다
  */
 function VideoPlayButton({ src, onPlay }: { src: string; onPlay: () => void }) {
   const [duration, setDuration] = useState<number | null>(null);
@@ -91,7 +91,6 @@ function VideoPlayButton({ src, onPlay }: { src: string; onPlay: () => void }) {
       <button
         type="button"
         aria-label="영상 재생"
-        aria-haspopup="dialog"
         onClick={onPlay}
         className="absolute top-1/2 left-1/2 z-10 grid size-14 -translate-1/2 cursor-pointer place-items-center rounded-circle bg-[rgba(0,0,0,0.55)] text-base-white backdrop-blur-[10px] transition-[scale,background-color] duration-base ease-standard hover:scale-108 hover:bg-[rgba(0,0,0,0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
@@ -103,6 +102,60 @@ function VideoPlayButton({ src, onPlay }: { src: string; onPlay: () => void }) {
         </span>
       )}
     </>
+  );
+}
+
+/** 칸 안에서 재생하는 영상. 넘기거나 스크롤해서 칸이 거의 안 보이면 멈춘다 */
+function InlineVideo({
+  src,
+  poster,
+  label,
+  className,
+  onError,
+}: {
+  src: string;
+  poster: string;
+  label: string;
+  className?: string;
+  onError: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting || entry.intersectionRatio < 0.3) video.pause();
+      },
+      { threshold: [0, 0.3] },
+    );
+    const pauseWhenHidden = () => {
+      if (document.hidden) video.pause();
+    };
+
+    observer.observe(video);
+    document.addEventListener('visibilitychange', pauseWhenHidden);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', pauseWhenHidden);
+    };
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      poster={poster}
+      controls
+      autoPlay
+      playsInline
+      preload="auto"
+      aria-label={label}
+      onError={onError}
+      className={className}
+    />
   );
 }
 
@@ -145,16 +198,12 @@ export function ArtworkViewer({
 
   const [current, setCurrent] = useState(0);
   const [bigStart, setBigStart] = useState<number | null>(null);
-  const [player, setPlayer] = useState<{ src: string; thumbnailSrc: string; key: number } | null>(
-    null,
-  );
-  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  /* 칸 안에서 재생 중인 영상 칸 */
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
 
-  const openPlayer = (index: number) => {
-    const src = videoSrcs[index];
-    if (!src) return;
-    setPlayer((prev) => ({ src, thumbnailSrc: images[index], key: (prev?.key ?? 0) + 1 }));
-    setIsPlayerOpen(true);
+  const handleVideoError = () => {
+    setPlayingIndex(null);
+    toast('영상 파일을 찾을 수 없어요');
   };
   const paneRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -198,6 +247,7 @@ export function ArtworkViewer({
 
   const changeMode = (next: ViewMode) => {
     if (next === mode) return;
+    setPlayingIndex(null);
     shouldAlignAfterModeChange.current = true;
     onModeChange(next);
   };
@@ -298,7 +348,9 @@ export function ArtworkViewer({
   const handleStageClick = (event: MouseEvent<HTMLDivElement>) => {
     if (
       !isWide() ||
-      (event.target as HTMLElement).closest('button, a, [role="group"][aria-label="감상 방식"]')
+      (event.target as HTMLElement).closest(
+        'button, a, video, [role="group"][aria-label="감상 방식"]',
+      )
     )
       return;
     const image = (event.target as HTMLElement).closest('img');
@@ -469,13 +521,25 @@ export function ArtworkViewer({
                   />
                 );
 
-                return videoSrc ? (
+                if (!videoSrc) return image;
+
+                return (
                   <div key={`${src}-${index}`} className={cn('relative', STACK_SCROLL_MARGIN)}>
-                    {image}
-                    <VideoPlayButton src={videoSrc} onPlay={() => openPlayer(index)} />
+                    {playingIndex === index ? (
+                      <InlineVideo
+                        src={videoSrc}
+                        poster={src}
+                        label={`${altOf(index)} 영상`}
+                        onError={handleVideoError}
+                        className="block h-auto w-full bg-secondary desktop:max-h-[calc(var(--W)*4/3)] desktop:object-contain"
+                      />
+                    ) : (
+                      <>
+                        {image}
+                        <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
+                      </>
+                    )}
                   </div>
-                ) : (
-                  image
                 );
               })}
             </div>
@@ -495,18 +559,33 @@ export function ArtworkViewer({
                   key={`${src}-${index}`}
                   className="relative h-full flex-[0_0_100%] snap-center bg-secondary"
                 >
-                  <OptimizedImage
-                    src={src}
-                    displayWidth={STAGE_IMAGE_WIDTH}
-                    alt={altOf(index)}
-                    draggable={false}
-                    loading={index === 0 ? 'eager' : 'lazy'}
-                    skeleton
-                    frameClassName="size-full"
-                    className="object-contain select-none"
-                  />
-                  {videoSrcs[index] && (
-                    <VideoPlayButton src={videoSrcs[index]} onPlay={() => openPlayer(index)} />
+                  {videoSrcs[index] && playingIndex === index ? (
+                    <InlineVideo
+                      src={videoSrcs[index]}
+                      poster={src}
+                      label={`${altOf(index)} 영상`}
+                      onError={handleVideoError}
+                      className="size-full bg-secondary object-contain"
+                    />
+                  ) : (
+                    <>
+                      <OptimizedImage
+                        src={src}
+                        displayWidth={STAGE_IMAGE_WIDTH}
+                        alt={altOf(index)}
+                        draggable={false}
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        skeleton
+                        frameClassName="size-full"
+                        className="object-contain select-none"
+                      />
+                      {videoSrcs[index] && (
+                        <VideoPlayButton
+                          src={videoSrcs[index]}
+                          onPlay={() => setPlayingIndex(index)}
+                        />
+                      )}
+                    </>
                   )}
                 </div>
               ))}
@@ -565,16 +644,6 @@ export function ArtworkViewer({
         subtitle={subtitle}
         onClose={closeBig}
       />
-      {player && (
-        <VideoPlayerOverlay
-          key={player.key}
-          open={isPlayerOpen}
-          src={player.src}
-          thumbnailSrc={player.thumbnailSrc}
-          title={title}
-          onClose={() => setIsPlayerOpen(false)}
-        />
-      )}
     </section>
   );
 }
