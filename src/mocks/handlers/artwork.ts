@@ -6,6 +6,17 @@ import { created, fail, noContent, paths, readJson, success, toNumber } from '@/
 import { compareBySort, matchesSearchWord } from '@/mocks/searchText';
 
 const now = () => new Date().toISOString();
+
+/* 대표 이미지(isThumbnail, 없으면 첫 장)를 목록 카드 필드로 바꿉니다. 영상이면 썸네일을 보이고 영상 주소를 따로 둡니다 */
+const toArtworkCard = (images: any[] | undefined, fallbackUrl = '') => {
+  const artworkImages = (images ?? []).filter((image) => image.imageType !== 'WORK_PROCESS');
+  const main = artworkImages.find((image) => image.isThumbnail) ?? artworkImages[0];
+  if (!main) return { artworkImageUrl: fallbackUrl, artworkVideoUrl: null };
+
+  return main.mediaType === 'VIDEO'
+    ? { artworkImageUrl: main.thumbnailUrl ?? '', artworkVideoUrl: main.imageUrl }
+    : { artworkImageUrl: main.imageUrl, artworkVideoUrl: null };
+};
 const findArtwork = (artworkId: number) =>
   mockDb.artworks.find((artwork: any) => artwork.artworkId === artworkId) ?? mockDb.artworks[0];
 
@@ -59,7 +70,7 @@ export const artworkHandlers = [
       const body = await readJson<Record<string, any>>(request);
       // 요청 데이터로만 구성합니다. 기존 작품을 템플릿으로 복사하면
       // 이미지 등 덮어쓰지 않은 필드가 그대로 남아 다른 작품 정보가 노출됩니다.
-      const imageUrl = body.images?.[0]?.imageUrl ?? '';
+      const { artworkImageUrl: imageUrl, artworkVideoUrl } = toArtworkCard(body.images);
       const artistName = body.artistName ?? mockDb.me.nickname;
       const artworkName = String(body.artworkName ?? body.title ?? '새 작품');
       const artwork = {
@@ -83,6 +94,7 @@ export const artworkHandlers = [
         // 전시작 목록이 공동 작가의 수정 · 삭제 권한을 판단하는 값
         coAuthorUserIds: body.coAuthors?.userIds ?? [],
         artworkImageUrl: imageUrl,
+        artworkVideoUrl,
         thumbnailUrl: imageUrl,
         imageUrl,
         order: mockDb.artworks.length + 1,
@@ -261,13 +273,17 @@ export const artworkHandlers = [
         );
       }
       const body = await readJson<Record<string, any>>(request);
-      const imageUrl = body.images?.[0]?.imageUrl ?? artwork.artworkImageUrl;
+      const { artworkImageUrl: imageUrl, artworkVideoUrl } = toArtworkCard(
+        body.images,
+        artwork.artworkImageUrl,
+      );
       const coAuthors = toCoAuthorList(body.coAuthors, artwork.displayId);
 
       Object.assign(artwork, body, {
         title: body.artworkName ?? artwork.title,
         material: body.materialMedia ?? artwork.material,
         artworkImageUrl: imageUrl,
+        artworkVideoUrl,
         thumbnailUrl: imageUrl,
         imageUrl,
         coAuthors,

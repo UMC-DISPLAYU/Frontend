@@ -176,11 +176,7 @@ export interface DisplayPeriodDto {
   endTime: string;
 }
 
-/* VIDEO 면 imageUrl 은 영상 원본, thumbnailUrl 은 썸네일 이미지다 */
-export type DisplayImageDto = ImageResponseDto & {
-  mediaType?: MediaTypeDto;
-  thumbnailUrl?: string | null;
-};
+export type DisplayImageDto = ImageResponseDto;
 
 export interface DisplayContentDto {
   contentId: number;

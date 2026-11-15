@@ -77,6 +77,9 @@ export function captureVideoFrame(video: HTMLVideoElement) {
 
 export interface VideoFileInfo {
   duration: number;
+  /** 화면에 보이는 크기(회전 반영) */
+  width: number;
+  height: number;
   /** 기본 썸네일(조금 뒤 장면) */
   thumbnail: File;
 }
@@ -89,11 +92,11 @@ export async function readVideoFile(file: File): Promise<VideoFileInfo> {
     const video = await loadVideo(url);
     await seekVideo(video, defaultThumbnailTime(video.duration));
     const thumbnail = await captureVideoFrame(video);
-    const { duration } = video;
+    const { duration, videoWidth: width, videoHeight: height } = video;
 
     video.removeAttribute('src');
     video.load();
-    return { duration, thumbnail };
+    return { duration, width, height, thumbnail };
   } finally {
     URL.revokeObjectURL(url);
   }

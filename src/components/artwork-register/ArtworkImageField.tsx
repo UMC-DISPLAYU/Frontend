@@ -3,6 +3,7 @@ import { type ChangeEvent, useId, useRef, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
+import { VideoThumbnailSheet } from '@/components/common/VideoThumbnailSheet';
 import {
   type ReorderDragMode,
   STOP_REORDER_PROPS,
@@ -12,12 +13,26 @@ import {
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { cropImageStyle } from '@/utils/cropBox';
+import { formatVideoDuration } from '@/utils/videoFile';
 
 import { ArtworkCropSheet } from './ArtworkCropSheet';
-import { ARTWORK_IMAGE_ACCEPT_TYPES } from './artworkRegister.constants';
+import {
+  ARTWORK_IMAGE_ACCEPT_TYPES,
+  ARTWORK_VIDEO_ACCEPT_TYPES,
+  MAX_ARTWORK_IMAGE_MB,
+} from './artworkRegister.constants';
 import { FOCUS_CLASS, HELP_CLASS, OPTIONAL_CLASS, REQUIRED_CLASS } from './artworkRegister.styles';
 import { CloseIcon, PlusIcon } from './ArtworkRegisterIcons';
-import type { ArtworkImageItem, ArtworkImageUploads } from './useArtworkImageUploads';
+import {
+  type ArtworkImageItem,
+  type ArtworkImageUploads,
+  isArtworkItemReady,
+} from './useArtworkImageUploads';
+
+const CHIP_BUTTON_CLASS = cn(
+  'typography-body-sm-semibold absolute right-1 bottom-1 h-5.5 rounded-6 bg-[rgba(255,255,255,0.92)] px-2 text-primary after:absolute after:-inset-x-1 after:-inset-y-2.75',
+  FOCUS_CLASS,
+);
 
 interface ArtworkImageFieldProps {
   label: string;
@@ -68,6 +83,7 @@ function ImageTile({
   canReorder,
   onRemove,
   onAdjust,
+  onChangeThumbnail,
 }: {
   item: ArtworkImageItem;
   index: number;
@@ -76,8 +92,10 @@ function ImageTile({
   canReorder: boolean;
   onRemove: () => void;
   onAdjust: () => void;
+  onChangeThumbnail: () => void;
 }) {
-  const isUploading = !item.uploadedUrl;
+  const isVideo = item.mediaType === 'VIDEO';
+  const isUploading = !isArtworkItemReady(item);
   const {
     setNodeRef,
     style: reorderStyle,
@@ -92,31 +110,39 @@ function ImageTile({
       aria-busy={isUploading}
       {...reorderProps}
       aria-roledescription="순서를 바꿀 수 있는 사진"
-      aria-label={`사진 ${index + 1}${isRepresentative ? ', 대표 사진' : ''}`}
+      aria-label={`${isVideo ? '영상' : '사진'} ${index + 1}${isRepresentative ? ', 대표 사진' : ''}`}
       className={cn(
         'relative h-30 w-24 shrink-0 animate-rise snap-start overflow-hidden bg-secondary [animation-duration:350ms] [animation-fill-mode:backwards]',
         reorderClassName,
         FOCUS_CLASS,
       )}
     >
-      <img
-        src={item.previewUrl}
-        alt=""
-        draggable={false}
-        className={cn('size-full object-contain', isUploading && 'opacity-50')}
-      />
-      {isRepresentative && !isUploading && (
+      {item.previewUrl && (
+        <img
+          src={item.previewUrl}
+          alt=""
+          draggable={false}
+          className={cn('size-full object-contain', isUploading && 'opacity-50')}
+        />
+      )}
+      {isVideo && (
+        <span className="typography-body-sm-semibold pointer-events-none absolute top-1 left-1 inline-flex h-5 items-center gap-0.75 rounded-4 bg-[rgba(0,0,0,0.72)] pr-1.5 pl-1 text-base-white tabular-nums">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-2.5">
+            <path d="M7 4.8v14.4L19 12z" fill="currentColor" />
+          </svg>
+          {item.duration !== undefined && formatVideoDuration(item.duration)}
+        </span>
+      )}
+      {/* 프로토타입: 영상은 칸마다 썸네일 변경, 사진은 대표 사진만 조정 */}
+      {!isUploading && (isVideo || isRepresentative) && (
         <button
           type="button"
-          aria-label="대표 사진 썸네일 조정"
-          onClick={onAdjust}
+          aria-label={isVideo ? '영상 썸네일 변경' : '대표 사진 썸네일 조정'}
+          onClick={isVideo ? onChangeThumbnail : onAdjust}
           {...STOP_REORDER_PROPS}
-          className={cn(
-            'typography-body-sm-semibold absolute right-1 bottom-1 h-5.5 rounded-6 bg-[rgba(255,255,255,0.92)] px-2 text-primary after:absolute after:-inset-x-1 after:-inset-y-2.75',
-            FOCUS_CLASS,
-          )}
+          className={CHIP_BUTTON_CLASS}
         >
-          조정
+          {isVideo ? '썸네일' : '조정'}
         </button>
       )}
       {isRepresentative && (
@@ -218,20 +244,30 @@ export function ArtworkImageField({
     null,
   );
   const [isCropOpen, setIsCropOpen] = useState(false);
+  const [thumbnailSession, setThumbnailSession] = useState<{
+    item: ArtworkImageItem;
+    key: number;
+  } | null>(null);
+  const [isThumbnailOpen, setIsThumbnailOpen] = useState(false);
   const { items, maxImages } = uploads;
-  const representativeImage = representative ? items[0] : undefined;
+  // 대표가 영상이면 서버가 썸네일을 그대로 카드에 쓰므로 자르기 미리보기를 두지 않는다
+  const representativeImage =
+    representative && items[0]?.mediaType === 'IMAGE' ? items[0] : undefined;
   const ids = items.map((item) => item.id);
   const { dragMode, contextProps } = useHorizontalReorder({ onMove: uploads.move });
 
   const openPicker = () => inputRef.current?.click();
 
   const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
-    const { overLimit, rejectedCount } = uploads.addFiles(Array.from(event.target.files ?? []));
+    const { overLimit, rejectedCount, message } = uploads.addFiles(
+      Array.from(event.target.files ?? []),
+    );
     event.target.value = '';
 
     // 프로토타입: 작품 이미지는 칸 위 안내로, 작업 과정은 토스트로 알린다
     setHasRejectedFile(representative && rejectedCount > 0);
     if (overLimit) toast(limitMessage);
+    else if (message) toast(message);
     else if (rejectedCount > 0 && !representative) toast('올릴 수 없는 파일이에요');
   };
 
@@ -245,6 +281,11 @@ export function ArtworkImageField({
     setIsCropOpen(true);
   };
 
+  const openThumbnail = (item: ArtworkImageItem) => {
+    setThumbnailSession((prev) => ({ item, key: (prev?.key ?? 0) + 1 }));
+    setIsThumbnailOpen(true);
+  };
+
   return (
     <div className={className}>
       <input
@@ -252,7 +293,10 @@ export function ArtworkImageField({
         type="file"
         hidden
         multiple
-        accept={ARTWORK_IMAGE_ACCEPT_TYPES.join(',')}
+        accept={[
+          ...ARTWORK_IMAGE_ACCEPT_TYPES,
+          ...(uploads.allowVideo ? ARTWORK_VIDEO_ACCEPT_TYPES : []),
+        ].join(',')}
         onChange={handleFiles}
       />
       <div className="typography-body-lg-semibold flex items-center gap-1 text-primary">
@@ -314,6 +358,7 @@ export function ArtworkImageField({
                 canReorder={items.length > 1}
                 onRemove={() => uploads.remove(item.id)}
                 onAdjust={() => openCrop(item)}
+                onChangeThumbnail={() => openThumbnail(item)}
               />
             ))}
           </div>
@@ -335,6 +380,20 @@ export function ArtworkImageField({
           onDone={(crop) => {
             uploads.setCrop(cropSession.item.id, crop);
             setIsCropOpen(false);
+          }}
+        />
+      )}
+      {thumbnailSession?.item.videoSrc && (
+        <VideoThumbnailSheet
+          key={thumbnailSession.key}
+          open={isThumbnailOpen}
+          videoSrc={thumbnailSession.item.videoSrc}
+          imageAcceptTypes={ARTWORK_IMAGE_ACCEPT_TYPES}
+          maxImageMb={MAX_ARTWORK_IMAGE_MB}
+          onClose={() => setIsThumbnailOpen(false)}
+          onSelect={(file) => {
+            uploads.setThumbnail(thumbnailSession.item.id, file);
+            setIsThumbnailOpen(false);
           }}
         />
       )}
