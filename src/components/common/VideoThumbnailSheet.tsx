@@ -4,8 +4,6 @@ import { Overlay } from '@/components/ui';
 import { toast } from '@/stores/toastStore';
 import { captureVideoFrame } from '@/utils/videoFile';
 
-import { MAX_POSTER_FILE_MB, POSTER_ACCEPT_TYPES } from './displayRegister.constants';
-
 const SOFT_BUTTON_CLASS =
   'typography-body-lg-semibold h-11 rounded-12 bg-[#f0f0f3] text-primary transition-[background-color,transform] duration-fast ease-standard hover:bg-[#e4e4e7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98';
 const DARK_BUTTON_CLASS =
@@ -35,6 +33,9 @@ interface VideoThumbnailSheetProps {
   onClose: () => void;
   /** 고른 장면 또는 올린 이미지 */
   onSelect: (file: File) => void;
+  /** 이미지 올리기에서 받을 형식 · 용량 */
+  imageAcceptTypes: readonly string[];
+  maxImageMb: number;
 }
 
 /** 프로토타입 thumbSheet: 영상에서 장면을 고르거나 이미지를 올려 썸네일을 바꾼다 */
@@ -43,6 +44,8 @@ export function VideoThumbnailSheet({
   videoSrc,
   onClose,
   onSelect,
+  imageAcceptTypes,
+  maxImageMb,
 }: VideoThumbnailSheetProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,14 +78,11 @@ export function VideoThumbnailSheet({
     event.target.value = '';
     if (!file) return;
 
-    if (file.size > MAX_POSTER_FILE_MB * 1024 * 1024) {
-      toast(`썸네일 이미지는 ${MAX_POSTER_FILE_MB}MB 이하로 올려주세요`);
+    if (file.size > maxImageMb * 1024 * 1024) {
+      toast(`썸네일 이미지는 ${maxImageMb}MB 이하로 올려주세요`);
       return;
     }
-    if (
-      !(POSTER_ACCEPT_TYPES as readonly string[]).includes(file.type) ||
-      !(await canLoadImage(file))
-    ) {
+    if (!imageAcceptTypes.includes(file.type) || !(await canLoadImage(file))) {
       toast('이 이미지는 불러오지 못했어요');
       return;
     }
@@ -140,7 +140,7 @@ export function VideoThumbnailSheet({
         ref={fileInputRef}
         type="file"
         hidden
-        accept={POSTER_ACCEPT_TYPES.join(',')}
+        accept={imageAcceptTypes.join(',')}
         onChange={(event) => void handleImage(event)}
       />
       <div className="grid place-items-center overflow-hidden rounded-12 bg-[#f4f4f5]">

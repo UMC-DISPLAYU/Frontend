@@ -3,6 +3,7 @@ import { type ChangeEvent, useRef, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
+import { VideoThumbnailSheet } from '@/components/common/VideoThumbnailSheet';
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import {
   type ReorderDragMode,
@@ -24,7 +25,6 @@ import { COUNT_CLASS, FOCUS_CLASS, REQUIRED_CLASS } from './displayRegister.styl
 import { CloseIcon, PlayIcon, PlusIcon } from './DisplayRegisterIcons';
 import { PosterCropSheet } from './PosterCropSheet';
 import { isPosterReady, type PosterItem, type PosterUploads } from './usePosterUploads';
-import { VideoThumbnailSheet } from './VideoThumbnailSheet';
 
 const ACCEPT = [...POSTER_ACCEPT_TYPES, ...POSTER_VIDEO_ACCEPT_TYPES].join(',');
 
@@ -308,6 +308,8 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
           key={thumbnailSession.key}
           open={isThumbnailOpen}
           videoSrc={thumbnailSession.item.videoSrc}
+          imageAcceptTypes={POSTER_ACCEPT_TYPES}
+          maxImageMb={MAX_POSTER_FILE_MB}
           onClose={() => setIsThumbnailOpen(false)}
           onSelect={(file) => {
             posters.setThumbnail(thumbnailSession.item.id, file);
