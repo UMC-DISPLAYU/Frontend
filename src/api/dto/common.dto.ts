@@ -1,3 +1,5 @@
+import type { MediaTypeDto } from './file.dto';
+
 //공통 메타 정보
 export interface ApiMetaDto {
   timestamp: string;
@@ -76,6 +78,7 @@ export interface CursorPaginationDto<TCursor = number | string> {
  */
 export interface ImageResponseDto {
   imageId: number;
+  /* VIDEO 면 영상 원본 주소다 */
   imageUrl: string;
   isThumbnail: boolean;
   imageType: string;
@@ -83,4 +86,8 @@ export interface ImageResponseDto {
   width: number;
   height: number;
   sortOrder: number;
+  /* 전시 포스터 · 전시 작품만 내려준다. 없으면 IMAGE */
+  mediaType?: MediaTypeDto;
+  /* VIDEO 일 때 썸네일 이미지 주소 */
+  thumbnailUrl?: string | null;
 }

@@ -1,9 +1,5 @@
-import type {
-  ApiResponseDto,
-  CursorPaginationDto,
-  ImageResponseDto,
-  OffsetPageRequestDto,
-} from './common.dto';
+import type { ApiResponseDto, ImageResponseDto, OffsetPageRequestDto } from './common.dto';
+import type { MediaTypeDto } from './file.dto';
 
 export interface ArtworkImageDto extends ImageResponseDto {
   isThumbnail: boolean;
@@ -271,12 +267,17 @@ export interface ArtworkCropDto {
 export interface ArtworkImageRequestDto {
   imageUrl: string;
   isThumbnail?: boolean;
-  /* 사진 · 영상 구분 없이 작품 이미지(ARTWORK)와 작업 과정(WORK_PROCESS)만 나눈다 */
+  /* 작품 이미지(ARTWORK)와 작업 과정(WORK_PROCESS)을 나눈다. 작업 과정은 사진만 받는다 */
   imageType: 'ARTWORK' | 'WORK_PROCESS';
   sortOrder?: number;
   caption?: string;
+  /* 영상이면 썸네일 크기 */
   width?: number;
   height?: number;
+  /* 전시 작품만 받는다. 생략하면 IMAGE */
+  mediaType?: MediaTypeDto;
+  /* VIDEO 일 때 필수인 썸네일 이미지 주소 */
+  thumbnailUrl?: string;
 }
 
 export interface CreateExhibitionArtworkRequestDto {
@@ -407,6 +408,8 @@ export interface DisplayArtworkDto {
   imageWidth: number;
   imageHeight: number;
   artworkCrop?: ArtworkCropDto | null;
+  /* 대표가 영상이면 영상 주소(artworkImageUrl 은 썸네일), 아니면 null */
+  artworkVideoUrl?: string | null;
 }
 
 export interface GetDisplayArtworksResponseDataDto {
@@ -434,27 +437,17 @@ export type GetMyArtworksResponseDto = ApiResponseDto<GetMyArtworksResponseDataD
 
 /* GET /v1/artworks/search: 탐색 작품 탭. type · status 는 작품이 속한 전시 기준이다 */
 export interface SearchArtworksRequestDto {
+  /* 작품명 · 대표 · 공동 작가명 */
   searchWord?: string | null;
-  field?: string | null;
   type?: string | null;
   status?: string | null;
-  sort?: string | null;
-  cursor?: string | null;
+  page?: number;
   size: number;
 }
 
-export interface ArtworkSearchItemDto {
-  artworkId: number;
-  artworkName: string;
-  artworkImageUrl: string;
-  /* 작품 카드에 표시하는 전시 작가명. 대표 작가가 첫 번째이고 공동 작가가 이어진다 */
-  artists?: ArtworkCoAuthorDto[] | null;
-  displayId: number;
-}
+/* 응답 카드는 작품 미리보기와 같은 형식이다 */
+export type ArtworkSearchItemDto = ArtworkPreviewItemDto;
 
-export interface SearchArtworksResponseDataDto {
-  artworks: ArtworkSearchItemDto[];
-  pagination: CursorPaginationDto<string>;
-}
+export type SearchArtworksResponseDataDto = GetArtworkPreviewResponseDataDto;
 
 export type SearchArtworksResponseDto = ApiResponseDto<SearchArtworksResponseDataDto>;

@@ -6,6 +6,6 @@ export { DisplayHubDoneRing } from './DisplayHubDoneRing';
 export { DisplayHubHeader } from './DisplayHubHeader';
 export { DisplayHubIcon } from './DisplayHubIcon';
 export { type DisplayHubStatus, getDisplayHubStatus } from './displayHubStatus';
-export { DisplayHubStatusBanner, DisplayHubSummary } from './DisplayHubSummary';
+export { DisplayHubStatusBanner } from './DisplayHubSummary';
 export { DisplayHubVisibility } from './DisplayHubVisibility';
 export { DisplayPublishSteps } from './DisplayPublishSteps';

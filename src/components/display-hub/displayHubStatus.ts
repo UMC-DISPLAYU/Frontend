@@ -43,11 +43,5 @@ export const DISPLAY_HUB_STATUS_META: Record<DisplayHubStatus, DisplayHubStatusM
 
 const toDotted = (date: string) => date.replace(/-/g, '.');
 
-/** "2026-05-28", "2026-06-05" → "2026.05.28 - 06.05". 연도가 다르면 끝 날짜에도 연도를 붙인다 */
-export const formatDisplayHubPeriod = (startDate: string, endDate: string) => {
-  const end = startDate.slice(0, 4) === endDate.slice(0, 4) ? endDate.slice(5) : endDate;
-  return `${toDotted(startDate)} - ${toDotted(end)}`;
-};
-
 /** "2026-05-28" → "05.28" */
 export const formatDisplayHubMonthDay = (date: string) => toDotted(date.slice(5));

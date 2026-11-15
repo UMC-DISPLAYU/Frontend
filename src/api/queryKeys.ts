@@ -90,7 +90,7 @@ export const queryKeys = {
       [...queryKeys.displayArtworks.lists(), 'display', displayId] as const,
     preview: (params?: GetArtworkPreviewRequestDto) =>
       [...queryKeys.displayArtworks.lists(), 'preview', params ?? {}] as const,
-    search: (params: Omit<SearchArtworksRequestDto, 'cursor'>) =>
+    search: (params: Omit<SearchArtworksRequestDto, 'page'>) =>
       [...queryKeys.displayArtworks.lists(), 'search', params] as const,
     me: () => [...queryKeys.displayArtworks.lists(), 'me'] as const,
     byUserId: (userId: number) => [...queryKeys.displayArtworks.lists(), 'user', userId] as const,

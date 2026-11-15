@@ -6,6 +6,12 @@ import {
   MOCK_PERSONAL_ARTWORK_FEELINGS,
   MOCK_PERSONAL_ARTWORKS,
 } from '@/mocks/data/personalArtwork';
+import {
+  MOCK_POSTER_THUMBNAIL_URL,
+  MOCK_VIDEO_DISPLAY_ID,
+  withArtworkVideoSample,
+  withPosterVideoSample,
+} from '@/mocks/data/videoSamples';
 
 const now = () => new Date().toISOString();
 
@@ -110,6 +116,7 @@ const MOCK_TEAM_MEMBERS: Record<number, unknown[]> = {
       displayNickname: '한도윤',
       role: 'TEAM_MEM',
       accepted: false,
+      invitationId: 1015,
     },
   ].map((member) => ({ accepted: true, loggedIn: true, artistVerified: true, ...member })),
 };
@@ -205,7 +212,11 @@ const artworkToDetail = (artwork: any, isMine = false) => ({
       displayId: artwork.displayId,
       exhibitionTitle: display?.title ?? '',
       exhibitionSubtitle: display?.subtitle ?? '',
-      exhibitionThumbnailUrl: display?.posterSection?.images?.[0]?.imageUrl ?? '',
+      // 영상 포스터 샘플 전시는 서버처럼 썸네일을 내려준다
+      exhibitionThumbnailUrl:
+        artwork.displayId === MOCK_VIDEO_DISPLAY_ID
+          ? MOCK_POSTER_THUMBNAIL_URL
+          : (display?.posterSection?.images?.[0]?.imageUrl ?? ''),
       exhibitionOrganizer: display?.organization ?? '',
       exhibitionPeriod: formatPeriod(display?.startedAt, display?.endedAt),
       exhibitionLocation: display?.placeName ?? '',
@@ -275,19 +286,21 @@ export const mockDb: {
 } = {
   me: makeUser(),
   searchableUsers: MOCK_SEARCHABLE_USERS,
-  displays: MOCK_DISPLAY_DETAILS.map(displayToDetail),
-  artworks: MOCK_DISPLAY_DETAILS.flatMap((display) =>
-    display.artworkSection.artworks.map((artwork, index) => {
-      const detail = artworkToDetail(artwork, display.displayId === 101 && index === 0);
-      if (display.displayId !== 101) return detail;
-      // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로 둔다
-      if (index === 0) return { ...detail, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } };
-      if (index === 1) {
-        const me = { userId: 1, name: makeUser().nickname };
-        return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
-      }
-      return detail;
-    }),
+  displays: MOCK_DISPLAY_DETAILS.map(displayToDetail).map(withPosterVideoSample),
+  artworks: withArtworkVideoSample(
+    MOCK_DISPLAY_DETAILS.flatMap((display) =>
+      display.artworkSection.artworks.map((artwork, index) => {
+        const detail = artworkToDetail(artwork, display.displayId === 101 && index === 0);
+        if (display.displayId !== 101) return detail;
+        // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로 둔다
+        if (index === 0) return { ...detail, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } };
+        if (index === 1) {
+          const me = { userId: 1, name: makeUser().nickname };
+          return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
+        }
+        return detail;
+      }),
+    ),
   ),
   loungePosts: [
     {

@@ -82,7 +82,7 @@ export const useCancelDisplayInvitation = (displayId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (inviteeUserId: number) => cancelDisplayInvitation(displayId, inviteeUserId),
+    mutationFn: (invitationId: number) => cancelDisplayInvitation(invitationId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.displayInvitations.all });
       return refetchTeam(queryClient, displayId);

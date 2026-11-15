@@ -48,6 +48,27 @@ describe('splitArtworkImages', () => {
       ]),
     ).toEqual({ artworkUrls: ['a2', 'a1', 'a3'], processUrls: ['p1'] });
   });
+
+  it('영상은 썸네일 · 크기를 따로 모은다', () => {
+    expect(
+      splitArtworkImages([
+        { imageUrl: 'a1', sortOrder: 1, imageType: 'ARTWORK' },
+        {
+          imageUrl: 'v1.mp4',
+          sortOrder: 2,
+          imageType: 'ARTWORK',
+          mediaType: 'VIDEO',
+          thumbnailUrl: 't1.jpg',
+          width: 1920,
+          height: 1080,
+        },
+      ]),
+    ).toEqual({
+      artworkUrls: ['a1', 'v1.mp4'],
+      processUrls: [],
+      videos: { 'v1.mp4': { thumbnailUrl: 't1.jpg', width: 1920, height: 1080 } },
+    });
+  });
 });
 
 describe('toArtworkImageRequests', () => {
@@ -80,6 +101,25 @@ describe('toArtworkImageRequests', () => {
     expect(requests[2]).toMatchObject({ caption: '' });
     expect(requests[2].width).toBeGreaterThan(0);
     expect(requests[2].height).toBeGreaterThan(0);
+  });
+
+  it('영상은 VIDEO · 썸네일 · 썸네일 크기를 보내고, 사진에는 mediaType 을 붙이지 않는다', () => {
+    const requests = toArtworkImageRequests({
+      artworkUrls: ['v1.mp4', 'a1'],
+      processUrls: [],
+      videos: { 'v1.mp4': { thumbnailUrl: 't1.jpg', width: 1920, height: 1080 } },
+    });
+
+    expect(requests[0]).toMatchObject({
+      imageUrl: 'v1.mp4',
+      isThumbnail: true,
+      mediaType: 'VIDEO',
+      thumbnailUrl: 't1.jpg',
+      width: 1920,
+      height: 1080,
+    });
+    expect(requests[1]).not.toHaveProperty('mediaType');
+    expect(requests[1]).not.toHaveProperty('thumbnailUrl');
   });
 });
 

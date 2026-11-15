@@ -7,6 +7,7 @@ import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
 import { cn } from '@/utils/cn';
 
+import { HomePosterVideo } from './HomePosterVideo';
 import { useCenteredScroll } from './useCenteredScroll';
 import { usePosterSlideMotion } from './usePosterSlideMotion';
 import { useSwapIn } from './useSwapIn';
@@ -115,6 +116,9 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
                   loading={index < 3 ? 'eager' : 'lazy'}
                   className="absolute inset-0 size-full object-cover"
                 />
+                {item.posterVideoUrl && (
+                  <HomePosterVideo src={item.posterVideoUrl} isActive={isActive} />
+                )}
                 {/*
                   옆 칸을 어둡게 하는 막(프로토타입 .dim · .shade-side). 막은 포스터와 따로 그려지는 레이어라,
                   축소된 포스터 가장자리 픽셀을 반만 덮어 사진 밝기가 1px 테두리처럼 새어 나온다.

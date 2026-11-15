@@ -144,16 +144,7 @@ function SectionCreateForm({ displayId, backPath }: { displayId: number; backPat
       const imageUrls = await Promise.all(
         photos.map((photo) => imageUpload.uploadImage(photo.file)),
       );
-      const { categoryId, failedCount } = await createSection.mutateAsync({
-        title: title.trim(),
-        imageUrls,
-      });
-      if (failedCount > 0) {
-        // 섹션은 만들어졌으니 섹션 편집에서 나머지 사진을 다시 올리게 한다
-        toast(`사진 ${failedCount}장은 올리지 못했어요. 섹션 편집에서 다시 올려 주세요`);
-        navigate(`/exhibition/${displayId}/contents/${categoryId}`, { replace: true });
-        return;
-      }
+      await createSection.mutateAsync({ title: title.trim(), imageUrls });
       toast('섹션을 추가했어요');
       leave();
     } catch (error) {

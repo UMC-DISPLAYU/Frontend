@@ -58,52 +58,35 @@ export const DISPLAY_TYPE_REVERSE_MAP: Record<string, string> = {
 };
 
 /*
- * 전시 등록은 작가 활동분야와 다른 enum을 씁니다. 공예는 CRAFTS, 기타는 OTHERS 로 보냅니다.
- * 서버 enum 에 없는 값을 보내면 MALFORMED_JSON 으로 등록이 실패합니다.
+ * 전시 등록 · 수정 분야(POST · PATCH /display fields). 서버는 새로 고르는 값으로 이 12개만 받는다.
+ * DESIGN · FASHION 등 예전 값을 새로 보내면 400 이고, 원래 저장돼 있던 예전 값만 다시 보내 유지할 수 있다.
  */
 export const DISPLAY_FIELD_SERVER_VALUES = [
   'PAINTING',
-  'DESIGN',
-  'PHOTOGRAPHY',
-  'ARCHITECTURE',
-  'VIDEO',
-  'CRAFTS',
   'SCULPTURE',
-  'FASHION',
-  'INTERDISCIPLINARY',
-  'ILLUSTRATION',
+  'PHOTOGRAPHY',
+  'GRAPHIC',
+  'BRANDING',
+  'PRODUCT',
+  'VIDEO',
+  'SPACE',
+  'ARCHITECTURE',
+  'UX_UI',
+  'CRAFTS',
   'OTHERS',
 ] as const;
 
-export const DISPLAY_FIELD_MAP: Record<string, string> = {
-  PAINTING: 'PAINTING',
-  DESIGN: 'DESIGN',
-  PHOTOGRAPHY: 'PHOTOGRAPHY',
-  ARCHITECTURE: 'ARCHITECTURE',
-  VIDEO: 'VIDEO',
-  SCULPTURE: 'SCULPTURE',
-  FASHION: 'FASHION',
-  ILLUSTRATION: 'ILLUSTRATION',
+export type DisplayFieldValue = (typeof DISPLAY_FIELD_SERVER_VALUES)[number];
+
+// 서버가 같은 분야로 보는 예전 표기(서버 CreativeFieldCodes)
+const DISPLAY_FIELD_ALIASES: Record<string, DisplayFieldValue> = {
+  UXUI: 'UX_UI',
+  MEDIA: 'VIDEO',
   CRAFT: 'CRAFTS',
   ETC: 'OTHERS',
-} satisfies Record<ExhibitionField, (typeof DISPLAY_FIELD_SERVER_VALUES)[number]>;
-
-export const DISPLAY_FIELD_REVERSE_MAP: Record<string, ExhibitionField> = {
-  PAINTING: 'PAINTING',
-  DESIGN: 'DESIGN',
-  PHOTOGRAPHY: 'PHOTOGRAPHY',
-  ARCHITECTURE: 'ARCHITECTURE',
-  MEDIA: 'VIDEO',
-  VIDEO: 'VIDEO',
-  SCULPTURE: 'SCULPTURE',
-  FASHION: 'FASHION',
-  INTERDISCIPLINARY: 'ILLUSTRATION',
-  ILLUSTRATION: 'ILLUSTRATION',
-  CRAFT: 'CRAFT',
-  CRAFTS: 'CRAFT',
-  ETC: 'ETC',
-  OTHERS: 'ETC',
 };
+
+export const toDisplayFieldValue = (code: string) => DISPLAY_FIELD_ALIASES[code] ?? code;
 
 export type ArtistFieldCode =
   | 'PAINTING'

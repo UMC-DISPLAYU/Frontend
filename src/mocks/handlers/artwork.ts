@@ -3,9 +3,20 @@ import { http } from 'msw';
 
 import { listResponse, mockDb, okStatus } from '@/mocks/data/repository';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
-import { compareBySort, matchesSearchWord } from '@/mocks/searchText';
+import { matchesSearchWord } from '@/mocks/searchText';
 
 const now = () => new Date().toISOString();
+
+/* 대표 이미지(isThumbnail, 없으면 첫 장)를 목록 카드 필드로 바꿉니다. 영상이면 썸네일을 보이고 영상 주소를 따로 둡니다 */
+const toArtworkCard = (images: any[] | undefined, fallbackUrl = '') => {
+  const artworkImages = (images ?? []).filter((image) => image.imageType !== 'WORK_PROCESS');
+  const main = artworkImages.find((image) => image.isThumbnail) ?? artworkImages[0];
+  if (!main) return { artworkImageUrl: fallbackUrl, artworkVideoUrl: null };
+
+  return main.mediaType === 'VIDEO'
+    ? { artworkImageUrl: main.thumbnailUrl ?? '', artworkVideoUrl: main.imageUrl }
+    : { artworkImageUrl: main.imageUrl, artworkVideoUrl: null };
+};
 const findArtwork = (artworkId: number) =>
   mockDb.artworks.find((artwork: any) => artwork.artworkId === artworkId) ?? mockDb.artworks[0];
 
@@ -26,16 +37,6 @@ const toCoAuthorList = (
     })),
     ...(coAuthors?.rawNames ?? []).map((name) => ({ userId: null, name })),
   ];
-};
-
-// 목 작품 데이터는 예전 분야 값(CRAFT · DESIGN · FASHION)을 써서 탐색 분야 값과 맞춰 본다
-const MOCK_ARTWORK_FIELD_ALIASES: Record<string, string> = {
-  CRAFTS: 'CRAFT',
-  GRAPHIC: 'DESIGN',
-  BRANDING: 'DESIGN',
-  PRODUCT: 'DESIGN',
-  UXUI: 'DESIGN',
-  OTHERS: 'FASHION',
 };
 
 const SELECTABLE_ARTWORK_TYPES = new Set([
@@ -124,7 +125,7 @@ export const artworkHandlers = [
       if (!types) return invalidArtworkTypes('/api/v1/artworks');
       // 요청 데이터로만 구성합니다. 기존 작품을 템플릿으로 복사하면
       // 이미지 등 덮어쓰지 않은 필드가 그대로 남아 다른 작품 정보가 노출됩니다.
-      const imageUrl = body.images?.[0]?.imageUrl ?? '';
+      const { artworkImageUrl: imageUrl, artworkVideoUrl } = toArtworkCard(body.images);
       const artistName = body.artistName ?? mockDb.me.nickname;
       const artworkName = String(body.artworkName ?? body.title ?? '새 작품');
       const artwork = {
@@ -148,6 +149,7 @@ export const artworkHandlers = [
         coAuthors: toCoAuthorList(body.coAuthors, Number(body.displayId ?? 101)),
         artworkCrop: body.artworkCrop ?? null,
         artworkImageUrl: imageUrl,
+        artworkVideoUrl,
         thumbnailUrl: imageUrl,
         imageUrl,
         order: mockDb.artworks.length + 1,
@@ -191,50 +193,45 @@ export const artworkHandlers = [
     http.get(path, ({ request }) => {
       const url = new URL(request.url);
       const searchWord = url.searchParams.get('searchWord');
-      const field = url.searchParams.get('field');
       const type = url.searchParams.get('type');
       const status = url.searchParams.get('status');
-      const sort = url.searchParams.get('sort');
-      const cursor = Number(url.searchParams.get('cursor') ?? 0) || 0;
+      const page = Number(url.searchParams.get('page') ?? 0) || 0;
       const size = Number(url.searchParams.get('size') ?? 20);
 
       const matched = mockDb.artworks
-        .map((artwork: any) => ({
-          artwork,
-          display: mockDb.displays.find((display: any) => display.displayId === artwork.displayId),
-        }))
-        .filter(({ artwork, display }: any) => {
+        .filter((artwork: any) => {
+          const display = mockDb.displays.find((item: any) => item.displayId === artwork.displayId);
           if (!display) return false;
-          // 작품 탭의 전시 유형 · 상태 필터는 작품이 속한 전시 기준이다
+          // 전시 유형 · 상태 필터는 작품이 속한 전시 기준이다
           if (type && display.displayType !== type) return false;
           if (status && display.status !== status) return false;
-          if (field && artwork.type !== (MOCK_ARTWORK_FIELD_ALIASES[field] ?? field)) return false;
-          // 작품명 · 전시 작가명(공동 작가 포함)으로 찾는다
+          // 작품명 · 대표 · 공동 작가명으로 찾는다
           return matchesSearchWord(searchWord, [
             artwork.artworkName,
             ...(artwork.artists ?? []).map((artist: any) => artist.name),
           ]);
         })
-        .sort(
-          compareBySort(
-            sort,
-            ({ artwork }: any) => artwork.likeCount ?? 0,
-            ({ artwork }: any) => [artwork.displayId, artwork.artworkId],
-          ),
-        );
+        .sort((a: any, b: any) => b.artworkId - a.artworkId);
 
-      const artworks = matched.slice(cursor, cursor + size).map(({ artwork }: any) => ({
+      const start = page * size;
+      const artworks = matched.slice(start, start + size).map((artwork: any) => ({
         artworkId: artwork.artworkId,
         artworkName: artwork.artworkName,
+        artistName: artwork.artistName,
+        artistUserId: artwork.artistUserId,
         artworkImageUrl: artwork.artworkImageUrl,
+        imageWidth: artwork.imageWidth,
+        imageHeight: artwork.imageHeight,
+        exhibitionInfo: artwork.exhibitionInfo,
         artists: artwork.artists ?? [{ userId: null, name: artwork.artistName ?? '' }],
-        displayId: artwork.displayId,
+        artworkCrop: artwork.artworkCrop ?? null,
       }));
-      const nextCursor = cursor + size < matched.length ? String(cursor + size) : null;
 
       return success('/api/v1/artworks/search', {
         artworks,
-        pagination: { nextCursor, size: artworks.length, hasNext: nextCursor !== null },
+        page,
+        size,
+        isLast: start + size >= matched.length,
       });
     }),
   ),
@@ -332,7 +329,10 @@ export const artworkHandlers = [
         artwork.types ?? (artwork.type ? [artwork.type] : []),
       );
       if (!types) return invalidArtworkTypes('/api/v1/artworks/{artworkId}');
-      const imageUrl = body.images?.[0]?.imageUrl ?? artwork.artworkImageUrl;
+      const { artworkImageUrl: imageUrl, artworkVideoUrl } = toArtworkCard(
+        body.images,
+        artwork.artworkImageUrl,
+      );
       const coAuthors = toCoAuthorList(body.coAuthors, artwork.displayId);
       const materialMedia = toMaterialMedia(body.materialMedia);
       // 영역을 생략하면 대표 사진이 같은 동안 유지하고, 대표 사진이 바뀌면 지운다
@@ -347,6 +347,7 @@ export const artworkHandlers = [
         material: materialMedia,
         artworkCrop: artworkCrop ?? null,
         artworkImageUrl: imageUrl,
+        artworkVideoUrl,
         thumbnailUrl: imageUrl,
         imageUrl,
         coAuthors,

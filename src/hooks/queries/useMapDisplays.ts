@@ -6,7 +6,7 @@ import { queryKeys } from '@/api/queryKeys';
 
 /**
  * 지도에 찍을 전시를 모두 조회하는 훅 (/v1/display/map).
- * 핀은 범위 안 전시가 전부 있어야 하므로 전체 범위를 페이지 끝까지 받는다.
+ * 핀은 범위 안 전시가 전부 있어야 하므로 전체 범위를 all=true 로 한 번에 받는다.
  */
 
 export interface NearbyDisplay {
@@ -42,10 +42,6 @@ const WORLD_BOUNDS = {
   northLatitude: 90,
   eastLongitude: 180,
 };
-// 서버가 받는 최대 페이지 크기
-const PAGE_SIZE = 100;
-// 서버가 다음 페이지를 계속 돌려주는 경우를 막는 안전장치 (최대 5,000개)
-const MAX_PAGES = 50;
 
 const toNearbyDisplay = (marker: DisplayMapMarkerDto): NearbyDisplay => ({
   displayId: marker.displayId,
@@ -62,24 +58,8 @@ const toNearbyDisplay = (marker: DisplayMapMarkerDto): NearbyDisplay => ({
 });
 
 export async function fetchAllMapDisplays(signal?: AbortSignal): Promise<NearbyDisplay[]> {
-  const markers = new Map<number, DisplayMapMarkerDto>();
-  let cursor: number | undefined;
-
-  for (let page = 0; page < MAX_PAGES; page += 1) {
-    const { markers: pageMarkers, pagination } = await getDisplayMap(
-      { ...WORLD_BOUNDS, size: PAGE_SIZE, cursor },
-      signal,
-    );
-    pageMarkers.forEach((marker) => markers.set(marker.displayId, marker));
-    // 페이지 나눔 없이 한 번에 주도록 API가 바뀌어 pagination이 빠져도 한 페이지로 보고 끝낸다
-    const hasNext = pagination?.hasNext ?? false;
-    const nextCursor = pagination?.nextCursor;
-    // 서버가 같은 커서를 다시 주면 같은 페이지만 반복되므로 멈춘다
-    if (!hasNext || nextCursor == null || nextCursor === cursor) break;
-    cursor = nextCursor;
-  }
-
-  return [...markers.values()].map(toNearbyDisplay);
+  const { markers } = await getDisplayMap({ ...WORLD_BOUNDS, all: true }, signal);
+  return markers.map(toNearbyDisplay);
 }
 
 export function useMapDisplays() {

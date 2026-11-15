@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { ARTIST_PROFILE_FIELD_LABELS, isArtistProfileField } from '@/constants/artistField';
-import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
+import { toArtistProfileFieldLabels } from '@/constants/artistField';
 import {
   useArchiveArtist,
   useArchivedArtists,
@@ -68,12 +67,7 @@ export function useArtistProfile(userId: number) {
   const profile = profileQuery.data;
   const header = useMemo(() => {
     if (!profile) return null;
-    // 프로토타입 12개 분야 이름을 먼저 쓰고, 예전에 저장한 디자인 · 패션 · 일러스트는 예전 이름으로 보여 준다
-    const fieldLabels = (profile.fields ?? []).map((code) =>
-      isArtistProfileField(code)
-        ? ARTIST_PROFILE_FIELD_LABELS[code]
-        : (EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code),
-    );
+    const fieldLabels = toArtistProfileFieldLabels(profile.fields);
     return {
       name: profile.artistName || '작가',
       subtitle: [profile.schoolName, ...fieldLabels].filter(Boolean).join(' · '),

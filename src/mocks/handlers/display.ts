@@ -18,6 +18,51 @@ const listDisplays = () =>
   }));
 
 let nextScreeningId = 1;
+let nextPosterImageId = 10_000;
+
+type MockPosterMedia = { imageUrl: string; mediaType: 'IMAGE' | 'VIDEO'; thumbnailUrl?: string };
+
+const toMockPosterImage = (media: MockPosterMedia, sortOrder: number) => ({
+  imageId: nextPosterImageId++,
+  imageUrl: media.imageUrl,
+  isThumbnail: sortOrder === 0,
+  imageType: sortOrder === 0 ? 'MAIN' : 'DETAIL',
+  caption: '',
+  width: 0,
+  height: 0,
+  sortOrder,
+  mediaType: media.mediaType,
+  thumbnailUrl: media.mediaType === 'VIDEO' ? (media.thumbnailUrl ?? null) : null,
+});
+
+const cardUrlOf = (media: MockPosterMedia) =>
+  media.mediaType === 'VIDEO' ? (media.thumbnailUrl ?? '') : media.imageUrl;
+
+/* posterMedia · displayMedia 를 상세 images 와 목록 카드 필드(posterImageUrl · posterVideoUrl)에 반영합니다. 생략한 그룹은 그대로 둡니다 */
+const applyPosterMedia = (
+  display: any,
+  body: { posterMedia?: MockPosterMedia; displayMedia?: MockPosterMedia[] },
+) => {
+  if (!body.posterMedia && !body.displayMedia) return;
+
+  const current: MockPosterMedia[] = (display.images ?? display.posterImages ?? [])
+    .slice()
+    .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+    .map((image: any) => ({
+      imageUrl: image.imageUrl,
+      mediaType: image.mediaType ?? 'IMAGE',
+      thumbnailUrl: image.thumbnailUrl ?? undefined,
+    }));
+  const main = body.posterMedia ?? current[0];
+  const extras = body.displayMedia ?? current.slice(1);
+  const media = [main, ...extras].filter(Boolean) as MockPosterMedia[];
+
+  display.images = media.map(toMockPosterImage);
+  display.posterImages = display.images;
+  display.posterImageUrl = main ? cardUrlOf(main) : '';
+  display.thumbnailUrl = display.posterImageUrl;
+  display.posterVideoUrl = main?.mediaType === 'VIDEO' ? main.imageUrl : null;
+};
 
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
@@ -89,6 +134,7 @@ const myDisplayItem = (display: any) => ({
   department: display.department,
   placeName: display.placeName,
   postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
+  posterVideoUrl: display.posterVideoUrl ?? null,
   displayNickname: display.displayNickname ?? display.artistName ?? '작가명',
   artistName: display.displayNickname ?? display.artistName ?? '작가명',
 });
@@ -154,8 +200,12 @@ export const displayHandlers = [
         displayId,
         title: String(body.title ?? '새 전시'),
         invitationToken: `mock-invitation-${displayId}`,
+        images: [],
+        posterImages: [],
+        posterVideoUrl: null,
       };
 
+      applyPosterMedia(display, body as Parameters<typeof applyPosterMedia>[1]);
       mockDb.displays.unshift(display);
 
       return created('/api/v1/display', { displayId, ...display });
@@ -179,6 +229,7 @@ export const displayHandlers = [
       assign('content', body.description);
       assign('posterImageUrl', body.posterImageUrl);
       assign('thumbnailUrl', body.posterImageUrl);
+      applyPosterMedia(display, body);
       assign('displayType', body.type);
       assign('displayFields', body.fields);
       assign('organization', body.schoolOrOrganization);
@@ -360,17 +411,37 @@ export const displayHandlers = [
         northLatitude: Number(searchParams.get('northLatitude')),
         eastLongitude: Number(searchParams.get('eastLongitude')),
       };
-      const searchWord = searchParams.get('searchWord')?.trim();
+      const searchWord = searchParams.get('searchWord');
+      const all = searchParams.get('all') === 'true';
       const cursor = Number(searchParams.get('cursor') ?? 0);
-      const size = Number(searchParams.get('size') ?? mockDb.displays.length);
+      const size = Number(searchParams.get('size') ?? 20);
       const hasBounds = Object.values(bounds).every(Number.isFinite);
       const start = Number.isFinite(cursor) ? cursor : 0;
+      // 서버는 한국 날짜 기준 오늘 끝나는 전시까지 돌려준다
+      const today = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+      if (all && searchParams.has('cursor')) {
+        return fail(
+          '/api/v1/display/map',
+          400,
+          'INVALID_PARAMETER',
+          'all 과 cursor 는 함께 보낼 수 없어요.',
+        );
+      }
 
       const filteredMarkers = listDisplays()
         .map((display: any) => {
           const coordinates = DISPLAY_MAP_COORDINATES[display.displayId];
+          // 검색 대상: 전시명 · 장소명 · 학교명 · 세부 소속
+          const matchesSearch = matchesSearchWord(searchWord, [
+            display.title,
+            display.location?.placeName ?? display.placeName,
+            display.organization,
+            display.department,
+            display.schoolDepartmentName,
+          ]);
 
-          if (!coordinates) {
+          if (!coordinates || !matchesSearch) {
             return null;
           }
 
@@ -387,11 +458,18 @@ export const displayHandlers = [
             longitude: coordinates.longitude,
           };
         })
-        .filter((marker: any) => marker)
+        .filter((marker: any) => marker && marker.endDate >= today)
         .filter(
           (marker: any) => !hasBounds || isInsideBounds(marker.latitude, marker.longitude, bounds),
-        )
-        .filter((marker: any) => !searchWord || marker.title.includes(searchWord));
+        );
+
+      if (all) {
+        return success('/api/v1/display/map', {
+          markers: filteredMarkers,
+          pagination: { nextCursor: null, size: filteredMarkers.length, hasNext: false },
+        });
+      }
+
       const markers = filteredMarkers.slice(start, start + size);
       const nextCursor = start + size < filteredMarkers.length ? start + size : null;
 
@@ -548,10 +626,17 @@ export const displayHandlers = [
       );
       const exhibitions = allExhibitions.slice(cursor, cursor + size);
       const nextCursor = cursor + size < allExhibitions.length ? cursor + size : null;
+      const last = exhibitions.at(-1);
 
       return success('/api/v1/display/search', {
         exhibitions,
-        pagination: { nextCursor, size: exhibitions.length, hasNext: nextCursor !== null },
+        pagination: {
+          nextCursor,
+          size: exhibitions.length,
+          hasNext: nextCursor !== null,
+          // 목은 커서를 순번으로 쓰므로 cursorLikeCount 를 받아도 쓰지 않는다
+          ...(sort === 'LIKES' && last && { nextCursorLikeCount: last.likeCount ?? 0 }),
+        },
       });
     }),
   ),
@@ -617,22 +702,25 @@ export const displayHandlers = [
       const invitee = mockDb.searchableUsers.find((user: any) => user.userId === inviteeUserId);
       const members = display.teamMembers ?? [];
       const alreadyMember = members.some((member: any) => member.userId === inviteeUserId);
+      const invitationId = Date.now();
 
       if (inviteeUserId && !alreadyMember) {
         display.teamMembers = [
           ...members,
           {
-            teamMemberId: Date.now(),
+            // 초대 대기는 실서버처럼 teamMemberId 가 없고 invitationId 로 취소한다
+            teamMemberId: null,
             userId: inviteeUserId,
             displayNickname: invitee?.nickname ?? `user-${inviteeUserId}`,
             role: 'TEAM_MEM',
             accepted: false,
+            invitationId,
           },
         ];
       }
 
       return created('/api/v1/display-invitations/displays/{displayId}', {
-        invitationId: Date.now(),
+        invitationId,
         displayId,
         inviteeUserId,
         status: 'PENDING',

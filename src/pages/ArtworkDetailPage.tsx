@@ -29,6 +29,7 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
+import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { getExhibitionState } from '@/utils/exhibitionState';
 import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
@@ -111,16 +112,22 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
     coAuthors: detail.coAuthors,
   });
 
-  /* 뷰어는 작품 이미지만 씁니다. 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다. */
-  const artworkImages = (detail.images ?? []).filter((image) => image.imageType !== 'WORK_PROCESS');
-  const imageUrls = artworkImages
-    .map((image) => image.imageUrl)
-    .filter((imageUrl): imageUrl is string => Boolean(imageUrl));
-  const thumbnailUrl = artworkImages.find((image) => image.isThumbnail)?.imageUrl;
-  const orderedImages = thumbnailUrl
-    ? [thumbnailUrl, ...imageUrls.filter((imageUrl) => imageUrl !== thumbnailUrl)]
-    : imageUrls;
-  const viewerImages = orderedImages.length > 0 ? orderedImages : [FALLBACK_POSTER_IMAGE];
+  /*
+   * 뷰어는 작품 이미지만 씁니다. 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다.
+   * 영상은 칸에 썸네일을 보이고, 누르면 플레이어 창에서 재생합니다
+   */
+  const artworkImages = (detail.images ?? []).filter(
+    (image) => image.imageType !== 'WORK_PROCESS' && toDisplayImageCardUrl(image),
+  );
+  const thumbnailImage = artworkImages.find((image) => image.isThumbnail);
+  const orderedImages = thumbnailImage
+    ? [thumbnailImage, ...artworkImages.filter((image) => image !== thumbnailImage)]
+    : artworkImages;
+  const viewerImages =
+    orderedImages.length > 0 ? orderedImages.map(toDisplayImageCardUrl) : [FALLBACK_POSTER_IMAGE];
+  const viewerVideoSrcs = orderedImages.map((image) =>
+    isVideoMedia(image) ? image.imageUrl : undefined,
+  );
 
   const processImageUrls = getProcessImages(detail.images ?? []).map((image) => image.imageUrl);
 
@@ -128,6 +135,7 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
     <ArtworkDetailShell
       key={artworkId}
       images={viewerImages}
+      videoSrcs={viewerVideoSrcs}
       title={detail.artworkName}
       subtitle={artists.map((artist) => artist.name).join(', ')}
       onBack={goBack}

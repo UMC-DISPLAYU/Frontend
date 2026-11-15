@@ -3,6 +3,7 @@ import { type ChangeEvent, useRef, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
+import { VideoThumbnailSheet } from '@/components/common/VideoThumbnailSheet';
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import {
   type ReorderDragMode,
@@ -11,12 +12,26 @@ import {
   useHorizontalReorderItem,
 } from '@/hooks/useHorizontalReorder';
 import { cn } from '@/utils/cn';
+import { formatVideoDuration } from '@/utils/videoFile';
 
-import { MAX_POSTER_FILE_MB, POSTER_ACCEPT_TYPES } from './displayRegister.constants';
+import {
+  MAX_POSTER_FILE_MB,
+  MAX_POSTER_VIDEO_MB,
+  MAX_POSTER_VIDEO_SECONDS,
+  POSTER_ACCEPT_TYPES,
+  POSTER_VIDEO_ACCEPT_TYPES,
+} from './displayRegister.constants';
 import { COUNT_CLASS, FOCUS_CLASS, REQUIRED_CLASS } from './displayRegister.styles';
-import { CloseIcon, PlusIcon } from './DisplayRegisterIcons';
+import { CloseIcon, PlayIcon, PlusIcon } from './DisplayRegisterIcons';
 import { PosterCropSheet } from './PosterCropSheet';
-import type { PosterItem, PosterUploads } from './usePosterUploads';
+import { isPosterReady, type PosterItem, type PosterUploads } from './usePosterUploads';
+
+const ACCEPT = [...POSTER_ACCEPT_TYPES, ...POSTER_VIDEO_ACCEPT_TYPES].join(',');
+
+const CHIP_BUTTON_CLASS = cn(
+  'typography-body-sm-semibold absolute right-1.5 bottom-1.5 h-5.5 rounded-6 bg-[rgba(255,255,255,0.92)] px-2 text-primary after:absolute after:-inset-x-1 after:-inset-y-2.75',
+  FOCUS_CLASS,
+);
 
 const ADD_TILE_CLASS = cn(
   'typography-body-md-medium grid shrink-0 cursor-pointer place-content-center justify-items-center gap-2 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
@@ -29,7 +44,8 @@ function PosterHelp() {
       JPG, PNG, WEBP, HEIC · 장당 최대 {MAX_POSTER_FILE_MB}MB
       <br />큰 그래픽은 JPG 고화질로 내보내 주세요
       <br />
-      영상은 1개까지 · MP4, MOV, WEBM · 30초 이내 · 200MB 이하
+      영상은 1개까지 · MP4, MOV, WEBM · {MAX_POSTER_VIDEO_SECONDS}초 이내 · {MAX_POSTER_VIDEO_MB}MB
+      이하
     </p>
   );
 }
@@ -74,22 +90,23 @@ function UploadErrorBox({ onRetry }: { onRetry: () => void }) {
 function PosterThumb({
   item,
   index,
-  locked,
   dragMode,
   canReorder,
   onRemove,
   onAdjust,
+  onChangeThumbnail,
 }: {
   item: PosterItem;
   index: number;
-  locked: boolean;
   dragMode: ReorderDragMode;
   canReorder: boolean;
   onRemove: () => void;
   onAdjust: () => void;
+  onChangeThumbnail: () => void;
 }) {
   const isRepresentative = index === 0;
-  const isUploading = !item.uploadedUrl;
+  const isVideo = item.mediaType === 'VIDEO';
+  const isUploading = !isPosterReady(item);
   const {
     setNodeRef,
     style: reorderStyle,
@@ -98,7 +115,7 @@ function PosterThumb({
   } = useHorizontalReorderItem({
     id: item.id,
     dragMode,
-    disabled: locked || !canReorder,
+    disabled: !canReorder,
   });
 
   return (
@@ -108,66 +125,72 @@ function PosterThumb({
       aria-busy={isUploading}
       {...reorderProps}
       aria-roledescription="순서를 바꿀 수 있는 포스터"
-      aria-label={`포스터 ${index + 1}${isRepresentative ? ', 대표' : ''}`}
+      aria-label={`포스터 ${index + 1}${isVideo ? ', 영상' : ''}${isRepresentative ? ', 대표' : ''}`}
       className={cn(
         'relative h-[105px] w-21 shrink-0 animate-rise snap-start overflow-hidden bg-[#f4f4f5] [animation-duration:350ms] [animation-fill-mode:backwards]',
         reorderClassName,
         FOCUS_CLASS,
       )}
     >
-      <img
-        src={item.previewUrl}
-        alt=""
-        draggable={false}
-        className={cn('size-full object-cover', isUploading && 'opacity-50')}
-      />
-      {isRepresentative && !isUploading && !locked && (
+      {item.previewUrl && (
+        <img
+          src={item.previewUrl}
+          alt=""
+          draggable={false}
+          className={cn('size-full object-cover', isUploading && 'opacity-50')}
+        />
+      )}
+      {isVideo && (
+        <span className="typography-body-sm-semibold pointer-events-none absolute top-1.5 left-1.5 inline-flex h-5 items-center gap-0.75 rounded-4 bg-[rgba(0,0,0,0.72)] pr-1.5 pl-1 text-base-white tabular-nums">
+          <PlayIcon className="size-2.5" />
+          {item.duration !== undefined && formatVideoDuration(item.duration)}
+        </span>
+      )}
+      {isRepresentative && !isUploading && (
         <button
           type="button"
-          aria-label="대표 포스터 썸네일 조정"
-          onClick={onAdjust}
+          aria-label={isVideo ? '영상 썸네일 변경' : '대표 포스터 썸네일 조정'}
+          onClick={isVideo ? onChangeThumbnail : onAdjust}
           {...STOP_REORDER_PROPS}
-          className={cn(
-            'typography-body-sm-semibold absolute right-1.5 bottom-1.5 h-5.5 rounded-6 bg-[rgba(255,255,255,0.92)] px-2 text-primary after:absolute after:-inset-x-1 after:-inset-y-2.75',
-            FOCUS_CLASS,
-          )}
+          className={CHIP_BUTTON_CLASS}
         >
-          조정
+          {isVideo ? '썸네일' : '조정'}
         </button>
       )}
       {isRepresentative && (
-        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1.5 left-1.5 inline-flex h-5 items-center rounded-4 bg-[#000] px-1.5 text-base-white">
+        <span className="typography-body-sm-semibold pointer-events-none absolute bottom-1.5 left-1.5 inline-flex h-5.5 items-center rounded-4 bg-[#000] px-1.5 text-base-white">
           대표
         </span>
       )}
-      {!locked && (
-        <button
-          type="button"
-          aria-label={`포스터 ${index + 1} 삭제`}
-          onClick={onRemove}
-          {...STOP_REORDER_PROPS}
-          className={cn(
-            'absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-circle bg-primary-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.15)] after:absolute after:-inset-2.5',
-            FOCUS_CLASS,
-          )}
-        >
-          <CloseIcon strokeWidth={2.4} className="size-3" />
-        </button>
-      )}
+      <button
+        type="button"
+        aria-label={`포스터 ${index + 1} 삭제`}
+        onClick={onRemove}
+        {...STOP_REORDER_PROPS}
+        className={cn(
+          'absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-circle bg-primary-white text-primary shadow-[0_1px_4px_rgba(0,0,0,0.15)] after:absolute after:-inset-2.5',
+          FOCUS_CLASS,
+        )}
+      >
+        <CloseIcon strokeWidth={2.4} className="size-3" />
+      </button>
     </div>
   );
 }
 
 interface PosterUploadFieldProps {
   posters: PosterUploads;
-  /** 수정 API 가 포스터 목록을 받지 않아, 수정 화면에서는 보기만 한다 */
-  locked?: boolean;
 }
 
-export function PosterUploadField({ posters, locked = false }: PosterUploadFieldProps) {
+export function PosterUploadField({ posters }: PosterUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [cropSession, setCropSession] = useState<{ item: PosterItem; key: number } | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
+  const [thumbnailSession, setThumbnailSession] = useState<{
+    item: PosterItem;
+    key: number;
+  } | null>(null);
+  const [isThumbnailOpen, setIsThumbnailOpen] = useState(false);
   const { items, errorKind } = posters;
   const ids = items.map((item) => item.id);
   const { dragMode, contextProps } = useHorizontalReorder({ onMove: posters.move });
@@ -187,15 +210,13 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
     setIsCropOpen(true);
   };
 
+  const openThumbnail = (item: PosterItem) => {
+    setThumbnailSession((prev) => ({ item, key: (prev?.key ?? 0) + 1 }));
+    setIsThumbnailOpen(true);
+  };
+
   const fileInput = (
-    <input
-      ref={inputRef}
-      type="file"
-      hidden
-      multiple
-      accept={POSTER_ACCEPT_TYPES.join(',')}
-      onChange={handleFiles}
-    />
+    <input ref={inputRef} type="file" hidden multiple accept={ACCEPT} onChange={handleFiles} />
   );
   const errorBox = errorKind && <UploadErrorBox onRetry={handleRetry} />;
 
@@ -223,7 +244,7 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
 
   return (
     <div className="mt-6">
-      {!locked && fileInput}
+      {fileInput}
       <div className="typography-body-lg-semibold flex justify-between text-primary">
         <span>
           전시 포스터
@@ -233,13 +254,7 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
           {items.length} / {MAX_POSTER_UPLOAD_IMAGES}
         </span>
       </div>
-      {locked ? (
-        <p className="typography-body-md-medium mt-1 text-secondary">
-          포스터는 지금 수정할 수 없어요
-        </p>
-      ) : (
-        <PosterHelp />
-      )}
+      <PosterHelp />
       {errorBox}
       <DndContext {...contextProps}>
         <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
@@ -250,7 +265,7 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
               dragMode && 'snap-none',
             )}
           >
-            {!locked && items.length < MAX_POSTER_UPLOAD_IMAGES && (
+            {items.length < MAX_POSTER_UPLOAD_IMAGES && (
               <button
                 type="button"
                 onClick={openPicker}
@@ -265,11 +280,11 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
                 key={item.id}
                 item={item}
                 index={index}
-                locked={locked}
                 dragMode={dragMode}
                 canReorder={items.length > 1}
                 onRemove={() => posters.remove(item.id)}
                 onAdjust={() => openCrop(item)}
+                onChangeThumbnail={() => openThumbnail(item)}
               />
             ))}
           </div>
@@ -285,6 +300,20 @@ export function PosterUploadField({ posters, locked = false }: PosterUploadField
           onDone={(crop) => {
             posters.setCrop(cropSession.item.id, crop);
             setIsCropOpen(false);
+          }}
+        />
+      )}
+      {thumbnailSession?.item.videoSrc && (
+        <VideoThumbnailSheet
+          key={thumbnailSession.key}
+          open={isThumbnailOpen}
+          videoSrc={thumbnailSession.item.videoSrc}
+          imageAcceptTypes={POSTER_ACCEPT_TYPES}
+          maxImageMb={MAX_POSTER_FILE_MB}
+          onClose={() => setIsThumbnailOpen(false)}
+          onSelect={(file) => {
+            posters.setThumbnail(thumbnailSession.item.id, file);
+            setIsThumbnailOpen(false);
           }}
         />
       )}

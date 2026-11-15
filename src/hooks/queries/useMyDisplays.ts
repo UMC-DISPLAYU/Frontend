@@ -33,6 +33,7 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   endDate: display.endDate,
   place: display.placeName,
   thumbnail: display.postImageUrl,
+  hasVideoPoster: Boolean(display.posterVideoUrl),
   artistName: display.displayNickname ?? display.artistName,
 });
 

@@ -26,6 +26,7 @@ import {
   MAX_ARTWORK_MATERIAL_LENGTH,
   MAX_ARTWORK_SIZE_LENGTH,
   MAX_ARTWORK_TITLE_LENGTH,
+  MAX_ARTWORK_VIDEO_MB,
   MAX_PROCESS_IMAGES,
 } from './artworkRegister.constants';
 import {
@@ -71,6 +72,8 @@ export interface ArtworkRegisterFormProps {
   leaveFallback: string;
   /** 수정할 때 기존 서버 분야(화면에 없는 분야를 지키고 개수 한도를 맞추는 데 쓴다) */
   previousTypes?: readonly string[];
+  /** 작품 이미지에 영상을 받는지. 전시 작품만 받는다(개인 작품 API 는 영상 필드가 없다) */
+  allowVideo?: boolean;
 }
 
 export function ArtworkRegisterForm({
@@ -84,6 +87,7 @@ export function ArtworkRegisterForm({
   onSubmit,
   leaveFallback,
   previousTypes,
+  allowVideo = false,
 }: ArtworkRegisterFormProps) {
   const leave = useLeaveArtworkRegister();
   const formId = useId();
@@ -94,11 +98,14 @@ export function ArtworkRegisterForm({
   const artworkImages = useArtworkImageUploads({
     initialUrls: initialImages.artworkUrls,
     initialCrop: initialImages.artworkCrop,
+    initialVideos: initialImages.videos,
     maxImages: MAX_ARTWORK_IMAGES,
+    allowVideo,
   });
   const processImages = useArtworkImageUploads({
     initialUrls: initialImages.processUrls,
     maxImages: MAX_PROCESS_IMAGES,
+    videoNotAllowedMessage: allowVideo ? '작업 과정에는 사진만 올릴 수 있어요' : undefined,
     // 프로토타입은 작업 과정 칸의 오류를 칸 위 안내 대신 토스트로 알린다
     onUploadError: () => toast('작업 과정 사진을 올리지 못했어요. 다시 시도해주세요.'),
   });
@@ -191,6 +198,7 @@ export function ArtworkRegisterForm({
       artworkUrls: artworkImages.uploadedUrls,
       processUrls: processImages.uploadedUrls,
       artworkCrop: artworkImages.items[0]?.crop ?? null,
+      ...(allowVideo && { videos: artworkImages.uploadedVideos }),
     });
   });
 
@@ -216,8 +224,8 @@ export function ArtworkRegisterForm({
               className="mt-4"
               label="작품 이미지"
               required
-              help={`첫 번째 사진이 대표 이미지예요\nJPG, PNG, WEBP, HEIC · 장당 최대 ${MAX_ARTWORK_IMAGE_MB}MB\n영상은 1개까지 · MP4, MOV, WEBM · 3분 이내 · 500MB 이하`}
-              addLabel="사진·영상 추가"
+              help={`첫 번째 사진이 대표 이미지예요\nJPG, PNG, WEBP, HEIC · 장당 최대 ${MAX_ARTWORK_IMAGE_MB}MB${allowVideo ? `\n영상은 1개까지 · MP4, MOV, WEBM · 3분 이내 · ${MAX_ARTWORK_VIDEO_MB}MB 이하` : ''}`}
+              addLabel={allowVideo ? '사진·영상 추가' : '사진 추가'}
               uploads={artworkImages}
               representative
               limitMessage={`작품 이미지는 최대 ${MAX_ARTWORK_IMAGES}장까지 올릴 수 있어요`}

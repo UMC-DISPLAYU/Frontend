@@ -85,6 +85,17 @@ export function DisplayManagementCard({
           skeleton
           frameClassName="absolute inset-0"
         />
+        {ex.hasVideoPoster && (
+          <span
+            role="img"
+            aria-label="영상 포스터"
+            className="absolute top-1.5 left-1.5 inline-flex h-5 items-center rounded-4 bg-[rgba(0,0,0,0.72)] px-1 text-base-white"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-2.5">
+              <path d="M7 4.8v14.4L19 12z" fill="currentColor" />
+            </svg>
+          </span>
+        )}
       </div>
 
       <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-7 wrap-break-word">

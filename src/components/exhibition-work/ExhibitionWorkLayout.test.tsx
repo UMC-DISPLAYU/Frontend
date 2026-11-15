@@ -3,7 +3,7 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
+import { DisplaySummaryCard } from '@/components/common/DisplaySummaryCard';
 
 import { ExhibitionWorkLayout } from './ExhibitionWorkLayout';
 
@@ -17,7 +17,6 @@ vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
 vi.mock('@/hooks/queries/useUserProfile', () => ({
   useUserMe: () => ({ data: { id: mocks.userId } }),
 }));
-vi.mock('@/components/common/OptimizedImage', () => ({ OptimizedImage: 'img' }));
 vi.mock('@/components/layout', () => ({ PageContainer: 'main' }));
 
 type Element = ReactElement<Record<string, unknown>>;
@@ -66,12 +65,6 @@ describe('전시 작업 탭', () => {
     expect(mocks.navigate).not.toHaveBeenCalled();
   });
 
-  it('전시 미리보기는 전시 팀원용 미리보기 주소를 새 탭으로 연다', () => {
-    const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
-    const preview = nodes(page).find((node) => node.props.to === '/exhibition/7/preview');
-    expect(preview?.props).toMatchObject({ target: '_blank', rel: 'noopener noreferrer' });
-  });
-
   it('기존 별도 관리 경로에서 탭을 누르면 전시 작업의 해당 탭으로 이동한다', () => {
     const page = ExhibitionWorkLayout({ display, activeTab: 'contents', children: null });
     (tabsOf(page)[0].props.onClick as () => void)();
@@ -82,22 +75,10 @@ describe('전시 작업 탭', () => {
 });
 
 describe('전시 요약 카드', () => {
-  it('일정은 앞에만 연도를 붙이고 끝 연도는 다를 때만 붙인다', () => {
-    const texts = (dates: { startDate: string; endDate: string }) =>
-      nodes(
-        ExhibitionWorkLayout({
-          display: { ...display, period: dates as DisplayDetailDto['period'] },
-          activeTab: 'artworks',
-          children: null,
-        }),
-      )
-        .map((node) => node.props.children)
-        .filter((child): child is string => typeof child === 'string');
-    expect(texts({ startDate: '2026-11-01', endDate: '2026-11-30' })).toContain('2026.11.01–11.30');
-    expect(texts({ startDate: '2026-12-20', endDate: '2027-01-05' })).toContain(
-      '2026.12.20–2027.01.05',
-    );
-    expect(texts({ startDate: '2026-11-01', endDate: '2026-11-01' })).toContain('2026.11.01');
+  it('공용 전시 요약 카드에 전시를 넘긴다', () => {
+    const page = ExhibitionWorkLayout({ display, activeTab: 'artworks', children: null });
+    const card = nodes(page).find((node) => node.type === DisplaySummaryCard);
+    expect(card?.props.display).toBe(display);
   });
 });
 
@@ -109,20 +90,20 @@ describe('전시 상태', () => {
         activeTab: 'artworks',
         children: null,
       }),
-    ).find((node) => node.type === DisplayPublishStatusLabel);
+    ).find((node) => node.type === DisplaySummaryCard);
 
   it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED', 'PUBLISHED'])(
-    '공개 상태 %s 는 공용 상태 라벨에 그대로 넘긴다',
+    '공개 상태 %s 는 요약 카드에 그대로 넘긴다',
     (status) => {
-      const label = statusLabelOf(status);
-      expect(label?.props.status).toBe(status);
-      expect(label?.props.label).toBeUndefined();
+      const card = statusLabelOf(status);
+      expect(card?.props.status).toBe(status);
+      expect(card?.props.statusLabel).toBeUndefined();
     },
   );
 
   it('모르는 값(전시 기간 상태)은 한글 라벨을 준비 중 모양으로 보인다', () => {
-    const label = statusLabelOf('UPCOMING');
-    expect(label?.props.status).toBe('DRAFT');
-    expect(label?.props.label).toBe('전시 예정');
+    const card = statusLabelOf('UPCOMING');
+    expect(card?.props.status).toBe('DRAFT');
+    expect(card?.props.statusLabel).toBe('전시 예정');
   });
 });
