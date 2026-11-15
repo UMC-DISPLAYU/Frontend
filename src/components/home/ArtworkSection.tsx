@@ -6,6 +6,7 @@ import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { cn } from '@/utils/cn';
+import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 
 import { ArtistByline } from './ArtistByline';
 import { HOME_INNER } from './homeLayout';
@@ -69,12 +70,13 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
                 to={`/artwork/${artwork.artworkId}`}
                 className="group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
               >
-                <span className={cn('block overflow-hidden', IMAGE_FRAME_CLASS)}>
+                <span className={cn('relative block overflow-hidden', IMAGE_FRAME_CLASS)}>
                   <OptimizedImage
                     src={artwork.artworkImageUrl}
                     alt={`${artwork.artworkName} 작품`}
-                    displayWidth={220}
+                    displayWidth={croppedDisplayWidth(220, artwork.artworkCrop)}
                     className="size-full object-cover transition-transform duration-[700ms] ease-standard group-hover:scale-103"
+                    style={savedCropImageStyle(artwork.artworkCrop)}
                   />
                 </span>
                 <span className="block pt-2">

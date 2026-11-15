@@ -8,6 +8,7 @@ import {
   buildUpdateArtworkRequest,
   resolveQaHandlerUserIds,
   splitArtworkImages,
+  toArtworkCropRequest,
   toArtworkImageRequests,
   toArtworkRegisterValues,
 } from './artworkRequest';
@@ -156,7 +157,7 @@ describe('buildCreateArtworkRequest', () => {
       artworkName: '머문 자리의 온기',
       content: '',
       type: 'PAINTING',
-      types: ['PAINTING', 'DESIGN'],
+      types: ['PAINTING', 'GRAPHIC'],
       productionYear: 2026,
       materialMedia: '아크릴',
       size: '',
@@ -200,6 +201,46 @@ describe('buildUpdateArtworkRequest', () => {
   });
 });
 
+describe('artworkCrop', () => {
+  it('대표 사진의 썸네일 영역을 보내고, 고르지 않았으면 보내지 않는다', () => {
+    const base = { values, author: me, coAuthors: [], ownerUserId: 9 };
+
+    expect(
+      buildCreateArtworkRequest(7, {
+        ...base,
+        images: { ...images, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } },
+      }).artworkCrop,
+    ).toEqual({ x: 0.25, y: 0, w: 0.75, h: 1 });
+    expect(buildCreateArtworkRequest(7, { ...base, images })).not.toHaveProperty('artworkCrop');
+    expect(
+      buildUpdateArtworkRequest({ ...base, images: { ...images, artworkCrop: null } }),
+    ).not.toHaveProperty('artworkCrop');
+  });
+
+  it('소수점 10자리까지 내림하고 x + w · y + h 가 1 을 넘지 않게 한다', () => {
+    expect(toArtworkCropRequest({ x: 1 / 3, y: 0.1, w: 2 / 3, h: 0.9 })).toEqual({
+      x: 0.3333333333,
+      y: 0.1,
+      w: 0.6666666666,
+      h: 0.9,
+    });
+    expect(toArtworkCropRequest({ x: 0.3, y: 0, w: 0.7000005, h: 1 })).toEqual({
+      x: 0.3,
+      y: 0,
+      w: 0.7,
+      h: 1,
+    });
+  });
+
+  it('올바르지 않은 영역은 보내지 않는다', () => {
+    expect(toArtworkCropRequest(null)).toBeUndefined();
+    expect(toArtworkCropRequest({ x: 0, y: 0, w: 0, h: 1 })).toBeUndefined();
+    expect(toArtworkCropRequest({ x: 0.5, y: 0, w: 0.6, h: 1 })).toBeUndefined();
+    // 허용 오차로 통과해도 내림한 뒤 너비가 0 이면 보내지 않는다
+    expect(toArtworkCropRequest({ x: 0.99999999999, y: 0, w: 1e-12, h: 1 })).toBeUndefined();
+  });
+});
+
 describe('buildPersonalArtworkRequest', () => {
   it('작가 · 담당자 필드 없이 작품 정보만 보낸다', () => {
     const request = buildPersonalArtworkRequest(values, images);
@@ -208,36 +249,44 @@ describe('buildPersonalArtworkRequest', () => {
     expect(request).not.toHaveProperty('point');
     expect(buildPersonalArtworkRequest(values, images, { point: ' 포인트 ' }).point).toBe('포인트');
   });
+
+  it('개인 작품 API 는 예전 분야 값을 받아 그래픽 · 영상 · 공예 · 기타를 예전 값으로 보내고 썸네일 영역은 보내지 않는다', () => {
+    const request = buildPersonalArtworkRequest(
+      { ...values, fieldLabels: ['그래픽', '영상', '공예'] },
+      { ...images, artworkCrop: { x: 0, y: 0, w: 0.75, h: 1 } },
+    );
+
+    expect(request.types).toEqual(['DESIGN', 'MEDIA', 'CRAFT']);
+    expect(request.type).toBe('DESIGN');
+    expect(request).not.toHaveProperty('artworkCrop');
+    expect(buildPersonalArtworkRequest({ ...values, fieldLabels: ['기타'] }, images).types).toEqual(
+      ['ETC'],
+    );
+  });
 });
 
-describe('수정할 때 화면에 없는 분야 지키기', () => {
-  const withFallback: ArtworkRegisterValues = { ...values, fieldLabels: ['기타'] };
+describe('12개 밖의 분야 값', () => {
+  it('수정 화면에 보이지 않고, 저장할 때도 보내지 않는다', () => {
+    const edited = toArtworkRegisterValues({
+      artworkName: '작은 정원',
+      content: null,
+      type: 'DESIGN',
+      types: ['DESIGN', 'PAINTING', 'FASHION'],
+      productionYear: 2025,
+      materialMedia: null,
+      size: null,
+    });
 
-  it('화면에 없는 서버 분야(FASHION · COMPLEX)로 저장된 작품은 기타를 그대로 두면 원래 값을 보낸다', () => {
-    expect(
-      buildPersonalArtworkRequest(withFallback, images, { types: ['FASHION', 'COMPLEX'] }).types,
-    ).toEqual(['FASHION', 'COMPLEX']);
+    expect(edited.fieldLabels).toEqual(['회화']);
     expect(
       buildUpdateArtworkRequest({
-        values: withFallback,
+        values: edited,
         images,
         author: me,
         coAuthors: [],
-        previous: { point: null, qaHandlerUserIds: [1], type: 'FASHION' },
-      }).types,
-    ).toEqual(['FASHION']);
-  });
-
-  it('기타를 다른 분야로 바꾸거나 원래 값이 ETC 면 그대로 보낸다', () => {
-    expect(
-      buildPersonalArtworkRequest({ ...values, fieldLabels: ['회화'] }, images, {
-        types: ['FASHION'],
+        previous: { point: null, qaHandlerUserIds: [1], types: ['DESIGN', 'PAINTING', 'FASHION'] },
       }).types,
     ).toEqual(['PAINTING']);
-    expect(buildPersonalArtworkRequest(withFallback, images, { types: ['ETC'] }).types).toEqual([
-      'ETC',
-    ]);
-    expect(buildPersonalArtworkRequest(withFallback, images).types).toEqual(['ETC']);
   });
 });
 

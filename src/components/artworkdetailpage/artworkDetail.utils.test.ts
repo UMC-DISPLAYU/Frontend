@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getArtworkArtists,
+  getArtworkSpecText,
   getProcessImages,
   getStackPhotoIndex,
   hasArtworkIntro,
@@ -115,5 +116,14 @@ describe('getArtworkArtists', () => {
 
   it('작가 이름이 비면 작가 미상으로 둔다', () => {
     expect(getArtworkArtists({ artistName: '' })[0].name).toBe('작가 미상');
+  });
+});
+
+describe('getArtworkSpecText', () => {
+  it('12개 분야는 한글 이름으로 보이고, 12개 밖의 분야 값은 보이지 않는다', () => {
+    expect(getArtworkSpecText({ type: 'GRAPHIC', productionYear: 2026 })).toBe('그래픽 · 2026');
+    expect(getArtworkSpecText({ type: 'DESIGN', productionYear: 2026, size: '50cm' })).toBe(
+      '2026 · 50cm',
+    );
   });
 });

@@ -5,7 +5,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import type { MediaTypeDto } from '@/api/dto';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
 import { toast } from '@/stores/toastStore';
-import type { CropRect } from '@/utils/cropBox';
+import { type CropRect, isValidCrop } from '@/utils/cropBox';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
 
@@ -19,11 +19,12 @@ import {
   MAX_ARTWORK_VIDEOS,
 } from './artworkRegister.constants';
 import type { ArtworkVideoMeta } from './artworkRequest';
+import { convertHeicToJpeg, isHeicFile } from './heicImage';
 
 export type ArtworkImageItem = {
   id: string;
   mediaType: MediaTypeDto;
-  /** 칸에 보일 이미지. 영상이면 썸네일이고, 영상을 읽는 동안은 비어 있다 */
+  /** 칸에 보일 이미지. 영상이면 썸네일이고, 영상을 읽는 동안 · HEIC 를 JPG 로 바꾸는 동안은 비어 있다 */
   previewUrl: string;
   uploadedUrl?: string;
   /** 카드에 보이는 부분. 없으면 사진 가운데 */
@@ -55,8 +56,8 @@ const revokeItemUrls = (item: ArtworkImageItem) => {
   if (isLocalUrl(item.videoSrc)) URL.revokeObjectURL(item.videoSrc);
 };
 
-export const isAcceptableArtworkImage = (file: Pick<File, 'type' | 'size'>) =>
-  (ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) &&
+export const isAcceptableArtworkImage = (file: Pick<File, 'type' | 'size' | 'name'>) =>
+  ((ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) || isHeicFile(file)) &&
   file.size <= MAX_ARTWORK_IMAGE_MB * 1024 * 1024;
 
 export const isArtworkVideoFile = (file: Pick<File, 'type' | 'name'>) =>
@@ -122,6 +123,7 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
 const toInitialItems = (
   urls: string[],
   videos: Record<string, ArtworkVideoMeta>,
+  initialCrop?: CropRect | null,
 ): ArtworkImageItem[] =>
   urls.map((url, index) => {
     const video = videos[url];
@@ -137,7 +139,13 @@ const toInitialItems = (
           width: video.width,
           height: video.height,
         }
-      : { id: `initial-${index}`, mediaType: 'IMAGE', previewUrl: url, uploadedUrl: url };
+      : {
+          id: `initial-${index}`,
+          mediaType: 'IMAGE',
+          previewUrl: url,
+          uploadedUrl: url,
+          crop: index === 0 && isValidCrop(initialCrop) ? initialCrop : null,
+        };
   });
 
 /**
@@ -146,6 +154,7 @@ const toInitialItems = (
  */
 export function useArtworkImageUploads({
   initialUrls,
+  initialCrop,
   initialVideos = {},
   maxImages,
   allowVideo = false,
@@ -153,6 +162,8 @@ export function useArtworkImageUploads({
   onUploadError,
 }: {
   initialUrls: string[];
+  /** 첫 장(대표 사진)에 저장돼 있던 썸네일 영역 */
+  initialCrop?: CropRect | null;
   /** 저장된 영상(주소 → 썸네일 · 크기) */
   initialVideos?: Record<string, ArtworkVideoMeta>;
   maxImages: number;
@@ -161,7 +172,7 @@ export function useArtworkImageUploads({
   onUploadError?: () => void;
 }) {
   const [items, setItems] = useState<ArtworkImageItem[]>(() =>
-    toInitialItems(initialUrls, initialVideos),
+    toInitialItems(initialUrls, initialVideos, initialCrop),
   );
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
   /* 읽을 수 없거나 바꿀 수 없는 영상. 작품 이미지 칸 위 안내로 알린다 */
@@ -188,6 +199,8 @@ export function useArtworkImageUploads({
     return () => {
       itemsRef.current.forEach(revokeItemUrls);
       aborters.forEach((aborter) => aborter.abort());
+      // 화면을 떠난 뒤 끝난 HEIC 변환이 미리보기를 만들지 않게 비운다
+      itemsRef.current = [];
     };
   }, []);
 
@@ -241,12 +254,28 @@ export function useArtworkImageUploads({
   );
 
   const startImageUpload = useCallback(
-    (item: ArtworkImageItem, file: File) => {
-      uploadImage({ file, domain: 'artwork' })
-        .then((uploadedUrl) => patchItem(item.id, { uploadedUrl }))
-        .catch(() => failUpload(item.id, file));
+    async (item: ArtworkImageItem, file: File) => {
+      try {
+        let uploadFile = file;
+        if (isHeicFile(file)) {
+          uploadFile = await convertHeicToJpeg(file);
+          if (!isAlive(item.id)) return;
+
+          const previewUrl = URL.createObjectURL(uploadFile);
+          // 바로 지워도 remove 가 이 주소를 해제하도록 ref 에도 넣어 둔다
+          itemsRef.current = itemsRef.current.map((image) =>
+            image.id === item.id ? { ...image, previewUrl } : image,
+          );
+          patchItem(item.id, { previewUrl });
+        }
+
+        const uploadedUrl = await uploadImage({ file: uploadFile, domain: 'artwork' });
+        patchItem(item.id, { uploadedUrl });
+      } catch {
+        failUpload(item.id, file);
+      }
     },
-    [failUpload, patchItem, uploadImage],
+    [failUpload, isAlive, patchItem, uploadImage],
   );
 
   const startVideoUpload = useCallback(
@@ -325,7 +354,7 @@ export function useArtworkImageUploads({
         const item: ArtworkImageItem = {
           id: createImageId(),
           mediaType: isVideo ? 'VIDEO' : 'IMAGE',
-          previewUrl: isVideo ? '' : URL.createObjectURL(file),
+          previewUrl: isVideo || isHeicFile(file) ? '' : URL.createObjectURL(file),
         };
         return { file, item };
       });
@@ -335,7 +364,7 @@ export function useArtworkImageUploads({
       setItems((prev) => [...prev, ...added.map(({ item }) => item)]);
       added.forEach(({ item, file }) => {
         if (item.mediaType === 'VIDEO') void startVideoUpload(item.id, file);
-        else startImageUpload(item, file);
+        else void startImageUpload(item, file);
       });
 
       return { overLimit, rejectedCount, message };

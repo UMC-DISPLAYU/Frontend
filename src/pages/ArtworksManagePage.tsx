@@ -82,8 +82,9 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
         place: '',
         owner: artwork.artistName,
         artistUserId: artwork.artistUserId,
-        coAuthorUserIds: artwork.coAuthorUserIds,
+        artistUserIds: artwork.artistUserIds,
         thumbnail: artwork.artworkImageUrl,
+        thumbnailCrop: artwork.artworkCrop,
       })),
     [data],
   );

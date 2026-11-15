@@ -19,7 +19,6 @@ import {
   EMPTY_ARTWORK_REGISTER_VALUES,
   parseProxyAuthor,
   type ProxyAuthor,
-  readArtworkTypes,
   splitArtworkImages,
   toArtworkRegisterValues,
   toNamedCoAuthor,
@@ -145,7 +144,6 @@ function ArtworkRegisterContent({
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       leaveFallback={workPath}
-      previousTypes={edit ? readArtworkTypes(edit.previous) : undefined}
       allowVideo
       authorSection={
         <>
@@ -270,7 +268,10 @@ function ArtworkRegisterRoute() {
             : toNamedCoAuthor(coAuthor.name),
         )}
         defaultValues={toArtworkRegisterValues(previous)}
-        initialImages={splitArtworkImages(detailQuery.data.images)}
+        initialImages={{
+          ...splitArtworkImages(detailQuery.data.images),
+          artworkCrop: previous.artworkCrop,
+        }}
         // 수정 화면 조회 응답에는 사진 설명이 없어, 다시 보낼 사진 설명 · 크기는 관람용 상세에서 가져온다
         edit={{ artworkId, previous: { ...previous, images: detailQuery.data.images } }}
       />

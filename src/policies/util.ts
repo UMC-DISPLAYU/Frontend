@@ -10,7 +10,8 @@ export interface DisplayPolicyResource {
 }
 
 export interface ArtworkPolicyResource {
-  artistUserId: number;
+  /* 계정이 연결되지 않은 작가는 null 입니다. */
+  artistUserId: number | null;
   /* 공동 작업자. 계정이 연결되지 않은 공동 작업자는 userId가 null입니다. */
   coAuthors?: {
     userId: number | null;

@@ -25,11 +25,14 @@ interface ManageScreenProps {
   onAdd: () => void;
 }
 
+// 작품 목록은 대표 · 공동 작가 계정 id 를 artistUserIds 하나로 준다. 작품을 만든 사람인지만 보면 되므로 대표 외는 공동 작가로 둔다
 function getArtworkPolicyResource(work: Work): ArtworkPolicyResource | undefined {
   if (work.artistUserId === undefined) return undefined;
   return {
     artistUserId: work.artistUserId,
-    coAuthors: work.coAuthorUserIds?.map((userId) => ({ userId, name: '' })),
+    coAuthors: (work.artistUserIds ?? [])
+      .filter((userId) => userId !== work.artistUserId)
+      .map((userId) => ({ userId, name: '' })),
   };
 }
 
@@ -48,7 +51,7 @@ function WorkRow({
   const canDelete = hasPermission(policy, 'delete');
   const isMine =
     userId !== undefined &&
-    (work.artistUserId === userId || Boolean(work.coAuthorUserIds?.includes(userId)));
+    (work.artistUserId === userId || Boolean(work.artistUserIds?.includes(userId)));
 
   return (
     <div className="relative transition-transform duration-base ease-[cubic-bezier(.16,1,.3,1)] hover:-translate-y-0.5">

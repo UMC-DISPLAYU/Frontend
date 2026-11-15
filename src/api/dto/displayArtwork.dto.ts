@@ -40,7 +40,7 @@ export interface GetArtworkDetailResponseDataDto {
   content: string;
   type: string;
   productionYear: number;
-  materialMedia: string;
+  materialMedia: string | null;
   size: string;
   point: string;
   images: ImageResponseDto[];
@@ -217,7 +217,7 @@ export interface UpdateArtworkOrderResponseDataDto {
 
 export type UpdateArtworkOrderResponseDto = ApiResponseDto<UpdateArtworkOrderResponseDataDto>;
 
-/* 작품분야 서버 enum. 작품 등록 · 수정 · 개인 작품이 같은 값을 쓴다 */
+/* 개인 작품 분야 서버 enum(예전 10개) */
 export type ArtworkTypeDto =
   | 'PAINTING'
   | 'DESIGN'
@@ -229,6 +229,40 @@ export type ArtworkTypeDto =
   | 'FASHION'
   | 'COMPLEX'
   | 'ETC';
+
+/*
+ * 전시 작품 분야. 새로 고를 수 있는 값은 앞의 12개이고,
+ * 뒤의 예전 값은 이미 저장된 분야를 수정 요청에 그대로 다시 보낼 때만 받는다
+ */
+export type DisplayArtworkTypeDto =
+  | 'PAINTING'
+  | 'SCULPTURE'
+  | 'PHOTOGRAPHY'
+  | 'GRAPHIC'
+  | 'BRANDING'
+  | 'PRODUCT'
+  | 'VIDEO'
+  | 'SPACE'
+  | 'ARCHITECTURE'
+  | 'UX_UI'
+  | 'CRAFTS'
+  | 'OTHERS'
+  | 'DESIGN'
+  | 'FASHION'
+  | 'COMPLEX'
+  | 'ILLUSTRATION'
+  | 'MEDIA'
+  | 'CRAFT'
+  | 'ETC'
+  | 'UXUI';
+
+/* 카드 썸네일에 보이는 영역. 대표 사진 전체를 1로 본 비율(0~1) */
+export interface ArtworkCropDto {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export interface ArtworkImageRequestDto {
   imageUrl: string;
@@ -250,11 +284,12 @@ export interface CreateExhibitionArtworkRequestDto {
   displayId: number;
   artworkName: string;
   content?: string;
-  type?: ArtworkTypeDto;
-  /* 서버가 최대 2개까지 받는다 */
-  types?: ArtworkTypeDto[];
+  type?: DisplayArtworkTypeDto;
+  /* 서버가 최대 3개까지 받는다 */
+  types?: DisplayArtworkTypeDto[];
   productionYear: number;
-  materialMedia: string;
+  /* 비우면(빈 문자열 포함) 저장된 재료 / 매체가 지워진다 */
+  materialMedia?: string;
   size?: string;
   point?: string;
   images: ArtworkImageRequestDto[];
@@ -263,6 +298,8 @@ export interface CreateExhibitionArtworkRequestDto {
   coAuthors: ArtworkCoAuthorsDto;
   /* 담당자는 여러 명 지정할 수 있고 최소 한 명은 있어야 합니다. */
   qaHandlerUserIds: number[];
+  /* 수정에서 생략하면 대표 사진이 같은 동안 기존 영역을 유지하고, 대표 사진이 바뀌면 지워진다 */
+  artworkCrop?: ArtworkCropDto | null;
 }
 
 export type UpdateExhibitionArtworkRequestDto = Omit<
@@ -278,7 +315,7 @@ export interface CreateExhibitionArtworkResponseDataDto {
   type: string;
   types?: string[];
   productionYear: number;
-  materialMedia: string;
+  materialMedia: string | null;
   size: string;
   point: string;
   workSortOrder: number;
@@ -287,6 +324,7 @@ export interface CreateExhibitionArtworkResponseDataDto {
   artistUserId: number;
   coAuthorCount: number;
   qaHandlerUserIds: number[];
+  artworkCrop?: ArtworkCropDto | null;
 }
 
 /* 수정 화면 진입 시 등록 당시 상태(공동 작가 · Q&A 담당자 포함)를 복원하는 응답 */
@@ -298,7 +336,7 @@ export interface DisplayArtworkEditResponseDataDto {
   type?: string | null;
   types?: string[] | null;
   productionYear: number;
-  materialMedia: string;
+  materialMedia: string | null;
   size?: string | null;
   point?: string | null;
   images: ImageResponseDto[];
@@ -306,6 +344,7 @@ export interface DisplayArtworkEditResponseDataDto {
   artistUserId?: number | null;
   coAuthors?: ArtworkCoAuthorDto[] | null;
   qaHandlerUserIds?: number[] | null;
+  artworkCrop?: ArtworkCropDto | null;
 }
 
 export type CreateExhibitionArtworkResponseDto =
@@ -345,6 +384,7 @@ export interface ArtworkPreviewItemDto {
   exhibitionInfo: ArtworkPreviewExhibitionInfoDto;
   /* 대표 작가가 첫 번째이고 공동 작가가 이어진다 */
   artists?: ArtworkCoAuthorDto[];
+  artworkCrop?: ArtworkCropDto | null;
 }
 
 export interface GetArtworkPreviewResponseDataDto {
@@ -361,11 +401,13 @@ export interface DisplayArtworkDto {
   displayId?: number;
   artworkName: string;
   artistName: string;
-  artistUserId?: number;
-  coAuthorUserIds?: number[];
+  artistUserId?: number | null;
+  /* 대표 · 공동 작가 중 계정이 있는 사람의 id. 계정 없는 작가와 Q&A 전용 담당자는 빠진다 */
+  artistUserIds?: number[];
   artworkImageUrl: string;
   imageWidth: number;
   imageHeight: number;
+  artworkCrop?: ArtworkCropDto | null;
   /* 대표가 영상이면 영상 주소(artworkImageUrl 은 썸네일), 아니면 null */
   artworkVideoUrl?: string | null;
 }

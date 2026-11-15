@@ -39,6 +39,60 @@ const toCoAuthorList = (
   ];
 };
 
+const SELECTABLE_ARTWORK_TYPES = new Set([
+  'PAINTING',
+  'SCULPTURE',
+  'PHOTOGRAPHY',
+  'GRAPHIC',
+  'BRANDING',
+  'PRODUCT',
+  'VIDEO',
+  'SPACE',
+  'ARCHITECTURE',
+  'UX_UI',
+  'CRAFTS',
+  'OTHERS',
+]);
+const CANONICAL_ARTWORK_TYPES: Record<string, string> = {
+  UXUI: 'UX_UI',
+  MEDIA: 'VIDEO',
+  CRAFT: 'CRAFTS',
+  ETC: 'OTHERS',
+};
+const MAX_ARTWORK_TYPES = 3;
+
+/*
+ * 서버처럼 분야를 1~3개(별칭은 표준 값으로 합쳐 센다)로 받고,
+ * 예전 값(DESIGN · FASHION 등)은 이미 저장된 분야를 다시 보낼 때만 받는다. 맞지 않으면 null
+ */
+const resolveArtworkTypes = (body: Record<string, any>, previous: readonly string[] = []) => {
+  const requested: string[] = body.types?.length ? body.types : body.type ? [body.type] : [];
+  const types = [...new Set(requested.map((type) => CANONICAL_ARTWORK_TYPES[type] ?? type))];
+  const kept = new Set(previous.map((type) => CANONICAL_ARTWORK_TYPES[type] ?? type));
+  const isAllowed = (type: string) => SELECTABLE_ARTWORK_TYPES.has(type) || kept.has(type);
+
+  return types.length > 0 && types.length <= MAX_ARTWORK_TYPES && types.every(isAllowed)
+    ? types
+    : null;
+};
+
+const invalidArtworkTypes = (path: string) =>
+  fail(path, 400, 'INVALID_ARTWORK_FIELD', '작품 분야는 신규 분야 중 1~3개만 선택할 수 있습니다.');
+
+/* 생략 · null · 공백이면 재료를 비운다 */
+const toMaterialMedia = (value: unknown) =>
+  typeof value === 'string' && value.trim() ? value.trim() : null;
+
+/* 대표 · 공동 작가 중 계정이 있는 사람의 id(중복 없이) */
+const toArtistUserIds = (artwork: any): number[] => [
+  ...new Set(
+    [
+      artwork.artistUserId,
+      ...(artwork.coAuthors ?? []).map((coAuthor: any) => coAuthor.userId),
+    ].filter((userId): userId is number => typeof userId === 'number'),
+  ),
+];
+
 export const artworkHandlers = [
   ...paths('/api/v1/artworks').map((path) =>
     http.get(path, ({ request }) => {
@@ -52,12 +106,23 @@ export const artworkHandlers = [
           ? mockDb.artworks.filter((artwork: any) => artwork.artistUserId === Number(userIdParam))
           : mockDb.artworks;
 
-      return success('/api/v1/artworks', listResponse(artworks));
+      return success(
+        '/api/v1/artworks',
+        listResponse(
+          artworks.map((artwork: any) => ({
+            ...artwork,
+            artistUserIds: toArtistUserIds(artwork),
+            artworkCrop: artwork.artworkCrop ?? null,
+          })),
+        ),
+      );
     }),
   ),
   ...paths('/api/v1/artworks').map((path) =>
     http.post(path, async ({ request }) => {
       const body = await readJson<Record<string, any>>(request);
+      const types = resolveArtworkTypes(body);
+      if (!types) return invalidArtworkTypes('/api/v1/artworks');
       // 요청 데이터로만 구성합니다. 기존 작품을 템플릿으로 복사하면
       // 이미지 등 덮어쓰지 않은 필드가 그대로 남아 다른 작품 정보가 노출됩니다.
       const { artworkImageUrl: imageUrl, artworkVideoUrl } = toArtworkCard(body.images);
@@ -73,16 +138,16 @@ export const artworkHandlers = [
         artist: artistName,
         content: body.content ?? '',
         description: body.content ?? '',
-        type: body.type ?? 'OTHERS',
+        type: types[0],
+        types,
         productionYear: body.productionYear ?? new Date().getFullYear(),
-        materialMedia: body.materialMedia ?? '',
-        material: body.materialMedia ?? '',
+        materialMedia: toMaterialMedia(body.materialMedia),
+        material: toMaterialMedia(body.materialMedia),
         size: body.size ?? '',
         point: body.point ?? '',
         images: body.images ?? [],
         coAuthors: toCoAuthorList(body.coAuthors, Number(body.displayId ?? 101)),
-        // 전시작 목록이 공동 작가의 수정 · 삭제 권한을 판단하는 값
-        coAuthorUserIds: body.coAuthors?.userIds ?? [],
+        artworkCrop: body.artworkCrop ?? null,
         artworkImageUrl: imageUrl,
         artworkVideoUrl,
         thumbnailUrl: imageUrl,
@@ -231,12 +296,13 @@ export const artworkHandlers = [
         type: artwork.type,
         types: artwork.types ?? (artwork.type ? [artwork.type] : []),
         productionYear: artwork.productionYear,
-        materialMedia: artwork.materialMedia ?? artwork.material ?? '',
+        materialMedia: artwork.materialMedia ?? artwork.material ?? null,
         size: artwork.size ?? '',
         point: artwork.point ?? '',
         images: artwork.images ?? [],
         artistName: artwork.artistName ?? artwork.artist,
         artistUserId: artwork.artistUserId ?? null,
+        artworkCrop: artwork.artworkCrop ?? null,
         coAuthors: Array.isArray(artwork.coAuthors) ? artwork.coAuthors : [],
         qaHandlerUserIds:
           artwork.qaHandlerUserIds ?? (artwork.artistUserId ? [artwork.artistUserId] : []),
@@ -258,21 +324,33 @@ export const artworkHandlers = [
         );
       }
       const body = await readJson<Record<string, any>>(request);
+      const types = resolveArtworkTypes(
+        body,
+        artwork.types ?? (artwork.type ? [artwork.type] : []),
+      );
+      if (!types) return invalidArtworkTypes('/api/v1/artworks/{artworkId}');
       const { artworkImageUrl: imageUrl, artworkVideoUrl } = toArtworkCard(
         body.images,
         artwork.artworkImageUrl,
       );
       const coAuthors = toCoAuthorList(body.coAuthors, artwork.displayId);
+      const materialMedia = toMaterialMedia(body.materialMedia);
+      // 영역을 생략하면 대표 사진이 같은 동안 유지하고, 대표 사진이 바뀌면 지운다
+      const artworkCrop =
+        body.artworkCrop ?? (imageUrl === artwork.artworkImageUrl ? artwork.artworkCrop : null);
 
       Object.assign(artwork, body, {
         title: body.artworkName ?? artwork.title,
-        material: body.materialMedia ?? artwork.material,
+        type: types[0],
+        types,
+        materialMedia,
+        material: materialMedia,
+        artworkCrop: artworkCrop ?? null,
         artworkImageUrl: imageUrl,
         artworkVideoUrl,
         thumbnailUrl: imageUrl,
         imageUrl,
         coAuthors,
-        coAuthorUserIds: body.coAuthors?.userIds ?? [],
       });
 
       return success('/api/v1/artworks/{artworkId}', {

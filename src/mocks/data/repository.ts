@@ -289,9 +289,17 @@ export const mockDb: {
   displays: MOCK_DISPLAY_DETAILS.map(displayToDetail).map(withPosterVideoSample),
   artworks: withArtworkVideoSample(
     MOCK_DISPLAY_DETAILS.flatMap((display) =>
-      display.artworkSection.artworks.map((artwork, index) =>
-        artworkToDetail(artwork, display.displayId === 101 && index === 0),
-      ),
+      display.artworkSection.artworks.map((artwork, index) => {
+        const detail = artworkToDetail(artwork, display.displayId === 101 && index === 0);
+        if (display.displayId !== 101) return detail;
+        // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로 둔다
+        if (index === 0) return { ...detail, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } };
+        if (index === 1) {
+          const me = { userId: 1, name: makeUser().nickname };
+          return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
+        }
+        return detail;
+      }),
     ),
   ),
   loungePosts: [

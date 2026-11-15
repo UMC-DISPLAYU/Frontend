@@ -1,20 +1,18 @@
 export const DEFAULT_ARTWORK_IMAGE_WIDTH = 800;
 export const DEFAULT_ARTWORK_IMAGE_HEIGHT = 600;
 
-export const ARTWORK_FIELD_MAP: Record<string, string> = {
-  회화: 'PAINTING',
-  디자인: 'DESIGN',
-  사진: 'PHOTOGRAPHY',
-  건축: 'ARCHITECTURE',
-  영상: 'MEDIA',
-  조소: 'SCULPTURE',
-  패션: 'FASHION',
-  일러스트: 'ILLUSTRATION',
-  공예: 'CRAFT',
-  기타: 'ETC',
+/* 작품 분야 값 → 한글 이름. 12개 밖의 값은 없는 값으로 보고 이름을 보이지 않는다 */
+export const ARTWORK_TYPE_LABEL_MAP: Record<string, string> = {
+  PAINTING: '회화',
+  SCULPTURE: '조소',
+  PHOTOGRAPHY: '사진',
+  GRAPHIC: '그래픽',
+  BRANDING: '브랜딩',
+  PRODUCT: '제품',
+  VIDEO: '영상',
+  SPACE: '공간',
+  ARCHITECTURE: '건축',
+  UX_UI: 'UXUI',
+  CRAFTS: '공예',
+  OTHERS: '기타',
 };
-
-/* ARTWORK_FIELD_MAP의 역방향(영문 enum → 한글 라벨) 조회용입니다. */
-export const ARTWORK_TYPE_LABEL_MAP: Record<string, string> = Object.fromEntries(
-  Object.entries(ARTWORK_FIELD_MAP).map(([label, value]) => [value, label]),
-);

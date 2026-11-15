@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  exceedsArtworkFieldLimit,
-  toArtworkFieldLabels,
-  toArtworkTypes,
-} from './artworkRegister.constants';
+import { toArtworkFieldLabels, toArtworkTypes } from './artworkRegister.constants';
 import {
   artworkRegisterSchema,
   type ArtworkRegisterValues,
@@ -81,31 +77,34 @@ describe('sanitizeArtworkYearInput', () => {
 });
 
 describe('작품분야 변환', () => {
-  it('같은 서버 값으로 가는 분야는 한 번만 보낸다', () => {
-    expect(toArtworkTypes(['그래픽', '브랜딩'])).toEqual(['DESIGN']);
-    expect(toArtworkTypes(['회화', '영상'])).toEqual(['PAINTING', 'MEDIA']);
-  });
-
-  it('서버 값을 분야 이름으로 되돌리고, 화면에 없는 값은 기타로 본다', () => {
-    expect(toArtworkFieldLabels(['PAINTING', 'DESIGN'])).toEqual(['회화', '그래픽']);
-    expect(toArtworkFieldLabels(['FASHION', 'COMPLEX'])).toEqual(['기타']);
-    expect(toArtworkFieldLabels(['PAINTING', 'SCULPTURE', 'MEDIA', 'CRAFT'])).toEqual([
-      '회화',
-      '조소',
-      '영상',
+  it('전시 작품은 12개 분야를 신규 서버 값으로 하나씩 보낸다', () => {
+    expect(toArtworkTypes(['그래픽', '브랜딩', '제품'])).toEqual([
+      'GRAPHIC',
+      'BRANDING',
+      'PRODUCT',
     ]);
-  });
-});
-
-describe('작품분야 개수 한도', () => {
-  it('분야 이름 3개 · 서버 값 3개까지는 넘지 않는다', () => {
-    expect(exceedsArtworkFieldLimit(['회화', '조소', '사진'])).toBe(false);
-    expect(exceedsArtworkFieldLimit(['회화', '조소', '사진', '영상'])).toBe(true);
+    expect(toArtworkTypes(['공간', 'UXUI', '영상'])).toEqual(['SPACE', 'UX_UI', 'VIDEO']);
+    expect(toArtworkTypes(['공예', '기타'])).toEqual(['CRAFTS', 'OTHERS']);
   });
 
-  it('기타가 화면에 없는 서버 분야 여러 개를 대신하면 그만큼 덜 고를 수 있다', () => {
-    expect(exceedsArtworkFieldLimit(['기타', '회화'], ['FASHION', 'COMPLEX'])).toBe(false);
-    expect(exceedsArtworkFieldLimit(['기타', '회화', '조소'], ['FASHION', 'COMPLEX'])).toBe(true);
-    expect(exceedsArtworkFieldLimit(['기타', '회화', '조소'], ['FASHION'])).toBe(false);
+  it('개인 작품은 개인 작품 API 값으로 보내고, 같은 값으로 가는 분야는 한 번만 보낸다', () => {
+    expect(toArtworkTypes(['그래픽', '브랜딩'], 'personal')).toEqual(['DESIGN']);
+    expect(toArtworkTypes(['회화', '영상', '공예'], 'personal')).toEqual([
+      'PAINTING',
+      'MEDIA',
+      'CRAFT',
+    ]);
+    expect(toArtworkTypes(['기타'], 'personal')).toEqual(['ETC']);
+  });
+
+  it('서버 값을 분야 이름으로 되돌리고, 12개 밖의 값은 버린다', () => {
+    expect(toArtworkFieldLabels(['BRANDING', 'UX_UI', 'CRAFTS'])).toEqual([
+      '브랜딩',
+      'UXUI',
+      '공예',
+    ]);
+    expect(toArtworkFieldLabels(['VIDEO', 'OTHERS'])).toEqual(['영상', '기타']);
+    expect(toArtworkFieldLabels(['PAINTING', 'DESIGN'])).toEqual(['회화']);
+    expect(toArtworkFieldLabels(['FASHION', 'MEDIA', 'ETC'])).toEqual([]);
   });
 });

@@ -31,6 +31,22 @@ describe('pickArtworkFiles', () => {
     expect(result.overLimit).toBe(false);
   });
 
+  it('HEIC · HEIF 는 받고, 윈도우처럼 형식이 비어 있어도 확장자로 받는다', () => {
+    const result = pickArtworkFiles(
+      [
+        { name: 'a.heic', type: 'image/heic', size: MB },
+        { name: 'b.heif', type: 'image/heif', size: MB },
+        { name: 'c.HEIC', type: '', size: MB },
+        { name: 'd', type: '', size: MB },
+      ],
+      0,
+      10,
+    );
+
+    expect(result.accepted.map((file) => file.name)).toEqual(['a.heic', 'b.heif', 'c.HEIC']);
+    expect(result.rejectedCount).toBe(1);
+  });
+
   it('장당 20MB 는 올리고 넘으면 올리지 않는다', () => {
     const result = pickArtworkFiles([jpg('a', 20 * MB), jpg('b', 20 * MB + 1)], 0, 10);
 

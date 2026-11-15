@@ -4,6 +4,7 @@ import { DndContext } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
 import { VideoThumbnailSheet } from '@/components/common/VideoThumbnailSheet';
+import { Loader } from '@/components/ui';
 import {
   type ReorderDragMode,
   STOP_REORDER_PROPS,
@@ -23,6 +24,7 @@ import {
 } from './artworkRegister.constants';
 import { FOCUS_CLASS, HELP_CLASS, OPTIONAL_CLASS, REQUIRED_CLASS } from './artworkRegister.styles';
 import { CloseIcon, PlusIcon } from './ArtworkRegisterIcons';
+import { heicAcceptTokens } from './heicImage';
 import {
   type ArtworkImageItem,
   type ArtworkImageUploads,
@@ -117,13 +119,17 @@ function ImageTile({
         FOCUS_CLASS,
       )}
     >
-      {item.previewUrl && (
+      {item.previewUrl ? (
         <img
           src={item.previewUrl}
           alt=""
           draggable={false}
           className={cn('size-full object-contain', isUploading && 'opacity-50')}
         />
+      ) : (
+        <span className="absolute inset-0 grid place-items-center text-secondary">
+          <Loader label={null} />
+        </span>
       )}
       {isVideo && (
         <span className="typography-body-sm-semibold pointer-events-none absolute top-1 left-1 inline-flex h-5 items-center gap-0.75 rounded-4 bg-[rgba(0,0,0,0.72)] pr-1.5 pl-1 text-base-white tabular-nums">
@@ -295,6 +301,7 @@ export function ArtworkImageField({
         multiple
         accept={[
           ...ARTWORK_IMAGE_ACCEPT_TYPES,
+          ...heicAcceptTokens(),
           ...(uploads.allowVideo ? ARTWORK_VIDEO_ACCEPT_TYPES : []),
         ].join(',')}
         onChange={handleFiles}
@@ -364,7 +371,7 @@ export function ArtworkImageField({
           </div>
         </SortableContext>
       </DndContext>
-      {representativeImage && (
+      {representativeImage?.previewUrl && (
         <ThumbnailPreview
           item={representativeImage}
           onAdjust={() => openCrop(representativeImage)}

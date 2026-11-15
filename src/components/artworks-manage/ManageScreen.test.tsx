@@ -23,7 +23,7 @@ const works: Work[] = [
     title: '대표 작품',
     artist: '작가',
     artistUserId: 2,
-    coAuthorUserIds: [3],
+    artistUserIds: [2, 3],
     org: '',
     date: '',
     place: '',
@@ -98,4 +98,57 @@ it.each([
     />,
   );
   expect(html.includes('전시작 추가')).toBe(visible);
+});
+
+// 작품 목록의 artistUserIds 에는 대표 · 공동 작가가 모두 들어 있어 공동 작가에게도 내 작품으로 보인다
+it.each([
+  [2, 1],
+  [3, 1],
+  [9, 0],
+] as const)('사용자 %i 에게 보이는 내 작품 칩 %i개', (id, count) => {
+  h.user = { id, isVerified: true };
+  const html = renderToStaticMarkup(
+    <ManageScreen
+      works={works}
+      display={display}
+      userId={id}
+      onEdit={vi.fn()}
+      onDelete={vi.fn()}
+      onEditOrder={vi.fn()}
+      onAdd={vi.fn()}
+    />,
+  );
+  expect(html.split('내 작품').length - 1).toBe(count);
+});
+
+it('대표 작가 계정이 없어도 계정이 있는 공동 작가는 자기 작품을 관리할 수 있다', () => {
+  h.user = { id: 3, isVerified: true };
+  const html = renderToStaticMarkup(
+    <ManageScreen
+      works={[{ ...works[0], artistUserId: null, artistUserIds: [3] }]}
+      display={display}
+      userId={3}
+      onEdit={vi.fn()}
+      onDelete={vi.fn()}
+      onEditOrder={vi.fn()}
+      onAdd={vi.fn()}
+    />,
+  );
+  expect(html.includes('대표 작품 작품 관리')).toBe(true);
+});
+
+it('작가 계정이 하나도 없는 작품도 전시 대표자는 관리할 수 있다', () => {
+  h.user = { id: 1, isVerified: true };
+  const html = renderToStaticMarkup(
+    <ManageScreen
+      works={[{ ...works[0], artistUserId: null, artistUserIds: [] }]}
+      display={display}
+      userId={1}
+      onEdit={vi.fn()}
+      onDelete={vi.fn()}
+      onEditOrder={vi.fn()}
+      onAdd={vi.fn()}
+    />,
+  );
+  expect(html.includes('대표 작품 작품 관리')).toBe(true);
 });

@@ -7,6 +7,7 @@ import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getExhibitionArtistName } from '@/utils/artist';
+import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 
@@ -72,11 +73,12 @@ export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: P
             >
               <OptimizedImage
                 src={artwork.artworkImageUrl}
-                displayWidth={360}
+                displayWidth={croppedDisplayWidth(360, artwork.artworkCrop)}
                 alt={artwork.artworkName}
                 skeleton
                 frameClassName={CARD_FRAME}
                 className="size-full object-cover transition-transform duration-slow ease-standard group-hover:scale-103"
+                style={savedCropImageStyle(artwork.artworkCrop)}
               />
               <div className="pt-2">
                 <b className="typography-body-lg-semibold block truncate">{artwork.artworkName}</b>
