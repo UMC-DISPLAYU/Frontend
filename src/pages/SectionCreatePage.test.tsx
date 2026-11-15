@@ -110,7 +110,7 @@ beforeEach(() => {
   });
   vi.stubGlobal('window', { history: { state: { idx: 3 } } });
   h.upload.mockImplementation(async (file: { name: string }) => `/up/${file.name}`);
-  h.create.mockResolvedValue({ categoryId: 31, failedCount: 0 });
+  h.create.mockResolvedValue({ categoryId: 31 });
 });
 afterEach(() => vi.unstubAllGlobals());
 
@@ -138,13 +138,15 @@ it('추가하기는 고른 순서대로 사진을 올린 뒤 섹션을 만들고
   expect(h.navigate).toHaveBeenCalledWith(-1);
 });
 
-it('사진 일부를 붙이지 못하면 만들어진 섹션의 편집 화면으로 보낸다', async () => {
+it('섹션 만들기에 실패하면 섹션이 남지 않으므로 화면에 남아 다시 시도할 수 있다', async () => {
   h.title = '전시 전경';
-  h.create.mockResolvedValue({ categoryId: 31, failedCount: 1 });
+  h.create.mockRejectedValue(new ApiError('server', { status: 500 }));
   pick([photo('a.png'), photo('b.png')]);
   await (submitButton().props.onClick as () => Promise<void>)();
   await new Promise((resolve) => setTimeout(resolve, 0));
-  expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/contents/31', { replace: true });
+  expect(h.toast).not.toHaveBeenCalled();
+  expect(h.navigate).not.toHaveBeenCalled();
+  expect(submitButton().props.disabled).toBe(false);
 });
 
 it('올리기에 실패하면 화면에 남아 다시 시도할 수 있다', async () => {

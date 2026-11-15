@@ -37,7 +37,7 @@ export function PendingInviteList({ displayId, members }: PendingInviteListProps
     <ul className="pt-1.5">
       {members.map((member) => {
         // 초대 대기는 기본 닉네임으로 보여 준다(프로토타입)
-        const name = member.nickname ?? member.displayNickname;
+        const name = member.nickname || member.displayNickname;
 
         return (
           <li
