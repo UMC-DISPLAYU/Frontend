@@ -9,6 +9,7 @@ import { BookmarkIcon } from './MyPageIcons';
 // 포스터 정식 규격 402:568(탐색 · 홈과 같은 카드)
 const POSTER_FRAME_CLASS = 'aspect-402/568 w-full bg-secondary';
 const ARTWORK_FRAME_CLASS = 'aspect-175/234 w-full bg-secondary';
+const ARTIST_THUMB_FRAME_CLASS = 'h-13 w-10 bg-tertiary';
 
 const CARD_CLASS =
   'group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98';
@@ -118,27 +119,57 @@ export type ArchiveArtistView = {
   key: string;
   to: string;
   name: string;
-  /** "학교 · 분야". 없으면 이름만 보인다 */
-  description: string;
 };
 
 type ArchiveArtistRowProps = {
   artist: ArchiveArtistView;
+  /** "학교 · 분야". 없으면 이름만 보인다 */
+  description: string;
+  isDescriptionPending: boolean;
+  /** 작품 사진 최대 3점. 없으면 보이지 않는다 */
+  thumbnails: string[];
   isRemoving: boolean;
   onUnarchive: () => void;
 };
 
-export function ArchiveArtistRow({ artist, isRemoving, onUnarchive }: ArchiveArtistRowProps) {
+export function ArchiveArtistRow({
+  artist,
+  description,
+  isDescriptionPending,
+  thumbnails,
+  isRemoving,
+  onUnarchive,
+}: ArchiveArtistRowProps) {
   return (
     <div className="flex items-center gap-3 border-b border-bg-tertiary">
       <Link
-        className="flex min-w-0 flex-1 flex-col gap-0.5 rounded-12 py-4 text-primary transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-focus active:scale-98"
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-12 py-4 text-primary transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-focus active:scale-98"
         to={artist.to}
       >
-        <span className="typography-body-xl-semibold truncate">{artist.name}</span>
-        {artist.description && (
-          <span className="typography-body-md-medium truncate text-tertiary">
-            {artist.description}
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="typography-body-xl-semibold truncate">{artist.name}</span>
+          {isDescriptionPending ? (
+            <SkeletonText className="typography-body-md-medium w-32" />
+          ) : (
+            description && (
+              <span className="typography-body-md-medium truncate text-tertiary">
+                {description}
+              </span>
+            )
+          )}
+        </span>
+        {thumbnails.length > 0 && (
+          <span aria-hidden="true" className="flex shrink-0 gap-1">
+            {thumbnails.map((url, index) => (
+              <OptimizedImage
+                alt=""
+                displayWidth={80}
+                frameClassName={ARTIST_THUMB_FRAME_CLASS}
+                key={`${index}-${url}`}
+                skeleton
+                src={url}
+              />
+            ))}
           </span>
         )}
       </Link>

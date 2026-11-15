@@ -7,7 +7,7 @@ import { ReceivedInvitationsFlow, useReceivedInvitationsSheet } from '@/componen
 import { PageContainer } from '@/components/layout';
 import {
   ARCHIVE_PANEL_ID,
-  ArchiveArtistRow,
+  ArchiveArtistItem,
   ArchiveArtistRowSkeleton,
   ArchiveArtworkCard,
   ArchiveArtworkCardSkeleton,
@@ -219,10 +219,12 @@ export function MyPage() {
     if (activeTab === 'artist') {
       return (
         <ul {...skeletonProps} className="mt-2">
-          {archive.artists.map(({ userId, view }, index) => (
+          {archive.artists.map(({ userId, fields, view }, index) => (
             <li className="animate-rise" key={view.key} style={staggerStyle(index)}>
-              <ArchiveArtistRow
+              <ArchiveArtistItem
                 artist={view}
+                fields={fields}
+                userId={userId}
                 isRemoving={unarchiveArtist.isPending && unarchiveArtist.variables === userId}
                 onUnarchive={() => handleUnarchiveArtist(userId)}
               />
