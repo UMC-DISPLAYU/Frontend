@@ -9,7 +9,11 @@ import { buildCreateDisplayRequest, toDisplayRegion } from './createDisplayReque
 
 const DRAFT: ExhibitionRegisterDraft = {
   ...INITIAL_EXHIBITION_REGISTER_DRAFT,
-  imageUrls: ['p0', 'p1', 'p2', 'p3', 'p4'],
+  posters: ['p0', 'p1', 'p2', 'p3', 'p4'].map((url) => ({
+    url,
+    mediaType: 'IMAGE' as const,
+    thumbnailUrl: null,
+  })),
   title: ' 졸업 전시 ',
   intro: '소개',
   type: '졸업 전시',
@@ -30,8 +34,8 @@ describe('buildCreateDisplayRequest', () => {
   it('draft 를 서버 요청 형식으로 바꾼다', () => {
     expect(buildCreateDisplayRequest(DRAFT, ' 김디유 ')).toEqual({
       title: '졸업 전시',
-      posterImageUrl: 'p0',
-      displayImageUrl: ['p1', 'p2', 'p3', 'p4'],
+      posterMedia: { imageUrl: 'p0', mediaType: 'IMAGE' },
+      displayMedia: ['p1', 'p2', 'p3', 'p4'].map((imageUrl) => ({ imageUrl, mediaType: 'IMAGE' })),
       type: 'GRADUATION',
       fields: ['VIDEO', 'GRAPHIC', 'CRAFTS'],
       region: 'SEOUL',
@@ -48,6 +52,27 @@ describe('buildCreateDisplayRequest', () => {
       longitude: 127,
       displayNickname: '김디유',
     });
+  });
+
+  it('영상 포스터는 썸네일과 함께 보내고, 이미지에는 썸네일을 붙이지 않는다', () => {
+    const request = buildCreateDisplayRequest(
+      {
+        ...DRAFT,
+        posters: [
+          { url: 'v0.mp4', mediaType: 'VIDEO', thumbnailUrl: 't0.jpg' },
+          { url: 'p1', mediaType: 'IMAGE', thumbnailUrl: null },
+        ],
+      },
+      '김디유',
+    );
+
+    expect(request).toMatchObject({
+      posterMedia: { imageUrl: 'v0.mp4', mediaType: 'VIDEO', thumbnailUrl: 't0.jpg' },
+      displayMedia: [{ imageUrl: 'p1', mediaType: 'IMAGE' }],
+    });
+    expect(request?.displayMedia?.[0]).not.toHaveProperty('thumbnailUrl');
+    expect(request).not.toHaveProperty('posterImageUrl');
+    expect(request).not.toHaveProperty('displayImageUrl');
   });
 
   it('기타 단체 전시는 단체명을 소속으로 보내고 학과는 보내지 않는다', () => {
@@ -74,7 +99,7 @@ describe('buildCreateDisplayRequest', () => {
   });
 
   it('필수값이 빠지면 null', () => {
-    expect(buildCreateDisplayRequest({ ...DRAFT, imageUrls: [] }, '김디유')).toBeNull();
+    expect(buildCreateDisplayRequest({ ...DRAFT, posters: [] }, '김디유')).toBeNull();
     expect(buildCreateDisplayRequest({ ...DRAFT, latitude: null }, '김디유')).toBeNull();
     expect(buildCreateDisplayRequest(DRAFT, '  ')).toBeNull();
   });

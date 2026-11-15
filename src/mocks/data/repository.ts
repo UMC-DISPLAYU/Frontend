@@ -6,6 +6,11 @@ import {
   MOCK_PERSONAL_ARTWORK_FEELINGS,
   MOCK_PERSONAL_ARTWORKS,
 } from '@/mocks/data/personalArtwork';
+import {
+  MOCK_POSTER_THUMBNAIL_URL,
+  MOCK_VIDEO_DISPLAY_ID,
+  withPosterVideoSample,
+} from '@/mocks/data/videoSamples';
 
 const now = () => new Date().toISOString();
 
@@ -206,7 +211,11 @@ const artworkToDetail = (artwork: any, isMine = false) => ({
       displayId: artwork.displayId,
       exhibitionTitle: display?.title ?? '',
       exhibitionSubtitle: display?.subtitle ?? '',
-      exhibitionThumbnailUrl: display?.posterSection?.images?.[0]?.imageUrl ?? '',
+      // 영상 포스터 샘플 전시는 서버처럼 썸네일을 내려준다
+      exhibitionThumbnailUrl:
+        artwork.displayId === MOCK_VIDEO_DISPLAY_ID
+          ? MOCK_POSTER_THUMBNAIL_URL
+          : (display?.posterSection?.images?.[0]?.imageUrl ?? ''),
       exhibitionOrganizer: display?.organization ?? '',
       exhibitionPeriod: formatPeriod(display?.startedAt, display?.endedAt),
       exhibitionLocation: display?.placeName ?? '',
@@ -276,7 +285,7 @@ export const mockDb: {
 } = {
   me: makeUser(),
   searchableUsers: MOCK_SEARCHABLE_USERS,
-  displays: MOCK_DISPLAY_DETAILS.map(displayToDetail),
+  displays: MOCK_DISPLAY_DETAILS.map(displayToDetail).map(withPosterVideoSample),
   artworks: MOCK_DISPLAY_DETAILS.flatMap((display) =>
     display.artworkSection.artworks.map((artwork, index) =>
       artworkToDetail(artwork, display.displayId === 101 && index === 0),

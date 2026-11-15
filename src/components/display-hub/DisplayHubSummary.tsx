@@ -6,6 +6,7 @@ import type { DisplayDetailDto } from '@/api/dto';
 import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
+import { toDisplayImageCardUrl } from '@/utils/displayMedia';
 
 import { DisplayHubIcon } from './DisplayHubIcon';
 import {
@@ -35,7 +36,7 @@ export function DisplayHubSummary({ display, status, className }: DisplayHubSumm
       >
         <div className="aspect-402/568 w-[82px] overflow-hidden bg-[#000]">
           <OptimizedImage
-            src={poster?.imageUrl}
+            src={poster ? toDisplayImageCardUrl(poster) : undefined}
             alt={`${display.title} 포스터`}
             displayWidth={82}
             skeleton
