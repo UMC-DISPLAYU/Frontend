@@ -1,7 +1,5 @@
 /*
  * 작가 프로필 분야. 프로토타입(profile-edit.html)의 12개를 같은 순서로 둔다.
- * 수정 API(PATCH /artists/me/artist-profile)의 fields enum 은 아직 예전 10개라
- * GRAPHIC · BRANDING · PRODUCT · SPACE · UX_UI 를 고르면 저장이 실패한다.
  */
 export const ARTIST_PROFILE_FIELDS = [
   'PAINTING',

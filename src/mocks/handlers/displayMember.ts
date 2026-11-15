@@ -52,12 +52,13 @@ export const teamOf = (display: any): any[] => {
   return display.teamMembers;
 };
 
-/* 기본 닉네임은 닉네임 검색 목과 같은 사람에서 가져온다 */
+/* 기본 닉네임은 닉네임 검색 목과 같은 사람에서 가져온다. 실서버처럼 없으면 빈 문자열 */
 const withNickname = (entry: any) => ({
   ...entry,
-  nickname: [mockDb.me, ...mockDb.searchableUsers].find(
-    (user: { userId: number }) => user.userId === entry.userId,
-  )?.nickname,
+  nickname:
+    [mockDb.me, ...mockDb.searchableUsers].find(
+      (user: { userId: number }) => user.userId === entry.userId,
+    )?.nickname ?? '',
 });
 
 const findAcceptedMember = (display: any, memberId: number) =>
