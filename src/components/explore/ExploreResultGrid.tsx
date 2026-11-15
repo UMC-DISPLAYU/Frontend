@@ -1,7 +1,8 @@
-import type { ReactNode, Ref } from 'react';
+import type { ReactNode } from 'react';
 
 import { ErrorView } from '@/components/common';
 import { SkeletonList } from '@/components/ui';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
@@ -24,8 +25,29 @@ type ExploreResultGridProps<T> = {
   error: unknown;
   refetch: () => unknown;
   fetchNextPage: () => unknown;
-  triggerRef: Ref<HTMLDivElement>;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  /** 필터를 바꿔 이전 결과를 대신 보여 주는 중 */
+  isPlaceholderData: boolean;
 };
+
+type LoadMoreTriggerProps = {
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => unknown;
+};
+
+// 스켈레톤이 끝나 목록과 함께 마운트될 때 감시를 건다(부모에서 걸면 스켈레톤 동안 대상이 없어 다음 페이지를 못 받는다)
+function LoadMoreTrigger({ hasNextPage, isFetchingNextPage, fetchNextPage }: LoadMoreTriggerProps) {
+  const triggerRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    rootMargin: '0px 0px 400px 0px',
+  });
+
+  return <div aria-hidden="true" className="h-1" ref={triggerRef} />;
+}
 
 function ExploreEmpty() {
   return (
@@ -48,7 +70,9 @@ export function ExploreResultGrid<T>({
   error,
   refetch,
   fetchNextPage,
-  triggerRef,
+  hasNextPage,
+  isFetchingNextPage,
+  isPlaceholderData,
 }: ExploreResultGridProps<T>) {
   const hasItems = pages.some((page) => page.length > 0);
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
@@ -97,7 +121,11 @@ export function ExploreResultGrid<T>({
           }}
         />
       ) : null}
-      <div aria-hidden="true" className="h-1" ref={triggerRef} />
+      <LoadMoreTrigger
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage && !isError && !isPlaceholderData}
+        isFetchingNextPage={isFetchingNextPage}
+      />
     </>
   );
 }

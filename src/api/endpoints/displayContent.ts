@@ -4,6 +4,7 @@ import type {
   CreateContentImageRequestDto,
   CreateContentImageResponseDto,
   ReorderContentCategoriesRequestDto,
+  ReorderContentCategoriesResponseDataDto,
   ReorderContentImagesRequestDto,
   UpdateContentCategoryRequestDto,
   UpdateContentImageRequestDto,
@@ -36,7 +37,7 @@ export const updateContentCategory = async (
 export const reorderContentCategories = async (
   displayId: number,
   body: ReorderContentCategoriesRequestDto,
-): Promise<void> =>
+): Promise<ReorderContentCategoriesResponseDataDto> =>
   apiRequest(`/v1/display/${displayId}/content-categories/reorder`, {
     method: 'PATCH',
     body,

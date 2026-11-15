@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import type { ArchivedArtistDto, ArchivedArtworkDto } from '@/api/dto';
-import { EXHIBITION_FIELD_LABELS, type ExhibitionField } from '@/constants/exhibition';
+import { toArtistProfileFieldLabels } from '@/constants/artistField';
 import {
   useArchivedArtists,
   useArchivedExhibitions,
@@ -28,8 +28,7 @@ type ArchivedArtistResponse = Omit<ArchivedArtistDto, 'artistUserId'> & {
   artistUserId?: number;
 };
 
-export const toFieldLabels = (fields: string[] | undefined) =>
-  (fields ?? []).map((code) => EXHIBITION_FIELD_LABELS[code as ExhibitionField] ?? code);
+export const toFieldLabels = toArtistProfileFieldLabels;
 
 /** 보관함 세 탭의 목록 · 수와 빈 상태 추천 목록. 추천은 보고 있는 탭이 비었을 때만 불러온다 */
 export function useMyArchive(activeTab: TabKey) {

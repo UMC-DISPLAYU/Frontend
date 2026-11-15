@@ -39,21 +39,27 @@ const DETAIL = {
 } as unknown as DisplayDetailDto;
 
 describe('toFieldLabels', () => {
-  it('서버 값을 화면 분야 이름으로 바꾸고, 화면에 없는 값은 뺀다', () => {
-    expect(toFieldLabels(['DESIGN', 'VIDEO', 'CRAFTS', 'OTHERS', 'FASHION'])).toEqual([
-      '그래픽',
-      '영상',
+  it('서버 값을 화면 분야 이름으로 바꾸고, 새 목록에서 빠진 예전 분야는 뺀다', () => {
+    expect(
+      toFieldLabels(['DESIGN', 'GRAPHIC', 'UX_UI', 'VIDEO', 'CRAFTS', 'OTHERS', 'FASHION']),
+    ).toEqual(['그래픽', 'UXUI', '영상', '공예', '기타']);
+  });
+
+  it('예전 표기는 같은 분야 이름으로 바꾼다', () => {
+    expect(toFieldLabels(['CRAFT', 'ETC', 'MEDIA', 'UXUI'])).toEqual([
       '공예',
       '기타',
+      '영상',
+      'UXUI',
     ]);
   });
 });
 
 describe('toEditDraft', () => {
-  it('화면에 없는 분야는 따로 보존한다', () => {
+  it('화면에 없는 예전 분야는 따로 보존한다', () => {
     expect(toEditDraft(DETAIL)).toMatchObject({
-      fieldLabels: ['그래픽', '영상'],
-      hiddenServerFields: ['FASHION'],
+      fieldLabels: ['영상'],
+      hiddenServerFields: ['DESIGN', 'FASHION'],
     });
   });
 
@@ -67,8 +73,8 @@ describe('toEditDraft', () => {
       title: '졸업 전시',
       intro: '소개',
       type: '졸업 전시',
-      fieldLabels: ['그래픽', '영상'],
-      field: ['DESIGN', 'VIDEO'],
+      fieldLabels: ['영상'],
+      field: ['VIDEO'],
       school: '디유대학교',
       department: '시각디자인과',
       organizer: '',
@@ -95,7 +101,7 @@ describe('buildUpdateDisplayRequest', () => {
       posterMedia: { imageUrl: 'p0', mediaType: 'IMAGE' },
       displayMedia: [{ imageUrl: 'p1', mediaType: 'VIDEO', thumbnailUrl: 't1' }],
       type: 'GRADUATION',
-      fields: ['DESIGN', 'VIDEO', 'FASHION'],
+      fields: ['VIDEO', 'DESIGN', 'FASHION'],
       schoolOrOrganization: '디유대학교',
       departmentOrClub: '시각디자인과',
       description: '소개',
@@ -134,7 +140,7 @@ describe('isEditDraftChanged', () => {
     const original = toEditDraft(DETAIL);
     expect(isEditDraftChanged(original, { ...original })).toBe(false);
     expect(isEditDraftChanged(original, { ...original, title: '새 제목' })).toBe(true);
-    expect(isEditDraftChanged(original, { ...original, fieldLabels: ['영상'] })).toBe(true);
+    expect(isEditDraftChanged(original, { ...original, fieldLabels: ['회화'] })).toBe(true);
     expect(
       isEditDraftChanged(original, { ...original, posters: original.posters.slice(0, 1) }),
     ).toBe(true);

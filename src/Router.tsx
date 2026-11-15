@@ -63,10 +63,11 @@ const DisplayContentsPage = lazyPage(
 );
 // 라운지는 당분간 노출하지 않는다 (#442)
 // const LoungePage = lazyPage(() => import('./pages/LoungePage'), 'LoungePage');
-const PersonalArtworkDetailPage = lazyPage(
-  () => import('./pages/PersonalArtworkDetailPage'),
-  'PersonalArtworkDetailPage',
-);
+// 개인 작품은 진입점이 정해질 때까지 노출하지 않는다 (#463 · #548)
+// const PersonalArtworkDetailPage = lazyPage(
+//   () => import('./pages/PersonalArtworkDetailPage'),
+//   'PersonalArtworkDetailPage',
+// );
 // 라운지는 당분간 노출하지 않는다 (#442)
 // const LoungeBoardPage = lazyPage(() => import('./pages/LoungeBoardPage'), 'LoungeBoardPage');
 // const LoungeBoardDetailPage = lazyPage(
@@ -215,12 +216,12 @@ export const router = createBrowserRouter([
           },
           // 라운지는 당분간 노출하지 않는다 (#442)
           // { path: 'lounge', element: <LoungePage /> },
-          /* 개인 작품 상세는 비회원도 열람할 수 있습니다. */
-          {
-            path: 'personal-artworks/:personalArtworkId',
-            loader: validateNumericId('personalArtworkId'),
-            element: <PersonalArtworkDetailPage />,
-          },
+          // 개인 작품은 진입점이 정해질 때까지 노출하지 않는다 (#463 · #548)
+          // {
+          //   path: 'personal-artworks/:personalArtworkId',
+          //   loader: validateNumericId('personalArtworkId'),
+          //   element: <PersonalArtworkDetailPage />,
+          // },
           // 라운지는 당분간 노출하지 않는다 (#442)
           // { path: 'lounge/:category', element: <LoungeBoardPage /> },
           // {
