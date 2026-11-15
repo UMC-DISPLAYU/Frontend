@@ -1,5 +1,5 @@
 import type { CreateDisplayRequestDto } from '@/api/dto';
-import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
+import { DISPLAY_TYPE_MAP, toDisplayFieldValue } from '@/constants/exhibition';
 import type { ExhibitionRegisterDraft } from '@/contexts/exhibitionRegisterDraftState';
 
 import { OTHER_GROUP_DISPLAY_TYPE } from './displayRegister.constants';
@@ -14,7 +14,7 @@ export function toDisplayRegion(address: string): CreateDisplayRequestDto['regio
 }
 
 export const toDisplayFields = (draft: ExhibitionRegisterDraft) => [
-  ...new Set(draft.field.map((field) => DISPLAY_FIELD_MAP[field] ?? field)),
+  ...new Set(draft.field.map(toDisplayFieldValue)),
 ];
 
 /** 기타 단체 전시는 단체명만, 그 외는 학교 + 학과. 학교가 없으면 학과를 소속으로 쓴다 */
