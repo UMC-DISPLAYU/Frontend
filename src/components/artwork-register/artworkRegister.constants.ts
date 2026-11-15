@@ -3,16 +3,8 @@ import type { ArtworkTypeDto, DisplayArtworkTypeDto } from '@/api/dto';
 export const MAX_ARTWORK_IMAGES = 10;
 export const MAX_PROCESS_IMAGES = 10;
 export const MAX_ARTWORK_IMAGE_MB = 20;
-// HEIC · HEIF 는 올리기 전에 JPG 로 바꾼다(heicImage.ts)
-export const ARTWORK_IMAGE_ACCEPT_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/heic',
-  'image/heif',
-] as const;
-// 윈도우는 HEIC 형식을 몰라 파일 선택 창에서 숨길 수 있어 확장자도 넣는다
-export const ARTWORK_IMAGE_ACCEPT = [...ARTWORK_IMAGE_ACCEPT_TYPES, '.heic', '.heif'].join(',');
+// HEIC · HEIF 도 받고, 올리기 전에 JPG 로 바꾼다(heicImage.ts)
+export const ARTWORK_IMAGE_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 export const MAX_ARTWORK_TITLE_LENGTH = 60;
 export const MAX_ARTWORK_INTRO_LENGTH = 1500;

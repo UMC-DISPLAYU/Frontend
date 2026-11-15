@@ -3,6 +3,7 @@ import { type ChangeEvent, useId, useRef, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
+import { Loader } from '@/components/ui';
 import {
   type ReorderDragMode,
   STOP_REORDER_PROPS,
@@ -14,9 +15,10 @@ import { cn } from '@/utils/cn';
 import { cropImageStyle } from '@/utils/cropBox';
 
 import { ArtworkCropSheet } from './ArtworkCropSheet';
-import { ARTWORK_IMAGE_ACCEPT } from './artworkRegister.constants';
+import { ARTWORK_IMAGE_ACCEPT_TYPES } from './artworkRegister.constants';
 import { FOCUS_CLASS, HELP_CLASS, OPTIONAL_CLASS, REQUIRED_CLASS } from './artworkRegister.styles';
 import { CloseIcon, PlusIcon } from './ArtworkRegisterIcons';
+import { heicAcceptTokens } from './heicImage';
 import type { ArtworkImageItem, ArtworkImageUploads } from './useArtworkImageUploads';
 
 interface ArtworkImageFieldProps {
@@ -99,13 +101,17 @@ function ImageTile({
         FOCUS_CLASS,
       )}
     >
-      {item.previewUrl && (
+      {item.previewUrl ? (
         <img
           src={item.previewUrl}
           alt=""
           draggable={false}
           className={cn('size-full object-contain', isUploading && 'opacity-50')}
         />
+      ) : (
+        <span className="absolute inset-0 grid place-items-center text-secondary">
+          <Loader label={null} />
+        </span>
       )}
       {isRepresentative && !isUploading && (
         <button
@@ -254,7 +260,7 @@ export function ArtworkImageField({
         type="file"
         hidden
         multiple
-        accept={ARTWORK_IMAGE_ACCEPT}
+        accept={[...ARTWORK_IMAGE_ACCEPT_TYPES, ...heicAcceptTokens()].join(',')}
         onChange={handleFiles}
       />
       <div className="typography-body-lg-semibold flex items-center gap-1 text-primary">
