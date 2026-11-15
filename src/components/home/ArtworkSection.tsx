@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 import { Link } from 'react-router-dom';
 
 import type { ArtworkPreviewItemDto } from '@/api/dto';
@@ -10,6 +12,7 @@ import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 
 import { ArtistByline } from './ArtistByline';
 import { HOME_INNER } from './homeLayout';
+import { useTapWhileScrolling } from './useTapWhileScrolling';
 
 // 폰에서는 2장 + 3번째가 조금 보이게(프로토타입 11-08): 폭 = (화면 폭 − 76px) / 2, 최대 175px
 const CARD_CLASS =
@@ -24,9 +27,12 @@ interface ArtworkSectionProps {
 
 export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
+  const listRef = useRef<HTMLUListElement>(null);
+  const isHidden = !showSkeleton && !artworks?.length;
+  useTapWhileScrolling(listRef, !isHidden);
 
   // 불러오지 못했거나 작품이 없으면 섹션째 숨긴다(홈의 보조 영역이라 빈 안내를 두지 않는다)
-  if (!showSkeleton && !artworks?.length) return null;
+  if (isHidden) return null;
 
   return (
     <section aria-labelledby="home-artworks-title" className={cn(HOME_INNER, 'py-5')}>
@@ -47,6 +53,7 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
       <p className="typography-body-md-medium mt-0.5 text-tertiary">전시 속 작품을 만나보세요</p>
 
       <ul
+        ref={listRef}
         {...skeletonProps}
         className="-mr-(--home-pad) mt-4 flex snap-x snap-proximity gap-3 overflow-x-auto pr-(--home-pad) [scrollbar-width:none] tablet:mr-0 tablet:gap-4 tablet:pr-0 min-[68.75rem]:gap-6 [&::-webkit-scrollbar]:hidden"
       >
