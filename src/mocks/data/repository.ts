@@ -9,6 +9,7 @@ import {
 import {
   MOCK_POSTER_THUMBNAIL_URL,
   MOCK_VIDEO_DISPLAY_ID,
+  withArtworkVideoSample,
   withPosterVideoSample,
 } from '@/mocks/data/videoSamples';
 
@@ -285,9 +286,11 @@ export const mockDb: {
   me: makeUser(),
   searchableUsers: MOCK_SEARCHABLE_USERS,
   displays: MOCK_DISPLAY_DETAILS.map(displayToDetail).map(withPosterVideoSample),
-  artworks: MOCK_DISPLAY_DETAILS.flatMap((display) =>
-    display.artworkSection.artworks.map((artwork, index) =>
-      artworkToDetail(artwork, display.displayId === 101 && index === 0),
+  artworks: withArtworkVideoSample(
+    MOCK_DISPLAY_DETAILS.flatMap((display) =>
+      display.artworkSection.artworks.map((artwork, index) =>
+        artworkToDetail(artwork, display.displayId === 101 && index === 0),
+      ),
     ),
   ),
   loungePosts: [
