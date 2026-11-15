@@ -13,8 +13,12 @@ interface PendingInviteListProps {
 export function PendingInviteList({ displayId, members }: PendingInviteListProps) {
   const cancel = useCancelDisplayInvitation(displayId);
 
-  const cancelInvite = (member: DisplayMemberEntryDto) => {
-    cancel.mutate(member.userId, {
+  const cancelInvite = ({ invitationId }: DisplayMemberEntryDto) => {
+    if (invitationId == null) {
+      toast('초대 정보를 찾지 못했어요. 새로고침 후 다시 시도해주세요.');
+      return;
+    }
+    cancel.mutate(invitationId, {
       onSuccess: () => toast('초대를 취소했어요'),
       onError: (error) =>
         toast(getErrorMessage(error, '초대를 취소하지 못했어요. 다시 시도해주세요.')),

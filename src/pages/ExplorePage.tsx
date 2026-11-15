@@ -18,7 +18,6 @@ import {
 } from '@/components/explore';
 import { useInfiniteSearchArtworks } from '@/hooks/queries/useArtworkSearch';
 import { useInfiniteSearchDisplays } from '@/hooks/queries/useDisplayBrowse';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { cn } from '@/utils/cn';
 
 const PAGE_SIZE = 20;
@@ -31,20 +30,21 @@ export function ExplorePage() {
 
   const isExhibitionView = view === 'exhibition';
   // 전시 ↔ 작품을 오가도 검색어 · 분야 · 필터 · 정렬은 그대로 둔다(탐색 정책)
-  const searchParams = {
+  const sharedParams = {
     searchWord: searchWord || null,
-    field: field.value,
     type: type.value,
     status: status.value,
-    sort: sort.value,
     size: PAGE_SIZE,
   };
 
   const exhibitionQuery = useInfiniteSearchDisplays({
-    ...searchParams,
+    ...sharedParams,
+    field: field.value,
+    sort: sort.value === 'LIKES' ? 'LIKES' : 'LATEST',
     enabled: isExhibitionView,
   });
-  const artworkQuery = useInfiniteSearchArtworks({ ...searchParams, enabled: !isExhibitionView });
+  // 작품 검색 API 는 분야 · 정렬을 받지 않는다
+  const artworkQuery = useInfiniteSearchArtworks({ ...sharedParams, enabled: !isExhibitionView });
 
   const exhibitionPages = exhibitionQuery.data?.pages.map((page) => page.exhibitions) ?? [];
   const artworkPages = artworkQuery.data?.pages.map((page) => page.artworks) ?? [];
@@ -64,13 +64,6 @@ export function ExplorePage() {
     fetchNextPage,
   });
 
-  const triggerRef = useInfiniteScroll({
-    hasNextPage: hasNextPage && !isError,
-    isFetchingNextPage,
-    fetchNextPage,
-    rootMargin: '0px 0px 400px 0px',
-  });
-
   const queryState = {
     isPending: activeQuery.isPending,
     isError,
@@ -78,7 +71,8 @@ export function ExplorePage() {
     error: activeQuery.error,
     refetch: activeQuery.refetch,
     fetchNextPage,
-    triggerRef,
+    hasNextPage,
+    isFetchingNextPage,
   };
 
   return (

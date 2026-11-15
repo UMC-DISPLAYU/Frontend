@@ -59,16 +59,25 @@ export interface SearchDisplaysRequestDto {
   region?: string | null;
   field?: string | null;
   type?: string | null;
-  /* LATEST(최초 공개일 최신순) · POPULAR(좋아요 많은 순). 서버가 아직 받지 않아 무시된다 */
-  sort?: string | null;
+  /* 생략하면 LATEST */
+  sort?: DisplaySearchSort | null;
   cursor: number;
+  /* LIKES 다음 페이지에서 응답 nextCursorLikeCount 를 nextCursor 와 함께 보낸다 */
+  cursorLikeCount?: number | null;
   size: number;
+}
+
+export type DisplaySearchSort = 'LATEST' | 'LIKES';
+
+export interface DisplayListPaginationDto extends CursorPaginationDto<number> {
+  /* 좋아요순(LIKES) 검색에서만 내려온다 */
+  nextCursorLikeCount?: number | null;
 }
 
 //
 export interface DisplayListResponseDataDto {
   exhibitions: DisplayListItemDto[];
-  pagination: CursorPaginationDto<number>;
+  pagination: DisplayListPaginationDto;
 }
 
 export type GetDisplaysResponseDto = ApiResponseDto<DisplayListResponseDataDto>;
@@ -83,6 +92,8 @@ export interface GetDisplayMapRequestDto {
   searchWord?: string;
   cursor?: number;
   size?: number;
+  /* true 면 범위 안 예정 · 진행 전시를 한 번에 받는다. size 는 무시되고 cursor 와 함께 보내면 400 */
+  all?: boolean;
 }
 
 export interface DisplayMapMarkerDto {
@@ -522,6 +533,8 @@ export interface DisplayMemberEntryDto extends DisplayTeamMemberDto {
   artistVerified: boolean;
   /** 기본 닉네임. displayNickname(전시 작가명) 아래에 보여 준다. 아직 스웨거에 없어 없을 수 있다 */
   nickname?: string;
+  /** 초대 대기 항목의 초대 ID(초대 취소에 쓴다). 수락한 팀원은 null */
+  invitationId?: number | null;
 }
 
 /* 서버가 실제로 내려주는 원본 응답 — 참여 팀원과 초대 대기 팀원이 배열로 분리되어 있습니다. */
