@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { toArtistProfileFieldLabels } from '@/constants/artistField';
 import { useArtistExhibitionArtworks, useUserArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useUserArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useSkeleton } from '@/hooks/useSkeleton';
 
 const PREVIEW_COUNT = 3;
 
@@ -14,6 +15,8 @@ export function useArchivedArtistPreview(userId: number, archivedFields: string[
   const profileQuery = useUserArtistProfile(userId);
   const personalArtworksQuery = useUserArtworks(userId);
   const exhibitionArtworksQuery = useArtistExhibitionArtworks(userId);
+
+  const { showSkeleton, skeletonProps } = useSkeleton(profileQuery.isPending);
 
   const profile = profileQuery.data;
   const description = [
@@ -37,7 +40,8 @@ export function useArchivedArtistPreview(userId: number, archivedFields: string[
 
   return {
     description,
-    isDescriptionPending: profileQuery.isPending,
+    isDescriptionPending: showSkeleton,
+    descriptionSkeletonProps: skeletonProps,
     thumbnails,
   };
 }

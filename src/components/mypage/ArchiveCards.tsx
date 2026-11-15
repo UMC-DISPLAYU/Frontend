@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonText } from '@/components/ui';
+import type { useSkeleton } from '@/hooks/useSkeleton';
 import { cn } from '@/utils/cn';
 
 import { BookmarkIcon } from './MyPageIcons';
@@ -126,6 +127,8 @@ type ArchiveArtistRowProps = {
   /** "학교 · 분야". 없으면 이름만 보인다 */
   description: string;
   isDescriptionPending: boolean;
+  /** `useSkeleton` 의 skeletonProps. 설명 스켈레톤과 실제 글자가 번갈아 들어가는 칸에 붙인다 */
+  descriptionSkeletonProps: ReturnType<typeof useSkeleton>['skeletonProps'];
   /** 작품 사진 최대 3점. 없으면 보이지 않는다 */
   thumbnails: string[];
   isRemoving: boolean;
@@ -136,6 +139,7 @@ export function ArchiveArtistRow({
   artist,
   description,
   isDescriptionPending,
+  descriptionSkeletonProps,
   thumbnails,
   isRemoving,
   onUnarchive,
@@ -146,7 +150,7 @@ export function ArchiveArtistRow({
         className="flex min-w-0 flex-1 items-center gap-3 rounded-12 py-4 text-primary transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-focus active:scale-98"
         to={artist.to}
       >
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span {...descriptionSkeletonProps} className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="typography-body-xl-semibold truncate">{artist.name}</span>
           {isDescriptionPending ? (
             <SkeletonText className="typography-body-md-medium w-32" />
