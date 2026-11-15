@@ -95,4 +95,15 @@ describe('toUpdateArtistProfileBody', () => {
     );
     expect(body.fields).toEqual(['GRAPHIC', 'BRANDING']);
   });
+
+  it('예전 이름 · 새 이름으로 온 분야를 같은 칩으로 고른 상태로 보이고, 저장은 새 이름으로 보낸다', () => {
+    const defaults = toEditArtistProfileDefaults({
+      ...profile,
+      fields: ['CRAFT', 'CRAFTS', 'ETC', 'OTHERS', 'MEDIA', 'UXUI'],
+    });
+    expect(defaults.fields).toHaveLength(4);
+
+    const body = toUpdateArtistProfileBody(defaults, { profileImageUrl: null });
+    expect(body.fields).toEqual(['CRAFTS', 'OTHERS', 'VIDEO', 'UX_UI']);
+  });
 });
