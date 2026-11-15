@@ -1,11 +1,30 @@
-import type { CreateDisplayRequestDto } from '@/api/dto';
+import type { CreateDisplayRequestDto, DisplayMediaRequestDto } from '@/api/dto';
 import { DISPLAY_FIELD_MAP, DISPLAY_TYPE_MAP } from '@/constants/exhibition';
-import type { ExhibitionRegisterDraft } from '@/contexts/exhibitionRegisterDraftState';
+import type {
+  ExhibitionPosterMedia,
+  ExhibitionRegisterDraft,
+} from '@/contexts/exhibitionRegisterDraftState';
 
 import { OTHER_GROUP_DISPLAY_TYPE } from './displayRegister.constants';
 
 /* 서버는 대표 포스터 외에 최대 4장을 받는다 */
 const MAX_EXTRA_POSTERS = 4;
+
+const toDisplayMedia = (poster: ExhibitionPosterMedia): DisplayMediaRequestDto =>
+  poster.mediaType === 'VIDEO'
+    ? { imageUrl: poster.url, mediaType: 'VIDEO', thumbnailUrl: poster.thumbnailUrl ?? undefined }
+    : { imageUrl: poster.url, mediaType: 'IMAGE' };
+
+/** 대표 포스터와 추가 포스터. 옛 posterImageUrl · displayImageUrl 대신 영상까지 담는 필드로 보낸다 */
+export function toPosterMediaRequest(posters: ExhibitionPosterMedia[]) {
+  const [main, ...extras] = posters;
+  if (!main) return null;
+
+  return {
+    posterMedia: toDisplayMedia(main),
+    displayMedia: extras.slice(0, MAX_EXTRA_POSTERS).map(toDisplayMedia),
+  };
+}
 
 export function toDisplayRegion(address: string): CreateDisplayRequestDto['region'] {
   if (address.includes('서울')) return 'SEOUL';
@@ -34,14 +53,14 @@ export function buildCreateDisplayRequest(
   draft: ExhibitionRegisterDraft,
   displayNickname: string,
 ): CreateDisplayRequestDto | null {
-  const [posterImageUrl, ...extraPosters] = draft.imageUrls;
+  const posterMedia = toPosterMediaRequest(draft.posters);
   const type = DISPLAY_TYPE_MAP[draft.type];
   const fields = toDisplayFields(draft);
   const { schoolOrOrganization, departmentOrClub } = toDisplayAffiliation(draft);
   const nickname = displayNickname.trim();
 
   const hasRequired =
-    posterImageUrl &&
+    posterMedia &&
     type &&
     fields.length > 0 &&
     draft.title.trim() &&
@@ -62,8 +81,7 @@ export function buildCreateDisplayRequest(
 
   return {
     title: draft.title.trim(),
-    posterImageUrl,
-    displayImageUrl: extraPosters.slice(0, MAX_EXTRA_POSTERS),
+    ...posterMedia,
     type,
     fields,
     region: toDisplayRegion(draft.address),

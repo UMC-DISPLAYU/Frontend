@@ -63,7 +63,7 @@ function DisplayRegisterIntroForm() {
   // 수정할 때는 전시에 저장된 소속을, 등록할 때는 인증된 학교를 보여준다
   const schoolName = isEdit ? draft.school : (artistProfile?.schoolName ?? '');
   const posters = usePosterUploads({
-    initialUrls: draft.imageUrls,
+    initialPosters: draft.posters,
     initialCrop: draft.posterCrop,
   });
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
@@ -100,6 +100,7 @@ function DisplayRegisterIntroForm() {
           fieldLabels: values.fieldLabels ?? [],
           department: isOtherGroup ? '' : (values.department ?? ''),
           organizer: isOtherGroup ? (values.department ?? '') : '',
+          posters: posters.posterSnapshot,
         }),
       )
     : Boolean(
@@ -113,7 +114,7 @@ function DisplayRegisterIntroForm() {
   // 학교명은 프로필에서 채우므로, 조회가 끝나기 전에 넘어가면 소속이 학교 없이 저장된다
   const canSubmit =
     isValid &&
-    posters.uploadedUrls.length > 0 &&
+    posters.uploadedPosters.length > 0 &&
     !posters.isUploading &&
     !(!isEdit && isProfilePending && !isOtherGroup);
 
@@ -150,7 +151,7 @@ function DisplayRegisterIntroForm() {
   const onSubmit = (data: DisplayRegisterIntroValues) => {
     const isOther = data.type === OTHER_GROUP_DISPLAY_TYPE;
     const introStep = {
-      imageUrls: posters.uploadedUrls,
+      posters: posters.uploadedPosters,
       posterCrop: posters.posterCrop,
       title: data.title,
       intro: data.intro,
@@ -181,7 +182,7 @@ function DisplayRegisterIntroForm() {
             className="flex-1"
           >
             <DisplayRegisterProgress step={1} label="01 전시 소개" />
-            <PosterUploadField posters={posters} locked={isEdit} />
+            <PosterUploadField posters={posters} />
 
             <div className={FIELD_CLASS}>
               <label htmlFor="display-title" className={LABEL_CLASS}>

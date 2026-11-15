@@ -18,6 +18,51 @@ const listDisplays = () =>
   }));
 
 let nextScreeningId = 1;
+let nextPosterImageId = 10_000;
+
+type MockPosterMedia = { imageUrl: string; mediaType: 'IMAGE' | 'VIDEO'; thumbnailUrl?: string };
+
+const toMockPosterImage = (media: MockPosterMedia, sortOrder: number) => ({
+  imageId: nextPosterImageId++,
+  imageUrl: media.imageUrl,
+  isThumbnail: sortOrder === 0,
+  imageType: sortOrder === 0 ? 'MAIN' : 'DETAIL',
+  caption: '',
+  width: 0,
+  height: 0,
+  sortOrder,
+  mediaType: media.mediaType,
+  thumbnailUrl: media.mediaType === 'VIDEO' ? (media.thumbnailUrl ?? null) : null,
+});
+
+const cardUrlOf = (media: MockPosterMedia) =>
+  media.mediaType === 'VIDEO' ? (media.thumbnailUrl ?? '') : media.imageUrl;
+
+/* posterMedia · displayMedia 를 상세 images 와 목록 카드 필드(posterImageUrl · posterVideoUrl)에 반영합니다. 생략한 그룹은 그대로 둡니다 */
+const applyPosterMedia = (
+  display: any,
+  body: { posterMedia?: MockPosterMedia; displayMedia?: MockPosterMedia[] },
+) => {
+  if (!body.posterMedia && !body.displayMedia) return;
+
+  const current: MockPosterMedia[] = (display.images ?? display.posterImages ?? [])
+    .slice()
+    .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+    .map((image: any) => ({
+      imageUrl: image.imageUrl,
+      mediaType: image.mediaType ?? 'IMAGE',
+      thumbnailUrl: image.thumbnailUrl ?? undefined,
+    }));
+  const main = body.posterMedia ?? current[0];
+  const extras = body.displayMedia ?? current.slice(1);
+  const media = [main, ...extras].filter(Boolean) as MockPosterMedia[];
+
+  display.images = media.map(toMockPosterImage);
+  display.posterImages = display.images;
+  display.posterImageUrl = main ? cardUrlOf(main) : '';
+  display.thumbnailUrl = display.posterImageUrl;
+  display.posterVideoUrl = main?.mediaType === 'VIDEO' ? main.imageUrl : null;
+};
 
 const findDisplay = (displayId: number) =>
   mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
@@ -89,6 +134,7 @@ const myDisplayItem = (display: any) => ({
   department: display.department,
   placeName: display.placeName,
   postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
+  posterVideoUrl: display.posterVideoUrl ?? null,
   displayNickname: display.displayNickname ?? display.artistName ?? '작가명',
   artistName: display.displayNickname ?? display.artistName ?? '작가명',
 });
@@ -154,8 +200,12 @@ export const displayHandlers = [
         displayId,
         title: String(body.title ?? '새 전시'),
         invitationToken: `mock-invitation-${displayId}`,
+        images: [],
+        posterImages: [],
+        posterVideoUrl: null,
       };
 
+      applyPosterMedia(display, body as Parameters<typeof applyPosterMedia>[1]);
       mockDb.displays.unshift(display);
 
       return created('/api/v1/display', { displayId, ...display });
@@ -179,6 +229,7 @@ export const displayHandlers = [
       assign('content', body.description);
       assign('posterImageUrl', body.posterImageUrl);
       assign('thumbnailUrl', body.posterImageUrl);
+      applyPosterMedia(display, body);
       assign('displayType', body.type);
       assign('displayFields', body.fields);
       assign('organization', body.schoolOrOrganization);

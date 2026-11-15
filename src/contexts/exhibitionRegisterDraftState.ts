@@ -1,5 +1,14 @@
 import { createContext } from 'react';
 
+import type { MediaTypeDto } from '@/api/dto';
+
+/** 올라간 포스터 한 장. VIDEO 면 url 은 영상 원본, thumbnailUrl 은 썸네일 이미지다 */
+export type ExhibitionPosterMedia = {
+  url: string;
+  mediaType: MediaTypeDto;
+  thumbnailUrl: string | null;
+};
+
 export type ExhibitionRegisterDraft = {
   /** 수정 중인 전시 id. 등록 중이면 null */
   editDisplayId: number | null;
@@ -7,7 +16,8 @@ export type ExhibitionRegisterDraft = {
   editSessionId: string | null;
   /** 수정 중인 전시의 분야 중 화면에 없는 서버 값(패션 등). 저장할 때 그대로 다시 보낸다 */
   hiddenServerFields: string[];
-  imageUrls: string[];
+  /** 첫 번째가 대표 포스터다 */
+  posters: ExhibitionPosterMedia[];
   title: string;
   subtitle: string;
   intro: string;
@@ -39,7 +49,7 @@ export const INITIAL_EXHIBITION_REGISTER_DRAFT: ExhibitionRegisterDraft = {
   editDisplayId: null,
   editSessionId: null,
   hiddenServerFields: [],
-  imageUrls: [],
+  posters: [],
   title: '',
   subtitle: '',
   intro: '',

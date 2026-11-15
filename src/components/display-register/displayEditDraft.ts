@@ -10,7 +10,11 @@ import {
 } from '@/contexts/exhibitionRegisterDraftState';
 import { parseInstagramId } from '@/utils/linkInput';
 
-import { toDisplayAffiliation, toDisplayFields } from './createDisplayRequest';
+import {
+  toDisplayAffiliation,
+  toDisplayFields,
+  toPosterMediaRequest,
+} from './createDisplayRequest';
 import {
   DISPLAY_FIELD_OPTIONS,
   OTHER_GROUP_DISPLAY_TYPE,
@@ -49,7 +53,11 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
   return {
     ...INITIAL_EXHIBITION_REGISTER_DRAFT,
     editDisplayId: detail.displayId,
-    imageUrls: images.map((image) => image.imageUrl),
+    posters: images.map((image) => ({
+      url: image.imageUrl,
+      mediaType: image.mediaType ?? 'IMAGE',
+      thumbnailUrl: image.thumbnailUrl ?? null,
+    })),
     title: detail.title ?? '',
     subtitle: detail.subtitle ?? '',
     intro: detail.content ?? '',
@@ -73,7 +81,7 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
   };
 }
 
-/** 수정 API 가 받는 항목만 담는다. 필수값이 빠졌으면 null */
+/** 수정 API 가 받는 항목만 담는다. 포스터는 목록 전체를 보내 지운 포스터도 반영한다. 필수값이 빠졌으면 null */
 export function buildUpdateDisplayRequest(
   draft: ExhibitionRegisterDraft,
 ): UpdateDisplayRequestDto | null {
@@ -83,9 +91,10 @@ export function buildUpdateDisplayRequest(
   const { schoolOrOrganization, departmentOrClub } = toDisplayAffiliation(draft);
   const title = draft.title.trim();
   const placeName = draft.placeName.trim();
+  const posterMedia = toPosterMediaRequest(draft.posters);
 
   const hasRequired =
-    draft.imageUrls[0] &&
+    posterMedia &&
     type &&
     visibleFields.length > 0 &&
     title &&
@@ -100,7 +109,7 @@ export function buildUpdateDisplayRequest(
 
   return {
     title,
-    posterImageUrl: draft.imageUrls[0],
+    ...posterMedia,
     type,
     fields,
     schoolOrOrganization,
@@ -115,6 +124,7 @@ export function buildUpdateDisplayRequest(
 }
 
 const EDITABLE_KEYS = [
+  'posters',
   'title',
   'intro',
   'type',
