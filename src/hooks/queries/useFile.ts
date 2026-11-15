@@ -42,3 +42,25 @@ export const useUploadImage = () =>
       return fileUrl;
     },
   });
+
+// 영상은 prepareVideoForUpload 로 MP4 로 맞춘 파일만 받는다
+export const useUploadVideo = () =>
+  useMutation({
+    mutationFn: async ({ file, domain }: { file: File; domain: string }) => {
+      if (file.type !== 'video/mp4') {
+        throw new ApiError('지원하지 않는 영상 형식입니다.', { code: 'UNSUPPORTED_VIDEO_TYPE' });
+      }
+
+      const { uploadUrl, fileUrl } = await createPresignedUrl({
+        fileType: 'VIDEO',
+        domain,
+        fileName: file.name,
+        contentType: 'video/mp4',
+        fileSize: file.size,
+      });
+
+      await uploadFileToPresignedUrl(uploadUrl, file);
+
+      return fileUrl;
+    },
+  });

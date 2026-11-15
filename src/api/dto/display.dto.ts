@@ -4,6 +4,7 @@ import type {
   ImageResponseDto,
   OffsetPageRequestDto,
 } from './common.dto';
+import type { MediaTypeDto } from './file.dto';
 
 /* 인기 · 졸업전시 · 마감 임박 · 검색 목록이 공통으로 내려주는 전시 항목 */
 export interface HomeExhibitionDto {
@@ -18,6 +19,8 @@ export interface HomeExhibitionDto {
   isArchived: boolean;
   /* 장소가 없는 전시는 비어 올 수 있다 */
   placeName?: string | null;
+  /* 대표 포스터가 영상이면 영상 주소(posterImageUrl 은 썸네일), 아니면 null */
+  posterVideoUrl?: string | null;
 }
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
@@ -173,7 +176,11 @@ export interface DisplayPeriodDto {
   endTime: string;
 }
 
-export type DisplayImageDto = ImageResponseDto;
+/* VIDEO 면 imageUrl 은 영상 원본, thumbnailUrl 은 썸네일 이미지다 */
+export type DisplayImageDto = ImageResponseDto & {
+  mediaType?: MediaTypeDto;
+  thumbnailUrl?: string | null;
+};
 
 export interface DisplayContentDto {
   contentId: number;
@@ -385,10 +392,20 @@ export interface GetMyDisplayReviewsResponseDataDto {
 
 export type GetMyDisplayReviewsResponseDto = ApiResponseDto<GetMyDisplayReviewsResponseDataDto>;
 
+/* 포스터 한 장. VIDEO 면 thumbnailUrl 이 필수이고, IMAGE 면 보내지 않는다 */
+export interface DisplayMediaRequestDto {
+  imageUrl: string;
+  mediaType: MediaTypeDto;
+  thumbnailUrl?: string;
+}
+
 export interface CreateDisplayRequestDto {
   title: string;
-  posterImageUrl: string;
+  /* posterImageUrl · displayImageUrl 은 이미지 전용 옛 필드다. posterMedia · displayMedia 와 함께 보내면 400 */
+  posterImageUrl?: string;
   displayImageUrl?: string[];
+  posterMedia?: DisplayMediaRequestDto;
+  displayMedia?: DisplayMediaRequestDto[];
   type: string;
   fields: string[];
   region: string;
@@ -424,6 +441,9 @@ export interface UpdateDisplayRequestDto {
   displayId?: number;
   title?: string;
   posterImageUrl?: string;
+  /* 생략하면 그대로 두고, displayMedia 를 빈 배열로 보내면 추가 포스터를 모두 지운다 */
+  posterMedia?: DisplayMediaRequestDto;
+  displayMedia?: DisplayMediaRequestDto[];
   type?: string;
   fields?: string[];
   schoolOrOrganization?: string | null;
@@ -488,6 +508,8 @@ export interface MyDisplayDto {
   department: string;
   placeName: string;
   postImageUrl: string;
+  /* 대표 포스터가 영상이면 영상 주소(postImageUrl 은 썸네일), 아니면 null */
+  posterVideoUrl?: string | null;
   isLeader?: boolean;
   publishStatus?: DisplayPublishStatus;
   displayNickname?: string;
