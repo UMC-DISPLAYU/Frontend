@@ -59,7 +59,7 @@ interface SavedView {
 
 const readSavedView = (): SavedView | null => {
   try {
-    const saved = JSON.parse(sessionStorage.getItem(VIEW_STATE_KEY) ?? 'null');
+    const saved = JSON.parse(localStorage.getItem(VIEW_STATE_KEY) ?? 'null');
     if (
       Number.isFinite(saved?.center?.lat) &&
       Number.isFinite(saved?.center?.lng) &&
@@ -170,7 +170,7 @@ export function MapPage() {
   const handleIdle = useCallback((target: kakao.maps.Map) => {
     const center = target.getCenter();
     try {
-      sessionStorage.setItem(
+      localStorage.setItem(
         VIEW_STATE_KEY,
         JSON.stringify({
           center: { lat: center.getLat(), lng: center.getLng() },
