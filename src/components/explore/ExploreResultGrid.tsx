@@ -27,6 +27,8 @@ type ExploreResultGridProps<T> = {
   fetchNextPage: () => unknown;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  /** 필터를 바꿔 이전 결과를 대신 보여 주는 중 */
+  isPlaceholderData: boolean;
 };
 
 type LoadMoreTriggerProps = {
@@ -70,6 +72,7 @@ export function ExploreResultGrid<T>({
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
+  isPlaceholderData,
 }: ExploreResultGridProps<T>) {
   const hasItems = pages.some((page) => page.length > 0);
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
@@ -120,7 +123,7 @@ export function ExploreResultGrid<T>({
       ) : null}
       <LoadMoreTrigger
         fetchNextPage={fetchNextPage}
-        hasNextPage={hasNextPage && !isError}
+        hasNextPage={hasNextPage && !isError && !isPlaceholderData}
         isFetchingNextPage={isFetchingNextPage}
       />
     </>

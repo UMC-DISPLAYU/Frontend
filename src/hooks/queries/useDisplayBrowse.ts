@@ -48,10 +48,10 @@ export const useInfiniteSearchDisplays = ({
     initialPageParam: { cursor: 0 } as SearchDisplaysPageParam,
     getNextPageParam: ({ pagination }): SearchDisplaysPageParam | undefined => {
       if (!pagination?.hasNext || pagination.nextCursor == null) return undefined;
-      // 좋아요순은 같은 좋아요 수 안에서 ID 로 이어 받으므로 마지막 좋아요 수를 함께 보낸다
-      return params.sort === 'LIKES' && pagination.nextCursorLikeCount != null
-        ? { cursor: pagination.nextCursor, cursorLikeCount: pagination.nextCursorLikeCount }
-        : { cursor: pagination.nextCursor };
+      if (params.sort !== 'LIKES') return { cursor: pagination.nextCursor };
+      // 좋아요순은 같은 좋아요 수 안에서 ID 로 이어 받으므로 마지막 좋아요 수가 없으면 이어 받지 않는다
+      if (pagination.nextCursorLikeCount == null) return undefined;
+      return { cursor: pagination.nextCursor, cursorLikeCount: pagination.nextCursorLikeCount };
     },
     enabled,
   });

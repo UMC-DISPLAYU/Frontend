@@ -33,6 +33,11 @@ describe('toEditArtistProfileDefaults', () => {
     expect(values.fields).toEqual(['GRAPHIC', 'UX_UI']);
   });
 
+  it('예전 별칭으로 저장된 분야는 표준 값으로 선택해 둔다', () => {
+    const values = toEditArtistProfileDefaults({ ...profile, fields: ['CRAFT', 'ETC'] });
+    expect(values.fields).toEqual(['CRAFTS', 'OTHERS']);
+  });
+
   it('예전처럼 링크 칸에 인스타그램 주소만 있으면 Instagram 칸으로 옮긴다', () => {
     const values = toEditArtistProfileDefaults({
       ...profile,

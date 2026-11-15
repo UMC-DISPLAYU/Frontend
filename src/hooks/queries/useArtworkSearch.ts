@@ -14,6 +14,7 @@ export const useInfiniteSearchArtworks = ({ enabled = true, ...params }: SearchA
     placeholderData: keepPreviousData,
     queryFn: ({ pageParam, signal }) => searchArtworks({ ...params, page: pageParam }, signal),
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => (lastPage.isLast ? undefined : lastPage.page + 1),
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      lastPage.isLast ? undefined : lastPageParam + 1,
     enabled,
   });

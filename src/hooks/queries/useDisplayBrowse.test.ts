@@ -53,4 +53,11 @@ describe('useInfiniteSearchDisplays', () => {
     expect(getNextPageParam(lastPage({ hasNext: false, nextCursor: 17 }))).toBeUndefined();
     expect(getNextPageParam(lastPage({ hasNext: true, nextCursor: null }))).toBeUndefined();
   });
+
+  it('좋아요순인데 nextCursorLikeCount 가 없으면 멈춘다', () => {
+    const next = useSearchOptions('LIKES').getNextPageParam(
+      lastPage({ hasNext: true, nextCursor: 17 }),
+    );
+    expect(next).toBeUndefined();
+  });
 });

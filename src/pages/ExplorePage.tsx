@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import {
   EXPLORE_WRAP_CLASS,
   ExploreArtworkCard,
@@ -47,7 +49,13 @@ export function ExplorePage() {
   const artworkQuery = useInfiniteSearchArtworks({ ...sharedParams, enabled: !isExhibitionView });
 
   const exhibitionPages = exhibitionQuery.data?.pages.map((page) => page.exhibitions) ?? [];
-  const artworkPages = artworkQuery.data?.pages.map((page) => page.artworks) ?? [];
+  // 작품 검색은 순번(page)으로 받아, 사이에 작품이 추가되면 앞 페이지 작품이 다시 올 수 있다
+  const artworkPages = useMemo(() => {
+    const seen = new Set<number>();
+    return (artworkQuery.data?.pages ?? []).map((page) =>
+      page.artworks.filter(({ artworkId }) => !seen.has(artworkId) && seen.add(artworkId)),
+    );
+  }, [artworkQuery.data]);
 
   const activeQuery = isExhibitionView ? exhibitionQuery : artworkQuery;
   const activePages = isExhibitionView ? exhibitionPages : artworkPages;
@@ -73,6 +81,7 @@ export function ExplorePage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isPlaceholderData,
   };
 
   return (
