@@ -15,11 +15,12 @@ export function RegisterCallout({ onRegister }: { onRegister: () => void }) {
         <button
           type="button"
           onClick={onRegister}
-          className="typography-body-md-semibold relative flex shrink-0 cursor-pointer items-center gap-0.75 rounded-4 whitespace-nowrap after:absolute after:inset-x-0 after:-inset-y-3.5 text-secondary underline underline-offset-2 transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-focus"
+          className="typography-body-md-semibold relative flex shrink-0 cursor-pointer items-start rounded-4 whitespace-nowrap after:absolute after:inset-x-0 after:-inset-y-3.5 text-secondary underline decoration-from-font [text-underline-position:from-font] transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-focus"
         >
           전시 등록하기
-          <span className="grid size-3 place-items-center">
-            <img src={GoIcon} alt="" className="size-3" />
+          {/* 피그마: 12px 칸 안에 화살표(8.36×8.71)를 원래 크기로 둔다 */}
+          <span className="relative mt-[3px] size-3 shrink-0">
+            <img src={GoIcon} alt="" className="absolute top-[1.5px] left-[2.14px] max-w-none" />
           </span>
         </button>
       </div>
