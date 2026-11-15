@@ -145,9 +145,6 @@ describe('isEditDraftChanged', () => {
       isEditDraftChanged(original, { ...original, posters: original.posters.slice(0, 1) }),
     ).toBe(true);
     expect(
-      isEditDraftChanged(original, { ...original, posters: original.posters.slice(0, 1) }),
-    ).toBe(true);
-    expect(
       isEditDraftChanged(original, { ...original, posterCrop: { x: 0, y: 0, w: 1, h: 1 } }),
     ).toBe(false);
   });
