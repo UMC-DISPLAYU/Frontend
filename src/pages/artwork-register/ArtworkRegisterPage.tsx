@@ -146,6 +146,7 @@ function ArtworkRegisterContent({
       onSubmit={handleSubmit}
       leaveFallback={workPath}
       previousTypes={edit ? readArtworkTypes(edit.previous) : undefined}
+      allowVideo
       authorSection={
         <>
           <ArtworkAuthorSection

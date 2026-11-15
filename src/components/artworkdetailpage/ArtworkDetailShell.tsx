@@ -19,6 +19,8 @@ import { useViewMode } from './useViewMode';
 
 type Props = {
   images: string[];
+  /* images 와 같은 순서. 영상인 칸은 영상 주소(images 는 썸네일) */
+  videoSrcs?: (string | undefined)[];
   title: string;
   /* 작가 이름들(900px 이상 크게 보기 위 띠) */
   subtitle?: string;
@@ -60,6 +62,7 @@ const WIDE_TAB_TEXT = 'desktop:[&_[role=tab]]:text-[16px]';
 
 export function ArtworkDetailShell({
   images,
+  videoSrcs,
   title,
   subtitle,
   onBack,
@@ -127,6 +130,7 @@ export function ArtworkDetailShell({
       <div className={LAYOUT}>
         <ArtworkViewer
           images={images}
+          videoSrcs={videoSrcs}
           title={title}
           subtitle={subtitle}
           mode={mode}

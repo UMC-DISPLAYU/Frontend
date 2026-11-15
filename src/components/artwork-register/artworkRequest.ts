@@ -13,15 +13,25 @@ import { toArtworkFieldLabels, toArtworkTypes } from './artworkRegister.constant
 import type { ArtworkRegisterValues } from './artworkRegister.schema';
 import type { ArtworkPerson } from './artworkRegister.types';
 
+/** 작품 이미지 중 영상의 썸네일 · 크기(카드에 보일 썸네일 크기) */
+export interface ArtworkVideoMeta {
+  thumbnailUrl: string;
+  width?: number;
+  height?: number;
+}
+
 export interface ArtworkImageUrls {
   artworkUrls: string[];
   processUrls: string[];
+  /** artworkUrls 중 영상인 주소. 전시 작품만 영상을 받는다 */
+  videos?: Record<string, ArtworkVideoMeta>;
 }
 
-type ImageLike = Pick<ImageResponseDto, 'imageUrl' | 'sortOrder'> & {
-  imageType?: string | null;
-  isThumbnail?: boolean | null;
-};
+type ImageLike = Pick<ImageResponseDto, 'imageUrl' | 'sortOrder'> &
+  Partial<Pick<ImageResponseDto, 'mediaType' | 'thumbnailUrl' | 'width' | 'height'>> & {
+    imageType?: string | null;
+    isThumbnail?: boolean | null;
+  };
 
 /** 저장된 사진의 설명 · 크기. 수정 화면에는 입력 칸이 없어 같은 사진이면 그대로 다시 보낸다 */
 export type SavedArtworkImage = Pick<ImageResponseDto, 'imageUrl'> &
@@ -42,6 +52,14 @@ export function splitArtworkImages(images: readonly ImageLike[] | undefined): Ar
   const sorted = [...(images ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const artworkImages = sorted.filter((image) => image.imageType !== 'WORK_PROCESS');
   const thumbnail = artworkImages.find((image) => image.isThumbnail);
+  const videos = Object.fromEntries(
+    artworkImages
+      .filter((image) => image.mediaType === 'VIDEO' && image.thumbnailUrl)
+      .map((image) => [
+        image.imageUrl,
+        { thumbnailUrl: image.thumbnailUrl!, width: image.width, height: image.height },
+      ]),
+  );
 
   return {
     artworkUrls: (thumbnail
@@ -51,6 +69,7 @@ export function splitArtworkImages(images: readonly ImageLike[] | undefined): Ar
     processUrls: sorted
       .filter((image) => image.imageType === 'WORK_PROCESS')
       .map((image) => image.imageUrl),
+    ...(Object.keys(videos).length > 0 && { videos }),
   };
 }
 
@@ -63,7 +82,7 @@ const positive = (value: number | null | undefined) =>
  * 대표 이미지는 작품 이미지 첫 장이다.
  */
 export function toArtworkImageRequests(
-  { artworkUrls, processUrls }: ArtworkImageUrls,
+  { artworkUrls, processUrls, videos = {} }: ArtworkImageUrls,
   savedImages: readonly SavedArtworkImage[] = [],
 ): ArtworkImageRequestDto[] {
   const toImage = (
@@ -72,6 +91,7 @@ export function toArtworkImageRequests(
     imageType: ArtworkImageRequestDto['imageType'],
   ): ArtworkImageRequestDto => {
     const saved = savedImages.find((image) => image.imageUrl === imageUrl);
+    const video = imageType === 'ARTWORK' ? videos[imageUrl] : undefined;
 
     return {
       imageUrl,
@@ -79,9 +99,12 @@ export function toArtworkImageRequests(
       imageType,
       // 저장된 설명은 공백 · 빈 문자열까지 원래 값 그대로 보낸다
       ...(typeof saved?.caption === 'string' && { caption: saved.caption }),
-      width: positive(saved?.width) ?? DEFAULT_ARTWORK_IMAGE_WIDTH,
-      height: positive(saved?.height) ?? DEFAULT_ARTWORK_IMAGE_HEIGHT,
+      // 영상은 썸네일 크기를 보낸다(서버가 카드 크기로 쓴다)
+      width: positive(video?.width) ?? positive(saved?.width) ?? DEFAULT_ARTWORK_IMAGE_WIDTH,
+      height: positive(video?.height) ?? positive(saved?.height) ?? DEFAULT_ARTWORK_IMAGE_HEIGHT,
       sortOrder: index + 1,
+      // 사진은 mediaType 을 생략한다(개인 작품 API 는 이 필드가 없다)
+      ...(video && { mediaType: 'VIDEO' as const, thumbnailUrl: video.thumbnailUrl }),
     };
   };
 

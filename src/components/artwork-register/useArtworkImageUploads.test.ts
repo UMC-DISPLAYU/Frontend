@@ -5,6 +5,7 @@ import { pickArtworkFiles } from './useArtworkImageUploads';
 const MB = 1024 * 1024;
 const jpg = (name: string, size = MB) => ({ name, type: 'image/jpeg', size });
 const gif = (name: string) => ({ name, type: 'image/gif', size: MB });
+const mp4 = (name: string, size = MB) => ({ name, type: 'video/mp4', size });
 
 describe('pickArtworkFiles', () => {
   it('남은 칸만큼 고른 순서대로 넣고, 칸이 다 찬 뒤 남은 파일이 있으면 overLimit', () => {
@@ -42,5 +43,45 @@ describe('pickArtworkFiles', () => {
 
     expect(result.accepted).toHaveLength(0);
     expect(result.overLimit).toBe(true);
+  });
+
+  it('영상을 받는 칸은 영상 1개까지 넣는다', () => {
+    const result = pickArtworkFiles([mp4('v1'), mp4('v2')], 0, 10, { allowVideo: true });
+
+    expect(result.accepted.map((file) => file.name)).toEqual(['v1']);
+    expect(result.message).toBe('영상은 1개만 올릴 수 있어요');
+  });
+
+  it('영상은 500MB(10진 바이트) 이하만 넣는다', () => {
+    expect(
+      pickArtworkFiles([mp4('v', 500_000_000)], 0, 10, { allowVideo: true }).accepted,
+    ).toHaveLength(1);
+    expect(pickArtworkFiles([mp4('v', 500_000_001)], 0, 10, { allowVideo: true })).toMatchObject({
+      accepted: [],
+      message: '영상은 500MB 이하로 올려주세요',
+    });
+  });
+
+  it('이미 영상이 있으면 영상은 넣지 않는다', () => {
+    const result = pickArtworkFiles([mp4('v'), jpg('a')], 1, 10, {
+      allowVideo: true,
+      currentVideoCount: 1,
+    });
+
+    expect(result.accepted.map((file) => file.name)).toEqual(['a']);
+    expect(result.message).toBe('영상은 1개만 올릴 수 있어요');
+  });
+
+  it('영상을 받지 않는 칸은 안내가 있으면 안내로, 없으면 올릴 수 없는 파일로 센다', () => {
+    expect(
+      pickArtworkFiles([mp4('v')], 0, 10, {
+        videoNotAllowedMessage: '작업 과정에는 사진만 올릴 수 있어요',
+      }),
+    ).toMatchObject({
+      accepted: [],
+      rejectedCount: 0,
+      message: '작업 과정에는 사진만 올릴 수 있어요',
+    });
+    expect(pickArtworkFiles([mp4('v')], 0, 10)).toMatchObject({ accepted: [], rejectedCount: 1 });
   });
 });

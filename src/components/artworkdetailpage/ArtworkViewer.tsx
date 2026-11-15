@@ -10,15 +10,19 @@ import {
 
 import { DetailBackButton } from '@/components/common/detail';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
 import { ArtworkBigView } from './ArtworkBigView';
 import { getStackPhotoIndex, STACK_READING_LINE } from './artworkDetail.utils';
+import { InlineVideo, PlayMark, VideoPlayButton } from './ArtworkVideo';
 import type { ViewerChrome } from './useViewerChromeFade';
 import type { ViewMode } from './useViewMode';
 
 type Props = {
   images: string[];
+  /* images 와 같은 순서. 영상인 칸은 영상 주소(images 는 썸네일) */
+  videoSrcs?: (string | undefined)[];
   title: string;
   /* 크게 보기 위 띠의 작가 이름 */
   subtitle?: string;
@@ -80,6 +84,7 @@ function StackImage({ src, alt, eager }: { src: string; alt: string; eager: bool
 
 export function ArtworkViewer({
   images,
+  videoSrcs = [],
   title,
   subtitle,
   mode,
@@ -95,6 +100,19 @@ export function ArtworkViewer({
 
   const [current, setCurrent] = useState(0);
   const [bigStart, setBigStart] = useState<number | null>(null);
+  /* 칸 안에서 재생 중인 영상 칸 */
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+
+  // 크게 보기가 뒤 칸의 영상을 가리므로, 열 때 칸 안 재생을 멈춘다
+  const openBig = (index: number) => {
+    setPlayingIndex(null);
+    setBigStart(index);
+  };
+
+  const handleVideoError = () => {
+    setPlayingIndex(null);
+    toast('영상 파일을 찾을 수 없어요');
+  };
   const paneRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const stackRef = useRef<HTMLDivElement>(null);
@@ -137,6 +155,7 @@ export function ArtworkViewer({
 
   const changeMode = (next: ViewMode) => {
     if (next === mode) return;
+    setPlayingIndex(null);
     shouldAlignAfterModeChange.current = true;
     onModeChange(next);
   };
@@ -237,12 +256,17 @@ export function ArtworkViewer({
   const handleStageClick = (event: MouseEvent<HTMLDivElement>) => {
     if (
       !isWide() ||
-      (event.target as HTMLElement).closest('button, a, [role="group"][aria-label="감상 방식"]')
+      (event.target as HTMLElement).closest(
+        'button, a, video, [role="group"][aria-label="감상 방식"]',
+      )
     )
       return;
     const image = (event.target as HTMLElement).closest('img');
-    const stackIndex = image ? Array.from(stackRef.current?.children ?? []).indexOf(image) : -1;
-    setBigStart(isStack && stackIndex >= 0 ? stackIndex : currentRef.current);
+    // 영상 칸은 사진을 한 겹 감싸 두므로 감싼 칸 기준으로 순서를 찾는다
+    const stackIndex = image
+      ? Array.from(stackRef.current?.children ?? []).findIndex((child) => child.contains(image))
+      : -1;
+    openBig(isStack && stackIndex >= 0 ? stackIndex : currentRef.current);
   };
 
   return (
@@ -265,11 +289,11 @@ export function ArtworkViewer({
             <button
               key={`${src}-${index}`}
               type="button"
-              aria-label={`${index + 1}번째 이미지 보기`}
+              aria-label={`${index + 1}번째 ${videoSrcs[index] ? '영상' : '이미지'} 보기`}
               aria-current={index === current}
               onClick={() => selectThumb(index)}
               className={cn(
-                'h-16 w-12 shrink-0 cursor-pointer overflow-hidden border-2 transition-opacity duration-fast ease-standard',
+                'relative h-16 w-12 shrink-0 cursor-pointer overflow-hidden border-2 transition-opacity duration-fast ease-standard',
                 index === current
                   ? 'border-interactive-selected opacity-100'
                   : 'border-transparent opacity-55 hover:opacity-100',
@@ -281,6 +305,14 @@ export function ArtworkViewer({
                 alt=""
                 className="size-full object-cover"
               />
+              {videoSrcs[index] && (
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-0.5 left-0.5 grid size-4 place-items-center rounded-circle bg-[rgba(0,0,0,0.6)] text-base-white"
+                >
+                  <PlayMark className="size-2" />
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -358,7 +390,7 @@ export function ArtworkViewer({
                   aria-label="크게 보기"
                   title="크게 보기"
                   aria-pressed={false}
-                  onClick={() => setBigStart(currentRef.current)}
+                  onClick={() => openBig(currentRef.current)}
                   className={cn(VIEW_BUTTON_CLASS, 'hidden desktop:grid')}
                 >
                   <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
@@ -386,14 +418,38 @@ export function ArtworkViewer({
 
           {isStack ? (
             <div ref={stackRef} aria-label="작품 이미지 이어보기">
-              {images.map((src, index) => (
-                <StackImage
-                  key={`${src}-${index}`}
-                  src={src}
-                  alt={altOf(index)}
-                  eager={index === 0}
-                />
-              ))}
+              {images.map((src, index) => {
+                const videoSrc = videoSrcs[index];
+                const image = (
+                  <StackImage
+                    key={`${src}-${index}`}
+                    src={src}
+                    alt={altOf(index)}
+                    eager={index === 0}
+                  />
+                );
+
+                if (!videoSrc) return image;
+
+                return (
+                  <div key={`${src}-${index}`} className={cn('relative', STACK_SCROLL_MARGIN)}>
+                    {playingIndex === index ? (
+                      <InlineVideo
+                        src={videoSrc}
+                        poster={src}
+                        label={`${altOf(index)} 영상`}
+                        onError={handleVideoError}
+                        className="block h-auto w-full bg-secondary desktop:max-h-[calc(var(--W)*4/3)] desktop:object-contain"
+                      />
+                    ) : (
+                      <>
+                        {image}
+                        <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div
@@ -409,18 +465,36 @@ export function ArtworkViewer({
               {images.map((src, index) => (
                 <div
                   key={`${src}-${index}`}
-                  className="h-full flex-[0_0_100%] snap-center bg-secondary"
+                  className="relative h-full flex-[0_0_100%] snap-center bg-secondary"
                 >
-                  <OptimizedImage
-                    src={src}
-                    displayWidth={STAGE_IMAGE_WIDTH}
-                    alt={altOf(index)}
-                    draggable={false}
-                    loading={index === 0 ? 'eager' : 'lazy'}
-                    skeleton
-                    frameClassName="size-full"
-                    className="object-contain select-none"
-                  />
+                  {videoSrcs[index] && playingIndex === index ? (
+                    <InlineVideo
+                      src={videoSrcs[index]}
+                      poster={src}
+                      label={`${altOf(index)} 영상`}
+                      onError={handleVideoError}
+                      className="size-full bg-secondary object-contain"
+                    />
+                  ) : (
+                    <>
+                      <OptimizedImage
+                        src={src}
+                        displayWidth={STAGE_IMAGE_WIDTH}
+                        alt={altOf(index)}
+                        draggable={false}
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        skeleton
+                        frameClassName="size-full"
+                        className="object-contain select-none"
+                      />
+                      {videoSrcs[index] && (
+                        <VideoPlayButton
+                          src={videoSrcs[index]}
+                          onPlay={() => setPlayingIndex(index)}
+                        />
+                      )}
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -474,6 +548,7 @@ export function ArtworkViewer({
         open={bigStart !== null}
         startIndex={bigStart ?? 0}
         images={images}
+        videoSrcs={videoSrcs}
         title={title}
         subtitle={subtitle}
         onClose={closeBig}

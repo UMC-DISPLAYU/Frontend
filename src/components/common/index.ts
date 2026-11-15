@@ -19,3 +19,4 @@ export { LoginConfirmModal } from './LoginConfirmModal';
 export { LogoutConfirmModal } from './LogoutConfirmModal';
 export { ProfileAvatar } from './ProfileAvatar';
 export { ProfilePhotoField } from './ProfilePhotoField';
+export { VideoThumbnailSheet } from './VideoThumbnailSheet';

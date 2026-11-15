@@ -4,13 +4,18 @@ import { createPortal } from 'react-dom';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
+
+import { InlineVideo, VideoPlayButton } from './ArtworkVideo';
 
 type Props = {
   open: boolean;
   /* 열 때 보고 있던 사진. 그 사진 윗선이 위 띠(96) 아래에 오게 연다 */
   startIndex: number;
   images: string[];
+  /* images 와 같은 순서. 영상인 칸은 영상 주소(images 는 썸네일) */
+  videoSrcs?: (string | undefined)[];
   title: string;
   /* 작가 이름들. 제목 아래 작은 글자 */
   subtitle?: string;
@@ -38,11 +43,21 @@ function readPhotoIndex(scroller: HTMLElement | null, feed: HTMLElement | null) 
  * 검정 화면에 사진을 원래 비율로 폭 min(1200, 창 − 192) 끝까지 이어 붙인다.
  * 닫기: ✕ · Esc · 브라우저 뒤로가기 · 사진 바깥 누르기
  */
-export function ArtworkBigView({ open, startIndex, images, title, subtitle, onClose }: Props) {
+export function ArtworkBigView({
+  open,
+  startIndex,
+  images,
+  videoSrcs = [],
+  title,
+  subtitle,
+  onClose,
+}: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(startIndex);
   const [isShown, setIsShown] = useState(false);
+  /* 크게 보기 안에서 재생 중인 영상 칸. 닫으면 처음 상태로 돌아간다 */
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const frameRef = useRef(0);
   const readIndex = () => readPhotoIndex(scrollerRef.current, feedRef.current);
 
@@ -88,6 +103,7 @@ export function ArtworkBigView({ open, startIndex, images, title, subtitle, onCl
       cancelAnimationFrame(frame);
       userScrollEvents.forEach((type) => scroller?.removeEventListener(type, markUserScroll));
       setIsShown(false);
+      setPlayingIndex(null);
       opener?.focus({ preventScroll: true });
     };
   }, [open, startIndex]);
@@ -170,17 +186,45 @@ export function ArtworkBigView({ open, startIndex, images, title, subtitle, onCl
         ref={feedRef}
         className="relative z-0 mx-auto grid w-[min(1200px,calc(100vw-192px))] pt-8 pb-24"
       >
-        {images.map((src, index) => (
-          <OptimizedImage
-            key={`${src}-${index}`}
-            src={src}
-            displayWidth={BIG_IMAGE_WIDTH}
-            alt={`${title} ${index + 1}/${images.length}`}
-            loading={Math.abs(index - startIndex) > 1 ? 'lazy' : 'eager'}
-            draggable={false}
-            className="block h-auto w-full bg-[#27272a] select-none"
-          />
-        ))}
+        {images.map((src, index) => {
+          const alt = `${title} ${index + 1}/${images.length}`;
+          const videoSrc = videoSrcs[index];
+          const image = (
+            <OptimizedImage
+              key={`${src}-${index}`}
+              src={src}
+              displayWidth={BIG_IMAGE_WIDTH}
+              alt={alt}
+              loading={Math.abs(index - startIndex) > 1 ? 'lazy' : 'eager'}
+              draggable={false}
+              className="block h-auto w-full bg-[#27272a] select-none"
+            />
+          );
+          if (!videoSrc) return image;
+
+          // 영상은 썸네일 위 ▶ 를 누르면 그 자리에서 재생한다(상세 뷰어와 같다)
+          return (
+            <div key={`${src}-${index}`} className="relative">
+              {playingIndex === index ? (
+                <InlineVideo
+                  src={videoSrc}
+                  poster={src}
+                  label={`${alt} 영상`}
+                  onError={() => {
+                    setPlayingIndex(null);
+                    toast('영상 파일을 찾을 수 없어요');
+                  }}
+                  className="block h-auto w-full bg-[#27272a]"
+                />
+              ) : (
+                <>
+                  {image}
+                  <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
       <i
         aria-hidden="true"

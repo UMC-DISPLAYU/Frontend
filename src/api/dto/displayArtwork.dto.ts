@@ -1,4 +1,5 @@
 import type { ApiResponseDto, ImageResponseDto, OffsetPageRequestDto } from './common.dto';
+import type { MediaTypeDto } from './file.dto';
 
 export interface ArtworkImageDto extends ImageResponseDto {
   isThumbnail: boolean;
@@ -232,12 +233,17 @@ export type ArtworkTypeDto =
 export interface ArtworkImageRequestDto {
   imageUrl: string;
   isThumbnail?: boolean;
-  /* 사진 · 영상 구분 없이 작품 이미지(ARTWORK)와 작업 과정(WORK_PROCESS)만 나눈다 */
+  /* 작품 이미지(ARTWORK)와 작업 과정(WORK_PROCESS)을 나눈다. 작업 과정은 사진만 받는다 */
   imageType: 'ARTWORK' | 'WORK_PROCESS';
   sortOrder?: number;
   caption?: string;
+  /* 영상이면 썸네일 크기 */
   width?: number;
   height?: number;
+  /* 전시 작품만 받는다. 생략하면 IMAGE */
+  mediaType?: MediaTypeDto;
+  /* VIDEO 일 때 필수인 썸네일 이미지 주소 */
+  thumbnailUrl?: string;
 }
 
 export interface CreateExhibitionArtworkRequestDto {
@@ -360,6 +366,8 @@ export interface DisplayArtworkDto {
   artworkImageUrl: string;
   imageWidth: number;
   imageHeight: number;
+  /* 대표가 영상이면 영상 주소(artworkImageUrl 은 썸네일), 아니면 null */
+  artworkVideoUrl?: string | null;
 }
 
 export interface GetDisplayArtworksResponseDataDto {
