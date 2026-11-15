@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import type { DisplayArtworkDto, DisplayTeamMemberDto } from '@/api/dto';
+import type { DisplayTeamMemberDto } from '@/api/dto';
 import { ErrorView } from '@/components/common/ErrorView';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
@@ -14,7 +14,6 @@ import { staggerStyle } from '@/utils/stagger';
 import { formatVideoDuration, readVideoDuration } from '@/utils/videoFile';
 
 import { PlayMarkIcon } from './PosterVideoSlide';
-import { VideoPlayerOverlay } from './VideoPlayerOverlay';
 
 type Props = {
   displayId: number;
@@ -29,7 +28,7 @@ const GRID = 'grid grid-cols-2 gap-x-3 gap-y-6 desktop:grid-cols-3';
 /* 피그마 `Card / 작품 · 검정`(카드 E): 틀 없이 사진(3:4), 사진 아래 8 · 제목↔작가 2 */
 const CARD_FRAME = 'aspect-3/4 w-full overflow-hidden bg-secondary';
 const CARD_CLASS =
-  'group block w-full animate-rise text-left text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98';
+  'group block animate-rise text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98';
 
 /** 영상 작품 카드 위 재생 표시와 길이. 길이는 영상을 읽을 수 있을 때만 보인다(프로토타입) */
 function VideoMarks({ src }: { src: string }) {
@@ -66,13 +65,6 @@ export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: P
   const { data, error, isPending, isError, refetch } = useDisplayArtworks(displayId);
   const artworks = data?.artworks ?? [];
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
-  const [playing, setPlaying] = useState<{ artwork: DisplayArtworkDto; key: number } | null>(null);
-  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
-
-  const openPlayer = (artwork: DisplayArtworkDto) => {
-    setPlaying((prev) => ({ artwork, key: (prev?.key ?? 0) + 1 }));
-    setIsPlayerOpen(true);
-  };
 
   return (
     <section
@@ -111,8 +103,15 @@ export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: P
         <div className={GRID}>
           {artworks.map((artwork, index) => {
             const videoUrl = artwork.artworkVideoUrl;
-            const content = (
-              <>
+
+            // 영상 작품도 같은 카드로 작품 상세로 간다(작품 상세에서 그 칸에서 재생한다)
+            return (
+              <Link
+                key={artwork.artworkId}
+                to={artworkPath?.(artwork.artworkId) ?? `/artwork/${artwork.artworkId}`}
+                style={staggerStyle(index)}
+                className={CARD_CLASS}
+              >
                 <div className="relative">
                   <OptimizedImage
                     src={artwork.artworkImageUrl}
@@ -132,43 +131,10 @@ export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: P
                     {getExhibitionArtistName(artwork.artistName, artwork.artistUserId, teamMembers)}
                   </span>
                 </div>
-              </>
-            );
-
-            // 프로토타입: 영상 작품은 사진 작품과 같은 카드지만, 누르면 상세 대신 플레이어 창에서 재생한다
-            return videoUrl ? (
-              <button
-                key={artwork.artworkId}
-                type="button"
-                aria-haspopup="dialog"
-                onClick={() => openPlayer(artwork)}
-                style={staggerStyle(index)}
-                className={CARD_CLASS}
-              >
-                {content}
-              </button>
-            ) : (
-              <Link
-                key={artwork.artworkId}
-                to={artworkPath?.(artwork.artworkId) ?? `/artwork/${artwork.artworkId}`}
-                style={staggerStyle(index)}
-                className={CARD_CLASS}
-              >
-                {content}
               </Link>
             );
           })}
         </div>
-      )}
-      {playing?.artwork.artworkVideoUrl && (
-        <VideoPlayerOverlay
-          key={playing.key}
-          open={isPlayerOpen}
-          src={playing.artwork.artworkVideoUrl}
-          thumbnailSrc={playing.artwork.artworkImageUrl}
-          title={playing.artwork.artworkName}
-          onClose={() => setIsPlayerOpen(false)}
-        />
       )}
     </section>
   );
