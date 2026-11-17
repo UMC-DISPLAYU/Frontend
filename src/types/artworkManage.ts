@@ -16,6 +16,8 @@ export interface Work {
   thumbnail?: string;
   /** 카드 썸네일에 보이는 영역 */
   thumbnailCrop?: CropRect | null;
+  /** 카드 썸네일에 보이는 방식(서버 값 FILL | FIT). 없으면 꽉 채우기 */
+  thumbnailFitMode?: string | null;
 }
 
 export type Content = {

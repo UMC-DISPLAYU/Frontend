@@ -17,6 +17,7 @@ import {
   CoAuthorSheet,
   DIRECT_INPUT_CAPTION,
   EMPTY_ARTWORK_REGISTER_VALUES,
+  fromArtworkFitMode,
   parseProxyAuthor,
   type ProxyAuthor,
   splitArtworkImages,
@@ -285,6 +286,7 @@ function ArtworkRegisterRoute() {
         initialImages={{
           ...splitArtworkImages(detailQuery.data.images),
           artworkCrop: previous.artworkCrop,
+          artworkFit: fromArtworkFitMode(previous.artworkFitMode),
         }}
         // 수정 화면 조회 응답에는 사진 설명이 없어, 다시 보낼 사진 설명 · 크기는 관람용 상세에서 가져온다
         edit={{ artworkId, previous: { ...previous, images: detailQuery.data.images } }}

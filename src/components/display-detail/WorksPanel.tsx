@@ -7,7 +7,13 @@ import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getExhibitionArtistName } from '@/utils/artist';
-import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
+import { cn } from '@/utils/cn';
+import {
+  croppedDisplayWidth,
+  FIT_THUMBNAIL_IMAGE_CLASS,
+  resolveSavedThumbnail,
+  savedCropImageStyle,
+} from '@/utils/cropBox';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 
@@ -76,30 +82,39 @@ export function WorksPanel({
         </p>
       ) : (
         <div className={GRID}>
-          {artworks.map((artwork, index) => (
-            <Link
-              key={artwork.artworkId}
-              to={artworkPath?.(artwork.artworkId) ?? `/artwork/${artwork.artworkId}`}
-              style={staggerStyle(index)}
-              className="group block animate-rise text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
-            >
-              <OptimizedImage
-                src={artwork.artworkImageUrl}
-                displayWidth={croppedDisplayWidth(360, artwork.artworkCrop)}
-                alt={artwork.artworkName}
-                skeleton
-                frameClassName={CARD_FRAME}
-                className="size-full object-cover transition-transform duration-slow ease-standard group-hover:scale-103"
-                style={savedCropImageStyle(artwork.artworkCrop)}
-              />
-              <div className="pt-2">
-                <b className="typography-body-lg-semibold block truncate">{artwork.artworkName}</b>
-                <span className="typography-body-md-medium mt-0.5 block truncate text-secondary">
-                  {getExhibitionArtistName(artwork.artistName, artwork.artistUserId, teamMembers)}
-                </span>
-              </div>
-            </Link>
-          ))}
+          {artworks.map((artwork, index) => {
+            const thumbnail = resolveSavedThumbnail(artwork.artworkCrop, artwork.artworkFitMode);
+
+            return (
+              <Link
+                key={artwork.artworkId}
+                to={artworkPath?.(artwork.artworkId) ?? `/artwork/${artwork.artworkId}`}
+                style={staggerStyle(index)}
+                className="group block animate-rise text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
+              >
+                <OptimizedImage
+                  src={artwork.artworkImageUrl}
+                  displayWidth={croppedDisplayWidth(360, thumbnail.crop)}
+                  alt={artwork.artworkName}
+                  skeleton
+                  frameClassName={CARD_FRAME}
+                  className={cn(
+                    'size-full object-cover transition-transform duration-slow ease-standard group-hover:scale-103',
+                    thumbnail.isFit && FIT_THUMBNAIL_IMAGE_CLASS,
+                  )}
+                  style={savedCropImageStyle(thumbnail.crop)}
+                />
+                <div className="pt-2">
+                  <b className="typography-body-lg-semibold block truncate">
+                    {artwork.artworkName}
+                  </b>
+                  <span className="typography-body-md-medium mt-0.5 block truncate text-secondary">
+                    {getExhibitionArtistName(artwork.artistName, artwork.artistUserId, teamMembers)}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </section>

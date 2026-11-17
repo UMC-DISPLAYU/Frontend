@@ -129,6 +129,7 @@ export const artworkHandlers = [
             artistUserIds: toArtistUserIds(artwork),
             artists: toArtistList(artwork),
             artworkCrop: artwork.artworkCrop ?? null,
+            artworkFitMode: artwork.artworkFitMode ?? null,
           })),
         ),
       );
@@ -164,6 +165,7 @@ export const artworkHandlers = [
         images: body.images ?? [],
         coAuthors: toCoAuthorList(body.coAuthors, Number(body.displayId ?? 101)),
         artworkCrop: body.artworkCrop ?? null,
+        artworkFitMode: body.artworkFitMode ?? null,
         artworkImageUrl: imageUrl,
         artworkVideoUrl,
         thumbnailUrl: imageUrl,
@@ -241,6 +243,7 @@ export const artworkHandlers = [
         exhibitionInfo: artwork.exhibitionInfo,
         artists: artwork.artists ?? [{ userId: null, name: artwork.artistName ?? '' }],
         artworkCrop: artwork.artworkCrop ?? null,
+        artworkFitMode: artwork.artworkFitMode ?? null,
       }));
 
       return success('/api/v1/artworks/search', {
@@ -319,6 +322,7 @@ export const artworkHandlers = [
         artistName: artwork.artistName ?? artwork.artist,
         artistUserId: artwork.artistUserId ?? null,
         artworkCrop: artwork.artworkCrop ?? null,
+        artworkFitMode: artwork.artworkFitMode ?? null,
         coAuthors: Array.isArray(artwork.coAuthors) ? artwork.coAuthors : [],
         qaHandlerUserIds:
           artwork.qaHandlerUserIds ?? (artwork.artistUserId ? [artwork.artistUserId] : []),
@@ -354,6 +358,10 @@ export const artworkHandlers = [
       // 영역을 생략하면 대표 사진이 같은 동안 유지하고, 대표 사진이 바뀌면 지운다
       const artworkCrop =
         body.artworkCrop ?? (imageUrl === artwork.artworkImageUrl ? artwork.artworkCrop : null);
+      // 보이는 방식도 영역과 같이, 생략하면 대표 사진이 같은 동안 유지한다(백엔드에 요청한 필드)
+      const artworkFitMode =
+        body.artworkFitMode ??
+        (imageUrl === artwork.artworkImageUrl ? artwork.artworkFitMode : null);
 
       Object.assign(artwork, body, {
         title: body.artworkName ?? artwork.title,
@@ -362,6 +370,7 @@ export const artworkHandlers = [
         materialMedia,
         material: materialMedia,
         artworkCrop: artworkCrop ?? null,
+        artworkFitMode: artworkFitMode ?? null,
         artworkImageUrl: imageUrl,
         artworkVideoUrl,
         thumbnailUrl: imageUrl,

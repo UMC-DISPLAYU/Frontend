@@ -6,6 +6,7 @@ import {
   buildCreateArtworkRequest,
   buildPersonalArtworkRequest,
   buildUpdateArtworkRequest,
+  fromArtworkFitMode,
   resolveQaHandlerUserIds,
   splitArtworkImages,
   toArtworkCropRequest,
@@ -310,5 +311,34 @@ describe('toArtworkRegisterValues', () => {
       material: 'Mixed media',
       size: '',
     });
+  });
+});
+
+describe('artworkFitMode', () => {
+  const base = { values, author: me, coAuthors: [], ownerUserId: 9 };
+
+  it('대표 사진의 보이는 방식을 FILL · FIT 으로 보낸다', () => {
+    expect(
+      buildCreateArtworkRequest(7, { ...base, images: { ...images, artworkFit: 'fit' } })
+        .artworkFitMode,
+    ).toBe('FIT');
+    expect(
+      buildUpdateArtworkRequest({ ...base, images: { ...images, artworkFit: 'fill' } })
+        .artworkFitMode,
+    ).toBe('FILL');
+  });
+
+  it('방식을 모르면 보내지 않는다', () => {
+    expect(buildCreateArtworkRequest(7, { ...base, images })).not.toHaveProperty('artworkFitMode');
+    expect(
+      buildUpdateArtworkRequest({ ...base, images: { ...images, artworkFit: null } }),
+    ).not.toHaveProperty('artworkFitMode');
+  });
+
+  it('서버 값을 화면 방식으로 바꾸고, 없으면 null 이다', () => {
+    expect(fromArtworkFitMode('FIT')).toBe('fit');
+    expect(fromArtworkFitMode('FILL')).toBe('fill');
+    expect(fromArtworkFitMode(null)).toBeNull();
+    expect(fromArtworkFitMode(undefined)).toBeNull();
   });
 });
