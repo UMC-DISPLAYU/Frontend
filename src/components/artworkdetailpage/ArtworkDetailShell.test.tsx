@@ -40,12 +40,11 @@ const nodes = (node: ReactNode): Element[] =>
       : [],
   );
 
-const render = (props: { isPreview?: boolean; hideBack?: boolean }) =>
+const render = (props: { isPreview?: boolean }) =>
   nodes(
     ArtworkDetailShell({
       images: ['a.jpg'],
       title: '작품',
-      onBack: vi.fn(),
       label: null,
       hasIntro: false,
       intro: null,
@@ -56,23 +55,17 @@ const render = (props: { isPreview?: boolean; hideBack?: boolean }) =>
   );
 
 describe('작품 상세 뒤로가기', () => {
-  it('작품 미리보기는 모바일 · 데스크톱 모두 뒤로가기 버튼을 두지 않는다', () => {
-    const tree = render({ isPreview: true, hideBack: true });
-    expect(tree.find((node) => node.type === DetailBackButton)).toBeUndefined();
-    expect(tree.find((node) => node.type === ArtworkViewer)?.props.isPreview).toBe(false);
-    expect(tree.find((node) => node.type === DetailTabNav)?.props.isStuck).toBe(false);
-  });
-
-  it('공개 전 전시의 공개 작품 상세는 모바일 · 데스크톱 뒤로가기를 그대로 둔다', () => {
-    const tree = render({ isPreview: true });
-    expect(tree.find((node) => node.type === DetailBackButton)).toBeDefined();
-    expect(tree.find((node) => node.type === DetailTabNav)?.props.isStuck).toBe(true);
-    expect(tree.find((node) => node.type === ArtworkViewer)?.props.isPreview).toBe(true);
-  });
-
-  it('공개 작품 상세는 모바일 뒤로가기만 둔다', () => {
-    const tree = render({});
-    expect(tree.find((node) => node.type === DetailBackButton)).toBeDefined();
-    expect(tree.find((node) => node.type === ArtworkViewer)?.props.isPreview).toBe(false);
-  });
+  it.each([
+    ['공개 작품 상세', false],
+    ['미리보기', true],
+  ])(
+    '%s는 모바일 · 데스크톱 모두 뒤로가기 버튼을 두지 않는다(프로토타입 U-149)',
+    (_, isPreview) => {
+      const tree = render({ isPreview });
+      expect(tree.find((node) => node.type === DetailBackButton)).toBeUndefined();
+      expect(tree.find((node) => node.type === ArtworkViewer)?.props).not.toHaveProperty('onBack');
+      // 뒤로가기 자리를 비우지 않으므로 탭 줄이 붙어도 왼쪽으로 밀지 않는다
+      expect(tree.find((node) => node.type === DetailTabNav)?.props.isStuck).toBe(false);
+    },
+  );
 });

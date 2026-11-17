@@ -8,7 +8,6 @@ import {
   useState,
 } from 'react';
 
-import { DetailBackButton } from '@/components/common/detail';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
@@ -30,15 +29,11 @@ type Props = {
   onModeChange: (mode: ViewMode) => void;
   stageRef: RefObject<HTMLDivElement>;
   chrome: ViewerChrome;
-  /* 900px 이상은 서비스 헤더가 있어 뒤로가기를 빼지만, 미리보기는 사진 위에 둔다 */
-  isPreview: boolean;
-  onBack: () => void;
 };
 
 const STAGE_IMAGE_WIDTH = 1080;
 const THUMB_IMAGE_WIDTH = 96;
-const OVERLAY_TOP = 'top-[max(16px,env(safe-area-inset-top))]';
-// 높이 40인 보기 방식 스위치를 높이 44인 뒤로가기와 가운데를 맞춘다
+// 프로토타입 .vmode: 사진 위 16 + 2
 const SWITCH_TOP = 'top-[calc(max(16px,env(safe-area-inset-top))+2px)]';
 // 이어서 보기에서 썸네일로 옮길 때 사진 윗변이 놓이는 자리. 현재 장 계산의 기준선으로도 읽는다.
 // 900px 이상은 사진 열이 따로 스크롤되므로 열의 위 여백(32)에 맞춘다
@@ -91,8 +86,6 @@ export function ArtworkViewer({
   onModeChange,
   stageRef,
   chrome,
-  isPreview,
-  onBack,
 }: Props) {
   const photoCount = images.length;
   const hasMultiple = photoCount > 1;
@@ -334,19 +327,6 @@ export function ArtworkViewer({
               isStack ? 'sticky top-(--detail-top) h-0 w-full desktop:top-0' : 'absolute inset-0',
             )}
           >
-            {/* 900px 미만의 뒤로가기는 화면을 따라 내려오도록 ArtworkDetailShell 이 둔다 */}
-            {isPreview && (
-              <DetailBackButton
-                onBack={onBack}
-                {...holdProps}
-                className={cn(
-                  'pointer-events-auto absolute left-5 hidden desktop:grid',
-                  OVERLAY_TOP,
-                  stackHiddenClass,
-                )}
-              />
-            )}
-
             {hasMultiple && (
               <div
                 role="group"
@@ -416,89 +396,97 @@ export function ArtworkViewer({
             )}
           </div>
 
-          {isStack ? (
-            <div ref={stackRef} aria-label="작품 이미지 이어보기">
-              {images.map((src, index) => {
-                const videoSrc = videoSrcs[index];
-                const image = (
-                  <StackImage
-                    key={`${src}-${index}`}
-                    src={src}
-                    alt={altOf(index)}
-                    eager={index === 0}
-                  />
-                );
-
-                if (!videoSrc) return image;
-
-                return (
-                  <div key={`${src}-${index}`} className={cn('relative', STACK_SCROLL_MARGIN)}>
-                    {playingIndex === index ? (
-                      <InlineVideo
-                        src={videoSrc}
-                        poster={src}
-                        label={`${altOf(index)} 영상`}
-                        onError={handleVideoError}
-                        className="block h-auto w-full bg-secondary desktop:max-h-[calc(var(--W)*4/3)] desktop:object-contain"
-                      />
-                    ) : (
-                      <>
-                        {image}
-                        <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div
-              ref={trackRef}
-              tabIndex={0}
-              role="group"
-              aria-roledescription="이미지 슬라이더"
-              aria-label="작품 이미지"
-              onScroll={handleTrackScroll}
-              onKeyDown={handleTrackKeyDown}
-              className="flex h-full touch-pan-x touch-pan-y touch-pinch-zoom snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {images.map((src, index) => (
-                <div
+          {/*
+           * 프로토타입처럼 두 보기를 모두 그려 두고 보이는 쪽만 바꾼다.
+           * 바꿀 때마다 사진을 새로 붙이면 다시 불러오고 그리느라 화면이 버벅인다
+           */}
+          <div
+            ref={stackRef}
+            aria-label="작품 이미지 이어보기"
+            className={cn(!isStack && 'hidden')}
+          >
+            {images.map((src, index) => {
+              const videoSrc = videoSrcs[index];
+              const image = (
+                <StackImage
                   key={`${src}-${index}`}
-                  className="relative h-full flex-[0_0_100%] snap-center bg-secondary"
-                >
-                  {videoSrcs[index] && playingIndex === index ? (
+                  src={src}
+                  alt={altOf(index)}
+                  eager={index === 0}
+                />
+              );
+
+              if (!videoSrc) return image;
+
+              return (
+                <div key={`${src}-${index}`} className={cn('relative', STACK_SCROLL_MARGIN)}>
+                  {isStack && playingIndex === index ? (
                     <InlineVideo
-                      src={videoSrcs[index]}
+                      src={videoSrc}
                       poster={src}
                       label={`${altOf(index)} 영상`}
                       onError={handleVideoError}
-                      className="size-full bg-secondary object-contain"
+                      className="block h-auto w-full bg-secondary desktop:max-h-[calc(var(--W)*4/3)] desktop:object-contain"
                     />
                   ) : (
                     <>
-                      <OptimizedImage
-                        src={src}
-                        displayWidth={STAGE_IMAGE_WIDTH}
-                        alt={altOf(index)}
-                        draggable={false}
-                        loading={index === 0 ? 'eager' : 'lazy'}
-                        skeleton
-                        frameClassName="size-full"
-                        className="object-contain select-none"
-                      />
-                      {videoSrcs[index] && (
-                        <VideoPlayButton
-                          src={videoSrcs[index]}
-                          onPlay={() => setPlayingIndex(index)}
-                        />
-                      )}
+                      {image}
+                      <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
                     </>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
+          <div
+            ref={trackRef}
+            tabIndex={0}
+            role="group"
+            aria-roledescription="이미지 슬라이더"
+            aria-label="작품 이미지"
+            onScroll={handleTrackScroll}
+            onKeyDown={handleTrackKeyDown}
+            className={cn(
+              'flex h-full touch-pan-x touch-pan-y touch-pinch-zoom snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+              isStack && 'hidden',
+            )}
+          >
+            {images.map((src, index) => (
+              <div
+                key={`${src}-${index}`}
+                className="relative h-full flex-[0_0_100%] snap-center bg-secondary"
+              >
+                {videoSrcs[index] && !isStack && playingIndex === index ? (
+                  <InlineVideo
+                    src={videoSrcs[index]}
+                    poster={src}
+                    label={`${altOf(index)} 영상`}
+                    onError={handleVideoError}
+                    className="size-full bg-secondary object-contain"
+                  />
+                ) : (
+                  <>
+                    <OptimizedImage
+                      src={src}
+                      displayWidth={STAGE_IMAGE_WIDTH}
+                      alt={altOf(index)}
+                      draggable={false}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      skeleton
+                      frameClassName="size-full"
+                      className="object-contain select-none"
+                    />
+                    {videoSrcs[index] && (
+                      <VideoPlayButton
+                        src={videoSrcs[index]}
+                        onPlay={() => setPlayingIndex(index)}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* 900px 이상 넘김 줄: 사진 밖 아래 오른쪽 ‹ 1 / 6 ›. 이어서 보기에선 왼쪽 썸네일이 위치를 알려 준다 */}

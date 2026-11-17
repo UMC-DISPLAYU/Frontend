@@ -5,6 +5,7 @@ import { ArtworkBottomBar } from '@/components/artworkdetailpage/ArtworkActions'
 import type { ArtworkArtist } from '@/components/artworkdetailpage/ArtworkArtists';
 import {
   getArtworkArtists,
+  getExhibitionOrganizerText,
   getProcessImages,
   hasArtworkIntro,
 } from '@/components/artworkdetailpage/artworkDetail.utils';
@@ -25,7 +26,6 @@ import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
-import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
@@ -37,12 +37,9 @@ import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 type ArtworkDetailPageProps = {
   /* 전시 작업에서 연 작품 미리보기(/exhibition/:displayId/artworks/:artworkId/preview)의 전시 */
   previewDisplayId?: number;
-  onBack?: () => void;
 };
 
-export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPageProps = {}) {
-  const flowBack = useFlowBack();
-  const goBack = onBack ?? (() => flowBack());
+export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps = {}) {
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
 
@@ -98,7 +95,10 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
     exhibitionId: String(detail.exhibitionInfo?.displayId ?? ''),
     exhibitionTitle: detail.exhibitionInfo?.exhibitionTitle ?? '',
     exhibitionSubtitle: detail.exhibitionInfo?.exhibitionSubtitle ?? '',
-    exhibitionOrganizer: detail.exhibitionInfo?.exhibitionOrganizer ?? '',
+    exhibitionOrganizer: getExhibitionOrganizerText(
+      display,
+      detail.exhibitionInfo?.exhibitionOrganizer ?? '',
+    ),
     exhibitionPeriod: detail.exhibitionInfo?.exhibitionPeriod ?? '',
     exhibitionThumbnail: detail.exhibitionInfo?.exhibitionThumbnailUrl ?? '',
     bookmarkCount: detail.likeCount ?? 0,
@@ -138,9 +138,7 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
       videoSrcs={viewerVideoSrcs}
       title={detail.artworkName}
       subtitle={artists.map((artist) => artist.name).join(', ')}
-      onBack={goBack}
       isPreview={isPreview}
-      hideBack={previewDisplayId !== undefined}
       label={
         <ArtworkMeta
           artwork={artwork}

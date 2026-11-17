@@ -1,7 +1,6 @@
 import { type ReactNode, useRef } from 'react';
 
 import {
-  DetailBackButton,
   DetailPreviewBanner,
   detailStickyTopClass,
   DetailTabNav,
@@ -24,11 +23,8 @@ type Props = {
   title: string;
   /* 작가 이름들(900px 이상 크게 보기 위 띠) */
   subtitle?: string;
-  onBack: () => void;
-  /* 공개 전 전시의 작품. 띠를 두고 900px 이상에서도 뒤로가기를 남긴다 */
+  /* 공개 전 전시의 작품. 위에 미리보기 띠를 둔다 */
   isPreview?: boolean;
-  /* 전시 작업에서 연 작품 미리보기: 뒤로가기 버튼을 두지 않는다(프로토타입 work.html .backa 숨김) */
-  hideBack?: boolean;
   label: ReactNode;
   hasIntro: boolean;
   intro: ReactNode;
@@ -43,10 +39,10 @@ const TAB_LABEL: Record<ArtworkDetailTabKey, string> = { intro: '소개', guest:
 
 /*
  * 프로토타입 반응형(전시 상세와 같은 틀)
- * - 900px 미만: 사진 → 이름표 → 탭. 뒤로가기는 화면을 따라 내려오다 탭 줄이 붙으면 그 왼쪽에 앉는다
- * - 768~899px: 위에 서비스 헤더(64)가 생기고, 탭 줄 · 뒤로가기는 그 아래에 붙는다
+ * - 900px 미만: 사진 → 이름표 → 탭
+ * - 768~899px: 위에 서비스 헤더(64)가 생기고, 탭 줄은 그 아래에 붙는다
  * - 900px 이상(U-157): 왼쪽 사진 열 · 오른쪽 정보가 머리 아래부터 창 끝까지 각자 스크롤한다.
- *   뒤로가기는 없다(미리보기만 사진 위에 둔다)
+ * 뒤로가기 버튼은 두지 않고 브라우저 뒤로가기에 맡긴다(프로토타입 U-149)
  */
 const LAYOUT =
   'mx-auto w-full max-w-310 desktop:grid desktop:h-[calc(100dvh-var(--detail-top))] desktop:grid-cols-[auto_minmax(380px,1fr)] desktop:items-start desktop:gap-x-18 desktop:px-8';
@@ -65,9 +61,7 @@ export function ArtworkDetailShell({
   videoSrcs,
   title,
   subtitle,
-  onBack,
   isPreview = false,
-  hideBack = false,
   label,
   hasIntro,
   intro,
@@ -75,7 +69,7 @@ export function ArtworkDetailShell({
   bottomBar,
 }: Props) {
   const tabs = hasIntro ? TABS_WITH_INTRO : GUEST_ONLY_TABS;
-  const { activeTab, selectTab, sentinelRef, isStuck } = useDetailTab(tabs);
+  const { activeTab, selectTab, sentinelRef } = useDetailTab(tabs);
   const infoRef = useRef<HTMLDivElement>(null);
   useDisablePageBounce();
 
@@ -93,8 +87,6 @@ export function ArtworkDetailShell({
   const [mode, changeMode] = useViewMode(images.length > 1);
   const stageRef = useRef<HTMLDivElement>(null);
   const chrome = useViewerChromeFade(stageRef, mode === 'stack');
-  // 탭 줄 왼쪽에 앉아 있을 때는 숨기지 않는다(프로토타입)
-  const isBackHidden = chrome.isStackHidden && !isStuck;
 
   return (
     <div
@@ -113,20 +105,6 @@ export function ArtworkDetailShell({
 
       <DetailTopBar className={isPreview ? 'top-10' : 'top-0'} />
 
-      {/* 높이 0인 sticky 칸이라 처음엔 사진 위(20, 16)에 있다가, 스크롤하면 화면 맨 위(768px 이상은 헤더 아래)에 붙는다 */}
-      {!hideBack && (
-        <div className="sticky top-[calc(var(--detail-top)-max(16px,env(safe-area-inset-top)))] z-30 h-0 desktop:hidden">
-          <DetailBackButton
-            onBack={onBack}
-            {...chrome.holdProps}
-            className={cn(
-              'absolute top-[max(16px,env(safe-area-inset-top))] left-5',
-              isBackHidden && 'pointer-events-none opacity-0',
-            )}
-          />
-        </div>
-      )}
-
       <div className={LAYOUT}>
         <ArtworkViewer
           images={images}
@@ -137,8 +115,6 @@ export function ArtworkDetailShell({
           onModeChange={changeMode}
           stageRef={stageRef}
           chrome={chrome}
-          isPreview={isPreview && !hideBack}
-          onBack={onBack}
         />
 
         <div ref={infoRef} className={cn(INFO_COLUMN, WIDE_TAB_TEXT)}>
@@ -154,8 +130,7 @@ export function ArtworkDetailShell({
             activeTab={activeTab}
             onTabChange={changeTab}
             sentinelRef={sentinelRef}
-            // 뒤로가기 버튼이 없으면 탭 줄 왼쪽에 자리를 비우지 않는다
-            isStuck={isStuck && !hideBack}
+            isStuck={false}
           />
 
           {hasIntro && (

@@ -146,9 +146,10 @@ export function ArtworkBigView({
         isShown ? 'opacity-100' : 'opacity-0',
       )}
     >
+      {/* 맨 끝 바탕색까지 한 줄이라 background-image(bg-[...])가 아닌 background 로 쓴다 */}
       <i
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(70%_45%_at_50%_0%,#3f3f46_0%,rgba(63,63,70,0)_100%),radial-gradient(28%_80%_at_0%_55%,#26262b_0%,rgba(38,38,43,0)_100%),radial-gradient(28%_80%_at_100%_55%,#26262b_0%,rgba(38,38,43,0)_100%),#0b0b0c]"
+        className="pointer-events-none fixed inset-0 z-0 [background:radial-gradient(70%_45%_at_50%_0%,#3f3f46_0%,rgba(63,63,70,0)_100%),radial-gradient(28%_80%_at_0%_55%,#26262b_0%,rgba(38,38,43,0)_100%),radial-gradient(28%_80%_at_100%_55%,#26262b_0%,rgba(38,38,43,0)_100%),#0b0b0c]"
       />
       <div className="sticky top-0 z-2 -mb-8 flex h-24 items-start gap-4 bg-[linear-gradient(to_bottom,rgba(11,11,12,0.92)_0%,rgba(11,11,12,0.72)_45%,rgba(11,11,12,0)_100%)] pt-2.5 pr-5 pl-8">
         <div className="grid min-w-0 flex-1 gap-0.5 pt-0.5">
