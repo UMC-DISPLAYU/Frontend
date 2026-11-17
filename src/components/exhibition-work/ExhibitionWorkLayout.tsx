@@ -8,8 +8,10 @@ import { DisplaySummaryCard } from '@/components/common/DisplaySummaryCard';
 import { PageContainer } from '@/components/layout';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { cn } from '@/utils/cn';
 import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
+import { hasPermission } from '@/utils/hasPermission';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
 import { WorkIcon } from './WorkIcon';
@@ -85,6 +87,8 @@ export function ExhibitionWorkLayout({
   const navigate = useNavigate();
   const { data: userMe } = useUserMe();
   const tabId = useId();
+  // 프로토타입 works.html: 팀원은 전시 콘텐츠 탭 없이 전시작만 본다(탭 줄도 숨긴다)
+  const showTabs = hasPermission(useDisplayContentPolicy(display), 'view');
   /*
    * 프로토타입 works.html: 뒤로가기는 기록을 되돌리지 않고 정해진 곳으로 간다.
    * 대표자는 전시 관리, 관리자 · 팀원은 내 전시 관리. 대표자를 위임하고 이 화면에 온 경우에도
@@ -127,55 +131,64 @@ export function ExhibitionWorkLayout({
           )}
 
           <div className="min-w-0">
-            <div
-              role="tablist"
-              aria-label="전시 작업"
-              // 탭 줄은 프로토타입이 아니라 사용자 지시로 예전 모양(열 폭 전체 · 높이 48 · 밑줄 2)을 쓴다.
-              // 900px 이상은 요약 카드 윗선(8)과 나란히
-              className="mt-4 flex border-b border-primary desktop:mt-2"
-            >
-              {(['artworks', 'contents'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  id={`${tabId}-${tab}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === tab}
-                  aria-controls={`${tabId}-panel`}
-                  tabIndex={activeTab === tab ? 0 : -1}
-                  onClick={() => changeTab(tab)}
-                  onKeyDown={(event) => {
-                    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-                    event.preventDefault();
-                    const next =
-                      event.key === 'Home'
-                        ? 'artworks'
-                        : event.key === 'End'
-                          ? 'contents'
-                          : tab === 'artworks'
-                            ? 'contents'
-                            : 'artworks';
-                    changeTab(next);
-                    document.getElementById(`${tabId}-${next}`)?.focus();
-                  }}
-                  className={cn(
-                    'typography-body-lg-medium -mb-px h-12 flex-1 border-b-2 transition-colors duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-                    activeTab === tab
-                      ? 'typography-body-lg-semibold border-interactive-selected text-primary'
-                      : 'border-transparent text-secondary',
-                  )}
+            {showTabs ? (
+              <>
+                <div
+                  role="tablist"
+                  aria-label="전시 작업"
+                  // 탭 줄은 프로토타입이 아니라 사용자 지시로 예전 모양(열 폭 전체 · 높이 48 · 밑줄 2)을 쓴다.
+                  // 900px 이상은 요약 카드 윗선(8)과 나란히
+                  className="mt-4 flex border-b border-primary desktop:mt-2"
                 >
-                  {tab === 'artworks' ? '전시작' : '전시 콘텐츠'}
-                </button>
-              ))}
-            </div>
-            <section
-              id={`${tabId}-panel`}
-              role="tabpanel"
-              aria-labelledby={`${tabId}-${activeTab}`}
-            >
-              {children}
-            </section>
+                  {(['artworks', 'contents'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      id={`${tabId}-${tab}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={activeTab === tab}
+                      aria-controls={`${tabId}-panel`}
+                      tabIndex={activeTab === tab ? 0 : -1}
+                      onClick={() => changeTab(tab)}
+                      onKeyDown={(event) => {
+                        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                        event.preventDefault();
+                        const next =
+                          event.key === 'Home'
+                            ? 'artworks'
+                            : event.key === 'End'
+                              ? 'contents'
+                              : tab === 'artworks'
+                                ? 'contents'
+                                : 'artworks';
+                        changeTab(next);
+                        document.getElementById(`${tabId}-${next}`)?.focus();
+                      }}
+                      className={cn(
+                        'typography-body-lg-medium -mb-px h-12 flex-1 border-b-2 transition-colors duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                        activeTab === tab
+                          ? 'typography-body-lg-semibold border-interactive-selected text-primary'
+                          : 'border-transparent text-secondary',
+                      )}
+                    >
+                      {tab === 'artworks' ? '전시작' : '전시 콘텐츠'}
+                    </button>
+                  ))}
+                </div>
+                <section
+                  id={`${tabId}-panel`}
+                  role="tabpanel"
+                  aria-labelledby={`${tabId}-${activeTab}`}
+                >
+                  {children}
+                </section>
+              </>
+            ) : (
+              // 900px 이상은 탭이 없어도 첫 줄(전시작 수)을 요약 카드 윗선(8)과 나란히 둔다
+              <section aria-label="전시작" className="desktop:pt-1">
+                {children}
+              </section>
+            )}
           </div>
         </div>
       </PageContainer>

@@ -1,4 +1,4 @@
-import type { DisplayPublishStatus } from '@/api/dto';
+import type { DisplayMemberRole, DisplayPublishStatus } from '@/api/dto';
 
 export type TabKey = 'exhibition' | 'artwork' | 'artist';
 
@@ -10,6 +10,7 @@ export interface ExhibitionItem {
   /* 내 전시 목록은 생성/참여를 나눠서 내려주므로 소유 여부를 그대로 담아둡니다. */
   isOwner?: boolean;
   isLeader?: boolean;
+  role?: DisplayMemberRole;
   publishStatus?: DisplayPublishStatus;
   status: string;
   title: string;

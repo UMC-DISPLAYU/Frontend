@@ -154,8 +154,7 @@ export function AddressSearchView({
 
   return (
     <div className="flex-1 pb-10">
-      <p className="typography-body-xl-semibold mt-2 text-primary">주소를 검색해주세요</p>
-      <form role="search" onSubmit={handleSubmit} className="mt-5">
+      <form role="search" onSubmit={handleSubmit} className="mt-2">
         <label htmlFor={inputId} className="typography-body-lg-semibold flex text-primary">
           주소
         </label>
@@ -165,7 +164,7 @@ export function AddressSearchView({
             type="search"
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
-            placeholder="예) 예술로 12"
+            placeholder="주소를 검색해주세요"
             autoComplete="off"
             enterKeyHint="search"
             // 사용자가 주소 검색을 눌러 들어온 화면이라 바로 입력할 수 있게 한다

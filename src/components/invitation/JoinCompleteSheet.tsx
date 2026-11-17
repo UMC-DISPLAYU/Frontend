@@ -152,6 +152,7 @@ export function JoinCompleteSheet({ open, onClose, summary }: JoinCompleteSheetP
                 'bg-interactive-primary text-interactive-inverse hover:bg-interactive-primary-hover',
               )}
               replace
+              state={{ leaveTo: 'work' }}
               to={summary ? getArtworkRegisterPath(summary.displayId) : '/display-management'}
             >
               내 작품 등록하기

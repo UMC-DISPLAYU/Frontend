@@ -4,11 +4,12 @@ import { Link } from 'react-router-dom';
 
 import type { DisplayDetailDto, DisplayPublishStatus } from '@/api/dto';
 import { cn } from '@/utils/cn';
-import { toDisplayImageCardUrl } from '@/utils/displayMedia';
+import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
 import { formatDisplayPeriod } from '@/utils/displayPeriod';
 
 import { DisplayPublishStatusLabel } from './DisplayPublishStatusLabel';
 import { OptimizedImage } from './OptimizedImage';
+import { VideoPosterBadge } from './VideoPosterBadge';
 
 interface DisplaySummaryCardProps {
   display: DisplayDetailDto;
@@ -30,7 +31,7 @@ export function DisplaySummaryCard({
   return (
     <section aria-label="전시 요약" className={className}>
       <div className="mt-2 grid animate-[display-summary-rise_450ms_cubic-bezier(0.16,1,0.3,1)_backwards] grid-cols-[82px_minmax(0,1fr)] gap-x-3.5 rounded-12 border border-primary p-3">
-        <div className="aspect-402/568 w-[82px] overflow-hidden bg-[#000]">
+        <div className="relative aspect-402/568 w-[82px] overflow-hidden bg-[#000]">
           <OptimizedImage
             src={poster ? toDisplayImageCardUrl(poster) : undefined}
             alt={`${display.title} 포스터`}
@@ -40,6 +41,7 @@ export function DisplaySummaryCard({
             frameClassName="h-full w-full"
             className="object-cover"
           />
+          {poster && isVideoMedia(poster) && <VideoPosterBadge />}
         </div>
         <div className="grid min-w-0 content-start gap-0.5">
           <div className="flex items-center justify-between gap-2 text-primary">

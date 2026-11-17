@@ -21,7 +21,6 @@ import {
   INPUT_CLASS,
   isEditDraftChanged,
   LABEL_CLASS,
-  LockIcon,
   MAX_DISPLAY_FIELDS,
   OTHER_GROUP_DISPLAY_TYPE,
   PosterUploadField,
@@ -291,14 +290,9 @@ function DisplayRegisterIntroForm() {
                 className="mt-3 overflow-hidden rounded-12 border border-primary transition-colors duration-fast focus-within:border-[#18181b]"
               >
                 {!isOtherGroup && (
-                  <div className="typography-body-xl-regular flex h-[54px] items-center justify-between bg-secondary px-4 text-primary">
+                  <div className="typography-body-xl-regular flex h-[54px] items-center bg-secondary px-4 text-primary">
                     <span className="min-w-0 truncate">{schoolName}</span>
-                    <LockIcon
-                      role="img"
-                      aria-hidden={false}
-                      aria-label="변경할 수 없어요"
-                      className="size-4.5 shrink-0 text-tertiary"
-                    />
+                    <span className="sr-only">(변경할 수 없어요)</span>
                   </div>
                 )}
                 <input

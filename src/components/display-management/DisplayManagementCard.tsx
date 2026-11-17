@@ -1,5 +1,6 @@
 import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { VideoPosterBadge } from '@/components/common/VideoPosterBadge';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import {
   useCurrentPolicyUser,
@@ -48,7 +49,7 @@ export function DisplayManagementCard({
     )?.displayNickname;
 
   const isLeader = ex.isLeader ?? ex.isOwner ?? false;
-  const role = isLeader ? '대표자' : '팀원';
+  const role = isLeader ? '대표자' : ex.role === 'MANAGER' ? '관리자' : '팀원';
   // 전시 관리에서는 공개 여부만 보여주고, 기간에 따른 전시 예정 · 종료는 보여주지 않는다(PM 확인).
   // 예전 응답처럼 publishStatus 가 없으면 공개된 전시로 본다
   const status = isDisplayPublishStatus(ex.publishStatus) ? ex.publishStatus : 'PUBLISHED';
@@ -85,17 +86,7 @@ export function DisplayManagementCard({
           skeleton
           frameClassName="absolute inset-0"
         />
-        {ex.hasVideoPoster && (
-          <span
-            role="img"
-            aria-label="영상 포스터"
-            className="absolute top-1.5 left-1.5 inline-flex h-5 items-center rounded-4 bg-[rgba(0,0,0,0.72)] px-1 text-base-white"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-2.5">
-              <path d="M7 4.8v14.4L19 12z" fill="currentColor" />
-            </svg>
-          </span>
-        )}
+        {ex.hasVideoPoster && <VideoPosterBadge />}
       </div>
 
       <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-7 wrap-break-word">

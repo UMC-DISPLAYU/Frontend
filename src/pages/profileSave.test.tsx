@@ -1,8 +1,9 @@
 import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
 
-import { beforeEach, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/api/apiError';
+import { ErrorView } from '@/components/common';
 
 import { ArtistVerificationPage } from './artist-verification/ArtistVerificationPage';
 import { EditArtistProfilePage } from './artist-verification/EditArtistProfilePage';
@@ -18,6 +19,8 @@ const h = vi.hoisted(() => ({
   back: vi.fn(),
   setError: vi.fn(),
   toast: vi.fn(),
+  fresh: true,
+  queryError: false,
 }));
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
@@ -71,9 +74,13 @@ vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.back }));
 vi.mock('@/hooks/queries/useFile', () => ({
   useUploadImage: () => ({ mutateAsync: h.upload, isPending: false }),
 }));
+vi.mock('@/hooks/useFetchedSinceMount', () => ({ useFetchedSinceMount: () => h.fresh }));
 vi.mock('@/hooks/queries/useUserProfile', () => ({
-  useUserMe: () => ({ data: { id: 1, nickname: '작가' } }),
-  useMyArtistProfile: () => ({ data: { artistName: '작가', fields: ['PAINTING'] } }),
+  useUserMe: () => ({ data: { id: 1, nickname: '작가' }, isError: h.queryError }),
+  useMyArtistProfile: () => ({
+    data: { artistName: '작가', fields: ['PAINTING'] },
+    isError: h.queryError,
+  }),
   useUpdateUserMe: () => ({ mutateAsync: h.save, isPending: false }),
   useUpdateMyArtistProfile: () => ({ mutateAsync: h.save, isPending: false }),
   useCreateMyArtistProfile: () => ({ mutateAsync: h.save, isPending: false }),
@@ -93,7 +100,11 @@ vi.mock('@/components/common', () => ({
   ProfileAvatar: () => null,
   ProfilePhotoField: () => null,
 }));
-vi.mock('@/components/ui', () => ({ ChipGroup: () => null, Skeleton: () => null }));
+vi.mock('@/components/ui', () => ({
+  ChipGroup: () => null,
+  Skeleton: () => null,
+  SkeletonText: () => null,
+}));
 vi.mock('@/stores/toastStore', () => ({ toast: h.toast }));
 vi.mock('@/components/artist-verification', () => ({
   ArtistFieldSelector: () => null,
@@ -136,6 +147,8 @@ const failure = new ApiError('server', { status: 500 });
 beforeEach(() => {
   h.states = [];
   h.refs = [];
+  h.fresh = true;
+  h.queryError = false;
   vi.clearAllMocks();
   h.save.mockResolvedValue(undefined);
   h.upload.mockResolvedValue('https://example.com/photo.png');
@@ -220,4 +233,42 @@ it('최종 작가 프로필 실패 후 인증 단계와 활동 분야를 유지�
   expect(tree.find((node) => node.props.role === 'alert')!.props.children).toContain('서버');
   await form(tree)(values);
   expect(render(ArtistVerificationPage, false).some((node) => 'onDone' in node.props)).toBe(true);
+});
+
+describe.each([
+  ['기본 정보 수정', EditBasicInfoPage, 'EditBasicInfoForm'],
+  ['작가 프로필 수정', EditArtistProfilePage, 'EditArtistProfileForm'],
+])('%s: 받아 둔 예전 값으로 폼을 채우지 않는다', (_, page, formName) => {
+  const root = () => {
+    h.si = 0;
+    h.ri = 0;
+    return page() as Element;
+  };
+  const rootName = () => {
+    const { type } = root();
+    return typeof type === 'function' ? type.name : type;
+  };
+  const tree = () => nodes(root());
+
+  it('이 화면에서 새로 받기 전에는 받아 둔 값이 있어도 폼 대신 스켈레톤을 그린다', () => {
+    h.fresh = false;
+    expect(rootName()).not.toBe(formName);
+    expect(root().type).not.toBe(ErrorView);
+    expect(tree().some((node) => node.props['aria-hidden'] === 'true')).toBe(true);
+  });
+
+  it('새로 받은 뒤에만 폼을 그린다', () => {
+    expect(rootName()).toBe(formName);
+  });
+
+  it('새로 받기에 실패하면 받아 둔 값으로 폼을 그리지 않고 다시 시도를 안내한다', () => {
+    h.fresh = false;
+    h.queryError = true;
+    expect(root().type).toBe(ErrorView);
+  });
+
+  it('폼을 그린 뒤 다시 받기만 실패하면 입력 중인 폼을 유지한다', () => {
+    h.queryError = true;
+    expect(rootName()).toBe(formName);
+  });
 });

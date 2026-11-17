@@ -143,3 +143,6 @@ export const ARTIST_FIELD_REVERSE_MAP: Record<ArtistFieldCode, ExhibitionField> 
 export const MAX_ARTIST_FIELDS = 2;
 
 export const MAX_POSTER_UPLOAD_IMAGES = 5;
+
+/* 전시 작가명은 10자 미만(PM 확인). 전시 등록 · 초대 수락 · 내 전시 관리의 작가명 수정이 같은 값을 쓴다 */
+export const DISPLAY_ARTIST_NAME_MAX_LENGTH = 9;

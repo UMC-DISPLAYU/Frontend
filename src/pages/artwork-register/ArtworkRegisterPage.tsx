@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { SessionChangedError } from '@/api/apiError';
-import type { DisplayArtworkEditResponseDataDto } from '@/api/dto';
+import type { DisplayArtworkEditResponseDataDto, DisplayMemberEntryDto } from '@/api/dto';
 import {
   ArtworkAuthorSection,
   type ArtworkImageUrls,
@@ -34,9 +34,14 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useFetchedSinceMount } from '@/hooks/useFetchedSinceMount';
+import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
+import { hasPermission } from '@/utils/hasPermission';
+
+import { getArtworkRegisterLoadState } from './artworkRegisterLoadState';
 
 const notifyError = (error: unknown, fallback: string) => {
   if (error instanceof SessionChangedError) return;
@@ -82,11 +87,10 @@ function ArtworkRegisterContent({
   const candidates = useMemo(
     () =>
       toTeamCandidates(members?.members, {
-        ownerUserId,
         excludeUserIds: [myUserId, author.userId],
         requireArtistVerified: true,
       }),
-    [author.userId, members, myUserId, ownerUserId],
+    [author.userId, members, myUserId],
   );
 
   const handleSubmit = (values: ArtworkRegisterValues, images: ArtworkImageUrls) => {
@@ -180,13 +184,17 @@ function ArtworkRegisterContent({
   );
 }
 
-// 프로토타입: 작가명 아래 줄은 기본 닉네임. 팀원 API 에는 계정 닉네임이 없어 팀원은 역할을 보여준다
+type MemberNickname = Pick<DisplayMemberEntryDto, 'userId' | 'nickname'>;
+
+// 프로토타입: 작가명 아래 줄은 계정 닉네임(아이디), 계정 없이 이름만 넣은 작가는 "직접 입력"
 const authorCaption = (
   userId: number | null | undefined,
   me: { userId: number | undefined; nickname: string },
+  members: readonly MemberNickname[] | undefined,
 ) => {
   if (typeof userId !== 'number') return DIRECT_INPUT_CAPTION;
-  return userId === me.userId ? me.nickname || '나' : '팀원';
+  if (userId === me.userId) return me.nickname;
+  return members?.find((member) => member.userId === userId)?.nickname?.trim() ?? '';
 };
 
 function ArtworkRegisterRoute() {
@@ -207,9 +215,9 @@ function ArtworkRegisterRoute() {
 
   const myUserId = userMeQuery.data?.id;
   const display = displayQuery.data;
-  const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === myUserId;
-  // 대신 등록은 대표자만 할 수 있다
-  const proxy: ProxyAuthor | null = !isEdit && isOwner ? parseProxyAuthor(searchParams) : null;
+  // 대신 등록은 대표자 · 관리자만 할 수 있다(기획 권한표)
+  const canProxy = hasPermission(useArtworkPolicy(display), 'proxy');
+  const proxy: ProxyAuthor | null = !isEdit && canProxy ? parseProxyAuthor(searchParams) : null;
   const members = membersQuery.data?.members;
   // 전시 작가명이 비어 있으면(빈 문자열 포함) 기본 닉네임을 쓴다
   const myName =
@@ -221,10 +229,16 @@ function ArtworkRegisterRoute() {
   const queries = [
     userMeQuery,
     displayQuery,
-    ...(isEdit ? [editQuery, detailQuery] : [membersQuery]),
+    membersQuery,
+    ...(isEdit ? [editQuery, detailQuery] : []),
   ];
-  const failed = queries.find((query) => query.isError);
-  const isPending = queries.some((query) => query.isPending);
+  const isEditDataFresh = useFetchedSinceMount(editQuery, detailQuery);
+  const isEditDataStale = isEdit && !isEditDataFresh;
+  const { failed, isPending } = getArtworkRegisterLoadState({
+    queries,
+    editQueries: isEdit ? [editQuery, detailQuery] : [],
+    isEditDataStale,
+  });
   const { showSkeleton } = useSkeleton(isPending);
   const title = isEdit ? '작품 수정' : '작품 등록';
 
@@ -241,7 +255,7 @@ function ArtworkRegisterRoute() {
     return <ArtworkRegisterSkeleton title={title} withAuthor onBack={() => leave(workPath)} />;
   }
 
-  if (isEdit && editQuery.data && detailQuery.data) {
+  if (isEdit && !isEditDataStale && editQuery.data && detailQuery.data) {
     const previous = editQuery.data;
 
     return (
@@ -254,7 +268,7 @@ function ArtworkRegisterRoute() {
         author={{
           key: 'author',
           name: previous.artistName,
-          caption: authorCaption(previous.artistUserId, me),
+          caption: authorCaption(previous.artistUserId, me, members),
           userId: previous.artistUserId ?? undefined,
         }}
         initialCoAuthors={(previous.coAuthors ?? []).map((coAuthor) =>
@@ -262,7 +276,7 @@ function ArtworkRegisterRoute() {
             ? {
                 key: `user-${coAuthor.userId}`,
                 name: coAuthor.name,
-                caption: '팀원',
+                caption: authorCaption(coAuthor.userId, me, members),
                 userId: coAuthor.userId,
               }
             : toNamedCoAuthor(coAuthor.name),
@@ -297,15 +311,15 @@ function ArtworkRegisterRoute() {
     ? {
         key: 'author',
         name: proxyMember.displayNickname,
-        caption: authorCaption(proxyMember.userId, me),
+        caption: authorCaption(proxyMember.userId, me, members),
         userId: proxyMember.userId,
       }
     : proxy?.kind === 'name'
-      ? { key: 'author', name: proxy.name, caption: authorCaption(undefined, me) }
+      ? { key: 'author', name: proxy.name, caption: DIRECT_INPUT_CAPTION }
       : {
           key: 'author',
           name: myName,
-          caption: authorCaption(myUserId, me),
+          caption: authorCaption(myUserId, me, members),
           userId: myUserId,
         };
 

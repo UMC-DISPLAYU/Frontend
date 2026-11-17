@@ -282,25 +282,72 @@ const MOCK_SEARCHABLE_USERS = [
   { userId: 210, name: '임규리', nickname: 'quriosity' },
 ];
 
+/* 공동 작가가 많은 작품: 전시작 카드 · 작품 상세 · 수정 화면에서 긴 작가 줄을 확인하는 목 데이터(101번 전시 맨 앞) */
+const MANY_CO_AUTHOR_NAMES = [
+  '소화전 앞 적재 금지구역',
+  '호스꺼내기 밸브열기',
+  '화재진화 밸브 닫기',
+  '방재설비 2단 연동제어기',
+  '메머드커피 창업 문의',
+  'QR코드를 찍어보세요',
+  '음료가 매우 뜨거우니',
+  '조심하세요',
+  '작가프로필수정해야함',
+  '중앙대학교310관',
+  '연기감지기동작한경우',
+  '수동으로조작시복구할경우',
+  '가나다라마바사',
+  '아자차카타파하',
+  '기러기토마토스위스',
+  '페페로니피자라지사이즈',
+  '간장공장장공장공장장',
+  '길이테스트하려고',
+  '아무거나치는중 ㅜㅠ',
+];
+
+const withManyCoAuthorsSample = (artworks: any[]) => {
+  const base = artworks.find((artwork) => artwork.displayId === 101);
+  if (!base) return artworks;
+  const artworkId = 9101;
+  const coAuthors = MANY_CO_AUTHOR_NAMES.map((name) => ({ userId: null, name }));
+  const lead = { userId: base.artistUserId, name: base.artistName };
+
+  return [
+    {
+      ...base,
+      artworkId,
+      id: artworkId,
+      title: '공동 작가가 많은 작품',
+      artworkName: '공동 작가가 많은 작품',
+      artworkCrop: null,
+      artists: [lead, ...coAuthors],
+      coAuthors,
+    },
+    ...artworks,
+  ];
+};
+
 export const mockDb: {
   [key: string]: any;
 } = {
   me: makeUser(),
   searchableUsers: MOCK_SEARCHABLE_USERS,
   displays: MOCK_DISPLAY_DETAILS.map(displayToDetail).map(withPosterVideoSample),
-  artworks: withArtworkVideoSample(
-    MOCK_DISPLAY_DETAILS.flatMap((display) =>
-      display.artworkSection.artworks.map((artwork, index) => {
-        const detail = artworkToDetail(artwork, display.displayId === 101 && index === 0);
-        if (display.displayId !== 101) return detail;
-        // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로 둔다
-        if (index === 0) return { ...detail, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } };
-        if (index === 1) {
-          const me = { userId: 1, name: makeUser().nickname };
-          return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
-        }
-        return detail;
-      }),
+  artworks: withManyCoAuthorsSample(
+    withArtworkVideoSample(
+      MOCK_DISPLAY_DETAILS.flatMap((display) =>
+        display.artworkSection.artworks.map((artwork, index) => {
+          const detail = artworkToDetail(artwork, display.displayId === 101 && index === 0);
+          if (display.displayId !== 101) return detail;
+          // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로 둔다
+          if (index === 0) return { ...detail, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } };
+          if (index === 1) {
+            const me = { userId: 1, name: makeUser().nickname };
+            return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
+          }
+          return detail;
+        }),
+      ),
     ),
   ),
   loungePosts: [

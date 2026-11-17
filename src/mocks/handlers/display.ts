@@ -5,6 +5,7 @@ import { isContentHiddenBeforeOpen } from '@/mocks/data/contentOpen';
 import { findMockDisplay, mockDb, okStatus } from '@/mocks/data/repository';
 import { teamOf } from '@/mocks/handlers/displayMember';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { hasMockScenario } from '@/mocks/scenario';
 import { compareBySort, matchesSearchWord } from '@/mocks/searchText';
 
 const now = () => new Date().toISOString();
@@ -115,6 +116,41 @@ const displayDetailResponse = (displayId: number) => {
         : null),
     websiteUrl:
       display.websiteUrl ?? (display.displayId === 101 ? 'https://softlanding.kr/' : null),
+  };
+};
+
+/* 목 전시는 모두 내가 대표자라, 관리자 · 팀원 화면은 ?mock=display-manager | display-member 로 확인한다 */
+const MOCK_OTHER_LEADER_ID = 9001;
+
+const withMockTeamRole = (detail: ReturnType<typeof displayDetailResponse>) => {
+  const role = hasMockScenario('display-manager')
+    ? 'MANAGER'
+    : hasMockScenario('display-member')
+      ? 'TEAM_MEM'
+      : null;
+  if (!role) return detail;
+
+  const myUserId = mockDb.me.userId;
+  return {
+    ...detail,
+    ownerUserId: MOCK_OTHER_LEADER_ID,
+    teamMembers: [
+      {
+        teamMemberId: MOCK_OTHER_LEADER_ID,
+        userId: MOCK_OTHER_LEADER_ID,
+        displayNickname: '김도윤',
+        role: 'TEAM_LEADER',
+        accepted: true,
+      },
+      ...detail.teamMembers.filter((member: any) => member.userId !== myUserId),
+      {
+        teamMemberId: myUserId,
+        userId: myUserId,
+        displayNickname: '디스플레이유',
+        role,
+        accepted: true,
+      },
+    ],
   };
 };
 
@@ -495,6 +531,7 @@ export const displayHandlers = [
           .map((display: any, index: number) => ({
             ...myDisplayItem(display),
             isLeader: true,
+            role: 'TEAM_LEADER',
             publishStatus: MY_DISPLAY_PUBLISH_STATUSES[index],
           })),
         participatedDisplays: listDisplays()
@@ -502,6 +539,8 @@ export const displayHandlers = [
           .map((display: any, index: number) => ({
             ...myDisplayItem(display),
             isLeader: false,
+            // 참여한 전시 중 첫 번째는 관리자로 지정된 전시
+            role: index === 0 ? 'MANAGER' : 'TEAM_MEM',
             publishStatus: MY_DISPLAY_PUBLISH_STATUSES[index + 3],
           })),
       }),
@@ -561,6 +600,20 @@ export const displayHandlers = [
           const member = display.teamMembers.find((m: any) => m.userId === mockDb.me.userId);
           if (member) member.displayNickname = body.displayNickname;
         }
+        // 실서버처럼 그 전시 작품에 실린 내 이름(대표 · 공동 작가)도 전시 작가명을 따른다.
+        // 목에서 새로 등록한 작품은 artistUserId 가 없으면 내 작품이다
+        const myUserId = mockDb.me.userId;
+        mockDb.artworks
+          .filter((artwork: any) => artwork.displayId === body.displayId)
+          .forEach((artwork: any) => {
+            if ((artwork.artistUserId ?? myUserId) === myUserId) {
+              artwork.artistName = body.displayNickname;
+              artwork.artist = body.displayNickname;
+            }
+            [...(artwork.artists ?? []), ...(artwork.coAuthors ?? [])].forEach((author: any) => {
+              if (author.userId === myUserId) author.name = body.displayNickname;
+            });
+          });
       }
       return success('/api/v1/display/me/nickname', body);
     }),
@@ -647,7 +700,7 @@ export const displayHandlers = [
     http.get(path, ({ params }) =>
       success(
         '/api/v1/display/{displayId}',
-        displayDetailResponse(toNumber(params.displayId, 101)),
+        withMockTeamRole(displayDetailResponse(toNumber(params.displayId, 101))),
       ),
     ),
   ),
