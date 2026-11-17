@@ -8,13 +8,10 @@ import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
-import { usePreviewBack } from './usePreviewBack';
-
 /* 전시 작업의 "전시 미리보기". 전시 팀원만 열 수 있다(라우트의 DisplayPermissionGuard view) */
 export function DisplayPreviewPage() {
   const { displayId: displayIdParam } = useParams<{ displayId: string }>();
   const displayId = parseDisplayId(displayIdParam);
-  const goBack = usePreviewBack(`/exhibition/${displayIdParam}/work`);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
   const { showSkeleton } = useSkeleton(isPending && displayId !== null);
 
@@ -31,5 +28,5 @@ export function DisplayPreviewPage() {
     );
   }
 
-  return <DisplayDetailView key={displayId} display={display} onBack={goBack} previewMode />;
+  return <DisplayDetailView key={displayId} display={display} previewMode />;
 }

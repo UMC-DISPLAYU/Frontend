@@ -5,10 +5,14 @@ import contentStack from '@/assets/display-detail/content-stack.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
 
+import { getContentOpenNotice } from './displayDetail.utils';
+
 type Props = {
   display: DisplayDetailDto;
   /* 콘텐츠 카드가 갈 주소. 없으면 공개 전시 콘텐츠 */
   contentPath?: (categoryId: number) => string;
+  /* 등록 중 전시(팀원 미리보기)는 공개 시점 안내를 띄우지 않는다 */
+  isPreview?: boolean;
 };
 
 /* 섹션 사이 연한 구분선. 900px 이상은 본문 폭 끝까지 */
@@ -48,15 +52,13 @@ function ContentCards({ display, contentPath }: Props) {
                 frameClassName="aspect-3/4 w-full overflow-hidden border border-primary bg-tertiary"
                 className="size-full object-cover transition-transform duration-slow ease-standard group-hover:scale-104"
               />
-              {/* 인스타그램처럼 사진이 여러 장이면 오른쪽 위에 묶음 표시 */}
-              {category.contents.length > 1 && (
-                <span
-                  aria-hidden="true"
-                  className="absolute top-1.75 right-1.75 grid size-5 place-items-center"
-                >
-                  <img src={contentStack} alt="" />
-                </span>
-              )}
+              {/* 프로토타입은 사진이 1장이면 묶음 표시를 빼지만, 1장이어도 보인다(PM/FE 2차 회의 2026-11-16) */}
+              <span
+                aria-hidden="true"
+                className="absolute top-1.75 right-1.75 grid size-5 place-items-center"
+              >
+                <img src={contentStack} alt="" />
+              </span>
             </div>
             <strong className="typography-body-lg-semibold mt-2 block truncate">
               {category.name}
@@ -68,12 +70,23 @@ function ContentCards({ display, contentPath }: Props) {
   );
 }
 
-export function IntroPanel({ display, contentPath }: Props) {
+export function IntroPanel({ display, contentPath, isPreview = false }: Props) {
+  const hasContents = display.contentCategories.length > 0;
+  const openNotice =
+    !hasContents && !isPreview
+      ? getContentOpenNotice(display.exhibitionContentOpen, display.period)
+      : null;
+
   return (
     <div className="pb-10">
       {display.content && <IntroText content={display.content} />}
-      {display.contentCategories.length > 0 && (
-        <ContentCards display={display} contentPath={contentPath} />
+      {hasContents && <ContentCards display={display} contentPath={contentPath} />}
+      {openNotice && (
+        <section aria-label="전시콘텐츠" className={cn(DIVIDER, 'mt-7 px-gutter desktop:px-0')}>
+          <p className="typography-body-lg-regular pt-14 pb-6 text-center text-tertiary">
+            {openNotice}
+          </p>
+        </section>
       )}
     </div>
   );

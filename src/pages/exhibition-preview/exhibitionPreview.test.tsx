@@ -131,14 +131,11 @@ describe('미리보기 뒤로가기', () => {
 });
 
 describe('전시 미리보기', () => {
-  it('공개된 전시도 미리보기 모드로 보여주고, 뒤로가기는 전시 작업 기준이다', () => {
-    setHistoryIndex(0);
+  it('공개된 전시도 미리보기 모드로 보여준다', () => {
     const page = asElement(DisplayPreviewPage());
     expect(page.type).toBe(DisplayDetailView);
     expect(page.props.previewMode).toBe(true);
     expect(page.props.display).toBe(publicDisplay);
-    (page.props.onBack as () => void)();
-    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/work', { replace: true });
   });
 
   it('불러오는 중에는 상세 스켈레톤을 보인다', () => {

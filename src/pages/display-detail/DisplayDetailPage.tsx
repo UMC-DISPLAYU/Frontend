@@ -4,13 +4,11 @@ import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
 import { NotFoundView } from '@/components/error-page';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
-import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayDetailPage() {
-  const flowBack = useFlowBack();
   const { id } = useParams<{ id: string }>();
   const displayId = parseDisplayId(id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
@@ -32,5 +30,5 @@ export function DisplayDetailPage() {
   }
 
   // 다른 전시로 옮겨 가면 펼친 소개 · 포스터 위치를 처음으로 돌린다
-  return <DisplayDetailView key={displayId} display={display} onBack={() => flowBack()} />;
+  return <DisplayDetailView key={displayId} display={display} />;
 }

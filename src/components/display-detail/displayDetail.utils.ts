@@ -1,3 +1,6 @@
+import type { DisplayContentOpenType, DisplayPeriodDto } from '@/api/dto';
+import { getExhibitionState } from '@/utils/exhibitionState';
+
 export type DisplayDetailTabKey = 'intro' | 'works' | 'reviews';
 
 export const DISPLAY_DETAIL_TABS: DisplayDetailTabKey[] = ['intro', 'works', 'reviews'];
@@ -23,3 +26,17 @@ export function formatPeriodTime(start?: string | null, end?: string | null) {
 
 // 작가 프로필도 같이 쓰므로 공용 위치로 올렸다
 export { type ExternalLink, toInstagramLink, toWebsiteLink } from '@/utils/externalLink';
+
+/*
+ * 공개 시점이 "전시 시작일부터"면 서버가 개막 전까지 작품 · 콘텐츠를 비워서 준다.
+ * 빈 화면 대신 언제부터 보이는지 알린다. 예: 11.16부터 노출돼요
+ */
+export function getContentOpenNotice(
+  open: DisplayContentOpenType | undefined,
+  period: DisplayPeriodDto | undefined,
+  now = Date.now(),
+) {
+  if (open !== 'ON_EXHIBITION' || !period?.startDate) return null;
+  if (getExhibitionState(period, now) !== 'upcoming') return null;
+  return `${toDot(period.startDate).slice(5)}부터 노출돼요`;
+}
