@@ -63,7 +63,7 @@ describe('toInboxNotification', () => {
       id: 31,
       title: '저장한 작가의 새 전시',
       body: NOTIFICATION.body,
-      timeLabel: '방금 전',
+      timeLabel: '1분 전',
       isUnread: true,
       action: { kind: 'link', to: '/display/7' },
     });

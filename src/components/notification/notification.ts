@@ -1,5 +1,6 @@
 import type { NotificationBodySegmentDto, NotificationDto, NotificationTargetDto } from '@/api/dto';
-import { formatRelativeTime } from '@/utils/date';
+
+import { formatNotificationTime } from './formatNotificationTime';
 
 /** 알림을 눌렀을 때 할 일. 받은 초대는 마이 안의 시트라 주소 대신 따로 둔다 */
 export type NotificationAction = { kind: 'link'; to: string } | { kind: 'invitations' };
@@ -8,7 +9,7 @@ export interface InboxNotification {
   id: number;
   title: string;
   body: NotificationBodySegmentDto[];
-  /** '방금 전' · 'N분전' · 'YYYY.MM.DD' */
+  /** '방금' · 'N분 전' · 'N시간 전' · '어제' · 'N일 전' · 'MM.DD' */
   timeLabel: string;
   isUnread: boolean;
   /** 이동할 곳이 없거나 모르는 종류면 null(누를 수 없는 줄) */
@@ -40,7 +41,7 @@ export function toInboxNotification(notification: NotificationDto): InboxNotific
     id: notification.notificationId,
     title: notification.title ?? '',
     body: notification.body ?? [],
-    timeLabel: formatRelativeTime(notification.createdAt),
+    timeLabel: formatNotificationTime(notification.createdAt),
     isUnread: !notification.isRead,
     action: toNotificationAction(notification.target),
   };
