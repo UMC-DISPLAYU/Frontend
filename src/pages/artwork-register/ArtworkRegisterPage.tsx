@@ -34,9 +34,12 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useFetchedSinceMount } from '@/hooks/useFetchedSinceMount';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
+
+import { getArtworkRegisterLoadState } from './artworkRegisterLoadState';
 
 const notifyError = (error: unknown, fallback: string) => {
   if (error instanceof SessionChangedError) return;
@@ -223,8 +226,13 @@ function ArtworkRegisterRoute() {
     displayQuery,
     ...(isEdit ? [editQuery, detailQuery] : [membersQuery]),
   ];
-  const failed = queries.find((query) => query.isError);
-  const isPending = queries.some((query) => query.isPending);
+  const isEditDataFresh = useFetchedSinceMount(editQuery, detailQuery);
+  const isEditDataStale = isEdit && !isEditDataFresh;
+  const { failed, isPending } = getArtworkRegisterLoadState({
+    queries,
+    editQueries: isEdit ? [editQuery, detailQuery] : [],
+    isEditDataStale,
+  });
   const { showSkeleton } = useSkeleton(isPending);
   const title = isEdit ? '작품 수정' : '작품 등록';
 
@@ -241,7 +249,7 @@ function ArtworkRegisterRoute() {
     return <ArtworkRegisterSkeleton title={title} withAuthor onBack={() => leave(workPath)} />;
   }
 
-  if (isEdit && editQuery.data && detailQuery.data) {
+  if (isEdit && !isEditDataStale && editQuery.data && detailQuery.data) {
     const previous = editQuery.data;
 
     return (

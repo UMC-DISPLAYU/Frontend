@@ -21,6 +21,8 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
+import { refetchForNextScreen } from './refetchForNextScreen';
+
 /* 비로그인 상태에서는 호출하지 않고, 호출부에서 추가 조건을 줄 수 있습니다. */
 export const useUserMe = (options: { enabled?: boolean } = {}) => {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -66,13 +68,14 @@ export const useUserArtistProfile = (userId: number) =>
  * 작품 · 개인 작품 감상평, 팀원 목록의 기본 닉네임). 같이 무효화하지 않으면 staleTime 동안 예전 사진 · 이름이 남는다.
  */
 const invalidateMyAuthorInfo = (queryClient: QueryClient) => {
-  queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
   queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.loungeComments.all });
   queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.all, 'reviews'] });
   queryClient.invalidateQueries({ queryKey: queryKeys.artworkFeelings.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.details() });
   queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.all });
+  // 저장 뒤 돌아가는 마이 화면이 예전 사진 · 닉네임을 먼저 그리지 않게 한다
+  return refetchForNextScreen(queryClient, [queryKeys.users.me()]);
 };
 
 export const useUpdateNickname = () => {
@@ -99,13 +102,14 @@ export const useUpdateMyArtistProfile = () => {
   return useMutation({
     mutationFn: (body: UpdateArtistProfileRequestDto) => updateMyArtistProfile(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.artistProfile() });
       // 작가 프로필 화면(/artist/:userId)은 userId 기준 key 를 쓴다
       queryClient.invalidateQueries({
         predicate: ({ queryKey }) =>
           queryKey[0] === queryKeys.users.all[0] && queryKey[2] === 'artist-profile',
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.all });
+      // 저장 뒤 돌아가는 마이 화면이 예전 작가 사진 · 작가명을 먼저 그리지 않게 한다
+      return refetchForNextScreen(queryClient, [queryKeys.users.artistProfile()]);
     },
   });
 };

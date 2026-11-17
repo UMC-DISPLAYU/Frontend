@@ -13,6 +13,7 @@ import type { ExhibitionItem } from '@/types/mypage';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
 import { invalidateArtworksOfDisplay } from './displayArtworkCache';
+import { refetchForNextScreen } from './refetchForNextScreen';
 
 const formatDate = (date: string) => {
   const [year, month, day] = date.split('-');
@@ -74,6 +75,8 @@ const invalidateDisplayQueries = (queryClient: QueryClient, displayId: number) =
   queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
   invalidateArtworksOfDisplay(queryClient, displayId);
   queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
+  // 대화상자를 닫기 전에 내 전시 관리 목록에서 카드가 빠진 것까지 받아 둔다
+  return refetchForNextScreen(queryClient, [[...queryKeys.displays.lists(), 'my']]);
 };
 
 export const useDeleteDisplay = () => {
@@ -82,10 +85,11 @@ export const useDeleteDisplay = () => {
   return useMutation({
     mutationFn: (displayId: number) => deleteDisplay(displayId),
     onSuccess: (_, displayId) => {
-      invalidateDisplayQueries(queryClient, displayId);
+      const refetched = invalidateDisplayQueries(queryClient, displayId);
       // 무효화만 하면 뒤로가기로 상세에 돌아왔을 때 받아 둔 상세가 먼저 그려진다. 지운 전시는 캐시에서 뺀다
       queryClient.removeQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+      return refetched;
     },
   });
 };
@@ -109,12 +113,16 @@ export const useUpdateMyDisplayNickname = () => {
      * 작품 목록 · 상세를 같이 무효화하지 않으면 staleTime 동안 전시 작업 페이지 등에 예전 이름이 남습니다.
      */
     onSuccess: (_, { displayId }) => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
       queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'artist'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       invalidateArtworksOfDisplay(queryClient, displayId);
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
+      // 시트를 닫기 전에 카드의 작가명과, 카드를 눌러 들어갈 전시 작업 화면 데이터를 새로 받아 둔다
+      return refetchForNextScreen(queryClient, [
+        [...queryKeys.displays.lists(), 'my'],
+        queryKeys.displays.detail(displayId),
+        queryKeys.displayArtworks.byDisplayId(displayId),
+      ]);
     },
   });
 };
