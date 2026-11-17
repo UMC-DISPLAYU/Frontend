@@ -32,7 +32,6 @@ export function toTeamCandidates(
     excludeUserIds = [],
     requireArtistVerified = false,
   }: {
-    ownerUserId?: number;
     excludeUserIds?: readonly (number | undefined)[];
     requireArtistVerified?: boolean;
   } = {},
