@@ -23,6 +23,9 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
+import { invalidateArtworksOfDisplay } from './displayArtworkCache';
+import { refetchForNextScreen } from './refetchForNextScreen';
+
 export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
   useQuery({
     queryKey: queryKeys.displays.search(params),
@@ -82,10 +85,17 @@ export const useUpdateDisplay = (displayId: number | undefined) => {
       if (!displayId) throw new Error('displayId is required');
       return updateDisplay(displayId, body);
     },
+    // 작품 상세(exhibitionInfo) · 작품 검색(displayTitle) · 보관함 전시도 전시 제목 · 포스터 등을 담아 온다
     onSuccess: () => {
       if (!displayId) return;
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+      invalidateArtworksOfDisplay(queryClient, displayId);
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+      // 저장 뒤 돌아가는 전시 관리 · 내 전시 관리가 예전 포스터를 먼저 그리지 않게 한다
+      return refetchForNextScreen(queryClient, [
+        queryKeys.displays.detail(displayId),
+        [...queryKeys.displays.lists(), 'my'],
+      ]);
     },
   });
 };
@@ -96,9 +106,12 @@ export const useHideDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => hideDisplay(displayId),
+    // 비공개가 되면 그 전시와 작품이 작품 검색 · 작가 프로필 · 홈 · 보관함에서 빠지거나 상태가 바뀔 수 있다
     onSuccess: (_, displayId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+      invalidateArtworksOfDisplay(queryClient, displayId);
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.all });
     },
   });
 };
@@ -124,9 +137,10 @@ export const usePublishDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => publishDisplay(displayId),
+    // 심사 요청 완료 화면이 바뀐 상태로 그려지게 한다
     onSuccess: (_, displayId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+      return refetchForNextScreen(queryClient, [queryKeys.displays.detail(displayId)]);
     },
   });
 };

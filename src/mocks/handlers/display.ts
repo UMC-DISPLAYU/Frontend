@@ -594,6 +594,20 @@ export const displayHandlers = [
           const member = display.teamMembers.find((m: any) => m.userId === mockDb.me.userId);
           if (member) member.displayNickname = body.displayNickname;
         }
+        // 실서버처럼 그 전시 작품에 실린 내 이름(대표 · 공동 작가)도 전시 작가명을 따른다.
+        // 목에서 새로 등록한 작품은 artistUserId 가 없으면 내 작품이다
+        const myUserId = mockDb.me.userId;
+        mockDb.artworks
+          .filter((artwork: any) => artwork.displayId === body.displayId)
+          .forEach((artwork: any) => {
+            if ((artwork.artistUserId ?? myUserId) === myUserId) {
+              artwork.artistName = body.displayNickname;
+              artwork.artist = body.displayNickname;
+            }
+            [...(artwork.artists ?? []), ...(artwork.coAuthors ?? [])].forEach((author: any) => {
+              if (author.userId === myUserId) author.name = body.displayNickname;
+            });
+          });
       }
       return success('/api/v1/display/me/nickname', body);
     }),

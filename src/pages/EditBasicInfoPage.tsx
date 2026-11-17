@@ -19,6 +19,7 @@ import { ConfirmDialog, ErrorView, ProfileAvatar, ProfilePhotoField } from '@/co
 import { Skeleton, SkeletonText } from '@/components/ui';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
+import { useFetchedSinceMount } from '@/hooks/useFetchedSinceMount';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
@@ -34,10 +35,14 @@ import {
 const HELPER_ID = 'nickname-helper';
 
 export function EditBasicInfoPage() {
-  const { data: userMe, isPending, isError, error, refetch } = useUserMe();
-  const { showSkeleton } = useSkeleton(isPending);
+  const userMeQuery = useUserMe();
+  const { data: userMe, isError, error, refetch } = userMeQuery;
+  // 폼은 처음 그릴 때 값을 한 번만 읽으므로, 받아 둔 예전 값이 아니라 이 화면에서 새로 받은 값으로 채운다
+  const isFresh = useFetchedSinceMount(userMeQuery);
+  const isReady = Boolean(userMe) && isFresh;
+  const { showSkeleton } = useSkeleton(!isReady);
 
-  if (isError && !userMe) {
+  if (isError && !isFresh) {
     return (
       <ErrorView
         message={getErrorMessage(error, '내 정보를 불러오지 못했어요.')}
@@ -46,7 +51,7 @@ export function EditBasicInfoPage() {
     );
   }
 
-  if (showSkeleton || !userMe) {
+  if (showSkeleton || !isReady || !userMe) {
     return (
       <ArtistVerifyLayout>
         <div aria-hidden="true" className="flex flex-col gap-5 pt-18">
