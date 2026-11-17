@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
   EXPLORE_WRAP_CLASS,
   ExploreArtworkCard,
   ExploreArtworkCardSkeleton,
+  ExploreDensityToggle,
   ExploreExhibitionCard,
   ExploreExhibitionCardSkeleton,
   ExploreFieldTabs,
@@ -15,6 +16,7 @@ import {
   SORT_OPTIONS,
   STATUS_OPTIONS,
   TYPE_OPTIONS,
+  useDenseGridTransition,
   useExploreFilters,
   useSearchResultCount,
 } from '@/components/explore';
@@ -27,8 +29,31 @@ const RESULTS_ID = 'explore-results';
 const fieldTabId = (index: number) => `explore-field-${index}`;
 
 export function ExplorePage() {
-  const { field, type, status, sort, view, searchWord, selectOption, setView, submitSearch } =
-    useExploreFilters();
+  const {
+    field,
+    type,
+    status,
+    sort,
+    view,
+    dense,
+    searchWord,
+    selectOption,
+    setView,
+    setDense,
+    submitSearch,
+  } = useExploreFilters();
+
+  const fieldIndex = FIELD_OPTIONS.indexOf(field);
+  // 화면 위에 붙는 분야 탭 아래에서 처음 보이는 사진을 기준으로 보기를 바꾼다
+  const getTopInset = useCallback(
+    () => document.getElementById(fieldTabId(fieldIndex))?.getBoundingClientRect().bottom ?? 0,
+    [fieldIndex],
+  );
+  const { listRef, changeDense } = useDenseGridTransition({
+    dense,
+    onChange: setDense,
+    getTopInset,
+  });
 
   const isExhibitionView = view === 'exhibition';
   // 전시 ↔ 작품을 오가도 검색어 · 분야 · 필터 · 정렬은 그대로 둔다(탐색 정책)
@@ -125,22 +150,29 @@ export function ExplorePage() {
           <p aria-live="polite" className="typography-body-lg-semibold tabular-nums">
             {resultCount === null ? '' : `${isExhibitionView ? '전시' : '작품'} ${resultCount}개`}
           </p>
-          <ExploreFilterMenu
-            label="정렬"
-            onSelect={(option) => selectOption('sort', option)}
-            options={SORT_OPTIONS}
-            selectedLabel={sort.label}
-            variant="sort"
-          />
+          <div className="ml-auto flex items-center gap-2">
+            <ExploreDensityToggle dense={dense} onChange={changeDense} />
+            <ExploreFilterMenu
+              label="정렬"
+              onSelect={(option) => selectOption('sort', option)}
+              options={SORT_OPTIONS}
+              selectedLabel={sort.label}
+              variant="sort"
+            />
+          </div>
         </div>
 
+        {/* 목록 위 두 손가락은 페이지 확대 대신 보기 전환에 쓴다 */}
         <section
-          aria-labelledby={fieldTabId(FIELD_OPTIONS.indexOf(field))}
+          aria-labelledby={fieldTabId(fieldIndex)}
+          className="touch-pan-y"
           id={RESULTS_ID}
+          ref={listRef}
           role="tabpanel"
         >
           {isExhibitionView ? (
             <ExploreResultGrid
+              dense={dense}
               getKey={(exhibition) => exhibition.displayId}
               key="exhibition"
               itemObject="전시를"
@@ -151,6 +183,7 @@ export function ExplorePage() {
             />
           ) : (
             <ExploreResultGrid
+              dense={dense}
               getKey={(artwork) => artwork.artworkId}
               key="artwork"
               itemObject="작품을"

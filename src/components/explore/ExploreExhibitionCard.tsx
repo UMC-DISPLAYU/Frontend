@@ -5,7 +5,17 @@ import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonText } from '@/components/ui';
 import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
-import { CARD_CLASS, CARD_IMAGE_CLASS, CARD_TITLE_CLASS } from './exploreCardStyles';
+import {
+  CARD_CLASS,
+  CARD_HOVER_CLASS,
+  CARD_HOVER_TITLE_CLASS,
+  CARD_IMAGE_CLASS,
+  CARD_PHOTO_WRAP_CLASS,
+  CARD_SKELETON_TEXT_CLASS,
+  CARD_TEXT_CLASS,
+  CARD_TITLE_CLASS,
+  EXHIBITION_HOVER_GRADIENT,
+} from './exploreCardStyles';
 
 const POSTER_FRAME_CLASS = 'aspect-402/568 w-full bg-[#f4f4f5]';
 
@@ -16,15 +26,27 @@ type ExploreExhibitionCardProps = {
 export function ExploreExhibitionCard({ exhibition }: ExploreExhibitionCardProps) {
   return (
     <Link className={CARD_CLASS} to={`/display/${exhibition.displayId}`}>
-      <OptimizedImage
-        alt={`${exhibition.title} 포스터`}
-        className={CARD_IMAGE_CLASS}
-        displayWidth={280}
-        frameClassName={POSTER_FRAME_CLASS}
-        skeleton
-        src={exhibition.posterImageUrl}
-      />
-      <span className="block pt-2">
+      <span className={CARD_PHOTO_WRAP_CLASS}>
+        <OptimizedImage
+          alt={`${exhibition.title} 포스터`}
+          className={CARD_IMAGE_CLASS}
+          displayWidth={280}
+          frameClassName={POSTER_FRAME_CLASS}
+          skeleton
+          src={exhibition.posterImageUrl}
+        />
+        <span
+          aria-hidden="true"
+          className={CARD_HOVER_CLASS}
+          style={{ backgroundImage: EXHIBITION_HOVER_GRADIENT }}
+        >
+          <span className={CARD_HOVER_TITLE_CLASS}>{exhibition.title}</span>
+          <span className="mt-1 line-clamp-2 text-[10px] leading-[1.4] font-medium text-[#d4d4d8]">
+            {exhibition.schoolDepartmentName}
+          </span>
+        </span>
+      </span>
+      <span className={CARD_TEXT_CLASS} data-card-text>
         <span className={CARD_TITLE_CLASS}>{exhibition.title}</span>
         <span className="block truncate text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#3f3f47]">
           {exhibition.schoolDepartmentName}
@@ -47,7 +69,7 @@ export function ExploreExhibitionCardSkeleton() {
   return (
     <>
       <Skeleton className={POSTER_FRAME_CLASS} />
-      <div className="pt-2">
+      <div className={CARD_SKELETON_TEXT_CLASS}>
         <SkeletonText className="typography-body-lg-semibold w-7/10" />
         <SkeletonText className="typography-body-md-medium w-1/2" />
         <SkeletonText className="typography-body-md-medium mt-1 w-3/5" />
