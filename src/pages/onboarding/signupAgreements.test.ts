@@ -24,49 +24,36 @@ const ALL_AGREEMENTS = [
 ];
 
 const terms = (overrides: Partial<TermState> = {}): TermState => ({
-  over14: true,
   service: true,
-  privacy: true,
-  location: false,
+  over14: true,
   ...overrides,
 });
 
 describe('hasRequiredTerms', () => {
-  it('만 14세 확인과 필수 약관에 모두 동의해야 true', () => {
+  it('서비스 이용약관과 만 14세 확인에 모두 체크해야 true', () => {
     expect(hasRequiredTerms(terms())).toBe(true);
   });
 
-  it.each(['over14', 'service', 'privacy'] as const)('%s 미동의면 false', (key) => {
+  it.each(['service', 'over14'] as const)('%s 미체크면 false', (key) => {
     expect(hasRequiredTerms(terms({ [key]: false }))).toBe(false);
-  });
-
-  it('선택 약관은 결과에 영향을 주지 않는다', () => {
-    expect(hasRequiredTerms(terms({ location: true }))).toBe(true);
   });
 });
 
 describe('buildSignupAgreements', () => {
-  it('동의한 약관만 서버 버전과 함께 담는다', () => {
+  it('서비스 이용약관만 서버 버전과 함께 담는다', () => {
     expect(buildSignupAgreements(terms(), ALL_AGREEMENTS)).toEqual([
       { code: 'TERMS_OF_SERVICE', version: '1.2' },
-      { code: 'PRIVACY_COLLECTION_USE', version: '1.0' },
     ]);
   });
 
-  it('선택 약관에 동의하면 함께 담는다', () => {
-    expect(buildSignupAgreements(terms({ location: true }), ALL_AGREEMENTS)).toContainEqual({
-      code: 'LOCATION_BASED_SERVICE',
-      version: '1.0',
-    });
+  it('개인정보 수집·이용과 위치기반서비스는 목록에 있어도 담지 않는다', () => {
+    const codes = buildSignupAgreements(terms(), ALL_AGREEMENTS)?.map(({ code }) => code);
+    expect(codes).not.toContain('PRIVACY_COLLECTION_USE');
+    expect(codes).not.toContain('LOCATION_BASED_SERVICE');
   });
 
-  it('필수 약관 문서가 목록에 없으면 null', () => {
-    expect(buildSignupAgreements(terms(), [agreement('TERMS_OF_SERVICE')])).toBeNull();
+  it('서비스 이용약관 문서가 목록에 없으면 null', () => {
+    expect(buildSignupAgreements(terms(), [agreement('PRIVACY_COLLECTION_USE')])).toBeNull();
     expect(buildSignupAgreements(terms(), [])).toBeNull();
-  });
-
-  it('선택 약관 문서가 없으면 동의했어도 빼고 가입시킨다', () => {
-    const withoutLocation = ALL_AGREEMENTS.slice(0, 2);
-    expect(buildSignupAgreements(terms({ location: true }), withoutLocation)).toHaveLength(2);
   });
 });

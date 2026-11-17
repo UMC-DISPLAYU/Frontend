@@ -70,7 +70,6 @@ export function ArtworkAuthorSection({
         >
           <PlusIcon className="size-5" />
           공동 작가 추가
-          <small className="typography-body-md-medium text-secondary">· 선택</small>
         </button>
       </div>
     </section>

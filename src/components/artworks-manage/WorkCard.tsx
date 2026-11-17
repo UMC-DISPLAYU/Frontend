@@ -6,6 +6,7 @@ import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 
 /*
  * 프로토타입 works.html `.wc`: 3:4 사진(모서리 없음) · 사진 아래 8 제목 14 SemiBold · 작가 12 Medium.
+ * 작가는 대표 · 공동 작가를 ", "로 잇는다(2차 피드백).
  * 사진 위 버튼 · 칩은 overlay 로 받는다(관리: … 메뉴 · 내 작품, 순서 편집: 번호 · 손잡이)
  */
 export function WorkCard({
@@ -38,7 +39,9 @@ export function WorkCard({
         {overlay}
       </div>
       <p className="mt-2 truncate text-[14px] font-semibold">{work.title}</p>
-      <p className="truncate text-[12px] font-medium text-[#3f3f47]">{work.artist}</p>
+      <p className="truncate text-[12px] font-medium text-[#3f3f47]">
+        {(work.artistNames ?? [work.artist]).filter(Boolean).join(', ')}
+      </p>
     </div>
   );
 }

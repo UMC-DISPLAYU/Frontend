@@ -38,32 +38,42 @@ describe('대신 등록 경로', () => {
 
 describe('toTeamCandidates', () => {
   const members = [
-    { userId: 1, displayNickname: '대표', role: 'LEADER', accepted: true, artistVerified: true },
-    { userId: 2, displayNickname: '나', role: 'TEAM_MEM', accepted: true, artistVerified: true },
+    {
+      userId: 1,
+      displayNickname: '대표',
+      nickname: 'leader01',
+      accepted: true,
+      artistVerified: true,
+    },
+    { userId: 2, displayNickname: '나', nickname: ' me02 ', accepted: true, artistVerified: true },
     {
       userId: 3,
       displayNickname: '미인증',
-      role: 'TEAM_MEM',
+      nickname: 'unverified',
       accepted: true,
       artistVerified: false,
     },
-    { userId: 4, displayNickname: '대기', role: 'TEAM_MEM', accepted: false, artistVerified: true },
+    {
+      userId: 4,
+      displayNickname: '대기',
+      nickname: 'wait04',
+      accepted: false,
+      artistVerified: true,
+    },
   ];
 
   it('초대를 수락한 팀원만 남기고 제외할 사람을 뺀다', () => {
-    expect(
-      toTeamCandidates(members, { ownerUserId: 1, excludeUserIds: [2] }).map((m) => m.userId),
-    ).toEqual([1, 3]);
+    expect(toTeamCandidates(members, { excludeUserIds: [2] }).map((m) => m.userId)).toEqual([1, 3]);
   });
 
-  it('공동 작가는 작가 인증을 하지 않은 팀원을 고를 수 없게 한다', () => {
+  it('이름 아래에 역할 대신 계정 닉네임을 보이고, 작가 인증을 하지 않은 팀원은 고를 수 없게 한다', () => {
     expect(
-      toTeamCandidates(members, { ownerUserId: 1, requireArtistVerified: true }).map(
+      toTeamCandidates(members, { requireArtistVerified: true }).map(
         ({ userId, caption, disabled }) => [userId, caption, disabled],
       ),
     ).toEqual([
-      [1, '대표자', false],
-      [2, '팀원', false],
+      [1, 'leader01', false],
+      [2, 'me02', false],
       [3, '작가 인증 필요', true],
     ]);
   });

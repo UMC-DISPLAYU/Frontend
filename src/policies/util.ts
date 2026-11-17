@@ -6,6 +6,8 @@ export interface DisplayPolicyResource {
   teamMembers: {
     userId: number;
     accepted: boolean;
+    /* TEAM_LEADER · MANAGER · TEAM_MEM. 내려오지 않으면 일반 팀원으로 본다 */
+    role?: string;
   }[];
 }
 
@@ -67,6 +69,24 @@ export function isDisplayMember(user: User, display: DisplayPolicyResource): boo
   );
 }
 
+// 전시 관리자. 전시 대표자이거나 관리자(MANAGER)로 지정된 팀원
+export function isDisplayManager(user: User, display: DisplayPolicyResource): boolean {
+  if (!isLoggedIn(user)) return false;
+
+  return (
+    isDisplayOwner(user, display) ||
+    (display.teamMembers?.some(
+      (member) => member.userId === user.id && member.accepted && member.role === 'MANAGER',
+    ) ??
+      false)
+  );
+}
+
+// 전시 작업의 전체 작품 · 전시 콘텐츠 관리는 작가 인증을 받은 대표자 · 관리자만 가능(기획 권한표)
+export function canManageDisplayWork(user: User, display: DisplayPolicyResource): boolean {
+  return isArtistVerified(user) && isDisplayManager(user, display);
+}
+
 // 전시 관리(수정/삭제/초대/콘텐츠 편집)는 작가 인증을 받은 소유자만 가능
 export function canManageDisplay(user: User, display: DisplayPolicyResource): boolean {
   return isArtistVerified(user) && isDisplayOwner(user, display);
@@ -83,14 +103,14 @@ export function isArtworkAuthor(user: User, artwork: ArtworkPolicyResource): boo
   );
 }
 
-// 작품 수정/삭제는 작가 인증을 받은 전시 대표자이거나, 전시 소속인 중 작품을 만든 사람만 가능
+// 작품 수정/삭제는 작가 인증을 받은 전시 대표자 · 관리자이거나, 전시 소속인 중 작품을 만든 사람만 가능
 export function canManageArtwork(
   user: User,
   artwork: ArtworkPolicyResource,
   display: DisplayPolicyResource,
 ): boolean {
   return (
-    canManageDisplay(user, display) ||
+    canManageDisplayWork(user, display) ||
     (isArtistVerified(user) && isDisplayMember(user, display) && isArtworkAuthor(user, artwork))
   );
 }

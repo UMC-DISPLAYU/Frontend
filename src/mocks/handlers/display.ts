@@ -4,6 +4,7 @@ import { delay, http } from 'msw';
 import { mockDb, okStatus } from '@/mocks/data/repository';
 import { teamOf } from '@/mocks/handlers/displayMember';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { hasMockScenario } from '@/mocks/scenario';
 import { compareBySort, matchesSearchWord } from '@/mocks/searchText';
 
 const now = () => new Date().toISOString();
@@ -112,6 +113,41 @@ const displayDetailResponse = (displayId: number) => {
         : null),
     websiteUrl:
       display.websiteUrl ?? (display.displayId === 101 ? 'https://softlanding.kr/' : null),
+  };
+};
+
+/* 목 전시는 모두 내가 대표자라, 관리자 · 팀원 화면은 ?mock=display-manager | display-member 로 확인한다 */
+const MOCK_OTHER_LEADER_ID = 9001;
+
+const withMockTeamRole = (detail: ReturnType<typeof displayDetailResponse>) => {
+  const role = hasMockScenario('display-manager')
+    ? 'MANAGER'
+    : hasMockScenario('display-member')
+      ? 'TEAM_MEM'
+      : null;
+  if (!role) return detail;
+
+  const myUserId = mockDb.me.userId;
+  return {
+    ...detail,
+    ownerUserId: MOCK_OTHER_LEADER_ID,
+    teamMembers: [
+      {
+        teamMemberId: MOCK_OTHER_LEADER_ID,
+        userId: MOCK_OTHER_LEADER_ID,
+        displayNickname: '김도윤',
+        role: 'TEAM_LEADER',
+        accepted: true,
+      },
+      ...detail.teamMembers.filter((member: any) => member.userId !== myUserId),
+      {
+        teamMemberId: myUserId,
+        userId: myUserId,
+        displayNickname: '디스플레이유',
+        role,
+        accepted: true,
+      },
+    ],
   };
 };
 
@@ -658,7 +694,7 @@ export const displayHandlers = [
     http.get(path, ({ params }) =>
       success(
         '/api/v1/display/{displayId}',
-        displayDetailResponse(toNumber(params.displayId, 101)),
+        withMockTeamRole(displayDetailResponse(toNumber(params.displayId, 101))),
       ),
     ),
   ),
