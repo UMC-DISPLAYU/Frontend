@@ -20,11 +20,13 @@ interface NotificationSheetProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
-  /** 이동할 곳(to)이 있는 알림을 눌렀을 때 */
+  /** 이동할 곳(action)이 있는 알림을 눌렀을 때 */
   onSelect: (notification: InboxNotification) => void;
 }
 
 const ROW_CLASS = 'grid w-full grid-cols-[8px_minmax(0,1fr)] gap-x-3 py-4 text-left';
+// 이동하는 알림만 오른쪽에 화살표 칸을 둔다(PM 알림함 명세)
+const LINK_ROW_CLASS = 'grid-cols-[8px_minmax(0,1fr)_16px]';
 
 function NotificationContent({ notification }: { notification: InboxNotification }) {
   return (
@@ -33,12 +35,17 @@ function NotificationContent({ notification }: { notification: InboxNotification
         aria-hidden="true"
         className={cn('mt-1.75 size-2 rounded-circle', notification.isUnread && 'bg-notice')}
       />
-      <span className="min-w-0">
-        {notification.isUnread && <span className="sr-only">안 읽음, </span>}
-        <span className="typography-body-lg-medium block text-primary">
+      <span className="min-w-0 break-keep wrap-anywhere">
+        {notification.isUnread && <span className="sr-only">읽지 않음, </span>}
+        {notification.title && (
+          <span className="typography-body-lg-semibold block text-primary">
+            {notification.title}
+          </span>
+        )}
+        <span className="typography-body-lg-regular mt-0.5 block text-secondary">
           {notification.body.map((segment, index) =>
             segment.bold ? (
-              <strong className="font-semibold" key={index}>
+              <strong className="font-semibold text-primary" key={index}>
                 {segment.text}
               </strong>
             ) : (
@@ -50,6 +57,20 @@ function NotificationContent({ notification }: { notification: InboxNotification
           {notification.timeLabel}
         </span>
       </span>
+      {notification.action && (
+        <svg
+          aria-hidden="true"
+          className="size-4 self-center text-icon-tertiary"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path d="m9 6 6 6-6 6" />
+        </svg>
+      )}
     </>
   );
 }
@@ -59,7 +80,8 @@ function NotificationRowSkeleton() {
     <li className={cn(ROW_CLASS, 'border-b border-bg-tertiary')}>
       <span />
       <span className="min-w-0">
-        <SkeletonText className="typography-body-lg-medium w-4/5" />
+        <SkeletonText className="typography-body-lg-semibold w-24" />
+        <SkeletonText className="typography-body-lg-regular mt-0.5 w-4/5" />
         <SkeletonText className="typography-body-md-medium mt-0.5 w-12" />
       </span>
     </li>
@@ -108,9 +130,8 @@ export function NotificationSheet({
       );
     }
 
-    if (notifications.length === 0) {
-      return <p className="typography-body-md-medium pt-6 pb-3">받은 알림이 없어요</p>;
-    }
+    // PM 알림함 명세: 알림이 없으면 목록만 비우고 안내 문구는 두지 않는다
+    if (notifications.length === 0) return null;
 
     return (
       <>
@@ -121,10 +142,11 @@ export function NotificationSheet({
               key={notification.id}
               style={staggerStyle(index)}
             >
-              {notification.to ? (
+              {notification.action ? (
                 <button
                   className={cn(
                     ROW_CLASS,
+                    LINK_ROW_CLASS,
                     'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
                   )}
                   onClick={() => onSelect(notification)}

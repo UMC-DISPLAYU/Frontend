@@ -6,16 +6,37 @@ export interface NotificationBodySegmentDto {
   bold: boolean;
 }
 
-/* 누르면 이동할 곳. Swagger 에는 예시(DISPLAY_DETAIL)만 있어 전체 값은 아직 모른다 */
+/* 백엔드 NotificationTargetType */
+export type NotificationTargetType =
+  | 'DISPLAY_DETAIL'
+  | 'DISPLAY_WORKS'
+  | 'MY_DISPLAYS'
+  | 'MY_INVITATIONS';
+
+/* 누르면 이동할 곳. DISPLAY_* 의 id 는 전시 ID, MY_* 는 화면만 가리켜 id 가 null */
 export interface NotificationTargetDto {
-  type: string;
-  id: number;
+  type: NotificationTargetType;
+  id: number | null;
 }
+
+/* 백엔드 NotificationType. 문구 · 이동은 PM 알림함 명세(프로토타입 noti-demo.html)를 따른다 */
+export type NotificationType =
+  | 'REQUEST_APPROVED'
+  | 'REQUEST_REJECTED'
+  | 'EXHIBITION_INVITED'
+  | 'WORK_COAUTHOR_ADDED'
+  | 'WORK_PROXY_ASSIGNED'
+  | 'WORK_DELETED'
+  | 'WORK_DELETED_BY_ARTIST_LEAVE'
+  | 'EXHIBITION_MEMBER_REMOVED'
+  | 'EXHIBITION_DELETED'
+  | 'ARTIST_NEW_EXHIBITION'
+  | 'EXHIBITION_STARTED'
+  | 'OPERATOR_NOTICE';
 
 export interface NotificationDto {
   notificationId: number;
-  /* 예: ARTIST_NEW_EXHIBITION, EXHIBITION_MEMBER_REMOVED. 전체 값은 아직 모른다 */
-  type: string;
+  type: NotificationType;
   title: string;
   body: NotificationBodySegmentDto[];
   /* 알림함을 열기 전 기준 */

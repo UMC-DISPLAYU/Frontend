@@ -116,9 +116,17 @@ export function MyPage() {
   });
 
   const handleSelectNotification = (notification: InboxNotification) => {
-    if (!notification.to) return;
+    const { action } = notification;
+    if (!action) return;
+
+    if (action.kind === 'invitations') {
+      notificationInbox.close();
+      invitationsSheet.open();
+      return;
+    }
+
     // 오버레이 기록을 남기지 않도록 replace 로 이동한다
-    navigate(notification.to, { replace: true });
+    navigate(action.to, { replace: true });
   };
 
   const handleTabChange = (tab: TabKey) => {
