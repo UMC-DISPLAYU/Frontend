@@ -31,7 +31,7 @@ export function MyPageTopBar({
           className="-m-1 shrink-0 rounded-circle p-1 transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus active:scale-96"
           to="/edit-basic-info"
         >
-          <ProfileAvatar className="size-9" displayWidth={36} outlined src={profileImageUrl} />
+          <ProfileAvatar className="size-9" displayWidth={36} src={profileImageUrl} />
         </Link>
         <p className="typography-body-xxl-semibold truncate text-primary">{nickname}</p>
       </div>
