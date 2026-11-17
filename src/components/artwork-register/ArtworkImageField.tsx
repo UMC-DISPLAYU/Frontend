@@ -28,7 +28,6 @@ import { heicAcceptTokens } from './heicImage';
 import {
   type ArtworkImageItem,
   type ArtworkImageUploads,
-  getArtworkItemFit,
   isArtworkItemReady,
 } from './useArtworkImageUploads';
 
@@ -180,42 +179,19 @@ const DETAIL_RATIO = 402 / 554;
  * 대표 사진이 목록 썸네일(3:4)에서 어떻게 잘리는지와 상세에서는 전체가 보인다는 걸 두 칸으로 보여 주고,
  * 썸네일에 보이는 부분을 고르게 한다(프로토타입 U-160)
  */
-function ThumbnailPreview({
-  item,
-  onAdjust,
-  onMeasure,
-}: {
-  item: ArtworkImageItem;
-  onAdjust: () => void;
-  /** 사진 비율을 재면 알린다. 처음 보이는 방식(30% 규칙)을 정하는 데 쓴다 */
-  onMeasure: (imageRatio: number) => void;
-}) {
-  const isFit = getArtworkItemFit(item) === 'fit';
-  const crop = !isFit && item.crop ? item.crop : null;
-
+function ThumbnailPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust: () => void }) {
   return (
     <div className="mt-3.5 flex items-start gap-3.5 rounded-12 bg-secondary p-3.5">
       <div aria-hidden="true" className="flex shrink-0 gap-2.5">
         <figure className="grid content-start justify-items-center gap-1">
-          {/* 프로토타입 U-167: 전체 보이기면 목록 칸의 남는 곳은 흰색 */}
-          <div
-            className={cn(
-              'relative aspect-3/4 w-15 overflow-hidden',
-              isFit ? 'bg-primary-white' : 'bg-secondary',
-            )}
-          >
+          <div className="relative aspect-3/4 w-15 overflow-hidden bg-secondary">
             <img
               src={item.previewUrl}
               alt=""
-              onLoad={(event) => {
-                const { naturalWidth, naturalHeight } = event.currentTarget;
-                if (naturalWidth > 0 && naturalHeight > 0) onMeasure(naturalWidth / naturalHeight);
-              }}
-              style={crop ? cropImageStyle(crop) : undefined}
+              style={item.crop ? cropImageStyle(item.crop) : undefined}
               className={cn(
                 'pointer-events-none select-none',
-                !crop && 'size-full',
-                !crop && (isFit ? 'object-contain' : 'object-cover'),
+                !item.crop && 'size-full object-cover',
               )}
             />
           </div>
@@ -399,7 +375,6 @@ export function ArtworkImageField({
         <ThumbnailPreview
           item={representativeImage}
           onAdjust={() => openCrop(representativeImage)}
-          onMeasure={(imageRatio) => uploads.setImageRatio(representativeImage.id, imageRatio)}
         />
       )}
       {cropSession && (
@@ -408,10 +383,9 @@ export function ArtworkImageField({
           open={isCropOpen}
           imageUrl={cropSession.item.previewUrl}
           initialCrop={cropSession.item.crop ?? null}
-          initialFit={getArtworkItemFit(cropSession.item)}
           onClose={() => setIsCropOpen(false)}
-          onDone={(crop, fit) => {
-            uploads.setCrop(cropSession.item.id, crop, fit);
+          onDone={(crop) => {
+            uploads.setCrop(cropSession.item.id, crop);
             setIsCropOpen(false);
           }}
         />

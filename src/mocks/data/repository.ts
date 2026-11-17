@@ -182,10 +182,6 @@ const displayToDetail = (display: (typeof MOCK_DISPLAY_DETAILS)[number]) => ({
 const mockArtistUserId = (artwork: any, isMine: boolean) =>
   isMine ? 1 : 300 + (artwork.artworkId % 100);
 
-/** 전체 보이기 확인용 가로 사진(3:2, 전시 콘텐츠 사진) */
-const FIT_SAMPLE_IMAGE_URL =
-  'https://d1tdgnysscm2va.cloudfront.net/images/display/2026/08/aced4249-936e-46f5-a031-78a8bf42c995-075-660120338_17942677713176040_1398633902148556870_n.jpg';
-
 const artworkToDetail = (artwork: any, isMine = false) => ({
   artworkId: artwork.artworkId,
   id: artwork.artworkId,
@@ -347,22 +343,8 @@ export const mockDb: {
         display.artworkSection.artworks.map((artwork, index) => {
           const detail = artworkToDetail(artwork, display.displayId === 101 && index === 0);
           if (display.displayId !== 101) return detail;
-          // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로,
-          // 세 번째 작품은 가로로 긴 사진(3:2)을 대표로 두고 목록에 사진 전체가 보이게(전체 보이기) 둔다
-          if (index === 0)
-            return {
-              ...detail,
-              artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 },
-              artworkFitMode: 'FILL',
-            };
-          if (index === 2)
-            return {
-              ...artworkToDetail({
-                ...artwork,
-                images: [{ imageUrl: FIT_SAMPLE_IMAGE_URL }, ...artwork.images],
-              }),
-              artworkFitMode: 'FIT',
-            };
+          // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로 둔다
+          if (index === 0) return { ...detail, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } };
           if (index === 1) {
             const me = { userId: 1, name: makeUser().nickname };
             return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
