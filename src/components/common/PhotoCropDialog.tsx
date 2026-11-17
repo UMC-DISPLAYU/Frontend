@@ -6,7 +6,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type WheelEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -14,6 +13,8 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { cn } from '@/utils/cn';
+
+import { bindStageZoom } from './photoCropZoom';
 
 export type PhotoShape = 'circle' | 'rect';
 
@@ -99,6 +100,17 @@ export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDial
 
   const update = (next: Crop) => setCrop(clamp(next));
 
+  useEffect(() => {
+    const element = stageRef.current;
+    if (!open || !element) return;
+    return bindStageZoom(
+      element,
+      (factor) =>
+        setCrop((previous) => previous && clamp({ ...previous, cw: previous.cw * factor })),
+      () => pointers.current.size >= 2,
+    );
+  }, [open, clamp]);
+
   // 틀 크기(프로토타입): 원은 지름 300 이하, 사각형은 폭 264 이하. 위아래 여백 20씩
   const frameWidth = Math.round(
     Math.max(
@@ -149,13 +161,6 @@ export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDial
     const remaining = [...pointers.current.values()][0];
     gesture.current =
       remaining && crop ? { kind: 'drag', x: remaining.x, y: remaining.y, crop } : null;
-  };
-
-  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
-    if (!crop) return;
-    // 터치패드 핀치는 ctrlKey 가 붙은 휠로 들어와 작게 움직여도 부드럽게, 일반 휠은 한 칸씩
-    const factor = event.ctrlKey ? Math.exp(event.deltaY * 0.01) : event.deltaY > 0 ? 1.04 : 0.96;
-    update({ ...crop, cw: crop.cw * factor });
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -244,7 +249,6 @@ export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDial
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onWheel={handleWheel}
           ref={stageRef}
           role="application"
           tabIndex={0}
