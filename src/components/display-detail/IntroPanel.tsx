@@ -9,6 +9,8 @@ import { getContentOpenNotice } from './displayDetail.utils';
 
 type Props = {
   display: DisplayDetailDto;
+  /* 위에 소개 글이 있을 때만 구분선을 긋는다 */
+  divided?: boolean;
   /* 콘텐츠 카드가 갈 주소. 없으면 공개 전시 콘텐츠 */
   contentPath?: (categoryId: number) => string;
   /* 등록 중 전시(팀원 미리보기)는 공개 시점 안내를 띄우지 않는다 */
@@ -30,9 +32,12 @@ function IntroText({ content }: { content: string }) {
 }
 
 /* 피그마 메모: 인스타그램 게시물 첫 표지(3:4)를 자르지 않고 144×192로, 아래에 콘텐츠 제목 한 줄 */
-function ContentCards({ display, contentPath }: Props) {
+function ContentCards({ display, contentPath, divided }: Props) {
   return (
-    <section aria-label="전시콘텐츠" className={cn(DIVIDER, 'mt-7 px-gutter pt-5.25 desktop:px-0')}>
+    <section
+      aria-label="전시콘텐츠"
+      className={cn('px-gutter pt-5 desktop:px-0', divided && [DIVIDER, 'mt-7 pt-5.25'])}
+    >
       <div className="-mx-gutter flex snap-x snap-proximity scroll-px-gutter gap-3 overflow-x-auto px-gutter [scrollbar-width:none] desktop:mx-0 desktop:grid desktop:grid-cols-3 desktop:overflow-visible desktop:px-0 [&::-webkit-scrollbar]:hidden">
         {display.contentCategories.map((category) => (
           <Link
@@ -77,12 +82,20 @@ export function IntroPanel({ display, contentPath, isPreview = false }: Props) {
       ? getContentOpenNotice(display.exhibitionContentOpen, display.period)
       : null;
 
+  const intro = display.content?.trim();
+  const hasIntro = Boolean(intro);
+
   return (
     <div className="pb-10">
-      {display.content && <IntroText content={display.content} />}
-      {hasContents && <ContentCards display={display} contentPath={contentPath} />}
+      {intro && <IntroText content={intro} />}
+      {hasContents && (
+        <ContentCards display={display} contentPath={contentPath} divided={hasIntro} />
+      )}
       {openNotice && (
-        <section aria-label="전시콘텐츠" className={cn(DIVIDER, 'mt-7 px-gutter desktop:px-0')}>
+        <section
+          aria-label="전시콘텐츠"
+          className={cn('px-gutter desktop:px-0', hasIntro && [DIVIDER, 'mt-7'])}
+        >
           <p className="typography-body-lg-regular pt-14 pb-6 text-center text-tertiary">
             {openNotice}
           </p>
