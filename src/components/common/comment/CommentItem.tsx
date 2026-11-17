@@ -3,6 +3,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { Heart } from 'lucide-react';
 
 import { cn } from '@/utils/cn';
+import { linkifyText } from '@/utils/linkify';
 
 import { ImageModal } from '../ImageModal';
 import { OptimizedImage } from '../OptimizedImage';
@@ -241,7 +242,21 @@ export const CommentItem = memo(function CommentItem({
 
             {hasText && (
               <p className="typography-body-lg-regular mt-2 break-words whitespace-pre-line text-primary">
-                {comment.content}
+                {linkifyText(comment.content ?? '').map((segment, index) =>
+                  segment.type === 'link' ? (
+                    <a
+                      key={index}
+                      href={segment.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all underline underline-offset-2"
+                    >
+                      {segment.text}
+                    </a>
+                  ) : (
+                    segment.text
+                  ),
+                )}
               </p>
             )}
 

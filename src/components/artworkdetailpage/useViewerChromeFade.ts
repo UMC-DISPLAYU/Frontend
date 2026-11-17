@@ -8,9 +8,10 @@ const STACK_TOP_ZONE = 80;
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
- * 사진 위 컨트롤(뒤로가기 · 보기 방식 · 장수 칩)이 작품을 가리지 않게 한다. 움직임 줄이기면 그대로 둔다.
- * - 한 장씩: 3초 가만히 있으면 보기 방식이 흐려지고, 장수 칩은 넘긴 직후에만 잠깐 보인다.
- * - 이어서(디자이너 메모): 아래로 내리거나 3초 가만히 있으면 모두 숨고, 위로 올리거나 맨 위에서는 다시 보인다.
+ * 사진 위 컨트롤(보기 방식 · 장수 칩)이 작품을 가리지 않게 한다. 움직임 줄이기면 그대로 둔다(프로토타입 fade.js).
+ * - 보기 방식: 3초 가만히 있으면 흐려지기만 하고(55%) 계속 누를 수 있다.
+ * - 장수 칩: 넘긴 직후에만 잠깐 보인다.
+ * - 이어서: 아래로 내리면 바로 흐려지고(칩은 숨김), 위로 올리거나 맨 위에서는 다시 또렷해진다.
  */
 export function useViewerChromeFade(stageRef: RefObject<HTMLElement>, isStack: boolean) {
   const [isIdle, setIsIdle] = useState(false);
@@ -107,10 +108,8 @@ export function useViewerChromeFade(stageRef: RefObject<HTMLElement>, isStack: b
   }, [wake]);
 
   return {
-    /* 이어서 보기에서 컨트롤을 모두 숨기는 중 */
-    isStackHidden: isStack && isIdle,
-    /* 한 장씩 보기에서 보기 방식을 흐리게 */
-    isControlsDimmed: !isStack && isIdle,
+    /* 보기 방식을 흐리게(한 장씩 · 이어서 모두) */
+    isControlsDimmed: isIdle,
     isChipHidden: isStack ? isIdle : isChipIdle,
     peekChip,
     holdProps: { onMouseEnter: hold, onMouseLeave: release, onFocus: hold, onBlur: release },

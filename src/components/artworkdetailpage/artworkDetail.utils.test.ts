@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   getArtworkArtists,
   getArtworkSpecText,
+  getExhibitionOrganizerText,
   getProcessImages,
   getStackPhotoIndex,
   hasArtworkIntro,
@@ -124,6 +125,30 @@ describe('getArtworkSpecText', () => {
     expect(getArtworkSpecText({ type: 'GRAPHIC', productionYear: 2026 })).toBe('그래픽 · 2026');
     expect(getArtworkSpecText({ type: 'DESIGN', productionYear: 2026, size: '50cm' })).toBe(
       '2026 · 50cm',
+    );
+  });
+});
+
+describe('getExhibitionOrganizerText', () => {
+  it('전시의 학교와 학과를 함께 쓴다', () => {
+    expect(
+      getExhibitionOrganizerText(
+        { organization: '홍익대학교', department: '조소과' },
+        '홍익대학교',
+      ),
+    ).toBe('홍익대학교 조소과');
+  });
+
+  it('학과가 없으면 학교만 쓴다', () => {
+    expect(getExhibitionOrganizerText({ organization: '홍익대학교', department: null }, '')).toBe(
+      '홍익대학교',
+    );
+  });
+
+  it('전시 정보가 없거나 비어 있으면 작품 상세의 주최를 쓴다', () => {
+    expect(getExhibitionOrganizerText(undefined, '홍익대학교')).toBe('홍익대학교');
+    expect(getExhibitionOrganizerText({ organization: ' ', department: '' }, '홍익대학교')).toBe(
+      '홍익대학교',
     );
   });
 });

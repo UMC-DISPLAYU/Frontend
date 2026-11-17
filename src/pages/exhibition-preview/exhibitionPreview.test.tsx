@@ -1,5 +1,6 @@
 import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
 
+import { Navigate } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ArtworkDetailShell } from '@/components/artworkdetailpage/ArtworkDetailShell';
@@ -175,28 +176,17 @@ describe('전시 미리보기', () => {
 });
 
 describe('작품 미리보기', () => {
-  it('주소의 전시 번호와 전시 작업 뒤로가기를 작품 상세에 넘긴다', () => {
-    setHistoryIndex(0);
+  it('주소의 전시 번호를 작품 상세에 넘긴다', () => {
     const page = asElement(ArtworkPreviewPage());
     expect(page.type).toBe(ArtworkDetailPage);
-    expect(page.props.previewDisplayId).toBe(7);
-    (page.props.onBack as () => void)();
-    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/work', { replace: true });
+    expect(page.props).toEqual({ previewDisplayId: 7 });
   });
 
-  it('전시 미리보기에서 들어왔으면(from=ex) 전시 미리보기 작품 탭으로 돌아간다', () => {
-    setHistoryIndex(0);
-    h.search = 'from=ex';
-    const page = asElement(ArtworkPreviewPage());
-    (page.props.onBack as () => void)();
-    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/preview?tab=works', { replace: true });
-  });
-
-  it('같은 전시의 작품은 공개 전 모습으로 보이고 뒤로가기 버튼을 숨긴다', () => {
-    const onBack = vi.fn();
-    const page = asElement(ArtworkDetailPage({ previewDisplayId: 7, onBack }));
+  it('공개 전 전시의 작품은 미리보기 주소에서 공개 전 모습으로 보인다', () => {
+    h.display.data = { ...publicDisplay, status: 'PENDING_REVIEW' };
+    const page = asElement(ArtworkDetailPage({ previewDisplayId: 7 }));
     expect(page.type).toBe(ArtworkDetailShell);
-    expect(page.props).toMatchObject({ isPreview: true, hideBack: true, onBack });
+    expect(page.props.isPreview).toBe(true);
     expect(asElement(page.props.guestbook as ReactNode).type).toBe(ArtworkPreviewGuestbook);
     const meta = asElement(page.props.label as ReactNode);
     expect(meta.type).toBe(ArtworkMeta);
@@ -208,8 +198,7 @@ describe('작품 미리보기', () => {
 
   it('다른 전시의 작품이면 보여주지 않는다', () => {
     h.artwork.data = artworkOf(8);
-    const onBack = vi.fn();
-    expect(asElement(ArtworkDetailPage({ previewDisplayId: 7, onBack })).type).toBe(NotFoundView);
+    expect(asElement(ArtworkDetailPage({ previewDisplayId: 7 })).type).toBe(NotFoundView);
   });
 
   it('전시 정보가 없는 작품도 보여주지 않는다', () => {
@@ -217,14 +206,43 @@ describe('작품 미리보기', () => {
     expect(asElement(ArtworkDetailPage({ previewDisplayId: 7 })).type).toBe(NotFoundView);
   });
 
+  it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED'])(
+    '공개되지 않은 전시(%s)의 작품을 공개 주소로 열면 미리보기 주소로 보낸다',
+    (status) => {
+      h.display.data = { ...publicDisplay, status };
+      h.search = 'tab=guest';
+      const page = asElement(ArtworkDetailPage());
+      expect(page.type).toBe(Navigate);
+      expect(page.props).toEqual({
+        to: '/exhibition/7/artworks/3/preview?tab=guest',
+        replace: true,
+      });
+    },
+  );
+
+  it('공개 중인 전시의 작품을 미리보기 주소로 열면 공개 작품 상세 주소로 보낸다', () => {
+    h.search = 'tab=guest';
+    const page = asElement(ArtworkDetailPage({ previewDisplayId: 7 }));
+    expect(page.type).toBe(Navigate);
+    expect(page.props).toEqual({ to: '/artwork/3?tab=guest', replace: true });
+  });
+
+  it('공개된 전시는 개막 전이어도 공개 작품 상세다', () => {
+    h.display.data = {
+      ...publicDisplay,
+      period: { startDate: '2099-01-01', endDate: '2099-01-31' },
+    };
+    const page = asElement(ArtworkDetailPage());
+    expect(page.type).toBe(ArtworkDetailShell);
+    expect(page.props.isPreview).toBe(false);
+  });
+
   it('공개 작품 상세는 그대로 공개 화면이다', () => {
     const page = asElement(ArtworkDetailPage());
     expect(page.type).toBe(ArtworkDetailShell);
-    expect(page.props).toMatchObject({ isPreview: false, hideBack: false });
+    expect(page.props.isPreview).toBe(false);
     const meta = asElement(page.props.label as ReactNode);
     expect(meta.props.previewMode).toBe(false);
-    (page.props.onBack as () => void)();
-    expect(h.flowBack).toHaveBeenCalledOnce();
   });
 });
 

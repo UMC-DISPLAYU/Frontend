@@ -90,3 +90,18 @@ export function getArtworkSpecText({
     .filter(Boolean)
     .join(' · ');
 }
+
+/*
+ * 소속 전시 줄의 주최: 프로토타입처럼 학교와 학과를 함께 쓴다(예: 모아디자인대학교 시각디자인학과).
+ * 작품 상세 응답의 주최는 학교만 오므로 전시 상세의 학교 · 학과를 먼저 쓴다
+ */
+export function getExhibitionOrganizerText(
+  display: { organization?: string | null; department?: string | null } | undefined,
+  fallback: string,
+) {
+  const text = [display?.organization, display?.department]
+    .map((value) => value?.trim())
+    .filter(Boolean)
+    .join(' ');
+  return text || fallback;
+}

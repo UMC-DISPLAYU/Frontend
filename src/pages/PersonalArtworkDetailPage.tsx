@@ -18,12 +18,10 @@ import { NotFoundView } from '@/components/error-page';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { usePersonalArtwork } from '@/hooks/queries/usePersonalArtwork';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
-import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
 
 export function PersonalArtworkDetailPage() {
-  const flowBack = useFlowBack();
   const { personalArtworkId: idParam } = useParams<{ personalArtworkId: string }>();
   const personalArtworkId = Number(idParam ?? 0);
 
@@ -59,7 +57,6 @@ export function PersonalArtworkDetailPage() {
       key={personalArtworkId}
       images={viewerImages}
       title={artwork.artworkName}
-      onBack={() => flowBack()}
       label={<PersonalArtworkMeta artwork={artwork} />}
       hasIntro={hasArtworkIntro({
         content: artwork.content,

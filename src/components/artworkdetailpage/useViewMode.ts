@@ -12,8 +12,8 @@ const readStoredViewMode = (): ViewMode => {
   }
 };
 
-/* 고른 감상 방식은 이 기기에 기억한다. 사진이 한 장이면 늘 한 장씩 */
-export function useViewMode(hasMultiple: boolean) {
+/* 고른 감상 방식은 이 기기에 기억한다 */
+export function useViewMode() {
   const [storedMode, setStoredMode] = useState<ViewMode>(readStoredViewMode);
 
   const changeMode = (mode: ViewMode) => {
@@ -25,5 +25,5 @@ export function useViewMode(hasMultiple: boolean) {
     setStoredMode(mode);
   };
 
-  return [hasMultiple ? storedMode : 'one', changeMode] as const;
+  return [storedMode, changeMode] as const;
 }

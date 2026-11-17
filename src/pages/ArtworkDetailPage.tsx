@@ -1,10 +1,11 @@
-import { useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkBottomBar } from '@/components/artworkdetailpage/ArtworkActions';
 import type { ArtworkArtist } from '@/components/artworkdetailpage/ArtworkArtists';
 import {
   getArtworkArtists,
+  getExhibitionOrganizerText,
   getProcessImages,
   hasArtworkIntro,
 } from '@/components/artworkdetailpage/artworkDetail.utils';
@@ -25,7 +26,6 @@ import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
-import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
@@ -37,14 +37,12 @@ import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 type ArtworkDetailPageProps = {
   /* 전시 작업에서 연 작품 미리보기(/exhibition/:displayId/artworks/:artworkId/preview)의 전시 */
   previewDisplayId?: number;
-  onBack?: () => void;
 };
 
-export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPageProps = {}) {
-  const flowBack = useFlowBack();
-  const goBack = onBack ?? (() => flowBack());
+export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps = {}) {
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
+  const { search } = useLocation();
 
   const { data: userMe } = useUserMe();
   const { data: detail, isPending, error, refetch } = useArtworkDetail(artworkId);
@@ -75,8 +73,24 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
     );
   }
 
+  /*
+   * 전시 상세와 같은 판단(isPreviewDisplay) · 같은 방식(사용자 결정): 공개 전 전시(준비 중 · 심사 중 · 반려)의 작품은 늘 미리보기 주소로,
+   * 공개 중(PUBLISHED)이면 개막 전이어도 늘 공개 상세 주소로 보낸다. 미리보기 라우트 가드가 팀원만 열어 준다
+   */
+  if (display && previewDisplayId === undefined && isPreviewDisplay(display)) {
+    return (
+      <Navigate
+        to={`/exhibition/${display.displayId}/artworks/${artworkId}/preview${search}`}
+        replace
+      />
+    );
+  }
+  if (display && previewDisplayId !== undefined && !isPreviewDisplay(display)) {
+    return <Navigate to={`/artwork/${artworkId}${search}`} replace />;
+  }
+
   const policyDisplay = (display ?? { ownerUserId: 0, teamMembers: [] }) as DisplayDetailDto;
-  const isPreview = previewDisplayId !== undefined || (display ? isPreviewDisplay(display) : false);
+  const isPreview = previewDisplayId !== undefined;
 
   const artistDisplayName = getExhibitionArtistName(
     detail.artistName,
@@ -98,7 +112,10 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
     exhibitionId: String(detail.exhibitionInfo?.displayId ?? ''),
     exhibitionTitle: detail.exhibitionInfo?.exhibitionTitle ?? '',
     exhibitionSubtitle: detail.exhibitionInfo?.exhibitionSubtitle ?? '',
-    exhibitionOrganizer: detail.exhibitionInfo?.exhibitionOrganizer ?? '',
+    exhibitionOrganizer: getExhibitionOrganizerText(
+      display,
+      detail.exhibitionInfo?.exhibitionOrganizer ?? '',
+    ),
     exhibitionPeriod: detail.exhibitionInfo?.exhibitionPeriod ?? '',
     exhibitionThumbnail: detail.exhibitionInfo?.exhibitionThumbnailUrl ?? '',
     bookmarkCount: detail.likeCount ?? 0,
@@ -138,9 +155,7 @@ export function ArtworkDetailPage({ previewDisplayId, onBack }: ArtworkDetailPag
       videoSrcs={viewerVideoSrcs}
       title={detail.artworkName}
       subtitle={artists.map((artist) => artist.name).join(', ')}
-      onBack={goBack}
       isPreview={isPreview}
-      hideBack={previewDisplayId !== undefined}
       label={
         <ArtworkMeta
           artwork={artwork}

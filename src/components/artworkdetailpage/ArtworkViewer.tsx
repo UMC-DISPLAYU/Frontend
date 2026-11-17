@@ -8,7 +8,6 @@ import {
   useState,
 } from 'react';
 
-import { DetailBackButton } from '@/components/common/detail';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
@@ -30,15 +29,11 @@ type Props = {
   onModeChange: (mode: ViewMode) => void;
   stageRef: RefObject<HTMLDivElement>;
   chrome: ViewerChrome;
-  /* 900px 이상은 서비스 헤더가 있어 뒤로가기를 빼지만, 미리보기는 사진 위에 둔다 */
-  isPreview: boolean;
-  onBack: () => void;
 };
 
 const STAGE_IMAGE_WIDTH = 1080;
 const THUMB_IMAGE_WIDTH = 96;
-const OVERLAY_TOP = 'top-[max(16px,env(safe-area-inset-top))]';
-// 높이 40인 보기 방식 스위치를 높이 44인 뒤로가기와 가운데를 맞춘다
+// 프로토타입 .vmode: 사진 위 16 + 2
 const SWITCH_TOP = 'top-[calc(max(16px,env(safe-area-inset-top))+2px)]';
 // 이어서 보기에서 썸네일로 옮길 때 사진 윗변이 놓이는 자리. 현재 장 계산의 기준선으로도 읽는다.
 // 900px 이상은 사진 열이 따로 스크롤되므로 열의 위 여백(32)에 맞춘다
@@ -52,6 +47,9 @@ const WIDE_SIZE_VARS =
 // 사용자가 직접 스크롤하기 시작했다는 신호. 썸네일로 고른 장을 이때까지 유지한다
 const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
 
+// 프로토타입 fade.js: 나타날 때 0.15s, 흐려지거나 숨을 때 0.4s(ease-out)
+const FADE_TRANSITION = 'transition-opacity duration-150 ease-out';
+const FADE_DIMMED = 'opacity-55 duration-400';
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isWide = () => window.matchMedia('(min-width: 900px)').matches;
 
@@ -91,8 +89,6 @@ export function ArtworkViewer({
   onModeChange,
   stageRef,
   chrome,
-  isPreview,
-  onBack,
 }: Props) {
   const photoCount = images.length;
   const hasMultiple = photoCount > 1;
@@ -121,8 +117,7 @@ export function ArtworkViewer({
   // 썸네일 · 보기 방식 전환으로 옮긴 장. 페이지 끝이라 사진이 위까지 못 올라와도 고른 장을 유지한다
   const isStackPinnedRef = useRef(false);
 
-  const { isStackHidden, isControlsDimmed, isChipHidden, peekChip, holdProps } = chrome;
-  const stackHiddenClass = isStackHidden && 'pointer-events-none opacity-0';
+  const { isControlsDimmed, isChipHidden, peekChip, holdProps } = chrome;
 
   const showPhoto = (index: number) => {
     if (index !== currentRef.current) peekChip();
@@ -334,81 +329,68 @@ export function ArtworkViewer({
               isStack ? 'sticky top-(--detail-top) h-0 w-full desktop:top-0' : 'absolute inset-0',
             )}
           >
-            {/* 900px 미만의 뒤로가기는 화면을 따라 내려오도록 ArtworkDetailShell 이 둔다 */}
-            {isPreview && (
-              <DetailBackButton
-                onBack={onBack}
-                {...holdProps}
-                className={cn(
-                  'pointer-events-auto absolute left-5 hidden desktop:grid',
-                  OVERLAY_TOP,
-                  stackHiddenClass,
-                )}
-              />
-            )}
-
-            {hasMultiple && (
-              <div
-                role="group"
-                aria-label="감상 방식"
-                {...holdProps}
-                className={cn(
-                  'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-black/45 p-1 backdrop-blur-[20px] transition-opacity duration-base ease-standard desktop:cursor-default',
-                  SWITCH_TOP,
-                  isControlsDimmed && 'opacity-55',
-                  stackHiddenClass,
-                )}
+            {/* 사진이 1장이어도 보기 방식을 고를 수 있게 둔다(사용자 결정, 프로토타입은 2장부터) */}
+            <div
+              role="group"
+              aria-label="감상 방식"
+              {...holdProps}
+              className={cn(
+                'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-black/45 p-1 backdrop-blur-[20px] desktop:cursor-default',
+                FADE_TRANSITION,
+                SWITCH_TOP,
+                isControlsDimmed && FADE_DIMMED,
+              )}
+            >
+              <button
+                type="button"
+                aria-label="한 장씩 보기"
+                title="한 장씩 보기"
+                aria-pressed={!isStack}
+                onClick={() => changeMode('one')}
+                className={VIEW_BUTTON_CLASS}
               >
-                <button
-                  type="button"
-                  aria-label="한 장씩 보기"
-                  title="한 장씩 보기"
-                  aria-pressed={!isStack}
-                  onClick={() => changeMode('one')}
-                  className={VIEW_BUTTON_CLASS}
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
-                    <rect x="6.5" y="3.5" width="11" height="17" rx="2" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  aria-label="이어서 보기"
-                  title="이어서 보기"
-                  aria-pressed={isStack}
-                  onClick={() => changeMode('stack')}
-                  className={VIEW_BUTTON_CLASS}
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
-                    <rect x="6.5" y="3.5" width="11" height="17" rx="2" />
-                    <path d="M6.5 9.2h11M6.5 14.8h11" />
-                  </svg>
-                </button>
-                {/* 크게 보기는 900px 이상에서만(프로토타입 U-159) */}
-                <button
-                  type="button"
-                  aria-label="크게 보기"
-                  title="크게 보기"
-                  aria-pressed={false}
-                  onClick={() => openBig(currentRef.current)}
-                  className={cn(VIEW_BUTTON_CLASS, 'hidden desktop:grid')}
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
-                    <path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5" />
-                  </svg>
-                </button>
-              </div>
-            )}
+                <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
+                  <rect x="6.5" y="3.5" width="11" height="17" rx="2" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                aria-label="이어서 보기"
+                title="이어서 보기"
+                aria-pressed={isStack}
+                onClick={() => changeMode('stack')}
+                className={VIEW_BUTTON_CLASS}
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
+                  <rect x="6.5" y="3.5" width="11" height="17" rx="2" />
+                  <path d="M6.5 9.2h11M6.5 14.8h11" />
+                </svg>
+              </button>
+              {/* 크게 보기는 900px 이상에서만(프로토타입 U-159) */}
+              <button
+                type="button"
+                aria-label="크게 보기"
+                title="크게 보기"
+                aria-pressed={false}
+                onClick={() => openBig(currentRef.current)}
+                className={cn(VIEW_BUTTON_CLASS, 'hidden desktop:grid')}
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
+                  <path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5" />
+                </svg>
+              </button>
+            </div>
 
             {hasMultiple && (
               <span
                 aria-live="polite"
                 className={cn(
-                  'typography-body-sm-medium absolute rounded-circle bg-base-black/60 px-2 py-1 text-base-white tabular-nums transition-opacity duration-base ease-standard desktop:hidden',
+                  'typography-body-sm-medium absolute rounded-circle bg-base-black/60 px-2 py-1 text-base-white tabular-nums desktop:hidden',
+                  FADE_TRANSITION,
                   isStack
                     ? 'top-[calc(max(16px,env(safe-area-inset-top))+10px)] right-28'
                     : 'right-4 bottom-4',
-                  isChipHidden && 'opacity-0',
+                  isChipHidden && 'opacity-0 duration-400',
                 )}
               >
                 {current + 1} / {photoCount}
@@ -416,89 +398,97 @@ export function ArtworkViewer({
             )}
           </div>
 
-          {isStack ? (
-            <div ref={stackRef} aria-label="작품 이미지 이어보기">
-              {images.map((src, index) => {
-                const videoSrc = videoSrcs[index];
-                const image = (
-                  <StackImage
-                    key={`${src}-${index}`}
-                    src={src}
-                    alt={altOf(index)}
-                    eager={index === 0}
-                  />
-                );
-
-                if (!videoSrc) return image;
-
-                return (
-                  <div key={`${src}-${index}`} className={cn('relative', STACK_SCROLL_MARGIN)}>
-                    {playingIndex === index ? (
-                      <InlineVideo
-                        src={videoSrc}
-                        poster={src}
-                        label={`${altOf(index)} 영상`}
-                        onError={handleVideoError}
-                        className="block h-auto w-full bg-secondary desktop:max-h-[calc(var(--W)*4/3)] desktop:object-contain"
-                      />
-                    ) : (
-                      <>
-                        {image}
-                        <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div
-              ref={trackRef}
-              tabIndex={0}
-              role="group"
-              aria-roledescription="이미지 슬라이더"
-              aria-label="작품 이미지"
-              onScroll={handleTrackScroll}
-              onKeyDown={handleTrackKeyDown}
-              className="flex h-full touch-pan-x touch-pan-y touch-pinch-zoom snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {images.map((src, index) => (
-                <div
+          {/*
+           * 프로토타입처럼 두 보기를 모두 그려 두고 보이는 쪽만 바꾼다.
+           * 바꿀 때마다 사진을 새로 붙이면 다시 불러오고 그리느라 화면이 버벅인다
+           */}
+          <div
+            ref={stackRef}
+            aria-label="작품 이미지 이어보기"
+            className={cn(!isStack && 'hidden')}
+          >
+            {images.map((src, index) => {
+              const videoSrc = videoSrcs[index];
+              const image = (
+                <StackImage
                   key={`${src}-${index}`}
-                  className="relative h-full flex-[0_0_100%] snap-center bg-secondary"
-                >
-                  {videoSrcs[index] && playingIndex === index ? (
+                  src={src}
+                  alt={altOf(index)}
+                  eager={index === 0}
+                />
+              );
+
+              if (!videoSrc) return image;
+
+              return (
+                <div key={`${src}-${index}`} className={cn('relative', STACK_SCROLL_MARGIN)}>
+                  {isStack && playingIndex === index ? (
                     <InlineVideo
-                      src={videoSrcs[index]}
+                      src={videoSrc}
                       poster={src}
                       label={`${altOf(index)} 영상`}
                       onError={handleVideoError}
-                      className="size-full bg-secondary object-contain"
+                      className="block h-auto w-full bg-secondary desktop:max-h-[calc(var(--W)*4/3)] desktop:object-contain"
                     />
                   ) : (
                     <>
-                      <OptimizedImage
-                        src={src}
-                        displayWidth={STAGE_IMAGE_WIDTH}
-                        alt={altOf(index)}
-                        draggable={false}
-                        loading={index === 0 ? 'eager' : 'lazy'}
-                        skeleton
-                        frameClassName="size-full"
-                        className="object-contain select-none"
-                      />
-                      {videoSrcs[index] && (
-                        <VideoPlayButton
-                          src={videoSrcs[index]}
-                          onPlay={() => setPlayingIndex(index)}
-                        />
-                      )}
+                      {image}
+                      <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
                     </>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
+          <div
+            ref={trackRef}
+            tabIndex={0}
+            role="group"
+            aria-roledescription="이미지 슬라이더"
+            aria-label="작품 이미지"
+            onScroll={handleTrackScroll}
+            onKeyDown={handleTrackKeyDown}
+            className={cn(
+              'flex h-full touch-pan-x touch-pan-y touch-pinch-zoom snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+              isStack && 'hidden',
+            )}
+          >
+            {images.map((src, index) => (
+              <div
+                key={`${src}-${index}`}
+                className="relative h-full flex-[0_0_100%] snap-center bg-secondary"
+              >
+                {videoSrcs[index] && !isStack && playingIndex === index ? (
+                  <InlineVideo
+                    src={videoSrcs[index]}
+                    poster={src}
+                    label={`${altOf(index)} 영상`}
+                    onError={handleVideoError}
+                    className="size-full bg-secondary object-contain"
+                  />
+                ) : (
+                  <>
+                    <OptimizedImage
+                      src={src}
+                      displayWidth={STAGE_IMAGE_WIDTH}
+                      alt={altOf(index)}
+                      draggable={false}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      skeleton
+                      frameClassName="size-full"
+                      className="object-contain select-none"
+                    />
+                    {videoSrcs[index] && (
+                      <VideoPlayButton
+                        src={videoSrcs[index]}
+                        onPlay={() => setPlayingIndex(index)}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* 900px 이상 넘김 줄: 사진 밖 아래 오른쪽 ‹ 1 / 6 ›. 이어서 보기에선 왼쪽 썸네일이 위치를 알려 준다 */}
