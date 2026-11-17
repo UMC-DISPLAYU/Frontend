@@ -16,6 +16,7 @@ import {
   CARD_TITLE_CLASS,
   EXHIBITION_HOVER_GRADIENT,
 } from './exploreCardStyles';
+import { usePhotoPending } from './usePhotoPending';
 
 const POSTER_FRAME_CLASS = 'aspect-402/568 w-full bg-[#f4f4f5]';
 
@@ -24,14 +25,22 @@ type ExploreExhibitionCardProps = {
 };
 
 export function ExploreExhibitionCard({ exhibition }: ExploreExhibitionCardProps) {
+  const { photoPending, onPhotoSettle } = usePhotoPending(exhibition.posterImageUrl);
+
   return (
-    <Link className={CARD_CLASS} to={`/display/${exhibition.displayId}`}>
+    <Link
+      className={CARD_CLASS}
+      data-photo-pending={photoPending || undefined}
+      to={`/display/${exhibition.displayId}`}
+    >
       <span className={CARD_PHOTO_WRAP_CLASS}>
         <OptimizedImage
           alt={`${exhibition.title} 포스터`}
           className={CARD_IMAGE_CLASS}
           displayWidth={280}
           frameClassName={POSTER_FRAME_CLASS}
+          onError={onPhotoSettle}
+          onLoad={onPhotoSettle}
           skeleton
           src={exhibition.posterImageUrl}
         />

@@ -16,6 +16,7 @@ import {
   CARD_TEXT_CLASS,
   CARD_TITLE_CLASS,
 } from './exploreCardStyles';
+import { usePhotoPending } from './usePhotoPending';
 
 const ARTWORK_FRAME_CLASS = 'aspect-161/215 w-full bg-[#f4f4f5]';
 
@@ -27,15 +28,22 @@ export function ExploreArtworkCard({ artwork }: ExploreArtworkCardProps) {
   const artistNames = artwork.artists?.length
     ? artwork.artists.map((artist) => artist.name)
     : [artwork.artistName];
+  const { photoPending, onPhotoSettle } = usePhotoPending(artwork.artworkImageUrl);
 
   return (
-    <Link className={CARD_CLASS} to={`/artwork/${artwork.artworkId}`}>
+    <Link
+      className={CARD_CLASS}
+      data-photo-pending={photoPending || undefined}
+      to={`/artwork/${artwork.artworkId}`}
+    >
       <span className={CARD_PHOTO_WRAP_CLASS}>
         <OptimizedImage
           alt={artwork.artworkName}
           className={CARD_IMAGE_CLASS}
           displayWidth={280}
           frameClassName={ARTWORK_FRAME_CLASS}
+          onError={onPhotoSettle}
+          onLoad={onPhotoSettle}
           skeleton
           src={artwork.artworkImageUrl}
         />
