@@ -284,10 +284,11 @@ function DrawingCanvasInner({
     exportCtx.translate(-cropLeft, -cropTop);
     redrawCanvas(exportCtx, strokes);
 
-    // 흰 화면 위에서 그림 경계가 보이도록 입력칸과 같은 회색을 획 뒤에 깐다
+    // PNG 투명 영역이 보는 곳마다 다르게 보이지 않도록 획 뒤에 흰 바탕을 깐다.
+    // 프로토타입은 연회색이지만 그리던 캔버스와 같은 흰색으로 한다(PM/FE 2차 회의 2026-11-16)
     exportCtx.setTransform(1, 0, 0, 1, 0, 0);
     exportCtx.globalCompositeOperation = 'destination-over';
-    exportCtx.fillStyle = readToken('--semantic-color-bg-secondary');
+    exportCtx.fillStyle = readToken('--semantic-color-bg-primary-white');
     exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
     exportCanvas.toBlob(async (blob) => {

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { delay, http } from 'msw';
 
-import { mockDb, okStatus } from '@/mocks/data/repository';
+import { isContentHiddenBeforeOpen } from '@/mocks/data/contentOpen';
+import { findMockDisplay, mockDb, okStatus } from '@/mocks/data/repository';
 import { teamOf } from '@/mocks/handlers/displayMember';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 import { hasMockScenario } from '@/mocks/scenario';
@@ -65,8 +66,7 @@ const applyPosterMedia = (
   display.posterVideoUrl = main?.mediaType === 'VIDEO' ? main.imageUrl : null;
 };
 
-const findDisplay = (displayId: number) =>
-  mockDb.displays.find((display: any) => display.displayId === displayId) ?? mockDb.displays[0];
+const findDisplay = (displayId: number) => findMockDisplay(displayId) ?? mockDb.displays[0];
 
 /*
  * 전시 상세 응답. 스웨거 DisplayDetailResponse가 항상 내려주는 필드를 보강합니다.
@@ -86,7 +86,10 @@ const displayDetailResponse = (displayId: number) => {
     invitationDisabledAt: display.invitationDisabledAt ?? null,
     teamMembers: display.teamMembers ?? [],
     invitations: display.invitations ?? [],
-    contentCategories: display.contentCategories ?? [],
+    // 공개 시점이 전시 시작일부터면 개막 전에는 콘텐츠를 비워서 준다(실서버와 같게)
+    contentCategories: isContentHiddenBeforeOpen(display, 'exhibition')
+      ? []
+      : (display.contentCategories ?? []),
     images: display.images ?? display.posterImages ?? [],
     artworkContentOpen: display.artworkContentOpen ?? 'ON_EXHIBITION',
     exhibitionContentOpen: display.exhibitionContentOpen ?? 'ON_EXHIBITION',

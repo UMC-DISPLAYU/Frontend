@@ -1,6 +1,7 @@
-import { type ChangeEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { cn } from '@/utils/cn';
 
 import { PhotoCropDialog, type PhotoShape } from './PhotoCropDialog';
@@ -12,8 +13,6 @@ type ProfilePhotoFieldProps = {
   shape: PhotoShape;
   /** 저장된 주소 또는 새로 고른 사진의 미리보기 주소. 없으면 null */
   src: string | null;
-  /** 원 모양에서 사진이 없을 때 보일 기본 프로필 */
-  placeholder?: ReactNode;
   disabled?: boolean;
   /** 틀에 맞게 잘라 낸 사진. 삭제하면 null */
   onChange: (file: File | null) => void;
@@ -39,13 +38,7 @@ function PencilIcon() {
 }
 
 /** 프로필 사진. 사진이 있으면 눌렀을 때 사진 변경 · 삭제 메뉴, 없으면 바로 사진을 고른다 */
-export function ProfilePhotoField({
-  shape,
-  src,
-  placeholder,
-  disabled,
-  onChange,
-}: ProfilePhotoFieldProps) {
+export function ProfilePhotoField({ shape, src, disabled, onChange }: ProfilePhotoFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -103,23 +96,23 @@ export function ProfilePhotoField({
           onClick={src ? () => setIsMenuOpen((prev) => !prev) : pick}
           type="button"
         >
-          <span
-            className={cn(
-              'block size-full overflow-hidden bg-tertiary transition-transform duration-fast ease-standard group-active:scale-98',
-              isCircle && 'rounded-circle',
-            )}
-          >
-            {src ? (
+          {isCircle ? (
+            // 다른 화면의 프로필 사진과 같은 모양(외곽선 없음)이 되도록 공용 아바타로 그린다
+            <ProfileAvatar
+              className="size-full transition-transform duration-fast ease-standard group-active:scale-98"
+              displayWidth={80}
+              src={src}
+            />
+          ) : (
+            <span className="block size-full overflow-hidden bg-tertiary transition-transform duration-fast ease-standard group-active:scale-98">
               <OptimizedImage
                 alt=""
                 className="size-full object-cover"
-                displayWidth={isCircle ? 160 : 232}
+                displayWidth={232}
                 src={src}
               />
-            ) : (
-              placeholder
-            )}
-          </span>
+            </span>
+          )}
           {badge}
         </button>
       ) : (

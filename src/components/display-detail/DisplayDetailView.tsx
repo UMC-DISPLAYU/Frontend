@@ -1,6 +1,5 @@
 import type { DisplayDetailDto } from '@/api/dto';
 import {
-  DetailBackButton,
   DetailPreviewBanner,
   detailStickyTopClass,
   DetailTabNav,
@@ -11,7 +10,6 @@ import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { cn } from '@/utils/cn';
 import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
-import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
 import { DisplayBottomBar, DisplayInlineActions, DisplaySaveButton } from './DisplayActions';
 import {
@@ -28,16 +26,19 @@ import { WorksPanel } from './WorksPanel';
 
 /*
  * 프로토타입 반응형
- * - 600px 미만: 모바일. 포스터 → 정보 → 탭, 뒤로가기는 화면을 따라 내려온다
+ * - 600px 미만: 모바일. 포스터 → 정보 → 탭
  * - 600~767px: 포스터 · 본문을 가운데 좁은 단으로
- * - 768~899px: 위에 서비스 헤더(64)가 생기고, 탭 줄 · 뒤로가기는 그 아래에 붙는다
- * - 900px 이상: 왼쪽 포스터 · 오른쪽 정보 2단, 뒤로가기는 없다(미리보기만 포스터 위에 둔다)
+ * - 768~899px: 위에 서비스 헤더(64)가 생기고, 탭 줄은 그 아래에 붙는다
+ * - 900px 이상: 왼쪽 포스터 · 오른쪽 정보 2단
+ * 뒤로가기 버튼은 두지 않고 브라우저 뒤로가기에 맡긴다(프로토타입 11-15 U-149, 미리보기 포함)
+ * 900px 이상 아래 여백 80은 그리드가 아니라 오른쪽 정보 칸에 둔다. 그리드에 두면 포스터가 붙는 범위(그리드 줄)가
+ * 페이지 끝보다 80 먼저 끝나, 끝까지 내렸을 때 포스터가 위로 밀려 올라간다
  * 최대 폭 1240 · 좌우 여백 32는 공용 컨테이너(max-w-list · px-gutter)가 아니라 프로토타입 값이다
  */
 const LAYOUT =
-  'mx-auto w-full max-w-310 desktop:grid desktop:grid-cols-[minmax(320px,40%)_minmax(0,1fr)] desktop:items-start desktop:gap-x-14 desktop:px-8 desktop:pt-8 desktop:pb-20';
+  'mx-auto w-full max-w-310 desktop:grid desktop:grid-cols-[minmax(320px,40%)_minmax(0,1fr)] desktop:items-start desktop:gap-x-14 desktop:px-8 desktop:pt-8';
 const SHEET =
-  'min-w-0 min-[37.5rem]:mx-auto min-[37.5rem]:max-w-160 desktop:mx-0 desktop:max-w-170';
+  'min-w-0 min-[37.5rem]:mx-auto min-[37.5rem]:max-w-160 desktop:mx-0 desktop:max-w-170 desktop:pb-20';
 
 const TAB_LABEL: Record<DisplayDetailTabKey, string> = {
   intro: '소개',
@@ -47,17 +48,28 @@ const TAB_LABEL: Record<DisplayDetailTabKey, string> = {
 
 type Props = {
   display: DisplayDetailDto;
-  onBack: () => void;
   /*
-   * 전시 작업에서 연 미리보기(/exhibition/:displayId/preview). 공개 여부와 상관없이 공개 전 모습으로 보이고,
-   * 뒤로가기 버튼을 두지 않으며(프로토타입 exhibition.html .backa 숨김), 작품 · 콘텐츠를 누르면 미리보기 안에서 연다
+   * 전시 작업에서 연 미리보기(/exhibition/:displayId/preview). 공개 전 모습(안내 띠, 저장 · 좋아요 · 후기 막기)은
+   * 이 미리보기에서만 보이고, 작품 · 콘텐츠를 누르면 미리보기 안에서 연다.
+   * 등록 중 전시를 공개 주소(/display/:id)로 열면 DisplayDetailPage 가 이 미리보기 주소로 보낸다
    */
   previewMode?: boolean;
 };
 
-export function DisplayDetailView({ display, onBack, previewMode = false }: Props) {
-  const { activeTab, selectTab, sentinelRef, isStuck } = useDetailTab(DISPLAY_DETAIL_TABS);
-  const isPreview = previewMode || isPreviewDisplay(display);
+export function DisplayDetailView({ display, previewMode = false }: Props) {
+  const { activeTab, selectTab, sentinelRef } = useDetailTab(DISPLAY_DETAIL_TABS);
+
+  // 프로토타입 postFresh: 후기를 올렸을 때 탭 줄 아래로 내려가 있으면 탭 줄 자리로 부드럽게 올라간다
+  const scrollToTabs = () => {
+    const sentinel = sentinelRef.current;
+    const nav = sentinel?.nextElementSibling;
+    if (!sentinel || !nav) return;
+    const stickyTop = parseFloat(getComputedStyle(nav).top) || 0;
+    const top = sentinel.getBoundingClientRect().top + window.scrollY - stickyTop;
+    if (window.scrollY <= top) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+  };
 
   const posters = (display.images ?? [])
     .slice()
@@ -69,50 +81,34 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
     .filter((poster) => poster.src);
   const share = {
     shareTitle: display.title,
-    disabled: isPreview,
+    disabled: previewMode,
   };
   const saveButton = (
     <DisplaySaveButton
       displayId={display.displayId}
       saved={display.isArchived ?? false}
-      disabled={isPreview}
+      disabled={previewMode}
     />
   );
 
   return (
-    <div className={cn('min-h-dvh bg-primary-white', detailStickyTopClass(isPreview))}>
-      {isPreview && (
+    <div className={cn('min-h-dvh bg-primary-white', detailStickyTopClass(previewMode))}>
+      {previewMode && (
         <DetailPreviewBanner message="공개 전 모습이에요. 저장·좋아요·후기 작성은 할 수 없어요" />
       )}
 
-      <DetailTopBar className={isPreview ? 'top-10' : 'top-0'} />
+      <DetailTopBar className={previewMode ? 'top-10' : 'top-0'} />
 
       <div className={LAYOUT}>
-        {/*
-         * 900px 미만: 높이 0인 sticky 칸이라 처음엔 포스터 위(20, 20)에 있다가,
-         * 스크롤하면 화면 맨 위(768px 이상은 헤더 아래)에 붙어 탭 줄 왼쪽에 앉는다(프로토타입 11-09).
-         * 포스터와 같은 칸 안에 둬야 600~899px 포스터 위 여백(24)만큼 같이 내려온다
-         */}
-        {!previewMode && (
-          <div className="sticky top-[calc(var(--detail-top)-max(20px,env(safe-area-inset-top)))] z-30 h-0 desktop:hidden">
-            <DetailBackButton
-              onBack={onBack}
-              className="absolute top-[max(20px,env(safe-area-inset-top))] left-5"
-            />
-          </div>
-        )}
-
         <PosterCarousel
           posters={posters.length > 0 ? posters : [{ src: FALLBACK_POSTER_IMAGE }]}
           title={display.title}
-          onBack={onBack}
-          isPreview={isPreview && !previewMode}
         />
 
         <div className={SHEET}>
           <DisplaySummary
             display={display}
-            isPreview={isPreview}
+            isPreview={previewMode}
             actions={<DisplayInlineActions saveButton={saveButton} {...share} />}
           />
 
@@ -125,8 +121,8 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
             activeTab={activeTab}
             onTabChange={selectTab}
             sentinelRef={sentinelRef}
-            // 뒤로가기 버튼이 없으면 탭 줄 왼쪽에 자리를 비우지 않는다
-            isStuck={isStuck && !previewMode}
+            // 뒤로가기 버튼이 없어 탭 줄 왼쪽에 자리를 비우지 않는다
+            isStuck={false}
           />
 
           <div
@@ -138,6 +134,7 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
           >
             <IntroPanel
               display={display}
+              isPreview={previewMode}
               contentPath={
                 previewMode
                   ? (categoryId) =>
@@ -156,7 +153,9 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
               <WorksPanel
                 displayId={display.displayId}
                 teamMembers={display.teamMembers}
-                isPreview={isPreview}
+                isPreview={previewMode}
+                artworkContentOpen={display.artworkContentOpen}
+                period={display.period}
                 artworkPath={
                   previewMode
                     ? (artworkId) =>
@@ -176,7 +175,11 @@ export function DisplayDetailView({ display, onBack, previewMode = false }: Prop
               role="tabpanel"
               aria-labelledby={displayTabId('reviews')}
             >
-              {isPreview ? <PreviewReviewsPanel /> : <ReviewsPanel display={display} />}
+              {previewMode ? (
+                <PreviewReviewsPanel />
+              ) : (
+                <ReviewsPanel display={display} onPosted={scrollToTabs} />
+              )}
             </div>
           )}
         </div>

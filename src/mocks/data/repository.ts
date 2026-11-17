@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MOCK_ARTWORK, MOCK_DISPLAY } from '@/mocks/data';
+import { makeUpcomingDisplay, UPCOMING_DISPLAY_ID } from '@/mocks/data/contentOpen';
 import { MOCK_ARTWORK_FEELING_REPLIES, MOCK_ARTWORK_FEELINGS } from '@/mocks/data/feelings';
 import {
   MOCK_PERSONAL_ARTWORK_FEELING_REPLIES,
@@ -415,6 +416,17 @@ export const mockDb: {
   archivedPersonalArtworkIds: new Set<number>(),
   archivedArtistIds: new Set<number>(),
 };
+
+/* 개막 전 공개 전시 확인용(/display/190). 102번(포스터 1장 · 콘텐츠 있음)을 복사해 목록에는 넣지 않고 따로 둔다 */
+mockDb.upcomingDisplay = makeUpcomingDisplay(
+  mockDb.displays.find((display: { displayId: number }) => display.displayId === 102) ??
+    mockDb.displays[0],
+);
+
+/* 목록에 없는 확인용 전시까지 찾는다. 없는 번호면 undefined */
+export const findMockDisplay = (displayId: number) =>
+  mockDb.displays.find((display: { displayId: number }) => display.displayId === displayId) ??
+  (displayId === UPCOMING_DISPLAY_ID ? mockDb.upcomingDisplay : undefined);
 
 export const listResponse = <TItem>(items: TItem[], size = items.length) => ({
   contents: items,

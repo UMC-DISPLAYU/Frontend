@@ -15,7 +15,7 @@ import {
   VerifyHeader,
   VerifyInput,
 } from '@/components/artist-verify';
-import { ConfirmDialog, ErrorView, ProfileAvatar, ProfilePhotoField } from '@/components/common';
+import { ConfirmDialog, ErrorView, ProfilePhotoField } from '@/components/common';
 import { Skeleton, SkeletonText } from '@/components/ui';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useCheckNickname, useUpdateUserMe, useUserMe } from '@/hooks/queries/useUserProfile';
@@ -200,8 +200,6 @@ function EditBasicInfoForm({ userMe }: { userMe: UserProfileDto }) {
               <ProfilePhotoField
                 disabled={isSaving}
                 onChange={handlePhotoChange}
-                // 기본 프로필은 팀원 관리와 같게 외곽선 없이 둔다(사용자 결정)
-                placeholder={<ProfileAvatar className="size-20" displayWidth={80} />}
                 shape="circle"
                 src={photoPreview}
               />

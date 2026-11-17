@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-import type { DisplayTeamMemberDto } from '@/api/dto';
+import type { DisplayContentOpenType, DisplayPeriodDto, DisplayTeamMemberDto } from '@/api/dto';
 import { ErrorView } from '@/components/common/ErrorView';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
@@ -11,10 +11,15 @@ import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 
+import { getContentOpenNotice } from './displayDetail.utils';
+
 type Props = {
   displayId: number;
   teamMembers?: DisplayTeamMemberDto[];
   isPreview: boolean;
+  /* 작품 공개 시점과 전시 기간. 개막 전 빈 목록이면 언제부터 보이는지 알린다 */
+  artworkContentOpen?: DisplayContentOpenType;
+  period?: DisplayPeriodDto;
   /* 작품 카드가 갈 주소. 없으면 공개 작품 상세 */
   artworkPath?: (artworkId: number) => string;
 };
@@ -24,7 +29,14 @@ const GRID = 'grid grid-cols-2 gap-x-3 gap-y-6 desktop:grid-cols-3';
 /* 피그마 `Card / 작품 · 검정`(카드 E): 틀 없이 사진(3:4), 사진 아래 8 · 제목↔작가 2 */
 const CARD_FRAME = 'aspect-3/4 w-full overflow-hidden bg-secondary';
 
-export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: Props) {
+export function WorksPanel({
+  displayId,
+  teamMembers,
+  isPreview,
+  artworkContentOpen,
+  period,
+  artworkPath,
+}: Props) {
   const { data, error, isPending, isError, refetch } = useDisplayArtworks(displayId);
   const artworks = data?.artworks ?? [];
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
@@ -60,7 +72,7 @@ export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: P
         <p className="typography-body-lg-regular pt-8 pb-6 text-center whitespace-pre-line text-tertiary">
           {isPreview
             ? '아직 등록한 작품이 없어요\n전시에 작품을 올리면 여기에 보여요'
-            : '아직 등록한 작품이 없어요'}
+            : (getContentOpenNotice(artworkContentOpen, period) ?? '아직 등록한 작품이 없어요')}
         </p>
       ) : (
         <div className={GRID}>

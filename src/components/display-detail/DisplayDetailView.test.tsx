@@ -3,17 +3,15 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayDetailDto } from '@/api/dto';
-import { DetailBackButton, DetailPreviewBanner, DetailTabNav } from '@/components/common/detail';
+import { DetailPreviewBanner, DetailTabNav } from '@/components/common/detail';
 
 import { DisplayDetailView } from './DisplayDetailView';
 import { IntroPanel } from './IntroPanel';
-import { PosterCarousel } from './PosterCarousel';
 import { WorksPanel } from './WorksPanel';
 
 const h = vi.hoisted(() => ({ activeTab: 'works', isStuck: true }));
 
 vi.mock('@/components/common/detail', () => ({
-  DetailBackButton: () => null,
   DetailPreviewBanner: () => null,
   DetailTabNav: () => null,
   DetailTopBar: () => null,
@@ -59,21 +57,14 @@ beforeEach(() => {
 });
 
 describe('전시 상세 미리보기 모드', () => {
-  it('공개된 전시도 공개 전 띠를 두고, 뒤로가기 버튼을 두지 않는다', () => {
-    const tree = nodes(
-      DisplayDetailView({ display: publicDisplay, onBack: vi.fn(), previewMode: true }),
-    );
+  it('공개된 전시도 공개 전 띠를 두고, 탭 줄이 붙어도 뒤로가기 자리를 비우지 않는다', () => {
+    const tree = nodes(DisplayDetailView({ display: publicDisplay, previewMode: true }));
     expect(find(tree, DetailPreviewBanner)).toBeDefined();
-    expect(find(tree, DetailBackButton)).toBeUndefined();
-    expect(find(tree, PosterCarousel)?.props.isPreview).toBe(false);
-    // 탭 줄이 붙어도 뒤로가기 자리를 비우지 않는다
     expect(find(tree, DetailTabNav)?.props.isStuck).toBe(false);
   });
 
   it('작품 카드는 전시 미리보기에서 왔다는 표시와 함께 작품 미리보기 주소로 간다', () => {
-    const tree = nodes(
-      DisplayDetailView({ display: publicDisplay, onBack: vi.fn(), previewMode: true }),
-    );
+    const tree = nodes(DisplayDetailView({ display: publicDisplay, previewMode: true }));
     const works = find(tree, WorksPanel);
     expect(works?.props.isPreview).toBe(true);
     const artworkPath = works?.props.artworkPath as (artworkId: number) => string;
@@ -82,26 +73,34 @@ describe('전시 상세 미리보기 모드', () => {
 
   it('소개 탭의 콘텐츠는 미리보기 안의 콘텐츠 주소로 간다', () => {
     h.activeTab = 'intro';
-    const tree = nodes(
-      DisplayDetailView({ display: publicDisplay, onBack: vi.fn(), previewMode: true }),
-    );
+    const tree = nodes(DisplayDetailView({ display: publicDisplay, previewMode: true }));
     const contentPath = find(tree, IntroPanel)?.props.contentPath as (id: number) => string;
     expect(contentPath(5)).toBe('/exhibition/7/preview/contents?category=5');
   });
 
   it('공개 상세는 그대로 공개 작품 · 콘텐츠로 가고 띠가 없다', () => {
-    const tree = nodes(DisplayDetailView({ display: publicDisplay, onBack: vi.fn() }));
+    const tree = nodes(DisplayDetailView({ display: publicDisplay }));
     expect(find(tree, DetailPreviewBanner)).toBeUndefined();
-    expect(find(tree, DetailBackButton)).toBeDefined();
-    expect(find(tree, DetailTabNav)?.props.isStuck).toBe(true);
+    // 뒤로가기 버튼이 없어 탭 줄이 붙어도 왼쪽 자리를 비우지 않는다
+    expect(find(tree, DetailTabNav)?.props.isStuck).toBe(false);
     expect(find(tree, WorksPanel)?.props.artworkPath).toBeUndefined();
     expect(find(tree, IntroPanel)?.props.contentPath).toBeUndefined();
-    expect(find(tree, PosterCarousel)?.props.isPreview).toBe(false);
   });
 
-  it('등록 중 전시의 공개 상세는 900px 이상에서도 뒤로가기를 남긴다', () => {
+  it('심사를 통과해 공개된 전시는 개막 전이어도 일반 상세로 보인다', () => {
+    const upcoming = {
+      ...publicDisplay,
+      period: { startDate: '2999-01-01', endDate: '2999-01-02' },
+    } as DisplayDetailDto;
+    const tree = nodes(DisplayDetailView({ display: upcoming }));
+    expect(find(tree, DetailPreviewBanner)).toBeUndefined();
+    expect(find(tree, WorksPanel)?.props.isPreview).toBe(false);
+  });
+
+  it('공개 전 모습은 미리보기 모드에서만 보인다(등록 중 전시도 미리보기 주소로 보내므로 여기서 따로 보지 않는다)', () => {
     const draft = { ...publicDisplay, status: 'DRAFT' } as DisplayDetailDto;
-    const tree = nodes(DisplayDetailView({ display: draft, onBack: vi.fn() }));
-    expect(find(tree, PosterCarousel)?.props.isPreview).toBe(true);
+    const tree = nodes(DisplayDetailView({ display: draft }));
+    expect(find(tree, DetailPreviewBanner)).toBeUndefined();
+    expect(find(tree, WorksPanel)?.props.isPreview).toBe(false);
   });
 });
