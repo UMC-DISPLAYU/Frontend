@@ -179,4 +179,10 @@ export const queryKeys = {
         [...queryKeys.archives.artists.all(), 'detail', savedArtistId] as const,
     },
   },
+
+  notifications: {
+    all: ['notifications'] as const,
+    list: () => [...queryKeys.notifications.all, 'list'] as const,
+    unread: () => [...queryKeys.notifications.all, 'unread'] as const,
+  },
 } as const;

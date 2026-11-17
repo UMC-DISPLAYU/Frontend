@@ -26,6 +26,11 @@ import {
   useMyArchive,
   useMyArtistSummary,
 } from '@/components/mypage';
+import {
+  type InboxNotification,
+  NotificationSheet,
+  useNotificationInbox,
+} from '@/components/notification';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import { useUnarchiveArtist } from '@/hooks/queries/useArchive';
 import { useLogout } from '@/hooks/queries/useAuth';
@@ -83,6 +88,7 @@ export function MyPage() {
   const { data: invitationsData } = useMyDisplayInvitations();
   const invitationCount = invitationsData?.invitations?.length ?? 0;
   const invitationsSheet = useReceivedInvitationsSheet();
+  const notificationInbox = useNotificationInbox();
 
   const archive = useMyArchive(activeTab);
   const unarchiveArtist = useUnarchiveArtist();
@@ -108,6 +114,12 @@ export function MyPage() {
     fetchNextPage: () => void pagedQuery?.fetchNextPage(),
     rootMargin: '0px 0px 400px 0px',
   });
+
+  const handleSelectNotification = (notification: InboxNotification) => {
+    if (!notification.to) return;
+    // 오버레이 기록을 남기지 않도록 replace 로 이동한다
+    navigate(notification.to, { replace: true });
+  };
 
   const handleTabChange = (tab: TabKey) => {
     replaceSearchParams((prev) => {
@@ -264,7 +276,8 @@ export function MyPage() {
             <MyPageTopBar
               nickname={nickname}
               onOpenMenu={() => setIsDrawerOpen(true)}
-              onOpenNotifications={() => toast('알림함은 준비 중이에요')}
+              hasUnreadNotification={notificationInbox.hasUnread}
+              onOpenNotifications={notificationInbox.open}
               profileImageUrl={user.profileImageUrl}
             />
           ) : (
@@ -332,6 +345,19 @@ export function MyPage() {
           schoolName={artistSummary.schoolName}
         />
       )}
+
+      <NotificationSheet
+        error={notificationInbox.error}
+        hasNextPage={notificationInbox.hasNextPage}
+        isFetchingNextPage={notificationInbox.isFetchingNextPage}
+        isPending={notificationInbox.isPending}
+        notifications={notificationInbox.notifications}
+        onClose={notificationInbox.close}
+        onLoadMore={() => void notificationInbox.fetchNextPage()}
+        onRetry={() => void notificationInbox.refetch()}
+        onSelect={handleSelectNotification}
+        open={notificationInbox.isOpen}
+      />
 
       <ReceivedInvitationsFlow onClose={invitationsSheet.close} open={invitationsSheet.isOpen} />
 

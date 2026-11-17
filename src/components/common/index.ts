@@ -11,6 +11,8 @@ export { DisplaySummaryCard } from './DisplaySummaryCard';
 export { DrawingModal } from './DrawingModal';
 export { ErrorView } from './ErrorView';
 export { ExpandableText } from './ExpandableText';
+export { FullSheet } from './FullSheet';
+export { FullSheetHeader } from './FullSheetHeader';
 export { ImageModal } from './ImageModal';
 export { ImageUploader } from './ImageUploader';
 export { LinkInputField } from './LinkInputField';

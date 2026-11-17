@@ -2,9 +2,9 @@ import { useEffect, useRef } from 'react';
 
 import { Link } from 'react-router-dom';
 
+import { FullSheet } from '@/components/common';
 import { cn } from '@/utils/cn';
 
-import { FullSheet } from './FullSheet';
 import { getArtworkRegisterPath } from './receivedInvitation';
 
 const CHECK_LENGTH = 28;
