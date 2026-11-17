@@ -35,7 +35,7 @@ export {
 } from './displayRegisterBasic.schema';
 export { DisplayRegisterCta } from './DisplayRegisterCta';
 export { DisplayRegisterHeader } from './DisplayRegisterHeader';
-export { CheckIcon, ChevronRightIcon, LockIcon } from './DisplayRegisterIcons';
+export { CheckIcon, ChevronRightIcon } from './DisplayRegisterIcons';
 export type { DisplayRegisterIntroValues } from './displayRegisterIntro.schema';
 export { displayRegisterIntroSchema } from './displayRegisterIntro.schema';
 export { DisplayRegisterProgress } from './DisplayRegisterProgress';

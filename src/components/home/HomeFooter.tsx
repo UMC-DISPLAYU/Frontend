@@ -13,11 +13,11 @@ export function HomeFooter() {
     <footer className={cn(HOME_INNER, 'grid gap-2 py-5')}>
       <img src={FooterLogo} alt="Display U." width={99} height={23} />
       <div className="typography-body-md-medium flex items-center gap-3 text-tertiary">
-        <Link to="/policy" className={FOOTER_LINK_CLASS}>
+        <Link to="/policy?doc=service" className={FOOTER_LINK_CLASS}>
           이용약관
         </Link>
         <span aria-hidden="true" className="h-2.5 border-l border-primary" />
-        <Link to="/policy" className={FOOTER_LINK_CLASS}>
+        <Link to="/policy?doc=privacy" className={FOOTER_LINK_CLASS}>
           개인정보처리방침
         </Link>
       </div>

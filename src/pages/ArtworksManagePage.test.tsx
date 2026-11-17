@@ -4,9 +4,8 @@ import { beforeEach, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/api/apiError';
 import { ArtworkAuthorChoiceSheet } from '@/components/artwork-register';
-import { ManageScreen, OrderScreen } from '@/components/artworks-manage';
+import { DeleteConfirmDialog, ManageScreen, OrderScreen } from '@/components/artworks-manage';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
-import { Overlay } from '@/components/ui';
 import type { Work } from '@/types/artworkManage';
 
 import { ArtworksManagePage } from './ArtworksManagePage';
@@ -59,13 +58,13 @@ vi.mock('@/components/artwork-register', async () => ({
   ArtworkAuthorChoiceSheet: () => null,
 }));
 vi.mock('@/components/artworks-manage', () => ({
+  DeleteConfirmDialog: () => null,
   ManageScreen: () => null,
   OrderScreen: () => null,
 }));
 vi.mock('@/components/common', () => ({ ErrorView: () => null, LoadingView: () => null }));
 vi.mock('@/components/exhibition-work', () => ({ ExhibitionWorkLayout: () => null }));
 vi.mock('@/components/ui', () => ({
-  Overlay: () => null,
   Skeleton: () => null,
   SkeletonList: () => null,
 }));
@@ -86,7 +85,13 @@ vi.mock('@/hooks/queries/useDisplayMembers', () => ({
     data: {
       members: [
         { userId: 1, displayNickname: '대표', role: 'LEADER', accepted: true },
-        { userId: 3, displayNickname: '김서윤', role: 'TEAM_MEM', accepted: true },
+        {
+          userId: 3,
+          displayNickname: '김서윤',
+          nickname: 'blue.note',
+          role: 'TEAM_MEM',
+          accepted: true,
+        },
       ],
     },
   }),
@@ -180,32 +185,21 @@ it('삭제 실패는 확인창을 유지하고 중복 요청을 막으며 성공
   const manage = get(ManageScreen);
   (manage.props.onDelete as (work: Work) => void)((manage.props.works as Work[])[0]);
   expect(h.remove.reset).toHaveBeenCalledOnce();
-  const confirm = () => {
-    const buttons = nodes(get(Overlay).props.footer as ReactNode);
-    call(
-      buttons.find((node) => node.type === 'button' && node.props.children === '삭제하기')!,
-      'onClick',
-    );
-  };
-  confirm();
+  const dialog = () => get(DeleteConfirmDialog);
+  expect(dialog().props.title).toBe('작품을 삭제할까요?');
+  call(dialog(), 'onConfirm');
   expect(h.remove.mutate).toHaveBeenCalledWith(1, expect.any(Object));
   h.remove.error = failure;
-  expect(get(Overlay).props.open).toBe(true);
-  expect(
-    nodes(get(Overlay).props.children as ReactNode).find((node) => node.props.role === 'alert')!
-      .props.children,
-  ).toContain('서버');
+  expect(dialog().props.open).toBe(true);
+  expect(dialog().props.errorMessage).toContain('서버');
   h.remove.isPending = true;
-  const pending = nodes(get(Overlay).props.footer as ReactNode).find(
-    (node) => node.type === 'button' && node.props.children === '삭제 중',
-  )!;
-  expect(pending.props.disabled).toBe(true);
-  call(pending, 'onClick');
+  expect(dialog().props.isDeleting).toBe(true);
+  call(dialog(), 'onConfirm');
   expect(h.remove.mutate).toHaveBeenCalledTimes(1);
   h.remove.isPending = false;
   expect(h.toast).not.toHaveBeenCalled();
   h.remove.mutate.mock.calls[0][1].onSuccess();
-  expect(get(Overlay).props.open).toBe(false);
+  expect(dialog().props.open).toBe(false);
   expect(h.toast).toHaveBeenCalledWith('작품을 삭제했어요');
 });
 
@@ -223,7 +217,7 @@ it('대표자는 누구의 작품인지 고른 뒤 작품 등록으로 이동한
   const sheet = get(ArtworkAuthorChoiceSheet);
   expect(sheet.props.open).toBe(true);
   expect(sheet.props.candidates).toEqual([
-    { userId: 3, name: '김서윤', caption: '팀원', disabled: false },
+    { userId: 3, name: '김서윤', caption: 'blue.note', disabled: false },
   ]);
 
   (sheet.props.onSelectMine as () => void)();

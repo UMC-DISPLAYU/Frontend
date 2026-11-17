@@ -6,18 +6,23 @@ const h = vi.hoisted(() => ({
   navigate: vi.fn(),
   listeners: [] as (() => void)[],
   idx: undefined as number | undefined,
+  locationState: null as unknown,
 }));
 
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
   useCallback: <T>(callback: T) => callback,
 }));
-vi.mock('react-router-dom', () => ({ useNavigate: () => h.navigate }));
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => h.navigate,
+  useLocation: () => ({ state: h.locationState }),
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
   h.listeners = [];
   h.idx = undefined;
+  h.locationState = null;
   vi.stubGlobal('window', {
     history: {
       get state() {
@@ -61,6 +66,20 @@ describe('useLeaveArtworkRegister', () => {
     expect(h.navigate).toHaveBeenCalledTimes(1);
     expect(h.navigate).toHaveBeenLastCalledWith(-1);
 
+    h.listeners.forEach((listener) => listener());
+    expect(h.navigate).toHaveBeenLastCalledWith('/fallback', { replace: true });
+  });
+
+  it('받은 초대에서 들어오면(leaveTo: work) 기록이 있어도 fallback 으로 바꾼다', () => {
+    h.locationState = { leaveTo: 'work', overlayIds: ['a'] };
+    const leave = useLeaveArtworkRegister();
+    h.idx = 3;
+
+    leave('/fallback');
+    expect(h.navigate).toHaveBeenLastCalledWith('/fallback', { replace: true });
+
+    leave('/fallback', { overlayOpen: true });
+    expect(h.navigate).toHaveBeenLastCalledWith(-1);
     h.listeners.forEach((listener) => listener());
     expect(h.navigate).toHaveBeenLastCalledWith('/fallback', { replace: true });
   });

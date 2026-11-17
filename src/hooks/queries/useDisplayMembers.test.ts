@@ -103,14 +103,14 @@ describe('useChangeDisplayMemberRole', () => {
 });
 
 describe('useRemoveDisplayMember', () => {
-  it('내보낸 팀원의 작품이 지워지므로 전시 작품 목록도 다시 받는다', async () => {
+  it('내보낸 팀원의 작품이 지워지므로 모든 작품 목록도 다시 받는다', async () => {
     h.invalidateQueries.mockResolvedValue(undefined);
     const { mutationFn, onSuccess } = options(useRemoveDisplayMember(7));
 
     await mutationFn(3);
     await onSuccess();
     expect(h.api.removeDisplayMember).toHaveBeenCalledWith(7, 3);
-    expect(invalidatedKeys()).toContainEqual(queryKeys.displayArtworks.byDisplayId(7));
+    expect(invalidatedKeys()).toContainEqual(queryKeys.displayArtworks.lists());
     expect(invalidatedKeys()).toContainEqual(queryKeys.displayMembers.byDisplayId(7));
   });
 });

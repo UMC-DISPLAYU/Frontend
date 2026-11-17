@@ -13,6 +13,8 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
+import { invalidateArtworksOfDisplay } from './displayArtworkCache';
+
 export const useDisplayMembers = (displayId: number) =>
   useQuery({
     queryKey: queryKeys.displayMembers.byDisplayId(displayId),
@@ -96,10 +98,9 @@ export const useRemoveDisplayMember = (displayId: number) => {
   return useMutation({
     mutationFn: (memberId: number) => removeDisplayMember(displayId, memberId),
     onSuccess: () => {
-      // 내보낸 팀원이 작가로 등록된 작품은 서버에서 함께 삭제됩니다
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.displayArtworks.byDisplayId(displayId),
-      });
+      // 내보낸 팀원이 작가로 등록된 작품은 서버에서 함께 삭제되어 작품 목록 · 상세 · 보관함에서도 빠집니다
+      invalidateArtworksOfDisplay(queryClient, displayId);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
       return refetchTeam(queryClient, displayId);
     },
   });

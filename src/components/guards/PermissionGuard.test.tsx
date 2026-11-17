@@ -70,11 +70,12 @@ vi.mock('@/hooks/usePermissionRequiredModal', () => ({
 
 function artworkPolicy(
   canCreate: boolean,
-): PermissionMap<'create' | 'edit' | 'delete' | 'reorder'> {
+): PermissionMap<'create' | 'edit' | 'delete' | 'proxy' | 'reorder'> {
   return {
     create: () => canCreate,
     edit: () => false,
     delete: () => false,
+    proxy: () => false,
     reorder: () => false,
   };
 }

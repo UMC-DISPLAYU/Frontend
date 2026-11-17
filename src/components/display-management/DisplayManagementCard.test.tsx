@@ -119,3 +119,8 @@ it('전시 작가명이 응답에 없으면 멤버 목록에서 내 이름을 �
   expect(h.useDisplayMembers).toHaveBeenCalledWith(10);
   expect(html).toContain('· 팀원(멤버작가)');
 });
+
+it('영상 포스터면 전시 관리 · 전시 작업과 같은 공용 영상 포스터 칩을 보인다', () => {
+  expect(render(display)).not.toContain('aria-label="영상 포스터"');
+  expect(render({ ...display, hasVideoPoster: true })).toContain('aria-label="영상 포스터"');
+});

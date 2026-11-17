@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PageContainer } from '@/components/layout';
@@ -15,27 +13,34 @@ import { useOnboardingSignup } from './useOnboardingSignup';
 
 type Step = 'terms' | 'nickname' | 'done';
 
-type OnboardingHistoryState = { step?: Step } | null;
+type OnboardingHistoryState = { step?: Step; terms?: TermState } | null;
 
-const INITIAL_TERMS: TermState = { over14: false, service: false, privacy: false, location: false };
+const readTerms = (state: OnboardingHistoryState): TermState => ({
+  service: state?.terms?.service === true,
+  over14: state?.terms?.over14 === true,
+});
 
 export function NewOnboardingPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [terms, setTerms] = useState<TermState>(INITIAL_TERMS);
-  const signup = useOnboardingSignup(terms);
 
   /*
-   * 단계는 history state 에 둬서 브라우저 뒤로가기로 이전 단계로 돌아간다(프로토타입 동작).
-   * 새로고침하면 약관 동의 상태가 사라지므로, 동의 없이 닉네임 단계로 오면 약관부터 보여준다.
+   * 단계와 약관 체크는 history state 에 둔다. 브라우저 뒤로가기로 이전 단계로 돌아가고(프로토타입 동작),
+   * 약관 문서를 보고 돌아와도 체크가 남는다. 소셜 로그인 뒤에는 새 기록으로 들어오므로 다른 계정의 체크가 남지 않는다.
+   * 동의 없이 닉네임 단계로 오면 약관부터 보여준다.
    */
   const historyState = location.state as OnboardingHistoryState;
+  const terms = readTerms(historyState);
+  const signup = useOnboardingSignup(terms);
   const requestedStep = historyState?.step ?? 'terms';
   const step: Step =
     requestedStep === 'nickname' && !hasRequiredTerms(terms) ? 'terms' : requestedStep;
 
   const goTo = (next: OnboardingHistoryState, options?: { replace?: boolean }) =>
-    navigate({ pathname: location.pathname, search: location.search }, { ...options, state: next });
+    navigate(
+      { pathname: location.pathname, search: location.search },
+      { ...options, state: next, preventScrollReset: options?.replace },
+    );
 
   return (
     /* 프로토타입처럼 화면 전체를 흰 배경으로 두고, 모바일에서도 최대 480px 로 가운데 정렬한다 */
@@ -44,9 +49,9 @@ export function NewOnboardingPage() {
         {step === 'terms' ? (
           <TermsAgreementScreen
             terms={terms}
-            onChange={setTerms}
+            onChange={(next) => goTo({ step: 'terms', terms: next }, { replace: true })}
             onBack={() => navigate('/home')}
-            onNext={() => goTo({ step: 'nickname' })}
+            onNext={() => goTo({ step: 'nickname', terms })}
           />
         ) : null}
 
