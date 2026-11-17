@@ -10,7 +10,6 @@ import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
 import { cn } from '@/utils/cn';
 import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
-import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
 import { DisplayBottomBar, DisplayInlineActions, DisplaySaveButton } from './DisplayActions';
 import {
@@ -50,15 +49,15 @@ const TAB_LABEL: Record<DisplayDetailTabKey, string> = {
 type Props = {
   display: DisplayDetailDto;
   /*
-   * 전시 작업에서 연 미리보기(/exhibition/:displayId/preview). 공개 여부와 상관없이 공개 전 모습으로 보이고,
-   * 작품 · 콘텐츠를 누르면 미리보기 안에서 연다
+   * 전시 작업에서 연 미리보기(/exhibition/:displayId/preview). 공개 전 모습(안내 띠, 저장 · 좋아요 · 후기 막기)은
+   * 이 미리보기에서만 보이고, 작품 · 콘텐츠를 누르면 미리보기 안에서 연다.
+   * 등록 중 전시를 공개 주소(/display/:id)로 열면 DisplayDetailPage 가 이 미리보기 주소로 보낸다
    */
   previewMode?: boolean;
 };
 
 export function DisplayDetailView({ display, previewMode = false }: Props) {
   const { activeTab, selectTab, sentinelRef } = useDetailTab(DISPLAY_DETAIL_TABS);
-  const isPreview = previewMode || isPreviewDisplay(display);
 
   // 프로토타입 postFresh: 후기를 올렸을 때 탭 줄 아래로 내려가 있으면 탭 줄 자리로 부드럽게 올라간다
   const scrollToTabs = () => {
@@ -82,23 +81,23 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
     .filter((poster) => poster.src);
   const share = {
     shareTitle: display.title,
-    disabled: isPreview,
+    disabled: previewMode,
   };
   const saveButton = (
     <DisplaySaveButton
       displayId={display.displayId}
       saved={display.isArchived ?? false}
-      disabled={isPreview}
+      disabled={previewMode}
     />
   );
 
   return (
-    <div className={cn('min-h-dvh bg-primary-white', detailStickyTopClass(isPreview))}>
-      {isPreview && (
+    <div className={cn('min-h-dvh bg-primary-white', detailStickyTopClass(previewMode))}>
+      {previewMode && (
         <DetailPreviewBanner message="공개 전 모습이에요. 저장·좋아요·후기 작성은 할 수 없어요" />
       )}
 
-      <DetailTopBar className={isPreview ? 'top-10' : 'top-0'} />
+      <DetailTopBar className={previewMode ? 'top-10' : 'top-0'} />
 
       <div className={LAYOUT}>
         <PosterCarousel
@@ -109,7 +108,7 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
         <div className={SHEET}>
           <DisplaySummary
             display={display}
-            isPreview={isPreview}
+            isPreview={previewMode}
             actions={<DisplayInlineActions saveButton={saveButton} {...share} />}
           />
 
@@ -135,7 +134,7 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
           >
             <IntroPanel
               display={display}
-              isPreview={isPreview}
+              isPreview={previewMode}
               contentPath={
                 previewMode
                   ? (categoryId) =>
@@ -154,7 +153,7 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
               <WorksPanel
                 displayId={display.displayId}
                 teamMembers={display.teamMembers}
-                isPreview={isPreview}
+                isPreview={previewMode}
                 artworkContentOpen={display.artworkContentOpen}
                 period={display.period}
                 artworkPath={
@@ -176,7 +175,7 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
               role="tabpanel"
               aria-labelledby={displayTabId('reviews')}
             >
-              {isPreview ? (
+              {previewMode ? (
                 <PreviewReviewsPanel />
               ) : (
                 <ReviewsPanel display={display} onPosted={scrollToTabs} />

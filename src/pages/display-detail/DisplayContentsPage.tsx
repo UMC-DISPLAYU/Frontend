@@ -1,6 +1,6 @@
 import { type RefObject, useEffect, useRef, useState } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
@@ -11,6 +11,7 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { useReplaceSearchParams } from '@/hooks/useReplaceSearchParams';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
+import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 /* 프로토타입 exhibition.html 콘텐츠 보기(11-15 U-152): 사진은 폭 끝까지 · 원래 비율 · 사이 4, 768px 이상은 가운데 560 */
@@ -66,6 +67,7 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
   const goBack = onBack ?? (() => flowBack());
   const { id } = useParams<{ id: string }>();
   const [searchParams, replaceSearchParams] = useReplaceSearchParams();
+  const { search } = useLocation();
   const displayId = parseDisplayId(previewDisplayId ?? id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
@@ -82,6 +84,11 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
   const category = categories[categoryIndex];
   const nextCategory = categories[categoryIndex + 1];
   const current = usePhotoCounter(feedRef, headerRef, category?.categoryId);
+
+  // 공개 주소로 연 등록 중 전시는 미리보기 안의 콘텐츠 주소로 보낸다(전시 팀원만 열림)
+  if (!previewDisplayId && display && isPreviewDisplay(display)) {
+    return <Navigate to={`/exhibition/${display.displayId}/preview/contents${search}`} replace />;
+  }
 
   // 삭제된 전시 · 없는 콘텐츠 번호는 404. 그 밖에 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
   if (displayId === null || isNotFoundError(error) || (display && !category)) {

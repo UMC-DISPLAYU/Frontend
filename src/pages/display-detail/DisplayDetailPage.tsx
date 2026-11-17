@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
@@ -6,10 +6,12 @@ import { NotFoundView } from '@/components/error-page';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
+import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { search } = useLocation();
   const displayId = parseDisplayId(id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
   const { showSkeleton } = useSkeleton(isPending && displayId !== null);
@@ -27,6 +29,11 @@ export function DisplayDetailPage() {
         onRetry={() => void refetch()}
       />
     );
+  }
+
+  // 공개 전 모습은 미리보기 화면 하나로만 보인다. 등록 중 전시는 미리보기 주소로 보낸다(전시 팀원만 열림)
+  if (isPreviewDisplay(display)) {
+    return <Navigate to={`/exhibition/${displayId}/preview${search}`} replace />;
   }
 
   // 다른 전시로 옮겨 가면 펼친 소개 · 포스터 위치를 처음으로 돌린다

@@ -97,9 +97,10 @@ describe('전시 상세 미리보기 모드', () => {
     expect(find(tree, WorksPanel)?.props.isPreview).toBe(false);
   });
 
-  it('등록 중 전시는 공개 상세 주소에서도 공개 전 모습이다', () => {
+  it('공개 전 모습은 미리보기 모드에서만 보인다(등록 중 전시도 미리보기 주소로 보내므로 여기서 따로 보지 않는다)', () => {
     const draft = { ...publicDisplay, status: 'DRAFT' } as DisplayDetailDto;
     const tree = nodes(DisplayDetailView({ display: draft }));
-    expect(find(tree, DetailPreviewBanner)).toBeDefined();
+    expect(find(tree, DetailPreviewBanner)).toBeUndefined();
+    expect(find(tree, WorksPanel)?.props.isPreview).toBe(false);
   });
 });
