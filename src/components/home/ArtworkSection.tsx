@@ -86,7 +86,9 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
                 </div>
               </div>
               <div className="pt-2">
-                <b className="typography-body-lg-semibold block">{artwork.artworkName}</b>
+                <b className="typography-body-lg-semibold block [overflow-wrap:anywhere]">
+                  {artwork.artworkName}
+                </b>
                 <ArtistByline
                   names={
                     artwork.artists?.length
