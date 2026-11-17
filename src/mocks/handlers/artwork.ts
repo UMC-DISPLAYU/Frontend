@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { http } from 'msw';
 
-import { listResponse, mockDb, okStatus } from '@/mocks/data/repository';
+import { isContentHiddenBeforeOpen } from '@/mocks/data/contentOpen';
+import { findMockDisplay, listResponse, mockDb, okStatus } from '@/mocks/data/repository';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 import { matchesSearchWord } from '@/mocks/searchText';
 
@@ -111,8 +112,11 @@ export const artworkHandlers = [
       const displayIdParam = searchParams.get('displayId');
       const userIdParam = searchParams.get('userId');
 
+      // 공개 시점이 전시 시작일부터면 개막 전에는 전시 작품을 비워서 준다(실서버와 같게)
       const artworks = displayIdParam
-        ? mockDb.artworks.filter((artwork: any) => artwork.displayId === Number(displayIdParam))
+        ? isContentHiddenBeforeOpen(findMockDisplay(Number(displayIdParam)), 'artwork')
+          ? []
+          : mockDb.artworks.filter((artwork: any) => artwork.displayId === Number(displayIdParam))
         : userIdParam
           ? mockDb.artworks.filter((artwork: any) => artwork.artistUserId === Number(userIdParam))
           : mockDb.artworks;

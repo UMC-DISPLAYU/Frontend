@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { BottomCommentBar } from '@/components/common/BottomCommentBar';
+import { COMMENT_REPORT_ENABLED, ReportReasonDialog } from '@/components/common/comment';
 import { ErrorView } from '@/components/common/ErrorView';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useCreateDisplayReviewReply } from '@/hooks/queries/useDisplayReviewReplies';
@@ -10,16 +11,43 @@ import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useDisplayReviewPolicy, useDisplayReviewReplyPolicy } from '@/hooks/usePolicy';
 import { useSkeleton } from '@/hooks/useSkeleton';
+import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
-import { DisplayReviewCommentItem } from './DisplayReviewCommentItem';
+import { DisplayReviewCommentItem, type ReportTarget } from './DisplayReviewCommentItem';
 
 const PLACEHOLDER = '글을 입력하세요.';
 
 type Props = {
   display: DisplayDetailDto;
+  /* 후기를 올린 뒤 탭 줄 아래로 올라가 새 후기가 보이게 한다 */
+  onPosted?: () => void;
 };
+
+/*
+ * 프로토타입 .cm.fresh: 방금 올린 후기는 위에서 10px 내려오며 나타난다(0.42s).
+ * 항목마다 늘 이 틀로 감싸 두고 처음 그려질 때만 fresh 를 본다(감싸기를 바꾸면 항목이 다시 마운트돼 펼친 답글이 접힌다).
+ * Web Animations API 는 index.css 의 동작 줄이기 전역 규칙이 닿지 않아 여기서 직접 본다
+ */
+function ReviewRow({ fresh, children }: { fresh: boolean; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const freshOnMountRef = useRef(fresh);
+
+  useEffect(() => {
+    if (!freshOnMountRef.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    ref.current?.animate(
+      [
+        { opacity: 0, transform: 'translateY(-10px)' },
+        { opacity: 1, transform: 'none' },
+      ],
+      { duration: 420, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'backwards' },
+    );
+  }, []);
+
+  return <div ref={ref}>{children}</div>;
+}
 
 function ReviewSkeleton() {
   return (
@@ -51,7 +79,7 @@ export function PreviewReviewsPanel() {
   );
 }
 
-export function ReviewsPanel({ display }: Props) {
+export function ReviewsPanel({ display, onPosted }: Props) {
   const displayId = display.displayId;
   const {
     data,
@@ -82,6 +110,17 @@ export function ReviewsPanel({ display }: Props) {
     );
   }, []);
 
+  // 신고할 후기 · 답글. 신고 API가 생기면 사유와 함께 이 대상을 보낸다
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const isLoggedIn = hasPermission(reviewPolicy, 'like');
+  const handleReport = useCallback(
+    (target: ReportTarget) => {
+      if (isLoggedIn) setReportTarget(target);
+      else openLoginModal();
+    },
+    [isLoggedIn, openLoginModal],
+  );
+
   const createReview = useCreateDisplayReview(displayId);
   const createReply = useCreateDisplayReviewReply(displayId, replyState?.commentId ?? 0);
 
@@ -89,6 +128,9 @@ export function ReviewsPanel({ display }: Props) {
     // 답글 없는 삭제된 후기는 빼고, 답글이 있으면 삭제 안내로 남긴다
     (review) => !(review.isDeleted && review.replyCount === 0),
   );
+
+  // 내가 방금 올린 후기. 목록에 처음 나타날 때 등장 효과를 준다
+  const [postedReviewId, setPostedReviewId] = useState<number | null>(null);
 
   const triggerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -126,15 +168,20 @@ export function ReviewsPanel({ display }: Props) {
       <div className="flex flex-col">
         {!showSkeleton &&
           reviews.map((review) => (
-            <DisplayReviewCommentItem
+            <ReviewRow
               key={review.displayReviewId}
-              display={display}
-              displayId={displayId}
-              review={review}
-              myUserId={userMe?.id}
-              activeReplyId={replyState?.highlightId ?? null}
-              onReplyClick={handleReplyClick}
-            />
+              fresh={review.displayReviewId === postedReviewId}
+            >
+              <DisplayReviewCommentItem
+                display={display}
+                displayId={displayId}
+                review={review}
+                myUserId={userMe?.id}
+                activeReplyId={replyState?.highlightId ?? null}
+                onReplyClick={handleReplyClick}
+                onReport={COMMENT_REPORT_ENABLED ? handleReport : undefined}
+              />
+            </ReviewRow>
           ))}
       </div>
 
@@ -160,6 +207,7 @@ export function ReviewsPanel({ display }: Props) {
         placement="page"
         placeholder={PLACEHOLDER}
         imageDomain="display-review"
+        maxImages={4}
         isSubmitting={replyState ? createReply.isPending : createReview.isPending}
         replyingTo={replyState?.author}
         onCancelReply={clearReplyTarget}
@@ -188,10 +236,24 @@ export function ReviewsPanel({ display }: Props) {
             return false;
           }
 
-          await createReview.mutateAsync({ content: finalContent, images: formattedImages });
+          const posted = await createReview.mutateAsync({
+            content: finalContent,
+            images: formattedImages,
+          });
+          setPostedReviewId(posted.displayReviewId);
+          onPosted?.();
         }}
       />
       {loginModal}
+      <ReportReasonDialog
+        open={reportTarget !== null}
+        onClose={() => setReportTarget(null)}
+        onSelect={() => {
+          // 신고 API가 아직 없어 서버로 보내지 않는다. API가 생기면 reportTarget 과 사유를 보낸다
+          setReportTarget(null);
+          toast('신고가 접수됐어요');
+        }}
+      />
     </section>
   );
 }

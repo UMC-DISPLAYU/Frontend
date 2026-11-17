@@ -42,6 +42,8 @@ vi.mock('react', async (original) => ({
   useCallback: (callback: unknown) => callback,
 }));
 vi.mock('react-router-dom', () => ({
+  Navigate: () => null,
+  useLocation: () => ({ search: h.search ? `?${h.search}` : '' }),
   useParams: () => h.params,
   useNavigate: () => h.navigate,
   useSearchParams: () => [new URLSearchParams(h.search)],
@@ -131,14 +133,23 @@ describe('미리보기 뒤로가기', () => {
 });
 
 describe('전시 미리보기', () => {
-  it('공개된 전시도 미리보기 모드로 보여주고, 뒤로가기는 전시 작업 기준이다', () => {
-    setHistoryIndex(0);
+  it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED'])(
+    '공개 전 전시(%s)는 미리보기 모드로 보여준다',
+    (status) => {
+      const display = { ...publicDisplay, status };
+      h.display.data = display;
+      const page = asElement(DisplayPreviewPage());
+      expect(page.type).toBe(DisplayDetailView);
+      expect(page.props.previewMode).toBe(true);
+      expect(page.props.display).toBe(display);
+    },
+  );
+
+  it('공개된 전시는 미리보기를 떼고 탭을 유지한 채 일반 상세로 바꿔 간다', () => {
+    h.search = 'tab=works';
     const page = asElement(DisplayPreviewPage());
-    expect(page.type).toBe(DisplayDetailView);
-    expect(page.props.previewMode).toBe(true);
-    expect(page.props.display).toBe(publicDisplay);
-    (page.props.onBack as () => void)();
-    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/work', { replace: true });
+    expect(page.type).not.toBe(DisplayDetailView);
+    expect(page.props).toMatchObject({ to: '/display/7?tab=works', replace: true });
   });
 
   it('불러오는 중에는 상세 스켈레톤을 보인다', () => {
