@@ -1,5 +1,6 @@
 import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
 
+import { Navigate } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ArtworkDetailShell } from '@/components/artworkdetailpage/ArtworkDetailShell';
@@ -42,6 +43,8 @@ vi.mock('react', async (original) => ({
   useCallback: (callback: unknown) => callback,
 }));
 vi.mock('react-router-dom', () => ({
+  Navigate: () => null,
+  useLocation: () => ({ search: h.search ? `?${h.search}` : '' }),
   useParams: () => h.params,
   useNavigate: () => h.navigate,
   useSearchParams: () => [new URLSearchParams(h.search)],
@@ -191,6 +194,24 @@ describe('작품 미리보기', () => {
   it('전시 정보가 없는 작품도 보여주지 않는다', () => {
     h.artwork.data = { ...artworkOf(7), exhibitionInfo: null };
     expect(asElement(ArtworkDetailPage({ previewDisplayId: 7 })).type).toBe(NotFoundView);
+  });
+
+  it('등록 중(DRAFT) 전시의 작품을 공개 주소로 열면 미리보기 주소로 보낸다', () => {
+    h.display.data = { ...publicDisplay, status: 'DRAFT' };
+    h.search = 'tab=guest';
+    const page = asElement(ArtworkDetailPage());
+    expect(page.type).toBe(Navigate);
+    expect(page.props).toEqual({ to: '/exhibition/7/artworks/3/preview?tab=guest', replace: true });
+  });
+
+  it('공개된 전시는 개막 전이어도 공개 작품 상세다', () => {
+    h.display.data = {
+      ...publicDisplay,
+      period: { startDate: '2099-01-01', endDate: '2099-01-31' },
+    };
+    const page = asElement(ArtworkDetailPage());
+    expect(page.type).toBe(ArtworkDetailShell);
+    expect(page.props.isPreview).toBe(false);
   });
 
   it('공개 작품 상세는 그대로 공개 화면이다', () => {

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkBottomBar } from '@/components/artworkdetailpage/ArtworkActions';
@@ -32,7 +32,6 @@ import { getExhibitionArtistName } from '@/utils/artist';
 import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { getExhibitionState } from '@/utils/exhibitionState';
-import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 
 type ArtworkDetailPageProps = {
   /* 전시 작업에서 연 작품 미리보기(/exhibition/:displayId/artworks/:artworkId/preview)의 전시 */
@@ -42,6 +41,7 @@ type ArtworkDetailPageProps = {
 export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps = {}) {
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
+  const { search } = useLocation();
 
   const { data: userMe } = useUserMe();
   const { data: detail, isPending, error, refetch } = useArtworkDetail(artworkId);
@@ -72,8 +72,22 @@ export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps =
     );
   }
 
+  /*
+   * 미리보기 화면은 미리보기 주소 하나로만 둔다(전시 상세와 같은 방식).
+   * 등록 중(DRAFT) 전시의 작품을 공개 주소로 열면 미리보기 주소로 보내고, 그 라우트 가드가 팀원만 열어 준다.
+   * 심사를 통과해 공개된 전시는 개막 전이어도 일반 상세로 보인다
+   */
+  if (previewDisplayId === undefined && display?.status === 'DRAFT') {
+    return (
+      <Navigate
+        to={`/exhibition/${display.displayId}/artworks/${artworkId}/preview${search}`}
+        replace
+      />
+    );
+  }
+
   const policyDisplay = (display ?? { ownerUserId: 0, teamMembers: [] }) as DisplayDetailDto;
-  const isPreview = previewDisplayId !== undefined || (display ? isPreviewDisplay(display) : false);
+  const isPreview = previewDisplayId !== undefined;
 
   const artistDisplayName = getExhibitionArtistName(
     detail.artistName,
