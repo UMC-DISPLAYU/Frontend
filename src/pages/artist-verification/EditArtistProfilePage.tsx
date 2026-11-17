@@ -23,6 +23,7 @@ import { Skeleton, SkeletonText } from '@/components/ui';
 import { MAX_ARTIST_FIELDS } from '@/constants/exhibition';
 import { useUploadImage } from '@/hooks/queries/useFile';
 import { useMyArtistProfile, useUpdateMyArtistProfile } from '@/hooks/queries/useUserProfile';
+import { useFetchedSinceMount } from '@/hooks/useFetchedSinceMount';
 import { useFlowBack } from '@/hooks/useFlowBack';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
@@ -37,10 +38,14 @@ import {
 import { toEditArtistProfileDefaults, toUpdateArtistProfileBody } from './editArtistProfileBody';
 
 export function EditArtistProfilePage() {
-  const { data: artistProfile, isPending, isError, error, refetch } = useMyArtistProfile();
-  const { showSkeleton } = useSkeleton(isPending);
+  const artistProfileQuery = useMyArtistProfile();
+  const { data: artistProfile, isError, error, refetch } = artistProfileQuery;
+  // 폼은 처음 그릴 때 값을 한 번만 읽으므로, 받아 둔 예전 값이 아니라 이 화면에서 새로 받은 값으로 채운다
+  const isFresh = useFetchedSinceMount(artistProfileQuery);
+  const isReady = Boolean(artistProfile) && isFresh;
+  const { showSkeleton } = useSkeleton(!isReady);
 
-  if (isError && !artistProfile) {
+  if (isError && !isFresh) {
     return (
       <ErrorView
         message={getErrorMessage(error, '작가 프로필을 불러오지 못했어요.')}
@@ -49,7 +54,7 @@ export function EditArtistProfilePage() {
     );
   }
 
-  if (showSkeleton || !artistProfile) {
+  if (showSkeleton || !isReady || !artistProfile) {
     return (
       <ArtistVerifyLayout>
         <div aria-hidden="true" className="flex flex-col gap-5 pt-18">

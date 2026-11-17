@@ -219,7 +219,11 @@ export function DisplayHubPage() {
         variant="form"
         className="typography-body-lg-medium max-w-[480px] text-primary desktop:max-w-list"
       >
-        <DisplayHubHeader title="전시 관리" />
+        <DisplayHubHeader
+          title="전시 관리"
+          backTo="/display-management"
+          backLabel="내 전시 관리로 돌아가기"
+        />
         {renderContent()}
 
         <DisplayHubConfirmDialog

@@ -6,6 +6,7 @@ import type { DisplayDetailDto } from '@/api/dto';
 
 import { DisplayPublishStatusLabel } from './DisplayPublishStatusLabel';
 import { DisplaySummaryCard } from './DisplaySummaryCard';
+import { VideoPosterBadge } from './VideoPosterBadge';
 
 vi.mock('react-router-dom', () => ({ Link: 'a' }));
 vi.mock('./OptimizedImage', () => ({ OptimizedImage: 'img' }));
@@ -45,6 +46,26 @@ describe('DisplaySummaryCard', () => {
   it('대표 포스터(MAIN)를 먼저 쓴다', () => {
     const image = render().find((node) => node.type === 'img');
     expect(image?.props.src).toBe('main.jpg');
+  });
+
+  it('대표 포스터가 영상이면 썸네일 위에 영상 포스터 칩을 보인다', () => {
+    expect(render().some((node) => node.type === VideoPosterBadge)).toBe(false);
+
+    const tree = render({
+      display: {
+        ...display,
+        images: [
+          {
+            imageType: 'MAIN',
+            imageUrl: 'main.mp4',
+            mediaType: 'VIDEO',
+            thumbnailUrl: 'main-thumb.jpg',
+          },
+        ],
+      } as unknown as DisplayDetailDto,
+    });
+    expect(tree.some((node) => node.type === VideoPosterBadge)).toBe(true);
+    expect(tree.find((node) => node.type === 'img')?.props.src).toBe('main-thumb.jpg');
   });
 
   it('소속 · 일정 · 장소를 보인다', () => {

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-export const MAX_ARTIST_NAME_LENGTH = 20;
+import { DISPLAY_ARTIST_NAME_MAX_LENGTH } from '@/constants/exhibition';
+
+export const MAX_ARTIST_NAME_LENGTH = DISPLAY_ARTIST_NAME_MAX_LENGTH;
 
 export const displayRegisterArtistSchema = z.object({
   artistName: z

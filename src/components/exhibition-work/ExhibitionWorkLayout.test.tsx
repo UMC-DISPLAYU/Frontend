@@ -11,11 +11,12 @@ const mocks = vi.hoisted(() => ({ navigate: vi.fn(), focus: vi.fn(), userId: 1 }
 vi.mock('react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react')>()),
   useId: () => 'work-tabs',
+  useMemo: (factory: () => unknown) => factory(),
 }));
 vi.mock('react-router-dom', () => ({ Link: 'a', useNavigate: () => mocks.navigate }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
 vi.mock('@/hooks/queries/useUserProfile', () => ({
-  useUserMe: () => ({ data: { id: mocks.userId } }),
+  useUserMe: () => ({ data: { id: mocks.userId, isVerified: true } }),
 }));
 vi.mock('@/components/layout', () => ({ PageContainer: 'main' }));
 
@@ -41,6 +42,7 @@ const display = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.userId = 1;
   vi.stubGlobal('document', { getElementById: vi.fn(() => ({ focus: mocks.focus })) });
 });
 afterEach(() => vi.unstubAllGlobals());
@@ -71,6 +73,36 @@ describe('전시 작업 탭', () => {
     expect(mocks.navigate).toHaveBeenCalledWith('/exhibition/7/work?tab=artworks', {
       replace: true,
     });
+  });
+});
+
+describe('역할별 탭', () => {
+  const asTeamMember = (role: string) =>
+    ({
+      ...display,
+      teamMembers: [{ userId: 2, accepted: true, role }],
+    }) as unknown as DisplayDetailDto;
+  const hasTabs = (page: ReactNode) => nodes(page).some((node) => node.props.role === 'tablist');
+
+  it('팀원은 전시 콘텐츠 탭 없이 전시작만 본다', () => {
+    mocks.userId = 2;
+    const page = ExhibitionWorkLayout({
+      display: asTeamMember('TEAM_MEM'),
+      activeTab: 'artworks',
+      children: null,
+    });
+    expect(hasTabs(page)).toBe(false);
+    expect(nodes(page).some((node) => node.props['aria-label'] === '전시작')).toBe(true);
+  });
+
+  it('관리자는 대표자처럼 전시작 · 전시 콘텐츠 탭을 본다', () => {
+    mocks.userId = 2;
+    const page = ExhibitionWorkLayout({
+      display: asTeamMember('MANAGER'),
+      activeTab: 'artworks',
+      children: null,
+    });
+    expect(hasTabs(page)).toBe(true);
   });
 });
 

@@ -15,6 +15,7 @@ import {
 import { getPersonalArtworks } from '@/api/endpoints/personalArtwork';
 import { queryKeys } from '@/api/queryKeys';
 
+import { refetchForNextScreen } from './refetchForNextScreen';
 import { useUserMe } from './useUserProfile';
 
 // GET /v1/artworks?displayId=
@@ -25,24 +26,30 @@ export const useDisplayArtworks = (displayId: number) =>
     enabled: Number.isFinite(displayId) && displayId > 0,
   });
 
-/* 작품 변경 후 전시 · 작가 프로필 · 탐색의 작품 목록을 다시 불러옵니다. */
+/* 작품 변경 후 전시 · 작가 프로필 · 탐색 · 보관함의 작품 목록을 다시 불러옵니다. */
 const useInvalidateDisplayArtworks = (displayId: number) => {
   const queryClient = useQueryClient();
 
   return () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
     queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
   };
 };
 
 // POST /v1/artworks
 export const useCreateDisplayArtwork = (displayId: number) => {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidateDisplayArtworks(displayId);
 
   return useMutation({
     mutationFn: (body: CreateExhibitionArtworkRequestDto) =>
       createExhibitionArtwork(displayId, body),
-    onSuccess: invalidate,
+    // 등록 완료 뒤 돌아가는 전시 작업 목록에 새 작품이 바로 있게 한다
+    onSuccess: () => {
+      invalidate();
+      return refetchForNextScreen(queryClient, [queryKeys.displayArtworks.byDisplayId(displayId)]);
+    },
   });
 };
 
@@ -59,11 +66,13 @@ export const useUpdateDisplayArtwork = (displayId: number) => {
       artworkId: number;
       body: UpdateExhibitionArtworkRequestDto;
     }) => updateExhibitionArtwork(artworkId, body),
+    // 저장 뒤 돌아가는 전시 작업 목록 · 작품 상세가 예전 사진 · 제목을 먼저 그리지 않게 한다
     onSuccess: (_, variables) => {
       invalidate();
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.displayArtworks.detail(variables.artworkId),
-      });
+      return refetchForNextScreen(queryClient, [
+        queryKeys.displayArtworks.byDisplayId(displayId),
+        queryKeys.displayArtworks.detail(variables.artworkId),
+      ]);
     },
   });
 };

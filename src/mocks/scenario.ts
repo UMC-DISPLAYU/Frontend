@@ -11,7 +11,10 @@ export type MockScenario =
   | 'agreements-empty'
   | 'agreements-slow'
   /** 작가 인증 전 사용자: 작가 인증 안내 모달 확인용(예: `/home?mock=artist-unverified` → 전시 등록하기) */
-  | 'artist-unverified';
+  | 'artist-unverified'
+  /** 전시 상세에서 나를 관리자 · 팀원으로 바꾼다(예: `/exhibition/101/work?mock=display-manager`) */
+  | 'display-manager'
+  | 'display-member';
 
 export const hasMockScenario = (scenario: MockScenario) =>
   new URLSearchParams(window.location.search).getAll('mock').includes(scenario);

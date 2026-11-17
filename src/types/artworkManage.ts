@@ -11,6 +11,8 @@ export interface Work {
   artistUserId?: number | null;
   /** 대표 · 공동 작가 중 계정이 있는 사람의 id */
   artistUserIds?: number[];
+  /** 카드에 보일 작가 이름. 대표 작가가 첫 번째이고 공동 작가가 이어진다 */
+  artistNames?: string[];
   thumbnail?: string;
   /** 카드 썸네일에 보이는 영역 */
   thumbnailCrop?: CropRect | null;

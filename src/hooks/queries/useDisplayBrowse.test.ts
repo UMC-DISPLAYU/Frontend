@@ -1,8 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { DisplayListResponseDataDto } from '@/api/dto';
+import { queryKeys } from '@/api/queryKeys';
 
-import { useInfiniteSearchDisplays } from './useDisplayBrowse';
+import { useHideDisplay, useInfiniteSearchDisplays, useUpdateDisplay } from './useDisplayBrowse';
+
+const h = vi.hoisted(() => ({ invalidateQueries: vi.fn() }));
 
 // 훅이 만든 옵션만 꺼내 보려고 useInfiniteQuery 가 옵션을 그대로 돌려주게 한다
 vi.mock('@tanstack/react-query', () => ({
@@ -10,7 +13,7 @@ vi.mock('@tanstack/react-query', () => ({
   useInfiniteQuery: (options: unknown) => options,
   useMutation: (options: unknown) => options,
   useQuery: (options: unknown) => options,
-  useQueryClient: () => ({}),
+  useQueryClient: () => ({ invalidateQueries: h.invalidateQueries }),
 }));
 vi.mock('@/api/endpoints', () => ({}));
 
@@ -59,5 +62,43 @@ describe('useInfiniteSearchDisplays', () => {
       lastPage({ hasNext: true, nextCursor: 17 }),
     );
     expect(next).toBeUndefined();
+  });
+});
+
+const invalidatedKeys = () =>
+  h.invalidateQueries.mock.calls.map(([filters]) => (filters as { queryKey: unknown }).queryKey);
+
+describe('전시 변경 후 캐시 무효화', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('전시 정보를 고치면 전시 정보를 담은 작품 목록 · 상세와 보관함 전시도 다시 받는다', () => {
+    (useUpdateDisplay(7) as unknown as { onSuccess: () => void }).onSuccess();
+
+    expect(invalidatedKeys()).toEqual(
+      expect.arrayContaining([
+        queryKeys.displays.detail(7),
+        queryKeys.displays.lists(),
+        queryKeys.displayArtworks.lists(),
+        queryKeys.archives.displays.all(),
+      ]),
+    );
+  });
+
+  it('전시를 비공개로 돌리면 작품 목록 · 보관함도 다시 받는다', () => {
+    (useHideDisplay() as unknown as { onSuccess: (data: unknown, id: number) => void }).onSuccess(
+      undefined,
+      7,
+    );
+
+    expect(invalidatedKeys()).toEqual(
+      expect.arrayContaining([
+        queryKeys.displays.detail(7),
+        queryKeys.displays.lists(),
+        queryKeys.displayArtworks.lists(),
+        queryKeys.archives.all,
+      ]),
+    );
   });
 });

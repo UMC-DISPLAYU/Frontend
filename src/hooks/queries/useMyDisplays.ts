@@ -12,6 +12,9 @@ import { queryKeys } from '@/api/queryKeys';
 import type { ExhibitionItem } from '@/types/mypage';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
+import { invalidateArtworksOfDisplay } from './displayArtworkCache';
+import { refetchForNextScreen } from './refetchForNextScreen';
+
 const formatDate = (date: string) => {
   const [year, month, day] = date.split('-');
   return year && month && day ? `${year}.${month}.${day}` : date;
@@ -22,6 +25,7 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   displayId: display.displayId,
   isOwner,
   isLeader: display.isLeader ?? isOwner,
+  role: display.role,
   publishStatus: display.publishStatus ?? 'PUBLISHED',
   status: getDisplayStatusLabel(display.displayStatus),
   title: display.title,
@@ -65,10 +69,15 @@ export const useArtistDisplays = (userId: number, { enabled = true }: { enabled?
     },
   });
 
+/* 전시를 지우거나 나가면 그 전시에 올린 내 작품도 서버에서 사라져, 작품 목록 · 상세 · 보관함 작품도 바뀝니다. */
 const invalidateDisplayQueries = (queryClient: QueryClient, displayId: number) => {
   queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
   queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
   queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
+  invalidateArtworksOfDisplay(queryClient, displayId);
+  queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
+  // 대화상자를 닫기 전에 내 전시 관리 목록에서 카드가 빠진 것까지 받아 둔다
+  return refetchForNextScreen(queryClient, [[...queryKeys.displays.lists(), 'my']]);
 };
 
 export const useDeleteDisplay = () => {
@@ -77,10 +86,11 @@ export const useDeleteDisplay = () => {
   return useMutation({
     mutationFn: (displayId: number) => deleteDisplay(displayId),
     onSuccess: (_, displayId) => {
-      invalidateDisplayQueries(queryClient, displayId);
+      const refetched = invalidateDisplayQueries(queryClient, displayId);
       // 무효화만 하면 뒤로가기로 상세에 돌아왔을 때 받아 둔 상세가 먼저 그려진다. 지운 전시는 캐시에서 뺀다
       queryClient.removeQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+      return refetched;
     },
   });
 };
@@ -99,17 +109,21 @@ export const useUpdateMyDisplayNickname = () => {
 
   return useMutation({
     mutationFn: (body: UpdateMyDisplayNicknameRequestDto) => updateMyDisplayNickname(body),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.displayMembers.byDisplayId(variables.displayId),
-      });
-      /*
-       * useDisplayDetail도 DisplayDetailDto.teamMembers로 같은 displayNickname을 담고 있고,
-       * 작품 상세 페이지의 작가명 표시가 여기서 조회한 값을 씁니다. 같이 무효화하지 않으면
-       * 이미 캐시된 화면에서 바뀐 작가명이 반영되지 않습니다.
-       */
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(variables.displayId) });
+    /*
+     * 전시 작가명은 전시 상세 teamMembers · 팀원 목록 · 내 전시 · 작가 전시 목록뿐 아니라 그 전시 작품의 artistName 에도 담겨 옵니다.
+     * 작품 목록 · 상세를 같이 무효화하지 않으면 staleTime 동안 전시 작업 페이지 등에 예전 이름이 남습니다.
+     */
+    onSuccess: (_, { displayId }) => {
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'artist'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
+      invalidateArtworksOfDisplay(queryClient, displayId);
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
+      // 시트를 닫기 전에 카드의 작가명과, 카드를 눌러 들어갈 전시 작업 화면 데이터를 새로 받아 둔다
+      return refetchForNextScreen(queryClient, [
+        [...queryKeys.displays.lists(), 'my'],
+        queryKeys.displays.detail(displayId),
+        queryKeys.displayArtworks.byDisplayId(displayId),
+      ]);
     },
   });
 };

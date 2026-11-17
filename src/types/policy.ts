@@ -8,6 +8,7 @@ export type PolicyActionMap = {
   display: 'view' | 'create' | 'edit' | 'delete';
   displayArtistName: 'edit';
   displayContent:
+    | 'view'
     | 'createCategory'
     | 'editCategory'
     | 'deleteCategory'
@@ -16,7 +17,7 @@ export type PolicyActionMap = {
     | 'deleteContent'
     | 'reorder';
   displayInvitation: 'create';
-  artwork: 'create' | 'edit' | 'delete' | 'reorder';
+  artwork: 'create' | 'edit' | 'delete' | 'proxy' | 'reorder';
   feeling:
     | 'create'
     | 'delete'
