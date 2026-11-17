@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { BottomCommentBar } from '@/components/common/BottomCommentBar';
+import { COMMENT_REPORT_ENABLED, ReportReasonDialog } from '@/components/common/comment';
 import { ErrorView } from '@/components/common/ErrorView';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import {
@@ -11,10 +12,11 @@ import {
 } from '@/hooks/queries/useArtworkFeelings';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useFeelingPolicy, useFeelingReplyPolicy } from '@/hooks/usePolicy';
+import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
-import { ArtworkFeelingCommentItem } from './ArtworkFeelingCommentItem';
+import { ArtworkFeelingCommentItem, type FeelingReportTarget } from './ArtworkFeelingCommentItem';
 
 type Props = {
   artworkId: number;
@@ -80,6 +82,17 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
     setReplyTarget(null);
     setActiveReplyId(null);
   };
+  // 신고할 방명록 · 답글. 신고 API가 생기면 사유와 함께 이 대상을 보낸다
+  const [reportTarget, setReportTarget] = useState<FeelingReportTarget | null>(null);
+  const isLoggedIn = hasPermission(feelingPolicy, 'like');
+  const handleReport = useCallback(
+    (target: FeelingReportTarget) => {
+      if (isLoggedIn) setReportTarget(target);
+      else openLoginModal();
+    },
+    [isLoggedIn, openLoginModal],
+  );
+
   const handleReplyClick = useCallback((commentId: number, author: string, highlightId: string) => {
     setReplyTarget({ commentId, author });
     setActiveReplyId(highlightId);
@@ -134,6 +147,7 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
             myUserId={myUserId}
             activeReplyId={activeReplyId}
             onReplyClick={handleReplyClick}
+            onReport={COMMENT_REPORT_ENABLED ? handleReport : undefined}
           />
         ))}
       </div>
@@ -192,6 +206,14 @@ export function ArtworkGuestbookTab({ artworkId, display, myUserId }: Props) {
             artworkId,
             body: { content: finalContent, images: formattedImages },
           });
+        }}
+      />
+      <ReportReasonDialog
+        open={reportTarget !== null}
+        onClose={() => setReportTarget(null)}
+        onSelect={() => {
+          setReportTarget(null);
+          toast('신고가 접수됐어요');
         }}
       />
       {loginModal}

@@ -16,6 +16,9 @@ import { useDisplayPolicy, useFeelingPolicy } from '@/hooks/usePolicy';
 import { formatRelativeTime } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
+/* 신고할 방명록 글. 답글이면 replyId 가 있다 */
+export type FeelingReportTarget = { feelingId: number; replyId?: number };
+
 type Props = {
   artworkId: number;
   feeling: ArtworkFeelingDto;
@@ -23,6 +26,8 @@ type Props = {
   myUserId?: number;
   onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
   activeReplyId?: string | null;
+  /* 남의 방명록 · 답글 신고. 없으면 신고하기 메뉴가 생기지 않는다 */
+  onReport?: (target: FeelingReportTarget) => void;
 };
 
 export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem({
@@ -32,6 +37,7 @@ export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem
   myUserId,
   onReplyClick,
   activeReplyId = null,
+  onReport,
 }: Props) {
   const [repliesOpen, setRepliesOpen] = useState(false);
   const { loginModal, openLoginModal } = useLoginRequiredModal();
@@ -164,6 +170,16 @@ export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem
     [onReplyClick],
   );
 
+  const handleReport = useCallback(
+    (commentId: string, parentCommentId?: string) =>
+      onReport?.(
+        parentCommentId
+          ? { feelingId: Number(parentCommentId), replyId: Number(commentId) }
+          : { feelingId: Number(commentId) },
+      ),
+    [onReport],
+  );
+
   return (
     <>
       <CommentItem
@@ -181,6 +197,7 @@ export const ArtworkFeelingCommentItem = memo(function ArtworkFeelingCommentItem
         onDelete={handleDelete}
         onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
+        onReport={onReport ? handleReport : undefined}
       />
       {loginModal}
     </>
