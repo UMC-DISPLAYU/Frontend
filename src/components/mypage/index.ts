@@ -1,3 +1,4 @@
+export { ArchiveArtistItem } from './ArchiveArtistItem';
 export {
   ArchiveArtistRow,
   ArchiveArtistRowSkeleton,

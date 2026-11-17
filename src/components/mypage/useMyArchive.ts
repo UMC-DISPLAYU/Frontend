@@ -74,11 +74,11 @@ export function useMyArchive(activeTab: TabKey) {
         const userId = item.artistUserId ?? item.artistId;
         return {
           userId,
+          fields: item.fields ?? [],
           view: {
             key: String(item.archiveArtistId),
             to: `/artist/${userId}`,
             name: item.artistName || '작가',
-            description: toFieldLabels(item.fields).join(' · '),
           } satisfies ArchiveArtistView,
         };
       }),
