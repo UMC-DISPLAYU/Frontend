@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { bindStageZoom, wheelZoomFactor } from './photoCropZoom';
 
 const fire = (target: EventTarget, type: string, props: Record<string, unknown> = {}) => {
-  const event = Object.assign(new Event(type, { cancelable: true }), props);
+  const event = new Event(type, { cancelable: true });
+  for (const [key, value] of Object.entries(props)) Object.defineProperty(event, key, { value });
   target.dispatchEvent(event);
   return event;
 };
@@ -52,21 +53,41 @@ describe('bindStageZoom', () => {
     expect(fire(stage, 'gestureend', { scale: 1 }).defaultPrevented).toBe(true);
   });
 
-  it('gesture 중에 같이 들어오는 휠은 두 번 확대되지 않게 막기만 한다', () => {
+  it('gesture 중 · 직후에 같이 들어오는 휠은 두 번 확대되지 않게 막기만 한다', () => {
     const { stage, onZoom } = setup();
-    fire(stage, 'gesturestart', { scale: 1 });
-    const wheel = fire(stage, 'wheel', { deltaY: -10, ctrlKey: true });
+    fire(stage, 'gesturestart', { scale: 1, timeStamp: 1000 });
+    const wheel = fire(stage, 'wheel', { deltaY: -10, ctrlKey: true, timeStamp: 1050 });
     expect(wheel.defaultPrevented).toBe(true);
     expect(onZoom).not.toHaveBeenCalled();
-    fire(stage, 'gestureend', { scale: 1 });
-    fire(stage, 'wheel', { deltaY: -10, ctrlKey: true });
+    fire(stage, 'gestureend', { scale: 1, timeStamp: 1100 });
+    fire(stage, 'wheel', { deltaY: -10, ctrlKey: true, timeStamp: 1250 });
+    expect(onZoom).not.toHaveBeenCalled();
+    fire(stage, 'wheel', { deltaY: -10, ctrlKey: true, timeStamp: 1300 });
     expect(onZoom).toHaveBeenCalledTimes(1);
+  });
+
+  it('gestureend 가 오지 않아도 잠시 뒤 휠 확대가 다시 된다', () => {
+    const { stage, onZoom } = setup();
+    fire(stage, 'gesturestart', { scale: 1, timeStamp: 1000 });
+    fire(stage, 'gesturechange', { scale: 1.2, timeStamp: 1020 });
+    onZoom.mockClear();
+    fire(stage, 'wheel', { deltaY: 100, timeStamp: 5000 });
+    expect(onZoom).toHaveBeenCalledWith(1.04);
   });
 
   it('두 손가락 터치 핀치 중 gesture(iOS)는 pointer 핀치에 맡기고 막기만 한다', () => {
     const { stage, onZoom } = setup(() => true);
     fire(stage, 'gesturestart', { scale: 1 });
     expect(fire(stage, 'gesturechange', { scale: 2 }).defaultPrevented).toBe(true);
+    expect(onZoom).not.toHaveBeenCalled();
+  });
+
+  it('터치 핀치로 시작한 gesture 는 손가락 하나를 떼도 끝날 때까지 확대하지 않는다', () => {
+    let touching = true;
+    const { stage, onZoom } = setup(() => touching);
+    fire(stage, 'gesturestart', { scale: 1 });
+    touching = false;
+    fire(stage, 'gesturechange', { scale: 1.5 });
     expect(onZoom).not.toHaveBeenCalled();
   });
 
