@@ -6,7 +6,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type WheelEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -14,6 +13,8 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { cn } from '@/utils/cn';
+
+import { bindStageZoom } from './photoCropZoom';
 
 export type PhotoShape = 'circle' | 'rect';
 
@@ -56,6 +57,7 @@ export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDial
 
   useEffect(() => {
     if (!file) return;
+    const activePointers = pointers.current;
     const url = URL.createObjectURL(file);
     const element = new Image();
     element.onload = () => {
@@ -65,6 +67,9 @@ export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDial
     };
     element.src = url;
     return () => {
+      // 손가락을 댄 채로 닫히면 pointerup 이 오지 않아 남은 기록이 다음 열기의 핀치 판단을 흐린다
+      activePointers.clear();
+      gesture.current = null;
       URL.revokeObjectURL(url);
       setImage(null);
       setCrop(null);
@@ -98,6 +103,23 @@ export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDial
   );
 
   const update = (next: Crop) => setCrop(clamp(next));
+
+  // 리스너를 다시 붙이면 진행 중인 Safari gesture 기록이 사라지므로, 최신 clamp 는 ref 로 넘긴다
+  const zoomRef = useRef<(factor: number) => void>(() => {});
+  useLayoutEffect(() => {
+    zoomRef.current = (factor) =>
+      setCrop((previous) => previous && clamp({ ...previous, cw: previous.cw * factor }));
+  });
+
+  useEffect(() => {
+    const element = stageRef.current;
+    if (!open || !element) return;
+    return bindStageZoom(
+      element,
+      (factor) => zoomRef.current(factor),
+      () => pointers.current.size >= 2,
+    );
+  }, [open]);
 
   // 틀 크기(프로토타입): 원은 지름 300 이하, 사각형은 폭 264 이하. 위아래 여백 20씩
   const frameWidth = Math.round(
@@ -149,13 +171,6 @@ export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDial
     const remaining = [...pointers.current.values()][0];
     gesture.current =
       remaining && crop ? { kind: 'drag', x: remaining.x, y: remaining.y, crop } : null;
-  };
-
-  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
-    if (!crop) return;
-    // 터치패드 핀치는 ctrlKey 가 붙은 휠로 들어와 작게 움직여도 부드럽게, 일반 휠은 한 칸씩
-    const factor = event.ctrlKey ? Math.exp(event.deltaY * 0.01) : event.deltaY > 0 ? 1.04 : 0.96;
-    update({ ...crop, cw: crop.cw * factor });
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -244,7 +259,6 @@ export function PhotoCropDialog({ file, shape, onCancel, onDone }: PhotoCropDial
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onWheel={handleWheel}
           ref={stageRef}
           role="application"
           tabIndex={0}
