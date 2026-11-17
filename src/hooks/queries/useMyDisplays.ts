@@ -22,6 +22,7 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   displayId: display.displayId,
   isOwner,
   isLeader: display.isLeader ?? isOwner,
+  role: display.role,
   publishStatus: display.publishStatus ?? 'PUBLISHED',
   status: getDisplayStatusLabel(display.displayStatus),
   title: display.title,

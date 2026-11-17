@@ -96,6 +96,15 @@ it('발행 상태가 없으면 공개 중으로 표시한다', () => {
   );
 });
 
+it.each([
+  ['MANAGER', '· 관리자(전시작가)'],
+  ['TEAM_MEM', '· 팀원(전시작가)'],
+] as const)('참여한 전시에서 역할이 %s이면 %s(으)로 표시한다', (role, label) => {
+  const html = render({ ...display, isOwner: false, isLeader: false, role });
+
+  expect(html).toContain(label);
+});
+
 it('전시 작가명이 응답에 있으면 멤버 목록을 조회하지 않는다', () => {
   render(display);
 

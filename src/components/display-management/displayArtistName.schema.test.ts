@@ -12,7 +12,11 @@ it('공백만 있으면 통과하지 않는다', () => {
   expect(parse('   ').success).toBe(false);
 });
 
-it('255자까지만 통과한다', () => {
-  expect(parse('가'.repeat(255)).success).toBe(true);
-  expect(parse('가'.repeat(256)).success).toBe(false);
+it('10자 미만(9자)까지만 통과한다', () => {
+  expect(parse('가'.repeat(9)).success).toBe(true);
+  expect(parse('가'.repeat(10)).success).toBe(false);
+});
+
+it('앞뒤 공백은 글자 수에 넣지 않는다', () => {
+  expect(parse(` ${'가'.repeat(9)} `).success).toBe(true);
 });

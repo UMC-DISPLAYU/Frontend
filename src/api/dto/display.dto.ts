@@ -522,6 +522,8 @@ export interface MyDisplayDto {
   /* 대표 포스터가 영상이면 영상 주소(postImageUrl 은 썸네일), 아니면 null */
   posterVideoUrl?: string | null;
   isLeader?: boolean;
+  /* 이 전시에서 내 역할. 내 전시 목록(GET /display/me)에만 있다 */
+  role?: DisplayMemberRole;
   publishStatus?: DisplayPublishStatus;
   displayNickname?: string;
   artistName?: string;

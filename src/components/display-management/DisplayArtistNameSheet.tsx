@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
 import { Overlay } from '@/components/ui';
+import { DISPLAY_ARTIST_NAME_MAX_LENGTH } from '@/constants/exhibition';
 
 import { displayArtistNameSchema, type DisplayArtistNameValues } from './displayArtistName.schema';
 
@@ -80,6 +81,7 @@ export function DisplayArtistNameSheet({
           id={inputId}
           {...register('artistName')}
           type="text"
+          maxLength={DISPLAY_ARTIST_NAME_MAX_LENGTH}
           autoComplete="off"
           aria-required="true"
           aria-invalid={Boolean(errors.artistName)}
