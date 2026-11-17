@@ -292,6 +292,7 @@ function DisplayRegisterIntroForm() {
                 {!isOtherGroup && (
                   <div className="typography-body-xl-regular flex h-[54px] items-center bg-secondary px-4 text-primary">
                     <span className="min-w-0 truncate">{schoolName}</span>
+                    <span className="sr-only">(변경할 수 없어요)</span>
                   </div>
                 )}
                 <input
