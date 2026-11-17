@@ -28,7 +28,7 @@ const BIG_BUTTON_CLASS =
 /*
  * 백엔드가 발급하는 초대 URL(/display/invitation/{token})의 착지 지점입니다.
  * 토큰으로 전시를 확인한 뒤(이때 서버가 대기 중인 초대를 만듭니다) 마이의 받은 초대 시트로 넘깁니다.
- * 마이는 보호 화면이라, 비로그인이면 AuthGuard가 그 위에 로그인 모달을 띄우고 로그인 후 돌아옵니다.
+ * AuthGuard 안에 있어 로그인한 뒤에만 그려집니다.
  */
 export function DisplayInvitationLinkPage() {
   const { token = '' } = useParams();

@@ -13,6 +13,7 @@ import {
 
 const h = vi.hoisted(() => ({
   invalidateQueries: vi.fn(),
+  setQueryData: vi.fn(),
   api: {
     cancelDisplayInvitation: vi.fn(),
     changeDisplayMemberRole: vi.fn(),
@@ -29,13 +30,16 @@ const h = vi.hoisted(() => ({
 vi.mock('@tanstack/react-query', () => ({
   useMutation: (options: unknown) => options,
   useQuery: (options: unknown) => options,
-  useQueryClient: () => ({ invalidateQueries: h.invalidateQueries }),
+  useQueryClient: () => ({
+    invalidateQueries: h.invalidateQueries,
+    setQueryData: h.setQueryData,
+  }),
 }));
 vi.mock('@/api/endpoints', () => h.api);
 
 type MutationOptions = {
   mutationFn: (variables?: unknown) => unknown;
-  onSuccess: () => unknown;
+  onSuccess: (data?: unknown) => unknown;
 };
 const options = (hook: unknown) => hook as MutationOptions;
 const invalidatedKeys = () =>
@@ -73,23 +77,34 @@ describe('useInviteDisplayMember', () => {
 });
 
 describe('useToggleDisplayInvitationLink', () => {
-  it('켜면 링크를 발급하고 끄면 비활성화한다', async () => {
+  it('켜면 발급 응답의 invitationUrl 을, 끄면 null 을 돌려준다', async () => {
+    const url = 'https://www.displayu.co.kr/display/invitation/raw-token';
+    h.api.createDisplayInvitation.mockResolvedValue({ displayId: 7, invitationUrl: url });
     const { mutationFn } = options(useToggleDisplayInvitationLink(7));
 
-    await mutationFn(true);
+    await expect(mutationFn(true)).resolves.toBe(url);
     expect(h.api.createDisplayInvitation).toHaveBeenCalledWith(7);
     expect(h.api.disableDisplayInvitation).not.toHaveBeenCalled();
 
-    await mutationFn(false);
+    await expect(mutationFn(false)).resolves.toBeNull();
     expect(h.api.disableDisplayInvitation).toHaveBeenCalledWith(7);
   });
 
-  it('새 토큰이 담긴 전시 상세를 기다린다', async () => {
+  it('받은 링크 주소를 캐시에 넣고 전시 상세를 다시 받을 때까지 기다린다', async () => {
     h.invalidateQueries.mockResolvedValue(undefined);
+    const url = 'https://www.displayu.co.kr/display/invitation/raw-token';
     const { onSuccess } = options(useToggleDisplayInvitationLink(7));
 
-    await expect(onSuccess()).resolves.toBeUndefined();
+    await expect(onSuccess(url)).resolves.toBeUndefined();
+    expect(h.setQueryData).toHaveBeenCalledWith(queryKeys.displays.invitationUrl(7), url);
     expect(invalidatedKeys()).toEqual([queryKeys.displays.detail(7)]);
+  });
+
+  it('끄면 캐시에 남은 링크 주소를 지운다', async () => {
+    const { onSuccess } = options(useToggleDisplayInvitationLink(7));
+
+    await onSuccess(null);
+    expect(h.setQueryData).toHaveBeenCalledWith(queryKeys.displays.invitationUrl(7), null);
   });
 });
 

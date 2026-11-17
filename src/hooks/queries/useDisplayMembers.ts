@@ -50,18 +50,37 @@ export const useInviteDisplayMember = (displayId: number) => {
   });
 };
 
+/*
+ * 전시 상세의 invitationToken 은 해시된 값이라 링크로 쓸 수 없고, 원본 토큰이 담긴 주소는 발급(POST) 응답의
+ * invitationUrl 로만 받는다. 그래서 발급 응답을 캐시에 넣어 두고 화면은 이 값을 읽는다(서버 조회 없음).
+ */
+export const useDisplayInvitationUrl = (displayId: number) =>
+  useQuery<string | null>({
+    queryKey: queryKeys.displays.invitationUrl(displayId),
+    queryFn: () => null,
+    enabled: false,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+
 /* 켜면 새 초대 링크를 발급하고, 끄면 지금 링크를 비활성화합니다. */
 export const useToggleDisplayInvitationLink = (displayId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (enabled: boolean) => {
-      if (enabled) await createDisplayInvitation(displayId);
-      else await disableDisplayInvitation(displayId);
+      if (!enabled) {
+        await disableDisplayInvitation(displayId);
+        return null;
+      }
+      const { invitationUrl } = await createDisplayInvitation(displayId);
+      return invitationUrl;
     },
-    // 링크 주소는 전시 상세의 토큰으로 그리므로 새 토큰을 받을 때까지 요청 중 상태를 유지합니다
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) }),
+    // 켜짐 · 꺼짐은 전시 상세로 판단하므로 다시 받을 때까지 요청 중 상태를 유지합니다
+    onSuccess: (invitationUrl) => {
+      queryClient.setQueryData(queryKeys.displays.invitationUrl(displayId), invitationUrl);
+      return queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+    },
   });
 };
 

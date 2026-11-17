@@ -1,10 +1,12 @@
-import { useToggleDisplayInvitationLink } from '@/hooks/queries/useDisplayMembers';
+import {
+  useDisplayInvitationUrl,
+  useToggleDisplayInvitationLink,
+} from '@/hooks/queries/useDisplayMembers';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 
 import { CopyIcon } from './TeamIcons';
-import { buildInviteLink } from './teamMembers';
 
 interface InviteLinkCardProps {
   displayId: number;
@@ -18,10 +20,11 @@ export function InviteLinkCard({
   invitationDisabledAt,
 }: InviteLinkCardProps) {
   const toggle = useToggleDisplayInvitationLink(displayId);
+  const { data: invitationUrl } = useDisplayInvitationUrl(displayId);
   const savedEnabled = Boolean(invitationToken) && !invitationDisabledAt;
   // 요청 중에는 누른 쪽으로 먼저 보여준다. 실패하면 서버 값으로 돌아간다
   const enabled = toggle.isPending ? toggle.variables : savedEnabled;
-  const link = savedEnabled && invitationToken ? buildInviteLink(invitationToken) : '';
+  const link = savedEnabled ? (invitationUrl ?? '') : '';
   const canCopy = enabled && link !== '';
 
   const changeEnabled = () => {

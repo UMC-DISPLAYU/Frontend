@@ -1,14 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { DisplayMemberEntryDto } from '@/api/dto';
 
-import {
-  buildInviteLink,
-  getInviteState,
-  groupMembersByRole,
-  normalizeNickname,
-  toTeamRole,
-} from './teamMembers';
+import { getInviteState, groupMembersByRole, normalizeNickname, toTeamRole } from './teamMembers';
 
 const entry = (
   userId: number,
@@ -24,10 +18,6 @@ const entry = (
   accepted,
   loggedIn: true,
   artistVerified: true,
-});
-
-afterEach(() => {
-  vi.unstubAllGlobals();
 });
 
 describe('toTeamRole', () => {
@@ -102,13 +92,5 @@ describe('getInviteState', () => {
 
   it('팀원이 아무도 없으면 초대할 수 있다', () => {
     expect(getInviteState(1, { memberAccept: [], memberPending: [] })).toBe('invitable');
-  });
-});
-
-describe('buildInviteLink', () => {
-  it('현재 사이트 주소의 초대 링크 화면 경로로 만든다', () => {
-    vi.stubGlobal('window', { location: { origin: 'https://displayu.co.kr' } });
-
-    expect(buildInviteLink('abc123')).toBe('https://displayu.co.kr/display/invitation/abc123');
   });
 });
