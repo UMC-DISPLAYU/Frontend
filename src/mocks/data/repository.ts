@@ -268,17 +268,21 @@ const artworkToDetail = (artwork: any, isMine = false) => ({
  * 닉네임 검색(GET /users/search)과 팀원 초대 화면에서 사용하는 검색 대상 사용자입니다.
  * userId 1~15는 mockDb.me와 다른 핸들러가 이미 쓰고 있어 201번대를 사용합니다.
  */
+/* 프로필 사진은 전시 포스터 이미지를 빌려 쓴다. 사진이 없는 사람(null)은 기본 아바타로 보인다 */
+const mockProfileImage = (index: number) =>
+  MOCK_DISPLAY[index % MOCK_DISPLAY.length].posterSection.images[0]?.imageUrl ?? null;
+
 const MOCK_SEARCHABLE_USERS = [
-  { userId: 201, name: '이정우', nickname: 'quietroom' },
-  { userId: 202, name: '최유성', nickname: 'quietstudio' },
-  { userId: 203, name: '김서연', nickname: 'seoyeon_k' },
-  { userId: 204, name: '박지훈', nickname: 'jihoon_park' },
-  { userId: 205, name: '한도윤', nickname: 'doyoon' },
-  { userId: 206, name: '정민서', nickname: 'minseo_art' },
-  { userId: 207, name: '오세훈', nickname: 'sehun_q' },
-  { userId: 208, name: '강하늘', nickname: 'skyline' },
-  { userId: 209, name: '윤채린', nickname: 'chaerin_j' },
-  { userId: 210, name: '임규리', nickname: 'quriosity' },
+  { userId: 201, name: '이정우', nickname: 'quietroom', profileImageUrl: mockProfileImage(5) },
+  { userId: 202, name: '최유성', nickname: 'quietstudio', profileImageUrl: null },
+  { userId: 203, name: '김서연', nickname: 'seoyeon_k', profileImageUrl: mockProfileImage(1) },
+  { userId: 204, name: '박지훈', nickname: 'jihoon_park', profileImageUrl: null },
+  { userId: 205, name: '한도윤', nickname: 'doyoon', profileImageUrl: mockProfileImage(2) },
+  { userId: 206, name: '정민서', nickname: 'minseo_art', profileImageUrl: null },
+  { userId: 207, name: '오세훈', nickname: 'sehun_q', profileImageUrl: mockProfileImage(3) },
+  { userId: 208, name: '강하늘', nickname: 'skyline', profileImageUrl: null },
+  { userId: 209, name: '윤채린', nickname: 'chaerin_j', profileImageUrl: mockProfileImage(4) },
+  { userId: 210, name: '임규리', nickname: 'quriosity', profileImageUrl: null },
 ];
 
 /* 공동 작가가 많은 작품: 전시작 카드 · 작품 상세 · 수정 화면에서 긴 작가 줄을 확인하는 목 데이터(101번 전시 맨 앞) */

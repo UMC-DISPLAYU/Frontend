@@ -44,7 +44,7 @@ export function PendingInviteList({ displayId, members }: PendingInviteListProps
             key={member.teamMemberId ?? member.userId}
             className="flex items-center gap-[11px] border-b border-[#f0f0f3] py-[14.5px]"
           >
-            <MemberAvatar />
+            <MemberAvatar src={member.profileImageUrl} />
             <span className="min-w-0 flex-1 truncate text-[14px] leading-[1.4] font-semibold">
               {name}
             </span>
