@@ -29,7 +29,7 @@ vi.mock('./ArtworkViewer', () => ({ ArtworkViewer: () => null }));
 vi.mock('./useDisablePageBounce', () => ({ useDisablePageBounce: () => {} }));
 vi.mock('./useViewMode', () => ({ useViewMode: () => ['stack', vi.fn()] }));
 vi.mock('./useViewerChromeFade', () => ({
-  useViewerChromeFade: () => ({ isStackHidden: false, holdProps: {} }),
+  useViewerChromeFade: () => ({ holdProps: {} }),
 }));
 
 type Element = ReactElement<Record<string, unknown>>;

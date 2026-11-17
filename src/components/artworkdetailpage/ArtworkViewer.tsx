@@ -47,6 +47,9 @@ const WIDE_SIZE_VARS =
 // 사용자가 직접 스크롤하기 시작했다는 신호. 썸네일로 고른 장을 이때까지 유지한다
 const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
 
+// 프로토타입 fade.js: 나타날 때 0.15s, 흐려지거나 숨을 때 0.4s(ease-out)
+const FADE_TRANSITION = 'transition-opacity duration-150 ease-out';
+const FADE_DIMMED = 'opacity-55 duration-400';
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isWide = () => window.matchMedia('(min-width: 900px)').matches;
 
@@ -114,8 +117,7 @@ export function ArtworkViewer({
   // 썸네일 · 보기 방식 전환으로 옮긴 장. 페이지 끝이라 사진이 위까지 못 올라와도 고른 장을 유지한다
   const isStackPinnedRef = useRef(false);
 
-  const { isStackHidden, isControlsDimmed, isChipHidden, peekChip, holdProps } = chrome;
-  const stackHiddenClass = isStackHidden && 'pointer-events-none opacity-0';
+  const { isControlsDimmed, isChipHidden, peekChip, holdProps } = chrome;
 
   const showPhoto = (index: number) => {
     if (index !== currentRef.current) peekChip();
@@ -333,10 +335,10 @@ export function ArtworkViewer({
               aria-label="감상 방식"
               {...holdProps}
               className={cn(
-                'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-black/45 p-1 backdrop-blur-[20px] transition-opacity duration-base ease-standard desktop:cursor-default',
+                'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-black/45 p-1 backdrop-blur-[20px] desktop:cursor-default',
+                FADE_TRANSITION,
                 SWITCH_TOP,
-                isControlsDimmed && 'opacity-55',
-                stackHiddenClass,
+                isControlsDimmed && FADE_DIMMED,
               )}
             >
               <button
@@ -383,11 +385,12 @@ export function ArtworkViewer({
               <span
                 aria-live="polite"
                 className={cn(
-                  'typography-body-sm-medium absolute rounded-circle bg-base-black/60 px-2 py-1 text-base-white tabular-nums transition-opacity duration-base ease-standard desktop:hidden',
+                  'typography-body-sm-medium absolute rounded-circle bg-base-black/60 px-2 py-1 text-base-white tabular-nums desktop:hidden',
+                  FADE_TRANSITION,
                   isStack
                     ? 'top-[calc(max(16px,env(safe-area-inset-top))+10px)] right-28'
                     : 'right-4 bottom-4',
-                  isChipHidden && 'opacity-0',
+                  isChipHidden && 'opacity-0 duration-400',
                 )}
               >
                 {current + 1} / {photoCount}
