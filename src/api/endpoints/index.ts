@@ -9,5 +9,6 @@ export * from './displayContent';
 export * from './file';
 export * from './health';
 export * from './lounge';
+export * from './notification';
 export * from './personalArtwork';
 export * from './user';

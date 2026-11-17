@@ -10,6 +10,7 @@ import { displayMemberHandlers } from './handlers/displayMember';
 import { fileHandlers } from './handlers/file';
 import { healthHandlers } from './handlers/health';
 import { loungeHandlers } from './handlers/lounge';
+import { notificationHandlers } from './handlers/notification';
 import { personalArtworkHandlers } from './handlers/personalArtwork';
 import { schoolVerificationHandlers } from './handlers/schoolVerification';
 import { userHandlers } from './handlers/user';
@@ -32,4 +33,5 @@ export const handlers = [
   ...fileHandlers,
   ...personalArtworkHandlers,
   ...addressHandlers,
+  ...notificationHandlers,
 ];

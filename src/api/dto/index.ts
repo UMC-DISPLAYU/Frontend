@@ -9,5 +9,6 @@ export * from './displayArtwork.dto';
 export * from './displayContent.dto';
 export * from './file.dto';
 export * from './lounge.dto';
+export * from './notification.dto';
 export * from './personalArtwork.dto';
 export * from './user.dto';

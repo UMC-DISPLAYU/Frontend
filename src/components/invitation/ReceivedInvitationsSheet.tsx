@@ -1,13 +1,11 @@
 import { useRef } from 'react';
 
-import { ErrorView } from '@/components/common';
+import { ErrorView, FullSheet, FullSheetHeader } from '@/components/common';
 import { SkeletonList } from '@/components/ui';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage } from '@/utils/error';
 
-import { FullSheet } from './FullSheet';
 import { InvitationCard, InvitationCardSkeleton } from './InvitationCard';
-import { BackIcon } from './InvitationIcons';
 import type { ReceivedInvitation } from './receivedInvitation';
 
 interface ReceivedInvitationsSheetProps {
@@ -81,18 +79,11 @@ export function ReceivedInvitationsSheet({
     <FullSheet initialFocusRef={closeButtonRef} label="받은 초대" onClose={onClose} open={open}>
       {(requestClose) => (
         <>
-          <div className="flex h-14 shrink-0 items-center gap-1 px-3">
-            <button
-              aria-label="닫기"
-              className="grid size-10 place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
-              onClick={requestClose}
-              ref={closeButtonRef}
-              type="button"
-            >
-              <BackIcon />
-            </button>
-            <h2 className="typography-body-xxl-semibold ml-1">받은 초대</h2>
-          </div>
+          <FullSheetHeader
+            closeButtonRef={closeButtonRef}
+            onClose={requestClose}
+            title="받은 초대"
+          />
           <div
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-1 pb-[max(32px,env(safe-area-inset-bottom))]"
             {...skeletonProps}

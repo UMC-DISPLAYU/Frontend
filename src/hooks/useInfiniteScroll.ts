@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 interface UseInfiniteScrollProps {
   hasNextPage: boolean | undefined;
@@ -15,10 +15,10 @@ export function useInfiniteScroll({
   threshold = 0.1,
   rootMargin = '0px',
 }: UseInfiniteScrollProps) {
-  const triggerRef = useRef<HTMLDivElement | null>(null);
+  // 콜백 ref 로 받아, 스켈레톤이 끝난 뒤처럼 센티널이 늦게 붙어도 옵저버를 연결한다
+  const [el, setEl] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const el = triggerRef.current;
     if (!el) return;
 
     const observer = new IntersectionObserver(
@@ -34,7 +34,7 @@ export function useInfiniteScroll({
     return () => {
       observer.disconnect();
     };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, threshold, rootMargin]);
+  }, [el, hasNextPage, isFetchingNextPage, fetchNextPage, threshold, rootMargin]);
 
-  return triggerRef;
+  return setEl;
 }
