@@ -117,13 +117,20 @@ export function ExploreResultGrid<T>({
 
   if (!hasItems) return <ExploreEmpty />;
 
+  // 촘촘히 보기는 사진뿐이라 사진이 올 때까지 카드를 띄우지 않는다(카드의 data-photo-pending).
+  // 스켈레톤 뒤에 나타날 때는 회색 칸 자리를 비우지 않게 그대로 둔다
+  const holdUntilPhoto = dense && skeletonProps['data-skeleton'] !== 'revealed';
+
   return (
     <>
       <ul {...skeletonProps} className={gridClass(dense)} data-dense={dense}>
         {pages.map((page) =>
           page.map((item, index) => (
             <li
-              className="animate-rise"
+              className={cn(
+                'animate-rise',
+                holdUntilPhoto && 'has-[[data-photo-pending]]:[animation-play-state:paused]',
+              )}
               data-flip-key={getKey(item)}
               key={getKey(item)}
               style={staggerStyle(index)}
