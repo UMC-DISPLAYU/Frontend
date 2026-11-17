@@ -75,25 +75,6 @@ describe('buildCreateDisplayRequest', () => {
     expect(request).not.toHaveProperty('displayImageUrl');
   });
 
-  it('대표 사진의 포스터 범위는 있을 때만 보내고, 영상 대표면 보내지 않는다', () => {
-    const posterCrop = { x: 0, y: 0, w: 1, h: 1 };
-
-    expect(buildCreateDisplayRequest({ ...DRAFT, posterCrop }, '김디유')).toMatchObject({
-      posterCrop,
-    });
-    expect(buildCreateDisplayRequest(DRAFT, '김디유')).not.toHaveProperty('posterCrop');
-    expect(
-      buildCreateDisplayRequest(
-        {
-          ...DRAFT,
-          posterCrop,
-          posters: [{ url: 'v0.mp4', mediaType: 'VIDEO', thumbnailUrl: 't0.jpg' }],
-        },
-        '김디유',
-      ),
-    ).not.toHaveProperty('posterCrop');
-  });
-
   it('기타 단체 전시는 단체명을 소속으로 보내고 학과는 보내지 않는다', () => {
     const request = buildCreateDisplayRequest(
       { ...DRAFT, type: '기타 단체 전시', school: '', department: '', organizer: '디유 연합' },
@@ -115,6 +96,13 @@ describe('buildCreateDisplayRequest', () => {
       instagramUrl: 'https://instagram.com/displayu',
       websiteUrl: 'https://displayu.kr/',
     });
+  });
+
+  it('포스터 범위는 고른 경우에만 보낸다', () => {
+    expect(buildCreateDisplayRequest(DRAFT, '김디유')).not.toHaveProperty('posterCrop');
+    expect(
+      buildCreateDisplayRequest({ ...DRAFT, posterCrop: { x: 0, y: 0.1, w: 1, h: 0.8 } }, '김디유'),
+    ).toMatchObject({ posterCrop: { x: 0, y: 0.1, w: 1, h: 0.8 } });
   });
 
   it('필수값이 빠지면 null', () => {

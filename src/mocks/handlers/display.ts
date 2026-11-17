@@ -82,6 +82,7 @@ const displayDetailResponse = (displayId: number) => {
     likeCount: display.likeCount ?? 0,
     currentScreeningId:
       display.status === 'PENDING_REVIEW' ? (display.currentScreeningId ?? null) : null,
+    posterCrop: display.posterCrop ?? null,
     invitationToken: display.invitationToken ?? null,
     invitationDisabledAt: display.invitationDisabledAt ?? null,
     teamMembers: display.teamMembers ?? [],
@@ -174,6 +175,7 @@ const myDisplayItem = (display: any) => ({
   placeName: display.placeName,
   postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
   posterVideoUrl: display.posterVideoUrl ?? null,
+  posterCrop: display.posterCrop ?? null,
   displayNickname: display.displayNickname ?? display.artistName ?? '작가명',
   artistName: display.displayNickname ?? display.artistName ?? '작가명',
 });
@@ -266,17 +268,15 @@ export const displayHandlers = [
       assign('subtitle', body.subtitle);
       assign('description', body.description);
       assign('content', body.description);
+      const mainPosterUrl = () =>
+        (display.images ?? display.posterImages ?? [])
+          .slice()
+          .sort((a: any, b: any) => a.sortOrder - b.sortOrder)[0]?.imageUrl ??
+        display.posterImageUrl;
+      const prevPosterUrl = mainPosterUrl();
       assign('posterImageUrl', body.posterImageUrl);
       assign('thumbnailUrl', body.posterImageUrl);
-      const previousPosterUrl = (display.images ?? display.posterImages)?.find(
-        (image: any) => image.sortOrder === 0,
-      )?.imageUrl;
       applyPosterMedia(display, body);
-      // 스웨거: posterCrop 생략 · null 이면 기존 범위 유지, 대표 포스터 주소가 바뀌면 초기화
-      if (body.posterMedia && body.posterMedia.imageUrl !== previousPosterUrl) {
-        display.posterCrop = null;
-      }
-      if (body.posterCrop) display.posterCrop = body.posterCrop;
       assign('displayType', body.type);
       assign('displayFields', body.fields);
       assign('organization', body.schoolOrOrganization);
@@ -297,6 +297,24 @@ export const displayHandlers = [
       }
       assign('startTime', body.openTime);
       assign('endTime', body.closeTime);
+
+      // 스웨거: 링크 · 위치 · 포스터 범위는 null 이면 기존 값 유지, 링크는 빈 문자열이면 삭제
+      if (body.instagramUrl != null) display.instagramUrl = body.instagramUrl;
+      if (body.websiteUrl != null) display.websiteUrl = body.websiteUrl;
+      if (body.roadAddress != null) {
+        display.location = {
+          placeName: body.placeName ?? display.placeName,
+          roadAddress: body.roadAddress,
+          latitude: body.latitude ?? display.location?.latitude,
+          longitude: body.longitude ?? display.location?.longitude,
+        };
+      } else if (body.placeName !== undefined && display.location) {
+        display.location = { ...display.location, placeName: body.placeName };
+      }
+      assign('region', body.region ?? undefined);
+      // 실서버처럼 대표 포스터 주소가 바뀌면 기존 범위를 버린다
+      if (mainPosterUrl() !== prevPosterUrl) display.posterCrop = body.posterCrop ?? null;
+      else assign('posterCrop', body.posterCrop ?? undefined);
 
       return success('/api/v1/display', display);
     }),

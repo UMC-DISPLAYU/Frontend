@@ -39,8 +39,6 @@ import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 
-// 수정 API 가 아직 주소 · 링크를 받지 않아 수정 화면에서는 잠근다
-const LOCKED_HELP = '지금은 수정할 수 없어요';
 const REQUIRED_MARK = (
   <span aria-hidden="true" className={REQUIRED_CLASS}>
     *
@@ -304,12 +302,9 @@ function DisplayRegisterBasicForm() {
                 placeholder="주소 검색"
                 value={values.address ?? ''}
                 icon="search"
-                disabled={isEdit}
                 onClick={openAddress}
               />
-              <p className={HELP_CLASS}>
-                {isEdit ? LOCKED_HELP : '검색 결과에서 전시 장소의 주소를 선택해주세요'}
-              </p>
+              <p className={HELP_CLASS}>검색 결과에서 전시 장소의 주소를 선택해주세요</p>
             </div>
 
             <Controller
@@ -328,8 +323,6 @@ function DisplayRegisterBasicForm() {
                       : ''
                   }
                   errorMessage="아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)"
-                  lockedHelp={LOCKED_HELP}
-                  disabled={isEdit}
                   name={field.name}
                   value={field.value}
                   onChange={field.onChange}
@@ -355,8 +348,6 @@ function DisplayRegisterBasicForm() {
                   idleHelp="전시 사이트나 포트폴리오 주소를 적어주세요"
                   validHelp={website.status === 'valid' ? `${website.href} 로 연결돼요` : ''}
                   errorMessage="주소 형식을 확인해 주세요 (예: displayu.co.kr)"
-                  lockedHelp={LOCKED_HELP}
-                  disabled={isEdit}
                   name={field.name}
                   value={field.value}
                   onChange={field.onChange}

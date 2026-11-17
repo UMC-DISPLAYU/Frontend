@@ -110,9 +110,9 @@ export function MapPin({
 
 export function MyLocationMarker() {
   return (
-    <span aria-hidden className="pointer-events-none relative block size-0">
-      <span className="absolute -top-5.5 -left-5.5 size-11 rounded-circle bg-[rgba(24,24,27,.14)] animate-[ping_2.4s_var(--ease-standard)_infinite]" />
-      <span className="absolute -top-2.25 -left-2.25 size-4.5 rounded-circle border-3 border-interactive-inverse bg-interactive-primary shadow-[0_2px_6px_rgba(0,0,0,.3)]" />
+    <span aria-hidden className="pointer-events-none relative block size-0 text-icon-info">
+      <span className="absolute -top-5.5 -left-5.5 size-11 rounded-circle bg-current/20 animate-[ping_2.4s_var(--ease-standard)_infinite]" />
+      <span className="absolute -top-2.25 -left-2.25 size-4.5 rounded-circle border-3 border-interactive-inverse bg-current shadow-[0_2px_6px_rgba(0,0,0,.3)]" />
     </span>
   );
 }

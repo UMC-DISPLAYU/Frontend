@@ -138,6 +138,14 @@ export interface DisplayRejectionReasonResponseDataDto {
   rejectionReason: string;
 }
 
+/* 대표 포스터에서 카드에 보이는 범위. 원본 이미지 전체를 1로 본 비율(0~1) */
+export interface PosterCropDto {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface DisplayDetailDto {
   displayId: number;
   ownerUserId: number;
@@ -162,6 +170,8 @@ export interface DisplayDetailDto {
   status: string;
   /* 현재 심사 요청 ID. 심사 중이 아니면 null이고, 심사 요청 취소 API의 screeningId로 쓴다 */
   currentScreeningId: number | null;
+  /* 대표 포스터 표시 범위. null 이면 조정 없음 */
+  posterCrop?: PosterCropDto | null;
   invitationToken: string | null;
   invitationDisabledAt: string | null;
   images: DisplayImageDto[];
@@ -171,16 +181,6 @@ export interface DisplayDetailDto {
   /* 전시 링크(선택). 필드 이름은 백엔드와 확정했고, 실서버 응답에 아직 없을 수 있다 */
   instagramUrl?: string | null;
   websiteUrl?: string | null;
-  /* 대표 포스터 표시 범위. null 이면 조정 없음 */
-  posterCrop?: PosterCropDto | null;
-}
-
-/* 대표 포스터 원본 기준 0~1 비율. 포스터 전체는 { x: 0, y: 0, w: 1, h: 1 } 이다 */
-export interface PosterCropDto {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
 }
 
 export interface DisplayLocationDto {
@@ -427,8 +427,6 @@ export interface CreateDisplayRequestDto {
   displayImageUrl?: string[];
   posterMedia?: DisplayMediaRequestDto;
   displayMedia?: DisplayMediaRequestDto[];
-  /* 생략 또는 null 이면 조정 없음 */
-  posterCrop?: PosterCropDto | null;
   type: string;
   fields: string[];
   region: string;
@@ -452,6 +450,8 @@ export interface CreateDisplayRequestDto {
   /* 선택. https:// 로 시작하는 전체 주소만 받고 빈 문자열은 안 된다(없으면 보내지 않는다) */
   instagramUrl?: string;
   websiteUrl?: string;
+  /* 생략하면 조정 없이 만든다 */
+  posterCrop?: PosterCropDto;
   departmentOrClubValid?: boolean;
   regionValid?: boolean;
 }
@@ -467,8 +467,6 @@ export interface UpdateDisplayRequestDto {
   /* 생략하면 그대로 두고, displayMedia 를 빈 배열로 보내면 추가 포스터를 모두 지운다 */
   posterMedia?: DisplayMediaRequestDto;
   displayMedia?: DisplayMediaRequestDto[];
-  /* 생략 또는 null 이면 기존 범위 유지. 대표 포스터 주소가 바뀌면 서버가 초기화한다 */
-  posterCrop?: PosterCropDto | null;
   type?: string;
   fields?: string[];
   schoolOrOrganization?: string | null;
@@ -483,6 +481,15 @@ export interface UpdateDisplayRequestDto {
   placeName?: string;
   precautions?: string | null;
   fieldsValid?: boolean;
+  /* 링크 · 위치 · 포스터 범위는 생략하거나 null 이면 기존 값을 유지한다. 링크는 빈 문자열을 보내야 지워진다 */
+  instagramUrl?: string | null;
+  websiteUrl?: string | null;
+  roadAddress?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  region?: CreateDisplayRequestDto['region'] | null;
+  /* 대표 포스터 주소가 바뀌면 서버가 초기화한다 */
+  posterCrop?: PosterCropDto | null;
 }
 
 export type UpdateDisplayResponseDataDto = DisplayDetailDto;
@@ -535,6 +542,7 @@ export interface MyDisplayDto {
   postImageUrl: string;
   /* 대표 포스터가 영상이면 영상 주소(postImageUrl 은 썸네일), 아니면 null */
   posterVideoUrl?: string | null;
+  posterCrop?: PosterCropDto | null;
   isLeader?: boolean;
   /* 이 전시에서 내 역할. 내 전시 목록(GET /display/me)에만 있다 */
   role?: DisplayMemberRole;

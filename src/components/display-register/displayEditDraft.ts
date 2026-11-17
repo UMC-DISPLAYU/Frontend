@@ -8,13 +8,12 @@ import {
   type ExhibitionRegisterDraft,
   INITIAL_EXHIBITION_REGISTER_DRAFT,
 } from '@/contexts/exhibitionRegisterDraftState';
-import { isValidCrop } from '@/utils/cropBox';
 import { parseInstagramId } from '@/utils/linkInput';
 
 import {
   toDisplayAffiliation,
   toDisplayFields,
-  toPosterCropRequest,
+  toDisplayRegion,
   toPosterMediaRequest,
 } from './createDisplayRequest';
 import {
@@ -51,7 +50,6 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
   const fieldLabels = toFieldLabels(detail.displayFields ?? []);
   const instagram = parseInstagramId(detail.instagramUrl ?? '');
   const images = [...(detail.images ?? [])].sort((a, b) => a.sortOrder - b.sortOrder);
-  const isImageMain = (images[0]?.mediaType ?? 'IMAGE') === 'IMAGE';
 
   return {
     ...INITIAL_EXHIBITION_REGISTER_DRAFT,
@@ -61,6 +59,7 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
       mediaType: image.mediaType ?? 'IMAGE',
       thumbnailUrl: image.thumbnailUrl ?? null,
     })),
+    posterCrop: detail.posterCrop ?? null,
     title: detail.title ?? '',
     subtitle: detail.subtitle ?? '',
     intro: detail.content ?? '',
@@ -81,7 +80,6 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
     longitude: detail.location?.longitude ?? null,
     instagramId: instagram.status === 'valid' ? instagram.value : '',
     websiteUrl: detail.websiteUrl ?? '',
-    posterCrop: isImageMain && isValidCrop(detail.posterCrop) ? detail.posterCrop : null,
   };
 }
 
@@ -107,14 +105,16 @@ export function buildUpdateDisplayRequest(
     draft.endDate &&
     draft.startTime &&
     draft.endTime &&
-    placeName;
+    placeName &&
+    draft.address &&
+    draft.latitude !== null &&
+    draft.longitude !== null;
 
   if (!hasRequired) return null;
 
   return {
     title,
     ...posterMedia,
-    ...toPosterCropRequest(draft),
     type,
     fields,
     schoolOrOrganization,
@@ -125,6 +125,15 @@ export function buildUpdateDisplayRequest(
     openTime: draft.startTime,
     closeTime: draft.endTime,
     placeName,
+    roadAddress: draft.address,
+    latitude: draft.latitude!,
+    longitude: draft.longitude!,
+    region: toDisplayRegion(draft.address),
+    // 링크는 빈 문자열을 보내야 지워진다(null · 생략은 기존 값 유지)
+    instagramUrl: draft.instagramId ? `https://instagram.com/${draft.instagramId}` : '',
+    websiteUrl: draft.websiteUrl,
+    // null 은 기존 범위를 유지하므로 범위를 고른 경우에만 보낸다
+    ...(draft.posterCrop ? { posterCrop: draft.posterCrop } : {}),
   };
 }
 
@@ -142,6 +151,9 @@ const EDITABLE_KEYS = [
   'startTime',
   'endTime',
   'placeName',
+  'address',
+  'instagramId',
+  'websiteUrl',
 ] as const satisfies readonly (keyof ExhibitionRegisterDraft)[];
 
 /** 수정 화면에서 서버 값과 달라진 항목이 있는지. 이탈 확인 모달을 띄울지 정할 때 쓴다 */

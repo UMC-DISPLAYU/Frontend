@@ -36,6 +36,7 @@ const DETAIL = {
   ],
   instagramUrl: 'https://www.instagram.com/displayu/',
   websiteUrl: 'https://displayu.kr/',
+  posterCrop: { x: 0.1, y: 0, w: 0.8, h: 1 },
 } as unknown as DisplayDetailDto;
 
 describe('toFieldLabels', () => {
@@ -84,22 +85,8 @@ describe('toEditDraft', () => {
       address: '서울특별시 중구 예술로 12',
       instagramId: 'displayu',
       websiteUrl: 'https://displayu.kr/',
+      posterCrop: { x: 0.1, y: 0, w: 0.8, h: 1 },
     });
-  });
-
-  it('대표가 사진이면 저장된 포스터 범위를 불러오고, 영상 대표나 잘못된 범위는 버린다', () => {
-    const crop = { x: 0.1, y: 0, w: 0.8, h: 1 };
-    expect(toEditDraft({ ...DETAIL, posterCrop: crop }).posterCrop).toEqual(crop);
-    expect(toEditDraft({ ...DETAIL, posterCrop: { x: 0.5, y: 0, w: 0.8, h: 1 } }).posterCrop).toBe(
-      null,
-    );
-    expect(
-      toEditDraft({
-        ...DETAIL,
-        posterCrop: crop,
-        images: [{ imageUrl: 'v', sortOrder: 0, mediaType: 'VIDEO', thumbnailUrl: 't' }],
-      } as unknown as DisplayDetailDto).posterCrop,
-    ).toBeNull();
   });
 
   it('기타 단체 전시는 소속을 단체명으로 둔다', () => {
@@ -125,20 +112,24 @@ describe('buildUpdateDisplayRequest', () => {
       openTime: '10:00',
       closeTime: '18:00',
       placeName: '예술관',
+      roadAddress: '서울특별시 중구 예술로 12',
+      latitude: 37.5,
+      longitude: 127,
+      region: 'SEOUL',
+      instagramUrl: 'https://instagram.com/displayu',
+      websiteUrl: 'https://displayu.kr/',
+      posterCrop: { x: 0.1, y: 0, w: 0.8, h: 1 },
     });
   });
 
-  it('대표 사진의 포스터 범위가 있으면 함께 보내고, 영상 대표면 보내지 않는다', () => {
-    const original = toEditDraft(DETAIL);
-    const posterCrop = { x: 0, y: 0, w: 1, h: 1 };
-    expect(buildUpdateDisplayRequest({ ...original, posterCrop })).toMatchObject({ posterCrop });
-    expect(
-      buildUpdateDisplayRequest({
-        ...original,
-        posterCrop,
-        posters: [...original.posters].reverse(),
-      }),
-    ).not.toHaveProperty('posterCrop');
+  it('지운 링크는 빈 문자열로 보내 지운다', () => {
+    const draft = { ...toEditDraft(DETAIL), instagramId: '', websiteUrl: '' };
+    expect(buildUpdateDisplayRequest(draft)).toMatchObject({ instagramUrl: '', websiteUrl: '' });
+  });
+
+  it('포스터 범위가 없으면 보내지 않아 서버 값을 유지한다', () => {
+    const draft = { ...toEditDraft(DETAIL), posterCrop: null };
+    expect(buildUpdateDisplayRequest(draft)).not.toHaveProperty('posterCrop');
   });
 
   it('추가 포스터를 모두 지우면 빈 목록을 보내 지운다', () => {
@@ -160,6 +151,7 @@ describe('buildUpdateDisplayRequest', () => {
     expect(
       buildUpdateDisplayRequest({ ...toEditDraft(DETAIL), fieldLabels: [], field: [] }),
     ).toBeNull();
+    expect(buildUpdateDisplayRequest({ ...toEditDraft(DETAIL), latitude: null })).toBeNull();
   });
 });
 
@@ -175,5 +167,9 @@ describe('isEditDraftChanged', () => {
     expect(
       isEditDraftChanged(original, { ...original, posterCrop: { x: 0, y: 0, w: 1, h: 1 } }),
     ).toBe(true);
+    expect(isEditDraftChanged(original, { ...original, address: '서울특별시 종로구 1' })).toBe(
+      true,
+    );
+    expect(isEditDraftChanged(original, { ...original, websiteUrl: '' })).toBe(true);
   });
 });
