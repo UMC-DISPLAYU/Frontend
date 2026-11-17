@@ -249,6 +249,7 @@ export function ReviewsPanel({ display, onPosted }: Props) {
         open={reportTarget !== null}
         onClose={() => setReportTarget(null)}
         onSelect={() => {
+          // 신고 API가 아직 없어 서버로 보내지 않는다. API가 생기면 reportTarget 과 사유를 보낸다
           setReportTarget(null);
           toast('신고가 접수됐어요');
         }}
