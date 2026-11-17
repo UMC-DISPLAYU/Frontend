@@ -34,9 +34,11 @@ import {
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
+import { useArtworkPolicy } from '@/hooks/usePolicy';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
+import { hasPermission } from '@/utils/hasPermission';
 
 const notifyError = (error: unknown, fallback: string) => {
   if (error instanceof SessionChangedError) return;
@@ -210,9 +212,9 @@ function ArtworkRegisterRoute() {
 
   const myUserId = userMeQuery.data?.id;
   const display = displayQuery.data;
-  const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === myUserId;
-  // 대신 등록은 대표자만 할 수 있다
-  const proxy: ProxyAuthor | null = !isEdit && isOwner ? parseProxyAuthor(searchParams) : null;
+  // 대신 등록은 대표자 · 관리자만 할 수 있다(기획 권한표)
+  const canProxy = hasPermission(useArtworkPolicy(display), 'proxy');
+  const proxy: ProxyAuthor | null = !isEdit && canProxy ? parseProxyAuthor(searchParams) : null;
   const members = membersQuery.data?.members;
   // 전시 작가명이 비어 있으면(빈 문자열 포함) 기본 닉네임을 쓴다
   const myName =

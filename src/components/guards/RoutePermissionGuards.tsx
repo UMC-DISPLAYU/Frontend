@@ -46,6 +46,7 @@ type ArtworkGuardProps = GuardChildrenProps & {
 
 type DisplayContentGuardProps = GuardChildrenProps & {
   action:
+    | 'view'
     | 'createCategory'
     | 'editCategory'
     | 'deleteCategory'
@@ -128,6 +129,7 @@ function useDisplayPolicyResource(): ResourceQueryState<DisplayPolicyResource> {
             memberQuery.data?.members?.map((member) => ({
               userId: member.userId,
               accepted: member.accepted !== false,
+              role: member.role,
             })) ??
             [],
         }

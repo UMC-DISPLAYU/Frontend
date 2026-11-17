@@ -8,10 +8,10 @@ import {
   type ProxyAuthor,
   toTeamCandidates,
 } from '@/components/artwork-register';
-import { ManageScreen, OrderScreen } from '@/components/artworks-manage';
+import { DeleteConfirmDialog, ManageScreen, OrderScreen } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
-import { Overlay, Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
+import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import {
   useDeleteArtwork,
   useDisplayArtworks,
@@ -58,9 +58,9 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const artworkPolicy = useArtworkPolicy(display);
   const canReorder = hasPermission(artworkPolicy, 'reorder');
   const isOrderScreen = screen === 'order' && canReorder;
-  const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
-  // 대신 등록 시트의 팀원 목록. 대표자만 시트를 열기 때문에 대표자일 때만 불러온다
-  const membersQuery = useDisplayMembers(isOwner ? displayId : 0);
+  // 기획 권한표: 대표자 · 관리자는 다른 작가의 작품을 대신 등록할 수 있어 그때만 팀원 목록을 불러온다
+  const canProxy = hasPermission(artworkPolicy, 'proxy');
+  const membersQuery = useDisplayMembers(canProxy ? displayId : 0);
   const memberList = membersQuery.data;
   const proxyCandidates = useMemo(
     () =>
@@ -82,6 +82,9 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
         owner: artwork.artistName,
         artistUserId: artwork.artistUserId,
         artistUserIds: artwork.artistUserIds,
+        artistNames: artwork.artists?.length
+          ? artwork.artists.map(({ name }) => name)
+          : [artwork.artistName],
         thumbnail: artwork.artworkImageUrl,
         thumbnailCrop: artwork.artworkCrop,
       })),
@@ -111,9 +114,9 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
     );
   };
 
-  // 프로토타입: 팀원은 바로 작품 등록, 대표자는 먼저 누구의 작품인지 고른다
+  // 프로토타입: 팀원은 바로 작품 등록, 대표자 · 관리자는 먼저 누구의 작품인지 고른다
   const handleAddArtwork = () => {
-    if (!isOwner) {
+    if (!canProxy) {
       navigate(buildArtworkRegisterPath(displayId));
       return;
     }
@@ -198,48 +201,23 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
         onSelectMember={(memberUserId) => openRegister({ kind: 'member', userId: memberUserId })}
         onSelectName={(name) => openRegister({ kind: 'name', name })}
       />
-      <Overlay
+      <DeleteConfirmDialog
         open={confirming}
-        onClose={() => setConfirming(false)}
         title="작품을 삭제할까요?"
         description="삭제하면 이 작품이 전시에서 사라져요"
-        role="alertdialog"
-        size="sm"
-        showCloseButton={false}
-        footer={
-          <div className="flex gap-2 pb-5 tablet:pb-0">
-            <button
-              type="button"
-              onClick={() => setConfirming(false)}
-              disabled={deleteArtworkMutation.isPending}
-              className="typography-body-lg-semibold min-h-11 flex-1 rounded-12 bg-secondary text-primary focus-visible:outline-2 focus-visible:outline-focus active:scale-99 disabled:opacity-50"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={deleteArtworkMutation.isPending}
-              className="typography-body-lg-semibold min-h-11 flex-1 rounded-12 bg-notice text-interactive-inverse focus-visible:outline-2 focus-visible:outline-focus active:scale-99 disabled:opacity-50"
-            >
-              {deleteArtworkMutation.isPending ? '삭제 중' : '삭제하기'}
-            </button>
-          </div>
+        notice="삭제된 작품은 복구할 수 없어요"
+        isDeleting={deleteArtworkMutation.isPending}
+        errorMessage={
+          deleteArtworkMutation.error
+            ? getErrorMessage(
+                deleteArtworkMutation.error,
+                '작품을 삭제하지 못했어요. 다시 시도해주세요.',
+              )
+            : null
         }
-      >
-        <div className="rounded-12 bg-error-subtle p-3 text-error">
-          <p className="typography-body-lg-semibold">삭제 안내</p>
-          <p className="typography-body-md-medium mt-1">삭제된 작품은 복구할 수 없어요</p>
-        </div>
-        {deleteArtworkMutation.error && (
-          <p role="alert" className="typography-body-md-medium mt-3 text-error">
-            {getErrorMessage(
-              deleteArtworkMutation.error,
-              '작품을 삭제하지 못했어요. 다시 시도해주세요.',
-            )}
-          </p>
-        )}
-      </Overlay>
+        onCancel={() => setConfirming(false)}
+        onConfirm={handleDelete}
+      />
     </>
   );
 

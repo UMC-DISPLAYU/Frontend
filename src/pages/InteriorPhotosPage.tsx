@@ -84,7 +84,7 @@ function SortablePhotoItem({
   onPointerDown,
   onMoveByKey,
 }: SortablePhotoItemProps) {
-  const displayContentPolicy = useDisplayContentPolicy(displayDetail, photo);
+  const displayContentPolicy = useDisplayContentPolicy(displayDetail);
   const canDeleteContent = hasPermission(displayContentPolicy, 'deleteContent');
 
   return (
@@ -222,7 +222,7 @@ function InteriorPhotos({
   };
   const canEditPhotos =
     canReorder ||
-    photos.some((photo) => policies.displayContent.deleteContent(policyUser, displayDetail, photo));
+    (photos.length > 0 && policies.displayContent.deleteContent(policyUser, displayDetail));
 
   // 프로토타입 자동 저장: 제목 · 설명은 입력칸을 벗어나거나 화면을 나갈 때 저장한다
   const saveDetails = async (values: ContentEditValues) => {
@@ -323,10 +323,7 @@ function InteriorPhotos({
     // 사진은 1장 이상 필수라 마지막 한 장은 지우지 않는다(프로토타입 11-15)
     if (photoActionRef.current || isPhotoActionPending || photos.length < 2) return;
     const targetPhoto = photos.find((photo) => photo.id === id);
-    if (
-      !targetPhoto ||
-      !policies.displayContent.deleteContent(policyUser, displayDetail, targetPhoto)
-    ) {
+    if (!targetPhoto || !policies.displayContent.deleteContent(policyUser, displayDetail)) {
       return;
     }
 

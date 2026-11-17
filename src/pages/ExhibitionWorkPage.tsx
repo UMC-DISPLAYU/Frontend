@@ -5,7 +5,9 @@ import { ExhibitionWorkLayout } from '@/components/exhibition-work';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { useDisplayContentPolicy } from '@/hooks/usePolicy';
 import { useReplaceSearchParams } from '@/hooks/useReplaceSearchParams';
+import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworksManagePage } from './ArtworksManagePage';
 import { DisplayContentsManagePage } from './DisplayContentsManagePage';
@@ -14,9 +16,11 @@ export function ExhibitionWorkPage() {
   const { displayId } = useParams();
   const flowBack = useFlowBack();
   const [searchParams, replaceSearchParams] = useReplaceSearchParams();
-  const activeTab = searchParams.get('tab') === 'contents' ? 'contents' : 'artworks';
   const { data: display, isPending, isError } = useDisplayDetail(Number(displayId));
   const { data: userMe } = useUserMe();
+  const canViewContents = hasPermission(useDisplayContentPolicy(display), 'view');
+  const activeTab =
+    canViewContents && searchParams.get('tab') === 'contents' ? 'contents' : 'artworks';
 
   if (isPending) return <LoadingView />;
   if (isError || !display)
@@ -52,9 +56,11 @@ export function ExhibitionWorkPage() {
       <div hidden={activeTab !== 'artworks'}>
         <ArtworksManagePage embedded />
       </div>
-      <div hidden={activeTab !== 'contents'}>
-        <DisplayContentsManagePage embedded />
-      </div>
+      {canViewContents && (
+        <div hidden={activeTab !== 'contents'}>
+          <DisplayContentsManagePage embedded />
+        </div>
+      )}
     </ExhibitionWorkLayout>
   );
 }

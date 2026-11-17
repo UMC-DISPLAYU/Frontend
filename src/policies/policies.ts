@@ -8,10 +8,12 @@ import type {
 import {
   canManageArtwork,
   canManageDisplay,
+  canManageDisplayWork,
   canModerateDisplayPost,
   canModeratePersonalPost,
   canViewLoungePost,
   isArtistVerified,
+  isDisplayManager,
   isDisplayMember,
   isLoggedIn,
   isMine,
@@ -37,16 +39,22 @@ export const policies = {
   },
 
   displayContent: {
-    createCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
-    editCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
-    deleteCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
-    // 이미 만들어진 카테고리에 사진을 추가하는 건 작가 인증 여부와 무관하게 전시 소속인이면 가능
-    createContent: (user: User, display: DisplayPolicyResource) => isDisplayMember(user, display),
-    editContent: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
-    deleteContent: (user: User, display: DisplayPolicyResource, content?: UserOwnedResource) =>
-      canManageDisplay(user, display) ||
-      (isDisplayMember(user, display) && content !== undefined && isOwner(user, content)),
-    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
+    // 전시 작업 화면의 전시 콘텐츠 탭 · 섹션 화면. 팀원은 전시작만 본다(기획 권한표)
+    view: (user: User, display: DisplayPolicyResource) => isDisplayManager(user, display),
+    createCategory: (user: User, display: DisplayPolicyResource) =>
+      canManageDisplayWork(user, display),
+    editCategory: (user: User, display: DisplayPolicyResource) =>
+      canManageDisplayWork(user, display),
+    deleteCategory: (user: User, display: DisplayPolicyResource) =>
+      canManageDisplayWork(user, display),
+    createContent: (user: User, display: DisplayPolicyResource) =>
+      canManageDisplayWork(user, display),
+    editContent: (user: User, display: DisplayPolicyResource) =>
+      canManageDisplayWork(user, display),
+    deleteContent: (user: User, display: DisplayPolicyResource) =>
+      canManageDisplayWork(user, display),
+    // 섹션 순서 · 섹션 안 사진 순서
+    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplayWork(user, display),
   },
 
   displayInvitation: {
@@ -60,7 +68,9 @@ export const policies = {
       canManageArtwork(user, artwork, display),
     delete: (user: User, artwork: ArtworkPolicyResource, display: DisplayPolicyResource) =>
       canManageArtwork(user, artwork, display),
-    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
+    // 다른 작가의 작품 대신 등록(팀원 선택 · 이름 직접 입력)
+    proxy: (user: User, display: DisplayPolicyResource) => canManageDisplayWork(user, display),
+    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplayWork(user, display),
   },
 
   feeling: {
