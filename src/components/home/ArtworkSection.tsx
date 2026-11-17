@@ -6,12 +6,7 @@ import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { cn } from '@/utils/cn';
-import {
-  croppedDisplayWidth,
-  FIT_THUMBNAIL_IMAGE_CLASS,
-  resolveSavedThumbnail,
-  savedCropImageStyle,
-} from '@/utils/cropBox';
+import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 
 import { ArtistByline } from './ArtistByline';
 import { HOME_INNER } from './homeLayout';
@@ -70,48 +65,41 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
           </SkeletonList>
         ) : (
           // 프로토타입처럼 카드는 등장 애니메이션 없이 바로 그린다(한 장씩 올라오면 옆으로 넘길 때 뒤 카드가 비어 보인다)
-          artworks?.map((artwork) => {
-            const thumbnail = resolveSavedThumbnail(artwork.artworkCrop, artwork.artworkFitMode);
-
-            return (
-              <Link
-                key={artwork.artworkId}
-                to={`/artwork/${artwork.artworkId}`}
-                className={cn(
-                  CARD_CLASS,
-                  'group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98',
-                )}
-              >
-                <div>
-                  <div className={cn('relative overflow-hidden', IMAGE_FRAME_CLASS)}>
-                    <OptimizedImage
-                      src={artwork.artworkImageUrl}
-                      alt={`${artwork.artworkName} 작품`}
-                      displayWidth={croppedDisplayWidth(220, thumbnail.crop)}
-                      className={cn(
-                        'size-full object-cover transition-transform duration-[700ms] ease-standard group-hover:scale-103',
-                        thumbnail.isFit && FIT_THUMBNAIL_IMAGE_CLASS,
-                      )}
-                      style={savedCropImageStyle(thumbnail.crop)}
-                    />
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <b className="typography-body-lg-semibold block [overflow-wrap:anywhere]">
-                    {artwork.artworkName}
-                  </b>
-                  <ArtistByline
-                    names={
-                      artwork.artists?.length
-                        ? artwork.artists.map(({ name }) => name)
-                        : [artwork.artistName]
-                    }
-                    className="typography-body-md-medium text-secondary"
+          artworks?.map((artwork) => (
+            <Link
+              key={artwork.artworkId}
+              to={`/artwork/${artwork.artworkId}`}
+              className={cn(
+                CARD_CLASS,
+                'group block text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98',
+              )}
+            >
+              <div>
+                <div className={cn('relative overflow-hidden', IMAGE_FRAME_CLASS)}>
+                  <OptimizedImage
+                    src={artwork.artworkImageUrl}
+                    alt={`${artwork.artworkName} 작품`}
+                    displayWidth={croppedDisplayWidth(220, artwork.artworkCrop)}
+                    className="size-full object-cover transition-transform duration-[700ms] ease-standard group-hover:scale-103"
+                    style={savedCropImageStyle(artwork.artworkCrop)}
                   />
                 </div>
-              </Link>
-            );
-          })
+              </div>
+              <div className="pt-2">
+                <b className="typography-body-lg-semibold block [overflow-wrap:anywhere]">
+                  {artwork.artworkName}
+                </b>
+                <ArtistByline
+                  names={
+                    artwork.artists?.length
+                      ? artwork.artists.map(({ name }) => name)
+                      : [artwork.artistName]
+                  }
+                  className="typography-body-md-medium text-secondary"
+                />
+              </div>
+            </Link>
+          ))
         )}
       </div>
     </section>
