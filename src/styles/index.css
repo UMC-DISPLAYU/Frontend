@@ -21,6 +21,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Tailwind v4 preflight 가 button 의 cursor: pointer 를 뺐다. 컴포넌트의 cursor-* 클래스가 이기도록 base 에 둔다 */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
 }
 
 /*
