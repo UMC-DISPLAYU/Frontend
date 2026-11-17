@@ -9,12 +9,12 @@ import { BookmarkIcon, ExternalLinkIcon, PencilIcon } from './ArtistProfileIcons
 const PHOTO_FRAME_CLASS = 'h-33 w-29 bg-secondary';
 /*
  * 이름 옆 동그라미는 작가명 글자 높이에 맞춘다. 0.89em = Pretendard 굵은 한글의 실제 글자 높이
- * (위 0.80em + 아래 0.09em). 이름과 같은 typography를 받아 em이 이름 글자 크기(28 → 36px)를 따른다.
+ * (위 0.80em + 아래 0.09em). 이름 줄의 typography를 이어받아 em이 이름 글자 크기(28 → 36px)를 따른다.
  * 이름이 두 줄이어도 첫 줄 글자 옆에 오도록, 줄 높이(1.4em)에서 글자 높이를 뺀 나머지의 절반만큼 내린다.
- * 누르는 영역은 ::before로 44px를 유지한다.
+ * 누르는 영역은 ::before로 44px를 유지하되, 이름 글자를 덮지 않게 왼쪽은 gap(8px)까지만 넓힌다.
  */
 const ACTION_CLASS =
-  'typography-title-md desktop:typography-title-xl relative mt-[calc((1.4em-0.89em)/2)] grid size-[0.89em] shrink-0 place-items-center rounded-circle bg-secondary text-primary transition duration-fast ease-standard before:absolute before:top-1/2 before:left-1/2 before:size-11 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-circle hover:bg-tertiary active:scale-94 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-default';
+  'relative mt-[calc((1.4em-0.89em)/2)] grid size-[0.89em] shrink-0 place-items-center rounded-circle bg-secondary text-primary transition duration-fast ease-standard before:absolute before:top-1/2 before:-left-2 before:size-11 before:-translate-y-1/2 hover:bg-tertiary active:scale-94 focus-visible:outline-2 focus-visible:outline-focus disabled:cursor-default';
 /* 동그라미 대비 아이콘 비율은 프로토타입(36px 안에 20px)과 같게 둔다 */
 const ACTION_ICON_CLASS = 'size-[0.5em]';
 
@@ -64,7 +64,7 @@ export function ArtistProfileHeader({
         {/* 한 줄일 때 줄 높이는 프로토타입 행동 버튼(44px)을 그대로 둔다: 44px에서 이름 줄 높이(1.4em)를 뺀 만큼 위아래로 나눈다 */}
         <div className="typography-title-md flex items-start gap-2 py-[max(0px,22px-0.7em)] desktop:typography-title-xl">
           {/* 이름은 최대 2줄, 넘으면 … (단어 중간에서 끊지 않는다) */}
-          <h1 className="typography-title-md line-clamp-2 min-w-0 break-keep [overflow-wrap:anywhere] text-primary desktop:typography-title-xl">
+          <h1 className="line-clamp-2 min-w-0 break-keep [overflow-wrap:anywhere] text-primary">
             {name}
           </h1>
           {action.kind === 'edit' ? (
@@ -146,7 +146,7 @@ export function ArtistProfileHeaderSkeleton() {
       className="grid grid-cols-[minmax(0,1fr)_116px] gap-x-4 pt-6 desktop:flex desktop:flex-col desktop:pt-0"
     >
       <div>
-        {/* 이름 줄은 옆의 저장 · 수정 버튼(44px) 높이를 따른다 */}
+        {/* 이름 줄 높이는 실제 화면과 같게 모바일 44px, 데스크톱 50.4px(이름 한 줄)이다 */}
         <div className="flex min-h-11 items-center">
           <SkeletonText className="typography-title-md w-32 desktop:typography-title-xl" />
         </div>
