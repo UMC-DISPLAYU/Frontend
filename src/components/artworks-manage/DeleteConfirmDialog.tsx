@@ -29,7 +29,9 @@ export function DeleteConfirmDialog({
   return (
     <Overlay
       open={open}
-      onClose={onCancel}
+      onClose={() => {
+        if (!isDeleting) onCancel();
+      }}
       title={title}
       role="alertdialog"
       size="sm"
@@ -42,8 +44,9 @@ export function DeleteConfirmDialog({
           <button
             ref={cancelButtonRef}
             type="button"
+            disabled={isDeleting}
             onClick={onCancel}
-            className="h-11 flex-1 rounded-12 bg-[#f0f0f3] text-[14px] font-semibold tracking-[-0.03em] text-[#18181b] transition duration-fast hover:bg-[#e4e4e7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-98"
+            className="disabled:opacity-50 h-11 flex-1 rounded-12 bg-[#f0f0f3] text-[14px] font-semibold tracking-[-0.03em] text-[#18181b] transition duration-fast hover:bg-[#e4e4e7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#18181b] active:scale-98"
           >
             취소
           </button>

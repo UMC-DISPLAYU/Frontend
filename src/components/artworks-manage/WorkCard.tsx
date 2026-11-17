@@ -40,7 +40,7 @@ export function WorkCard({
       </div>
       <p className="mt-2 truncate text-[14px] font-semibold">{work.title}</p>
       <p className="truncate text-[12px] font-medium text-[#3f3f47]">
-        {(work.artistNames ?? [work.artist]).join(', ')}
+        {(work.artistNames ?? [work.artist]).filter(Boolean).join(', ')}
       </p>
     </div>
   );

@@ -19,5 +19,6 @@
 | **LoungeComment (라운지 댓글(공통))**                   | -                                 | 회원                              | —                                                | 작성자                                           | —                                 | 회원      | —         |
 | **Memo**                                                | 나                                | 나                                | 나                                               | 나                                               | —                                 | —         | —         |
 
-- DisplayContent의 view는 전시 작업 화면의 전시 콘텐츠 탭 · 섹션 화면 열람이다. 일반 팀원은 전시작 탭만 본다.
+- DisplayContent의 view는 전시 작업 화면의 전시 콘텐츠 탭 · 섹션 화면 열람이다. 일반 팀원은 전시작 탭만 보므로 섹션 사진(DisplayContentPhoto)도 이 화면에 들어올 수 있는 대표자 · 관리자만 다룬다.
+- DisplayContent의 reorder는 섹션 순서이고, DisplayContentPhoto의 reorder는 섹션 안 사진 순서다.
 - 전시 관리자는 전시 대표자가 관리자(MANAGER)로 지정한 팀원이다.

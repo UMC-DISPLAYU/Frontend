@@ -162,16 +162,18 @@ const MATRIX: Record<string, Rule[]> = {
       desc: '전시 소유자 || 전시 관리자',
       allow: ['displayManager', 'unverifiedDisplayManager', 'displayOwner'],
     },
-    ...(['createCategory', 'reorder'] as const).map((a) => ({
+    ...(['createCategory', 'reorderCategory'] as const).map((a) => ({
       permission: `displayContent:${a}`,
       desc: '작가 인증 && (전시 소유자 || 전시 관리자)',
       allow: ['displayManager', 'displayOwner'] as RoleName[],
     })),
-    ...(['editCategory', 'deleteCategory', 'editContent', 'deleteContent'] as const).map((a) => ({
-      permission: `displayContent:${a}`,
-      desc: '작가 인증 && 전시 소유자',
-      allow: ['displayOwner' as RoleName],
-    })),
+    ...(['editCategory', 'deleteCategory', 'editContent', 'deleteContent', 'reorder'] as const).map(
+      (a) => ({
+        permission: `displayContent:${a}`,
+        desc: '작가 인증 && 전시 소유자',
+        allow: ['displayOwner' as RoleName],
+      }),
+    ),
     {
       permission: 'displayContent:createContent',
       desc: '전시 소속인',

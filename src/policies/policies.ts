@@ -51,7 +51,11 @@ export const policies = {
     deleteContent: (user: User, display: DisplayPolicyResource, content?: UserOwnedResource) =>
       canManageDisplay(user, display) ||
       (isDisplayMember(user, display) && content !== undefined && isOwner(user, content)),
-    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplayContent(user, display),
+    // 섹션 안 사진 순서
+    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
+    // 섹션 순서
+    reorderCategory: (user: User, display: DisplayPolicyResource) =>
+      canManageDisplayContent(user, display),
   },
 
   displayInvitation: {

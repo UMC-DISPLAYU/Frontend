@@ -42,7 +42,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
   const canCreateCategory = hasPermission(displayContentPolicy, 'createCategory');
   const canEditCategory = hasPermission(displayContentPolicy, 'editCategory');
   const canDeleteCategory = hasPermission(displayContentPolicy, 'deleteCategory');
-  const canReorder = hasPermission(displayContentPolicy, 'reorder');
+  const canReorder = hasPermission(displayContentPolicy, 'reorderCategory');
   const canEditList = canEditCategory || canDeleteCategory || canReorder;
 
   const deleteMutation = useDeleteContentCategory(displayId);

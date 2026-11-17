@@ -15,7 +15,8 @@ export type PolicyActionMap = {
     | 'createContent'
     | 'editContent'
     | 'deleteContent'
-    | 'reorder';
+    | 'reorder'
+    | 'reorderCategory';
   displayInvitation: 'create';
   artwork: 'create' | 'edit' | 'delete' | 'reorder';
   feeling:

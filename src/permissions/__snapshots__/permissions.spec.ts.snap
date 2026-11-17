@@ -57,7 +57,7 @@ exports[`권한 테이블 무결성 > 전체 역할 × 권한 결과 스냅샷 1
       "displayOwner",
     ],
     "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
-    "permission": "displayContent:reorder",
+    "permission": "displayContent:reorderCategory",
     "when": null,
   },
   {
@@ -90,6 +90,14 @@ exports[`권한 테이블 무결성 > 전체 역할 × 권한 결과 스냅샷 1
     ],
     "condition": "작가 인증 && 전시 소유자",
     "permission": "displayContent:deleteContent",
+    "when": null,
+  },
+  {
+    "allowed": [
+      "displayOwner",
+    ],
+    "condition": "작가 인증 && 전시 소유자",
+    "permission": "displayContent:reorder",
     "when": null,
   },
   {

@@ -100,6 +100,8 @@ export function useDisplayContentPolicy(
       deleteContent: () =>
         display ? policies.displayContent.deleteContent(user, display, content) : false,
       reorder: () => (display ? policies.displayContent.reorder(user, display) : false),
+      reorderCategory: () =>
+        display ? policies.displayContent.reorderCategory(user, display) : false,
     }),
     [user, display, content],
   );

@@ -57,7 +57,7 @@ vi.mock('@/hooks/usePolicy', () => ({
     createCategory: () => h.canManage,
     editCategory: () => h.canManage,
     deleteCategory: () => h.canManage,
-    reorder: () => h.canManage,
+    reorderCategory: () => h.canManage,
   }),
 }));
 vi.mock('@/hooks/queries/useDisplayDetail', () => ({

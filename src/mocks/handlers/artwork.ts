@@ -83,7 +83,6 @@ const invalidArtworkTypes = (path: string) =>
 const toMaterialMedia = (value: unknown) =>
   typeof value === 'string' && value.trim() ? value.trim() : null;
 
-/* 대표 · 공동 작가 중 계정이 있는 사람의 id(중복 없이) */
 /* 목록의 artists: 대표 작가가 첫 번째, 공동 작가가 이어진다. 등록 · 수정한 작품은 coAuthors 로 다시 만든다 */
 const toArtistList = (artwork: any) =>
   artwork.coAuthors
@@ -95,6 +94,7 @@ const toArtistList = (artwork: any) =>
         { userId: artwork.artistUserId ?? null, name: artwork.artistName ?? '' },
       ]);
 
+/* 대표 · 공동 작가 중 계정이 있는 사람의 id(중복 없이) */
 const toArtistUserIds = (artwork: any): number[] => [
   ...new Set(
     [
