@@ -1,5 +1,7 @@
 import { delay, http, HttpResponse } from 'msw';
 
+import type { SignupRequestDto } from '@/api/dto';
+import { agreements } from '@/mocks/handlers/agreement';
 import { created, fail, noContent, paths, readJson, success } from '@/mocks/response';
 import { MOCK_DELAY_MS, MOCK_NICKNAMES } from '@/mocks/scenario';
 
@@ -43,7 +45,16 @@ export const authHandlers = [
   ),
   ...paths('/api/v1/auth/signup').map((path) =>
     http.post(path, async ({ request }) => {
-      const body = await readJson<{ nickname?: string }>(request);
+      const body = await readJson<SignupRequestDto>(request);
+
+      // 실서버처럼 서비스 이용약관(현재 버전) 동의와 만 14세 이상 확인이 없으면 가입시키지 않는다
+      const service = agreements.find(({ code }) => code === 'TERMS_OF_SERVICE');
+      const agreedService = body.agreements?.some(
+        ({ code, version }) => code === service?.code && version === service?.version,
+      );
+      if (!agreedService || body.isOver14 !== true) {
+        return fail('/api/v1/auth/signup', 400, 'INVALID_INPUT_VALUE', '필수 약관에 동의해주세요.');
+      }
 
       if (body.nickname === MOCK_NICKNAMES.signupSlow) await delay(MOCK_DELAY_MS);
       if (body.nickname === MOCK_NICKNAMES.signupDuplicate) {

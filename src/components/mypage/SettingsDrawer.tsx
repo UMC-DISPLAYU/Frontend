@@ -170,11 +170,11 @@ export function SettingsDrawer({
             aria-label="약관"
             className="typography-body-md-medium flex items-center gap-3 text-primary"
           >
-            <Link className={FOOTER_LINK_CLASS} replace to="/policy">
+            <Link className={FOOTER_LINK_CLASS} replace to="/policy?doc=service">
               이용약관
             </Link>
             <span aria-hidden="true" className="h-2.5 border-l border-primary" />
-            <Link className={FOOTER_LINK_CLASS} replace to="/policy">
+            <Link className={FOOTER_LINK_CLASS} replace to="/policy?doc=privacy">
               개인정보처리방침
             </Link>
           </nav>

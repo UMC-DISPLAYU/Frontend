@@ -230,7 +230,6 @@ export const router = createBrowserRouter([
           //   element: <LoungeBoardDetailPage />,
           //   handle: { hideNavbar: true },
           // },
-          { path: 'policy', element: <PolicyPage /> },
 
           // 🔒 보호된 라우트 (인증 필요 - AuthGuard Layout 적용)
           {
@@ -526,6 +525,13 @@ export const router = createBrowserRouter([
       {
         path: '/onboarding',
         element: <NewOnboardingPage />,
+        errorElement: <RouteErrorView />,
+      },
+
+      // 약관 문서(?doc=service | privacy | privacy-notice)는 프로토타입에 냅바 · 푸터가 없어 Layout 밖에 둔다
+      {
+        path: '/policy',
+        element: <PolicyPage />,
         errorElement: <RouteErrorView />,
       },
 
