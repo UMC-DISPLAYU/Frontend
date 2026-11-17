@@ -17,6 +17,9 @@ import { useDisplayPolicy, useDisplayReviewPolicy } from '@/hooks/usePolicy';
 import { formatRelativeTime } from '@/utils/date';
 import { hasPermission } from '@/utils/hasPermission';
 
+/* 신고할 글. 답글이면 replyId 가 있다 */
+export type ReportTarget = { reviewId: number; replyId?: number };
+
 type Props = {
   display: DisplayDetailDto;
   displayId: number;
@@ -24,7 +27,7 @@ type Props = {
   myUserId?: number;
   onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
   /* 남의 후기 · 답글 신고. 없으면 신고하기 메뉴가 생기지 않는다 */
-  onReport?: () => void;
+  onReport?: (target: ReportTarget) => void;
   activeReplyId?: string | null;
 };
 
@@ -143,6 +146,16 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
     [isLoggedIn, openLoginModal, deleteReplyMutation, deleteMutation],
   );
 
+  const handleReport = useCallback(
+    (commentId: string, parentCommentId?: string) =>
+      onReport?.(
+        parentCommentId
+          ? { reviewId: Number(parentCommentId), replyId: Number(commentId) }
+          : { reviewId: Number(commentId) },
+      ),
+    [onReport],
+  );
+
   const handleToggleReplies = useCallback(() => setRepliesOpen((v) => !v), []);
   const handleLoadMoreReplies = useCallback(() => fetchMoreReplies(), [fetchMoreReplies]);
   const handleReplyClick = useCallback(
@@ -166,7 +179,7 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
         onUnlike={handleLike}
         isLikePending={isLikePending}
         onDelete={handleDelete}
-        onReport={onReport}
+        onReport={onReport ? handleReport : undefined}
         onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
       />

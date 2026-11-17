@@ -309,7 +309,8 @@ export function BottomCommentBar({
                   <button
                     type="button"
                     onClick={handleOpenDrawing}
-                    disabled={isBusy || hasDraft}
+                    // 접힌 동안은 invisible 로 막는다. disabled 로 막으면 disabled:opacity-40 이 이겨 0까지 사라지지 않는다
+                    disabled={isBusy}
                     aria-label="그림 그리기"
                     className={cn(TOOL_BUTTON_CLASS, hasDraft && COLLAPSED_CLASS)}
                   >

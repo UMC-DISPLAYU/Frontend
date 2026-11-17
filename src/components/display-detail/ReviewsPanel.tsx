@@ -15,7 +15,7 @@ import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
-import { DisplayReviewCommentItem } from './DisplayReviewCommentItem';
+import { DisplayReviewCommentItem, type ReportTarget } from './DisplayReviewCommentItem';
 
 const PLACEHOLDER = '글을 입력하세요.';
 
@@ -25,11 +25,17 @@ type Props = {
   onPosted?: () => void;
 };
 
-/* 프로토타입 .cm.fresh: 방금 올린 후기는 위에서 10px 내려오며 나타난다(0.42s) */
-function FreshReview({ children }: { children: ReactNode }) {
+/*
+ * 프로토타입 .cm.fresh: 방금 올린 후기는 위에서 10px 내려오며 나타난다(0.42s).
+ * 항목마다 늘 이 틀로 감싸 두고 처음 그려질 때만 fresh 를 본다(감싸기를 바꾸면 항목이 다시 마운트돼 펼친 답글이 접힌다).
+ * Web Animations API 는 index.css 의 동작 줄이기 전역 규칙이 닿지 않아 여기서 직접 본다
+ */
+function ReviewRow({ fresh, children }: { fresh: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
+  const freshOnMountRef = useRef(fresh);
 
   useEffect(() => {
+    if (!freshOnMountRef.current) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     ref.current?.animate(
       [
@@ -104,12 +110,16 @@ export function ReviewsPanel({ display, onPosted }: Props) {
     );
   }, []);
 
-  const [isReportOpen, setIsReportOpen] = useState(false);
+  // 신고할 후기 · 답글. 신고 API가 생기면 사유와 함께 이 대상을 보낸다
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const isLoggedIn = hasPermission(reviewPolicy, 'like');
-  const handleReport = useCallback(() => {
-    if (isLoggedIn) setIsReportOpen(true);
-    else openLoginModal();
-  }, [isLoggedIn, openLoginModal]);
+  const handleReport = useCallback(
+    (target: ReportTarget) => {
+      if (isLoggedIn) setReportTarget(target);
+      else openLoginModal();
+    },
+    [isLoggedIn, openLoginModal],
+  );
 
   const createReview = useCreateDisplayReview(displayId);
   const createReply = useCreateDisplayReviewReply(displayId, replyState?.commentId ?? 0);
@@ -119,12 +129,8 @@ export function ReviewsPanel({ display, onPosted }: Props) {
     (review) => !(review.isDeleted && review.replyCount === 0),
   );
 
-  // 올리기 직전에 있던 후기들. 목록 맨 위에 새로 생긴 후기만 등장 효과를 준다(뒤 페이지는 제외)
-  const [knownIds, setKnownIds] = useState<Set<number> | null>(null);
-  const firstKnownIndex = knownIds
-    ? reviews.findIndex((review) => knownIds.has(review.displayReviewId))
-    : 0;
-  const freshCount = firstKnownIndex === -1 ? reviews.length : firstKnownIndex;
+  // 내가 방금 올린 후기. 목록에 처음 나타날 때 등장 효과를 준다
+  const [postedReviewId, setPostedReviewId] = useState<number | null>(null);
 
   const triggerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -161,10 +167,12 @@ export function ReviewsPanel({ display, onPosted }: Props) {
 
       <div className="flex flex-col">
         {!showSkeleton &&
-          reviews.map((review, index) => {
-            const item = (
+          reviews.map((review) => (
+            <ReviewRow
+              key={review.displayReviewId}
+              fresh={review.displayReviewId === postedReviewId}
+            >
               <DisplayReviewCommentItem
-                key={review.displayReviewId}
                 display={display}
                 displayId={displayId}
                 review={review}
@@ -173,13 +181,8 @@ export function ReviewsPanel({ display, onPosted }: Props) {
                 onReplyClick={handleReplyClick}
                 onReport={COMMENT_REPORT_ENABLED ? handleReport : undefined}
               />
-            );
-            return index < freshCount ? (
-              <FreshReview key={review.displayReviewId}>{item}</FreshReview>
-            ) : (
-              item
-            );
-          })}
+            </ReviewRow>
+          ))}
       </div>
 
       <div ref={triggerRef} className="h-4" />
@@ -233,18 +236,20 @@ export function ReviewsPanel({ display, onPosted }: Props) {
             return false;
           }
 
-          const idsBeforePost = new Set(reviews.map((review) => review.displayReviewId));
-          await createReview.mutateAsync({ content: finalContent, images: formattedImages });
-          setKnownIds(idsBeforePost);
+          const posted = await createReview.mutateAsync({
+            content: finalContent,
+            images: formattedImages,
+          });
+          setPostedReviewId(posted.displayReviewId);
           onPosted?.();
         }}
       />
       {loginModal}
       <ReportReasonDialog
-        open={isReportOpen}
-        onClose={() => setIsReportOpen(false)}
+        open={reportTarget !== null}
+        onClose={() => setReportTarget(null)}
         onSelect={() => {
-          setIsReportOpen(false);
+          setReportTarget(null);
           toast('신고가 접수됐어요');
         }}
       />

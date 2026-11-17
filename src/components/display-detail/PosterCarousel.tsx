@@ -49,7 +49,7 @@ export function PosterCarousel({ posters, title }: Props) {
 
   return (
     <div className="relative desktop:sticky desktop:top-[calc(var(--detail-top)+2rem)] desktop:flex desktop:flex-col desktop:gap-3">
-      <div className="relative aspect-402/568 overflow-hidden bg-secondary min-[37.5rem]:mx-auto min-[37.5rem]:mt-6 min-[37.5rem]:max-w-120 desktop:mx-0 desktop:mt-0 desktop:max-w-none">
+      <div className="relative aspect-402/568 overflow-hidden bg-secondary min-[37.5rem]:mx-auto min-[37.5rem]:mt-6 min-[37.5rem]:max-w-120 desktop:mx-0 desktop:mt-0 desktop:max-h-[calc(100dvh-var(--detail-top)-2rem-4.75rem-1.5rem)] desktop:max-w-none">
         <div
           ref={trackRef}
           role="group"
@@ -92,7 +92,10 @@ export function PosterCarousel({ posters, title }: Props) {
         )}
       </div>
 
-      {/* 프로토타입은 1장이면 썸네일을 숨기지만, 1장이어도 보인다(PM/FE 2차 회의 2026-11-16). 장수 칩은 여러 장일 때만 */}
+      {/*
+       * 포스터는 sticky 라 아래 썸네일(간격 12 + 64)까지 화면 안에 들도록 높이를 막는다(남는 곳은 회색, 포스터는 contain).
+       * 프로토타입은 1장이면 썸네일을 숨기지만, 1장이어도 보인다(PM/FE 2차 회의 2026-11-16). 장수 칩은 여러 장일 때만
+       */}
       <div
         role="group"
         aria-label="포스터 목록"
