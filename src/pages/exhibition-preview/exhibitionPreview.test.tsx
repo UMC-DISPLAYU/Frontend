@@ -196,12 +196,24 @@ describe('작품 미리보기', () => {
     expect(asElement(ArtworkDetailPage({ previewDisplayId: 7 })).type).toBe(NotFoundView);
   });
 
-  it('등록 중(DRAFT) 전시의 작품을 공개 주소로 열면 미리보기 주소로 보낸다', () => {
-    h.display.data = { ...publicDisplay, status: 'DRAFT' };
-    h.search = 'tab=guest';
-    const page = asElement(ArtworkDetailPage());
-    expect(page.type).toBe(Navigate);
-    expect(page.props).toEqual({ to: '/exhibition/7/artworks/3/preview?tab=guest', replace: true });
+  it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED'])(
+    '공개되지 않은 전시(%s)의 작품을 공개 주소로 열면 미리보기 주소로 보낸다',
+    (status) => {
+      h.display.data = { ...publicDisplay, status };
+      h.search = 'tab=guest';
+      const page = asElement(ArtworkDetailPage());
+      expect(page.type).toBe(Navigate);
+      expect(page.props).toEqual({
+        to: '/exhibition/7/artworks/3/preview?tab=guest',
+        replace: true,
+      });
+    },
+  );
+
+  it('공개된 전시의 작품도 미리보기 주소로 열면 미리보기다', () => {
+    const page = asElement(ArtworkDetailPage({ previewDisplayId: 7 }));
+    expect(page.type).toBe(ArtworkDetailShell);
+    expect(page.props.isPreview).toBe(true);
   });
 
   it('공개된 전시는 개막 전이어도 공개 작품 상세다', () => {
