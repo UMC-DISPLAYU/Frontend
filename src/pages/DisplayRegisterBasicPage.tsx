@@ -351,10 +351,10 @@ function DisplayRegisterBasicForm() {
                   parsed={website}
                   maxLength={120}
                   inputMode="url"
-                  placeholder="ex) displayu.kr"
+                  placeholder="ex) displayu.co.kr"
                   idleHelp="전시 사이트나 포트폴리오 주소를 적어주세요"
                   validHelp={website.status === 'valid' ? `${website.href} 로 연결돼요` : ''}
-                  errorMessage="주소 형식을 확인해 주세요 (예: displayu.kr)"
+                  errorMessage="주소 형식을 확인해 주세요 (예: displayu.co.kr)"
                   lockedHelp={LOCKED_HELP}
                   disabled={isEdit}
                   name={field.name}
