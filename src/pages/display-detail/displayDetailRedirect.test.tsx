@@ -63,14 +63,17 @@ beforeEach(() => {
 });
 
 describe('공개 상세 주소의 미리보기는 미리보기 화면 하나로 보낸다', () => {
-  it('등록 중 전시를 /display/:id 로 열면 탭을 유지한 채 미리보기 주소로 바꿔 간다', () => {
-    h.display.data = display('DRAFT');
-    h.search = '?tab=works';
-    const page = asElement(DisplayDetailPage());
+  it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED'])(
+    '공개되지 않은 전시(%s)를 /display/:id 로 열면 탭을 유지한 채 미리보기 주소로 바꿔 간다',
+    (status) => {
+      h.display.data = display(status);
+      h.search = '?tab=works';
+      const page = asElement(DisplayDetailPage());
 
-    expect(page.type).not.toBe(DisplayDetailView);
-    expect(page.props).toMatchObject({ to: '/exhibition/7/preview?tab=works', replace: true });
-  });
+      expect(page.type).not.toBe(DisplayDetailView);
+      expect(page.props).toMatchObject({ to: '/exhibition/7/preview?tab=works', replace: true });
+    },
+  );
 
   it('공개된 전시는 개막 전이어도 일반 상세로 보인다', () => {
     h.display.data = display('PUBLISHED');
@@ -91,15 +94,7 @@ describe('공개 상세 주소의 미리보기는 미리보기 화면 하나로 
     });
   });
 
-  it('미리보기에서 연 콘텐츠라도 이미 공개된 전시면 공개 콘텐츠 주소로 바꿔 간다', () => {
-    h.display.data = display('PUBLISHED');
-    h.search = '?category=5';
-    const page = asElement(DisplayContentsPage({ previewDisplayId: '7', onBack: vi.fn() }));
-
-    expect(page.props).toMatchObject({ to: '/display/7/contents?category=5', replace: true });
-  });
-
-  it('미리보기에서 연 등록 중 전시의 콘텐츠는 그대로 보여 준다', () => {
+  it('미리보기에서 연 콘텐츠는 그대로 보여 준다', () => {
     h.display.data = display('DRAFT');
     h.search = '?category=5';
     const page = asElement(DisplayContentsPage({ previewDisplayId: '7', onBack: vi.fn() }));

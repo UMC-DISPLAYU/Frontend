@@ -11,7 +11,7 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { useReplaceSearchParams } from '@/hooks/useReplaceSearchParams';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
-import { isPreviewDisplay, isPublishedDisplay } from '@/utils/isPreviewDisplay';
+import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 /* 프로토타입 exhibition.html 콘텐츠 보기(11-15 U-152): 사진은 폭 끝까지 · 원래 비율 · 사이 4, 768px 이상은 가운데 560 */
@@ -88,10 +88,6 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
   // 공개 주소로 연 등록 중 전시는 미리보기 안의 콘텐츠 주소로 보낸다(전시 팀원만 열림)
   if (!previewDisplayId && display && isPreviewDisplay(display)) {
     return <Navigate to={`/exhibition/${display.displayId}/preview/contents${search}`} replace />;
-  }
-  // 미리보기에서 연 콘텐츠라도 이미 공개된 전시면 공개 콘텐츠 주소로 보낸다
-  if (previewDisplayId && display && isPublishedDisplay(display)) {
-    return <Navigate to={`/display/${display.displayId}/contents${search}`} replace />;
   }
 
   // 삭제된 전시 · 없는 콘텐츠 번호는 404. 그 밖에 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
