@@ -75,8 +75,8 @@ export function JoinArtistNameSheet({
           작품을 등록할 때 작가명으로 사용할 이름이에요
         </p>
         <label className="typography-body-lg-semibold mt-5.5 block text-primary" htmlFor={inputId}>
-          전시 작가명{' '}
-          <span aria-hidden="true" className="text-info">
+          전시 작가명
+          <span aria-hidden="true" className="ml-[3px] text-error">
             *
           </span>
         </label>
