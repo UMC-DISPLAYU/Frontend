@@ -92,45 +92,44 @@ export function PosterCarousel({ posters, title }: Props) {
         )}
       </div>
 
-      {hasMultiple && (
-        <div
-          role="group"
-          aria-label="포스터 목록"
-          className="hidden gap-1.5 overflow-x-auto [scrollbar-width:none] desktop:flex [&::-webkit-scrollbar]:hidden"
-        >
-          {posters.map(({ src, videoSrc }, index) => (
-            <button
-              key={`${src}-${index}`}
-              type="button"
-              aria-label={videoSrc ? '영상 포스터 보기' : `포스터 ${index + 1} 보기`}
-              aria-current={index === current}
-              onClick={() => goTo(index)}
-              className={cn(
-                'relative h-16 w-12 shrink-0 cursor-pointer overflow-hidden border-2 transition-opacity duration-fast ease-standard hover:opacity-100',
-                index === current
-                  ? 'border-bg-primary-black opacity-100'
-                  : 'border-transparent opacity-55',
-              )}
-            >
-              <OptimizedImage
-                src={src}
-                displayWidth={96}
-                alt=""
-                draggable={false}
-                className="size-full object-cover"
-              />
-              {videoSrc && (
-                <span
-                  aria-hidden="true"
-                  className="absolute bottom-0.5 left-0.5 grid size-4 place-items-center rounded-circle bg-[rgba(0,0,0,0.6)] text-base-white"
-                >
-                  <PlayMarkIcon className="size-2" />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* 프로토타입은 1장이면 썸네일을 숨기지만, 1장이어도 보인다(PM/FE 2차 회의 2026-11-16). 장수 칩은 여러 장일 때만 */}
+      <div
+        role="group"
+        aria-label="포스터 목록"
+        className="hidden gap-1.5 overflow-x-auto [scrollbar-width:none] desktop:flex [&::-webkit-scrollbar]:hidden"
+      >
+        {posters.map(({ src, videoSrc }, index) => (
+          <button
+            key={`${src}-${index}`}
+            type="button"
+            aria-label={videoSrc ? '영상 포스터 보기' : `포스터 ${index + 1} 보기`}
+            aria-current={index === current}
+            onClick={() => goTo(index)}
+            className={cn(
+              'relative h-16 w-12 shrink-0 cursor-pointer overflow-hidden border-2 transition-opacity duration-fast ease-standard hover:opacity-100',
+              index === current
+                ? 'border-bg-primary-black opacity-100'
+                : 'border-transparent opacity-55',
+            )}
+          >
+            <OptimizedImage
+              src={src}
+              displayWidth={96}
+              alt=""
+              draggable={false}
+              className="size-full object-cover"
+            />
+            {videoSrc && (
+              <span
+                aria-hidden="true"
+                className="absolute bottom-0.5 left-0.5 grid size-4 place-items-center rounded-circle bg-[rgba(0,0,0,0.6)] text-base-white"
+              >
+                <PlayMarkIcon className="size-2" />
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

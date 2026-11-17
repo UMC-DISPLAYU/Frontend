@@ -26,6 +26,8 @@ type Props = {
   onUnlike?: (commentId: string, parentCommentId?: string) => void;
   isLikePending?: boolean;
   onDelete?: (commentId: string, parentCommentId?: string) => void;
+  /* 넘기면 지울 수 없는 남의 글 더보기 메뉴에 신고하기가 생긴다 */
+  onReport?: (commentId: string, parentCommentId?: string) => void;
   onReplyClick?: (commentId: string, author: string, highlightId: string) => void;
   activeReplyId?: string | null;
   className?: string;
@@ -33,7 +35,7 @@ type Props = {
 
 const ACTION_TEXT_CLASS = 'typography-body-md-medium text-secondary';
 
-function CommentMoreMenu({ onDelete }: { onDelete: () => void }) {
+function CommentMoreMenu({ label, onSelect }: { label: string; onSelect: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -77,11 +79,11 @@ function CommentMoreMenu({ onDelete }: { onDelete: () => void }) {
             role="menuitem"
             onClick={() => {
               setIsOpen(false);
-              onDelete();
+              onSelect();
             }}
             className="typography-body-lg-medium h-10 w-full cursor-pointer rounded-8 px-3 text-left text-primary transition-colors duration-fast ease-standard hover:bg-tertiary"
           >
-            삭제하기
+            {label}
           </button>
         </div>
       )}
@@ -141,6 +143,7 @@ export const CommentItem = memo(function CommentItem({
   onUnlike,
   isLikePending = false,
   onDelete,
+  onReport,
   onReplyClick,
   activeReplyId = null,
   className,
@@ -198,10 +201,18 @@ export const CommentItem = memo(function CommentItem({
               <span className="typography-body-md-medium shrink-0 text-tertiary">
                 {comment.time}
               </span>
-              {canDelete && (
+              {canDelete ? (
                 <CommentMoreMenu
-                  onDelete={() => onDelete?.(commentId, isReply ? parentCommentId : undefined)}
+                  label="삭제하기"
+                  onSelect={() => onDelete?.(commentId, isReply ? parentCommentId : undefined)}
                 />
+              ) : (
+                onReport && (
+                  <CommentMoreMenu
+                    label="신고하기"
+                    onSelect={() => onReport(commentId, isReply ? parentCommentId : undefined)}
+                  />
+                )
               )}
             </div>
 
@@ -264,6 +275,7 @@ export const CommentItem = memo(function CommentItem({
               onUnlike={onUnlike}
               isLikePending={isLikePending}
               onDelete={onDelete}
+              onReport={onReport}
               onReplyClick={onReplyClick}
               activeReplyId={activeReplyId}
             />

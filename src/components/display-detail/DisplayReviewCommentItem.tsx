@@ -23,6 +23,8 @@ type Props = {
   review: DisplayReviewDto;
   myUserId?: number;
   onReplyClick?: (commentId: number, author: string, highlightId: string) => void;
+  /* 남의 후기 · 답글 신고. 없으면 신고하기 메뉴가 생기지 않는다 */
+  onReport?: () => void;
   activeReplyId?: string | null;
 };
 
@@ -32,6 +34,7 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
   review,
   myUserId,
   onReplyClick,
+  onReport,
   activeReplyId = null,
 }: Props) {
   const [repliesOpen, setRepliesOpen] = useState(false);
@@ -163,6 +166,7 @@ export const DisplayReviewCommentItem = memo(function DisplayReviewCommentItem({
         onUnlike={handleLike}
         isLikePending={isLikePending}
         onDelete={handleDelete}
+        onReport={onReport}
         onReplyClick={handleReplyClick}
         activeReplyId={activeReplyId}
       />

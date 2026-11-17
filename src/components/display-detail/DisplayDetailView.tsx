@@ -58,6 +58,18 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
   const { activeTab, selectTab, sentinelRef } = useDetailTab(DISPLAY_DETAIL_TABS);
   const isPreview = previewMode || isPreviewDisplay(display);
 
+  // 프로토타입 postFresh: 후기를 올렸을 때 탭 줄 아래로 내려가 있으면 탭 줄 자리로 부드럽게 올라간다
+  const scrollToTabs = () => {
+    const sentinel = sentinelRef.current;
+    const nav = sentinel?.nextElementSibling;
+    if (!sentinel || !nav) return;
+    const stickyTop = parseFloat(getComputedStyle(nav).top) || 0;
+    const top = sentinel.getBoundingClientRect().top + window.scrollY - stickyTop;
+    if (window.scrollY <= top) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+  };
+
   const posters = (display.images ?? [])
     .slice()
     .sort((a, b) => Number(b.isThumbnail) - Number(a.isThumbnail) || a.sortOrder - b.sortOrder)
@@ -162,7 +174,11 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
               role="tabpanel"
               aria-labelledby={displayTabId('reviews')}
             >
-              {isPreview ? <PreviewReviewsPanel /> : <ReviewsPanel display={display} />}
+              {isPreview ? (
+                <PreviewReviewsPanel />
+              ) : (
+                <ReviewsPanel display={display} onPosted={scrollToTabs} />
+              )}
             </div>
           )}
         </div>

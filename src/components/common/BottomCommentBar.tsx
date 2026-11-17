@@ -40,9 +40,16 @@ type Props = {
 // 한 줄일 때 48px 입력칸을 채우는 높이(하단 여백 4 제외)와, 4줄까지 늘어나는 최대 높이
 const TEXTAREA_MIN_HEIGHT = 44;
 const TEXTAREA_MAX_HEIGHT = 114;
+// 이보다 높으면 두 줄 이상이라 버튼을 아래에 붙인다(프로토타입 .gbc-row.multi)
+const MULTILINE_HEIGHT = 48;
 
+/*
+ * 프로토타입 후기 · 방명록 입력: 글을 쓰거나 사진을 붙이면 연필은 폭이 접히며 사라지고,
+ * 보내기는 폭이 펴지며 커져 나타난다(폭 0.2s · 투명도 0.14~0.16s)
+ */
 const TOOL_BUTTON_CLASS =
-  'relative grid size-10 shrink-0 cursor-pointer place-items-center rounded-8 before:absolute before:-inset-0.5 transition duration-fast ease-standard hover:bg-tertiary active:scale-94 disabled:pointer-events-none disabled:opacity-40';
+  'relative grid h-10 w-10 shrink-0 cursor-pointer place-items-center overflow-visible rounded-8 before:absolute before:-inset-0.5 transition-[width,opacity,background-color,scale,visibility] duration-fast ease-standard hover:bg-tertiary active:scale-94 disabled:pointer-events-none disabled:opacity-40';
+const COLLAPSED_CLASS = 'pointer-events-none invisible w-0 overflow-hidden opacity-0';
 
 export function BottomCommentBar({
   placeholder = '글을 입력하세요.',
@@ -61,6 +68,7 @@ export function BottomCommentBar({
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [content, setContent] = useState('');
+  const [isMultiline, setIsMultiline] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -96,6 +104,7 @@ export function BottomCommentBar({
       Math.max(textarea.scrollHeight, TEXTAREA_MIN_HEIGHT),
       TEXTAREA_MAX_HEIGHT,
     )}px`;
+    setIsMultiline(textarea.scrollHeight > MULTILINE_HEIGHT);
   }, [content]);
 
   const pickImages = (event: ChangeEvent<HTMLInputElement>) => {
@@ -260,7 +269,12 @@ export function BottomCommentBar({
               </div>
             )}
 
-            <div className="flex items-end pr-1 pb-1 pl-4">
+            <div
+              className={cn(
+                'flex min-h-12 pr-1 pl-4',
+                isMultiline ? 'items-end pb-1' : 'items-center',
+              )}
+            >
               <textarea
                 ref={inputRef}
                 rows={1}
@@ -291,18 +305,16 @@ export function BottomCommentBar({
                     onChange={pickImages}
                     className="hidden"
                   />
-                  {/* 그림은 단독으로만 올리므로 글이나 사진이 있으면 연필을 숨긴다 */}
-                  {!hasDraft && (
-                    <button
-                      type="button"
-                      onClick={handleOpenDrawing}
-                      disabled={isBusy}
-                      aria-label="그림 그리기"
-                      className={TOOL_BUTTON_CLASS}
-                    >
-                      <img src={pencilIcon} alt="" />
-                    </button>
-                  )}
+                  {/* 그림은 단독으로만 올리므로 글이나 사진이 있으면 연필을 접는다 */}
+                  <button
+                    type="button"
+                    onClick={handleOpenDrawing}
+                    disabled={isBusy || hasDraft}
+                    aria-label="그림 그리기"
+                    className={cn(TOOL_BUTTON_CLASS, hasDraft && COLLAPSED_CLASS)}
+                  >
+                    <img src={pencilIcon} alt="" className="max-w-none" />
+                  </button>
                   <button
                     type="button"
                     onClick={handlePickPhoto}
@@ -315,19 +327,20 @@ export function BottomCommentBar({
                 </div>
               )}
 
-              {hasDraft && (
-                <button
-                  type="button"
-                  onClick={submit}
-                  disabled={!canSubmit}
-                  aria-label="등록"
-                  className="relative grid size-10 shrink-0 animate-fade-in cursor-pointer place-items-center before:absolute before:-inset-0.5 disabled:opacity-50"
-                >
-                  <span className="grid size-8 place-items-center rounded-circle bg-interactive-primary transition-transform duration-fast ease-standard active:scale-94">
-                    <img src={arrowUpIcon} alt="" />
-                  </span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={submit}
+                disabled={!canSubmit}
+                aria-label="등록"
+                className={cn(
+                  'relative grid h-10 w-10 shrink-0 cursor-pointer place-items-center transition-[width,opacity,scale,visibility] duration-fast ease-standard before:absolute before:-inset-0.5',
+                  hasDraft ? 'disabled:opacity-50' : cn(COLLAPSED_CLASS, 'scale-70'),
+                )}
+              >
+                <span className="grid size-8 shrink-0 place-items-center rounded-circle bg-interactive-primary transition-transform duration-fast ease-standard active:scale-94">
+                  <img src={arrowUpIcon} alt="" />
+                </span>
+              </button>
             </div>
           </div>
 
