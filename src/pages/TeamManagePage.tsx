@@ -43,6 +43,8 @@ export function TeamManage() {
         error={members.error}
         onRetry={() => void members.refetch()}
       />
+      {/* 프로토타입 .pad2: 마지막 팀원이 화면 끝에 붙지 않게 아래에 96px 를 비운다 */}
+      <div aria-hidden="true" className="h-24 shrink-0" />
     </TeamPage>
   );
 }
