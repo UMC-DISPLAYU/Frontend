@@ -122,7 +122,9 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
         <div className="mt-1 flex min-h-10 items-center justify-between gap-3">
           {isEditingList ? (
             <p className="text-[12px] font-medium text-[#3f3f47]">
-              순서 변경과 삭제는 자동으로 저장돼요
+              {canDeleteCategory
+                ? '순서 변경과 삭제는 자동으로 저장돼요'
+                : '끌어서 순서를 바꾸면 자동으로 저장돼요'}
             </p>
           ) : (
             <b className="text-[14px] font-semibold tabular-nums">

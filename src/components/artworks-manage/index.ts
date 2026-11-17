@@ -4,6 +4,7 @@ export { ContentCard } from './ContentCard';
 export { ContentDeleteConfirmDialog } from './ContentDeleteConfirmDialog';
 export { contentEditSchema, type ContentEditValues, sectionEditSchema } from './contentEdit.schema';
 export { ContentList } from './ContentList';
+export { DeleteConfirmDialog } from './DeleteConfirmDialog';
 export { ManageScreen } from './ManageScreen';
 export { OrderScreen } from './OrderScreen';
 export { SectionFieldLabel, sectionInputClass } from './SectionFields';

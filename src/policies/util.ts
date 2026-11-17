@@ -6,6 +6,8 @@ export interface DisplayPolicyResource {
   teamMembers: {
     userId: number;
     accepted: boolean;
+    /* TEAM_LEADER · MANAGER · TEAM_MEM. 내려오지 않으면 일반 팀원으로 본다 */
+    role?: string;
   }[];
 }
 
@@ -65,6 +67,24 @@ export function isDisplayMember(user: User, display: DisplayPolicyResource): boo
     isDisplayOwner(user, display) ||
     (display.teamMembers?.some((member) => member.userId === user.id && member.accepted) ?? false)
   );
+}
+
+// 전시 관리자. 전시 대표자이거나 관리자(MANAGER)로 지정된 팀원
+export function isDisplayManager(user: User, display: DisplayPolicyResource): boolean {
+  if (!isLoggedIn(user)) return false;
+
+  return (
+    isDisplayOwner(user, display) ||
+    (display.teamMembers?.some(
+      (member) => member.userId === user.id && member.accepted && member.role === 'MANAGER',
+    ) ??
+      false)
+  );
+}
+
+// 전시 콘텐츠 섹션 추가 · 순서 변경은 작가 인증을 받은 대표자 · 관리자만 가능
+export function canManageDisplayContent(user: User, display: DisplayPolicyResource): boolean {
+  return isArtistVerified(user) && isDisplayManager(user, display);
 }
 
 // 전시 관리(수정/삭제/초대/콘텐츠 편집)는 작가 인증을 받은 소유자만 가능

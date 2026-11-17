@@ -89,6 +89,7 @@ export function useDisplayContentPolicy(
 
   return useMemo(
     () => ({
+      view: () => (display ? policies.displayContent.view(user, display) : false),
       createCategory: () =>
         display ? policies.displayContent.createCategory(user, display) : false,
       editCategory: () => (display ? policies.displayContent.editCategory(user, display) : false),

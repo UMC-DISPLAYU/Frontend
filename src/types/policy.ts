@@ -8,6 +8,7 @@ export type PolicyActionMap = {
   display: 'view' | 'create' | 'edit' | 'delete';
   displayArtistName: 'edit';
   displayContent:
+    | 'view'
     | 'createCategory'
     | 'editCategory'
     | 'deleteCategory'

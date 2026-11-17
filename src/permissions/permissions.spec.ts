@@ -12,6 +12,7 @@ const BASE: Attrs = {
   authenticated: false,
   artistVerified: false,
   isDisplayOwner: false,
+  isDisplayManager: false,
   isDisplayMember: false,
   isArtworkCreator: false,
   isArtworkCollaborator: false,
@@ -49,6 +50,23 @@ const ROLES = {
     authenticated: true,
     artistVerified: true,
     isDisplayMember: true,
+  },
+
+  /** 작가 인증 + 전시 관리자(MANAGER로 지정된 소속인) */
+  displayManager: {
+    ...BASE,
+    authenticated: true,
+    artistVerified: true,
+    isDisplayMember: true,
+    isDisplayManager: true,
+  },
+
+  /** 작가 인증 전 + 전시 관리자 */
+  unverifiedDisplayManager: {
+    ...BASE,
+    authenticated: true,
+    isDisplayMember: true,
+    isDisplayManager: true,
   },
 
   /** 작가 인증 + 전시 소유자 (소유자는 소속인을 포함한다고 가정) */
@@ -103,6 +121,9 @@ const ARTISTS = ALL_ROLES.filter((r) => ROLES[r].artistVerified);
 /** 전시에 소속된 작가 (소유자 포함) */
 const DISPLAY_MEMBERS = ALL_ROLES.filter((r) => ROLES[r].isDisplayMember);
 
+/** 작가 인증을 마친 전시 소속인 */
+const VERIFIED_DISPLAY_MEMBERS = DISPLAY_MEMBERS.filter((r) => ROLES[r].artistVerified);
+
 /* ------------------------------------------------------------------
  * 3. 어댑터 — 구현 시그니처가 달라지면 이 함수 하나만 고치면 된다.
  * ----------------------------------------------------------------*/
@@ -136,16 +157,17 @@ const MATRIX: Record<string, Rule[]> = {
   ],
 
   displayContent: [
-    ...(
-      [
-        'createCategory',
-        'editCategory',
-        'deleteCategory',
-        'editContent',
-        'deleteContent',
-        'reorder',
-      ] as const
-    ).map((a) => ({
+    {
+      permission: 'displayContent:view',
+      desc: '전시 소유자 || 전시 관리자',
+      allow: ['displayManager', 'unverifiedDisplayManager', 'displayOwner'],
+    },
+    ...(['createCategory', 'reorder'] as const).map((a) => ({
+      permission: `displayContent:${a}`,
+      desc: '작가 인증 && (전시 소유자 || 전시 관리자)',
+      allow: ['displayManager', 'displayOwner'] as RoleName[],
+    })),
+    ...(['editCategory', 'deleteCategory', 'editContent', 'deleteContent'] as const).map((a) => ({
       permission: `displayContent:${a}`,
       desc: '작가 인증 && 전시 소유자',
       allow: ['displayOwner' as RoleName],
@@ -169,7 +191,7 @@ const MATRIX: Record<string, Rule[]> = {
     {
       permission: 'artwork:create',
       desc: '작가 인증 && 전시 소속인',
-      allow: DISPLAY_MEMBERS,
+      allow: VERIFIED_DISPLAY_MEMBERS,
     },
     {
       permission: 'artwork:edit',

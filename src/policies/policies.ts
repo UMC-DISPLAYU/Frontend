@@ -8,10 +8,12 @@ import type {
 import {
   canManageArtwork,
   canManageDisplay,
+  canManageDisplayContent,
   canModerateDisplayPost,
   canModeratePersonalPost,
   canViewLoungePost,
   isArtistVerified,
+  isDisplayManager,
   isDisplayMember,
   isLoggedIn,
   isMine,
@@ -37,7 +39,10 @@ export const policies = {
   },
 
   displayContent: {
-    createCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
+    // 전시 작업 화면의 전시 콘텐츠 탭 · 섹션 화면. 팀원은 전시작만 본다(프로토타입 works.html)
+    view: (user: User, display: DisplayPolicyResource) => isDisplayManager(user, display),
+    createCategory: (user: User, display: DisplayPolicyResource) =>
+      canManageDisplayContent(user, display),
     editCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
     deleteCategory: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
     // 이미 만들어진 카테고리에 사진을 추가하는 건 작가 인증 여부와 무관하게 전시 소속인이면 가능
@@ -46,7 +51,7 @@ export const policies = {
     deleteContent: (user: User, display: DisplayPolicyResource, content?: UserOwnedResource) =>
       canManageDisplay(user, display) ||
       (isDisplayMember(user, display) && content !== undefined && isOwner(user, content)),
-    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplay(user, display),
+    reorder: (user: User, display: DisplayPolicyResource) => canManageDisplayContent(user, display),
   },
 
   displayInvitation: {

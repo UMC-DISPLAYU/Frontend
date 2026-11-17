@@ -20,6 +20,8 @@ export type Attrs = {
   artistVerified: boolean;
 
   isDisplayOwner: boolean;
+  // 전시 팀원 중 관리자(MANAGER)로 지정된 사람인가
+  isDisplayManager: boolean;
   isDisplayMember: boolean;
 
   isArtworkCreator: boolean;
@@ -55,7 +57,16 @@ function toDisplay(a: Attrs): DisplayPolicyResource {
     return { ownerUserId: SELF_ID, teamMembers: [{ userId: SELF_ID, accepted: true }] };
   }
   if (a.isDisplayMember) {
-    return { ownerUserId: OTHER_ID, teamMembers: [{ userId: SELF_ID, accepted: true }] };
+    return {
+      ownerUserId: OTHER_ID,
+      teamMembers: [
+        {
+          userId: SELF_ID,
+          accepted: true,
+          role: a.isDisplayManager ? 'MANAGER' : 'TEAM_MEM',
+        },
+      ],
+    };
   }
   return { ownerUserId: OTHER_ID, teamMembers: [] };
 }
@@ -116,6 +127,7 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
 
   'displayArtistName:edit': (a) => policies.displayArtistName.edit(toUser(a), toDisplay(a)),
 
+  'displayContent:view': (a) => policies.displayContent.view(toUser(a), toDisplay(a)),
   'displayContent:createCategory': (a) =>
     policies.displayContent.createCategory(toUser(a), toDisplay(a)),
   'displayContent:editCategory': (a) =>

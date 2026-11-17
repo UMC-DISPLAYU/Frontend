@@ -401,7 +401,7 @@ export const router = createBrowserRouter([
                   {
                     path: 'contents',
                     element: (
-                      <DisplayContentPermissionGuard action="createContent">
+                      <DisplayContentPermissionGuard action="view">
                         <DisplayContentsManagePage />
                       </DisplayContentPermissionGuard>
                     ),
@@ -418,7 +418,7 @@ export const router = createBrowserRouter([
                   {
                     path: 'contents/:categoryId',
                     element: (
-                      <DisplayContentPermissionGuard action="createContent">
+                      <DisplayContentPermissionGuard action="view">
                         <InteriorPhotosPage />
                       </DisplayContentPermissionGuard>
                     ),
