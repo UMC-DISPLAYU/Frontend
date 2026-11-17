@@ -26,6 +26,8 @@ import { TeamMemberTabs } from './TeamMemberTabs';
 export interface TeamDelegatedState {
   newLeaderName: string;
   myName: string;
+  newLeaderImageUrl?: string | null;
+  myImageUrl?: string | null;
 }
 
 interface TeamMemberSectionProps {
@@ -114,14 +116,18 @@ export function TeamMemberSection({
       return;
     }
 
-    const myName =
-      team?.memberAccept.find((entry) => entry.userId === myUserId)?.displayNickname ?? '';
+    const me = team?.memberAccept.find((entry) => entry.userId === myUserId);
     transferLeader.mutate(memberId, {
       // 위임하면 대표자 전용인 이 화면에 더 머물 수 없어 완료 화면으로 기록을 바꿔 넘어간다
       onSuccess: () =>
         navigate(`/exhibition/${displayId}/team/delegated`, {
           replace: true,
-          state: { newLeaderName: name, myName } satisfies TeamDelegatedState,
+          state: {
+            newLeaderName: name,
+            myName: me?.displayNickname ?? '',
+            newLeaderImageUrl: member.profileImageUrl,
+            myImageUrl: me?.profileImageUrl,
+          } satisfies TeamDelegatedState,
         }),
     });
   };

@@ -52,14 +52,17 @@ export const teamOf = (display: any): any[] => {
   return display.teamMembers;
 };
 
-/* 기본 닉네임은 닉네임 검색 목과 같은 사람에서 가져온다. 실서버처럼 없으면 빈 문자열 */
-const withNickname = (entry: any) => ({
-  ...entry,
-  nickname:
-    [mockDb.me, ...mockDb.searchableUsers].find(
-      (user: { userId: number }) => user.userId === entry.userId,
-    )?.nickname ?? '',
-});
+/* 기본 닉네임 · 프로필 사진은 닉네임 검색 목과 같은 사람에서 가져온다. 실서버처럼 없으면 빈 문자열 · null */
+const withNickname = (entry: any) => {
+  const user = [mockDb.me, ...mockDb.searchableUsers].find(
+    (candidate: { userId: number }) => candidate.userId === entry.userId,
+  );
+  return {
+    ...entry,
+    nickname: user?.nickname ?? '',
+    profileImageUrl: user?.profileImageUrl ?? null,
+  };
+};
 
 const findAcceptedMember = (display: any, memberId: number) =>
   teamOf(display).find((entry) => entry.teamMemberId === memberId && entry.accepted !== false);

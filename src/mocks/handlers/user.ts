@@ -121,6 +121,7 @@ export const userHandlers = [
         userId: user.userId,
         name: user.name,
         nickname: user.nickname,
+        profileImageUrl: user.profileImageUrl ?? null,
       });
     }),
   ),

@@ -46,11 +46,11 @@ export function TeamDelegatedPage() {
           {`${state.newLeaderName}님이 새로운 대표자가 되었어요\n대표자 전용 전시 관리 접근은 종료됐어요`}
         </p>
         <div className="flex w-full items-center">
-          <DelegatedMember name={state.newLeaderName} />
+          <DelegatedMember name={state.newLeaderName} imageUrl={state.newLeaderImageUrl} />
           <span aria-hidden="true" className="flex h-5 w-5.5 shrink-0 items-center justify-center">
             <img src={SwapArrowIcon} alt="" />
           </span>
-          <DelegatedMember name={state.myName} />
+          <DelegatedMember name={state.myName} imageUrl={state.myImageUrl} />
         </div>
         <Link
           to={workPath}
@@ -67,10 +67,10 @@ export function TeamDelegatedPage() {
   );
 }
 
-function DelegatedMember({ name }: { name: string }) {
+function DelegatedMember({ name, imageUrl }: { name: string; imageUrl?: string | null }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-      <MemberAvatar />
+      <MemberAvatar src={imageUrl} />
       <span className="typography-body-md-semibold w-full max-w-30 truncate">{name}</span>
     </div>
   );

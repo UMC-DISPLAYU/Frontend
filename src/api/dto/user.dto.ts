@@ -112,6 +112,8 @@ export interface UserSearchDto {
   userId: number;
   name: string;
   nickname: string;
+  /** 프로필 사진 주소. 없으면 기본 아바타를 보여 준다 */
+  profileImageUrl?: string | null;
 }
 
 /* 닉네임이 정확히 일치하는 사용자 한 명입니다. 없으면 404 USER_NICKNAME_NOT_FOUND 로 응답합니다. */

@@ -559,6 +559,8 @@ export interface DisplayMemberEntryDto extends DisplayTeamMemberDto {
   nickname: string;
   /** 초대 대기 항목의 초대 ID(초대 취소에 쓴다). 수락한 팀원은 null */
   invitationId?: number | null;
+  /** 프로필 사진 주소. 없으면 기본 아바타를 보여 준다 */
+  profileImageUrl?: string | null;
 }
 
 /* 서버가 실제로 내려주는 원본 응답 — 참여 팀원과 초대 대기 팀원이 배열로 분리되어 있습니다. */

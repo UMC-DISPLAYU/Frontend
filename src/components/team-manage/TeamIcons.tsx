@@ -60,11 +60,3 @@ export const MoreIcon = ({ className }: IconProps) => (
     <circle cx="18.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
   </LineIcon>
 );
-
-/* 프로토타입 i-avatar. 사람 모양이 원 아래로 잘리게 그린다 */
-export const AvatarGlyph = ({ className }: IconProps) => (
-  <svg aria-hidden="true" viewBox="0 0 59.5 65.87" className={className}>
-    <ellipse cx="29.75" cy="15.94" rx="15.23" ry="15.94" fill="currentColor" />
-    <path d="M0 65.87C0 49.44 13.32 36.12 29.75 36.12S59.5 49.44 59.5 65.87z" fill="currentColor" />
-  </svg>
-);
