@@ -89,6 +89,10 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
   if (!previewDisplayId && display && isPreviewDisplay(display)) {
     return <Navigate to={`/exhibition/${display.displayId}/preview/contents${search}`} replace />;
   }
+  // 미리보기에서 연 콘텐츠라도 공개된 전시면 공개 콘텐츠 주소로 보낸다
+  if (previewDisplayId && display && !isPreviewDisplay(display)) {
+    return <Navigate to={`/display/${display.displayId}/contents${search}`} replace />;
+  }
 
   // 삭제된 전시 · 없는 콘텐츠 번호는 404. 그 밖에 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
   if (displayId === null || isNotFoundError(error) || (display && !category)) {

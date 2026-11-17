@@ -31,7 +31,7 @@ export function DisplayDetailPage() {
     );
   }
 
-  // 공개 전 모습은 미리보기 화면 하나로만 보인다. 등록 중 전시는 미리보기 주소로 보낸다(전시 팀원만 열림)
+  // 공개 전(준비 중 · 심사 중 · 반려) 전시는 미리보기 주소로 보낸다(전시 팀원만 열림)
   if (isPreviewDisplay(display)) {
     return <Navigate to={`/exhibition/${displayId}/preview${search}`} replace />;
   }

@@ -6,6 +6,9 @@ import type { DisplayDetailDto } from '@/api/dto';
  */
 const NOT_PUBLIC_STATUSES = new Set(['DRAFT', 'PENDING_REVIEW', 'REJECTED']);
 
-/* 공개 상세 주소로 열면 미리보기 주소로 보내는 전시 */
+/*
+ * 미리보기로만 보이는 전시. 상세 · 미리보기 주소가 모두 이 함수 하나로 갈린다(사용자 결정).
+ * true 면 /display/:id → /exhibition/:id/preview, false 면 /exhibition/:id/preview → /display/:id
+ */
 export const isPreviewDisplay = (display: Pick<DisplayDetailDto, 'status'>) =>
   NOT_PUBLIC_STATUSES.has(display.status);
