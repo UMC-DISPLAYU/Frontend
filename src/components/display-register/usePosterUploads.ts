@@ -10,6 +10,7 @@ import type {
 } from '@/contexts/exhibitionRegisterDraftState';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
 import { toast } from '@/stores/toastStore';
+import { readImageDimensions } from '@/utils/image';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
 
@@ -22,6 +23,7 @@ import {
   POSTER_ACCEPT_TYPES,
   POSTER_VIDEO_ACCEPT_TYPES,
 } from './displayRegister.constants';
+import { defaultPosterCrop } from './posterFit';
 
 /** file: 형식 · 용량이 맞지 않거나 읽을 수 없어 올리지 않은 파일, upload: 업로드 요청 실패 */
 export type PosterErrorKind = 'file' | 'upload';
@@ -166,13 +168,30 @@ export function usePosterUploads({
     [dropItem, isAlive],
   );
 
+  // 꽉 채우면 많이 잘리는 포스터는 처음부터 전체 보이기로 둔다. 그 사이 직접 조정했으면 건드리지 않는다
+  const applyDefaultCrop = useCallback((id: string, file: File) => {
+    readImageDimensions(file)
+      .then(({ width, height }) => {
+        const crop = defaultPosterCrop(width / height);
+        if (!crop) return;
+
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === id && item.crop === undefined ? { ...item, crop } : item,
+          ),
+        );
+      })
+      .catch(() => {});
+  }, []);
+
   const startImageUpload = useCallback(
     (item: PosterItem, file: File) => {
+      applyDefaultCrop(item.id, file);
       uploadImage({ file, domain: 'display' })
         .then((uploadedUrl) => patchItem(item.id, { uploadedUrl }))
         .catch(() => failUpload(item.id, file));
     },
-    [failUpload, patchItem, uploadImage],
+    [applyDefaultCrop, failUpload, patchItem, uploadImage],
   );
 
   const startVideoUpload = useCallback(
