@@ -8,11 +8,13 @@ import {
   type ExhibitionRegisterDraft,
   INITIAL_EXHIBITION_REGISTER_DRAFT,
 } from '@/contexts/exhibitionRegisterDraftState';
+import { isValidCrop } from '@/utils/cropBox';
 import { parseInstagramId } from '@/utils/linkInput';
 
 import {
   toDisplayAffiliation,
   toDisplayFields,
+  toPosterCropRequest,
   toPosterMediaRequest,
 } from './createDisplayRequest';
 import {
@@ -49,6 +51,7 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
   const fieldLabels = toFieldLabels(detail.displayFields ?? []);
   const instagram = parseInstagramId(detail.instagramUrl ?? '');
   const images = [...(detail.images ?? [])].sort((a, b) => a.sortOrder - b.sortOrder);
+  const isImageMain = (images[0]?.mediaType ?? 'IMAGE') === 'IMAGE';
 
   return {
     ...INITIAL_EXHIBITION_REGISTER_DRAFT,
@@ -78,6 +81,7 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
     longitude: detail.location?.longitude ?? null,
     instagramId: instagram.status === 'valid' ? instagram.value : '',
     websiteUrl: detail.websiteUrl ?? '',
+    posterCrop: isImageMain && isValidCrop(detail.posterCrop) ? detail.posterCrop : null,
   };
 }
 
@@ -110,6 +114,7 @@ export function buildUpdateDisplayRequest(
   return {
     title,
     ...posterMedia,
+    ...toPosterCropRequest(draft),
     type,
     fields,
     schoolOrOrganization,
@@ -125,6 +130,7 @@ export function buildUpdateDisplayRequest(
 
 const EDITABLE_KEYS = [
   'posters',
+  'posterCrop',
   'title',
   'intro',
   'type',

@@ -268,7 +268,15 @@ export const displayHandlers = [
       assign('content', body.description);
       assign('posterImageUrl', body.posterImageUrl);
       assign('thumbnailUrl', body.posterImageUrl);
+      const previousPosterUrl = (display.images ?? display.posterImages)?.find(
+        (image: any) => image.sortOrder === 0,
+      )?.imageUrl;
       applyPosterMedia(display, body);
+      // 스웨거: posterCrop 생략 · null 이면 기존 범위 유지, 대표 포스터 주소가 바뀌면 초기화
+      if (body.posterMedia && body.posterMedia.imageUrl !== previousPosterUrl) {
+        display.posterCrop = null;
+      }
+      if (body.posterCrop) display.posterCrop = body.posterCrop;
       assign('displayType', body.type);
       assign('displayFields', body.fields);
       assign('organization', body.schoolOrOrganization);

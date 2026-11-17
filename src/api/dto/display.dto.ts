@@ -171,6 +171,16 @@ export interface DisplayDetailDto {
   /* 전시 링크(선택). 필드 이름은 백엔드와 확정했고, 실서버 응답에 아직 없을 수 있다 */
   instagramUrl?: string | null;
   websiteUrl?: string | null;
+  /* 대표 포스터 표시 범위. null 이면 조정 없음 */
+  posterCrop?: PosterCropDto | null;
+}
+
+/* 대표 포스터 원본 기준 0~1 비율. 포스터 전체는 { x: 0, y: 0, w: 1, h: 1 } 이다 */
+export interface PosterCropDto {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 export interface DisplayLocationDto {
@@ -417,6 +427,8 @@ export interface CreateDisplayRequestDto {
   displayImageUrl?: string[];
   posterMedia?: DisplayMediaRequestDto;
   displayMedia?: DisplayMediaRequestDto[];
+  /* 생략 또는 null 이면 조정 없음 */
+  posterCrop?: PosterCropDto | null;
   type: string;
   fields: string[];
   region: string;
@@ -455,6 +467,8 @@ export interface UpdateDisplayRequestDto {
   /* 생략하면 그대로 두고, displayMedia 를 빈 배열로 보내면 추가 포스터를 모두 지운다 */
   posterMedia?: DisplayMediaRequestDto;
   displayMedia?: DisplayMediaRequestDto[];
+  /* 생략 또는 null 이면 기존 범위 유지. 대표 포스터 주소가 바뀌면 서버가 초기화한다 */
+  posterCrop?: PosterCropDto | null;
   type?: string;
   fields?: string[];
   schoolOrOrganization?: string | null;

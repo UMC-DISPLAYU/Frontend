@@ -100,6 +100,7 @@ function DisplayRegisterIntroForm() {
           department: isOtherGroup ? '' : (values.department ?? ''),
           organizer: isOtherGroup ? (values.department ?? '') : '',
           posters: posters.posterSnapshot,
+          posterCrop: posters.posterCrop,
         }),
       )
     : Boolean(

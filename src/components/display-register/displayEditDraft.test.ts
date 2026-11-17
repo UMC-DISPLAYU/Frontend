@@ -87,6 +87,21 @@ describe('toEditDraft', () => {
     });
   });
 
+  it('대표가 사진이면 저장된 포스터 범위를 불러오고, 영상 대표나 잘못된 범위는 버린다', () => {
+    const crop = { x: 0.1, y: 0, w: 0.8, h: 1 };
+    expect(toEditDraft({ ...DETAIL, posterCrop: crop }).posterCrop).toEqual(crop);
+    expect(toEditDraft({ ...DETAIL, posterCrop: { x: 0.5, y: 0, w: 0.8, h: 1 } }).posterCrop).toBe(
+      null,
+    );
+    expect(
+      toEditDraft({
+        ...DETAIL,
+        posterCrop: crop,
+        images: [{ imageUrl: 'v', sortOrder: 0, mediaType: 'VIDEO', thumbnailUrl: 't' }],
+      } as unknown as DisplayDetailDto).posterCrop,
+    ).toBeNull();
+  });
+
   it('기타 단체 전시는 소속을 단체명으로 둔다', () => {
     expect(
       toEditDraft({ ...DETAIL, displayType: 'OTHERS', organization: '디유 연합' }),
@@ -111,6 +126,19 @@ describe('buildUpdateDisplayRequest', () => {
       closeTime: '18:00',
       placeName: '예술관',
     });
+  });
+
+  it('대표 사진의 포스터 범위가 있으면 함께 보내고, 영상 대표면 보내지 않는다', () => {
+    const original = toEditDraft(DETAIL);
+    const posterCrop = { x: 0, y: 0, w: 1, h: 1 };
+    expect(buildUpdateDisplayRequest({ ...original, posterCrop })).toMatchObject({ posterCrop });
+    expect(
+      buildUpdateDisplayRequest({
+        ...original,
+        posterCrop,
+        posters: [...original.posters].reverse(),
+      }),
+    ).not.toHaveProperty('posterCrop');
   });
 
   it('추가 포스터를 모두 지우면 빈 목록을 보내 지운다', () => {
@@ -146,6 +174,6 @@ describe('isEditDraftChanged', () => {
     ).toBe(true);
     expect(
       isEditDraftChanged(original, { ...original, posterCrop: { x: 0, y: 0, w: 1, h: 1 } }),
-    ).toBe(false);
+    ).toBe(true);
   });
 });

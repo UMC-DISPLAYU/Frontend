@@ -15,6 +15,12 @@ const toDisplayMedia = (poster: ExhibitionPosterMedia): DisplayMediaRequestDto =
     ? { imageUrl: poster.url, mediaType: 'VIDEO', thumbnailUrl: poster.thumbnailUrl ?? undefined }
     : { imageUrl: poster.url, mediaType: 'IMAGE' };
 
+/** 대표 포스터 표시 범위. 영상 대표는 서버가 받지 않고, 범위가 없으면 보내지 않는다 */
+export function toPosterCropRequest(draft: ExhibitionRegisterDraft) {
+  const main = draft.posters[0];
+  return main?.mediaType === 'IMAGE' && draft.posterCrop ? { posterCrop: draft.posterCrop } : {};
+}
+
 /** 대표 포스터와 추가 포스터. 옛 posterImageUrl · displayImageUrl 대신 영상까지 담는 필드로 보낸다 */
 export function toPosterMediaRequest(posters: ExhibitionPosterMedia[]) {
   const [main, ...extras] = posters;
@@ -82,6 +88,7 @@ export function buildCreateDisplayRequest(
   return {
     title: draft.title.trim(),
     ...posterMedia,
+    ...toPosterCropRequest(draft),
     type,
     fields,
     region: toDisplayRegion(draft.address),
