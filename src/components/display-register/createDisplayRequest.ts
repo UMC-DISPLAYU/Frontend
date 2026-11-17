@@ -99,5 +99,6 @@ export function buildCreateDisplayRequest(
     displayNickname: nickname,
     ...(draft.instagramId ? { instagramUrl: `https://instagram.com/${draft.instagramId}` } : {}),
     ...(draft.websiteUrl ? { websiteUrl: draft.websiteUrl } : {}),
+    ...(draft.posterCrop ? { posterCrop: draft.posterCrop } : {}),
   };
 }
