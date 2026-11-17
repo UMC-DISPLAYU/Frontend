@@ -1,4 +1,5 @@
 export { ExploreArtworkCard, ExploreArtworkCardSkeleton } from './ExploreArtworkCard';
+export { ExploreDensityToggle } from './ExploreDensityToggle';
 export { ExploreExhibitionCard, ExploreExhibitionCardSkeleton } from './ExploreExhibitionCard';
 export { ExploreFieldTabs } from './ExploreFieldTabs';
 export { ExploreFilterMenu } from './ExploreFilterMenu';
@@ -14,5 +15,6 @@ export {
 export { ExploreResultGrid } from './ExploreResultGrid';
 export { ExploreSearchBar } from './ExploreSearchBar';
 export { ExploreViewToggle } from './ExploreViewToggle';
+export { useDenseGridTransition } from './useDenseGridTransition';
 export { useExploreFilters } from './useExploreFilters';
 export { useSearchResultCount } from './useSearchResultCount';

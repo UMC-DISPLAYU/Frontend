@@ -4,12 +4,20 @@ import { ErrorView } from '@/components/common';
 import { SkeletonList } from '@/components/ui';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useSkeleton } from '@/hooks/useSkeleton';
+import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
 
+// 카드가 group/grid 의 data-dense 로 촘촘히 보기를 안다(exploreCardStyles)
 // 프로토타입 .grid: 2열 → 640px 3열 → 1000px 4열 → 1280px 5열, 세로 24 · 가로 12
-const GRID_CLASS =
-  'mt-3 grid grid-cols-2 gap-x-3 gap-y-6 min-[640px]:grid-cols-3 min-[1000px]:grid-cols-4 min-[1280px]:grid-cols-5';
+// 촘촘히(.grid.dense): 3열 → 640px 6열 → 1000px 8열 → 1280px 10열, 사이 4
+const gridClass = (dense: boolean) =>
+  cn(
+    'group/grid mt-3 grid',
+    dense
+      ? 'grid-cols-3 gap-1 min-[640px]:grid-cols-6 min-[1000px]:grid-cols-8 min-[1280px]:grid-cols-10'
+      : 'grid-cols-2 gap-x-3 gap-y-6 min-[640px]:grid-cols-3 min-[1000px]:grid-cols-4 min-[1280px]:grid-cols-5',
+  );
 
 type ExploreResultGridProps<T> = {
   /** 무한 스크롤로 받은 페이지별 항목 */
@@ -17,6 +25,8 @@ type ExploreResultGridProps<T> = {
   getKey: (item: T) => number;
   renderItem: (item: T) => ReactNode;
   renderSkeleton: () => ReactNode;
+  /** 촘촘히 보기(사진만) */
+  dense: boolean;
   /** 안내 문구에 쓰는 목적어. 예: '전시를' */
   itemObject: string;
   isPending: boolean;
@@ -63,6 +73,7 @@ export function ExploreResultGrid<T>({
   getKey,
   renderItem,
   renderSkeleton,
+  dense,
   itemObject,
   isPending,
   isError,
@@ -79,7 +90,12 @@ export function ExploreResultGrid<T>({
 
   if (showSkeleton) {
     return (
-      <ul {...skeletonProps} aria-label={`${itemObject} 불러오는 중`} className={GRID_CLASS}>
+      <ul
+        {...skeletonProps}
+        aria-label={`${itemObject} 불러오는 중`}
+        className={gridClass(dense)}
+        data-dense={dense}
+      >
         <SkeletonList count={6}>
           {() => <li aria-hidden="true">{renderSkeleton()}</li>}
         </SkeletonList>
@@ -103,10 +119,15 @@ export function ExploreResultGrid<T>({
 
   return (
     <>
-      <ul {...skeletonProps} className={GRID_CLASS}>
+      <ul {...skeletonProps} className={gridClass(dense)} data-dense={dense}>
         {pages.map((page) =>
           page.map((item, index) => (
-            <li className="animate-rise" key={getKey(item)} style={staggerStyle(index)}>
+            <li
+              className="animate-rise"
+              data-flip-key={getKey(item)}
+              key={getKey(item)}
+              style={staggerStyle(index)}
+            >
               {renderItem(item)}
             </li>
           )),
