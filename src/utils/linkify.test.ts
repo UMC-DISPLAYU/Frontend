@@ -37,6 +37,22 @@ describe('linkifyText', () => {
     ]);
   });
 
+  it('주소 안에서 짝이 맞는 괄호는 링크에 남긴다', () => {
+    expect(linkifyText('https://ko.wikipedia.org/wiki/Art_(visual) 참고')).toEqual([
+      {
+        type: 'link',
+        text: 'https://ko.wikipedia.org/wiki/Art_(visual)',
+        href: 'https://ko.wikipedia.org/wiki/Art_(visual)',
+      },
+      { type: 'text', text: ' 참고' },
+    ]);
+    expect(linkifyText('(https://a.com/Art_(visual)).')).toEqual([
+      { type: 'text', text: '(' },
+      { type: 'link', text: 'https://a.com/Art_(visual)', href: 'https://a.com/Art_(visual)' },
+      { type: 'text', text: ').' },
+    ]);
+  });
+
   it('줄바꿈과 여러 주소를 그대로 둔다', () => {
     expect(linkifyText('a http://a.com\nb https://b.com')).toEqual([
       { type: 'text', text: 'a ' },
