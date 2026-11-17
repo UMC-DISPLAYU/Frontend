@@ -55,7 +55,11 @@ export function WorkActionSheet({
       ref={containerRef}
       className="absolute top-2 right-2 z-10"
       onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+        // iOS Safari 는 버튼을 눌러도 포커스를 주지 않아 relatedTarget 이 null 로 온다.
+        // 이때 닫으면 메뉴 항목이 클릭 전에 사라지므로, 바깥 탭은 pointerdown 에 맡긴다
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) {
+          setOpen(false);
+        }
       }}
     >
       <button
