@@ -32,10 +32,11 @@ import { WorksPanel } from './WorksPanel';
  * - 768~899px: 위에 서비스 헤더(64)가 생기고, 탭 줄은 그 아래에 붙는다
  * - 900px 이상: 왼쪽 포스터 · 오른쪽 정보 2단
  * 뒤로가기 버튼은 두지 않고 브라우저 뒤로가기에 맡긴다(프로토타입 11-15 U-149, 미리보기 포함)
+ * 900px 이상은 내용이 끝나면 더 스크롤되지 않게 아래 여백을 두지 않는다(프로토타입은 80 + 40이 남아 빈 곳이 스크롤됨)
  * 최대 폭 1240 · 좌우 여백 32는 공용 컨테이너(max-w-list · px-gutter)가 아니라 프로토타입 값이다
  */
 const LAYOUT =
-  'mx-auto w-full max-w-310 desktop:grid desktop:grid-cols-[minmax(320px,40%)_minmax(0,1fr)] desktop:items-start desktop:gap-x-14 desktop:px-8 desktop:pt-8 desktop:pb-20';
+  'mx-auto w-full max-w-310 desktop:grid desktop:grid-cols-[minmax(320px,40%)_minmax(0,1fr)] desktop:items-start desktop:gap-x-14 desktop:px-8 desktop:pt-8';
 const SHEET =
   'min-w-0 min-[37.5rem]:mx-auto min-[37.5rem]:max-w-160 desktop:mx-0 desktop:max-w-170';
 

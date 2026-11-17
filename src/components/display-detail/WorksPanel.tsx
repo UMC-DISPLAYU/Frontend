@@ -44,7 +44,7 @@ export function WorksPanel({
   return (
     <section
       aria-label="작품 미리보기"
-      className="px-gutter pt-6 pb-10 desktop:px-0"
+      className="px-gutter pt-6 pb-10 desktop:px-0 desktop:pb-0"
       {...skeletonProps}
     >
       {showSkeleton ? (
