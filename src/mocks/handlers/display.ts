@@ -268,6 +268,12 @@ export const displayHandlers = [
       assign('subtitle', body.subtitle);
       assign('description', body.description);
       assign('content', body.description);
+      const mainPosterUrl = () =>
+        (display.images ?? display.posterImages ?? [])
+          .slice()
+          .sort((a: any, b: any) => a.sortOrder - b.sortOrder)[0]?.imageUrl ??
+        display.posterImageUrl;
+      const prevPosterUrl = mainPosterUrl();
       assign('posterImageUrl', body.posterImageUrl);
       assign('thumbnailUrl', body.posterImageUrl);
       applyPosterMedia(display, body);
@@ -306,7 +312,9 @@ export const displayHandlers = [
         display.location = { ...display.location, placeName: body.placeName };
       }
       assign('region', body.region ?? undefined);
-      assign('posterCrop', body.posterCrop ?? undefined);
+      // 실서버처럼 대표 포스터 주소가 바뀌면 기존 범위를 버린다
+      if (mainPosterUrl() !== prevPosterUrl) display.posterCrop = body.posterCrop ?? null;
+      else assign('posterCrop', body.posterCrop ?? undefined);
 
       return success('/api/v1/display', display);
     }),
