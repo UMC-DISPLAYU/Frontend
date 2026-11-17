@@ -357,6 +357,7 @@ export function MyPage() {
       <NotificationSheet
         error={notificationInbox.error}
         hasNextPage={notificationInbox.hasNextPage}
+        isFetchNextPageError={notificationInbox.isFetchNextPageError}
         isFetchingNextPage={notificationInbox.isFetchingNextPage}
         isPending={notificationInbox.isPending}
         notifications={notificationInbox.notifications}

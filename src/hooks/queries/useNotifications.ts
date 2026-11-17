@@ -16,6 +16,8 @@ export const useNotifications = ({ enabled }: { enabled: boolean }) => {
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextCursorId : null),
     enabled: !!accessToken && enabled,
+    // 열려 있는 동안 다시 받으면 읽음 처리 뒤 값이 와 이번에 보던 안 읽음 점이 사라진다. 실패는 다시 시도 버튼으로 복구한다
+    refetchOnReconnect: false,
   });
 };
 

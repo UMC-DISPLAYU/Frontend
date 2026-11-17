@@ -49,6 +49,10 @@ export function useNotificationInbox() {
 
   const close = useCallback(() => {
     setIsOpen(false);
+    // 목록을 못 받아 읽음 처리를 보내지 못했으면, 열 때 지운 점을 서버 값으로 되돌린다
+    if (!hasRequestedReadRef.current) {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.unread() });
+    }
     // 다음에 열 때 읽음 처리 뒤의 목록을 새로 받도록 지난 목록을 버린다
     queryClient.removeQueries({ queryKey: queryKeys.notifications.list() });
   }, [queryClient]);
@@ -64,6 +68,7 @@ export function useNotificationInbox() {
     refetch: listQuery.refetch,
     hasNextPage: listQuery.hasNextPage && !listQuery.isError,
     isFetchingNextPage: listQuery.isFetchingNextPage,
+    isFetchNextPageError: listQuery.isFetchNextPageError,
     fetchNextPage: listQuery.fetchNextPage,
   };
 }

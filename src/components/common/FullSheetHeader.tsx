@@ -14,7 +14,7 @@ export function FullSheetHeader({ title, onClose, closeButtonRef }: FullSheetHea
     <div className="flex h-14 shrink-0 items-center gap-1 px-3">
       <button
         aria-label="닫기"
-        className="grid size-10 place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
+        className="grid size-11 place-items-center rounded-circle text-icon-primary transition duration-fast ease-standard hover:bg-secondary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
         onClick={onClose}
         ref={closeButtonRef}
         type="button"

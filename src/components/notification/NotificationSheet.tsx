@@ -19,6 +19,8 @@ interface NotificationSheetProps {
   onRetry: () => void;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  /** 다음 페이지만 실패한 경우. 받은 목록은 그대로 두고 아래에서 다시 시도한다 */
+  isFetchNextPageError: boolean;
   onLoadMore: () => void;
   /** 이동할 곳(action)이 있는 알림을 눌렀을 때 */
   onSelect: (notification: InboxNotification) => void;
@@ -97,6 +99,7 @@ export function NotificationSheet({
   onRetry,
   hasNextPage,
   isFetchingNextPage,
+  isFetchNextPageError,
   onLoadMore,
   onSelect,
 }: NotificationSheetProps) {
@@ -163,6 +166,14 @@ export function NotificationSheet({
           ))}
         </ul>
         {hasNextPage && <div aria-hidden="true" className="h-1" ref={triggerRef} />}
+        {isFetchNextPageError && (
+          <ErrorView
+            className="min-h-0 flex-none py-6"
+            fullScreen={false}
+            message="알림을 더 불러오지 못했어요."
+            onRetry={onLoadMore}
+          />
+        )}
       </>
     );
   };

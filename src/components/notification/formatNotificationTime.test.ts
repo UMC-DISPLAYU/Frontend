@@ -30,8 +30,12 @@ describe('formatNotificationTime', () => {
   });
 
   it('7일부터는 날짜, 지난해면 연도까지', () => {
-    expect(formatNotificationTime('2026-11-28T03:00:00', NOW)).toBe('11.28');
-    expect(formatNotificationTime('2025-12-01T03:00:00', NOW)).toBe('2025.12.01');
+    // 로컬 날짜로 만들어 서버 형식(UTC)으로 바꿔야 어느 시간대에서 돌려도 같은 날짜가 나온다
+    const localDay = (year: number, month: number, day: number) =>
+      new Date(year, month - 1, day, 12).toISOString().slice(0, 19);
+
+    expect(formatNotificationTime(localDay(2026, 11, 28), NOW)).toBe('11.28');
+    expect(formatNotificationTime(localDay(2025, 12, 1), NOW)).toBe('2025.12.01');
   });
 
   it('미래 시각은 방금, 읽을 수 없는 값은 빈 문자열', () => {
