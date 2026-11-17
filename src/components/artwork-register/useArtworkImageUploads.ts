@@ -5,7 +5,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import type { MediaTypeDto } from '@/api/dto';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
 import { toast } from '@/stores/toastStore';
-import { type CropRect, isValidCrop } from '@/utils/cropBox';
+import { autoThumbnailFit, type CropRect, isValidCrop, type ThumbnailFit } from '@/utils/cropBox';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
 
@@ -29,6 +29,10 @@ export type ArtworkImageItem = {
   uploadedUrl?: string;
   /** 카드에 보이는 부분. 없으면 사진 가운데 */
   crop?: CropRect | null;
+  /** 썸네일 조정에서 고르거나 저장돼 있던 보이는 방식. 없으면 사진 비율로 정한다(getArtworkItemFit) */
+  fit?: ThumbnailFit | null;
+  /** 사진의 가로/세로. 미리보기가 불러와지면 잰다 */
+  imageRatio?: number;
   /** 올라간 영상 썸네일 주소 */
   thumbnailUrl?: string;
   /** 썸네일을 고를 때 재생할 영상 주소 */
@@ -66,6 +70,13 @@ export const isArtworkVideoFile = (file: Pick<File, 'type' | 'name'>) =>
 
 export const isArtworkItemReady = (item: ArtworkImageItem) =>
   Boolean(item.uploadedUrl) && (item.mediaType === 'IMAGE' || Boolean(item.thumbnailUrl));
+
+/** 작품 카드 썸네일 비율 */
+export const ARTWORK_CARD_RATIO = 3 / 4;
+
+/** 대표 사진이 목록에 보이는 방식. 고른 방식이 없으면 사진 비율로 정하고, 비율을 아직 모르면 null */
+export const getArtworkItemFit = (item: ArtworkImageItem): ThumbnailFit | null =>
+  item.fit ?? (item.imageRatio ? autoThumbnailFit(item.imageRatio, ARTWORK_CARD_RATIO) : null);
 
 interface PickOptions {
   /** 영상을 받는 칸(전시 작품 이미지)인지 */
@@ -124,6 +135,7 @@ const toInitialItems = (
   urls: string[],
   videos: Record<string, ArtworkVideoMeta>,
   initialCrop?: CropRect | null,
+  initialFit?: ThumbnailFit | null,
 ): ArtworkImageItem[] =>
   urls.map((url, index) => {
     const video = videos[url];
@@ -145,6 +157,8 @@ const toInitialItems = (
           previewUrl: url,
           uploadedUrl: url,
           crop: index === 0 && isValidCrop(initialCrop) ? initialCrop : null,
+          // 방식 없이 영역만 저장된 예전 작품은 고른 영역이 보이도록 꽉 채우기로 둔다
+          fit: index === 0 ? (initialFit ?? (isValidCrop(initialCrop) ? 'fill' : null)) : null,
         };
   });
 
@@ -155,6 +169,7 @@ const toInitialItems = (
 export function useArtworkImageUploads({
   initialUrls,
   initialCrop,
+  initialFit,
   initialVideos = {},
   maxImages,
   allowVideo = false,
@@ -164,6 +179,8 @@ export function useArtworkImageUploads({
   initialUrls: string[];
   /** 첫 장(대표 사진)에 저장돼 있던 썸네일 영역 */
   initialCrop?: CropRect | null;
+  /** 첫 장(대표 사진)에 저장돼 있던 보이는 방식 */
+  initialFit?: ThumbnailFit | null;
   /** 저장된 영상(주소 → 썸네일 · 크기) */
   initialVideos?: Record<string, ArtworkVideoMeta>;
   maxImages: number;
@@ -172,7 +189,7 @@ export function useArtworkImageUploads({
   onUploadError?: () => void;
 }) {
   const [items, setItems] = useState<ArtworkImageItem[]>(() =>
-    toInitialItems(initialUrls, initialVideos, initialCrop),
+    toInitialItems(initialUrls, initialVideos, initialCrop, initialFit),
   );
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
   /* 읽을 수 없거나 바꿀 수 없는 영상. 작품 이미지 칸 위 안내로 알린다 */
@@ -393,7 +410,15 @@ export function useArtworkImageUploads({
   }, []);
 
   const setCrop = useCallback(
-    (id: string, crop: CropRect | null) => patchItem(id, { crop }),
+    (id: string, crop: CropRect | null, fit: ThumbnailFit) => patchItem(id, { crop, fit }),
+    [patchItem],
+  );
+
+  const setImageRatio = useCallback(
+    (id: string, imageRatio: number) => {
+      if (itemsRef.current.find((item) => item.id === id)?.imageRatio === imageRatio) return;
+      patchItem(id, { imageRatio });
+    },
     [patchItem],
   );
 
@@ -450,6 +475,7 @@ export function useArtworkImageUploads({
     remove,
     move,
     setCrop,
+    setImageRatio,
     setThumbnail,
   };
 }

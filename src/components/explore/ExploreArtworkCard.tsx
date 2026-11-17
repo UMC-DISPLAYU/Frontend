@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom';
 import type { ArtworkSearchItemDto } from '@/api/dto';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonText } from '@/components/ui';
+import { cn } from '@/utils/cn';
+import {
+  croppedDisplayWidth,
+  FIT_THUMBNAIL_IMAGE_CLASS,
+  resolveSavedThumbnail,
+  savedCropImageStyle,
+} from '@/utils/cropBox';
 
 import { ArtistByline } from './ArtistByline';
 import {
@@ -29,6 +36,7 @@ export function ExploreArtworkCard({ artwork }: ExploreArtworkCardProps) {
     ? artwork.artists.map((artist) => artist.name)
     : [artwork.artistName];
   const { photoPending, onPhotoSettle } = usePhotoPending(artwork.artworkImageUrl);
+  const thumbnail = resolveSavedThumbnail(artwork.artworkCrop, artwork.artworkFitMode);
 
   return (
     <Link
@@ -39,13 +47,14 @@ export function ExploreArtworkCard({ artwork }: ExploreArtworkCardProps) {
       <span className={CARD_PHOTO_WRAP_CLASS}>
         <OptimizedImage
           alt={artwork.artworkName}
-          className={CARD_IMAGE_CLASS}
-          displayWidth={280}
+          className={cn(CARD_IMAGE_CLASS, thumbnail.isFit && FIT_THUMBNAIL_IMAGE_CLASS)}
+          displayWidth={croppedDisplayWidth(280, thumbnail.crop)}
           frameClassName={ARTWORK_FRAME_CLASS}
           onError={onPhotoSettle}
           onLoad={onPhotoSettle}
           skeleton
           src={artwork.artworkImageUrl}
+          style={savedCropImageStyle(thumbnail.crop)}
         />
         <span
           aria-hidden="true"

@@ -46,7 +46,7 @@ import {
 import { ArtworkRegisterCta } from './ArtworkRegisterCta';
 import { ArtworkRegisterHeader } from './ArtworkRegisterHeader';
 import type { ArtworkImageUrls } from './artworkRequest';
-import { useArtworkImageUploads } from './useArtworkImageUploads';
+import { getArtworkItemFit, useArtworkImageUploads } from './useArtworkImageUploads';
 import { useLeaveArtworkRegister } from './useLeaveArtworkRegister';
 
 const REQUIRED_MARK = (
@@ -95,6 +95,7 @@ export function ArtworkRegisterForm({
   const artworkImages = useArtworkImageUploads({
     initialUrls: initialImages.artworkUrls,
     initialCrop: initialImages.artworkCrop,
+    initialFit: initialImages.artworkFit,
     initialVideos: initialImages.videos,
     maxImages: MAX_ARTWORK_IMAGES,
     allowVideo,
@@ -191,10 +192,15 @@ export function ArtworkRegisterForm({
   const submit = handleSubmit((data) => {
     if (!canSubmit) return;
 
+    const representative = artworkImages.items[0];
+
     onSubmit(data, {
       artworkUrls: artworkImages.uploadedUrls,
       processUrls: processImages.uploadedUrls,
-      artworkCrop: artworkImages.items[0]?.crop ?? null,
+      artworkCrop: representative?.crop ?? null,
+      // 대표가 영상이면 썸네일이 카드를 꽉 채운다(프로토타입)
+      artworkFit:
+        representative?.mediaType === 'IMAGE' ? getArtworkItemFit(representative) : 'fill',
       ...(allowVideo && { videos: artworkImages.uploadedVideos }),
     });
   });

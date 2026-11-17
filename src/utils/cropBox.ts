@@ -121,3 +121,34 @@ export function savedCropImageStyle(crop: CropRect | null | undefined): CSSPrope
 export function croppedDisplayWidth(displayWidth: number, crop: CropRect | null | undefined) {
   return isValidCrop(crop) ? Math.round(displayWidth / crop.w) : displayWidth;
 }
+
+/** 목록 칸에 사진을 보이는 방식. fill = 꽉 채우기(상자 안만), fit = 전체 보이기(남는 곳은 흰색) */
+export type ThumbnailFit = 'fill' | 'fit';
+
+/** 칸에 꽉 채웠을 때 이만큼 넘게 잘리면 처음부터 전체 보이기로 둔다(프로토타입 U-167) */
+export const AUTO_FIT_CUT_OVER = 0.3;
+
+/** 칸에 꽉 채웠을 때 잘리는 양(0~1) */
+export function fillCutRatio(imageRatio: number, cropRatio: number) {
+  return 1 - Math.min(imageRatio, cropRatio) / Math.max(imageRatio, cropRatio);
+}
+
+/** 사진 가로 · 세로만으로 정하는 처음 보이는 방식 */
+export function autoThumbnailFit(imageRatio: number, cropRatio: number): ThumbnailFit {
+  return fillCutRatio(imageRatio, cropRatio) > AUTO_FIT_CUT_OVER ? 'fit' : 'fill';
+}
+
+/** 전체 보이기 이미지 클래스. 남는 곳은 사진 색을 따라가지 않고 흰색이다(img 배경이 남는 곳에 칠해진다) */
+export const FIT_THUMBNAIL_IMAGE_CLASS = 'object-contain bg-primary-white';
+
+/**
+ * 서버가 준 영역 · 방식(FILL | FIT)을 목록 카드에 적용할 값으로 바꾼다.
+ * 전체 보이기면 영역을 쓰지 않고, 방식이 없으면(예전 작품) 꽉 채우기로 본다
+ */
+export function resolveSavedThumbnail(
+  crop: CropRect | null | undefined,
+  fitMode: string | null | undefined,
+): { crop: CropRect | null; isFit: boolean } {
+  if (fitMode === 'FIT') return { crop: null, isFit: true };
+  return { crop: isValidCrop(crop) ? crop : null, isFit: false };
+}

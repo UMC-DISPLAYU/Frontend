@@ -264,6 +264,10 @@ export interface ArtworkCropDto {
   h: number;
 }
 
+/* 목록 카드에 대표 사진을 보이는 방식. FILL = 꽉 채우기(artworkCrop 영역), FIT = 전체 보이기(남는 곳 흰색).
+   실서버에 아직 없는 필드라 목(MSW)에서만 저장된다. 없으면 FILL 로 본다 */
+export type ArtworkFitModeDto = 'FILL' | 'FIT';
+
 export interface ArtworkImageRequestDto {
   imageUrl: string;
   isThumbnail?: boolean;
@@ -300,6 +304,7 @@ export interface CreateExhibitionArtworkRequestDto {
   qaHandlerUserIds: number[];
   /* 수정에서 생략하면 대표 사진이 같은 동안 기존 영역을 유지하고, 대표 사진이 바뀌면 지워진다 */
   artworkCrop?: ArtworkCropDto | null;
+  artworkFitMode?: ArtworkFitModeDto | null;
 }
 
 export type UpdateExhibitionArtworkRequestDto = Omit<
@@ -325,6 +330,7 @@ export interface CreateExhibitionArtworkResponseDataDto {
   coAuthorCount: number;
   qaHandlerUserIds: number[];
   artworkCrop?: ArtworkCropDto | null;
+  artworkFitMode?: ArtworkFitModeDto | null;
 }
 
 /* 수정 화면 진입 시 등록 당시 상태(공동 작가 · Q&A 담당자 포함)를 복원하는 응답 */
@@ -345,6 +351,7 @@ export interface DisplayArtworkEditResponseDataDto {
   coAuthors?: ArtworkCoAuthorDto[] | null;
   qaHandlerUserIds?: number[] | null;
   artworkCrop?: ArtworkCropDto | null;
+  artworkFitMode?: ArtworkFitModeDto | null;
 }
 
 export type CreateExhibitionArtworkResponseDto =
@@ -385,6 +392,7 @@ export interface ArtworkPreviewItemDto {
   /* 대표 작가가 첫 번째이고 공동 작가가 이어진다 */
   artists?: ArtworkCoAuthorDto[];
   artworkCrop?: ArtworkCropDto | null;
+  artworkFitMode?: ArtworkFitModeDto | null;
 }
 
 export interface GetArtworkPreviewResponseDataDto {
@@ -410,6 +418,7 @@ export interface DisplayArtworkDto {
   imageWidth: number;
   imageHeight: number;
   artworkCrop?: ArtworkCropDto | null;
+  artworkFitMode?: ArtworkFitModeDto | null;
   /* 대표가 영상이면 영상 주소(artworkImageUrl 은 썸네일), 아니면 null */
   artworkVideoUrl?: string | null;
 }

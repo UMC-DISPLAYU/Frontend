@@ -1,5 +1,6 @@
 import type {
   ArtworkCropDto,
+  ArtworkFitModeDto,
   ArtworkImageRequestDto,
   CreateExhibitionArtworkRequestDto,
   DisplayArtworkEditResponseDataDto,
@@ -9,7 +10,7 @@ import type {
   UpdateExhibitionArtworkRequestDto,
 } from '@/api/dto';
 import { DEFAULT_ARTWORK_IMAGE_HEIGHT, DEFAULT_ARTWORK_IMAGE_WIDTH } from '@/constants';
-import { type CropRect, isValidCrop } from '@/utils/cropBox';
+import { type CropRect, isValidCrop, type ThumbnailFit } from '@/utils/cropBox';
 
 import { toArtworkFieldLabels, toArtworkTypes } from './artworkRegister.constants';
 import type { ArtworkRegisterValues } from './artworkRegister.schema';
@@ -27,6 +28,8 @@ export interface ArtworkImageUrls {
   processUrls: string[];
   /** 대표 사진(작품 이미지 첫 장)이 카드 썸네일에 보이는 영역. 없으면 사진 가운데 */
   artworkCrop?: CropRect | null;
+  /** 대표 사진이 목록 카드에 보이는 방식. 없으면 꽉 채우기 */
+  artworkFit?: ThumbnailFit | null;
   /** artworkUrls 중 영상인 주소. 전시 작품만 영상을 받는다 */
   videos?: Record<string, ArtworkVideoMeta>;
 }
@@ -165,6 +168,14 @@ export function toArtworkCropRequest(
   return w > 0 && h > 0 ? { x, y, w, h } : undefined;
 }
 
+export const toArtworkFitModeRequest = (
+  fit: ThumbnailFit | null | undefined,
+): ArtworkFitModeDto | undefined => (fit ? (fit === 'fit' ? 'FIT' : 'FILL') : undefined);
+
+export const fromArtworkFitMode = (
+  fitMode: ArtworkFitModeDto | null | undefined,
+): ThumbnailFit | null => (fitMode === 'FIT' ? 'fit' : fitMode === 'FILL' ? 'fill' : null);
+
 /**
  * 서버는 Q&A 담당자를 한 명 이상 요구하고, 작가 · 계정이 연결된 공동 작가 · 전시 대표자 중에서만 받는다.
  * 화면에서 담당자를 고르지 않으므로 수정이면 남아 있는 기존 담당자를, 없으면 작가(계정 없으면 대표자)를 보낸다.
@@ -225,6 +236,7 @@ export function buildUpdateArtworkRequest({
   const point = previous?.point?.trim();
   const types = toArtworkTypes(values.fieldLabels);
   const artworkCrop = toArtworkCropRequest(images.artworkCrop);
+  const artworkFitMode = toArtworkFitModeRequest(images.artworkFit);
 
   return {
     ...toArtworkInfoRequest(values, images, previous),
@@ -232,6 +244,7 @@ export function buildUpdateArtworkRequest({
     types,
     ...(point && { point }),
     ...(artworkCrop && { artworkCrop }),
+    ...(artworkFitMode && { artworkFitMode }),
     artistName: author.name.trim(),
     ...(typeof author.userId === 'number' && { artistUserId: author.userId }),
     coAuthors: toCoAuthorsRequest(coAuthors),

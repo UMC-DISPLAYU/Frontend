@@ -11,6 +11,7 @@ export {
   buildCreateArtworkRequest,
   buildPersonalArtworkRequest,
   buildUpdateArtworkRequest,
+  fromArtworkFitMode,
   splitArtworkImages,
   toArtworkRegisterValues,
 } from './artworkRequest';
