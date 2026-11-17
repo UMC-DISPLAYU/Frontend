@@ -40,6 +40,9 @@ type ArtworkDetailPageProps = {
 
 // 정책: 준비 중(DRAFT, 비공개 전환 포함) · 심사 중(PENDING_REVIEW) · 반려(REJECTED)는 대중에게 공개되지 않는다
 const NOT_PUBLIC_DISPLAY_STATUSES = new Set(['DRAFT', 'PENDING_REVIEW', 'REJECTED']);
+// 공개 상세 · 미리보기 주소가 이 판단 하나로 갈린다. 둘이 다르면 서로 계속 넘긴다
+const isPreviewOnlyDisplay = (display: Pick<DisplayDetailDto, 'status'>) =>
+  NOT_PUBLIC_DISPLAY_STATUSES.has(display.status);
 
 export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps = {}) {
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
@@ -76,22 +79,19 @@ export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps =
   }
 
   /*
-   * 미리보기 화면은 미리보기 주소 하나로만 둔다(전시 상세와 같은 방식).
-   * 대중에게 공개되지 않은 전시(준비 중 · 심사 중 · 반려)의 작품을 공개 주소로 열면 미리보기 주소로 보내고,
-   * 그 라우트 가드가 팀원만 열어 준다. 심사가 승인돼 공개 중(PUBLISHED)이면 개막 전이어도 일반 상세다.
-   * 미리보기 주소는 전시 상태와 상관없이 그대로 미리보기로 보인다
+   * 전시 상세와 같은 방식(사용자 결정): 공개 전 전시(준비 중 · 심사 중 · 반려)의 작품은 늘 미리보기 주소로,
+   * 공개 중(PUBLISHED)이면 개막 전이어도 늘 공개 상세 주소로 보낸다. 미리보기 라우트 가드가 팀원만 열어 준다
    */
-  if (
-    previewDisplayId === undefined &&
-    display &&
-    NOT_PUBLIC_DISPLAY_STATUSES.has(display.status)
-  ) {
+  if (display && previewDisplayId === undefined && isPreviewOnlyDisplay(display)) {
     return (
       <Navigate
         to={`/exhibition/${display.displayId}/artworks/${artworkId}/preview${search}`}
         replace
       />
     );
+  }
+  if (display && previewDisplayId !== undefined && !isPreviewOnlyDisplay(display)) {
+    return <Navigate to={`/artwork/${artworkId}${search}`} replace />;
   }
 
   const policyDisplay = (display ?? { ownerUserId: 0, teamMembers: [] }) as DisplayDetailDto;
