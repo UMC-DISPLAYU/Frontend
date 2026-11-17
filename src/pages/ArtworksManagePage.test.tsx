@@ -85,7 +85,13 @@ vi.mock('@/hooks/queries/useDisplayMembers', () => ({
     data: {
       members: [
         { userId: 1, displayNickname: '대표', role: 'LEADER', accepted: true },
-        { userId: 3, displayNickname: '김서윤', role: 'TEAM_MEM', accepted: true },
+        {
+          userId: 3,
+          displayNickname: '김서윤',
+          nickname: 'blue.note',
+          role: 'TEAM_MEM',
+          accepted: true,
+        },
       ],
     },
   }),
@@ -211,7 +217,7 @@ it('대표자는 누구의 작품인지 고른 뒤 작품 등록으로 이동한
   const sheet = get(ArtworkAuthorChoiceSheet);
   expect(sheet.props.open).toBe(true);
   expect(sheet.props.candidates).toEqual([
-    { userId: 3, name: '김서윤', caption: '팀원', disabled: false },
+    { userId: 3, name: '김서윤', caption: 'blue.note', disabled: false },
   ]);
 
   (sheet.props.onSelectMine as () => void)();

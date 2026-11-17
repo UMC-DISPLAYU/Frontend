@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { AgreementCheckIcon } from './AgreementCheckIcon';
 import { focusOnMount } from './focusOnMount';
 import type { TermKey, TermState } from './onboarding.types';
@@ -5,17 +7,15 @@ import { OnboardingBottomButton } from './OnboardingBottomButton';
 import { OnboardingHeader } from './OnboardingHeader';
 import { ChevronRightIcon } from './OnboardingIcons';
 
-const TERM_ROWS: { key: TermKey; label: string; required: boolean }[] = [
-  { key: 'service', label: '서비스 이용약관', required: true },
-  { key: 'privacy', label: '개인정보 수집·이용 동의', required: true },
-  { key: 'over14', label: '만 14세 이상 확인', required: true },
-  { key: 'location', label: '위치기반서비스 이용약관', required: false },
+const TERMS_DOC_PATH = '/policy';
+
+const TERM_ROWS: { key: TermKey; label: string; doc?: string }[] = [
+  { key: 'service', label: '서비스 이용약관', doc: 'service' },
+  { key: 'over14', label: '만 14세 이상 확인' },
 ];
 
-const hasDocument = (key: TermKey) => key !== 'over14';
-
-const CHECK_BUTTON_CLASS =
-  'group flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-6 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
+const FOCUS_RING =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
 export function TermsAgreementScreen({
   terms,
@@ -28,13 +28,7 @@ export function TermsAgreementScreen({
   onChange: (terms: TermState) => void;
   onNext: () => void;
 }) {
-  const allChecked = Object.values(terms).every(Boolean);
-  const canProceed = TERM_ROWS.every(({ key, required }) => !required || terms[key]);
-
-  const toggleAll = () => {
-    const next = !allChecked;
-    onChange({ over14: next, service: next, privacy: next, location: next });
-  };
+  const canProceed = TERM_ROWS.every(({ key }) => terms[key]);
 
   return (
     <>
@@ -48,54 +42,47 @@ export function TermsAgreementScreen({
         >
           서비스 이용을 위해
           <br />
-          이용약관 동의가 필요합니다
+          이용약관 동의가 필요해요
         </h1>
 
         <div className="mt-10">
-          <div className="flex min-h-14 items-center">
-            <button
-              type="button"
-              role="checkbox"
-              aria-checked={allChecked}
-              onClick={toggleAll}
-              className={`${CHECK_BUTTON_CLASS} min-h-14`}
-            >
-              <AgreementCheckIcon checked={allChecked} />
-              <span className="typography-body-xl-semibold text-primary">전체 동의</span>
-            </button>
-          </div>
-
-          <hr className="border-primary" />
-
           <ul>
-            {TERM_ROWS.map(({ key, label, required }) => (
+            {TERM_ROWS.map(({ key, label, doc }) => (
               <li key={key} className="flex min-h-13 items-center gap-3">
                 <button
                   type="button"
                   role="checkbox"
                   aria-checked={terms[key]}
                   onClick={() => onChange({ ...terms, [key]: !terms[key] })}
-                  className={`${CHECK_BUTTON_CLASS} min-h-13`}
+                  className={`group flex min-h-13 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-6 text-left ${FOCUS_RING}`}
                 >
                   <AgreementCheckIcon checked={terms[key]} />
                   <span className="typography-body-lg-regular min-w-0 text-primary">
                     {label}
-                    <span className="ml-1 text-tertiary">{required ? '(필수)' : '(선택)'}</span>
+                    <span className="ml-1 text-tertiary">(필수)</span>
                   </span>
                 </button>
 
-                {hasDocument(key) ? (
-                  /* 약관 상세 화면은 두지 않고 프로토타입처럼 화살표 모양만 남긴다 */
-                  <span
-                    aria-hidden="true"
-                    className="-mr-2.5 grid size-11 shrink-0 place-items-center text-tertiary"
+                {doc ? (
+                  <Link
+                    to={`${TERMS_DOC_PATH}?doc=${doc}`}
+                    aria-label={`${label} 보기`}
+                    className={`-mr-2.5 grid size-11 shrink-0 place-items-center rounded-6 text-tertiary ${FOCUS_RING}`}
                   >
                     <ChevronRightIcon className="size-6" />
-                  </span>
+                  </Link>
                 ) : null}
               </li>
             ))}
           </ul>
+
+          {/* 개인정보 수집·이용은 동의가 아니라 안내라서 체크 없이 글자 링크로 둔다(프로토타입) */}
+          <Link
+            to={`${TERMS_DOC_PATH}?doc=privacy-notice`}
+            className={`typography-body-md-medium mt-1 inline-flex min-h-11 items-center rounded-6 text-secondary underline underline-offset-3 ${FOCUS_RING}`}
+          >
+            개인정보 수집·이용 안내
+          </Link>
         </div>
       </main>
 

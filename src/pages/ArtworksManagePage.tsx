@@ -65,10 +65,9 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const proxyCandidates = useMemo(
     () =>
       toTeamCandidates(memberList?.members, {
-        ownerUserId: display?.ownerUserId,
         excludeUserIds: [userId],
       }),
-    [display?.ownerUserId, memberList, userId],
+    [memberList, userId],
   );
 
   const fetchedWorks = useMemo<Work[]>(
