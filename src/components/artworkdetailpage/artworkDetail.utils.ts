@@ -1,5 +1,4 @@
 import type { ImageResponseDto } from '@/api/dto';
-import { ARTWORK_TYPE_LABEL_MAP } from '@/constants/artwork';
 
 export type ArtworkDetailTabKey = 'intro' | 'guest';
 
@@ -69,24 +68,17 @@ export function hasArtworkIntro({
   return Boolean(content?.trim() || processImageCount > 0);
 }
 
-/* 분류·연도·크기·재료 순으로, 값이 있는 항목만 가운뎃점(·)으로 잇습니다. */
+/* 연도·크기·재료 순으로, 값이 있는 항목만 가운뎃점(·)으로 잇습니다. */
 export function getArtworkSpecText({
-  type,
   productionYear,
   size,
   materialMedia,
 }: {
-  type: string;
   productionYear?: number | null;
   size?: string | null;
   materialMedia?: string | null;
 }) {
-  return [
-    ARTWORK_TYPE_LABEL_MAP[type],
-    productionYear ? `${productionYear}` : null,
-    size,
-    materialMedia,
-  ]
+  return [productionYear ? `${productionYear}` : null, size, materialMedia]
     .filter(Boolean)
     .join(' · ');
 }
