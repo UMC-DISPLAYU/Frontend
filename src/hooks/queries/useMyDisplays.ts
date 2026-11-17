@@ -65,10 +65,12 @@ export const useArtistDisplays = (userId: number, { enabled = true }: { enabled?
     },
   });
 
+/* 전시를 지우거나 나가면 그 전시에 올린 작품도 서버에서 사라져, 작품 검색 · 작가 프로필 · 홈 작품 목록도 바뀝니다. */
 const invalidateDisplayQueries = (queryClient: QueryClient, displayId: number) => {
   queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
   queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
   queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
+  queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
 };
 
 export const useDeleteDisplay = () => {
@@ -81,6 +83,7 @@ export const useDeleteDisplay = () => {
       // 무효화만 하면 뒤로가기로 상세에 돌아왔을 때 받아 둔 상세가 먼저 그려진다. 지운 전시는 캐시에서 뺀다
       queryClient.removeQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
     },
   });
 };
@@ -99,17 +102,18 @@ export const useUpdateMyDisplayNickname = () => {
 
   return useMutation({
     mutationFn: (body: UpdateMyDisplayNicknameRequestDto) => updateMyDisplayNickname(body),
+    /*
+     * 전시 작가명은 전시 상세 teamMembers · 팀원 목록뿐 아니라 그 전시 작품의 artistName 에도 담겨 옵니다.
+     * 작품 목록 · 상세를 같이 무효화하지 않으면 staleTime 동안 전시 작업 페이지 등에 예전 이름이 남습니다.
+     */
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
       queryClient.invalidateQueries({
         queryKey: queryKeys.displayMembers.byDisplayId(variables.displayId),
       });
-      /*
-       * useDisplayDetail도 DisplayDetailDto.teamMembers로 같은 displayNickname을 담고 있고,
-       * 작품 상세 페이지의 작가명 표시가 여기서 조회한 값을 씁니다. 같이 무효화하지 않으면
-       * 이미 캐시된 화면에서 바뀐 작가명이 반영되지 않습니다.
-       */
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(variables.displayId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
     },
   });
 };

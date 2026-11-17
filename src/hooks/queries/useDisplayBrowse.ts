@@ -82,10 +82,13 @@ export const useUpdateDisplay = (displayId: number | undefined) => {
       if (!displayId) throw new Error('displayId is required');
       return updateDisplay(displayId, body);
     },
+    // 작품 상세(exhibitionInfo) · 작품 검색(displayTitle) · 보관함 전시도 전시 제목 · 포스터 등을 담아 온다
     onSuccess: () => {
       if (!displayId) return;
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
     },
   });
 };
@@ -96,9 +99,11 @@ export const useHideDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => hideDisplay(displayId),
+    // 비공개가 되면 그 전시 작품이 작품 검색 · 작가 프로필 · 홈 작품 목록에서 빠질 수 있다
     onSuccess: (_, displayId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
     },
   });
 };

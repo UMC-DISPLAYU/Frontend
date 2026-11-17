@@ -25,13 +25,14 @@ export const useDisplayArtworks = (displayId: number) =>
     enabled: Number.isFinite(displayId) && displayId > 0,
   });
 
-/* 작품 변경 후 전시 · 작가 프로필 · 탐색의 작품 목록을 다시 불러옵니다. */
+/* 작품 변경 후 전시 · 작가 프로필 · 탐색 · 보관함의 작품 목록을 다시 불러옵니다. */
 const useInvalidateDisplayArtworks = (displayId: number) => {
   const queryClient = useQueryClient();
 
   return () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
     queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
   };
 };
 

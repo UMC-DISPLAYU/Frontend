@@ -96,10 +96,8 @@ export const useRemoveDisplayMember = (displayId: number) => {
   return useMutation({
     mutationFn: (memberId: number) => removeDisplayMember(displayId, memberId),
     onSuccess: () => {
-      // 내보낸 팀원이 작가로 등록된 작품은 서버에서 함께 삭제됩니다
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.displayArtworks.byDisplayId(displayId),
-      });
+      // 내보낸 팀원이 작가로 등록된 작품은 서버에서 함께 삭제되어 작품 검색 · 작가 프로필 목록에서도 빠집니다
+      void queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
       return refetchTeam(queryClient, displayId);
     },
   });
