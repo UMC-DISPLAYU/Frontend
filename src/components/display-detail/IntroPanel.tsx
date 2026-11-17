@@ -78,7 +78,7 @@ export function IntroPanel({ display, contentPath, isPreview = false }: Props) {
       : null;
 
   return (
-    <div className="pb-10 desktop:pb-0">
+    <div className="pb-10">
       {display.content && <IntroText content={display.content} />}
       {hasContents && <ContentCards display={display} contentPath={contentPath} />}
       {openNotice && (
