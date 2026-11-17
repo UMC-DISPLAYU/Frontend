@@ -91,7 +91,15 @@ describe('공개 상세 주소의 미리보기는 미리보기 화면 하나로 
     });
   });
 
-  it('미리보기에서 연 콘텐츠는 그대로 보여 준다', () => {
+  it('미리보기에서 연 콘텐츠라도 이미 공개된 전시면 공개 콘텐츠 주소로 바꿔 간다', () => {
+    h.display.data = display('PUBLISHED');
+    h.search = '?category=5';
+    const page = asElement(DisplayContentsPage({ previewDisplayId: '7', onBack: vi.fn() }));
+
+    expect(page.props).toMatchObject({ to: '/display/7/contents?category=5', replace: true });
+  });
+
+  it('미리보기에서 연 등록 중 전시의 콘텐츠는 그대로 보여 준다', () => {
     h.display.data = display('DRAFT');
     h.search = '?category=5';
     const page = asElement(DisplayContentsPage({ previewDisplayId: '7', onBack: vi.fn() }));

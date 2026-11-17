@@ -6,3 +6,7 @@ import type { DisplayDetailDto } from '@/api/dto';
  */
 export const isPreviewDisplay = (display: Pick<DisplayDetailDto, 'status'>) =>
   display.status === 'DRAFT';
+
+/* 심사를 통과해 공개된 전시. 미리보기 주소로 열어도 일반 상세로 보낸다 */
+export const isPublishedDisplay = (display: Pick<DisplayDetailDto, 'status'>) =>
+  display.status === 'PUBLISHED';
