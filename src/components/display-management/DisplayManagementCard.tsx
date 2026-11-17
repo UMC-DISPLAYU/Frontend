@@ -9,6 +9,7 @@ import {
 } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
+import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 import { hasPermission } from '@/utils/hasPermission';
 
@@ -82,9 +83,11 @@ export function DisplayManagementCard({
         <OptimizedImage
           src={ex.thumbnail}
           alt=""
-          displayWidth={96}
+          displayWidth={croppedDisplayWidth(96, ex.posterCrop)}
           skeleton
           frameClassName="absolute inset-0"
+          className="object-cover"
+          style={savedCropImageStyle(ex.posterCrop)}
         />
         {ex.hasVideoPoster && <VideoPosterBadge />}
       </div>

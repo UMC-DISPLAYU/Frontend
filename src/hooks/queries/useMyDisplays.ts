@@ -38,6 +38,7 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   place: display.placeName,
   thumbnail: display.postImageUrl,
   hasVideoPoster: Boolean(display.posterVideoUrl),
+  posterCrop: display.posterCrop ?? null,
   artistName: display.displayNickname ?? display.artistName,
 });
 

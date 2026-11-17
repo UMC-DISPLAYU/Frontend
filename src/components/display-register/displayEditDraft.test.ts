@@ -36,6 +36,7 @@ const DETAIL = {
   ],
   instagramUrl: 'https://www.instagram.com/displayu/',
   websiteUrl: 'https://displayu.kr/',
+  posterCrop: { x: 0.1, y: 0, w: 0.8, h: 1 },
 } as unknown as DisplayDetailDto;
 
 describe('toFieldLabels', () => {
@@ -84,6 +85,7 @@ describe('toEditDraft', () => {
       address: '서울특별시 중구 예술로 12',
       instagramId: 'displayu',
       websiteUrl: 'https://displayu.kr/',
+      posterCrop: { x: 0.1, y: 0, w: 0.8, h: 1 },
     });
   });
 
@@ -110,7 +112,24 @@ describe('buildUpdateDisplayRequest', () => {
       openTime: '10:00',
       closeTime: '18:00',
       placeName: '예술관',
+      roadAddress: '서울특별시 중구 예술로 12',
+      latitude: 37.5,
+      longitude: 127,
+      region: 'SEOUL',
+      instagramUrl: 'https://instagram.com/displayu',
+      websiteUrl: 'https://displayu.kr/',
+      posterCrop: { x: 0.1, y: 0, w: 0.8, h: 1 },
     });
+  });
+
+  it('지운 링크는 빈 문자열로 보내 지운다', () => {
+    const draft = { ...toEditDraft(DETAIL), instagramId: '', websiteUrl: '' };
+    expect(buildUpdateDisplayRequest(draft)).toMatchObject({ instagramUrl: '', websiteUrl: '' });
+  });
+
+  it('포스터 범위가 없으면 보내지 않아 서버 값을 유지한다', () => {
+    const draft = { ...toEditDraft(DETAIL), posterCrop: null };
+    expect(buildUpdateDisplayRequest(draft)).not.toHaveProperty('posterCrop');
   });
 
   it('추가 포스터를 모두 지우면 빈 목록을 보내 지운다', () => {
@@ -132,6 +151,7 @@ describe('buildUpdateDisplayRequest', () => {
     expect(
       buildUpdateDisplayRequest({ ...toEditDraft(DETAIL), fieldLabels: [], field: [] }),
     ).toBeNull();
+    expect(buildUpdateDisplayRequest({ ...toEditDraft(DETAIL), latitude: null })).toBeNull();
   });
 });
 
@@ -146,6 +166,10 @@ describe('isEditDraftChanged', () => {
     ).toBe(true);
     expect(
       isEditDraftChanged(original, { ...original, posterCrop: { x: 0, y: 0, w: 1, h: 1 } }),
-    ).toBe(false);
+    ).toBe(true);
+    expect(isEditDraftChanged(original, { ...original, address: '서울특별시 종로구 1' })).toBe(
+      true,
+    );
+    expect(isEditDraftChanged(original, { ...original, websiteUrl: '' })).toBe(true);
   });
 });

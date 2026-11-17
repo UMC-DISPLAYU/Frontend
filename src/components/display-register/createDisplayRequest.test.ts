@@ -98,6 +98,13 @@ describe('buildCreateDisplayRequest', () => {
     });
   });
 
+  it('포스터 범위는 고른 경우에만 보낸다', () => {
+    expect(buildCreateDisplayRequest(DRAFT, '김디유')).not.toHaveProperty('posterCrop');
+    expect(
+      buildCreateDisplayRequest({ ...DRAFT, posterCrop: { x: 0, y: 0.1, w: 1, h: 0.8 } }, '김디유'),
+    ).toMatchObject({ posterCrop: { x: 0, y: 0.1, w: 1, h: 0.8 } });
+  });
+
   it('필수값이 빠지면 null', () => {
     expect(buildCreateDisplayRequest({ ...DRAFT, posters: [] }, '김디유')).toBeNull();
     expect(buildCreateDisplayRequest({ ...DRAFT, latitude: null }, '김디유')).toBeNull();
