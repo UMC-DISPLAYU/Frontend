@@ -118,7 +118,7 @@ export function SettingsDrawer({
           onClick={() => goTo('/edit-basic-info')}
           type="button"
         >
-          <ProfileAvatar className="size-10" displayWidth={40} outlined src={profileImageUrl} />
+          <ProfileAvatar className="size-10" displayWidth={40} src={profileImageUrl} />
           <span className="typography-body-xxl-semibold min-w-0 flex-1 truncate">{nickname}</span>
           <ChevronRightIcon className="size-5 shrink-0 text-icon-primary" />
         </button>

@@ -10,19 +10,11 @@ type ProfileAvatarProps = {
   alt?: string;
   /** 보이는 지름(px). 사진 최적화 폭에 쓴다 */
   displayWidth?: number;
-  /** 원 안쪽 1px 테두리. 흰 사람 모양이 흰 바탕에 묻혀 반달처럼 보이지 않게 한다(마이 프로토타입) */
-  outlined?: boolean;
   /** 크기 덮어쓰기(기본 46px). 바탕은 디자인 확정대로 항상 회색이다 */
   className?: string;
 };
 
-export function ProfileAvatar({
-  src,
-  alt = '',
-  displayWidth = 46,
-  outlined = false,
-  className,
-}: ProfileAvatarProps) {
+export function ProfileAvatar({ src, alt = '', displayWidth = 46, className }: ProfileAvatarProps) {
   // 실패한 주소를 기록해 src 가 바뀌면 따로 초기화하지 않아도 다시 불러온다
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
 
@@ -39,8 +31,6 @@ export function ProfileAvatar({
       role={!isDecorative && !imageUrl ? 'img' : undefined}
       className={cn(
         'relative block size-11.5 shrink-0 overflow-hidden rounded-circle bg-tertiary text-icon-white',
-        outlined &&
-          'after:pointer-events-none after:absolute after:inset-0 after:rounded-circle after:shadow-[inset_0_0_0_1px_var(--border-color-primary)]',
         className,
       )}
     >
