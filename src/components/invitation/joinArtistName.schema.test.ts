@@ -17,9 +17,9 @@ it('한 글자부터 통과하고 앞뒤 공백을 지운 값을 보낸다', () 
   expect(parse('  김디유 ').data).toEqual({ artistName: '김디유' });
 });
 
-it('프로토타입 입력 제한(20자)까지만 통과한다', () => {
-  expect(JOIN_ARTIST_NAME_MAX_LENGTH).toBe(20);
-  expect(parse('가'.repeat(20)).success).toBe(true);
-  expect(parse('가'.repeat(21)).success).toBe(false);
-  expect(parse(` ${'가'.repeat(20)} `).success).toBe(true);
+it('전시 작가명 제한(10자 미만, 9자)까지만 통과한다', () => {
+  expect(JOIN_ARTIST_NAME_MAX_LENGTH).toBe(9);
+  expect(parse('가'.repeat(9)).success).toBe(true);
+  expect(parse('가'.repeat(10)).success).toBe(false);
+  expect(parse(` ${'가'.repeat(9)} `).success).toBe(true);
 });

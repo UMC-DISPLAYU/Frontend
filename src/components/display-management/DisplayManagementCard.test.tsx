@@ -105,6 +105,14 @@ it.each([
   expect(html).toContain(label);
 });
 
+it('대표자는 role 보다 먼저 대표자로 표시한다', () => {
+  expect(render({ ...display, role: 'MANAGER' })).toContain('· 대표자(전시작가)');
+});
+
+it('참여한 전시에 role 이 없으면 팀원으로 표시한다', () => {
+  expect(render({ ...display, isOwner: false, isLeader: false })).toContain('· 팀원(전시작가)');
+});
+
 it('전시 작가명이 응답에 있으면 멤버 목록을 조회하지 않는다', () => {
   render(display);
 
