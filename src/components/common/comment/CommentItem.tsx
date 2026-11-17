@@ -2,7 +2,6 @@ import { memo, useEffect, useRef, useState } from 'react';
 
 import { Heart } from 'lucide-react';
 
-import dotsIcon from '@/assets/comment/DotsIcon.svg';
 import { cn } from '@/utils/cn';
 
 import { ImageModal } from '../ImageModal';
@@ -35,12 +34,31 @@ type Props = {
 
 const ACTION_TEXT_CLASS = 'typography-body-md-medium text-secondary';
 
+/* 프로토타입 i-dots: 24 칸에 채운 점 3개(지름 3.4), 글자색을 따른다 */
+function DotsIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 fill-current">
+      <circle cx="5.5" cy="12" r="1.7" />
+      <circle cx="12" cy="12" r="1.7" />
+      <circle cx="18.5" cy="12" r="1.7" />
+    </svg>
+  );
+}
+
+/*
+ * 프로토타입 .dots · .menu(후기 · 방명록 같음): 32 원형 버튼(호버 #f0f0f3), 메뉴는 이름 줄 아래 36 · 오른쪽 끝에 맞춘다.
+ * 감싼 칸이 -6 만큼 오른쪽으로 나가 있어 메뉴를 그만큼(right 6) 안으로 당기고, 위로 -4 나가 있어 top 은 40 이다
+ */
 function CommentMoreMenu({ label, onSelect }: { label: string; onSelect: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const itemRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
+
+    // 프로토타입처럼 메뉴를 열면 첫 항목으로 포커스를 옮긴다
+    itemRef.current?.focus();
 
     const closeOnOutsidePress = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) setIsOpen(false);
@@ -65,23 +83,24 @@ function CommentMoreMenu({ label, onSelect }: { label: string; onSelect: () => v
         aria-haspopup="menu"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="grid size-8 cursor-pointer place-items-center rounded-circle transition-colors duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-focus"
+        className="grid size-8 cursor-pointer place-items-center rounded-circle text-[#18181b] transition-colors duration-fast ease-standard hover:bg-[#f0f0f3] focus-visible:outline-2 focus-visible:outline-focus"
       >
-        <img alt="" src={dotsIcon} className="max-w-none" />
+        <DotsIcon />
       </button>
       {isOpen && (
         <div
           role="menu"
-          className="absolute top-9 right-0 z-10 min-w-28 rounded-12 border border-bg-tertiary bg-primary-white p-1 shadow-lg"
+          className="absolute top-10 right-1.5 z-10 min-w-28 rounded-12 border border-[#f0f0f3] bg-[#fff] p-1 shadow-[0_5px_50px_rgba(0,0,0,0.07)]"
         >
           <button
+            ref={itemRef}
             type="button"
             role="menuitem"
             onClick={() => {
               setIsOpen(false);
               onSelect();
             }}
-            className="typography-body-lg-medium h-10 w-full cursor-pointer rounded-8 px-3 text-left text-primary transition-colors duration-fast ease-standard hover:bg-tertiary"
+            className="h-10 w-full cursor-pointer rounded-8 px-3 text-left text-[14px] leading-[1.4] font-medium tracking-[-0.03em] text-[#18181b] transition-colors duration-fast ease-standard hover:bg-[#f0f0f3] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
           >
             {label}
           </button>
