@@ -1,5 +1,5 @@
 import { setupServer } from 'msw/node';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 
 import { UPCOMING_DISPLAY_ID } from '@/mocks/data/contentOpen';
 import { mockDb } from '@/mocks/data/repository';
@@ -9,8 +9,15 @@ import { displayHandlers } from './display';
 
 const server = setupServer(...displayHandlers, ...artworkHandlers);
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterAll(() => server.close());
+// 전시 상세 목은 페이지 주소의 ?mock= 시나리오를 읽는다(scenario.ts). Node 에는 window 가 없어 빈 주소로 둔다
+beforeAll(() => {
+  vi.stubGlobal('window', { location: { search: '' } });
+  server.listen({ onUnhandledRequest: 'error' });
+});
+afterAll(() => {
+  server.close();
+  vi.unstubAllGlobals();
+});
 
 const getData = async (path: string) => {
   const response = await fetch(`http://localhost/api/v1${path}`);
