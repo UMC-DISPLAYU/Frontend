@@ -57,60 +57,52 @@ exports[`권한 테이블 무결성 > 전체 역할 × 권한 결과 스냅샷 1
       "displayOwner",
     ],
     "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
-    "permission": "displayContent:reorderCategory",
-    "when": null,
-  },
-  {
-    "allowed": [
-      "displayOwner",
-    ],
-    "condition": "작가 인증 && 전시 소유자",
     "permission": "displayContent:editCategory",
     "when": null,
   },
   {
     "allowed": [
+      "displayManager",
       "displayOwner",
     ],
-    "condition": "작가 인증 && 전시 소유자",
+    "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
     "permission": "displayContent:deleteCategory",
     "when": null,
   },
   {
     "allowed": [
+      "displayManager",
       "displayOwner",
     ],
-    "condition": "작가 인증 && 전시 소유자",
+    "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
+    "permission": "displayContent:createContent",
+    "when": null,
+  },
+  {
+    "allowed": [
+      "displayManager",
+      "displayOwner",
+    ],
+    "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
     "permission": "displayContent:editContent",
     "when": null,
   },
   {
     "allowed": [
+      "displayManager",
       "displayOwner",
     ],
-    "condition": "작가 인증 && 전시 소유자",
+    "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
     "permission": "displayContent:deleteContent",
     "when": null,
   },
   {
     "allowed": [
-      "displayOwner",
-    ],
-    "condition": "작가 인증 && 전시 소유자",
-    "permission": "displayContent:reorder",
-    "when": null,
-  },
-  {
-    "allowed": [
-      "displayMember",
       "displayManager",
-      "unverifiedDisplayManager",
       "displayOwner",
-      "artworkCreator",
-      "artworkCollaborator",
     ],
-    "condition": "전시 소속인",
-    "permission": "displayContent:createContent",
+    "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
+    "permission": "displayContent:reorder",
     "when": null,
   },
   {
@@ -135,29 +127,41 @@ exports[`권한 테이블 무결성 > 전체 역할 × 권한 결과 스냅샷 1
   },
   {
     "allowed": [
+      "displayManager",
       "displayOwner",
       "artworkCreator",
       "artworkCollaborator",
     ],
-    "condition": "(작가 인증 && 전시 소유자) || (전시 소속인 && (작품 생성자 || 공동작업자))",
+    "condition": "(작가 인증 && (전시 소유자 || 전시 관리자)) || (전시 소속인 && (작품 생성자 || 공동작업자))",
     "permission": "artwork:edit",
     "when": null,
   },
   {
     "allowed": [
+      "displayManager",
       "displayOwner",
       "artworkCreator",
       "artworkCollaborator",
     ],
-    "condition": "(작가 인증 && 전시 소유자) || (전시 소속인 && (작품 생성자 || 공동작업자))",
+    "condition": "(작가 인증 && (전시 소유자 || 전시 관리자)) || (전시 소속인 && (작품 생성자 || 공동작업자))",
     "permission": "artwork:delete",
     "when": null,
   },
   {
     "allowed": [
+      "displayManager",
       "displayOwner",
     ],
-    "condition": "작가 인증 && 전시 소유자",
+    "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
+    "permission": "artwork:proxy",
+    "when": null,
+  },
+  {
+    "allowed": [
+      "displayManager",
+      "displayOwner",
+    ],
+    "condition": "작가 인증 && (전시 소유자 || 전시 관리자)",
     "permission": "artwork:reorder",
     "when": null,
   },

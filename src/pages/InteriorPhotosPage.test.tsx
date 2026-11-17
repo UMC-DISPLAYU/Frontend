@@ -79,13 +79,10 @@ vi.mock('@/hooks/usePolicy', async () => {
   const { policies } = await import('@/policies/policies');
   return {
     useCurrentPolicyUser: () => h.user,
-    useDisplayContentPolicy: (
-      display: Parameters<typeof policies.displayContent.reorder>[1],
-      photo?: { userId: number },
-    ) => ({
+    useDisplayContentPolicy: (display: Parameters<typeof policies.displayContent.reorder>[1]) => ({
       editCategory: () => policies.displayContent.editCategory(h.user, display),
       createContent: () => policies.displayContent.createContent(h.user, display),
-      deleteContent: () => policies.displayContent.deleteContent(h.user, display, photo),
+      deleteContent: () => policies.displayContent.deleteContent(h.user, display),
       reorder: () => policies.displayContent.reorder(h.user, display),
     }),
   };
@@ -96,7 +93,10 @@ vi.mock('@/hooks/queries/useDisplayDetail', () => ({
     data: {
       displayId: 7,
       ownerUserId: 1,
-      teamMembers: [{ userId: 2, accepted: true }],
+      teamMembers: [
+        { userId: 2, accepted: true, role: 'TEAM_MEM' },
+        { userId: 3, accepted: true, role: 'MANAGER' },
+      ],
       contentCategories: [
         { categoryId: 9, name: '전시 전경', description: '섹션 설명', contents: h.contents },
       ],
@@ -311,23 +311,22 @@ it('삭제한 사진은 즉시 순서 저장에 실패해도 되살리지 않는
   expect(alertText()).not.toBe('');
 });
 
-it('팀원은 자기 사진만 삭제하고 완료 시 순서 API를 호출하지 않는다', () => {
-  h.user = { id: 2, isArtistVerified: false };
-  let tree = render();
+it('팀원은 사진을 지우거나 순서를 바꿀 수 없다(기획 권한표: 섹션 사진은 대표자 · 관리자만)', () => {
+  h.user = { id: 2, isArtistVerified: true };
+  const tree = render();
   expect(tree.find((node) => node.props.id === 'section-name')!.props.readOnly).toBe(true);
-  click(tree, '편집');
-  drag('3', '1');
-  expect(photoIds()).toEqual([1, 2, 3]);
-  expect(h.reorder).not.toHaveBeenCalled();
-  remove(1);
-  expect(h.remove).not.toHaveBeenCalled();
+  expect(tree.some((node) => node.type === 'button' && node.props.children === '편집')).toBe(false);
   remove(2);
-  expect(h.remove).toHaveBeenCalledWith(2, expect.any(Object));
-  h.remove.mock.calls[0][1].onSuccess();
-  click(render(), '완료');
-  expect(h.reorder).not.toHaveBeenCalled();
-  tree = render();
-  expect(photos(tree).every((node) => node.props.isEditing === false)).toBe(true);
+  expect(h.remove).not.toHaveBeenCalled();
+});
+
+it('관리자는 대표자처럼 다른 사람 사진도 지우고 순서를 바꾼다', () => {
+  h.user = { id: 3, isArtistVerified: true };
+  const tree = render();
+  expect(tree.find((node) => node.props.id === 'section-name')!.props.readOnly).toBe(false);
+  click(tree, '편집');
+  remove(1);
+  expect(h.remove).toHaveBeenCalledWith(1, expect.any(Object));
 });
 
 it('사진 삭제 실패는 사진을 복원한다', () => {

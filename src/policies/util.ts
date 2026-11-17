@@ -82,8 +82,8 @@ export function isDisplayManager(user: User, display: DisplayPolicyResource): bo
   );
 }
 
-// 전시 콘텐츠 섹션 추가 · 순서 변경은 작가 인증을 받은 대표자 · 관리자만 가능
-export function canManageDisplayContent(user: User, display: DisplayPolicyResource): boolean {
+// 전시 작업의 전체 작품 · 전시 콘텐츠 관리는 작가 인증을 받은 대표자 · 관리자만 가능(기획 권한표)
+export function canManageDisplayWork(user: User, display: DisplayPolicyResource): boolean {
   return isArtistVerified(user) && isDisplayManager(user, display);
 }
 
@@ -103,14 +103,14 @@ export function isArtworkAuthor(user: User, artwork: ArtworkPolicyResource): boo
   );
 }
 
-// 작품 수정/삭제는 작가 인증을 받은 전시 대표자이거나, 전시 소속인 중 작품을 만든 사람만 가능
+// 작품 수정/삭제는 작가 인증을 받은 전시 대표자 · 관리자이거나, 전시 소속인 중 작품을 만든 사람만 가능
 export function canManageArtwork(
   user: User,
   artwork: ArtworkPolicyResource,
   display: DisplayPolicyResource,
 ): boolean {
   return (
-    canManageDisplay(user, display) ||
+    canManageDisplayWork(user, display) ||
     (isArtistVerified(user) && isDisplayMember(user, display) && isArtworkAuthor(user, artwork))
   );
 }

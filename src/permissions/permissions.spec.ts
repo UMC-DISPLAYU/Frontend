@@ -162,23 +162,21 @@ const MATRIX: Record<string, Rule[]> = {
       desc: '전시 소유자 || 전시 관리자',
       allow: ['displayManager', 'unverifiedDisplayManager', 'displayOwner'],
     },
-    ...(['createCategory', 'reorderCategory'] as const).map((a) => ({
+    ...(
+      [
+        'createCategory',
+        'editCategory',
+        'deleteCategory',
+        'createContent',
+        'editContent',
+        'deleteContent',
+        'reorder',
+      ] as const
+    ).map((a) => ({
       permission: `displayContent:${a}`,
       desc: '작가 인증 && (전시 소유자 || 전시 관리자)',
       allow: ['displayManager', 'displayOwner'] as RoleName[],
     })),
-    ...(['editCategory', 'deleteCategory', 'editContent', 'deleteContent', 'reorder'] as const).map(
-      (a) => ({
-        permission: `displayContent:${a}`,
-        desc: '작가 인증 && 전시 소유자',
-        allow: ['displayOwner' as RoleName],
-      }),
-    ),
-    {
-      permission: 'displayContent:createContent',
-      desc: '전시 소속인',
-      allow: DISPLAY_MEMBERS,
-    },
   ],
 
   displayInvitation: [
@@ -197,18 +195,23 @@ const MATRIX: Record<string, Rule[]> = {
     },
     {
       permission: 'artwork:edit',
-      desc: '(작가 인증 && 전시 소유자) || (전시 소속인 && (작품 생성자 || 공동작업자))',
-      allow: ['displayOwner', 'artworkCreator', 'artworkCollaborator'],
+      desc: '(작가 인증 && (전시 소유자 || 전시 관리자)) || (전시 소속인 && (작품 생성자 || 공동작업자))',
+      allow: ['displayManager', 'displayOwner', 'artworkCreator', 'artworkCollaborator'],
     },
     {
       permission: 'artwork:delete',
-      desc: '(작가 인증 && 전시 소유자) || (전시 소속인 && (작품 생성자 || 공동작업자))',
-      allow: ['displayOwner', 'artworkCreator', 'artworkCollaborator'],
+      desc: '(작가 인증 && (전시 소유자 || 전시 관리자)) || (전시 소속인 && (작품 생성자 || 공동작업자))',
+      allow: ['displayManager', 'displayOwner', 'artworkCreator', 'artworkCollaborator'],
+    },
+    {
+      permission: 'artwork:proxy',
+      desc: '작가 인증 && (전시 소유자 || 전시 관리자)',
+      allow: ['displayManager', 'displayOwner'],
     },
     {
       permission: 'artwork:reorder',
-      desc: '작가 인증 && 전시 소유자',
-      allow: ['displayOwner'],
+      desc: '작가 인증 && (전시 소유자 || 전시 관리자)',
+      allow: ['displayManager', 'displayOwner'],
     },
   ],
 

@@ -140,14 +140,13 @@ const PERMISSION_CHECKS: Record<string, (a: Attrs) => boolean> = {
   'displayContent:deleteContent': (a) =>
     policies.displayContent.deleteContent(toUser(a), toDisplay(a)),
   'displayContent:reorder': (a) => policies.displayContent.reorder(toUser(a), toDisplay(a)),
-  'displayContent:reorderCategory': (a) =>
-    policies.displayContent.reorderCategory(toUser(a), toDisplay(a)),
 
   'displayInvitation:create': (a) => policies.displayInvitation.create(toUser(a), toDisplay(a)),
 
   'artwork:create': (a) => policies.artwork.create(toUser(a), toDisplay(a)),
   'artwork:edit': (a) => policies.artwork.edit(toUser(a), toArtwork(a), toDisplay(a)),
   'artwork:delete': (a) => policies.artwork.delete(toUser(a), toArtwork(a), toDisplay(a)),
+  'artwork:proxy': (a) => policies.artwork.proxy(toUser(a), toDisplay(a)),
   'artwork:reorder': (a) => policies.artwork.reorder(toUser(a), toDisplay(a)),
 
   'feeling:create': (a) => policies.feeling.create(toUser(a)),

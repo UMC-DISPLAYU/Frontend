@@ -58,9 +58,9 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const artworkPolicy = useArtworkPolicy(display);
   const canReorder = hasPermission(artworkPolicy, 'reorder');
   const isOrderScreen = screen === 'order' && canReorder;
-  const isOwner = typeof display?.ownerUserId === 'number' && display.ownerUserId === userId;
-  // 대신 등록 시트의 팀원 목록. 대표자만 시트를 열기 때문에 대표자일 때만 불러온다
-  const membersQuery = useDisplayMembers(isOwner ? displayId : 0);
+  // 기획 권한표: 대표자 · 관리자는 다른 작가의 작품을 대신 등록할 수 있어 그때만 팀원 목록을 불러온다
+  const canProxy = hasPermission(artworkPolicy, 'proxy');
+  const membersQuery = useDisplayMembers(canProxy ? displayId : 0);
   const memberList = membersQuery.data;
   const proxyCandidates = useMemo(
     () =>
@@ -115,9 +115,9 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
     );
   };
 
-  // 프로토타입: 팀원은 바로 작품 등록, 대표자는 먼저 누구의 작품인지 고른다
+  // 프로토타입: 팀원은 바로 작품 등록, 대표자 · 관리자는 먼저 누구의 작품인지 고른다
   const handleAddArtwork = () => {
-    if (!isOwner) {
+    if (!canProxy) {
       navigate(buildArtworkRegisterPath(displayId));
       return;
     }
