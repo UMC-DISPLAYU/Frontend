@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
 import { Overlay } from '@/components/ui';
+import { DISPLAY_ARTIST_NAME_MAX_LENGTH } from '@/constants/exhibition';
 
 import { displayArtistNameSchema, type DisplayArtistNameValues } from './displayArtistName.schema';
 
@@ -30,6 +31,7 @@ export function DisplayArtistNameSheet({
     register,
     handleSubmit,
     reset,
+    trigger,
     formState: { isValid, errors },
   } = useForm<DisplayArtistNameValues>({
     resolver: zodResolver(displayArtistNameSchema),
@@ -38,8 +40,11 @@ export function DisplayArtistNameSheet({
   });
 
   useEffect(() => {
-    if (open) reset({ artistName: initialArtistName });
-  }, [open, initialArtistName, reset]);
+    if (!open) return;
+    reset({ artistName: initialArtistName });
+    // 제한이 줄기 전에 9자보다 길게 저장된 작가명은 열자마자 오류를 보여 줘야 버튼이 꺼진 이유를 안다
+    if (initialArtistName.trim()) void trigger('artistName');
+  }, [open, initialArtistName, reset, trigger]);
 
   return (
     <Overlay
@@ -80,6 +85,7 @@ export function DisplayArtistNameSheet({
           id={inputId}
           {...register('artistName')}
           type="text"
+          maxLength={DISPLAY_ARTIST_NAME_MAX_LENGTH}
           autoComplete="off"
           aria-required="true"
           aria-invalid={Boolean(errors.artistName)}

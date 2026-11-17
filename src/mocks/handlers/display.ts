@@ -528,6 +528,7 @@ export const displayHandlers = [
           .map((display: any, index: number) => ({
             ...myDisplayItem(display),
             isLeader: true,
+            role: 'TEAM_LEADER',
             publishStatus: MY_DISPLAY_PUBLISH_STATUSES[index],
           })),
         participatedDisplays: listDisplays()
@@ -535,6 +536,8 @@ export const displayHandlers = [
           .map((display: any, index: number) => ({
             ...myDisplayItem(display),
             isLeader: false,
+            // 참여한 전시 중 첫 번째는 관리자로 지정된 전시
+            role: index === 0 ? 'MANAGER' : 'TEAM_MEM',
             publishStatus: MY_DISPLAY_PUBLISH_STATUSES[index + 3],
           })),
       }),

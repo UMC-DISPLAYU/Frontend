@@ -49,7 +49,7 @@ export function DisplayManagementCard({
     )?.displayNickname;
 
   const isLeader = ex.isLeader ?? ex.isOwner ?? false;
-  const role = isLeader ? '대표자' : '팀원';
+  const role = isLeader ? '대표자' : ex.role === 'MANAGER' ? '관리자' : '팀원';
   // 전시 관리에서는 공개 여부만 보여주고, 기간에 따른 전시 예정 · 종료는 보여주지 않는다(PM 확인).
   // 예전 응답처럼 publishStatus 가 없으면 공개된 전시로 본다
   const status = isDisplayPublishStatus(ex.publishStatus) ? ex.publishStatus : 'PUBLISHED';
