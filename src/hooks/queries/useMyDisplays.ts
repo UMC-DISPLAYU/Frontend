@@ -12,6 +12,8 @@ import { queryKeys } from '@/api/queryKeys';
 import type { ExhibitionItem } from '@/types/mypage';
 import { getDisplayStatusLabel } from '@/utils/mypage';
 
+import { invalidateArtworksOfDisplay } from './displayArtworkCache';
+
 const formatDate = (date: string) => {
   const [year, month, day] = date.split('-');
   return year && month && day ? `${year}.${month}.${day}` : date;
@@ -65,12 +67,13 @@ export const useArtistDisplays = (userId: number, { enabled = true }: { enabled?
     },
   });
 
-/* 전시를 지우거나 나가면 그 전시에 올린 작품도 서버에서 사라져, 작품 검색 · 작가 프로필 · 홈 작품 목록도 바뀝니다. */
+/* 전시를 지우거나 나가면 그 전시에 올린 내 작품도 서버에서 사라져, 작품 목록 · 상세 · 보관함 작품도 바뀝니다. */
 const invalidateDisplayQueries = (queryClient: QueryClient, displayId: number) => {
   queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
   queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
   queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
-  queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
+  invalidateArtworksOfDisplay(queryClient, displayId);
+  queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
 };
 
 export const useDeleteDisplay = () => {
@@ -83,7 +86,6 @@ export const useDeleteDisplay = () => {
       // 무효화만 하면 뒤로가기로 상세에 돌아왔을 때 받아 둔 상세가 먼저 그려진다. 지운 전시는 캐시에서 뺀다
       queryClient.removeQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
     },
   });
 };
@@ -103,16 +105,15 @@ export const useUpdateMyDisplayNickname = () => {
   return useMutation({
     mutationFn: (body: UpdateMyDisplayNicknameRequestDto) => updateMyDisplayNickname(body),
     /*
-     * 전시 작가명은 전시 상세 teamMembers · 팀원 목록뿐 아니라 그 전시 작품의 artistName 에도 담겨 옵니다.
+     * 전시 작가명은 전시 상세 teamMembers · 팀원 목록 · 내 전시 · 작가 전시 목록뿐 아니라 그 전시 작품의 artistName 에도 담겨 옵니다.
      * 작품 목록 · 상세를 같이 무효화하지 않으면 staleTime 동안 전시 작업 페이지 등에 예전 이름이 남습니다.
      */
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.displayMembers.byDisplayId(variables.displayId),
-      });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(variables.displayId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.all });
+    onSuccess: (_, { displayId }) => {
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'my'] });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.lists(), 'artist'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.byDisplayId(displayId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
+      invalidateArtworksOfDisplay(queryClient, displayId);
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.works.all() });
     },
   });

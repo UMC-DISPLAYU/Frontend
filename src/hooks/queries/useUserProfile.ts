@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
   CheckNicknameRequestDto,
@@ -61,14 +61,26 @@ export const useUserArtistProfile = (userId: number) =>
     enabled: Number.isFinite(userId) && userId > 0,
   });
 
+/*
+ * 내 닉네임 · 프로필 사진은 내가 쓴 글의 작성자 정보로도 담겨 온다(라운지 글 · 댓글, 전시 후기 · 답글,
+ * 작품 · 개인 작품 감상평, 팀원 목록의 기본 닉네임). 같이 무효화하지 않으면 staleTime 동안 예전 사진 · 이름이 남는다.
+ */
+const invalidateMyAuthorInfo = (queryClient: QueryClient) => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.loungeComments.all });
+  queryClient.invalidateQueries({ queryKey: [...queryKeys.displays.all, 'reviews'] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.artworkFeelings.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.personalArtworks.details() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.displayMembers.all });
+};
+
 export const useUpdateNickname = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (body: UpdateNicknameRequestDto) => updateNickname(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
-    },
+    onSuccess: () => invalidateMyAuthorInfo(queryClient),
   });
 };
 
@@ -77,10 +89,7 @@ export const useUpdateUserMe = () => {
 
   return useMutation({
     mutationFn: (body: UpdateMyProfileRequestDto) => updateUserMe(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.loungePosts.all });
-    },
+    onSuccess: () => invalidateMyAuthorInfo(queryClient),
   });
 };
 

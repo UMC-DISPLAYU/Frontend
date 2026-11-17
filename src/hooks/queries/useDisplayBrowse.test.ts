@@ -80,13 +80,13 @@ describe('전시 변경 후 캐시 무효화', () => {
       expect.arrayContaining([
         queryKeys.displays.detail(7),
         queryKeys.displays.lists(),
-        queryKeys.displayArtworks.all,
+        queryKeys.displayArtworks.lists(),
         queryKeys.archives.displays.all(),
       ]),
     );
   });
 
-  it('전시를 비공개로 돌리면 작품 목록도 다시 받는다', () => {
+  it('전시를 비공개로 돌리면 작품 목록 · 보관함도 다시 받는다', () => {
     (useHideDisplay() as unknown as { onSuccess: (data: unknown, id: number) => void }).onSuccess(
       undefined,
       7,
@@ -97,6 +97,7 @@ describe('전시 변경 후 캐시 무효화', () => {
         queryKeys.displays.detail(7),
         queryKeys.displays.lists(),
         queryKeys.displayArtworks.lists(),
+        queryKeys.archives.all,
       ]),
     );
   });

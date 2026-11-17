@@ -40,11 +40,12 @@ describe('useUpdateMyDisplayNickname', () => {
 
     expect(invalidatedKeys()).toEqual(
       expect.arrayContaining([
-        queryKeys.displays.lists(),
+        [...queryKeys.displays.lists(), 'my'],
+        [...queryKeys.displays.lists(), 'artist'],
         queryKeys.displays.detail(7),
         queryKeys.displayMembers.byDisplayId(7),
-        // 전시 작업 페이지의 작품 카드 · 작품 상세의 작가명
-        queryKeys.displayArtworks.all,
+        // 전시 작업 페이지의 작품 카드 · 작품 목록의 작가명
+        queryKeys.displayArtworks.lists(),
         queryKeys.archives.works.all(),
       ]),
     );
@@ -68,7 +69,7 @@ describe('useDeleteDisplay', () => {
 });
 
 describe('useExitDisplay', () => {
-  it('나간 전시에 올린 작품이 지워지므로 작품 목록도 다시 받는다', () => {
+  it('나간 전시에 올린 작품이 지워지므로 작품 목록 · 보관함 작품도 다시 받는다', () => {
     options<number>(useExitDisplay()).onSuccess(undefined, 7);
 
     expect(invalidatedKeys()).toEqual(
@@ -76,6 +77,7 @@ describe('useExitDisplay', () => {
         queryKeys.displays.lists(),
         queryKeys.displays.detail(7),
         queryKeys.displayArtworks.lists(),
+        queryKeys.archives.works.all(),
       ]),
     );
   });

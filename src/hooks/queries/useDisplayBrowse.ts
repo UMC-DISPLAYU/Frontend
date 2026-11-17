@@ -23,6 +23,8 @@ import {
 } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
 
+import { invalidateArtworksOfDisplay } from './displayArtworkCache';
+
 export const useSearchDisplays = (params: SearchDisplaysRequestDto) =>
   useQuery({
     queryKey: queryKeys.displays.search(params),
@@ -87,7 +89,7 @@ export const useUpdateDisplay = (displayId: number | undefined) => {
       if (!displayId) return;
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.all });
+      invalidateArtworksOfDisplay(queryClient, displayId);
       queryClient.invalidateQueries({ queryKey: queryKeys.archives.displays.all() });
     },
   });
@@ -99,11 +101,12 @@ export const useHideDisplay = () => {
 
   return useMutation({
     mutationFn: (displayId: number) => hideDisplay(displayId),
-    // 비공개가 되면 그 전시 작품이 작품 검색 · 작가 프로필 · 홈 작품 목록에서 빠질 수 있다
+    // 비공개가 되면 그 전시와 작품이 작품 검색 · 작가 프로필 · 홈 · 보관함에서 빠지거나 상태가 바뀔 수 있다
     onSuccess: (_, displayId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.detail(displayId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.displays.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.displayArtworks.lists() });
+      invalidateArtworksOfDisplay(queryClient, displayId);
+      queryClient.invalidateQueries({ queryKey: queryKeys.archives.all });
     },
   });
 };
