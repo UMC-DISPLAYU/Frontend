@@ -246,7 +246,8 @@ export function BottomCommentBar({
             </div>
           )}
 
-          <div className="flex flex-col overflow-hidden rounded-12 bg-secondary focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-focus">
+          {/* 테두리를 안쪽에 그린다. 바깥에 그리면 작품 상세처럼 따로 스크롤되는 칸에서 잘린다 */}
+          <div className="flex flex-col overflow-hidden rounded-12 bg-secondary focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-focus">
             {images.length > 0 && (
               <div className="flex gap-2 px-3 pt-3">
                 {images.map((image) => (
