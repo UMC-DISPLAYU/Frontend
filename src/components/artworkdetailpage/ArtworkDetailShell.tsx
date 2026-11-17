@@ -84,7 +84,7 @@ export function ArtworkDetailShell({
     if (info.scrollTop > top) info.scrollTo({ top, behavior: 'auto' });
   };
 
-  const [mode, changeMode] = useViewMode(images.length > 1);
+  const [mode, changeMode] = useViewMode();
   const stageRef = useRef<HTMLDivElement>(null);
   const chrome = useViewerChromeFade(stageRef, mode === 'stack');
 

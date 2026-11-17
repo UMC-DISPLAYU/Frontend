@@ -327,58 +327,57 @@ export function ArtworkViewer({
               isStack ? 'sticky top-(--detail-top) h-0 w-full desktop:top-0' : 'absolute inset-0',
             )}
           >
-            {hasMultiple && (
-              <div
-                role="group"
-                aria-label="감상 방식"
-                {...holdProps}
-                className={cn(
-                  'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-black/45 p-1 backdrop-blur-[20px] transition-opacity duration-base ease-standard desktop:cursor-default',
-                  SWITCH_TOP,
-                  isControlsDimmed && 'opacity-55',
-                  stackHiddenClass,
-                )}
+            {/* 사진이 1장이어도 보기 방식을 고를 수 있게 둔다(사용자 결정, 프로토타입은 2장부터) */}
+            <div
+              role="group"
+              aria-label="감상 방식"
+              {...holdProps}
+              className={cn(
+                'pointer-events-auto absolute right-5 flex gap-0.5 rounded-circle bg-black/45 p-1 backdrop-blur-[20px] transition-opacity duration-base ease-standard desktop:cursor-default',
+                SWITCH_TOP,
+                isControlsDimmed && 'opacity-55',
+                stackHiddenClass,
+              )}
+            >
+              <button
+                type="button"
+                aria-label="한 장씩 보기"
+                title="한 장씩 보기"
+                aria-pressed={!isStack}
+                onClick={() => changeMode('one')}
+                className={VIEW_BUTTON_CLASS}
               >
-                <button
-                  type="button"
-                  aria-label="한 장씩 보기"
-                  title="한 장씩 보기"
-                  aria-pressed={!isStack}
-                  onClick={() => changeMode('one')}
-                  className={VIEW_BUTTON_CLASS}
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
-                    <rect x="6.5" y="3.5" width="11" height="17" rx="2" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  aria-label="이어서 보기"
-                  title="이어서 보기"
-                  aria-pressed={isStack}
-                  onClick={() => changeMode('stack')}
-                  className={VIEW_BUTTON_CLASS}
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
-                    <rect x="6.5" y="3.5" width="11" height="17" rx="2" />
-                    <path d="M6.5 9.2h11M6.5 14.8h11" />
-                  </svg>
-                </button>
-                {/* 크게 보기는 900px 이상에서만(프로토타입 U-159) */}
-                <button
-                  type="button"
-                  aria-label="크게 보기"
-                  title="크게 보기"
-                  aria-pressed={false}
-                  onClick={() => openBig(currentRef.current)}
-                  className={cn(VIEW_BUTTON_CLASS, 'hidden desktop:grid')}
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
-                    <path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5" />
-                  </svg>
-                </button>
-              </div>
-            )}
+                <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
+                  <rect x="6.5" y="3.5" width="11" height="17" rx="2" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                aria-label="이어서 보기"
+                title="이어서 보기"
+                aria-pressed={isStack}
+                onClick={() => changeMode('stack')}
+                className={VIEW_BUTTON_CLASS}
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
+                  <rect x="6.5" y="3.5" width="11" height="17" rx="2" />
+                  <path d="M6.5 9.2h11M6.5 14.8h11" />
+                </svg>
+              </button>
+              {/* 크게 보기는 900px 이상에서만(프로토타입 U-159) */}
+              <button
+                type="button"
+                aria-label="크게 보기"
+                title="크게 보기"
+                aria-pressed={false}
+                onClick={() => openBig(currentRef.current)}
+                className={cn(VIEW_BUTTON_CLASS, 'hidden desktop:grid')}
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className={VIEW_ICON_CLASS}>
+                  <path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5" />
+                </svg>
+              </button>
+            </div>
 
             {hasMultiple && (
               <span
