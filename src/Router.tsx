@@ -198,7 +198,6 @@ export const router = createBrowserRouter([
             loader: validateNumericId('userId'),
             element: <AuthPage />,
           },
-          { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
           {
             path: 'display/:id',
             loader: validateNumericId('id'),
@@ -236,6 +235,8 @@ export const router = createBrowserRouter([
             element: <AuthGuard />,
             children: [
               { path: 'my', element: <MyPage /> },
+              // 토큰 조회가 로그인 필요라, 비로그인이면 로그인 모달을 띄우고 로그인 후 이 링크로 돌아온다
+              { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
               { path: 'artist-verification', element: <ArtistVerifyPage /> },
 
               // 내 전시 관리 목록

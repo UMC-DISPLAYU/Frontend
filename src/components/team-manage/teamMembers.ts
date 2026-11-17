@@ -39,13 +39,6 @@ export const getInviteState = (
   return 'invitable';
 };
 
-/*
- * 초대 링크는 전시 상세의 invitationToken 으로 만든다. 경로는 초대 조회 API(GET /display/invitation/{token})와
- * 같은 형태이고, 이 앱의 초대 링크 화면(/display/invitation/:token)으로 열린다.
- */
-export const buildInviteLink = (token: string) =>
-  `${window.location.origin}/display/invitation/${token}`;
-
 export type TeamTab = 'joined' | 'pending';
 
 export const getTeamTabIds = (idPrefix: string, tab: TeamTab) => ({
