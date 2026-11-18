@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import {
   ContentDeleteConfirmDialog,
   ContentList,
+  ManageEmptyState,
   MAX_DISPLAY_SECTIONS,
 } from '@/components/artworks-manage';
 import { ErrorView, LoadingView } from '@/components/common';
@@ -66,6 +67,7 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
   const contents = ordered && ordered.base === categories ? ordered.contents : fetchedContents;
   const isEditingList = editMode && contents.length > 0 && canEditList;
   const sectionPath = (categoryId: number) => `/exhibition/${displayId}/contents/${categoryId}`;
+  const openSectionCreate = () => navigate(`/exhibition/${displayId}/contents/new`);
 
   const handleDelete = () => {
     if (!deleting || deleteMutation.isPending) return;
@@ -151,34 +153,42 @@ export function DisplayContentsManagePage({ embedded = false }: { embedded?: boo
           {getErrorMessage(reorderMutation.error, '순서를 저장하지 못했어요. 다시 시도해주세요.')}
         </p>
       )}
-      {/* 프로토타입 11-15: 섹션 추가는 전시작 추가처럼 목록 위(도구 줄 아래 12, 목록과 4) */}
-      {canAdd && (
-        <button
-          type="button"
-          onClick={() => navigate(`/exhibition/${displayId}/contents/new`)}
-          className={`${ADD_BUTTON} ${contents.length > 0 ? 'mt-3' : 'mt-2'}`}
-        >
-          <WorkIcon name="plus" className="size-5" strokeWidth={2.2} />
-          섹션 추가
-        </button>
+      {contents.length === 0 ? (
+        <ManageEmptyState
+          canAdd={canAdd}
+          title="섹션 추가"
+          description="섹션을 등록해 주세요"
+          emptyMessage="등록된 섹션이 없어요"
+          onAdd={openSectionCreate}
+        />
+      ) : (
+        <>
+          {/* 프로토타입 11-15: 섹션 추가는 전시작 추가처럼 목록 위(도구 줄 아래 12, 목록과 4) */}
+          {canAdd && (
+            <button type="button" onClick={openSectionCreate} className={`${ADD_BUTTON} mt-3`}>
+              <WorkIcon name="plus" className="size-5" strokeWidth={2.2} />
+              섹션 추가
+            </button>
+          )}
+          <ContentList
+            className={canAdd ? 'mt-1' : undefined}
+            contents={contents}
+            editing={isEditingList}
+            disabled={reorderMutation.isPending || !canReorder}
+            onOpen={(content) => navigate(sectionPath(content.id))}
+            onDelete={
+              canDeleteCategory
+                ? (content) => {
+                    setDeleting(content);
+                    setDeleteError(null);
+                    setDeleteOpen(true);
+                  }
+                : undefined
+            }
+            onReorder={handleReorder}
+          />
+        </>
       )}
-      <ContentList
-        className={canAdd ? 'mt-1' : undefined}
-        contents={contents}
-        editing={isEditingList}
-        disabled={reorderMutation.isPending || !canReorder}
-        onOpen={(content) => navigate(sectionPath(content.id))}
-        onDelete={
-          canDeleteCategory
-            ? (content) => {
-                setDeleting(content);
-                setDeleteError(null);
-                setDeleteOpen(true);
-              }
-            : undefined
-        }
-        onReorder={handleReorder}
-      />
       <ContentDeleteConfirmDialog
         open={deleteOpen}
         isDeleting={deleteMutation.isPending}
