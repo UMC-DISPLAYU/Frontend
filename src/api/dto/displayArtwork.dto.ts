@@ -404,7 +404,7 @@ export interface DisplayArtworkDto {
   artistUserId?: number | null;
   /* 대표 · 공동 작가 중 계정이 있는 사람의 id. 계정 없는 작가와 Q&A 전용 담당자는 빠진다 */
   artistUserIds?: number[];
-  /* 대표 작가가 첫 번째이고 공동 작가가 이어진다. 실서버 응답에 아직 없을 수 있다 */
+  /* 대표 작가가 첫 번째이고 공동 작가가 이어진다. 대표 작가 자리도 userId 가 null 일 수 있다 */
   artists?: ArtworkCoAuthorDto[];
   artworkImageUrl: string;
   imageWidth: number;

@@ -76,7 +76,8 @@ export type ArchiveArtworkView = {
   key: string;
   to: string;
   title: string;
-  artistName: string;
+  /* 대표 작가 → 공동 작가 순서 */
+  artistNames: string[];
   imageUrl: string | null;
 };
 
@@ -94,9 +95,9 @@ export function ArchiveArtworkCard({ artwork }: { artwork: ArchiveArtworkView })
       {!artwork.imageUrl && <span className={cn('block', ARTWORK_FRAME_CLASS)} />}
       <span className="block pt-2">
         <span className="typography-body-lg-semibold block truncate">{artwork.title}</span>
-        {artwork.artistName && (
+        {artwork.artistNames.length > 0 && (
           <span className="typography-body-md-medium block truncate text-secondary">
-            {artwork.artistName}
+            {artwork.artistNames.join(', ')}
           </span>
         )}
       </span>

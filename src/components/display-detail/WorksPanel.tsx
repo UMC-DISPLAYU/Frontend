@@ -6,7 +6,7 @@ import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useSkeleton } from '@/hooks/useSkeleton';
-import { getExhibitionArtistName } from '@/utils/artist';
+import { getArtworkArtistNames } from '@/utils/artist';
 import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 import { getErrorMessage } from '@/utils/error';
 import { staggerStyle } from '@/utils/stagger';
@@ -95,7 +95,7 @@ export function WorksPanel({
               <div className="pt-2">
                 <b className="typography-body-lg-semibold block truncate">{artwork.artworkName}</b>
                 <span className="typography-body-md-medium mt-0.5 block truncate text-secondary">
-                  {getExhibitionArtistName(artwork.artistName, artwork.artistUserId, teamMembers)}
+                  {getArtworkArtistNames(artwork, teamMembers).join(', ')}
                 </span>
               </div>
             </Link>

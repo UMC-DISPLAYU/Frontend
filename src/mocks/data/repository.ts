@@ -452,6 +452,17 @@ export const listResponse = <TItem>(items: TItem[], size = items.length) => ({
   hasNext: false,
 });
 
+/* 목록의 artists: 대표 작가가 첫 번째, 공동 작가가 이어진다. 등록 · 수정한 작품은 coAuthors 로 다시 만든다 */
+export const toArtistList = (artwork: any) =>
+  artwork.coAuthors
+    ? [
+        { userId: artwork.artistUserId ?? null, name: artwork.artistName ?? '' },
+        ...artwork.coAuthors,
+      ]
+    : (artwork.artists ?? [
+        { userId: artwork.artistUserId ?? null, name: artwork.artistName ?? '' },
+      ]);
+
 export const okStatus = (id: number, active: boolean) => ({
   id,
   liked: active,

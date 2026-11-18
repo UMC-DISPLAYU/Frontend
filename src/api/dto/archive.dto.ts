@@ -1,4 +1,5 @@
 import type { ApiResponseDto, CursorPageInfoDto } from './common.dto';
+import type { ArtworkCoAuthorDto } from './displayArtwork.dto';
 
 export interface ArchivedExhibitionStatusDto {
   exhibitionId: number;
@@ -58,6 +59,8 @@ export interface ArchivedArtworkDto {
   artworkName: string;
   artworkImageUrl: string | null;
   artistName: string | null;
+  /* 대표 작가가 첫 번째이고 공동 작가가 이어진다. 실서버 응답에는 아직 없을 수 있다 */
+  artists?: ArtworkCoAuthorDto[] | null;
   memo: string | null;
   savedAt: string;
 }

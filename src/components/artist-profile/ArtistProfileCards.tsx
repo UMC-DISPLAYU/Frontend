@@ -102,7 +102,8 @@ export type ArtistWorkView = {
   key: string;
   to: string;
   title: string;
-  artistName: string;
+  /* 대표 작가 → 공동 작가 순서. 개인 작품은 작가 한 명이다 */
+  artistNames: string[];
   imageUrl: string | null;
 };
 
@@ -128,9 +129,9 @@ export function ArtistWorkCard({ work }: { work: ArtistWorkView }) {
         <span className="typography-body-lg-semibold desktop:typography-body-xl-semibold block truncate">
           {work.title}
         </span>
-        {work.artistName && (
+        {work.artistNames.length > 0 && (
           <span className="typography-body-md-medium block truncate text-tertiary">
-            {work.artistName}
+            {work.artistNames.join(', ')}
           </span>
         )}
       </span>
