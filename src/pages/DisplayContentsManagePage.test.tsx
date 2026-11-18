@@ -2,7 +2,11 @@ import { Children, isValidElement, type ReactElement, type ReactNode } from 'rea
 
 import { beforeEach, expect, it, vi } from 'vitest';
 
-import { ContentDeleteConfirmDialog, ContentList } from '@/components/artworks-manage';
+import {
+  ContentDeleteConfirmDialog,
+  ContentList,
+  ManageEmptyState,
+} from '@/components/artworks-manage';
 import { ExhibitionWorkLayout } from '@/components/exhibition-work';
 
 import { DisplayContentsManagePage } from './DisplayContentsManagePage';
@@ -49,6 +53,7 @@ vi.mock('@/components/exhibition-work', () => ({
 vi.mock('@/components/artworks-manage', () => ({
   ContentList: () => null,
   ContentDeleteConfirmDialog: () => null,
+  ManageEmptyState: () => null,
   MAX_DISPLAY_SECTIONS: 5,
 }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
@@ -177,8 +182,23 @@ it('마지막 섹션 삭제 성공 뒤 빈 목록에서 다시 추가할 수 있
   h.remove.mutate.mock.calls[0][1].onSuccess();
   h.categories = [];
   expect(get(render(), ContentDeleteConfirmDialog).props.open).toBe(false);
-  expect(button(render(), '섹션 추가')).toBeDefined();
+  expect(get(render(), ManageEmptyState).props.canAdd).toBe(true);
 });
+
+it.each([true, false])(
+  '섹션이 없으면 작은 추가 버튼 · 목록 대신 큰 빈 상태를 보인다(추가 권한 %s)',
+  (canManage) => {
+    h.canManage = canManage;
+    h.categories = [];
+    const tree = render();
+    expect(tree.some((node) => node.type === 'button')).toBe(false);
+    expect(tree.some((node) => node.type === ContentList)).toBe(false);
+    const empty = get(tree, ManageEmptyState);
+    expect(empty.props.canAdd).toBe(canManage);
+    (empty.props.onAdd as () => void)();
+    expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/contents/new');
+  },
+);
 
 it('섹션 삭제 실패 시 목록과 확인 창을 유지하고 다시 열면 오류를 지운다', () => {
   const target = { id: 11, title: '내부 사진' };

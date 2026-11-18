@@ -1,5 +1,4 @@
 import type { DisplayDetailDto } from '@/api/dto';
-import AddArtworkIcon from '@/assets/exhibition-work/AddArtworkIcon.svg';
 import PlusIcon from '@/assets/exhibition-work/PlusIcon.svg';
 import { WorkIcon } from '@/components/exhibition-work';
 import { useArtworkPolicy } from '@/hooks/usePolicy';
@@ -10,6 +9,7 @@ import { hasPermission } from '@/utils/hasPermission';
 import { staggerStyle } from '@/utils/stagger';
 
 import { MAX_DISPLAY_ARTWORKS, WORK_GRID } from './constants';
+import { ManageEmptyState } from './ManageEmptyState';
 import { WorkActionSheet } from './WorkActionSheet';
 import { WorkCard } from './WorkCard';
 
@@ -114,21 +114,13 @@ export function ManageScreen({
         </div>
       )}
       {works.length === 0 ? (
-        canCreate ? (
-          <button
-            type="button"
-            onClick={onAdd}
-            className="mt-3 flex min-h-55 w-full flex-col items-center justify-center gap-1 rounded-12 bg-secondary text-primary transition duration-fast ease-standard hover:bg-tertiary focus-visible:outline-2 focus-visible:outline-focus active:scale-99"
-          >
-            <img src={AddArtworkIcon} alt="" className="mb-2" />
-            <span className="typography-body-lg-semibold">전시작 추가</span>
-            <span className="typography-body-md-medium text-secondary">작품을 등록해 주세요</span>
-          </button>
-        ) : (
-          <p className="typography-body-lg-medium mt-3 flex min-h-55 items-center justify-center rounded-12 bg-secondary text-secondary">
-            등록된 전시작이 없어요
-          </p>
-        )
+        <ManageEmptyState
+          canAdd={canCreate}
+          title="전시작 추가"
+          description="작품을 등록해 주세요"
+          emptyMessage="등록된 전시작이 없어요"
+          onAdd={onAdd}
+        />
       ) : (
         <>
           {showAdd && (
