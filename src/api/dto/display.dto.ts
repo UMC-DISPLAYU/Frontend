@@ -166,6 +166,12 @@ export interface DisplayDetailDto {
   period: DisplayPeriodDto;
   artworkContentOpen: DisplayContentOpenType;
   exhibitionContentOpen: DisplayContentOpenType;
+  /*
+   * 일반 관람객에게 작품 · 전시 콘텐츠를 지금 보여도 되는지. 공개 시점 전이어도 서버는 목록을 그대로 주고 이 값만 false 로 준다.
+   * 팀원 미리보기와는 상관없다. 예전 응답처럼 없으면 보인다
+   */
+  artworkContentVisible?: boolean;
+  exhibitionContentVisible?: boolean;
   /* 공개 여부(PUBLISHED · DRAFT). 전시 예정 · 중 · 종료는 period 로 계산한다 */
   status: string;
   /* 현재 심사 요청 ID. 심사 중이 아니면 null이고, 심사 요청 취소 API의 screeningId로 쓴다 */

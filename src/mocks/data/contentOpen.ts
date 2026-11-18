@@ -3,8 +3,9 @@ import { getExhibitionState } from '@/utils/exhibitionState';
 
 /*
  * 작품 · 전시 콘텐츠 공개 시점(artworkContentOpen · exhibitionContentOpen)을 실서버처럼 흉내 낸다.
- * "전시 시작일부터(ON_EXHIBITION)"면 심사를 통과해 공개된 전시라도 개막 전까지 작품 · 콘텐츠를 비워서 준다.
- * 등록 중(DRAFT) 전시는 팀원 미리보기라 그대로 준다
+ * "전시 시작일부터(ON_EXHIBITION)"면 심사를 통과해 공개된 전시라도 개막 전까지 숨긴다. 실서버처럼 목록은 비우지 않고
+ * 전시 상세의 artworkContentVisible · exhibitionContentVisible 을 false 로 준다.
+ * 등록 중(DRAFT) 전시는 상세 주소가 404 라 판단하지 않는다
  */
 
 type ContentOpenDisplay = {

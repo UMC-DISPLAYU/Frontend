@@ -84,8 +84,11 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
   const nextCategory = categories[categoryIndex + 1];
   const current = usePhotoCounter(feedRef, headerRef, category?.categoryId);
 
-  // 공개 전 전시를 공개 주소로 열면 팀원이어도 404 다(미리보기 주소로만 본다)
-  const isHiddenOnPublic = !previewDisplayId && display !== undefined && isPreviewDisplay(display);
+  // 공개 전 전시 · 콘텐츠 공개 시점 전을 공개 주소로 열면 팀원이어도 404 다(미리보기 주소로만 본다)
+  const isHiddenOnPublic =
+    !previewDisplayId &&
+    display !== undefined &&
+    (isPreviewDisplay(display) || display.exhibitionContentVisible === false);
 
   // 삭제된 전시 · 없는 콘텐츠 번호는 404. 그 밖에 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
   if (displayId === null || isNotFoundError(error) || isHiddenOnPublic || (display && !category)) {

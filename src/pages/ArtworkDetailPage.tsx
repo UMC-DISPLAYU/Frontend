@@ -62,11 +62,13 @@ export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps =
   // 미리보기 주소의 전시와 작품이 속한 전시가 다르면 권한을 확인한 전시의 작품이 아니므로 보여주지 않는다
   const isOtherDisplay =
     previewDisplayId !== undefined && detail?.exhibitionInfo?.displayId !== previewDisplayId;
-  // 공개 전 전시(준비 중 · 심사 중 · 반려)의 작품을 공개 주소로 열면 팀원이어도 404 다(미리보기 주소로만 본다).
-  // 작품이 속한 전시를 볼 수 없으면(서버 404 · 403) 작품도 404 다
+  // 공개 전 전시(준비 중 · 심사 중 · 반려)나 작품 공개 시점 전의 작품을 공개 주소로 열면 팀원이어도 404 다
+  // (미리보기 주소로만 본다). 작품이 속한 전시를 볼 수 없으면(서버 404 · 403) 작품도 404 다
   const isHiddenOnPublic =
     previewDisplayId === undefined &&
-    ((display !== undefined && isPreviewDisplay(display)) || isNotFoundError(displayError));
+    ((display !== undefined &&
+      (isPreviewDisplay(display) || display.artworkContentVisible === false)) ||
+      isNotFoundError(displayError));
 
   if (isNotFoundError(error) || (!error && (!detail || isOtherDisplay)) || isHiddenOnPublic) {
     return <NotFoundView />;

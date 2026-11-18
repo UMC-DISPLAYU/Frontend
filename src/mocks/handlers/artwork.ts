@@ -1,14 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { http } from 'msw';
 
-import { isContentHiddenBeforeOpen } from '@/mocks/data/contentOpen';
-import {
-  findMockDisplay,
-  listResponse,
-  mockDb,
-  okStatus,
-  toArtistList,
-} from '@/mocks/data/repository';
+import { listResponse, mockDb, okStatus, toArtistList } from '@/mocks/data/repository';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 import { hasMockScenario } from '@/mocks/scenario';
 import { matchesSearchWord } from '@/mocks/searchText';
@@ -108,10 +101,9 @@ export const artworkHandlers = [
       const displayIdParam = searchParams.get('displayId');
       const userIdParam = searchParams.get('userId');
 
-      // 공개 시점이 전시 시작일부터면 개막 전에는 전시 작품을 비워서 준다(실서버와 같게)
+      // 실서버처럼 작품 공개 시점 전이어도 작품을 그대로 준다(숨김은 전시 상세의 artworkContentVisible 로 판단)
       const artworks = displayIdParam
-        ? isContentHiddenBeforeOpen(findMockDisplay(Number(displayIdParam)), 'artwork') ||
-          hasMockScenario('display-no-works')
+        ? hasMockScenario('display-no-works')
           ? []
           : mockDb.artworks.filter((artwork: any) => artwork.displayId === Number(displayIdParam))
         : userIdParam
