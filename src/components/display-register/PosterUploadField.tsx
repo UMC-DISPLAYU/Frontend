@@ -138,7 +138,7 @@ function PosterThumb({
       aria-roledescription="순서를 바꿀 수 있는 포스터"
       aria-label={`포스터 ${index + 1}${isVideo ? ', 영상' : ''}${isRepresentative ? ', 대표' : ''}`}
       className={cn(
-        'relative h-[105px] w-21 shrink-0 animate-rise snap-start overflow-hidden bg-[#f4f4f5] [animation-duration:350ms] [animation-fill-mode:backwards]',
+        'relative h-39.5 w-31.5 shrink-0 animate-rise snap-start overflow-hidden bg-[#f4f4f5] [animation-duration:350ms] [animation-fill-mode:backwards]',
         reorderClassName,
         FOCUS_CLASS,
       )}
@@ -291,7 +291,7 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
               <button
                 type="button"
                 onClick={openPicker}
-                className={cn(ADD_TILE_CLASS, 'h-[158px] w-31.5 snap-start')}
+                className={cn(ADD_TILE_CLASS, 'h-39.5 w-31.5 snap-start')}
               >
                 <PlusIcon strokeWidth={1.6} className="size-6" />
                 추가

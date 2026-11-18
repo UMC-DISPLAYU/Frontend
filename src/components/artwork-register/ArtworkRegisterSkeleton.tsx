@@ -40,10 +40,10 @@ export function ArtworkRegisterSkeleton({
               <SkeletonText className="typography-body-md-medium w-40" />
               <SkeletonText className="typography-body-md-medium w-48" />
             </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-30 w-24" />
-              <Skeleton className="h-30 w-24" />
-              <Skeleton className="h-30 w-24" />
+            <div className="flex gap-2 overflow-hidden">
+              <Skeleton className="h-45 w-36 shrink-0" />
+              <Skeleton className="h-45 w-36 shrink-0" />
+              <Skeleton className="h-45 w-36 shrink-0" />
             </div>
           </div>
           <div className="flex flex-col gap-1">
