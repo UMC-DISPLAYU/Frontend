@@ -15,8 +15,10 @@ describe('hasArtworkIntro', () => {
     expect(hasArtworkIntro({ processImageCount: 1 })).toBe(true);
   });
 
-  it('공백뿐인 글은 내용이 없는 것으로 본다', () => {
-    expect(hasArtworkIntro({ content: '  \n', processImageCount: 0 })).toBe(false);
+  it('소개글이 없거나(null · 빈 글) 공백뿐이고 작업과정도 없으면 소개 탭을 뺀다', () => {
+    for (const content of [null, undefined, '', '  \n']) {
+      expect(hasArtworkIntro({ content, processImageCount: 0 })).toBe(false);
+    }
   });
 });
 

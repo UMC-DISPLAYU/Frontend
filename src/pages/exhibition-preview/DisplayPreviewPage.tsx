@@ -3,6 +3,7 @@ import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
 import { NotFoundView } from '@/components/error-page';
+import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
@@ -18,7 +19,11 @@ export function DisplayPreviewPage() {
   const displayId = parseDisplayId(displayIdParam);
   const { search } = useLocation();
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
-  const { showSkeleton } = useSkeleton(isPending && displayId !== null);
+  // 작품이 없으면 작품 탭이 빠지므로 작품 목록도 함께 기다린다. 늦게 받아 탭이 빠지며 튀지 않게 한다
+  const { isPending: isWorksPending } = useDisplayArtworks(displayId ?? 0);
+  const { showSkeleton } = useSkeleton(
+    (isPending || (display !== undefined && isWorksPending)) && displayId !== null,
+  );
 
   if (showSkeleton) return <DisplayDetailSkeleton />;
 
