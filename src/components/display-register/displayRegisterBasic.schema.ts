@@ -24,7 +24,7 @@ export const displayRegisterBasicSchema = z
       message: '아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)',
     }),
     website: z.string().refine((value) => parseWebsiteUrl(value).status !== 'invalid', {
-      message: '주소 형식을 확인해 주세요 (예: displayu.co.kr)',
+      message: '주소 형식을 확인해 주세요 (예: www.displayu.co.kr)',
     }),
   })
   .refine((values) => values.endDate >= values.startDate, {

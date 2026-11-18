@@ -20,12 +20,8 @@ export const editArtistProfileSchema = z.object({
   introduction: z.string().max(ARTIST_INTRO_MAX, {
     message: `소개는 ${ARTIST_INTRO_MAX}자 이하로 적어주세요`,
   }),
-  instagram: z.string().refine((value) => parseInstagramId(value).status !== 'invalid', {
-    message: '아이디 형식을 확인해 주세요 (영문·숫자·밑줄·마침표)',
-  }),
-  portfolio: z.string().refine((value) => parseWebsiteUrl(value).status !== 'invalid', {
-    message: '주소 형식을 확인해 주세요 (예: displayu.kr)',
-  }),
+  instagram: z.string().refine((value) => parseInstagramId(value).status !== 'invalid'),
+  portfolio: z.string().refine((value) => parseWebsiteUrl(value).status !== 'invalid'),
 });
 
 export type EditArtistProfileFormValues = z.infer<typeof editArtistProfileSchema>;

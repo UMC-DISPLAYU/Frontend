@@ -231,7 +231,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
                   }}
                   onChange={field.onChange}
                   parsed={instagram}
-                  placeholder="아이디 (예: displayu)"
+                  placeholder="ex) displayu"
                   validHelp={
                     instagram.status === 'valid'
                       ? `instagram.com/${instagram.value} 로 연결돼요`
@@ -247,7 +247,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
               name="portfolio"
               render={({ field }) => (
                 <ProfileLinkField
-                  errorMessage="주소 형식을 확인해 주세요 (예: displayu.kr)"
+                  errorMessage="주소 형식을 확인해 주세요 (예: www.displayu.co.kr)"
                   id="portfolio"
                   idleHelp="작업 사이트나 포트폴리오 주소를 적어주세요"
                   inputMode="url"
@@ -257,7 +257,7 @@ function EditArtistProfileForm({ artistProfile }: { artistProfile: ArtistProfile
                   onBlur={field.onBlur}
                   onChange={field.onChange}
                   parsed={portfolio}
-                  placeholder="ex) displayu.kr"
+                  placeholder="ex) www.displayu.co.kr"
                   validHelp={portfolio.status === 'valid' ? `${portfolio.href} 로 연결돼요` : ''}
                   value={field.value}
                 />
