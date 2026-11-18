@@ -115,7 +115,7 @@ function ImageTile({
       aria-roledescription="순서를 바꿀 수 있는 사진"
       aria-label={`${isVideo ? '영상' : '사진'} ${index + 1}${isRepresentative ? ', 대표 사진' : ''}`}
       className={cn(
-        'relative h-30 w-24 shrink-0 animate-rise snap-start overflow-hidden bg-secondary [animation-duration:350ms] [animation-fill-mode:backwards]',
+        'relative h-45 w-36 shrink-0 animate-rise snap-start overflow-hidden bg-secondary [animation-duration:350ms] [animation-fill-mode:backwards]',
         reorderClassName,
         FOCUS_CLASS,
       )}
