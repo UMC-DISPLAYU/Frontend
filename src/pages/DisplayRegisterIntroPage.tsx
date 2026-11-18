@@ -88,6 +88,9 @@ function DisplayRegisterIntroForm() {
   const values = useWatch({ control });
   const titleInput = register('title');
   const isOtherGroup = values.type === OTHER_GROUP_DISPLAY_TYPE;
+  const affiliationPlaceholder = isOtherGroup
+    ? '단체명, 동아리명'
+    : '학과(학부)명, 학회명, 동아리명';
   const hasInput = isEdit
     ? Boolean(
         editDetail &&
@@ -222,7 +225,7 @@ function DisplayRegisterIntroForm() {
                 id="display-intro"
                 maxLength={MAX_INTRO_LENGTH}
                 placeholder="전시 소개를 입력해주세요"
-                className="typography-body-xl-regular mt-2 block h-32 w-full resize-none rounded-12 border border-primary bg-primary-white px-4 py-3.5 text-primary outline-none transition-colors duration-fast ease-standard placeholder:text-tertiary focus:border-[#18181b]"
+                className="typography-body-xl-regular mt-2 block h-42 w-full resize-none rounded-12 border border-primary bg-primary-white px-4 py-3.5 text-primary outline-none transition-colors duration-fast ease-standard placeholder:text-tertiary focus:border-[#18181b]"
                 {...register('intro')}
               />
               <p className="typography-body-md-medium mt-2 text-right text-tertiary tabular-nums">
@@ -296,10 +299,10 @@ function DisplayRegisterIntroForm() {
                   </div>
                 )}
                 <input
-                  aria-label="학과(학부)명, 학회명, 동아리명"
+                  aria-label={affiliationPlaceholder}
                   maxLength={40}
                   autoComplete="off"
-                  placeholder="학과(학부)명, 학회명, 동아리명"
+                  placeholder={affiliationPlaceholder}
                   className="typography-body-xl-regular block h-[55px] w-full border-t border-primary bg-transparent px-4 text-primary outline-none first:h-[54px] first:border-t-0 placeholder:text-disable"
                   {...register('department')}
                 />
