@@ -2,7 +2,9 @@ import { isValidElement, type ReactElement, type ReactNode } from 'react';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/api/apiError';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
+import { NotFoundView } from '@/components/error-page';
 
 import { DisplayContentsPage } from './DisplayContentsPage';
 import { DisplayDetailPage } from './DisplayDetailPage';
@@ -63,6 +65,7 @@ beforeEach(() => {
   h.search = '';
   h.display.data = undefined;
   h.display.isPending = false;
+  h.display.error = null;
   h.works.isPending = false;
 });
 
@@ -81,16 +84,16 @@ describe('전시 상세는 작품 목록까지 받은 뒤 그린다', () => {
   });
 });
 
-describe('공개 상세 주소의 미리보기는 미리보기 화면 하나로 보낸다', () => {
-  it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED'])(
-    '공개되지 않은 전시(%s)를 /display/:id 로 열면 탭을 유지한 채 미리보기 주소로 바꿔 간다',
+const NOT_PUBLIC_STATUSES = ['DRAFT', 'PENDING_REVIEW', 'REJECTED'];
+const ALL_STATUSES = [...NOT_PUBLIC_STATUSES, 'PUBLISHED'];
+
+describe('상세 · 미리보기 주소는 서로 보내지 않는다', () => {
+  it.each(NOT_PUBLIC_STATUSES)(
+    '공개되지 않은 전시(%s)를 /display/:id 로 열면 팀원이어도 404 화면을 보인다',
     (status) => {
       h.display.data = display(status);
       h.search = '?tab=works';
-      const page = asElement(DisplayDetailPage());
-
-      expect(page.type).not.toBe(DisplayDetailView);
-      expect(page.props).toMatchObject({ to: '/exhibition/7/preview?tab=works', replace: true });
+      expect(asElement(DisplayDetailPage()).type).toBe(NotFoundView);
     },
   );
 
@@ -102,30 +105,34 @@ describe('공개 상세 주소의 미리보기는 미리보기 화면 하나로 
     expect(page.props.previewMode).toBeUndefined();
   });
 
-  it('등록 중 전시의 콘텐츠를 공개 주소로 열면 미리보기 안의 콘텐츠 주소로 바꿔 간다', () => {
-    h.display.data = display('DRAFT');
+  it.each([403, 404])('상세 조회가 %i 면 404 화면을 보인다', (status) => {
+    h.display.error = new ApiError('error', { status });
+    expect(asElement(DisplayDetailPage()).type).toBe(NotFoundView);
+    expect(asElement(DisplayContentsPage()).type).toBe(NotFoundView);
+  });
+
+  it.each(NOT_PUBLIC_STATUSES)(
+    '공개되지 않은 전시(%s)의 콘텐츠를 공개 주소로 열면 404 화면을 보인다',
+    (status) => {
+      h.display.data = display(status);
+      h.search = '?category=5';
+      expect(asElement(DisplayContentsPage()).type).toBe(NotFoundView);
+    },
+  );
+
+  it('공개된 전시의 콘텐츠는 공개 주소에서 그대로 보여 준다', () => {
+    h.display.data = display('PUBLISHED');
     h.search = '?category=5';
     const page = asElement(DisplayContentsPage());
 
-    expect(page.props).toMatchObject({
-      to: '/exhibition/7/preview/contents?category=5',
-      replace: true,
-    });
+    expect(page.type).toBe('div');
   });
 
-  it('미리보기에서 연 콘텐츠라도 공개된 전시면 공개 콘텐츠 주소로 바꿔 간다', () => {
-    h.display.data = display('PUBLISHED');
+  it.each(ALL_STATUSES)('미리보기에서 연 %s 전시의 콘텐츠는 그대로 보여 준다', (status) => {
+    h.display.data = display(status);
     h.search = '?category=5';
     const page = asElement(DisplayContentsPage({ previewDisplayId: '7', onBack: vi.fn() }));
 
-    expect(page.props).toMatchObject({ to: '/display/7/contents?category=5', replace: true });
-  });
-
-  it('미리보기에서 연 공개 전 전시의 콘텐츠는 그대로 보여 준다', () => {
-    h.display.data = display('DRAFT');
-    h.search = '?category=5';
-    const page = asElement(DisplayContentsPage({ previewDisplayId: '7', onBack: vi.fn() }));
-
-    expect(page.props.to).toBeUndefined();
+    expect(page.type).toBe('div');
   });
 });

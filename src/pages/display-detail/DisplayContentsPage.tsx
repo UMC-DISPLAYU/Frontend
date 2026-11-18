@@ -1,6 +1,6 @@
 import { type RefObject, useEffect, useRef, useState } from 'react';
 
-import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
@@ -67,7 +67,6 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
   const goBack = onBack ?? (() => flowBack());
   const { id } = useParams<{ id: string }>();
   const [searchParams, replaceSearchParams] = useReplaceSearchParams();
-  const { search } = useLocation();
   const displayId = parseDisplayId(previewDisplayId ?? id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
   const { showSkeleton, skeletonProps } = useSkeleton(isPending);
@@ -85,17 +84,11 @@ export function DisplayContentsPage({ previewDisplayId, onBack }: DisplayContent
   const nextCategory = categories[categoryIndex + 1];
   const current = usePhotoCounter(feedRef, headerRef, category?.categoryId);
 
-  // 공개 주소로 연 등록 중 전시는 미리보기 안의 콘텐츠 주소로 보낸다(전시 팀원만 열림)
-  if (!previewDisplayId && display && isPreviewDisplay(display)) {
-    return <Navigate to={`/exhibition/${display.displayId}/preview/contents${search}`} replace />;
-  }
-  // 미리보기에서 연 콘텐츠라도 공개된 전시면 공개 콘텐츠 주소로 보낸다
-  if (previewDisplayId && display && !isPreviewDisplay(display)) {
-    return <Navigate to={`/display/${display.displayId}/contents${search}`} replace />;
-  }
+  // 공개 전 전시를 공개 주소로 열면 팀원이어도 404 다(미리보기 주소로만 본다)
+  const isHiddenOnPublic = !previewDisplayId && display !== undefined && isPreviewDisplay(display);
 
   // 삭제된 전시 · 없는 콘텐츠 번호는 404. 그 밖에 다시 불러오기만 실패하면 받아 둔 내용을 그대로 보여준다
-  if (displayId === null || isNotFoundError(error) || (display && !category)) {
+  if (displayId === null || isNotFoundError(error) || isHiddenOnPublic || (display && !category)) {
     return <NotFoundView />;
   }
   if (!isPending && !display) {

@@ -4,7 +4,7 @@ import { isPreviewDisplay } from './isPreviewDisplay';
 
 describe('isPreviewDisplay', () => {
   it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED'])(
-    '대중에게 공개되지 않은 전시(%s)는 미리보기로 보낸다',
+    '대중에게 공개되지 않은 전시(%s)는 미리보기로만 보인다',
     (status) => {
       expect(isPreviewDisplay({ status })).toBe(true);
     },

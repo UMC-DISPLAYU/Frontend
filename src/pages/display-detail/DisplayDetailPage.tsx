@@ -1,4 +1,4 @@
-import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
@@ -12,7 +12,6 @@ import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { search } = useLocation();
   const displayId = parseDisplayId(id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
   // 작품이 없으면 작품 탭이 빠지므로 작품 목록도 함께 기다린다. 늦게 받아 탭이 빠지며 튀지 않게 한다
@@ -36,10 +35,8 @@ export function DisplayDetailPage() {
     );
   }
 
-  // 공개 전(준비 중 · 심사 중 · 반려) 전시는 미리보기 주소로 보낸다(전시 팀원만 열림)
-  if (isPreviewDisplay(display)) {
-    return <Navigate to={`/exhibition/${displayId}/preview${search}`} replace />;
-  }
+  // 공개 전(준비 중 · 심사 중 · 반려) 전시는 팀원이 열어도 상세 주소에서는 404 다. 팀원은 미리보기 주소로만 본다
+  if (isPreviewDisplay(display)) return <NotFoundView />;
 
   // 다른 전시로 옮겨 가면 펼친 소개 · 포스터 위치를 처음으로 돌린다
   return <DisplayDetailView key={displayId} display={display} />;
