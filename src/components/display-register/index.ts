@@ -37,7 +37,10 @@ export { DisplayRegisterCta } from './DisplayRegisterCta';
 export { DisplayRegisterHeader } from './DisplayRegisterHeader';
 export { CheckIcon, ChevronRightIcon } from './DisplayRegisterIcons';
 export type { DisplayRegisterIntroValues } from './displayRegisterIntro.schema';
-export { displayRegisterIntroSchema } from './displayRegisterIntro.schema';
+export {
+  displayRegisterIntroSchema,
+  stripAffiliationBlockedChars,
+} from './displayRegisterIntro.schema';
 export { DisplayRegisterProgress } from './DisplayRegisterProgress';
 export { formatDotDate } from './displaySchedule';
 export { DisplayTimeSheet } from './DisplayTimeSheet';
