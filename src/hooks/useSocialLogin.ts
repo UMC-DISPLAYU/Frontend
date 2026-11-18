@@ -3,11 +3,27 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { useGoogleAuthorizationUrl, useKakaoAuthorizationUrl } from '@/hooks/queries/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import { clearPendingRedirect, savePendingRedirect } from '@/utils/pendingRedirect';
+import { hasPersistedTokenChanged } from '@/utils/persistedAuth';
 
 export type SocialLoginProvider = 'kakao' | 'google';
 
 const LOGIN_ERROR_MESSAGE = '로그인 연결에 실패했어요. 잠시 후 다시 시도해주세요.';
+
+const isMemoryTokenStale = () => {
+  const { name } = useAuthStore.persist.getOptions();
+  if (!name) return false;
+
+  try {
+    return hasPersistedTokenChanged(
+      localStorage.getItem(name),
+      useAuthStore.getState().accessToken,
+    );
+  } catch {
+    return false;
+  }
+};
 
 /*
  * 소셜 로그인 화면으로 보낸다.
@@ -25,7 +41,16 @@ export function useSocialLogin(redirectPath?: string) {
   // 소셜 로그인 화면에서 뒤로가기로 돌아오면 브라우저가 떠나기 전 상태(bfcache)를 그대로 복원한다
   useEffect(() => {
     const onPageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) setIsRedirecting(false);
+      if (!event.persisted) return;
+
+      // bfcache 는 로그인하러 떠나기 전 메모리(토큰 없음 · 열린 로그인 모달)까지 되살린다.
+      // 그 사이 로그인했으면 저장된 토큰으로 다시 그리도록 새로 불러온다(남은 모달 기록은 useOverlayHistoryCleanup 이 정리)
+      if (isMemoryTokenStale()) {
+        window.location.reload();
+        return;
+      }
+
+      setIsRedirecting(false);
     };
 
     window.addEventListener('pageshow', onPageShow);
