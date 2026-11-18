@@ -64,7 +64,15 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
    * 작품 목록은 페이지가 상세와 함께 기다려 두므로, 받은 뒤 작품 탭이 빠지며 탭 줄이 바뀌지 않는다
    */
   const { data: works } = useDisplayArtworks(display.displayId);
-  const tabs = getDisplayDetailTabs(display, { hasWorks: hasDisplayWorks(works) });
+  // 공개 시점 전이어도 서버가 작품 · 콘텐츠를 그대로 주므로 일반 상세에서만 숨긴다. 미리보기(팀원)는 다 보인다
+  const showWorks = previewMode || display.artworkContentVisible !== false;
+  const introDisplay =
+    previewMode || display.exhibitionContentVisible !== false
+      ? display
+      : { ...display, contentCategories: [] };
+  const tabs = getDisplayDetailTabs(introDisplay, {
+    hasWorks: showWorks && hasDisplayWorks(works),
+  });
   const hasIntro = tabs.includes('intro');
   const { activeTab, selectTab, sentinelRef } = useDetailTab(tabs);
 
@@ -143,7 +151,7 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
               className="animate-fade-in"
             >
               <IntroPanel
-                display={display}
+                display={introDisplay}
                 contentPath={
                   previewMode
                     ? (categoryId) =>

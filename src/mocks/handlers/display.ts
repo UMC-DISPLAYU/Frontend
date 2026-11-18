@@ -87,13 +87,13 @@ const displayDetailResponse = (displayId: number) => {
     invitationDisabledAt: display.invitationDisabledAt ?? null,
     teamMembers: display.teamMembers ?? [],
     invitations: display.invitations ?? [],
-    // 공개 시점이 전시 시작일부터면 개막 전에는 콘텐츠를 비워서 준다(실서버와 같게)
-    contentCategories: isContentHiddenBeforeOpen(display, 'exhibition')
-      ? []
-      : (display.contentCategories ?? []),
+    contentCategories: display.contentCategories ?? [],
     images: display.images ?? display.posterImages ?? [],
     artworkContentOpen: display.artworkContentOpen ?? 'ON_EXHIBITION',
     exhibitionContentOpen: display.exhibitionContentOpen ?? 'ON_EXHIBITION',
+    // 실서버처럼 공개 시점 전이어도 목록은 그대로 주고 공개 여부만 알린다
+    artworkContentVisible: !isContentHiddenBeforeOpen(display, 'artwork'),
+    exhibitionContentVisible: !isContentHiddenBeforeOpen(display, 'exhibition'),
     period: display.period ?? {
       startDate: display.startedAt,
       endDate: display.endedAt,

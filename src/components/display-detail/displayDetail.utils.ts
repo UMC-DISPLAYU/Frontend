@@ -16,7 +16,7 @@ export const hasDisplayIntro = (display: DisplayIntro) =>
 
 /*
  * 작품 목록(GET /v1/artworks?displayId=)을 받은 뒤에만 비었는지 판단한다. 받기 전 · 불러오기 실패(응답 없음)는
- * 작품 탭을 남긴다(실패면 패널에서 다시 시도를 보인다). 작품 공개 전이면 서버가 빈 목록을 주므로 탭이 빠진다
+ * 작품 탭을 남긴다(실패면 패널에서 다시 시도를 보인다)
  */
 export const hasDisplayWorks = (works: { artworks?: readonly unknown[] | null } | undefined) =>
   !works || (works.artworks?.length ?? 0) > 0;

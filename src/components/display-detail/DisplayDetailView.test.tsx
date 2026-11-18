@@ -174,6 +174,24 @@ describe('전시 상세 작품 탭', () => {
     expect(find(tree, DetailTabNav)?.props.tabs).toEqual(['reviews']);
   });
 
+  it('공개 시점 전(공개 여부 false)이면 일반 상세에서만 작품 · 콘텐츠를 숨기고 미리보기는 다 보인다', () => {
+    h.activeTab = 'intro';
+    const display = {
+      ...publicDisplay,
+      content: null,
+      contentCategories: [{ categoryId: 1, name: '도록', contents: [] }],
+      artworkContentVisible: false,
+      exhibitionContentVisible: false,
+    } as unknown as DisplayDetailDto;
+
+    nodes(DisplayDetailView({ display }));
+    expect(h.tabs).toEqual(['reviews']);
+
+    const tree = nodes(DisplayDetailView({ display, previewMode: true }));
+    expect(h.tabs).toEqual(['intro', 'works', 'reviews']);
+    expect(find(tree, IntroPanel)?.props.display).toBe(display);
+  });
+
   it('불러오기에 실패해 목록이 없으면 작품 탭을 남겨 다시 시도를 보인다', () => {
     h.works = { data: undefined };
     const tree = nodes(DisplayDetailView({ display: publicDisplay }));
