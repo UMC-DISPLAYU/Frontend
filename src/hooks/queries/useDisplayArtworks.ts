@@ -19,11 +19,15 @@ import { refetchForNextScreen } from './refetchForNextScreen';
 import { useUserMe } from './useUserProfile';
 
 // GET /v1/artworks?displayId=
-export const useDisplayArtworks = (displayId: number) =>
+export const useDisplayArtworks = (
+  displayId: number,
+  options?: { refetchOnWindowFocus?: boolean },
+) =>
   useQuery({
     queryKey: queryKeys.displayArtworks.byDisplayId(displayId),
     queryFn: () => getDisplayArtworks(displayId),
     enabled: Number.isFinite(displayId) && displayId > 0,
+    ...options,
   });
 
 /* 작품 변경 후 전시 · 작가 프로필 · 탐색 · 보관함의 작품 목록을 다시 불러옵니다. */

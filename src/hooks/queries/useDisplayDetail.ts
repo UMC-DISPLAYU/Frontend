@@ -9,11 +9,12 @@ import {
 import { queryKeys } from '@/api/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
-export const useDisplayDetail = (displayId: number) =>
+export const useDisplayDetail = (displayId: number, options?: { refetchOnWindowFocus?: boolean }) =>
   useQuery({
     queryKey: queryKeys.displays.detail(displayId),
     queryFn: () => getDisplayDetail(displayId),
     enabled: Number.isFinite(displayId) && displayId > 0,
+    ...options,
   });
 
 /*

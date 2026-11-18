@@ -76,6 +76,10 @@ const DisplayContentsPage = lazyPage(
 // );
 const PolicyPage = lazyPage(() => import('./pages/PolicyPage'), 'PolicyPage');
 const MyPage = lazyPage(() => import('./pages/MyPage'), 'MyPage');
+const InvitationJoinCompletePage = lazyPage(
+  () => import('./pages/InvitationJoinCompletePage'),
+  'InvitationJoinCompletePage',
+);
 const ArtistVerifyPage = lazyPage(() => import('./pages/artist-verification'), 'ArtistVerifyPage');
 const EditArtistProfilePage = lazyPage(
   () => import('./pages/artist-verification'),
@@ -235,6 +239,7 @@ export const router = createBrowserRouter([
             element: <AuthGuard />,
             children: [
               { path: 'my', element: <MyPage /> },
+              { path: 'my/invitations/complete', element: <InvitationJoinCompletePage /> },
               // 토큰 조회가 로그인 필요라, 비로그인이면 로그인 모달을 띄우고 로그인 후 이 링크로 돌아온다
               { path: 'display/invitation/:token', element: <DisplayInvitationLinkPage /> },
               { path: 'artist-verification', element: <ArtistVerifyPage /> },

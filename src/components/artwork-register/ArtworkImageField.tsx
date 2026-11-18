@@ -5,6 +5,7 @@ import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortabl
 
 import { VideoThumbnailSheet } from '@/components/common/VideoThumbnailSheet';
 import { Loader } from '@/components/ui';
+import { useFileDrop } from '@/hooks/useFileDrop';
 import {
   type ReorderDragMode,
   STOP_REORDER_PROPS,
@@ -119,15 +120,17 @@ function ImageTile({
         FOCUS_CLASS,
       )}
     >
-      {item.previewUrl ? (
+      {item.previewUrl && (
         <img
           src={item.previewUrl}
           alt=""
           draggable={false}
           className={cn('size-full object-contain', isUploading && 'opacity-50')}
         />
-      ) : (
-        <span className="absolute inset-0 grid place-items-center text-secondary">
+      )}
+      {/* 영상은 썸네일이 나온 뒤에도 H.264 변환 · 업로드에 시간이 걸려 끝날 때까지 로더를 둔다 */}
+      {(!item.previewUrl || (isVideo && isUploading)) && (
+        <span className="pointer-events-none absolute inset-0 grid place-items-center text-secondary">
           <Loader label={null} />
         </span>
       )}
@@ -264,11 +267,8 @@ export function ArtworkImageField({
 
   const openPicker = () => inputRef.current?.click();
 
-  const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
-    const { overLimit, rejectedCount, message } = uploads.addFiles(
-      Array.from(event.target.files ?? []),
-    );
-    event.target.value = '';
+  const addFiles = (files: File[]) => {
+    const { overLimit, rejectedCount, message } = uploads.addFiles(files);
 
     // 프로토타입: 작품 이미지는 칸 위 안내로, 작업 과정은 토스트로 알린다
     setHasRejectedFile(representative && rejectedCount > 0);
@@ -276,6 +276,13 @@ export function ArtworkImageField({
     else if (message) toast(message);
     else if (rejectedCount > 0 && !representative) toast('올릴 수 없는 파일이에요');
   };
+
+  const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
+    addFiles(Array.from(event.target.files ?? []));
+    event.target.value = '';
+  };
+
+  const { isDragging: isFileOver, dropProps } = useFileDrop(addFiles);
 
   const handleRetry = () => {
     setHasRejectedFile(false);
@@ -293,7 +300,13 @@ export function ArtworkImageField({
   };
 
   return (
-    <div className={className}>
+    <div
+      {...dropProps}
+      className={cn(
+        className,
+        isFileOver && 'rounded-12 outline-2 outline-offset-4 outline-focus outline-dashed',
+      )}
+    >
       <input
         ref={inputRef}
         type="file"
@@ -352,7 +365,7 @@ export function ArtworkImageField({
                 type="button"
                 onClick={openPicker}
                 className={cn(
-                  'typography-body-md-medium grid h-30 w-24 shrink-0 cursor-pointer snap-start place-content-center justify-items-center gap-1 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
+                  'typography-body-md-medium grid h-45 w-36 shrink-0 cursor-pointer snap-start place-content-center justify-items-center gap-1 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
                   FOCUS_CLASS,
                 )}
               >

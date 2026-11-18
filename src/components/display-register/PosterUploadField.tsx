@@ -4,7 +4,9 @@ import { DndContext } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
 import { VideoThumbnailSheet } from '@/components/common/VideoThumbnailSheet';
+import { Loader } from '@/components/ui';
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
+import { useFileDrop } from '@/hooks/useFileDrop';
 import {
   type ReorderDragMode,
   STOP_REORDER_PROPS,
@@ -37,6 +39,8 @@ const ADD_TILE_CLASS = cn(
   'typography-body-md-medium grid shrink-0 cursor-pointer place-content-center justify-items-center gap-2 border border-primary text-secondary transition-colors duration-fast hover:bg-secondary',
   FOCUS_CLASS,
 );
+
+const DROP_ACTIVE_CLASS = 'rounded-12 outline-2 outline-offset-4 outline-focus outline-dashed';
 
 function PosterHelp({ videoLimitMessage }: { videoLimitMessage: string | null }) {
   return (
@@ -147,6 +151,12 @@ function PosterThumb({
           className={cn('size-full object-cover', isUploading && 'opacity-50')}
         />
       )}
+      {/* 영상은 H.264 변환 · 업로드에 시간이 걸려 끝날 때까지 칸 안에 로더를 둔다 */}
+      {isUploading && (isVideo || !item.previewUrl) && (
+        <span className="pointer-events-none absolute inset-0 grid place-items-center text-secondary">
+          <Loader label={null} />
+        </span>
+      )}
       {isVideo && (
         <span className="typography-body-sm-semibold pointer-events-none absolute top-1.5 left-1.5 inline-flex h-5 items-center gap-0.75 rounded-4 bg-[rgba(0,0,0,0.72)] pr-1.5 pl-1 text-base-white tabular-nums">
           <PlayIcon className="size-2.5" />
@@ -201,6 +211,11 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
   const { items, errorKind, videoLimitMessage } = posters;
   const ids = items.map((item) => item.id);
   const { dragMode, contextProps } = useHorizontalReorder({ onMove: posters.move });
+  const { isDragging: isFileOver, dropProps } = useFileDrop(posters.addFiles);
+  const fieldProps = {
+    ...dropProps,
+    className: cn('mt-6', isFileOver && DROP_ACTIVE_CLASS),
+  };
 
   const openPicker = () => inputRef.current?.click();
   const handleRetry = () => {
@@ -229,10 +244,10 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
 
   if (items.length === 0) {
     return (
-      <div className="mt-6">
+      <div {...fieldProps}>
         {fileInput}
         <div className="flex items-start gap-4">
-          <button type="button" onClick={openPicker} className={cn(ADD_TILE_CLASS, 'h-30 w-24')}>
+          <button type="button" onClick={openPicker} className={cn(ADD_TILE_CLASS, 'h-45 w-36')}>
             <PlusIcon strokeWidth={1.6} className="size-7" />
             포스터 업로드
           </button>
@@ -250,7 +265,7 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
   }
 
   return (
-    <div className="mt-6">
+    <div {...fieldProps}>
       {fileInput}
       <div className="typography-body-lg-semibold flex justify-between text-primary">
         <span>
@@ -276,7 +291,7 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
               <button
                 type="button"
                 onClick={openPicker}
-                className={cn(ADD_TILE_CLASS, 'h-[105px] w-21 snap-start')}
+                className={cn(ADD_TILE_CLASS, 'h-[158px] w-31.5 snap-start')}
               >
                 <PlusIcon strokeWidth={1.6} className="size-6" />
                 추가
