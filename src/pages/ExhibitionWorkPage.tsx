@@ -16,7 +16,14 @@ export function ExhibitionWorkPage() {
   const { displayId } = useParams();
   const flowBack = useFlowBack();
   const [searchParams, replaceSearchParams] = useReplaceSearchParams();
-  const { data: display, isPending, isError } = useDisplayDetail(Number(displayId));
+  // 팀원들이 함께 작업하는 화면이라, 다른 탭 · 앱에 다녀오면 다른 팀원이 바꾼 내용을 다시 불러온다
+  const {
+    data: display,
+    isPending,
+    isError,
+  } = useDisplayDetail(Number(displayId), {
+    refetchOnWindowFocus: true,
+  });
   const { data: userMe } = useUserMe();
   const canViewContents = hasPermission(useDisplayContentPolicy(display), 'view');
   const activeTab =

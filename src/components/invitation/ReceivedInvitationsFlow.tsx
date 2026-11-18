@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -13,15 +13,14 @@ import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 
 import { JoinArtistNameSheet } from './JoinArtistNameSheet';
-import { JoinCompleteSheet, type JoinCompleteSummary } from './JoinCompleteSheet';
+import type { JoinCompleteSummary } from './JoinCompleteView';
 import {
+  JOIN_COMPLETE_PATH,
   type ReceivedInvitation,
   toCompletePeriod,
   toReceivedInvitation,
 } from './receivedInvitation';
 import { ReceivedInvitationsSheet } from './ReceivedInvitationsSheet';
-
-type JoinStep = 'artistName' | 'complete';
 
 interface ReceivedInvitationsFlowProps {
   /** 받은 초대 시트 열림. 수락을 누르면 이 시트를 닫고(onClose) 전시 작가명 시트로 넘어간다 */
@@ -30,7 +29,7 @@ interface ReceivedInvitationsFlowProps {
 }
 
 /**
- * 마이의 받은 초대 → 전시 작가명 → 참여 완료 흐름(프로토타입 my.html).
+ * 마이의 받은 초대 → 전시 작가명 → 참여 완료 페이지 흐름(프로토타입 my.html).
  * 미인증 사용자도 초대를 보고 거절할 수 있지만, 수락은 작가 인증이 필요하다.
  */
 export function ReceivedInvitationsFlow({ open, onClose }: ReceivedInvitationsFlowProps) {
@@ -41,13 +40,17 @@ export function ReceivedInvitationsFlow({ open, onClose }: ReceivedInvitationsFl
   const rejectMutation = useRejectDisplayInvitation();
   const acceptMutation = useAcceptDisplayInvitation();
 
-  const [joinStep, setJoinStep] = useState<JoinStep | null>(null);
+  const [isArtistNameOpen, setIsArtistNameOpen] = useState(false);
+  const isArtistNameOpenRef = useRef(isArtistNameOpen);
   const [joiningInvitation, setJoiningInvitation] = useState<ReceivedInvitation | null>(null);
   // 수락할 때마다 전시 작가명 시트를 새로 그려 빈 칸에서 시작한다
   const [joinAttempt, setJoinAttempt] = useState(0);
-  const [completeSummary, setCompleteSummary] = useState<JoinCompleteSummary | null>(null);
   const [rejectingInvitation, setRejectingInvitation] = useState<ReceivedInvitation | null>(null);
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
+
+  useEffect(() => {
+    isArtistNameOpenRef.current = isArtistNameOpen;
+  });
 
   const invitations = useMemo(
     () => invitationsQuery.data?.invitations.map(toReceivedInvitation) ?? [],
@@ -64,7 +67,7 @@ export function ReceivedInvitationsFlow({ open, onClose }: ReceivedInvitationsFl
     setJoiningInvitation(invitation);
     setJoinAttempt((attempt) => attempt + 1);
     onClose();
-    setJoinStep('artistName');
+    setIsArtistNameOpen(true);
   };
 
   const handleJoin = (artistName: string) => {
@@ -75,15 +78,18 @@ export function ReceivedInvitationsFlow({ open, onClose }: ReceivedInvitationsFl
       { invitationId: invitation.invitationId, displayNickname: artistName },
       {
         onSuccess: () => {
-          setCompleteSummary({
+          // 요청 중에 시트를 닫았으면 완료 화면으로 넘어가지 않는다
+          if (!isArtistNameOpenRef.current) return;
+
+          const joinComplete: JoinCompleteSummary = {
             displayId: invitation.displayId,
             title: invitation.title,
             organization: invitation.organization,
             period: toCompletePeriod(invitation.period),
             artistName,
-          });
-          // 요청 중에 시트를 닫았으면 완료 화면을 띄우지 않는다
-          setJoinStep((step) => (step === 'artistName' ? 'complete' : step));
+          };
+          // 시트가 쌓은 오버레이 기록을 완료 페이지로 바꿔, 뒤로가기하면 마이로 돌아간다
+          void navigate(JOIN_COMPLETE_PATH, { replace: true, state: { joinComplete } });
         },
       },
     );
@@ -123,15 +129,9 @@ export function ReceivedInvitationsFlow({ open, onClose }: ReceivedInvitationsFl
         }
         isSubmitting={acceptMutation.isPending}
         key={joinAttempt}
-        onClose={() => setJoinStep(null)}
+        onClose={() => setIsArtistNameOpen(false)}
         onSubmit={handleJoin}
-        open={joinStep === 'artistName'}
-      />
-
-      <JoinCompleteSheet
-        onClose={() => setJoinStep(null)}
-        open={joinStep === 'complete'}
-        summary={completeSummary}
+        open={isArtistNameOpen}
       />
 
       <ConfirmDialog

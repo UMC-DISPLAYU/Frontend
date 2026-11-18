@@ -33,6 +33,9 @@ export function toReceivedInvitation(dto: MyDisplayInvitationDto): ReceivedInvit
 /** 참여 완료 화면의 기간. 프로토타입처럼 카드 표기의 ' - ' 를 ' – ' 로 바꾼다 */
 export const toCompletePeriod = (period: string) => period.replace(' - ', ' – ');
 
+/** 받은 초대를 수락한 뒤 보이는 참여 완료 페이지 */
+export const JOIN_COMPLETE_PATH = '/my/invitations/complete';
+
 /** 참여 완료의 "내 작품 등록하기". 팀원은 시트 없이 바로 작품 등록 화면으로 간다(프로토타입 works.html) */
 export const getArtworkRegisterPath = (displayId: number) =>
   `/exhibition/${displayId}/artworks/new`;

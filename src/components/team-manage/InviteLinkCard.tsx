@@ -112,11 +112,6 @@ export function InviteLinkCard({
           링크 복사
         </button>
       </div>
-      {!enabled && (
-        <p className="mt-2 text-[12px] leading-[1.4] font-medium whitespace-pre-line text-[#71717b]">
-          {'이 링크로 새로운 팀원이 참여할 수 없어요\n기존 팀원의 참여 상태는 유지돼요'}
-        </p>
-      )}
     </section>
   );
 }

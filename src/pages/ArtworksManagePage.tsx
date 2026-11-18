@@ -46,7 +46,10 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
   const [ordered, setOrdered] = useState<{ base: unknown; works: Work[] } | null>(null);
   const [authorChoice, setAuthorChoice] = useState({ open: false, key: 0 });
 
-  const { data, isPending, isError, refetch } = useDisplayArtworks(displayId);
+  // 전시 작업 화면(embedded)에서만 다른 팀원이 올린 작품을 반영하려고 창에 돌아올 때 다시 불러온다
+  const { data, isPending, isError, refetch } = useDisplayArtworks(displayId, {
+    refetchOnWindowFocus: embedded,
+  });
   const { showSkeleton } = useSkeleton(isPending);
   const {
     data: display,
