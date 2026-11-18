@@ -9,6 +9,7 @@ import {
 } from '@/hooks/queries/useArchive';
 import { useHomeArtworkPreview, usePopularDisplays } from '@/hooks/queries/useHome';
 import type { TabKey } from '@/types/mypage';
+import { getArtworkArtistNames } from '@/utils/artist';
 import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
 import type { ArchiveArtistView, ArchiveArtworkView, ArchiveExhibitionView } from './ArchiveCards';
@@ -60,7 +61,10 @@ export function useMyArchive(activeTab: TabKey) {
             ? `/personal-artworks/${item.personalArtworkId}`
             : `/artwork/${item.artworkId}`,
           title: item.artworkName ?? item.title ?? '',
-          artistName: item.artistName ?? item.artist ?? '',
+          artistNames: getArtworkArtistNames({
+            artistName: item.artistName ?? item.artist ?? '',
+            artists: item.artists,
+          }),
           imageUrl: item.artworkImageUrl || item.thumbnailUrl || null,
         };
       }),

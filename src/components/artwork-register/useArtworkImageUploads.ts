@@ -4,7 +4,6 @@ import { arrayMove } from '@dnd-kit/sortable';
 
 import type { MediaTypeDto } from '@/api/dto';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
-import { toast } from '@/stores/toastStore';
 import { type CropRect, isValidCrop } from '@/utils/cropBox';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
@@ -14,6 +13,7 @@ import {
   ARTWORK_VIDEO_ACCEPT_TYPES,
   MAX_ARTWORK_IMAGE_MB,
   MAX_ARTWORK_VIDEO_BYTES,
+  MAX_ARTWORK_VIDEO_DURATION_LABEL,
   MAX_ARTWORK_VIDEO_MB,
   MAX_ARTWORK_VIDEO_SECONDS,
   MAX_ARTWORK_VIDEOS,
@@ -44,7 +44,7 @@ export type AddArtworkImagesResult = {
   overLimit: boolean;
   /** 형식 · 용량이 맞지 않아 올리지 않은 파일 수 */
   rejectedCount: number;
-  /** 영상 개수 · 용량처럼 토스트로 알릴 안내 */
+  /** 영상을 받지 않는 칸에서 영상을 골랐을 때 토스트로 알릴 안내 */
   message?: string;
 };
 
@@ -91,6 +91,7 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
   let overLimit = false;
   let videoCount = currentVideoCount;
   let message: string | undefined;
+  let videoLimitMessage: string | undefined;
 
   for (const file of files) {
     if (currentCount + accepted.length >= maxImages) {
@@ -103,9 +104,9 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
         if (videoNotAllowedMessage) message = videoNotAllowedMessage;
         else rejectedCount += 1;
       } else if (videoCount >= MAX_ARTWORK_VIDEOS) {
-        message = '영상은 1개만 올릴 수 있어요';
+        videoLimitMessage = `영상은 ${MAX_ARTWORK_VIDEOS}개만 올릴 수 있어요`;
       } else if (file.size > MAX_ARTWORK_VIDEO_BYTES) {
-        message = `영상은 ${MAX_ARTWORK_VIDEO_MB}MB 이하로 올려주세요`;
+        videoLimitMessage = `영상은 ${MAX_ARTWORK_VIDEO_MB}MB 이하로 올려주세요`;
       } else {
         videoCount += 1;
         accepted.push(file);
@@ -117,7 +118,7 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
     else rejectedCount += 1;
   }
 
-  return { accepted, rejectedCount, overLimit, message };
+  return { accepted, rejectedCount, overLimit, message, videoLimitMessage };
 }
 
 const toInitialItems = (
@@ -177,6 +178,8 @@ export function useArtworkImageUploads({
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
   /* 읽을 수 없거나 바꿀 수 없는 영상. 작품 이미지 칸 위 안내로 알린다 */
   const [hasMediaError, setHasMediaError] = useState(false);
+  /* 영상 개수 · 길이 · 용량 한도를 넘어 빼 둔 영상 안내. 다른 사진은 올릴 수 있어 등록을 막지 않는다 */
+  const [videoLimitMessage, setVideoLimitMessage] = useState<string | null>(null);
   const { mutateAsync: uploadImage } = useUploadImage();
   const { mutateAsync: uploadVideo } = useUploadVideo();
   const itemsRef = useRef(items);
@@ -293,7 +296,7 @@ export function useArtworkImageUploads({
         // 다시 묶거나 바꾼 파일이 서버 한도를 넘을 수 있다
         if (prepared.file.size > MAX_ARTWORK_VIDEO_BYTES) {
           remove(id);
-          toast(`영상은 ${MAX_ARTWORK_VIDEO_MB}MB 이하로 올려주세요`);
+          setVideoLimitMessage(`영상은 ${MAX_ARTWORK_VIDEO_MB}MB 이하로 올려주세요`);
           return;
         }
 
@@ -323,7 +326,7 @@ export function useArtworkImageUploads({
 
         remove(id);
         if (error instanceof VideoPrepareError && error.kind === 'too-long') {
-          toast('영상은 3분 이내로 올려주세요');
+          setVideoLimitMessage(`영상은 ${MAX_ARTWORK_VIDEO_DURATION_LABEL} 이내로 올려주세요`);
           return;
         }
         setHasMediaError(true);
@@ -339,7 +342,7 @@ export function useArtworkImageUploads({
       setFailedFiles([]);
       setHasMediaError(false);
 
-      const { accepted, rejectedCount, overLimit, message } = pickArtworkFiles(
+      const { accepted, rejectedCount, overLimit, message, ...picked } = pickArtworkFiles(
         files,
         itemsRef.current.length,
         maxImages,
@@ -349,6 +352,7 @@ export function useArtworkImageUploads({
           videoNotAllowedMessage,
         },
       );
+      setVideoLimitMessage(picked.videoLimitMessage ?? null);
       const added = accepted.map((file) => {
         const isVideo = isArtworkVideoFile(file);
         const item: ArtworkImageItem = {
@@ -434,6 +438,7 @@ export function useArtworkImageUploads({
     items,
     maxImages,
     allowVideo,
+    videoLimitMessage,
     hasUploadError: failedFiles.length > 0 || hasMediaError,
     isUploading: items.some((item) => !isArtworkItemReady(item)),
     uploadedUrls: readyItems.map((item) => item.uploadedUrl!),

@@ -315,7 +315,7 @@ function DisplayRegisterBasicForm() {
                   label="인스타그램"
                   parsed={instagram}
                   maxLength={60}
-                  placeholder="아이디 (예: displayu)"
+                  placeholder="ex) displayu"
                   idleHelp="@ 없이 아이디만 적어주세요"
                   validHelp={
                     instagram.status === 'valid'
@@ -344,10 +344,10 @@ function DisplayRegisterBasicForm() {
                   parsed={website}
                   maxLength={120}
                   inputMode="url"
-                  placeholder="ex) displayu.co.kr"
+                  placeholder="ex) www.displayu.co.kr"
                   idleHelp="전시 사이트나 포트폴리오 주소를 적어주세요"
                   validHelp={website.status === 'valid' ? `${website.href} 로 연결돼요` : ''}
-                  errorMessage="주소 형식을 확인해 주세요 (예: displayu.co.kr)"
+                  errorMessage="주소 형식을 확인해 주세요 (예: www.displayu.co.kr)"
                   name={field.name}
                   value={field.value}
                   onChange={field.onChange}

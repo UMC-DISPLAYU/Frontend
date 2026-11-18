@@ -94,6 +94,8 @@ export function usePosterUploads({
   );
   const [errorKind, setErrorKind] = useState<PosterErrorKind | null>(null);
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
+  /* 영상 개수 · 길이 · 용량 한도를 넘어 빼 둔 영상 안내. 다른 포스터는 올릴 수 있어 다음 단계를 막지 않는다 */
+  const [videoLimitMessage, setVideoLimitMessage] = useState<string | null>(null);
   const { mutateAsync: uploadImage } = useUploadImage();
   const { mutateAsync: uploadVideo } = useUploadVideo();
 
@@ -190,7 +192,7 @@ export function usePosterUploads({
         // 다시 묶거나 바꾼 파일이 서버 한도를 넘을 수 있다
         if (prepared.file.size > MAX_POSTER_VIDEO_BYTES) {
           dropItem(id);
-          toast(`영상은 ${MAX_POSTER_VIDEO_MB}MB 이하로 올려주세요`);
+          setVideoLimitMessage(`영상은 ${MAX_POSTER_VIDEO_MB}MB 이하로 올려주세요`);
           return;
         }
 
@@ -218,7 +220,7 @@ export function usePosterUploads({
 
         dropItem(id);
         if (error instanceof VideoPrepareError && error.kind === 'too-long') {
-          toast(`포스터 영상은 ${MAX_POSTER_VIDEO_SECONDS}초 이내로 올려주세요`);
+          setVideoLimitMessage(`포스터 영상은 ${MAX_POSTER_VIDEO_SECONDS}초 이내로 올려주세요`);
           return;
         }
         setErrorKind('file');
@@ -233,6 +235,7 @@ export function usePosterUploads({
     (files: File[]) => {
       setErrorKind(null);
       setFailedFiles([]);
+      setVideoLimitMessage(null);
 
       const remaining = MAX_POSTER_UPLOAD_IMAGES - itemsRef.current.length;
       if (files.length > remaining) {
@@ -241,17 +244,17 @@ export function usePosterUploads({
 
       let videoCount = itemsRef.current.filter((item) => item.mediaType === 'VIDEO').length;
       let hasBadFile = false;
-      let message = '';
+      let videoMessage = '';
       const added: { item: PosterItem; file: File }[] = [];
 
       files.slice(0, Math.max(remaining, 0)).forEach((file) => {
         if (isPosterVideoFile(file)) {
           if (videoCount >= MAX_POSTER_VIDEOS) {
-            message = '영상은 1개만 올릴 수 있어요';
+            videoMessage = `영상은 ${MAX_POSTER_VIDEOS}개만 올릴 수 있어요`;
             return;
           }
           if (file.size > MAX_POSTER_VIDEO_BYTES) {
-            message = `영상은 ${MAX_POSTER_VIDEO_MB}MB 이하로 올려주세요`;
+            videoMessage = `영상은 ${MAX_POSTER_VIDEO_MB}MB 이하로 올려주세요`;
             return;
           }
 
@@ -272,7 +275,7 @@ export function usePosterUploads({
       });
 
       if (hasBadFile) setErrorKind('file');
-      if (message) toast(message);
+      if (videoMessage) setVideoLimitMessage(videoMessage);
       if (added.length === 0) return;
 
       // 업로드 실패 콜백이 목록을 찾을 수 있도록 다음 렌더 전에 ref 에도 넣어 둔다
@@ -353,6 +356,7 @@ export function usePosterUploads({
   return {
     items,
     errorKind,
+    videoLimitMessage,
     isUploading: items.some((item) => !isPosterReady(item)),
     uploadedPosters,
     /** 수정 화면에서 바뀐 게 있는지 비교할 때 쓴다. 올라가는 중인 칸도 하나로 센다 */

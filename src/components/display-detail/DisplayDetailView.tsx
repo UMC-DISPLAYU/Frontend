@@ -8,15 +8,17 @@ import {
 } from '@/components/common/detail';
 import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
 import { FALLBACK_POSTER_IMAGE } from '@/constants';
+import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { cn } from '@/utils/cn';
 import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
 
 import { DisplayBottomBar, DisplayInlineActions, DisplaySaveButton } from './DisplayActions';
 import {
-  DISPLAY_DETAIL_TABS,
   type DisplayDetailTabKey,
   displayPanelId,
   displayTabId,
+  getDisplayDetailTabs,
+  hasDisplayWorks,
 } from './displayDetail.utils';
 import { DisplaySummary } from './DisplaySummary';
 import { IntroPanel } from './IntroPanel';
@@ -57,7 +59,14 @@ type Props = {
 };
 
 export function DisplayDetailView({ display, previewMode = false }: Props) {
-  const { activeTab, selectTab, sentinelRef } = useDetailTab(DISPLAY_DETAIL_TABS);
+  /*
+   * 소개 · 작품 탭은 비면 빠지고 남은 첫 탭이 기본이 된다. 주소에 남은 빠진 탭(?tab=)도 첫 탭으로 본다(useDetailTab).
+   * 작품 목록은 페이지가 상세와 함께 기다려 두므로, 받은 뒤 작품 탭이 빠지며 탭 줄이 바뀌지 않는다
+   */
+  const { data: works } = useDisplayArtworks(display.displayId);
+  const tabs = getDisplayDetailTabs(display, { hasWorks: hasDisplayWorks(works) });
+  const hasIntro = tabs.includes('intro');
+  const { activeTab, selectTab, sentinelRef } = useDetailTab(tabs);
 
   // 프로토타입 postFresh: 후기를 올렸을 때 탭 줄 아래로 내려가 있으면 탭 줄 자리로 부드럽게 올라간다
   const scrollToTabs = () => {
@@ -113,7 +122,7 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
           />
 
           <DetailTabNav
-            tabs={DISPLAY_DETAIL_TABS}
+            tabs={tabs}
             labels={TAB_LABEL}
             label="전시 상세"
             tabId={displayTabId}
@@ -125,24 +134,25 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
             isStuck={false}
           />
 
-          <div
-            id={displayPanelId('intro')}
-            role="tabpanel"
-            aria-labelledby={displayTabId('intro')}
-            hidden={activeTab !== 'intro'}
-            className="animate-fade-in"
-          >
-            <IntroPanel
-              display={display}
-              isPreview={previewMode}
-              contentPath={
-                previewMode
-                  ? (categoryId) =>
-                      `/exhibition/${display.displayId}/preview/contents?category=${categoryId}`
-                  : undefined
-              }
-            />
-          </div>
+          {hasIntro && (
+            <div
+              id={displayPanelId('intro')}
+              role="tabpanel"
+              aria-labelledby={displayTabId('intro')}
+              hidden={activeTab !== 'intro'}
+              className="animate-fade-in"
+            >
+              <IntroPanel
+                display={display}
+                contentPath={
+                  previewMode
+                    ? (categoryId) =>
+                        `/exhibition/${display.displayId}/preview/contents?category=${categoryId}`
+                    : undefined
+                }
+              />
+            </div>
+          )}
           {activeTab === 'works' && (
             <div
               id={displayPanelId('works')}
@@ -154,8 +164,6 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
                 displayId={display.displayId}
                 teamMembers={display.teamMembers}
                 isPreview={previewMode}
-                artworkContentOpen={display.artworkContentOpen}
-                period={display.period}
                 artworkPath={
                   previewMode
                     ? (artworkId) =>

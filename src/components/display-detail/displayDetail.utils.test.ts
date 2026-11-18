@@ -3,10 +3,66 @@ import { describe, expect, it } from 'vitest';
 import {
   formatPeriodDate,
   formatPeriodTime,
-  getContentOpenNotice,
+  getDisplayDetailTabs,
+  getDisplayIntroText,
+  hasDisplayIntro,
+  hasDisplayWorks,
   toInstagramLink,
   toWebsiteLink,
 } from './displayDetail.utils';
+
+describe('소개 탭 표시', () => {
+  const category = { categoryId: 1 };
+  const works = { hasWorks: true };
+
+  it('소개 글이나 전시 콘텐츠 중 하나라도 있으면 소개 탭을 둔다', () => {
+    expect(hasDisplayIntro({ content: '소개', contentCategories: [] })).toBe(true);
+    expect(hasDisplayIntro({ content: null, contentCategories: [category] })).toBe(true);
+    expect(getDisplayDetailTabs({ content: '소개', contentCategories: [] }, works)).toEqual([
+      'intro',
+      'works',
+      'reviews',
+    ]);
+  });
+
+  it('소개 글이 비었거나 공백뿐이고 콘텐츠도 없으면 소개 탭을 빼 작품 탭이 처음이 된다', () => {
+    for (const content of [null, undefined, '', ' \n\t ']) {
+      expect(hasDisplayIntro({ content, contentCategories: [] })).toBe(false);
+      expect(getDisplayDetailTabs({ content, contentCategories: [] }, works)).toEqual([
+        'works',
+        'reviews',
+      ]);
+    }
+  });
+
+  it('소개 글은 앞뒤 공백을 뺀 글을 보인다', () => {
+    expect(getDisplayIntroText({ content: '  소개 글\n' })).toBe('소개 글');
+    expect(getDisplayIntroText({ content: null })).toBe('');
+  });
+});
+
+describe('작품 탭 표시', () => {
+  it('작품 목록을 받기 전 · 불러오기 실패(응답 없음)는 작품 탭을 남긴다', () => {
+    expect(hasDisplayWorks(undefined)).toBe(true);
+  });
+
+  it('작품이 하나라도 있으면 작품 탭을 둔다', () => {
+    expect(hasDisplayWorks({ artworks: [{ artworkId: 1 }] })).toBe(true);
+  });
+
+  it('받은 목록이 비었으면(작품 공개 전 포함) 작품 탭을 뺀다', () => {
+    for (const artworks of [[], null, undefined]) {
+      expect(hasDisplayWorks({ artworks })).toBe(false);
+    }
+  });
+
+  it('작품만 없으면 소개 · 후기, 소개도 없으면 후기만 남는다(후기는 쓰는 탭이라 늘 남긴다)', () => {
+    const intro = { content: '소개', contentCategories: [] };
+    const empty = { content: ' ', contentCategories: [] };
+    expect(getDisplayDetailTabs(intro, { hasWorks: false })).toEqual(['intro', 'reviews']);
+    expect(getDisplayDetailTabs(empty, { hasWorks: false })).toEqual(['reviews']);
+  });
+});
 
 describe('formatPeriodDate', () => {
   it('같은 해면 끝 날짜의 연도를 뺀다', () => {
@@ -60,29 +116,5 @@ describe('toWebsiteLink', () => {
   it('http(s)가 아닌 주소나 잘못된 값은 열지 않는다', () => {
     expect(toWebsiteLink('javascript:alert(1)')).toBeNull();
     expect(toWebsiteLink('')).toBeNull();
-  });
-});
-
-describe('getContentOpenNotice', () => {
-  const period = {
-    startDate: '2026-11-16',
-    endDate: '2026-12-11',
-    startTime: '10:00:00',
-    endTime: '18:00:00',
-  };
-  const at = (value: string) => new Date(value).getTime();
-
-  it('전시 시작일부터 공개면 개막 전까지 언제부터 보이는지 알린다', () => {
-    expect(getContentOpenNotice('ON_EXHIBITION', period, at('2026-11-16T09:59:59'))).toBe(
-      '11.16부터 노출돼요',
-    );
-  });
-
-  it('개막 시각이 지나면 안내하지 않는다', () => {
-    expect(getContentOpenNotice('ON_EXHIBITION', period, at('2026-11-16T10:00:00'))).toBeNull();
-  });
-
-  it('바로 공개면 개막 전이어도 안내하지 않는다', () => {
-    expect(getContentOpenNotice('IMMEDIATELY', period, at('2026-11-01T00:00:00'))).toBeNull();
   });
 });

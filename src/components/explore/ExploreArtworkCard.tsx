@@ -4,7 +4,6 @@ import type { ArtworkSearchItemDto } from '@/api/dto';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonText } from '@/components/ui';
 
-import { ArtistByline } from './ArtistByline';
 import {
   ARTWORK_HOVER_GRADIENT,
   CARD_CLASS,
@@ -26,8 +25,8 @@ type ExploreArtworkCardProps = {
 
 export function ExploreArtworkCard({ artwork }: ExploreArtworkCardProps) {
   const artistNames = artwork.artists?.length
-    ? artwork.artists.map((artist) => artist.name)
-    : [artwork.artistName];
+    ? artwork.artists.map((artist) => artist.name).join(', ')
+    : artwork.artistName;
   const { photoPending, onPhotoSettle } = usePhotoPending(artwork.artworkImageUrl);
 
   return (
@@ -53,15 +52,16 @@ export function ExploreArtworkCard({ artwork }: ExploreArtworkCardProps) {
           style={{ backgroundImage: ARTWORK_HOVER_GRADIENT }}
         >
           <span className={CARD_HOVER_TITLE_CLASS}>{artwork.artworkName}</span>
-          <ArtistByline className="text-[12px] leading-[1.4] font-medium" names={artistNames} />
+          <span className="block truncate text-[12px] leading-[1.4] font-medium">
+            {artistNames}
+          </span>
         </span>
       </span>
       <span className={CARD_TEXT_CLASS} data-card-text>
         <span className={CARD_TITLE_CLASS}>{artwork.artworkName}</span>
-        <ArtistByline
-          className="text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#3f3f47]"
-          names={artistNames}
-        />
+        <span className="block truncate text-[12px] leading-[1.4] font-medium tracking-[-0.03em] text-[#3f3f47]">
+          {artistNames}
+        </span>
       </span>
     </Link>
   );

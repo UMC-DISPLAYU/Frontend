@@ -8,7 +8,6 @@ import { useSkeleton } from '@/hooks/useSkeleton';
 import { cn } from '@/utils/cn';
 import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 
-import { ArtistByline } from './ArtistByline';
 import { HOME_INNER } from './homeLayout';
 
 // 폰에서는 2장 + 3번째가 조금 보이게(프로토타입 11-08): 폭 = (화면 폭 − 76px) / 2, 최대 175px
@@ -89,14 +88,11 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
                 <b className="typography-body-lg-semibold block [overflow-wrap:anywhere]">
                   {artwork.artworkName}
                 </b>
-                <ArtistByline
-                  names={
-                    artwork.artists?.length
-                      ? artwork.artists.map(({ name }) => name)
-                      : [artwork.artistName]
-                  }
-                  className="typography-body-md-medium text-secondary"
-                />
+                <span className="typography-body-md-medium block truncate text-secondary">
+                  {artwork.artists?.length
+                    ? artwork.artists.map(({ name }) => name).join(', ')
+                    : artwork.artistName}
+                </span>
               </div>
             </Link>
           ))

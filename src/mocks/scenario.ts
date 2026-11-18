@@ -14,7 +14,9 @@ export type MockScenario =
   | 'artist-unverified'
   /** 전시 상세에서 나를 관리자 · 팀원으로 바꾼다(예: `/exhibition/101/work?mock=display-manager`) */
   | 'display-manager'
-  | 'display-member';
+  | 'display-member'
+  /** 전시 작품 목록을 비워 준다. 작품 탭이 빠지는지 확인용(예: `/display/106?mock=display-no-works` → 후기 탭만) */
+  | 'display-no-works';
 
 export const hasMockScenario = (scenario: MockScenario) =>
   new URLSearchParams(window.location.search).getAll('mock').includes(scenario);

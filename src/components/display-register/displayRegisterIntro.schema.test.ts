@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { displayRegisterIntroSchema } from './displayRegisterIntro.schema';
+import {
+  displayRegisterIntroSchema,
+  stripAffiliationBlockedChars,
+} from './displayRegisterIntro.schema';
 
 const valid = {
   title: '모두의 삶',
@@ -65,5 +68,36 @@ describe('displayRegisterIntroSchema', () => {
     expect(
       displayRegisterIntroSchema.safeParse({ ...valid, department: '가'.repeat(41) }).success,
     ).toBe(false);
+  });
+
+  it('소속 정보에 띄어쓰기 · 이스케이프 문자가 있으면 실패한다', () => {
+    for (const department of [
+      '시각 디자인학과',
+      '시각디자인학과 ',
+      '시각\t디자인',
+      '시각\n디자인',
+      '시각\u3000디자인',
+      '시각\\디자인',
+      "시각'디자인",
+      '시각"디자인',
+      '시각`디자인',
+      '시각\u200b디자인',
+    ]) {
+      expect(displayRegisterIntroSchema.safeParse({ ...valid, department }).success).toBe(false);
+    }
+    expect(
+      displayRegisterIntroSchema.safeParse({ ...valid, department: '시각디자인학과(학부),동아리' })
+        .success,
+    ).toBe(true);
+  });
+});
+
+describe('stripAffiliationBlockedChars', () => {
+  it('공백 · 제어 문자 · 이스케이프 문자만 지운다', () => {
+    expect(stripAffiliationBlockedChars(' 시각 디자인\t학과\n')).toBe('시각디자인학과');
+    expect(stripAffiliationBlockedChars('a\\b\'c"d`e\u0000f')).toBe('abcdef');
+    expect(stripAffiliationBlockedChars('학과(학부)명,학회-동아리_1·A')).toBe(
+      '학과(학부)명,학회-동아리_1·A',
+    );
   });
 });

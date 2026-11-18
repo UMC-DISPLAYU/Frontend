@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   InviteLinkCard,
@@ -12,6 +12,7 @@ import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 
 export function TeamManage() {
+  const navigate = useNavigate();
   const { displayId: displayIdParam } = useParams();
   const displayId = Number(displayIdParam);
 
@@ -22,7 +23,12 @@ export function TeamManage() {
 
   return (
     <TeamPage>
-      <TeamHeader title="팀원 관리" />
+      {/* 등록 완료 · 전시 관리 등 어디서 들어와도 기록을 되돌리지 않고 전시 관리로 간다(전시 작업 뒤로가기와 같다) */}
+      <TeamHeader
+        title="팀원 관리"
+        onBack={() => navigate(`/exhibition/${displayId}/manage`)}
+        backLabel="전시 관리로 돌아가기"
+      />
       <div className="mt-3 flex items-baseline gap-2.5">
         <h2 className="shrink-0 text-[16px] leading-[1.4] font-semibold">팀원 초대</h2>
         <p className="min-w-0 text-[12px] leading-[1.4] font-medium text-[#71717b]">

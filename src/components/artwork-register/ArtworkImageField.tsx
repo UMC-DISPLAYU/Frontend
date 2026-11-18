@@ -328,6 +328,11 @@ export function ArtworkImageField({
         </span>
       </div>
       <p className={cn(HELP_CLASS, 'whitespace-pre-line')}>{help}</p>
+      {uploads.videoLimitMessage && (
+        <p role="alert" className="typography-body-md-medium mt-1 text-error">
+          {uploads.videoLimitMessage}
+        </p>
+      )}
       {representative && (uploads.hasUploadError || hasRejectedFile) && (
         <UploadErrorBox onRetry={handleRetry} />
       )}

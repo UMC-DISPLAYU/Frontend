@@ -2,7 +2,7 @@ import { isValidElement, type ReactElement, type ReactNode } from 'react';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DisplayDetailView } from '@/components/display-detail';
+import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
 
 import { DisplayContentsPage } from './DisplayContentsPage';
 import { DisplayDetailPage } from './DisplayDetailPage';
@@ -16,6 +16,7 @@ const h = vi.hoisted(() => ({
     error: null as Error | null,
     refetch: vi.fn(),
   },
+  works: { data: undefined as unknown, isPending: false },
 }));
 
 // 페이지를 함수로 바로 불러 보므로 상태 · 효과 훅은 처음 값만 돌려준다
@@ -38,6 +39,7 @@ vi.mock('@/components/display-detail', () => ({
   DisplayDetailView: () => null,
 }));
 vi.mock('@/hooks/queries/useDisplayDetail', () => ({ useDisplayDetail: () => h.display }));
+vi.mock('@/hooks/queries/useDisplayArtworks', () => ({ useDisplayArtworks: () => h.works }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
 vi.mock('@/hooks/useReplaceSearchParams', () => ({
   useReplaceSearchParams: () => [new URLSearchParams(h.search), vi.fn()],
@@ -60,6 +62,23 @@ const display = (status: string) => ({
 beforeEach(() => {
   h.search = '';
   h.display.data = undefined;
+  h.display.isPending = false;
+  h.works.isPending = false;
+});
+
+describe('전시 상세는 작품 목록까지 받은 뒤 그린다', () => {
+  it('상세를 받았어도 작품 목록을 기다리는 동안은 스켈레톤을 둔다(작품 탭이 나중에 빠지며 튀지 않게)', () => {
+    h.display.data = display('PUBLISHED');
+    h.works.isPending = true;
+    expect(asElement(DisplayDetailPage()).type).toBe(DisplayDetailSkeleton);
+    h.works.isPending = false;
+    expect(asElement(DisplayDetailPage()).type).toBe(DisplayDetailView);
+  });
+
+  it('상세가 없으면(실패) 작품 목록을 기다리지 않는다', () => {
+    h.works.isPending = true;
+    expect(asElement(DisplayDetailPage()).type).not.toBe(DisplayDetailSkeleton);
+  });
 });
 
 describe('공개 상세 주소의 미리보기는 미리보기 화면 하나로 보낸다', () => {

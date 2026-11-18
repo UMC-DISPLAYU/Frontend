@@ -5,7 +5,7 @@ import contentStack from '@/assets/display-detail/content-stack.svg';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
 
-import { getContentOpenNotice } from './displayDetail.utils';
+import { getDisplayIntroText } from './displayDetail.utils';
 
 type Props = {
   display: DisplayDetailDto;
@@ -13,8 +13,6 @@ type Props = {
   divided?: boolean;
   /* 콘텐츠 카드가 갈 주소. 없으면 공개 전시 콘텐츠 */
   contentPath?: (categoryId: number) => string;
-  /* 등록 중 전시(팀원 미리보기)는 공개 시점 안내를 띄우지 않는다 */
-  isPreview?: boolean;
 };
 
 /* 섹션 사이 연한 구분선. 900px 이상은 본문 폭 끝까지 */
@@ -75,14 +73,9 @@ function ContentCards({ display, contentPath, divided }: Props) {
   );
 }
 
-export function IntroPanel({ display, contentPath, isPreview = false }: Props) {
+export function IntroPanel({ display, contentPath }: Props) {
   const hasContents = display.contentCategories.length > 0;
-  const openNotice =
-    !hasContents && !isPreview
-      ? getContentOpenNotice(display.exhibitionContentOpen, display.period)
-      : null;
-
-  const intro = display.content?.trim();
+  const intro = getDisplayIntroText(display);
   const hasIntro = Boolean(intro);
 
   return (
@@ -90,16 +83,6 @@ export function IntroPanel({ display, contentPath, isPreview = false }: Props) {
       {intro && <IntroText content={intro} />}
       {hasContents && (
         <ContentCards display={display} contentPath={contentPath} divided={hasIntro} />
-      )}
-      {openNotice && (
-        <section
-          aria-label="전시콘텐츠"
-          className={cn('px-gutter desktop:px-0', hasIntro && [DIVIDER, 'mt-7'])}
-        >
-          <p className="typography-body-lg-regular pt-14 pb-6 text-center text-tertiary">
-            {openNotice}
-          </p>
-        </section>
       )}
     </div>
   );

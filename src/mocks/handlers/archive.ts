@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { http } from 'msw';
 
-import { mockDb, okStatus } from '@/mocks/data/repository';
+import { mockDb, okStatus, toArtistList } from '@/mocks/data/repository';
 import { noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 
 const getFirstImageUrl = (item: any) =>
@@ -43,6 +43,7 @@ const archivedArtworks = () => ({
       userId: 1,
       title: artwork.title,
       artist: artwork.artist ?? artwork.artistName,
+      artists: toArtistList(artwork),
       thumbnailUrl: getFirstImageUrl(artwork),
       memo: artwork.memo ?? null,
       savedAt: '2026-08-02T00:00:00.000Z',

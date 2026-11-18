@@ -9,6 +9,7 @@ import {
 import { useArtistExhibitionArtworks, useUserArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useArtistDisplays } from '@/hooks/queries/useMyDisplays';
 import { useUserArtistProfile, useUserMe } from '@/hooks/queries/useUserProfile';
+import { getArtworkArtistNames } from '@/utils/artist';
 import { isInstagramUrl, toInstagramLink, toWebsiteLink } from '@/utils/externalLink';
 import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
 
@@ -103,14 +104,17 @@ export function useArtistProfile(userId: number) {
         key: `personal-${artwork.personalArtworkId}`,
         to: `/personal-artworks/${artwork.personalArtworkId}`,
         title: artwork.artworkName,
-        artistName,
+        artistNames: artistName ? [artistName] : [],
         imageUrl: artwork.thumbnailUrl || null,
       })),
       ...(exhibitionArtworksQuery.data?.artworks ?? []).map((artwork) => ({
         key: `exhibit-${artwork.artworkId}`,
         to: `/artwork/${artwork.artworkId}`,
         title: artwork.artworkName,
-        artistName: artwork.artistName || artistName,
+        artistNames: getArtworkArtistNames({
+          ...artwork,
+          artistName: artwork.artistName || artistName,
+        }),
         imageUrl: artwork.artworkImageUrl || null,
       })),
     ];

@@ -40,7 +40,7 @@ const nodes = (node: ReactNode): Element[] =>
       : [],
   );
 
-const render = (props: { isPreview?: boolean }) =>
+const render = (props: { isPreview?: boolean; hasIntro?: boolean }) =>
   nodes(
     ArtworkDetailShell({
       images: ['a.jpg'],
@@ -68,4 +68,17 @@ describe('작품 상세 뒤로가기', () => {
       expect(tree.find((node) => node.type === DetailTabNav)?.props.isStuck).toBe(false);
     },
   );
+});
+
+describe('작품 상세 탭', () => {
+  it('소개가 비면 소개 탭 · 패널을 빼고, 쓰는 탭인 방명록만 남긴다', () => {
+    const tree = render({ hasIntro: false });
+    expect(tree.find((node) => node.type === DetailTabNav)?.props.tabs).toEqual(['guest']);
+    expect(tree.find((node) => node.props.id === 'artwork-panel-intro')).toBeUndefined();
+  });
+
+  it('소개가 있으면 소개 · 방명록 순서로 둔다', () => {
+    const tree = render({ hasIntro: true });
+    expect(tree.find((node) => node.type === DetailTabNav)?.props.tabs).toEqual(['intro', 'guest']);
+  });
 });

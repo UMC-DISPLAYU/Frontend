@@ -30,6 +30,7 @@ const h = vi.hoisted(() => ({
     error: null as Error | null,
     refetch: vi.fn(),
   },
+  works: { data: undefined as unknown, isPending: false },
   artwork: {
     data: undefined as unknown,
     isPending: false,
@@ -71,6 +72,7 @@ vi.mock('@/components/artworkdetailpage/ArtworkSaveButton', () => ({
   ArtworkSaveButton: () => null,
 }));
 vi.mock('@/hooks/queries/useDisplayDetail', () => ({ useDisplayDetail: () => h.display }));
+vi.mock('@/hooks/queries/useDisplayArtworks', () => ({ useDisplayArtworks: () => h.works }));
 vi.mock('@/hooks/queries/useArtworkDetail', () => ({ useArtworkDetail: () => h.artwork }));
 vi.mock('@/hooks/queries/useUserProfile', () => ({ useUserMe: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.flowBack }));
@@ -114,6 +116,7 @@ beforeEach(() => {
   h.display.isPending = false;
   h.display.isLoading = false;
   h.display.error = null;
+  h.works.isPending = false;
   h.artwork.data = artworkOf(7);
   h.artwork.isPending = false;
   h.artwork.error = null;
@@ -156,6 +159,12 @@ describe('전시 미리보기', () => {
   it('불러오는 중에는 상세 스켈레톤을 보인다', () => {
     h.display.isPending = true;
     h.display.data = undefined;
+    expect(asElement(DisplayPreviewPage()).type).toBe(DisplayDetailSkeleton);
+  });
+
+  it('작품 목록을 받기 전에도 상세 스켈레톤을 둔다(작품 탭이 나중에 빠지며 튀지 않게)', () => {
+    h.display.data = { ...publicDisplay, status: 'DRAFT' };
+    h.works.isPending = true;
     expect(asElement(DisplayPreviewPage()).type).toBe(DisplayDetailSkeleton);
   });
 
