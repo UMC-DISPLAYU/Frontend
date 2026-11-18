@@ -13,6 +13,10 @@ export function getProcessImages<T extends Pick<ImageResponseDto, 'imageType' | 
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
+/* theme.css 의 --breakpoint-desktop(56.25rem = 900px)과 같다 */
+export const DESKTOP_MEDIA_QUERY = '(width >= 56.25rem)';
+export const isDesktopViewport = () => window.matchMedia(DESKTOP_MEDIA_QUERY).matches;
+
 /* 이어서 보기에서 지금 보는 장을 읽는 화면 높이 비율(프로토타입 40%) */
 export const STACK_READING_LINE = 0.4;
 
