@@ -1,6 +1,7 @@
-/* 카카오 로컬 주소 검색 응답(필요한 필드만). https://developers.kakao.com/docs/latest/ko/local/dev-guide */
+/* 카카오 로컬 주소 · 키워드 검색 응답(필요한 필드만). https://developers.kakao.com/docs/latest/ko/local/dev-guide */
 export interface KakaoAddressDocumentDto {
   address_name: string;
+  address_type: 'REGION' | 'ROAD' | 'REGION_ADDR' | 'ROAD_ADDR';
   x: string;
   y: string;
   address: {
@@ -16,6 +17,19 @@ export interface KakaoAddressDocumentDto {
 
 export interface KakaoAddressSearchResponseDto {
   documents: KakaoAddressDocumentDto[];
+  meta: { total_count: number; is_end: boolean };
+}
+
+export interface KakaoKeywordDocumentDto {
+  place_name: string;
+  address_name: string;
+  road_address_name: string;
+  x: string;
+  y: string;
+}
+
+export interface KakaoKeywordSearchResponseDto {
+  documents: KakaoKeywordDocumentDto[];
   meta: { total_count: number; is_end: boolean };
 }
 
