@@ -26,6 +26,7 @@ import {
   MAX_ARTWORK_MATERIAL_LENGTH,
   MAX_ARTWORK_SIZE_LENGTH,
   MAX_ARTWORK_TITLE_LENGTH,
+  MAX_ARTWORK_VIDEO_DURATION_LABEL,
   MAX_ARTWORK_VIDEO_MB,
   MAX_PROCESS_IMAGES,
 } from './artworkRegister.constants';
@@ -221,7 +222,7 @@ export function ArtworkRegisterForm({
               className="mt-4"
               label="작품 이미지"
               required
-              help={`첫 번째 사진이 대표 이미지예요\nJPG, PNG, WEBP, HEIC · 장당 최대 ${MAX_ARTWORK_IMAGE_MB}MB${allowVideo ? `\n영상은 1개까지 · MP4, MOV, WEBM · 3분 이내 · ${MAX_ARTWORK_VIDEO_MB}MB 이하` : ''}`}
+              help={`첫 번째 사진이 대표 이미지예요\nJPG, PNG, WEBP, HEIC · 장당 최대 ${MAX_ARTWORK_IMAGE_MB}MB${allowVideo ? `\n영상은 1개까지 · MP4, MOV, WEBM · ${MAX_ARTWORK_VIDEO_DURATION_LABEL} 이내 · ${MAX_ARTWORK_VIDEO_MB}MB 이하` : ''}`}
               addLabel={allowVideo ? '사진·영상 추가' : '사진 추가'}
               uploads={artworkImages}
               representative

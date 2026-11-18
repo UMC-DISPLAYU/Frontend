@@ -61,20 +61,23 @@ describe('pickArtworkFiles', () => {
     expect(result.overLimit).toBe(true);
   });
 
-  it('영상을 받는 칸은 영상 1개까지 넣는다', () => {
+  it('영상을 받는 칸은 영상 1개까지 넣고, 넘친 영상은 토스트가 아닌 칸 아래 안내로 알린다', () => {
     const result = pickArtworkFiles([mp4('v1'), mp4('v2')], 0, 10, { allowVideo: true });
 
     expect(result.accepted.map((file) => file.name)).toEqual(['v1']);
-    expect(result.message).toBe('영상은 1개만 올릴 수 있어요');
+    expect(result.videoLimitMessage).toBe('영상은 1개만 올릴 수 있어요');
+    expect(result.message).toBeUndefined();
   });
 
   it('영상은 500MB(10진 바이트) 이하만 넣는다', () => {
-    expect(
-      pickArtworkFiles([mp4('v', 500_000_000)], 0, 10, { allowVideo: true }).accepted,
-    ).toHaveLength(1);
+    expect(pickArtworkFiles([mp4('v', 500_000_000)], 0, 10, { allowVideo: true })).toMatchObject({
+      accepted: [{ name: 'v' }],
+      videoLimitMessage: undefined,
+    });
     expect(pickArtworkFiles([mp4('v', 500_000_001)], 0, 10, { allowVideo: true })).toMatchObject({
       accepted: [],
-      message: '영상은 500MB 이하로 올려주세요',
+      message: undefined,
+      videoLimitMessage: '영상은 500MB 이하로 올려주세요',
     });
   });
 
@@ -85,7 +88,7 @@ describe('pickArtworkFiles', () => {
     });
 
     expect(result.accepted.map((file) => file.name)).toEqual(['a']);
-    expect(result.message).toBe('영상은 1개만 올릴 수 있어요');
+    expect(result.videoLimitMessage).toBe('영상은 1개만 올릴 수 있어요');
   });
 
   it('영상을 받지 않는 칸은 안내가 있으면 안내로, 없으면 올릴 수 없는 파일로 센다', () => {
@@ -97,6 +100,7 @@ describe('pickArtworkFiles', () => {
       accepted: [],
       rejectedCount: 0,
       message: '작업 과정에는 사진만 올릴 수 있어요',
+      videoLimitMessage: undefined,
     });
     expect(pickArtworkFiles([mp4('v')], 0, 10)).toMatchObject({ accepted: [], rejectedCount: 1 });
   });

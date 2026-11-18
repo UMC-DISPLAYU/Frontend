@@ -38,15 +38,22 @@ const ADD_TILE_CLASS = cn(
   FOCUS_CLASS,
 );
 
-function PosterHelp() {
+function PosterHelp({ videoLimitMessage }: { videoLimitMessage: string | null }) {
   return (
-    <p className="typography-body-md-medium mt-1 text-secondary">
-      JPG, PNG, WEBP, HEIC · 장당 최대 {MAX_POSTER_FILE_MB}MB
-      <br />큰 그래픽은 JPG 고화질로 내보내 주세요
-      <br />
-      영상은 1개까지 · MP4, MOV, WEBM · {MAX_POSTER_VIDEO_SECONDS}초 이내 · {MAX_POSTER_VIDEO_MB}MB
-      이하
-    </p>
+    <>
+      <p className="typography-body-md-medium mt-1 text-secondary">
+        JPG, PNG, WEBP, HEIC · 장당 최대 {MAX_POSTER_FILE_MB}MB
+        <br />큰 그래픽은 JPG 고화질로 내보내 주세요
+        <br />
+        영상은 1개까지 · MP4, MOV, WEBM · {MAX_POSTER_VIDEO_SECONDS}초 이내 · {MAX_POSTER_VIDEO_MB}
+        MB 이하
+      </p>
+      {videoLimitMessage && (
+        <p role="alert" className="typography-body-md-medium mt-1 text-error">
+          {videoLimitMessage}
+        </p>
+      )}
+    </>
   );
 }
 
@@ -191,7 +198,7 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
     key: number;
   } | null>(null);
   const [isThumbnailOpen, setIsThumbnailOpen] = useState(false);
-  const { items, errorKind } = posters;
+  const { items, errorKind, videoLimitMessage } = posters;
   const ids = items.map((item) => item.id);
   const { dragMode, contextProps } = useHorizontalReorder({ onMove: posters.move });
 
@@ -234,7 +241,7 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
               전시 포스터
               <RequiredMark />
             </span>
-            <PosterHelp />
+            <PosterHelp videoLimitMessage={videoLimitMessage} />
           </div>
         </div>
         {errorBox}
@@ -254,7 +261,7 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
           {items.length} / {MAX_POSTER_UPLOAD_IMAGES}
         </span>
       </div>
-      <PosterHelp />
+      <PosterHelp videoLimitMessage={videoLimitMessage} />
       {errorBox}
       <DndContext {...contextProps}>
         <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
