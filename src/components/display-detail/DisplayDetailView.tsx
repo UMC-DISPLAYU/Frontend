@@ -53,7 +53,7 @@ type Props = {
   /*
    * 전시 작업에서 연 미리보기(/exhibition/:displayId/preview). 공개 전 모습(안내 띠, 저장 · 좋아요 · 후기 막기)은
    * 이 미리보기에서만 보이고, 작품 · 콘텐츠를 누르면 미리보기 안에서 연다.
-   * 등록 중 전시를 공개 주소(/display/:id)로 열면 DisplayDetailPage 가 이 미리보기 주소로 보낸다
+   * 공개 여부와 상관없이 이 주소에서만 미리보기로 보이고, 공개 전 전시의 공개 주소(/display/:id)는 404 다
    */
   previewMode?: boolean;
 };

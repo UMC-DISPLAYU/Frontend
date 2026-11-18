@@ -1,14 +1,16 @@
 import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
 
-import { Navigate } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/api/apiError';
 import { ArtworkDetailShell } from '@/components/artworkdetailpage/ArtworkDetailShell';
 import { ArtworkPreviewGuestbook } from '@/components/artworkdetailpage/ArtworkGuestbookTab';
 import { ArtworkMeta } from '@/components/artworkdetailpage/ArtworkMeta';
 import { ErrorView } from '@/components/common';
 import { DisplayDetailSkeleton, DisplayDetailView } from '@/components/display-detail';
 import { NotFoundView } from '@/components/error-page';
+import { policies } from '@/policies/policies';
+import type { User } from '@/types/policy';
 
 import { ArtworkDetailPage } from '../ArtworkDetailPage';
 import { DisplayContentsPage } from '../display-detail/DisplayContentsPage';
@@ -104,6 +106,8 @@ const artworkOf = (displayId: number) => ({
   exhibitionInfo: { displayId },
 });
 
+const ALL_STATUSES = ['DRAFT', 'PENDING_REVIEW', 'REJECTED', 'PUBLISHED'];
+
 const setHistoryIndex = (idx: number | undefined) =>
   vi.stubGlobal('window', { history: { state: idx === undefined ? null : { idx } } });
 
@@ -136,24 +140,50 @@ describe('미리보기 뒤로가기', () => {
   });
 });
 
-describe('전시 미리보기', () => {
-  it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED'])(
-    '공개 전 전시(%s)는 미리보기 모드로 보여준다',
-    (status) => {
-      const display = { ...publicDisplay, status };
-      h.display.data = display;
-      const page = asElement(DisplayPreviewPage());
-      expect(page.type).toBe(DisplayDetailView);
-      expect(page.props.previewMode).toBe(true);
-      expect(page.props.display).toBe(display);
-    },
-  );
+describe('미리보기 권한(라우트의 DisplayPermissionGuard view)', () => {
+  // 비로그인은 AuthGuard 가 먼저 막고, 정책도 막는다. 정책은 전시 상태를 보지 않으므로 공개 여부와 상관없다
+  const display = {
+    ownerUserId: 1,
+    teamMembers: [
+      { userId: 2, accepted: true, role: 'MANAGER' },
+      { userId: 3, accepted: true, role: 'TEAM_MEM' },
+      { userId: 4, accepted: false, role: 'TEAM_MEM' },
+    ],
+  };
+  const user = (id: number | null): User => ({ id, isArtistVerified: true });
 
-  it('공개된 전시는 미리보기를 떼고 탭을 유지한 채 일반 상세로 바꿔 간다', () => {
+  it.each([
+    ['비로그인', null],
+    ['일반 유저', 9],
+    ['초대를 수락하지 않은 유저', 4],
+  ])('%s 는 미리보기를 열 수 없다', (_, id) => {
+    expect(policies.display.view(user(id), display)).toBe(false);
+  });
+
+  it.each([
+    ['대표자', 1],
+    ['관리자', 2],
+    ['팀원', 3],
+  ])('%s 는 미리보기를 연다', (_, id) => {
+    expect(policies.display.view(user(id), display)).toBe(true);
+  });
+});
+
+describe('전시 미리보기', () => {
+  it.each(ALL_STATUSES)('%s 전시도 상세로 보내지 않고 미리보기 모드로 보여준다', (status) => {
+    const display = { ...publicDisplay, status };
+    h.display.data = display;
     h.search = 'tab=works';
     const page = asElement(DisplayPreviewPage());
-    expect(page.type).not.toBe(DisplayDetailView);
-    expect(page.props).toMatchObject({ to: '/display/7?tab=works', replace: true });
+    expect(page.type).toBe(DisplayDetailView);
+    expect(page.props.previewMode).toBe(true);
+    expect(page.props.display).toBe(display);
+  });
+
+  it.each([403, 404])('서버가 %i 를 주면 404 화면을 보인다', (status) => {
+    h.display.data = undefined;
+    h.display.error = new ApiError('error', { status });
+    expect(asElement(DisplayPreviewPage()).type).toBe(NotFoundView);
   });
 
   it('불러오는 중에는 상세 스켈레톤을 보인다', () => {
@@ -191,8 +221,9 @@ describe('작품 미리보기', () => {
     expect(page.props).toEqual({ previewDisplayId: 7 });
   });
 
-  it('공개 전 전시의 작품은 미리보기 주소에서 공개 전 모습으로 보인다', () => {
-    h.display.data = { ...publicDisplay, status: 'PENDING_REVIEW' };
+  it.each(ALL_STATUSES)('%s 전시의 작품도 미리보기 주소에서 미리보기 모습으로 보인다', (status) => {
+    h.display.data = { ...publicDisplay, status };
+    h.search = 'tab=guest';
     const page = asElement(ArtworkDetailPage({ previewDisplayId: 7 }));
     expect(page.type).toBe(ArtworkDetailShell);
     expect(page.props.isPreview).toBe(true);
@@ -203,6 +234,12 @@ describe('작품 미리보기', () => {
     const bottomBar = nodes(page.props.bottomBar as ReactNode)[0];
     expect(bottomBar.props.disabled).toBe(true);
     expect(asElement(bottomBar.props.saveButton as ReactNode).props.disabled).toBe(true);
+  });
+
+  it.each([403, 404])('작품 조회가 %i 면 미리보기에서도 404 화면을 보인다', (status) => {
+    h.artwork.data = undefined;
+    h.artwork.error = new ApiError('error', { status });
+    expect(asElement(ArtworkDetailPage({ previewDisplayId: 7 })).type).toBe(NotFoundView);
   });
 
   it('다른 전시의 작품이면 보여주지 않는다', () => {
@@ -216,24 +253,24 @@ describe('작품 미리보기', () => {
   });
 
   it.each(['DRAFT', 'PENDING_REVIEW', 'REJECTED'])(
-    '공개되지 않은 전시(%s)의 작품을 공개 주소로 열면 미리보기 주소로 보낸다',
+    '공개되지 않은 전시(%s)의 작품을 공개 주소로 열면 미리보기로 보내지 않고 404 화면을 보인다',
     (status) => {
       h.display.data = { ...publicDisplay, status };
       h.search = 'tab=guest';
-      const page = asElement(ArtworkDetailPage());
-      expect(page.type).toBe(Navigate);
-      expect(page.props).toEqual({
-        to: '/exhibition/7/artworks/3/preview?tab=guest',
-        replace: true,
-      });
+      expect(asElement(ArtworkDetailPage()).type).toBe(NotFoundView);
     },
   );
 
-  it('공개 중인 전시의 작품을 미리보기 주소로 열면 공개 작품 상세 주소로 보낸다', () => {
-    h.search = 'tab=guest';
-    const page = asElement(ArtworkDetailPage({ previewDisplayId: 7 }));
-    expect(page.type).toBe(Navigate);
-    expect(page.props).toEqual({ to: '/artwork/3?tab=guest', replace: true });
+  it.each([403, 404])('작품이 속한 전시 조회가 %i 면 공개 주소에서 404 화면을 보인다', (status) => {
+    h.display.data = undefined;
+    h.display.error = new ApiError('error', { status });
+    expect(asElement(ArtworkDetailPage()).type).toBe(NotFoundView);
+  });
+
+  it.each([403, 404])('작품 조회가 %i 면 공개 주소에서 404 화면을 보인다', (status) => {
+    h.artwork.data = undefined;
+    h.artwork.error = new ApiError('error', { status });
+    expect(asElement(ArtworkDetailPage()).type).toBe(NotFoundView);
   });
 
   it('공개된 전시는 개막 전이어도 공개 작품 상세다', () => {

@@ -1,4 +1,4 @@
-import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkBottomBar } from '@/components/artworkdetailpage/ArtworkActions';
@@ -42,14 +42,15 @@ type ArtworkDetailPageProps = {
 export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps = {}) {
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
-  const { search } = useLocation();
 
   const { data: userMe } = useUserMe();
   const { data: detail, isPending, error, refetch } = useArtworkDetail(artworkId);
   /* 작가 전용 권한 판단(팀원 여부 등)과 전시 상태 표시에 필요해 전시 상세도 함께 조회합니다. */
-  const { data: display, isLoading: isDisplayLoading } = useDisplayDetail(
-    detail?.exhibitionInfo?.displayId ?? 0,
-  );
+  const {
+    data: display,
+    isLoading: isDisplayLoading,
+    error: displayError,
+  } = useDisplayDetail(detail?.exhibitionInfo?.displayId ?? 0);
 
   // 공개 전 여부를 알기 전에 버튼이 눌리거나 방명록을 부르지 않도록 전시 상세까지 기다린다
   const { showSkeleton } = useSkeleton(
@@ -61,8 +62,15 @@ export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps =
   // 미리보기 주소의 전시와 작품이 속한 전시가 다르면 권한을 확인한 전시의 작품이 아니므로 보여주지 않는다
   const isOtherDisplay =
     previewDisplayId !== undefined && detail?.exhibitionInfo?.displayId !== previewDisplayId;
+  // 공개 전 전시(준비 중 · 심사 중 · 반려)의 작품을 공개 주소로 열면 팀원이어도 404 다(미리보기 주소로만 본다).
+  // 작품이 속한 전시를 볼 수 없으면(서버 404 · 403) 작품도 404 다
+  const isHiddenOnPublic =
+    previewDisplayId === undefined &&
+    ((display !== undefined && isPreviewDisplay(display)) || isNotFoundError(displayError));
 
-  if (isNotFoundError(error) || (!error && (!detail || isOtherDisplay))) return <NotFoundView />;
+  if (isNotFoundError(error) || (!error && (!detail || isOtherDisplay)) || isHiddenOnPublic) {
+    return <NotFoundView />;
+  }
 
   if (error || !detail) {
     return (
@@ -71,22 +79,6 @@ export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps =
         onRetry={() => void refetch()}
       />
     );
-  }
-
-  /*
-   * 전시 상세와 같은 판단(isPreviewDisplay) · 같은 방식(사용자 결정): 공개 전 전시(준비 중 · 심사 중 · 반려)의 작품은 늘 미리보기 주소로,
-   * 공개 중(PUBLISHED)이면 개막 전이어도 늘 공개 상세 주소로 보낸다. 미리보기 라우트 가드가 팀원만 열어 준다
-   */
-  if (display && previewDisplayId === undefined && isPreviewDisplay(display)) {
-    return (
-      <Navigate
-        to={`/exhibition/${display.displayId}/artworks/${artworkId}/preview${search}`}
-        replace
-      />
-    );
-  }
-  if (display && previewDisplayId !== undefined && !isPreviewDisplay(display)) {
-    return <Navigate to={`/artwork/${artworkId}${search}`} replace />;
   }
 
   const policyDisplay = (display ?? { ownerUserId: 0, teamMembers: [] }) as DisplayDetailDto;
