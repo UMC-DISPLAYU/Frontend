@@ -433,6 +433,22 @@ mockDb.upcomingDisplay = makeUpcomingDisplay(
     mockDb.displays[0],
 );
 
+/* 서버에 요청한 보이는 방식 · 주조색 필드. 포스터 범위를 내려주는 응답은 모두 함께 내려준다(값이 없으면 null) */
+export const posterFitFields = (display: {
+  posterCrop?: unknown;
+  posterFit?: unknown;
+  posterEdgeColor?: unknown;
+}) => ({
+  posterCrop: display.posterCrop ?? null,
+  posterFit: display.posterFit ?? null,
+  posterEdgeColor: display.posterEdgeColor ?? null,
+});
+
+export const artworkFitFields = (artwork: { artworkCrop?: unknown; artworkFit?: unknown }) => ({
+  artworkCrop: artwork.artworkCrop ?? null,
+  artworkFit: artwork.artworkFit ?? null,
+});
+
 /* 목록에 없는 확인용 전시까지 찾는다. 없는 번호면 undefined */
 export const findMockDisplay = (displayId: number) =>
   mockDb.displays.find((display: { displayId: number }) => display.displayId === displayId) ??
