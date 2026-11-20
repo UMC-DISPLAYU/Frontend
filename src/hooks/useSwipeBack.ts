@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { useLocation } from 'react-router-dom';
 
 import { useFlowBack } from '@/hooks/useFlowBack';
+import { hideUnderlay, showUnderlay, skipReturnAnimations } from '@/utils/swipeBackUnderlay';
 
 // iOS Safari · Android는 화면 왼쪽 끝 스와이프를 기본 뒤로가기로 쓴다. 겹치면 두 번 뒤로 가므로 비워 둔다
 const NATIVE_EDGE_WIDTH = 24;
@@ -32,9 +33,13 @@ function resetPage() {
   if (page) {
     page.style.position = '';
     page.style.left = '';
+    page.style.zIndex = '';
+    page.style.backgroundColor = '';
     page.style.transition = '';
   }
   document.documentElement.style.overflowX = '';
+  document.body.style.overflowX = '';
+  hideUnderlay();
 }
 
 function isInHorizontalScroller(target: EventTarget | null) {
@@ -55,8 +60,17 @@ export function useSwipeBack() {
   const goBack = useFlowBack();
   const { key } = useLocation();
 
+  const swipedBackRef = useRef(false);
+
   // 이전 화면이 그려진 뒤에 본문을 제자리로 돌린다. 이동 직후 되돌리면 떠나는 화면이 잠깐 다시 보인다
-  useLayoutEffect(() => resetPage, [key]);
+  useLayoutEffect(
+    () => () => {
+      if (swipedBackRef.current) skipReturnAnimations();
+      swipedBackRef.current = false;
+      resetPage();
+    },
+    [key],
+  );
 
   useEffect(() => {
     const page = document.getElementById('root');
@@ -74,8 +88,14 @@ export function useSwipeBack() {
     const move = (offset: number, animate: boolean) => {
       page.style.position = 'relative';
       page.style.left = `${offset}px`;
+      // 뒤에 깐 이전 화면(z 0)보다 위에 두고, 배경이 비치지 않게 칠한다
+      page.style.zIndex = '1';
+      page.style.backgroundColor = 'var(--semantic-color-bg-primary-white)';
       page.style.transition = animate ? `left ${SETTLE_MS}ms var(--ease-standard)` : '';
+      // html 의 clip 은 뷰포트로 넘어가 모바일에서 레이아웃 뷰포트가 밀린 만큼 넓어진다(fixed 요소 폭도 같이 커짐).
+      // body 에도 걸어 밀려난 본문을 body 안에서 잘라 낸다
       document.documentElement.style.overflowX = 'clip';
+      document.body.style.overflowX = 'clip';
     };
 
     const onStart = (event: TouchEvent) => {
@@ -108,6 +128,9 @@ export function useSwipeBack() {
           return;
         }
         dragging = true;
+        // 상세 화면은 flow 밖이라 useFlowBack 이 항상 한 칸 뒤(idx - 1)로 간다
+        const idx: unknown = window.history.state?.idx;
+        if (typeof idx === 'number') showUnderlay(idx - 1);
       }
 
       // 끄는 동안 세로 스크롤이 같이 움직이지 않게 막는다
@@ -127,8 +150,12 @@ export function useSwipeBack() {
           resetPage();
           return;
         }
+        swipedBackRef.current = true;
         goBack();
-        timer = window.setTimeout(resetPage, NAVIGATION_FALLBACK_MS);
+        timer = window.setTimeout(() => {
+          swipedBackRef.current = false;
+          resetPage();
+        }, NAVIGATION_FALLBACK_MS);
       }, SETTLE_MS);
     };
 

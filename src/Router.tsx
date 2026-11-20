@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 
 import { handleStaleChunkError } from '@/utils/staleChunkReload';
+import { savePageSnapshot } from '@/utils/swipeBackUnderlay';
 
 import { RootRedirect } from './components/auth/RootRedirect';
 import { LoadingView } from './components/common';
@@ -548,3 +549,14 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+// 쓸어 뒤로 갈 때(useSwipeBack) 뒤에 보일 이전 화면을 저장한다.
+// subscriber 는 history 기록 직후 · 다음 화면을 그리기 전에 불리므로 이때 #root 는 아직 떠나는 화면이다
+let lastLocationKey = router.state.location.key;
+router.subscribe(({ historyAction, location }) => {
+  if (location.key === lastLocationKey) return;
+  lastLocationKey = location.key;
+
+  const idx: unknown = window.history.state?.idx;
+  if (historyAction === 'PUSH' && typeof idx === 'number') savePageSnapshot(idx - 1);
+});
