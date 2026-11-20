@@ -3,6 +3,7 @@ import { http } from 'msw';
 
 import { mockDb, okStatus, toArtistList } from '@/mocks/data/repository';
 import { noContent, paths, readJson, success, toNumber } from '@/mocks/response';
+import { hasMockScenario } from '@/mocks/scenario';
 
 const getFirstImageUrl = (item: any) =>
   item.thumbnailUrl ??
@@ -110,9 +111,14 @@ const updateArtworkMemo = (archiveWorkId: number, memo: string | null) => {
   }
 };
 
+const emptyIfScenario = <T extends object>(list: T, key: keyof T): T =>
+  hasMockScenario('archive-empty') ? { ...list, [key]: [], size: 0 } : list;
+
 export const archiveHandlers = [
   ...paths('/api/v1/archives/artists').map((path) =>
-    http.get(path, () => success('/api/v1/archives/artists', archivedArtists())),
+    http.get(path, () =>
+      success('/api/v1/archives/artists', emptyIfScenario(archivedArtists(), 'artists')),
+    ),
   ),
   /* 저장 여부를 화면에서 확인할 수 있도록 mockDb에 실제로 반영합니다. */
   ...paths('/api/v1/archives/artists/{artistId}').map((path) =>
@@ -143,7 +149,9 @@ export const archiveHandlers = [
     ),
   ),
   ...paths('/api/v1/archives/artworks').map((path) =>
-    http.get(path, () => success('/api/v1/archives/artworks', archivedArtworks())),
+    http.get(path, () =>
+      success('/api/v1/archives/artworks', emptyIfScenario(archivedArtworks(), 'works')),
+    ),
   ),
   ...paths('/api/v1/archives/artworks/{artworkId}').map((path) =>
     http.post(path, ({ params }) =>
@@ -210,7 +218,9 @@ export const archiveHandlers = [
     }),
   ),
   ...paths('/api/v1/archives/exhibitions').map((path) =>
-    http.get(path, () => success('/api/v1/archives/exhibitions', archivedExhibitions())),
+    http.get(path, () =>
+      success('/api/v1/archives/exhibitions', emptyIfScenario(archivedExhibitions(), 'displays')),
+    ),
   ),
   ...paths('/api/v1/archives/exhibitions/{exhibitionId}').map((path) =>
     http.post(path, ({ params }) => {

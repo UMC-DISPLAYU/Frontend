@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import { useSkeleton } from '@/hooks/useSkeleton';
+import { cn } from '@/utils/cn';
 
 import { ChevronRightIcon } from './MyPageIcons';
+import { MY_PAGE_BLEED_X_CLASS } from './myPageLayout';
 
 const RAIL_SIZE_CLASS = 'aspect-3/4 w-full';
 const RAIL_FRAME_CLASS = `${RAIL_SIZE_CLASS} bg-tertiary`;
@@ -42,7 +44,7 @@ export function ArchiveEmpty({
       <div className="flex items-center justify-between gap-3 pt-6 pb-3">
         <h3 className="typography-body-xl-semibold text-primary">{title}</h3>
         <Link
-          className="typography-body-lg-medium -mr-0.5 inline-flex h-11 shrink-0 items-center text-tertiary transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-focus active:scale-97"
+          className="typography-body-lg-medium inline-flex h-11 shrink-0 items-center text-tertiary transition-transform duration-fast ease-standard focus-visible:outline-2 focus-visible:outline-focus active:scale-97"
           to={linkTo}
         >
           {linkLabel}
@@ -54,7 +56,10 @@ export function ArchiveEmpty({
           {/* 화면 끝까지 넘겨 볼 수 있게 좌우 여백만큼 밖으로 뺀다 */}
           <ul
             {...skeletonProps}
-            className="-mx-gutter flex snap-x snap-proximity scroll-px-gutter gap-2 overflow-x-auto px-gutter pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className={cn(
+              MY_PAGE_BLEED_X_CLASS,
+              'flex snap-x snap-proximity gap-2 overflow-x-auto pb-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+            )}
           >
             {showSkeleton ? (
               <SkeletonList count={4}>

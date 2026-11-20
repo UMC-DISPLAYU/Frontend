@@ -9,7 +9,7 @@ import { BookmarkIcon } from './MyPageIcons';
 
 // 포스터 정식 규격 402:568(탐색 · 홈과 같은 카드)
 const POSTER_FRAME_CLASS = 'aspect-402/568 w-full bg-secondary';
-const ARTWORK_FRAME_CLASS = 'aspect-175/234 w-full bg-secondary';
+const ARTWORK_FRAME_CLASS = 'aspect-161/215 w-full bg-secondary';
 const ARTIST_THUMB_FRAME_CLASS = 'h-13 w-10 bg-tertiary';
 
 const CARD_CLASS =
@@ -38,18 +38,18 @@ export function ArchiveExhibitionCard({ exhibition }: { exhibition: ArchiveExhib
         src={exhibition.posterImageUrl}
       />
       {!exhibition.posterImageUrl && <span className={cn('block', POSTER_FRAME_CLASS)} />}
-      <span className="block pt-2">
-        <span className="typography-body-lg-semibold block truncate">{exhibition.title}</span>
+      <span className="grid gap-0.5 pt-2">
+        <span className="typography-body-lg-semibold truncate">{exhibition.title}</span>
         {exhibition.organization && (
-          <span className="typography-body-md-medium block truncate text-secondary">
+          <span className="typography-body-md-medium truncate text-secondary">
             {exhibition.organization}
           </span>
         )}
-        <span className="typography-body-md-regular2 mt-1 block truncate text-tertiary">
+        <span className="typography-body-md-regular2 truncate text-tertiary">
           {exhibition.period}
         </span>
         {exhibition.place && (
-          <span className="typography-body-md-medium mt-0.5 block truncate text-tertiary">
+          <span className="typography-body-md-medium truncate text-tertiary">
             {exhibition.place}
           </span>
         )}
@@ -62,11 +62,11 @@ export function ArchiveExhibitionCardSkeleton() {
   return (
     <>
       <Skeleton className={POSTER_FRAME_CLASS} />
-      <div className="pt-2">
+      <div className="grid gap-0.5 pt-2">
         <SkeletonText className="typography-body-lg-semibold w-7/10" />
         <SkeletonText className="typography-body-md-medium w-1/2" />
-        <SkeletonText className="typography-body-md-regular2 mt-1 w-3/5" />
-        <SkeletonText className="typography-body-md-medium mt-0.5 w-2/5" />
+        <SkeletonText className="typography-body-md-regular2 w-3/5" />
+        <SkeletonText className="typography-body-md-medium w-2/5" />
       </div>
     </>
   );
@@ -93,10 +93,10 @@ export function ArchiveArtworkCard({ artwork }: { artwork: ArchiveArtworkView })
         src={artwork.imageUrl}
       />
       {!artwork.imageUrl && <span className={cn('block', ARTWORK_FRAME_CLASS)} />}
-      <span className="block pt-2">
-        <span className="typography-body-lg-semibold block truncate">{artwork.title}</span>
+      <span className="grid gap-0.5 pt-2">
+        <span className="typography-body-lg-semibold truncate">{artwork.title}</span>
         {artwork.artistNames.length > 0 && (
-          <span className="typography-body-md-medium block truncate text-secondary">
+          <span className="typography-body-md-medium truncate text-secondary">
             {artwork.artistNames.join(', ')}
           </span>
         )}
@@ -109,7 +109,7 @@ export function ArchiveArtworkCardSkeleton() {
   return (
     <>
       <Skeleton className={ARTWORK_FRAME_CLASS} />
-      <div className="pt-2">
+      <div className="grid gap-0.5 pt-2">
         <SkeletonText className="typography-body-lg-semibold w-7/10" />
         <SkeletonText className="typography-body-md-medium w-1/2" />
       </div>
