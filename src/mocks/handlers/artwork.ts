@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { http } from 'msw';
 
-import { listResponse, mockDb, okStatus, toArtistList } from '@/mocks/data/repository';
+import {
+  artworkFitFields,
+  listResponse,
+  mockDb,
+  okStatus,
+  toArtistList,
+} from '@/mocks/data/repository';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 import { hasMockScenario } from '@/mocks/scenario';
 import { compareBySort, matchesSearchWord } from '@/mocks/searchText';
@@ -18,6 +24,8 @@ const toArtworkCard = (images: any[] | undefined, fallbackUrl = '') => {
     ? { artworkImageUrl: main.thumbnailUrl ?? '', artworkVideoUrl: main.imageUrl }
     : { artworkImageUrl: main.imageUrl, artworkVideoUrl: null };
 };
+const withArtworkFit = (artwork: any) => ({ ...artwork, ...artworkFitFields(artwork) });
+
 const findArtwork = (artworkId: number) =>
   mockDb.artworks.find((artwork: any) => artwork.artworkId === artworkId) ?? mockDb.artworks[0];
 
@@ -297,7 +305,10 @@ export const artworkHandlers = [
   ),
   ...paths('/api/v1/artworks/{artworkId}').map((path) =>
     http.get(path, ({ params }) =>
-      success('/api/v1/artworks/{artworkId}', findArtwork(toNumber(params.artworkId, 1001))),
+      success(
+        '/api/v1/artworks/{artworkId}',
+        withArtworkFit(findArtwork(toNumber(params.artworkId, 1001))),
+      ),
     ),
   ),
   // 수정 화면 조회: 관람용 상세와 달리 공동 작가 · Q&A 담당자 · 분야 목록(types)을 함께 내려준다

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { http } from 'msw';
 
-import { mockDb, okStatus, toArtistList } from '@/mocks/data/repository';
+import { mockDb, okStatus, posterFitFields, toArtistList } from '@/mocks/data/repository';
 import { noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 import { hasMockScenario } from '@/mocks/scenario';
 
@@ -20,6 +20,7 @@ const archivedExhibitions = () => ({
     displayId: display.displayId,
     title: display.title,
     posterImageUrl: getFirstImageUrl(display),
+    ...posterFitFields(display),
     organization: display.organization,
     department: display.department ?? '',
     location: display.placeName,

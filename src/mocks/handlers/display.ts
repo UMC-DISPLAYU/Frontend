@@ -2,7 +2,7 @@
 import { delay, http } from 'msw';
 
 import { isContentHiddenBeforeOpen } from '@/mocks/data/contentOpen';
-import { findMockDisplay, mockDb, okStatus } from '@/mocks/data/repository';
+import { findMockDisplay, mockDb, okStatus, posterFitFields } from '@/mocks/data/repository';
 import { teamOf } from '@/mocks/handlers/displayMember';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 import { hasMockScenario } from '@/mocks/scenario';
@@ -203,6 +203,7 @@ const displayInvitationItem = (displayId: number, invitationId = displayId) => {
     location: 'SEOUL',
     placeName: display.placeName,
     thumbnailUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
+    ...posterFitFields(display),
     leaderName: '고상준',
     userNickname: 'sangjun24',
   };
@@ -352,7 +353,7 @@ export const displayHandlers = [
         assign('posterEdgeColor', body.posterEdgeColor ?? undefined);
       }
 
-      return success('/api/v1/display', display);
+      return success('/api/v1/display', displayDetailResponse(display.displayId));
     }),
   ),
   ...paths('/api/v1/display/publish').map((path) =>
@@ -423,7 +424,10 @@ export const displayHandlers = [
       display.exhibitionContentOpen =
         body.exhibitionContentOpen ?? display.exhibitionContentOpen ?? 'ON_EXHIBITION';
 
-      return success('/api/v1/display/{displayId}/reservation', display);
+      return success(
+        '/api/v1/display/{displayId}/reservation',
+        displayDetailResponse(display.displayId),
+      );
     }),
   ),
   ...paths('/api/v1/display/closing-soon').map((path) =>
@@ -553,6 +557,7 @@ export const displayHandlers = [
             endDate: display.period?.endDate ?? display.endedAt,
             locationName: display.location?.placeName ?? display.placeName,
             posterImageUrl: display.posterImageUrl,
+            ...posterFitFields(display),
             schoolDepartmentName: display.schoolDepartmentName,
             isArchived: display.isArchived ?? display.archived ?? false,
             latitude: coordinates.latitude,
