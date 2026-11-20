@@ -1,3 +1,4 @@
+import type { ImageFitDto } from '@/api/dto';
 import type { CropRect } from '@/utils/cropBox';
 
 export interface Work {
@@ -16,6 +17,9 @@ export interface Work {
   thumbnail?: string;
   /** 카드 썸네일에 보이는 영역 */
   thumbnailCrop?: CropRect | null;
+  thumbnailFit?: ImageFitDto | null;
+  /** 대표가 영상이면 true. 보이는 방식은 대표 사진에만 적용한다 */
+  hasVideo?: boolean;
 }
 
 export type Content = {

@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom';
 
 import type { DisplayTeamMemberDto } from '@/api/dto';
 import { ErrorView } from '@/components/common/ErrorView';
-import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { FitImage } from '@/components/common/FitImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui/Skeleton';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { getArtworkArtistNames } from '@/utils/artist';
-import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 import { getErrorMessage } from '@/utils/error';
+import { ARTWORK_FIT_RULE } from '@/utils/imageFit';
 import { staggerStyle } from '@/utils/stagger';
 
 type Props = {
@@ -71,14 +71,17 @@ export function WorksPanel({ displayId, teamMembers, isPreview, artworkPath }: P
               style={staggerStyle(index)}
               className="group block animate-rise text-primary transition-transform duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-98"
             >
-              <OptimizedImage
+              <FitImage
                 src={artwork.artworkImageUrl}
-                displayWidth={croppedDisplayWidth(360, artwork.artworkCrop)}
+                displayWidth={360}
+                crop={artwork.artworkCrop}
+                fit={artwork.artworkVideoUrl ? 'FILL' : artwork.artworkFit}
+                rule={ARTWORK_FIT_RULE}
+                fitClassName="bg-primary-white"
                 alt={artwork.artworkName}
                 skeleton
                 frameClassName={CARD_FRAME}
                 className="size-full object-cover transition-transform duration-slow ease-standard group-hover:scale-103"
-                style={savedCropImageStyle(artwork.artworkCrop)}
               />
               <div className="pt-2">
                 <b className="typography-body-lg-semibold block truncate">{artwork.artworkName}</b>

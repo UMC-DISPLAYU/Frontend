@@ -336,7 +336,10 @@ export const mockDb: {
 } = {
   me: makeUser(),
   searchableUsers: MOCK_SEARCHABLE_USERS,
-  displays: MOCK_DISPLAY_DETAILS.map(displayToDetail).map(withPosterVideoSample),
+  displays: MOCK_DISPLAY_DETAILS.map(displayToDetail)
+    .map(withPosterVideoSample)
+    // 103번: 대표 포스터를 '전체 보이기'로 고른 전시. 가장자리 색이 없는 예전 포스터라 남는 곳은 연한 회색
+    .map((display) => (display.displayId === 103 ? { ...display, posterFit: 'FIT' } : display)),
   artworks: withManyCoAuthorsSample(
     withArtworkVideoSample(
       MOCK_DISPLAY_DETAILS.flatMap((display) =>
@@ -349,6 +352,8 @@ export const mockDb: {
             const me = { userId: 1, name: makeUser().nickname };
             return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
           }
+          // 썸네일 조정에서 '전체 보이기'를 고른 작품(나머지는 저장값 없이 사진 비율로 자동)
+          if (index === 2) return { ...detail, artworkFit: 'FIT' };
           return detail;
         }),
       ),

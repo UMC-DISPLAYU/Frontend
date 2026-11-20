@@ -1,10 +1,11 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 
-import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { FitImage } from '@/components/common/FitImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import type { HomeExhibitionCard } from '@/hooks/queries/useHome';
 import { cn } from '@/utils/cn';
+import { POSTER_FIT_RULE } from '@/utils/imageFit';
 
 import { HomePosterVideo } from './HomePosterVideo';
 import { useCenteredScroll } from './useCenteredScroll';
@@ -84,13 +85,21 @@ export function PosterCarousel({ items, showRank, animateIn }: PosterCarouselPro
                 !isActive && '[transform:translateY(calc(var(--poster-w)*14/232))_scale(0.9138)]',
               )}
             >
-              <OptimizedImage
-                src={item.posterImageUrl}
-                alt=""
-                displayWidth={320}
-                loading={index < 3 ? 'eager' : 'lazy'}
-                className="absolute inset-0 size-full object-cover"
-              />
+              {/* 링크는 어둡게 덮는 막 때문에 자르지 않으므로, 고른 부분만 보이게 사진은 따로 자른다 */}
+              <span className="absolute inset-0 overflow-hidden">
+                <FitImage
+                  src={item.posterImageUrl}
+                  alt=""
+                  displayWidth={320}
+                  loading={index < 3 ? 'eager' : 'lazy'}
+                  crop={item.posterCrop}
+                  fit={item.posterVideoUrl ? 'FILL' : item.posterFit}
+                  rule={POSTER_FIT_RULE}
+                  fitClassName="bg-secondary"
+                  fitColor={item.posterEdgeColor}
+                  className="absolute inset-0 size-full object-cover"
+                />
+              </span>
               {item.posterVideoUrl && (
                 <HomePosterVideo src={item.posterVideoUrl} isActive={isActive} />
               )}

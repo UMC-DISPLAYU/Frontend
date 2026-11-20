@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 
 import type { ArtworkSearchItemDto } from '@/api/dto';
-import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { FitImage } from '@/components/common/FitImage';
 import { Skeleton, SkeletonText } from '@/components/ui';
+import { ARTWORK_FIT_RULE } from '@/utils/imageFit';
 
 import {
   ARTWORK_HOVER_GRADIENT,
@@ -36,10 +37,14 @@ export function ExploreArtworkCard({ artwork }: ExploreArtworkCardProps) {
       to={`/artwork/${artwork.artworkId}`}
     >
       <span className={CARD_PHOTO_WRAP_CLASS}>
-        <OptimizedImage
+        <FitImage
           alt={artwork.artworkName}
           className={CARD_IMAGE_CLASS}
+          crop={artwork.artworkCrop}
           displayWidth={280}
+          fit={artwork.artworkFit}
+          fitClassName="bg-primary-white"
+          rule={ARTWORK_FIT_RULE}
           frameClassName={ARTWORK_FRAME_CLASS}
           onError={onPhotoSettle}
           onLoad={onPhotoSettle}

@@ -120,6 +120,11 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
         <PosterCarousel
           posters={posters.length > 0 ? posters : [{ src: FALLBACK_POSTER_IMAGE }]}
           title={display.title}
+          representativeFit={{
+            crop: display.posterCrop,
+            fit: display.posterFit,
+            edgeColor: display.posterEdgeColor,
+          }}
         />
 
         <div className={SHEET}>
