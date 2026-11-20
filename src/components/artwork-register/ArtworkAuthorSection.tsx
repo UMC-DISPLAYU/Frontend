@@ -3,7 +3,7 @@ import { useId } from 'react';
 import { ProfileAvatar } from '@/components/common/ProfileAvatar';
 import { cn } from '@/utils/cn';
 
-import { FOCUS_CLASS } from './artworkRegister.styles';
+import { FOCUS_CLASS, OPTIONAL_CLASS } from './artworkRegister.styles';
 import type { ArtworkPerson } from './artworkRegister.types';
 import { CloseIcon, PlusIcon } from './ArtworkRegisterIcons';
 
@@ -70,6 +70,7 @@ export function ArtworkAuthorSection({
         >
           <PlusIcon className="size-5" />
           공동 작가 추가
+          <span className={OPTIONAL_CLASS}>· 선택</span>
         </button>
       </div>
     </section>
