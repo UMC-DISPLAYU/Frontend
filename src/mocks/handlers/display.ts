@@ -234,10 +234,28 @@ const isInsideBounds = (
   longitude >= bounds.westLongitude &&
   longitude <= bounds.eastLongitude;
 
+/* 실서버처럼 포스터 범위 값은 소수점 이하 10자리까지만 받는다 */
+const CROP_KEYS = ['x', 'y', 'w', 'h'] as const;
+const invalidPosterCrop = (path: string, crop: unknown) => {
+  if (!crop || typeof crop !== 'object') return null;
+  const key = CROP_KEYS.find((cropKey) => {
+    const value = (crop as Record<string, unknown>)[cropKey];
+    return typeof value === 'number' && Number(value.toFixed(10)) !== value;
+  });
+  if (!key) return null;
+
+  return fail(path, 400, 'INVALID_INPUT_VALUE', '입력값이 올바르지 않습니다.', [
+    { field: `posterCrop.${key}`, message: '숫자 값이 한계를 초과합니다(<1 자리>.<10 자리> 예상)' },
+  ]);
+};
+
 export const displayHandlers = [
   ...paths('/api/v1/display').map((path) =>
     http.post(path, async ({ request }) => {
       const body = await readJson<Record<string, unknown>>(request);
+      const cropError = invalidPosterCrop('/api/v1/display', body.posterCrop);
+      if (cropError) return cropError;
+
       const displayId = Math.max(...mockDb.displays.map((display: any) => display.displayId)) + 1;
       const display = {
         ...findDisplay(101),
@@ -264,6 +282,9 @@ export const displayHandlers = [
   ...paths('/api/v1/display').map((path) =>
     http.patch(path, async ({ request }) => {
       const body = await readJson<Record<string, any>>(request);
+      const cropError = invalidPosterCrop('/api/v1/display', body.posterCrop);
+      if (cropError) return cropError;
+
       const display = findDisplay(Number(body.displayId ?? 101));
 
       // 값이 넘어온 필드만 덮어씁니다. (undefined로 기존 값이 지워지는 것을 방지)
