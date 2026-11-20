@@ -43,7 +43,7 @@ export const STATUS_OPTIONS: readonly ExploreOption[] = [
   { label: '종료', value: 'ENDED' },
 ];
 
-// 서버 값: LATEST(등록순, 전시 ID 내림차순) · LIKES(좋아요 많은 순). 작품 검색은 정렬을 받지 않는다
+// 서버 값: LATEST(등록순, ID 내림차순) · LIKES(좋아요 많은 순). 전시 · 작품 검색이 같은 값을 쓴다
 export const SORT_OPTIONS: readonly ExploreOption[] = [
   { label: '최신순', value: 'LATEST' },
   { label: '인기순', value: 'LIKES' },

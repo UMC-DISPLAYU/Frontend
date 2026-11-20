@@ -61,16 +61,15 @@ export function ExplorePage() {
     searchWord: searchWord || null,
     type: type.value,
     status: status.value,
+    field: field.value,
+    sort: sort.value === 'LIKES' ? 'LIKES' : 'LATEST',
     size: PAGE_SIZE,
-  };
+  } as const;
 
   const exhibitionQuery = useInfiniteSearchDisplays({
     ...sharedParams,
-    field: field.value,
-    sort: sort.value === 'LIKES' ? 'LIKES' : 'LATEST',
     enabled: isExhibitionView,
   });
-  // 작품 검색 API 는 분야 · 정렬을 받지 않는다
   const artworkQuery = useInfiniteSearchArtworks({ ...sharedParams, enabled: !isExhibitionView });
 
   const exhibitionPages = exhibitionQuery.data?.pages.map((page) => page.exhibitions) ?? [];

@@ -4,7 +4,7 @@ import { http } from 'msw';
 import { listResponse, mockDb, okStatus, toArtistList } from '@/mocks/data/repository';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
 import { hasMockScenario } from '@/mocks/scenario';
-import { matchesSearchWord } from '@/mocks/searchText';
+import { compareBySort, matchesSearchWord } from '@/mocks/searchText';
 
 const now = () => new Date().toISOString();
 
@@ -195,13 +195,15 @@ export const artworkHandlers = [
       });
     }),
   ),
-  // 가짜 API: 탐색 작품 탭. 백엔드에 작품 검색 API가 생기기 전까지 탐색 정책대로 동작하게 둔다
+  // 탐색 작품 탭
   ...paths('/api/v1/artworks/search').map((path) =>
     http.get(path, ({ request }) => {
       const url = new URL(request.url);
       const searchWord = url.searchParams.get('searchWord');
       const type = url.searchParams.get('type');
       const status = url.searchParams.get('status');
+      const field = url.searchParams.get('field');
+      const sort = url.searchParams.get('sort');
       const page = Number(url.searchParams.get('page') ?? 0) || 0;
       const size = Number(url.searchParams.get('size') ?? 20);
 
@@ -212,13 +214,20 @@ export const artworkHandlers = [
           // 전시 유형 · 상태 필터는 작품이 속한 전시 기준이다
           if (type && display.displayType !== type) return false;
           if (status && display.status !== status) return false;
+          if (field && artwork.type !== field && !artwork.types?.includes(field)) return false;
           // 작품명 · 대표 · 공동 작가명으로 찾는다
           return matchesSearchWord(searchWord, [
             artwork.artworkName,
             ...(artwork.artists ?? []).map((artist: any) => artist.name),
           ]);
         })
-        .sort((a: any, b: any) => b.artworkId - a.artworkId);
+        .sort(
+          compareBySort(
+            sort,
+            (artwork: any) => artwork.likeCount ?? 0,
+            (artwork: any) => [artwork.artworkId],
+          ),
+        );
 
       const start = page * size;
       const artworks = matched.slice(start, start + size).map((artwork: any) => ({

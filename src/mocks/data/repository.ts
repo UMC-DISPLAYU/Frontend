@@ -238,7 +238,8 @@ const artworkToDetail = (artwork: any, isMine = false) => ({
   /* 작품 상세 응답(ArtworkDetailResponse)이 내려주는 좋아요/저장 상태입니다. */
   isLiked: false,
   isArchived: false,
-  likeCount: 3,
+  /* 탐색 인기순이 최신순과 다르게 보이도록 작품마다 다른 값을 준다 */
+  likeCount: artwork.artworkId % 9,
   thumbnailUrl: artwork.images[0]?.imageUrl ?? MOCK_UPLOAD_IMAGE_URL,
   /* 실제 API처럼 대표 이미지(ARTWORK, 첫 장이 썸네일)와 작업과정 이미지(WORK_PROCESS)를 한 배열에 담습니다. */
   images: [
