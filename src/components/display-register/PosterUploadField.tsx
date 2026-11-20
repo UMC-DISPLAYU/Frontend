@@ -318,9 +318,15 @@ export function PosterUploadField({ posters }: PosterUploadFieldProps) {
           open={isCropOpen}
           imageUrl={cropSession.item.previewUrl}
           initialCrop={cropSession.item.crop ?? null}
+          initialFit={cropSession.item.fit ?? null}
+          edgeColor={
+            posters.items.find(({ id }) => id === cropSession.item.id)?.edgeColor ??
+            cropSession.item.edgeColor ??
+            null
+          }
           onClose={() => setIsCropOpen(false)}
-          onDone={(crop) => {
-            posters.setCrop(cropSession.item.id, crop);
+          onDone={(crop, fit) => {
+            posters.setCrop(cropSession.item.id, crop, fit);
             setIsCropOpen(false);
           }}
         />

@@ -105,6 +105,18 @@ describe('buildCreateDisplayRequest', () => {
     ).toMatchObject({ posterCrop: { x: 0, y: 0.1, w: 1, h: 0.8 } });
   });
 
+  it('포스터 보이는 방식 · 가장자리 색은 있을 때만 보낸다', () => {
+    const request = buildCreateDisplayRequest(DRAFT, '김디유');
+    expect(request).not.toHaveProperty('posterFit');
+    expect(request).not.toHaveProperty('posterEdgeColor');
+    expect(
+      buildCreateDisplayRequest(
+        { ...DRAFT, posterFit: 'FIT', posterEdgeColor: '#ffffff' },
+        '김디유',
+      ),
+    ).toMatchObject({ posterFit: 'FIT', posterEdgeColor: '#ffffff' });
+  });
+
   it('필수값이 빠지면 null', () => {
     expect(buildCreateDisplayRequest({ ...DRAFT, posters: [] }, '김디유')).toBeNull();
     expect(buildCreateDisplayRequest({ ...DRAFT, latitude: null }, '김디유')).toBeNull();

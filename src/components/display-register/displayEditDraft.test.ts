@@ -132,6 +132,18 @@ describe('buildUpdateDisplayRequest', () => {
     expect(buildUpdateDisplayRequest(draft)).not.toHaveProperty('posterCrop');
   });
 
+  it('포스터 보이는 방식 · 가장자리 색을 불러오고, 없으면 보내지 않아 서버 값을 유지한다', () => {
+    const draft = toEditDraft({ ...DETAIL, posterFit: 'FIT', posterEdgeColor: '#2f3ed5' });
+    expect(draft).toMatchObject({ posterFit: 'FIT', posterEdgeColor: '#2f3ed5' });
+    expect(buildUpdateDisplayRequest(draft)).toMatchObject({
+      posterFit: 'FIT',
+      posterEdgeColor: '#2f3ed5',
+    });
+    const empty = buildUpdateDisplayRequest(toEditDraft(DETAIL));
+    expect(empty).not.toHaveProperty('posterFit');
+    expect(empty).not.toHaveProperty('posterEdgeColor');
+  });
+
   it('추가 포스터를 모두 지우면 빈 목록을 보내 지운다', () => {
     const original = toEditDraft(DETAIL);
     expect(

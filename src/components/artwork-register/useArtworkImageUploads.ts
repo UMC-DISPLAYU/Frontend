@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { arrayMove } from '@dnd-kit/sortable';
 
-import type { MediaTypeDto } from '@/api/dto';
+import type { ImageFitDto, MediaTypeDto } from '@/api/dto';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
 import { type CropRect, isValidCrop } from '@/utils/cropBox';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
@@ -29,6 +29,8 @@ export type ArtworkImageItem = {
   uploadedUrl?: string;
   /** 카드에 보이는 부분. 없으면 사진 가운데 */
   crop?: CropRect | null;
+  /** 썸네일 조정에서 고른 보이는 방식. 없으면 사진 비율로 자동 결과를 쓴다 */
+  fit?: ImageFitDto | null;
   /** 올라간 영상 썸네일 주소 */
   thumbnailUrl?: string;
   /** 썸네일을 고를 때 재생할 영상 주소 */
@@ -125,6 +127,7 @@ const toInitialItems = (
   urls: string[],
   videos: Record<string, ArtworkVideoMeta>,
   initialCrop?: CropRect | null,
+  initialFit?: ImageFitDto | null,
 ): ArtworkImageItem[] =>
   urls.map((url, index) => {
     const video = videos[url];
@@ -146,6 +149,7 @@ const toInitialItems = (
           previewUrl: url,
           uploadedUrl: url,
           crop: index === 0 && isValidCrop(initialCrop) ? initialCrop : null,
+          fit: index === 0 ? (initialFit ?? null) : null,
         };
   });
 
@@ -156,6 +160,7 @@ const toInitialItems = (
 export function useArtworkImageUploads({
   initialUrls,
   initialCrop,
+  initialFit,
   initialVideos = {},
   maxImages,
   allowVideo = false,
@@ -165,6 +170,7 @@ export function useArtworkImageUploads({
   initialUrls: string[];
   /** 첫 장(대표 사진)에 저장돼 있던 썸네일 영역 */
   initialCrop?: CropRect | null;
+  initialFit?: ImageFitDto | null;
   /** 저장된 영상(주소 → 썸네일 · 크기) */
   initialVideos?: Record<string, ArtworkVideoMeta>;
   maxImages: number;
@@ -173,7 +179,7 @@ export function useArtworkImageUploads({
   onUploadError?: () => void;
 }) {
   const [items, setItems] = useState<ArtworkImageItem[]>(() =>
-    toInitialItems(initialUrls, initialVideos, initialCrop),
+    toInitialItems(initialUrls, initialVideos, initialCrop, initialFit),
   );
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
   /* 읽을 수 없거나 바꿀 수 없는 영상. 작품 이미지 칸 위 안내로 알린다 */
@@ -396,8 +402,9 @@ export function useArtworkImageUploads({
     });
   }, []);
 
+  /** 썸네일 조정 결과(보이는 부분 · 보이는 방식)를 저장한다 */
   const setCrop = useCallback(
-    (id: string, crop: CropRect | null) => patchItem(id, { crop }),
+    (id: string, crop: CropRect | null, fit: ImageFitDto) => patchItem(id, { crop, fit }),
     [patchItem],
   );
 

@@ -3,6 +3,7 @@ import type {
   ArtworkImageRequestDto,
   CreateExhibitionArtworkRequestDto,
   DisplayArtworkEditResponseDataDto,
+  ImageFitDto,
   ImageResponseDto,
   PersonalArtworkRequestDto,
   PersonalArtworkResponseDataDto,
@@ -27,6 +28,8 @@ export interface ArtworkImageUrls {
   processUrls: string[];
   /** 대표 사진(작품 이미지 첫 장)이 카드 썸네일에 보이는 영역. 없으면 사진 가운데 */
   artworkCrop?: CropRect | null;
+  /** 대표 사진이 목록 칸에 보이는 방식. 썸네일 조정에서 고르지 않았으면 없다(화면이 사진 비율로 정한다) */
+  artworkFit?: ImageFitDto | null;
   /** artworkUrls 중 영상인 주소. 전시 작품만 영상을 받는다 */
   videos?: Record<string, ArtworkVideoMeta>;
 }
@@ -232,6 +235,8 @@ export function buildUpdateArtworkRequest({
     types,
     ...(point && { point }),
     ...(artworkCrop && { artworkCrop }),
+    // 고르지 않았으면 생략한다(서버는 대표 사진이 같은 동안 기존 값을 유지한다)
+    ...(images.artworkFit && { artworkFit: images.artworkFit }),
     artistName: author.name.trim(),
     ...(typeof author.userId === 'number' && { artistUserId: author.userId }),
     coAuthors: toCoAuthorsRequest(coAuthors),

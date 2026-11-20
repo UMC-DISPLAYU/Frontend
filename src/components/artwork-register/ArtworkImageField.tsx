@@ -15,6 +15,7 @@ import {
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { cropImageStyle } from '@/utils/cropBox';
+import { ARTWORK_FIT_RULE, resolveImageFit } from '@/utils/imageFit';
 import { formatVideoDuration } from '@/utils/videoFile';
 
 import { ArtworkCropSheet } from './ArtworkCropSheet';
@@ -183,18 +184,34 @@ const DETAIL_RATIO = 402 / 554;
  * 썸네일에 보이는 부분을 고르게 한다(프로토타입 U-160)
  */
 function ThumbnailPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust: () => void }) {
+  const [size, setSize] = useState<{ src: string; width: number; height: number }>();
+  const measured = size?.src === item.previewUrl ? size : undefined;
+  const isFit =
+    resolveImageFit(
+      { fit: item.fit, crop: item.crop, width: measured?.width, height: measured?.height },
+      ARTWORK_FIT_RULE,
+    ) === 'FIT';
+
   return (
     <div className="mt-3.5 flex items-start gap-3.5 rounded-12 bg-secondary p-3.5">
       <div aria-hidden="true" className="flex shrink-0 gap-2.5">
         <figure className="grid content-start justify-items-center gap-1">
-          <div className="relative aspect-3/4 w-15 overflow-hidden bg-secondary">
+          {/* 프로토타입 .cp-im.fit: 전체 보이기면 목록 칸의 남는 곳은 흰색 */}
+          <div
+            className={cn(
+              'relative aspect-3/4 w-15 overflow-hidden',
+              isFit ? 'bg-primary-white' : 'bg-secondary',
+            )}
+          >
             <img
               src={item.previewUrl}
               alt=""
-              style={item.crop ? cropImageStyle(item.crop) : undefined}
+              style={!isFit && item.crop ? cropImageStyle(item.crop) : undefined}
               className={cn(
                 'pointer-events-none select-none',
-                !item.crop && 'size-full object-cover',
+                isFit
+                  ? 'absolute inset-0 size-full object-contain'
+                  : !item.crop && 'size-full object-cover',
               )}
             />
           </div>
@@ -210,6 +227,10 @@ function ThumbnailPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust
             <img
               src={item.previewUrl}
               alt=""
+              onLoad={(event) => {
+                const { naturalWidth: width, naturalHeight: height } = event.currentTarget;
+                setSize({ src: item.previewUrl, width, height });
+              }}
               className="pointer-events-none block max-h-full max-w-full object-contain"
             />
           </div>
@@ -401,9 +422,10 @@ export function ArtworkImageField({
           open={isCropOpen}
           imageUrl={cropSession.item.previewUrl}
           initialCrop={cropSession.item.crop ?? null}
+          initialFit={cropSession.item.fit ?? null}
           onClose={() => setIsCropOpen(false)}
-          onDone={(crop) => {
-            uploads.setCrop(cropSession.item.id, crop);
+          onDone={(crop, fit) => {
+            uploads.setCrop(cropSession.item.id, crop, fit);
             setIsCropOpen(false);
           }}
         />

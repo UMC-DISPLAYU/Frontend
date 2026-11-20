@@ -100,5 +100,7 @@ export function buildCreateDisplayRequest(
     ...(draft.instagramId ? { instagramUrl: `https://instagram.com/${draft.instagramId}` } : {}),
     ...(draft.websiteUrl ? { websiteUrl: draft.websiteUrl } : {}),
     ...(draft.posterCrop ? { posterCrop: draft.posterCrop } : {}),
+    ...(draft.posterFit ? { posterFit: draft.posterFit } : {}),
+    ...(draft.posterEdgeColor ? { posterEdgeColor: draft.posterEdgeColor } : {}),
   };
 }

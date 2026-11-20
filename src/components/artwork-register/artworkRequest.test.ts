@@ -217,6 +217,17 @@ describe('artworkCrop', () => {
     ).not.toHaveProperty('artworkCrop');
   });
 
+  it('보이는 방식은 썸네일 조정에서 고른 경우에만 보낸다', () => {
+    const base = { values, author: me, coAuthors: [], ownerUserId: 9 };
+
+    expect(
+      buildCreateArtworkRequest(7, { ...base, images: { ...images, artworkFit: 'FIT' } }),
+    ).toMatchObject({ artworkFit: 'FIT' });
+    expect(
+      buildUpdateArtworkRequest({ ...base, images: { ...images, artworkFit: null } }),
+    ).not.toHaveProperty('artworkFit');
+  });
+
   it('소수점 10자리까지 내림하고 x + w · y + h 가 1 을 넘지 않게 한다', () => {
     expect(toArtworkCropRequest({ x: 1 / 3, y: 0.1, w: 2 / 3, h: 0.9 })).toEqual({
       x: 0.3333333333,

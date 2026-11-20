@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import type { MediaTypeDto } from '@/api/dto';
+import type { ImageFitDto, MediaTypeDto } from '@/api/dto';
 
 /** 올라간 포스터 한 장. VIDEO 면 url 은 영상 원본, thumbnailUrl 은 썸네일 이미지다 */
 export type ExhibitionPosterMedia = {
@@ -41,6 +41,9 @@ export type ExhibitionRegisterDraft = {
   artistName: string;
   fieldLabels: string[];
   posterCrop: PosterCropRect | null;
+  /* 대표 포스터 보이는 방식 · 가장자리 색. 백엔드 확인 전 필드 */
+  posterFit: ImageFitDto | null;
+  posterEdgeColor: string | null;
 };
 
 export type PosterCropRect = { x: number; y: number; w: number; h: number };
@@ -73,6 +76,8 @@ export const INITIAL_EXHIBITION_REGISTER_DRAFT: ExhibitionRegisterDraft = {
   artistName: '',
   fieldLabels: [],
   posterCrop: null,
+  posterFit: null,
+  posterEdgeColor: null,
 };
 
 export const ExhibitionRegisterDraftContext = createContext<{

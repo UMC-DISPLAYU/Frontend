@@ -64,7 +64,11 @@ function DisplayRegisterIntroForm() {
   const schoolName = isEdit ? draft.school : (artistProfile?.schoolName ?? '');
   const posters = usePosterUploads({
     initialPosters: draft.posters,
-    initialCrop: draft.posterCrop,
+    initialFit: {
+      crop: draft.posterCrop,
+      fit: draft.posterFit,
+      edgeColor: draft.posterEdgeColor,
+    },
   });
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
   const [isTitleHelpShown, setIsTitleHelpShown] = useState(false);
@@ -159,6 +163,8 @@ function DisplayRegisterIntroForm() {
     const introStep = {
       posters: posters.uploadedPosters,
       posterCrop: posters.posterCrop,
+      posterFit: posters.posterFit,
+      posterEdgeColor: posters.posterEdgeColor,
       title: data.title,
       intro: data.intro,
       type: data.type,
