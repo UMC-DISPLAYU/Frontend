@@ -2,8 +2,6 @@ import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import ChevronMapIcon from '@/assets/home/ChevronMapIcon.svg';
-import MapPinIcon from '@/assets/home/MapPinIcon.svg';
 import type { HomeExhibitionCard, HomeExhibitionTab } from '@/hooks/queries/useHome';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { useTabIndicator } from '@/hooks/useTabIndicator';
@@ -164,29 +162,6 @@ export function ExhibitionShowcase({
       >
         {stage}
       </div>
-
-      <Link
-        to="/map"
-        className="group mt-4 block border-t border-icon-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-inverse"
-      >
-        <span className={cn(HOME_INNER, 'flex items-center justify-between py-5')}>
-          {/* 프로토타입은 .map span 의 위 여백 2px 이 바깥 묶음에도 걸려 글자 · 핀이 4px 내려가 있다. 높이(86px)를 맞추려고 그대로 둔다 */}
-          <span className="flex items-center gap-3.5 pt-0.5">
-            <span className="grid size-8.5 place-items-center">
-              <img src={MapPinIcon} alt="" />
-            </span>
-            <span className="flex flex-col gap-0.5 pt-0.5">
-              <span className="typography-body-xl-semibold">가까운 전시 찾기</span>
-              <span className="typography-body-md-medium text-tertiary">
-                지도에서 전시 위치를 확인해보세요
-              </span>
-            </span>
-          </span>
-          <span className="grid size-8 place-items-center transition-transform duration-base ease-standard group-hover:translate-x-0.5">
-            <img src={ChevronMapIcon} alt="" />
-          </span>
-        </span>
-      </Link>
     </section>
   );
 }
