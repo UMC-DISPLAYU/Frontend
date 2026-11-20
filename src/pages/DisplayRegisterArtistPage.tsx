@@ -27,6 +27,9 @@ import { useFlowBack } from '@/hooks/useFlowBack';
 import { toast } from '@/stores/toastStore';
 import { getErrorMessage } from '@/utils/error';
 
+/* 제때 돌아가지 않은 되돌아가기를 기다리는 시간. 이 안에 도착하면 완료 화면을 다시 쌓는다 */
+const LATE_HISTORY_ARRIVAL_TIMEOUT_MS = 10_000;
+
 export function DisplayRegisterArtistPage() {
   const navigate = useNavigate();
   const flowBack = useFlowBack();
@@ -85,15 +88,26 @@ export function DisplayRegisterArtistPage() {
           typeof currentIndex === 'number' &&
           backIndex < currentIndex
         ) {
+          // 완료 화면이 바로 뒤 기록이 어디인지 알아야 내 전시 관리 기록을 겹쳐 쌓지 않는다
+          const pushCompleted = () =>
+            navigate(completedPath, { state: { prevPath: window.location.pathname } });
           // 브라우저가 실제로 돌아간 뒤에 쌓아야 한다. 먼저 쌓으면 늦게 처리된 되돌아가기가 등록 전 화면(마이 등)으로 데려간다(#637)
           const arrived = waitForHistoryIndex(backIndex);
           void navigate(backIndex - currentIndex);
 
           if (await arrived) {
-            // 완료 화면이 바로 뒤 기록이 어디인지 알아야 내 전시 관리 기록을 겹쳐 쌓지 않는다
-            navigate(completedPath, { state: { prevPath: window.location.pathname } });
+            pushCompleted();
             return;
           }
+
+          // 제때 돌아가지 않으면 우선 완료 화면으로 바꾼다. 되돌아가기는 취소되지 않아 나중에 도착할 수 있으므로, 도착하면 완료 화면을 다시 쌓는다
+          navigate(completedPath, { replace: true });
+          if (
+            await waitForHistoryIndex(backIndex, { timeoutMs: LATE_HISTORY_ARRIVAL_TIMEOUT_MS })
+          ) {
+            pushCompleted();
+          }
+          return;
         }
 
         navigate(completedPath, { replace: true });
