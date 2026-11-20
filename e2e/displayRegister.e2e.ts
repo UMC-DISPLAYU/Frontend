@@ -93,8 +93,8 @@ test('기록 이동이 안전장치(2초)보다 늦게 처리돼도 완료 화�
 
   await page.getByRole('button', { name: '전시 준비하기' }).click();
   await expect(page).toHaveURL(COMPLETED_URL);
-  // 늦은 되돌아가기(3초)가 도착한 뒤에도 완료 화면이어야 한다
-  await page.waitForTimeout(2500);
+  // 늦은 되돌아가기(누른 뒤 3초)가 도착한 뒤에도 완료 화면이어야 한다. 완료 주소가 바로 뜨는 경우도 있어 누른 때부터 센다
+  await page.waitForTimeout(4500);
   await expect(page).toHaveURL(COMPLETED_URL);
   await expect(page.getByRole('heading', { name: '전시 관리가 생성되었어요' })).toBeVisible();
 });
