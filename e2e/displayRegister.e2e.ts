@@ -80,3 +80,21 @@ test('기록 이동이 늦게 처리돼도 완료 화면이 남는다(#637)', as
 
   await submitAndExpectCompleted(page);
 });
+
+test('기록 이동이 안전장치(2초)보다 늦게 처리돼도 완료 화면이 남는다(#637)', async ({ page }) => {
+  await page.goto('/my');
+  await page
+    .getByRole('button', { name: '새 전시 등록', exact: true })
+    .or(page.getByRole('link', { name: '새 전시 등록', exact: true }))
+    .first()
+    .click();
+  await fillDisplayRegisterFlow(page);
+  await makeHistoryGoLate(page, 3000);
+
+  await page.getByRole('button', { name: '전시 준비하기' }).click();
+  await expect(page).toHaveURL(COMPLETED_URL);
+  // 늦은 되돌아가기(3초)가 도착한 뒤에도 완료 화면이어야 한다
+  await page.waitForTimeout(2500);
+  await expect(page).toHaveURL(COMPLETED_URL);
+  await expect(page.getByRole('heading', { name: '전시 관리가 생성되었어요' })).toBeVisible();
+});
