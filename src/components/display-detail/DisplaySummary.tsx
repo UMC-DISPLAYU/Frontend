@@ -1,11 +1,10 @@
-import { Heart } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import type { DisplayDetailDto } from '@/api/dto';
+import { DetailLikeButton } from '@/components/common/detail';
 import { useDisplayLikeStatus, useToggleDisplayLike } from '@/hooks/queries/useDisplayDetail';
 import { useLoginRequiredModal } from '@/hooks/usePermissionRequiredModal';
 import { useArchivePolicy } from '@/hooks/usePolicy';
-import { cn } from '@/utils/cn';
 import { hasPermission } from '@/utils/hasPermission';
 
 import {
@@ -47,27 +46,12 @@ function LikeButton({ display, disabled }: { display: DisplayDetailDto; disabled
 
   return (
     <>
-      <button
-        type="button"
-        aria-label="좋아요"
-        aria-pressed={liked}
+      <DetailLikeButton
+        liked={liked}
+        count={disabled ? 0 : (display.likeCount ?? 0)}
         onClick={handleClick}
         disabled={isBlocked}
-        className="-m-2 flex w-11 shrink-0 cursor-pointer flex-col items-center p-2 transition-transform duration-fast ease-standard active:scale-92 disabled:cursor-not-allowed disabled:opacity-45"
-      >
-        <Heart
-          aria-hidden="true"
-          size={24}
-          strokeWidth={1.7}
-          className={cn(
-            'text-icon-primary transition-transform duration-base ease-standard',
-            liked && 'scale-110 fill-current',
-          )}
-        />
-        <span className="typography-body-md-medium text-secondary">
-          {disabled ? 0 : (display.likeCount ?? 0)}
-        </span>
-      </button>
+      />
       {loginModal}
     </>
   );
