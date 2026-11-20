@@ -1,7 +1,6 @@
-import { Heart } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { cn } from '@/utils/cn';
+import { DetailLikeButton } from '@/components/common/detail';
 
 import { type ArtworkArtist, ArtworkArtists } from './ArtworkArtists';
 
@@ -40,26 +39,14 @@ export function ArtworkLabel({
         <h1 className="typography-title-xs desktop:typography-title-md min-w-0 flex-1 break-keep text-primary">
           {title}
         </h1>
-        <button
-          type="button"
-          aria-label="좋아요"
-          aria-pressed={liked}
+        <DetailLikeButton
+          liked={liked}
+          count={likeCount}
           onClick={onToggleLike}
           disabled={disabled}
           title={disabled ? '공개 전에는 사용할 수 없어요' : undefined}
-          className="-m-2 -mt-1.5 flex w-11 shrink-0 cursor-pointer flex-col items-center p-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100"
-        >
-          <Heart
-            aria-hidden="true"
-            size={24}
-            strokeWidth={1.5}
-            className={cn(
-              'text-icon-primary transition-transform duration-base ease-standard',
-              liked && 'scale-112 fill-current',
-            )}
-          />
-          <span className="typography-body-md-medium text-secondary">{likeCount}</span>
-        </button>
+          className="-mt-1.5 min-w-12"
+        />
       </div>
 
       <div className="mt-1 flex flex-col">
