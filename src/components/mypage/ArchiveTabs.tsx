@@ -34,7 +34,7 @@ export function ArchiveTabs({ activeTab, counts, onChange }: ArchiveTabsProps) {
   return (
     <div
       aria-label="보관함"
-      className="grid grid-cols-3 gap-1 rounded-circle bg-secondary p-1"
+      className="grid grid-cols-3 rounded-circle bg-secondary p-1"
       onKeyDown={handleKeyDown}
       role="tablist"
     >
@@ -48,7 +48,7 @@ export function ArchiveTabs({ activeTab, counts, onChange }: ArchiveTabsProps) {
             className={cn(
               'h-10 rounded-circle tabular-nums transition-colors duration-base ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
               isActive
-                ? 'typography-body-lg-semibold bg-primary-black text-quaternary'
+                ? 'typography-body-lg-semibold bg-primary-black text-interactive-inverse'
                 : 'typography-body-lg-medium text-secondary',
             )}
             id={archiveTabId(tab.key)}

@@ -21,6 +21,7 @@ export { MyActivityRow } from './MyActivityRow';
 export { MyArtistCard } from './MyArtistCard';
 export { MyPageHeader } from './MyPageHeader';
 export { GridIcon, MailIcon, PlusSquareIcon } from './MyPageIcons';
+export { MY_PAGE_WRAP_CLASS } from './myPageLayout';
 export { MyPageTopBar } from './MyPageTopBar';
 export { SettingsDrawer } from './SettingsDrawer';
 export { SettingsSheet } from './SettingsSheet';

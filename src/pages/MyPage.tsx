@@ -18,6 +18,7 @@ import {
   ArchiveTabs,
   GridIcon,
   MailIcon,
+  MY_PAGE_WRAP_CLASS,
   MyActivityRow,
   MyArtistCard,
   MyPageTopBar,
@@ -47,7 +48,9 @@ import { getErrorMessage } from '@/utils/error';
 import { hasPermission } from '@/utils/hasPermission';
 import { staggerStyle } from '@/utils/stagger';
 
-const GRID_CLASS = 'grid grid-cols-2 gap-x-3 gap-y-6 tablet:grid-cols-3';
+// 프로토타입 보관함 그리드: 화면 폭 640px 부터 3열, 1280px 부터 4열
+const GRID_CLASS =
+  'grid grid-cols-2 gap-x-3 gap-y-6 min-[640px]:grid-cols-3 min-[1280px]:grid-cols-4';
 
 const EMPTY_COPY: Record<TabKey, { title: string; linkLabel: string; linkTo: string }> = {
   exhibition: {
@@ -274,7 +277,10 @@ export function MyPage() {
   return (
     <div className="-mb-navbar-clearance min-h-dvh bg-primary-white pb-37.5">
       <PageContainer
-        className="pt-[max(12px,env(safe-area-inset-top))] tablet:pt-[max(12px,env(safe-area-inset-top))] desktop:grid desktop:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-16 desktop:pt-8"
+        className={cn(
+          MY_PAGE_WRAP_CLASS,
+          'pt-[max(12px,env(safe-area-inset-top))] tablet:pt-[max(12px,env(safe-area-inset-top))] desktop:grid desktop:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] desktop:items-start desktop:gap-x-16 desktop:pt-8',
+        )}
         variant="list"
       >
         <h1 className="sr-only">마이</h1>
@@ -329,7 +335,7 @@ export function MyPage() {
           <h2 className="typography-body-xxl-semibold text-primary" id="archive-title">
             보관함
           </h2>
-          <div className="mt-3">
+          <div className="mt-3.5">
             <ArchiveTabs activeTab={activeTab} counts={archive.counts} onChange={handleTabChange} />
           </div>
           <div aria-labelledby={archiveTabId(activeTab)} id={ARCHIVE_PANEL_ID} role="tabpanel">

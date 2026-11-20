@@ -16,7 +16,9 @@ export type MockScenario =
   | 'display-manager'
   | 'display-member'
   /** 전시 작품 목록을 비워 준다. 작품 탭이 빠지는지 확인용(예: `/display/106?mock=display-no-works` → 후기 탭만) */
-  | 'display-no-works';
+  | 'display-no-works'
+  /** 마이 보관함(전시 · 작품 · 작가)을 비워 준다. 빈 상태 확인용(예: `/my?mock=archive-empty`) */
+  | 'archive-empty';
 
 export const hasMockScenario = (scenario: MockScenario) =>
   new URLSearchParams(window.location.search).getAll('mock').includes(scenario);

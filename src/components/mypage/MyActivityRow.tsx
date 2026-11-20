@@ -22,7 +22,7 @@ export function MyActivityRow({ icon, label, count, to, onClick }: MyActivityRow
         {count ? (
           <strong className="typography-body-xl-medium text-error tabular-nums">{count}</strong>
         ) : null}
-        <ChevronRightIcon className="-mr-0.5 text-icon-primary transition-transform duration-base ease-standard group-hover:translate-x-0.75" />
+        <ChevronRightIcon className="-mr-0.5 text-icon-tertiary transition-transform duration-base ease-standard group-hover:translate-x-0.75" />
       </span>
     </>
   );
