@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { fillDisplayRegisterFlow, REGISTER_TODAY } from './support/displayRegister';
+import { fillDisplayRegisterFlow, REGISTER_TODAY, WIDE_POSTER } from './support/displayRegister';
 import { loginAsMockUser } from './support/session';
 
 const COMPLETED_URL = /\/exhibition\/\d+\/created$/;
@@ -95,6 +95,29 @@ test('기록 이동이 안전장치(2초)보다 늦게 처리돼도 완료 화�
   await expect(page).toHaveURL(COMPLETED_URL);
   // 늦은 되돌아가기(누른 뒤 3초)가 도착한 뒤에도 완료 화면이어야 한다. 완료 주소가 바로 뜨는 경우도 있어 누른 때부터 센다
   await page.waitForTimeout(4500);
+  await expect(page).toHaveURL(COMPLETED_URL);
+  await expect(page.getByRole('heading', { name: '전시 관리가 생성되었어요' })).toBeVisible();
+});
+
+test('포스터 범위를 옮겨도 등록된다(소수점 10자리, #662)', async ({ page }) => {
+  await page.goto('/my');
+  await page
+    .getByRole('button', { name: '새 전시 등록', exact: true })
+    .or(page.getByRole('link', { name: '새 전시 등록', exact: true }))
+    .first()
+    .click();
+  await fillDisplayRegisterFlow(page, { poster: WIDE_POSTER, moveCrop: true });
+
+  const request = page.waitForRequest(
+    (req) => req.method() === 'POST' && new URL(req.url()).pathname.endsWith('/v1/display'),
+  );
+  await page.getByRole('button', { name: '전시 준비하기' }).click();
+  const { posterCrop } = (await request).postDataJSON() as { posterCrop?: Record<string, number> };
+
+  expect(posterCrop).toBeDefined();
+  for (const value of Object.values(posterCrop ?? {})) {
+    expect(Number(value.toFixed(10))).toBe(value);
+  }
   await expect(page).toHaveURL(COMPLETED_URL);
   await expect(page.getByRole('heading', { name: '전시 관리가 생성되었어요' })).toBeVisible();
 });

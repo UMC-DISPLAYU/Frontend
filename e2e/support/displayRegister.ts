@@ -2,19 +2,49 @@ import { fileURLToPath } from 'node:url';
 
 import { expect, type Page } from '@playwright/test';
 
-const POSTER = fileURLToPath(new URL('../fixtures/poster.png', import.meta.url));
+const fixture = (name: string) => fileURLToPath(new URL(`../fixtures/${name}`, import.meta.url));
+
+/** 3:4 포스터. 썸네일 조정을 열어도 기본 범위가 전체라 범위를 보내지 않는다 */
+export const POSTER = fixture('poster.png');
+/** 900×800 포스터. 3:4 로 자르면 범위 값이 소수점 아래로 길어진다 */
+export const WIDE_POSTER = fixture('poster-wide.png');
 
 /** 달력은 오늘 이전 날짜를 막으므로, 이 날짜로 시계를 고정한 뒤 같은 달 안에서 고른다 */
 export const REGISTER_TODAY = new Date('2026-11-10T10:00:00+09:00');
 
+type FillOptions = {
+  poster?: string;
+  /** 썸네일 조정에서 범위를 줄이고 옮겨 posterCrop 을 보내게 한다 */
+  moveCrop?: boolean;
+};
+
 /** 등록 1/2 · 2/2 · 작가명을 채우고 '전시 준비하기'를 누르기 직전까지 간다 */
-export async function fillDisplayRegisterFlow(page: Page) {
+export async function fillDisplayRegisterFlow(
+  page: Page,
+  { poster = POSTER, moveCrop = false }: FillOptions = {},
+) {
   await expect(page).toHaveURL(/\/exhibition\/register$/);
 
   // 1/2 소개
-  await page.locator('input[type=file]').first().setInputFiles(POSTER);
+  await page.locator('input[type=file]').first().setInputFiles(poster);
   // 대표 포스터 조정 칩은 업로드가 끝난 뒤에 붙는다
-  await expect(page.getByLabel('대표 포스터 썸네일 조정')).toBeAttached();
+  const adjust = page.getByLabel('대표 포스터 썸네일 조정');
+  await expect(adjust).toBeAttached();
+
+  if (moveCrop) {
+    // 포스터가 1장이면 순서 바꾸기 칸이 aria-disabled 라, 그 안의 칩은 강제로 누른다(실제로는 눌린다)
+    await adjust.click({ force: true });
+    const sheet = page.locator('[role=dialog]', { hasText: '처음대로' });
+    // 줄이면(1/1.1) 이미지 비율과 상관없이 범위 값이 소수점 아래로 길어진다
+    // 전체 보이기에서는 범위 상자가 숨어 있어, 꽉 채우기로 바꾼 뒤 움직인다
+    await sheet.getByRole('radio', { name: '꽉 채우기' }).click();
+    const cropBox = sheet.locator('[role=group][aria-label^="썸네일 조정"]');
+    await expect(cropBox).toBeVisible();
+    await cropBox.press('-');
+    await cropBox.press('ArrowLeft');
+    await sheet.getByRole('button', { name: '완료', exact: true }).click();
+    await expect(sheet).toHaveCount(0);
+  }
 
   await page.locator('#display-title').fill('E2E 테스트 전시');
   await page.getByRole('button', { name: '전시 유형' }).click();

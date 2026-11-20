@@ -132,6 +132,14 @@ describe('buildUpdateDisplayRequest', () => {
     expect(buildUpdateDisplayRequest(draft)).not.toHaveProperty('posterCrop');
   });
 
+  it('포스터 범위는 서버가 받는 소수점 10자리로 내려 보낸다(#662)', () => {
+    const draft = { ...toEditDraft(DETAIL), posterCrop: { x: 1 / 3, y: 0, w: 2 / 3, h: 1 } };
+
+    expect(buildUpdateDisplayRequest(draft)).toMatchObject({
+      posterCrop: { x: 0.3333333333, y: 0, w: 0.6666666666, h: 1 },
+    });
+  });
+
   it('포스터 보이는 방식 · 가장자리 색을 불러오고, 없으면 보내지 않아 서버 값을 유지한다', () => {
     const draft = toEditDraft({ ...DETAIL, posterFit: 'FIT', posterEdgeColor: '#2f3ed5' });
     expect(draft).toMatchObject({ posterFit: 'FIT', posterEdgeColor: '#2f3ed5' });

@@ -8,6 +8,7 @@ import {
   type ExhibitionRegisterDraft,
   INITIAL_EXHIBITION_REGISTER_DRAFT,
 } from '@/contexts/exhibitionRegisterDraftState';
+import { toCropRequest } from '@/utils/cropBox';
 import { parseInstagramId } from '@/utils/linkInput';
 
 import {
@@ -114,6 +115,8 @@ export function buildUpdateDisplayRequest(
 
   if (!hasRequired) return null;
 
+  const posterCrop = toCropRequest(draft.posterCrop);
+
   return {
     title,
     ...posterMedia,
@@ -135,7 +138,7 @@ export function buildUpdateDisplayRequest(
     instagramUrl: draft.instagramId ? `https://instagram.com/${draft.instagramId}` : '',
     websiteUrl: draft.websiteUrl,
     // null 은 기존 범위를 유지하므로 범위를 고른 경우에만 보낸다
-    ...(draft.posterCrop ? { posterCrop: draft.posterCrop } : {}),
+    ...(posterCrop ? { posterCrop } : {}),
     ...(draft.posterFit ? { posterFit: draft.posterFit } : {}),
     ...(draft.posterEdgeColor ? { posterEdgeColor: draft.posterEdgeColor } : {}),
   };

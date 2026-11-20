@@ -25,12 +25,18 @@ export const created = <TData>(path: string, data: TData) =>
 export const noContent = (path: string) => success(path, null);
 
 // 401은 axios 인터셉터가 토큰 갱신으로 처리하므로 업무 오류에는 쓰지 않는다
-export const fail = (path: string, status: number, code: string, message: string) =>
+export const fail = (
+  path: string,
+  status: number,
+  code: string,
+  message: string,
+  details: ApiErrorResponseDto['error']['details'] = null,
+) =>
   HttpResponse.json<ApiErrorResponseDto>(
     {
       resultType: 'FAIL',
       success: null,
-      error: { code, message, details: null },
+      error: { code, message, details },
       meta: { path, timestamp: new Date().toISOString() },
     },
     { status },
