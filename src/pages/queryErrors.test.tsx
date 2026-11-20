@@ -53,6 +53,7 @@ vi.mock('@/hooks/queries/useDisplayBrowse', () => ({ useInfiniteSearchDisplays: 
 vi.mock('@/hooks/queries/useArtworkSearch', () => ({ useInfiniteSearchArtworks: () => h.query }));
 vi.mock('@/hooks/useInfiniteScroll', () => ({ useInfiniteScroll: h.scroll }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.back }));
+vi.mock('@/hooks/useSwipeBack', () => ({ useSwipeBack: () => undefined }));
 vi.mock('@/stores/authStore', () => ({ useAuthStore: () => h.token }));
 vi.mock('@/components/common', async () => ({
   ErrorView: (await import('@/components/common/ErrorView')).ErrorView,

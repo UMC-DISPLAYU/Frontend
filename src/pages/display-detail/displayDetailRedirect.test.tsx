@@ -43,6 +43,7 @@ vi.mock('@/components/display-detail', () => ({
 vi.mock('@/hooks/queries/useDisplayDetail', () => ({ useDisplayDetail: () => h.display }));
 vi.mock('@/hooks/queries/useDisplayArtworks', () => ({ useDisplayArtworks: () => h.works }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => vi.fn() }));
+vi.mock('@/hooks/useSwipeBack', () => ({ useSwipeBack: () => undefined }));
 vi.mock('@/hooks/useReplaceSearchParams', () => ({
   useReplaceSearchParams: () => [new URLSearchParams(h.search), vi.fn()],
 }));

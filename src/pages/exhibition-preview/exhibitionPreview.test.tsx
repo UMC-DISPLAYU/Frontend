@@ -78,6 +78,7 @@ vi.mock('@/hooks/queries/useDisplayArtworks', () => ({ useDisplayArtworks: () =>
 vi.mock('@/hooks/queries/useArtworkDetail', () => ({ useArtworkDetail: () => h.artwork }));
 vi.mock('@/hooks/queries/useUserProfile', () => ({ useUserMe: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.flowBack }));
+vi.mock('@/hooks/useSwipeBack', () => ({ useSwipeBack: () => undefined }));
 vi.mock('@/hooks/useSkeleton', () => ({
   useSkeleton: (pending: boolean) => ({ showSkeleton: pending, skeletonProps: {} }),
 }));

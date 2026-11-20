@@ -6,11 +6,13 @@ import { NotFoundView } from '@/components/error-page';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useSkeleton } from '@/hooks/useSkeleton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { isPreviewDisplay } from '@/utils/isPreviewDisplay';
 import { parseDisplayId } from '@/utils/parseDisplayId';
 
 export function DisplayDetailPage() {
+  useSwipeBack();
   const { id } = useParams<{ id: string }>();
   const displayId = parseDisplayId(id);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
