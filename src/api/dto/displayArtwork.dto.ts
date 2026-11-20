@@ -449,9 +449,14 @@ export interface SearchArtworksRequestDto {
   searchWord?: string | null;
   type?: string | null;
   status?: string | null;
+  field?: string | null;
+  /* 생략하면 LATEST */
+  sort?: ArtworkSearchSort | null;
   page?: number;
   size: number;
 }
+
+export type ArtworkSearchSort = 'LATEST' | 'LIKES';
 
 /* 응답 카드는 작품 미리보기와 같은 형식이다 */
 export type ArtworkSearchItemDto = ArtworkPreviewItemDto;
