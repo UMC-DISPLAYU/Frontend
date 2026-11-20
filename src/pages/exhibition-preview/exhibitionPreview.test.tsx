@@ -25,6 +25,7 @@ const h = vi.hoisted(() => ({
   search: '',
   navigate: vi.fn(),
   flowBack: vi.fn(),
+  swipeBack: vi.fn(),
   display: {
     data: undefined as unknown,
     isPending: false,
@@ -78,7 +79,7 @@ vi.mock('@/hooks/queries/useDisplayArtworks', () => ({ useDisplayArtworks: () =>
 vi.mock('@/hooks/queries/useArtworkDetail', () => ({ useArtworkDetail: () => h.artwork }));
 vi.mock('@/hooks/queries/useUserProfile', () => ({ useUserMe: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useFlowBack', () => ({ useFlowBack: () => h.flowBack }));
-vi.mock('@/hooks/useSwipeBack', () => ({ useSwipeBack: () => undefined }));
+vi.mock('@/hooks/useSwipeBack', () => ({ useSwipeBack: h.swipeBack }));
 vi.mock('@/hooks/useSkeleton', () => ({
   useSkeleton: (pending: boolean) => ({ showSkeleton: pending, skeletonProps: {} }),
 }));
@@ -138,6 +139,20 @@ describe('미리보기 뒤로가기', () => {
     setHistoryIndex(idx);
     usePreviewBack('/exhibition/7/work')();
     expect(h.navigate).toHaveBeenCalledWith('/exhibition/7/work', { replace: true });
+  });
+});
+
+describe('미리보기 쓸어 뒤로 가기', () => {
+  // 전시 미리보기는 새 탭으로 열려 돌아갈 기록이 없다. 홈이 아니라 뒤로가기 버튼과 같은 곳으로 간다
+  it.each([
+    ['전시 미리보기', DisplayPreviewPage, '/exhibition/7/work'],
+    ['콘텐츠 미리보기', ContentsPreviewPage, '/exhibition/7/preview'],
+  ])('%s 는 돌아갈 기록이 없으면 미리보기 뒤로가기 경로로 간다', (_, Page, fallback) => {
+    setHistoryIndex(0);
+    Page();
+    const [onBack] = h.swipeBack.mock.calls[0] as [() => void];
+    onBack();
+    expect(h.navigate).toHaveBeenCalledWith(fallback, { replace: true });
   });
 });
 

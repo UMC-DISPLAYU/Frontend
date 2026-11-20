@@ -6,8 +6,11 @@ import { NotFoundView } from '@/components/error-page';
 import { useDisplayArtworks } from '@/hooks/queries/useDisplayArtworks';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useSkeleton } from '@/hooks/useSkeleton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { getErrorMessage, isNotFoundError } from '@/utils/error';
 import { parseDisplayId } from '@/utils/parseDisplayId';
+
+import { usePreviewBack } from './usePreviewBack';
 
 /*
  * 전시 작업의 "전시 미리보기". 전시 팀원만 열 수 있다(라우트의 DisplayPermissionGuard view).
@@ -15,6 +18,7 @@ import { parseDisplayId } from '@/utils/parseDisplayId';
  */
 export function DisplayPreviewPage() {
   const { displayId: displayIdParam } = useParams<{ displayId: string }>();
+  useSwipeBack(usePreviewBack(`/exhibition/${displayIdParam}/work`));
   const displayId = parseDisplayId(displayIdParam);
   const { data: display, isPending, error, refetch } = useDisplayDetail(displayId ?? 0);
   // 작품이 없으면 작품 탭이 빠지므로 작품 목록도 함께 기다린다. 늦게 받아 탭이 빠지며 튀지 않게 한다
