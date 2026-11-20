@@ -83,6 +83,8 @@ const displayDetailResponse = (displayId: number) => {
     currentScreeningId:
       display.status === 'PENDING_REVIEW' ? (display.currentScreeningId ?? null) : null,
     posterCrop: display.posterCrop ?? null,
+    posterFit: display.posterFit ?? null,
+    posterEdgeColor: display.posterEdgeColor ?? null,
     invitationToken: display.invitationToken ?? null,
     invitationDisabledAt: display.invitationDisabledAt ?? null,
     teamMembers: display.teamMembers ?? [],
@@ -176,6 +178,8 @@ const myDisplayItem = (display: any) => ({
   postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
   posterVideoUrl: display.posterVideoUrl ?? null,
   posterCrop: display.posterCrop ?? null,
+  posterFit: display.posterFit ?? null,
+  posterEdgeColor: display.posterEdgeColor ?? null,
   displayNickname: display.displayNickname ?? display.artistName ?? '작가명',
   artistName: display.displayNickname ?? display.artistName ?? '작가명',
 });
@@ -244,6 +248,10 @@ export const displayHandlers = [
         images: [],
         posterImages: [],
         posterVideoUrl: null,
+        // 템플릿(101)의 썸네일 조정 값을 물려받지 않게 요청 값만 쓴다
+        posterCrop: body.posterCrop ?? null,
+        posterFit: body.posterFit ?? null,
+        posterEdgeColor: body.posterEdgeColor ?? null,
       };
 
       applyPosterMedia(display, body as Parameters<typeof applyPosterMedia>[1]);
@@ -313,8 +321,15 @@ export const displayHandlers = [
       }
       assign('region', body.region ?? undefined);
       // 실서버처럼 대표 포스터 주소가 바뀌면 기존 범위를 버린다
-      if (mainPosterUrl() !== prevPosterUrl) display.posterCrop = body.posterCrop ?? null;
-      else assign('posterCrop', body.posterCrop ?? undefined);
+      if (mainPosterUrl() !== prevPosterUrl) {
+        display.posterCrop = body.posterCrop ?? null;
+        display.posterFit = body.posterFit ?? null;
+        display.posterEdgeColor = body.posterEdgeColor ?? null;
+      } else {
+        assign('posterCrop', body.posterCrop ?? undefined);
+        assign('posterFit', body.posterFit ?? undefined);
+        assign('posterEdgeColor', body.posterEdgeColor ?? undefined);
+      }
 
       return success('/api/v1/display', display);
     }),

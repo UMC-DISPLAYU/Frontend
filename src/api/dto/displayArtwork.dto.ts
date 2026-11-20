@@ -1,5 +1,5 @@
 import type { ApiResponseDto, ImageResponseDto, OffsetPageRequestDto } from './common.dto';
-import type { MediaTypeDto } from './file.dto';
+import type { ImageFitDto, MediaTypeDto } from './file.dto';
 
 export interface ArtworkImageDto extends ImageResponseDto {
   isThumbnail: boolean;
@@ -300,6 +300,8 @@ export interface CreateExhibitionArtworkRequestDto {
   qaHandlerUserIds: number[];
   /* 수정에서 생략하면 대표 사진이 같은 동안 기존 영역을 유지하고, 대표 사진이 바뀌면 지워진다 */
   artworkCrop?: ArtworkCropDto | null;
+  /* 백엔드 확인 전: 대표 사진 보이는 방식. artworkCrop 과 같이 생략하면 유지하고, 대표 사진이 바뀌면 지워진다 */
+  artworkFit?: ImageFitDto | null;
 }
 
 export type UpdateExhibitionArtworkRequestDto = Omit<
@@ -325,6 +327,7 @@ export interface CreateExhibitionArtworkResponseDataDto {
   coAuthorCount: number;
   qaHandlerUserIds: number[];
   artworkCrop?: ArtworkCropDto | null;
+  artworkFit?: ImageFitDto | null;
 }
 
 /* 수정 화면 진입 시 등록 당시 상태(공동 작가 · Q&A 담당자 포함)를 복원하는 응답 */
@@ -345,6 +348,7 @@ export interface DisplayArtworkEditResponseDataDto {
   coAuthors?: ArtworkCoAuthorDto[] | null;
   qaHandlerUserIds?: number[] | null;
   artworkCrop?: ArtworkCropDto | null;
+  artworkFit?: ImageFitDto | null;
 }
 
 export type CreateExhibitionArtworkResponseDto =
@@ -385,6 +389,7 @@ export interface ArtworkPreviewItemDto {
   /* 대표 작가가 첫 번째이고 공동 작가가 이어진다 */
   artists?: ArtworkCoAuthorDto[];
   artworkCrop?: ArtworkCropDto | null;
+  artworkFit?: ImageFitDto | null;
 }
 
 export interface GetArtworkPreviewResponseDataDto {
@@ -410,6 +415,7 @@ export interface DisplayArtworkDto {
   imageWidth: number;
   imageHeight: number;
   artworkCrop?: ArtworkCropDto | null;
+  artworkFit?: ImageFitDto | null;
   /* 대표가 영상이면 영상 주소(artworkImageUrl 은 썸네일), 아니면 null */
   artworkVideoUrl?: string | null;
 }
