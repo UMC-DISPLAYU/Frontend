@@ -36,6 +36,9 @@ export interface HomeExhibitionCard {
   posterImageUrl: string;
   /** 대표 포스터가 영상이면 영상 주소. posterImageUrl 은 썸네일이다 */
   posterVideoUrl?: string;
+  posterCrop?: HomeExhibitionDto['posterCrop'];
+  posterFit?: HomeExhibitionDto['posterFit'];
+  posterEdgeColor?: HomeExhibitionDto['posterEdgeColor'];
   organization: string;
   period: string;
   place?: string;
@@ -52,6 +55,9 @@ const toHomeCard = (display: HomeExhibitionDto): HomeExhibitionCard => ({
   title: display.title,
   posterImageUrl: display.posterImageUrl,
   posterVideoUrl: display.posterVideoUrl || undefined,
+  posterCrop: display.posterCrop,
+  posterFit: display.posterFit,
+  posterEdgeColor: display.posterEdgeColor,
   organization: display.schoolDepartmentName,
   period: formatExhibitionPeriod(display.startedAt, display.endedAt),
   place: display.placeName || undefined,

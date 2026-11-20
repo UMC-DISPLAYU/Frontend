@@ -60,6 +60,8 @@ export function toEditDraft(detail: DisplayDetailDto): ExhibitionRegisterDraft {
       thumbnailUrl: image.thumbnailUrl ?? null,
     })),
     posterCrop: detail.posterCrop ?? null,
+    posterFit: detail.posterFit ?? null,
+    posterEdgeColor: detail.posterEdgeColor ?? null,
     title: detail.title ?? '',
     subtitle: detail.subtitle ?? '',
     intro: detail.content ?? '',
@@ -134,12 +136,15 @@ export function buildUpdateDisplayRequest(
     websiteUrl: draft.websiteUrl,
     // null 은 기존 범위를 유지하므로 범위를 고른 경우에만 보낸다
     ...(draft.posterCrop ? { posterCrop: draft.posterCrop } : {}),
+    ...(draft.posterFit ? { posterFit: draft.posterFit } : {}),
+    ...(draft.posterEdgeColor ? { posterEdgeColor: draft.posterEdgeColor } : {}),
   };
 }
 
 const EDITABLE_KEYS = [
   'posters',
   'posterCrop',
+  'posterFit',
   'title',
   'intro',
   'type',

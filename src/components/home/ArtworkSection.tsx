@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 
 import type { ArtworkPreviewItemDto } from '@/api/dto';
 import ChevronMoreIcon from '@/assets/home/ChevronMoreIcon.svg';
-import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { FitImage } from '@/components/common/FitImage';
 import { Skeleton, SkeletonList, SkeletonText } from '@/components/ui';
 import { useSkeleton } from '@/hooks/useSkeleton';
 import { cn } from '@/utils/cn';
-import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
+import { ARTWORK_FIT_RULE } from '@/utils/imageFit';
 
 import { HOME_INNER } from './homeLayout';
 
@@ -75,12 +75,15 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
             >
               <div>
                 <div className={cn('relative overflow-hidden', IMAGE_FRAME_CLASS)}>
-                  <OptimizedImage
+                  <FitImage
                     src={artwork.artworkImageUrl}
                     alt={`${artwork.artworkName} 작품`}
-                    displayWidth={croppedDisplayWidth(220, artwork.artworkCrop)}
+                    displayWidth={220}
+                    crop={artwork.artworkCrop}
+                    fit={artwork.artworkFit}
+                    rule={ARTWORK_FIT_RULE}
+                    fitClassName="bg-primary-white"
                     className="size-full object-cover transition-transform duration-[700ms] ease-standard group-hover:scale-103"
-                    style={savedCropImageStyle(artwork.artworkCrop)}
                   />
                 </div>
               </div>

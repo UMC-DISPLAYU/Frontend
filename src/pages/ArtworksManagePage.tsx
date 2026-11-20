@@ -90,6 +90,8 @@ export function ArtworksManagePage({ embedded = false }: { embedded?: boolean } 
           : [artwork.artistName],
         thumbnail: artwork.artworkImageUrl,
         thumbnailCrop: artwork.artworkCrop,
+        thumbnailFit: artwork.artworkFit,
+        hasVideo: Boolean(artwork.artworkVideoUrl),
       })),
     [data],
   );

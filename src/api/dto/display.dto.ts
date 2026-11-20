@@ -4,7 +4,7 @@ import type {
   ImageResponseDto,
   OffsetPageRequestDto,
 } from './common.dto';
-import type { MediaTypeDto } from './file.dto';
+import type { ImageFitDto, MediaTypeDto } from './file.dto';
 
 /* 인기 · 졸업전시 · 마감 임박 · 검색 목록이 공통으로 내려주는 전시 항목 */
 export interface HomeExhibitionDto {
@@ -21,6 +21,10 @@ export interface HomeExhibitionDto {
   placeName?: string | null;
   /* 대표 포스터가 영상이면 영상 주소(posterImageUrl 은 썸네일), 아니면 null */
   posterVideoUrl?: string | null;
+  /* 백엔드 확인 전: 대표 포스터 보이는 부분 · 보이는 방식 · 가장자리 색(#rrggbb) */
+  posterCrop?: PosterCropDto | null;
+  posterFit?: ImageFitDto | null;
+  posterEdgeColor?: string | null;
 }
 
 export type ClosingSoonExhibitionDto = HomeExhibitionDto;
@@ -178,6 +182,9 @@ export interface DisplayDetailDto {
   currentScreeningId: number | null;
   /* 대표 포스터 표시 범위. null 이면 조정 없음 */
   posterCrop?: PosterCropDto | null;
+  /* 백엔드 확인 전: 대표 포스터 보이는 방식 · 가장자리 색(#rrggbb). 전체 보이기면 상세 남는 곳도 이 색 */
+  posterFit?: ImageFitDto | null;
+  posterEdgeColor?: string | null;
   invitationToken: string | null;
   invitationDisabledAt: string | null;
   images: DisplayImageDto[];
@@ -458,6 +465,9 @@ export interface CreateDisplayRequestDto {
   websiteUrl?: string;
   /* 생략하면 조정 없이 만든다 */
   posterCrop?: PosterCropDto;
+  /* 백엔드 확인 전. 대표 포스터가 사진일 때만 보낸다 */
+  posterFit?: ImageFitDto;
+  posterEdgeColor?: string;
   departmentOrClubValid?: boolean;
   regionValid?: boolean;
 }
@@ -496,6 +506,9 @@ export interface UpdateDisplayRequestDto {
   region?: CreateDisplayRequestDto['region'] | null;
   /* 대표 포스터 주소가 바뀌면 서버가 초기화한다 */
   posterCrop?: PosterCropDto | null;
+  /* 백엔드 확인 전. posterCrop 과 같이 생략하면 유지하고, 대표 포스터 주소가 바뀌면 초기화한다 */
+  posterFit?: ImageFitDto | null;
+  posterEdgeColor?: string | null;
 }
 
 export type UpdateDisplayResponseDataDto = DisplayDetailDto;
@@ -549,6 +562,9 @@ export interface MyDisplayDto {
   /* 대표 포스터가 영상이면 영상 주소(postImageUrl 은 썸네일), 아니면 null */
   posterVideoUrl?: string | null;
   posterCrop?: PosterCropDto | null;
+  /* 백엔드 확인 전 */
+  posterFit?: ImageFitDto | null;
+  posterEdgeColor?: string | null;
   isLeader?: boolean;
   /* 이 전시에서 내 역할. 내 전시 목록(GET /display/me)에만 있다 */
   role?: DisplayMemberRole;

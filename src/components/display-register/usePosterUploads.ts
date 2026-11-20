@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { arrayMove } from '@dnd-kit/sortable';
 
-import type { MediaTypeDto } from '@/api/dto';
+import type { ImageFitDto, MediaTypeDto } from '@/api/dto';
 import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type {
   ExhibitionPosterMedia,
@@ -10,6 +10,7 @@ import type {
 } from '@/contexts/exhibitionRegisterDraftState';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
 import { toast } from '@/stores/toastStore';
+import { readLocalImageInfo } from '@/utils/imageFit';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
 
@@ -39,6 +40,17 @@ export type PosterItem = {
   videoSrc?: string;
   duration?: number;
   crop?: PosterCropRect | null;
+  /** 썸네일 조정에서 고른 보이는 방식. 없으면 사진 비율로 자동 결과를 쓴다 */
+  fit?: ImageFitDto | null;
+  /** 포스터 가장자리 색(#rrggbb). 새로 고른 파일은 올리기 전에 재고, 저장된 포스터는 서버 값을 쓴다 */
+  edgeColor?: string | null;
+};
+
+/** 대표 포스터(첫 장)에 저장돼 있던 썸네일 조정 값 */
+export type PosterFitState = {
+  crop: PosterCropRect | null;
+  fit: ImageFitDto | null;
+  edgeColor: string | null;
 };
 
 const createPosterId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -63,7 +75,7 @@ export const isPosterReady = (item: PosterItem) =>
 const toInitialItem = (
   poster: ExhibitionPosterMedia,
   index: number,
-  crop: PosterCropRect | null,
+  { crop, fit, edgeColor }: PosterFitState,
 ) =>
   poster.mediaType === 'VIDEO'
     ? {
@@ -80,17 +92,19 @@ const toInitialItem = (
         previewUrl: poster.url,
         uploadedUrl: poster.url,
         crop: index === 0 ? crop : null,
+        fit: index === 0 ? fit : null,
+        edgeColor: index === 0 ? edgeColor : null,
       };
 
 export function usePosterUploads({
   initialPosters,
-  initialCrop,
+  initialFit,
 }: {
   initialPosters: ExhibitionPosterMedia[];
-  initialCrop: PosterCropRect | null;
+  initialFit: PosterFitState;
 }) {
   const [items, setItems] = useState<PosterItem[]>(() =>
-    initialPosters.map((poster, index) => toInitialItem(poster, index, initialCrop)),
+    initialPosters.map((poster, index) => toInitialItem(poster, index, initialFit)),
   );
   const [errorKind, setErrorKind] = useState<PosterErrorKind | null>(null);
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
@@ -170,11 +184,15 @@ export function usePosterUploads({
 
   const startImageUpload = useCallback(
     (item: PosterItem, file: File) => {
+      // 전체 보이기의 남는 곳에 쓸 가장자리 색은 올리기 전 로컬 파일에서 잰다(올린 주소는 다른 출처라 캔버스로 읽지 못할 수 있다)
+      void readLocalImageInfo(item.previewUrl).then((info) => {
+        if (info && isAlive(item.id)) patchItem(item.id, { edgeColor: info.edgeColor });
+      });
       uploadImage({ file, domain: 'display' })
         .then((uploadedUrl) => patchItem(item.id, { uploadedUrl }))
         .catch(() => failUpload(item.id, file));
     },
-    [failUpload, patchItem, uploadImage],
+    [failUpload, isAlive, patchItem, uploadImage],
   );
 
   const startVideoUpload = useCallback(
@@ -311,8 +329,9 @@ export function usePosterUploads({
     });
   }, []);
 
+  /** 썸네일 조정 결과(보이는 부분 · 보이는 방식)를 저장한다 */
   const setCrop = useCallback(
-    (id: string, crop: PosterCropRect | null) => patchItem(id, { crop }),
+    (id: string, crop: PosterCropRect | null, fit: ImageFitDto) => patchItem(id, { crop, fit }),
     [patchItem],
   );
 
@@ -365,8 +384,10 @@ export function usePosterUploads({
       mediaType: item.mediaType,
       thumbnailUrl: item.thumbnailUrl ?? null,
     })),
-    // 영상 대표는 서버가 crop 을 받지 않는다
+    // 영상 대표는 서버가 crop 을 받지 않는다. 보이는 방식 · 가장자리 색도 대표 사진에만 쓴다
     posterCrop: items[0]?.mediaType === 'IMAGE' ? (items[0].crop ?? null) : null,
+    posterFit: items[0]?.mediaType === 'IMAGE' ? (items[0].fit ?? null) : null,
+    posterEdgeColor: items[0]?.mediaType === 'IMAGE' ? (items[0].edgeColor ?? null) : null,
     addFiles,
     retry,
     remove: dropItem,

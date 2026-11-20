@@ -1,7 +1,10 @@
 import { type KeyboardEvent, useRef, useState } from 'react';
 
+import type { ImageFitDto, PosterCropDto } from '@/api/dto';
+import { FitImage } from '@/components/common/FitImage';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { cn } from '@/utils/cn';
+import { POSTER_FIT_RULE } from '@/utils/imageFit';
 
 import { PlayMarkIcon, PosterVideoSlide } from './PosterVideoSlide';
 
@@ -11,6 +14,12 @@ export type PosterSlide = { src: string; videoSrc?: string };
 type Props = {
   posters: PosterSlide[];
   title: string;
+  /** 대표 포스터(첫 장)의 보이는 방식. 전체 보이기면 남는 곳을 가장자리 색으로 칠한다 */
+  representativeFit?: {
+    crop?: PosterCropDto | null;
+    fit?: ImageFitDto | null;
+    edgeColor?: string | null;
+  };
 };
 
 const POSTER_IMAGE_WIDTH = 1080;
@@ -24,7 +33,7 @@ const scrollBehavior = (): ScrollBehavior =>
  * 900px 이상은 포스터 아래에 썸네일 목록이 가로로 붙는다. 프로토타입은 왼쪽 세로 목록이지만,
  * 그만큼 포스터가 작아져서 아래 가로 줄로 옮겼다(PM/FE 2차 회의 2026-11-16)
  */
-export function PosterCarousel({ posters, title }: Props) {
+export function PosterCarousel({ posters, title, representativeFit }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
   const hasMultiple = posters.length > 1;
@@ -69,12 +78,19 @@ export function PosterCarousel({ posters, title }: Props) {
               {videoSrc ? (
                 <PosterVideoSlide src={videoSrc} thumbnailSrc={src} trackRef={trackRef} />
               ) : (
-                <OptimizedImage
+                <FitImage
                   src={src}
                   displayWidth={POSTER_IMAGE_WIDTH}
                   alt={`${title} 포스터 ${index + 1}`}
                   draggable={false}
                   loading={index === 0 ? 'eager' : 'lazy'}
+                  detail
+                  crop={representativeFit?.crop}
+                  // 대표 포스터만 보이는 방식을 따르고, 나머지는 지금처럼 전체 + 연한 회색
+                  fit={index === 0 ? representativeFit?.fit : 'FILL'}
+                  rule={POSTER_FIT_RULE}
+                  fitClassName="bg-secondary"
+                  fitColor={representativeFit?.edgeColor}
                   className="size-full object-contain select-none"
                 />
               )}

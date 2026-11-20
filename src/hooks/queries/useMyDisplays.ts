@@ -39,6 +39,8 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   thumbnail: display.postImageUrl,
   hasVideoPoster: Boolean(display.posterVideoUrl),
   posterCrop: display.posterCrop ?? null,
+  posterFit: display.posterFit ?? null,
+  posterEdgeColor: display.posterEdgeColor ?? null,
   artistName: display.displayNickname ?? display.artistName,
 });
 

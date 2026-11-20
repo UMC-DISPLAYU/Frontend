@@ -1,5 +1,5 @@
 import { DisplayPublishStatusLabel } from '@/components/common/DisplayPublishStatusLabel';
-import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { FitImage } from '@/components/common/FitImage';
 import { VideoPosterBadge } from '@/components/common/VideoPosterBadge';
 import { useDisplayMembers } from '@/hooks/queries/useDisplayMembers';
 import {
@@ -9,9 +9,9 @@ import {
 } from '@/hooks/usePolicy';
 import type { ExhibitionItem } from '@/types/mypage';
 import { cn } from '@/utils/cn';
-import { croppedDisplayWidth, savedCropImageStyle } from '@/utils/cropBox';
 import { isDisplayPublishStatus } from '@/utils/displayPublishStatus';
 import { hasPermission } from '@/utils/hasPermission';
+import { POSTER_FIT_RULE } from '@/utils/imageFit';
 
 import { type DisplayCardAction, DisplayCardMenu } from './DisplayCardMenu';
 import { formatDisplayPeriod } from './formatDisplayPeriod';
@@ -80,14 +80,18 @@ export function DisplayManagementCard({
       )}
     >
       <div className="relative aspect-402/568 w-24 overflow-hidden bg-[#000]">
-        <OptimizedImage
+        <FitImage
           src={ex.thumbnail}
           alt=""
-          displayWidth={croppedDisplayWidth(96, ex.posterCrop)}
+          displayWidth={96}
+          crop={ex.posterCrop}
+          fit={ex.hasVideoPoster ? 'FILL' : ex.posterFit}
+          rule={POSTER_FIT_RULE}
+          fitClassName="bg-secondary"
+          fitColor={ex.posterEdgeColor}
           skeleton
           frameClassName="absolute inset-0"
           className="object-cover"
-          style={savedCropImageStyle(ex.posterCrop)}
         />
         {ex.hasVideoPoster && <VideoPosterBadge />}
       </div>

@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 
 import type { DisplayListItemDto } from '@/api/dto';
-import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { FitImage } from '@/components/common/FitImage';
 import { Skeleton, SkeletonText } from '@/components/ui';
 import { formatExhibitionPeriod } from '@/utils/formatExhibitionPeriod';
+import { POSTER_FIT_RULE } from '@/utils/imageFit';
 
 import {
   CARD_CLASS,
@@ -34,10 +35,16 @@ export function ExploreExhibitionCard({ exhibition }: ExploreExhibitionCardProps
       to={`/display/${exhibition.displayId}`}
     >
       <span className={CARD_PHOTO_WRAP_CLASS}>
-        <OptimizedImage
+        <FitImage
           alt={`${exhibition.title} 포스터`}
           className={CARD_IMAGE_CLASS}
+          crop={exhibition.posterCrop}
           displayWidth={280}
+          // 영상 대표는 썸네일만 보이므로 지금처럼 꽉 채운다(보이는 방식은 대표 사진에만 적용)
+          fit={exhibition.posterVideoUrl ? 'FILL' : exhibition.posterFit}
+          fitClassName="bg-secondary"
+          fitColor={exhibition.posterEdgeColor}
+          rule={POSTER_FIT_RULE}
           frameClassName={POSTER_FRAME_CLASS}
           onError={onPhotoSettle}
           onLoad={onPhotoSettle}

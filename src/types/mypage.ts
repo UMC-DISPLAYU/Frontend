@@ -1,4 +1,9 @@
-import type { DisplayMemberRole, DisplayPublishStatus, PosterCropDto } from '@/api/dto';
+import type {
+  DisplayMemberRole,
+  DisplayPublishStatus,
+  ImageFitDto,
+  PosterCropDto,
+} from '@/api/dto';
 
 export type TabKey = 'exhibition' | 'artwork' | 'artist';
 
@@ -24,6 +29,8 @@ export interface ExhibitionItem {
   hasVideoPoster?: boolean;
   /* 대표 포스터에서 카드에 보이는 범위. 없으면 가운데를 보여 준다 */
   posterCrop?: PosterCropDto | null;
+  posterFit?: ImageFitDto | null;
+  posterEdgeColor?: string | null;
   memo?: string;
   artistName?: string;
 }
