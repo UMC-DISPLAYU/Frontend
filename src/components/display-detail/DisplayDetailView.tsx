@@ -114,7 +114,9 @@ export function DisplayDetailView({ display, previewMode = false }: Props) {
         <DetailPreviewBanner message="공개 전 모습이에요. 저장·좋아요·후기 작성은 할 수 없어요" />
       )}
 
-      <DetailTopBar className={previewMode ? 'top-10' : 'top-0'} />
+      <DetailTopBar
+        className={previewMode ? 'top-[var(--preview-banner-height,2.5rem)]' : 'top-0'}
+      />
 
       <div className={LAYOUT}>
         <PosterCarousel
