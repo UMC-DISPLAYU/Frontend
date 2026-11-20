@@ -15,3 +15,7 @@ package-lock.json
 .vercel
 .vite/
 src/mocks/passthrough/config.local.ts
+
+// Playwright E2E 결과
+test-results/
+playwright-report/
