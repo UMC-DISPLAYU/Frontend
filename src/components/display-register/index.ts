@@ -47,4 +47,5 @@ export { DisplayTimeSheet } from './DisplayTimeSheet';
 export { DisplayTypeSelect } from './DisplayTypeSelect';
 export { PosterUploadField } from './PosterUploadField';
 export { usePosterUploads } from './usePosterUploads';
+export { HISTORY_ARRIVAL_TIMEOUT_MS, waitForHistoryIndex } from './waitForHistoryIndex';
 export { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';

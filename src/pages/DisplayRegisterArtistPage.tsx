@@ -17,6 +17,7 @@ import {
   MAX_ARTIST_NAME_LENGTH,
   REQUIRED_CLASS,
   UNDERLINE_CLASS,
+  waitForHistoryIndex,
 } from '@/components/display-register';
 import { useFlowContext } from '@/components/guards/useFlowContext';
 import { PageContainer } from '@/components/layout';
@@ -84,10 +85,15 @@ export function DisplayRegisterArtistPage() {
           typeof currentIndex === 'number' &&
           backIndex < currentIndex
         ) {
-          await navigate(backIndex - currentIndex);
-          // 완료 화면이 바로 뒤 기록이 어디인지 알아야 내 전시 관리 기록을 겹쳐 쌓지 않는다
-          navigate(completedPath, { state: { prevPath: window.location.pathname } });
-          return;
+          // 브라우저가 실제로 돌아간 뒤에 쌓아야 한다. 먼저 쌓으면 늦게 처리된 되돌아가기가 등록 전 화면(마이 등)으로 데려간다(#637)
+          const arrived = waitForHistoryIndex(backIndex);
+          void navigate(backIndex - currentIndex);
+
+          if (await arrived) {
+            // 완료 화면이 바로 뒤 기록이 어디인지 알아야 내 전시 관리 기록을 겹쳐 쌓지 않는다
+            navigate(completedPath, { state: { prevPath: window.location.pathname } });
+            return;
+          }
         }
 
         navigate(completedPath, { replace: true });
