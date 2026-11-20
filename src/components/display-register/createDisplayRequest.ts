@@ -4,6 +4,7 @@ import type {
   ExhibitionPosterMedia,
   ExhibitionRegisterDraft,
 } from '@/contexts/exhibitionRegisterDraftState';
+import { toCropRequest } from '@/utils/cropBox';
 
 import { OTHER_GROUP_DISPLAY_TYPE } from './displayRegister.constants';
 
@@ -78,6 +79,7 @@ export function buildCreateDisplayRequest(
   if (!hasRequired) return null;
 
   const description = draft.intro.trim();
+  const posterCrop = toCropRequest(draft.posterCrop);
 
   return {
     title: draft.title.trim(),
@@ -99,7 +101,7 @@ export function buildCreateDisplayRequest(
     displayNickname: nickname,
     ...(draft.instagramId ? { instagramUrl: `https://instagram.com/${draft.instagramId}` } : {}),
     ...(draft.websiteUrl ? { websiteUrl: draft.websiteUrl } : {}),
-    ...(draft.posterCrop ? { posterCrop: draft.posterCrop } : {}),
+    ...(posterCrop ? { posterCrop } : {}),
     ...(draft.posterFit ? { posterFit: draft.posterFit } : {}),
     ...(draft.posterEdgeColor ? { posterEdgeColor: draft.posterEdgeColor } : {}),
   };

@@ -94,6 +94,25 @@ export function isValidCrop(crop: CropRect | null | undefined): crop is CropRect
   );
 }
 
+const CROP_DECIMAL_SCALE = 1e10;
+const floorCropValue = (value: number) =>
+  Math.floor(value * CROP_DECIMAL_SCALE) / CROP_DECIMAL_SCALE;
+
+/**
+ * 서버로 보낼 범위(전시 posterCrop · 작품 artworkCrop). 서버는 소수점 이하 10자리까지, x + w · y + h 가 1 이하인 값만 받아 내림으로 자른다.
+ * 올바르지 않은 범위는 보내지 않는다(생략하면 서버는 대표 이미지가 같은 동안 기존 범위를 유지한다)
+ */
+export function toCropRequest(crop: CropRect | null | undefined): CropRect | undefined {
+  if (!isValidCrop(crop)) return undefined;
+
+  const x = floorCropValue(crop.x);
+  const y = floorCropValue(crop.y);
+  const w = Math.min(floorCropValue(crop.w), floorCropValue(1 - x));
+  const h = Math.min(floorCropValue(crop.h), floorCropValue(1 - y));
+
+  return w > 0 && h > 0 ? { x, y, w, h } : undefined;
+}
+
 /** position: relative · overflow: hidden 인 칸을 상자 부분만으로 채우는 이미지 스타일 */
 export function cropImageStyle(crop: CropRect): CSSProperties {
   return {

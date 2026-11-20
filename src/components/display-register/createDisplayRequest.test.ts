@@ -105,6 +105,14 @@ describe('buildCreateDisplayRequest', () => {
     ).toMatchObject({ posterCrop: { x: 0, y: 0.1, w: 1, h: 0.8 } });
   });
 
+  it('포스터 범위는 서버가 받는 소수점 10자리로 내려 보낸다(#662)', () => {
+    const posterCrop = { x: 0, y: 0, w: 0.6751528910303928, h: 1 };
+
+    expect(buildCreateDisplayRequest({ ...DRAFT, posterCrop }, '김디유')).toMatchObject({
+      posterCrop: { x: 0, y: 0, w: 0.675152891, h: 1 },
+    });
+  });
+
   it('포스터 보이는 방식 · 가장자리 색은 있을 때만 보낸다', () => {
     const request = buildCreateDisplayRequest(DRAFT, '김디유');
     expect(request).not.toHaveProperty('posterFit');

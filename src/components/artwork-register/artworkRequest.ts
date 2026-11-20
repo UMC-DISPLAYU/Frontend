@@ -1,5 +1,4 @@
 import type {
-  ArtworkCropDto,
   ArtworkImageRequestDto,
   CreateExhibitionArtworkRequestDto,
   DisplayArtworkEditResponseDataDto,
@@ -10,7 +9,7 @@ import type {
   UpdateExhibitionArtworkRequestDto,
 } from '@/api/dto';
 import { DEFAULT_ARTWORK_IMAGE_HEIGHT, DEFAULT_ARTWORK_IMAGE_WIDTH } from '@/constants';
-import { type CropRect, isValidCrop } from '@/utils/cropBox';
+import { type CropRect, toCropRequest } from '@/utils/cropBox';
 
 import { toArtworkFieldLabels, toArtworkTypes } from './artworkRegister.constants';
 import type { ArtworkRegisterValues } from './artworkRegister.schema';
@@ -147,27 +146,6 @@ function toArtworkInfoRequest(
   };
 }
 
-const CROP_DECIMAL_SCALE = 1e10;
-const floorCropValue = (value: number) =>
-  Math.floor(value * CROP_DECIMAL_SCALE) / CROP_DECIMAL_SCALE;
-
-/**
- * 서버가 소수점 이하 10자리까지, x + w · y + h 가 1 이하인 값만 받아 내림으로 자른다.
- * 올바르지 않은 영역은 보내지 않는다(생략하면 서버는 대표 사진이 같은 동안 기존 영역을 유지한다)
- */
-export function toArtworkCropRequest(
-  crop: CropRect | null | undefined,
-): ArtworkCropDto | undefined {
-  if (!isValidCrop(crop)) return undefined;
-
-  const x = floorCropValue(crop.x);
-  const y = floorCropValue(crop.y);
-  const w = Math.min(floorCropValue(crop.w), floorCropValue(1 - x));
-  const h = Math.min(floorCropValue(crop.h), floorCropValue(1 - y));
-
-  return w > 0 && h > 0 ? { x, y, w, h } : undefined;
-}
-
 /**
  * 서버는 Q&A 담당자를 한 명 이상 요구하고, 작가 · 계정이 연결된 공동 작가 · 전시 대표자 중에서만 받는다.
  * 화면에서 담당자를 고르지 않으므로 수정이면 남아 있는 기존 담당자를, 없으면 작가(계정 없으면 대표자)를 보낸다.
@@ -227,7 +205,7 @@ export function buildUpdateArtworkRequest({
 }: ExhibitionArtworkRequestInput): UpdateExhibitionArtworkRequestDto {
   const point = previous?.point?.trim();
   const types = toArtworkTypes(values.fieldLabels);
-  const artworkCrop = toArtworkCropRequest(images.artworkCrop);
+  const artworkCrop = toCropRequest(images.artworkCrop);
 
   return {
     ...toArtworkInfoRequest(values, images, previous),

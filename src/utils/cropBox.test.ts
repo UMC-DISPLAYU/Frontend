@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { fitCrop, isSameCrop, isValidCrop, moveCrop, resizeCrop, scaleCrop } from './cropBox';
+import {
+  fitCrop,
+  isSameCrop,
+  isValidCrop,
+  moveCrop,
+  resizeCrop,
+  scaleCrop,
+  toCropRequest,
+} from './cropBox';
 
 const CROP_RATIO = 0.75;
 
@@ -101,5 +109,30 @@ describe('isValidCrop', () => {
 
   it('사진 안의 상자는 참이다', () => {
     expect(isValidCrop({ x: 0.1, y: 0.1, w: 0.5, h: 0.5 })).toBe(true);
+  });
+});
+
+describe('toCropRequest', () => {
+  it('소수점 10자리까지 내림하고 x + w · y + h 가 1 을 넘지 않게 한다', () => {
+    expect(toCropRequest({ x: 1 / 3, y: 0.1, w: 2 / 3, h: 0.9 })).toEqual({
+      x: 0.3333333333,
+      y: 0.1,
+      w: 0.6666666666,
+      h: 0.9,
+    });
+    expect(toCropRequest({ x: 0.3, y: 0, w: 0.7000005, h: 1 })).toEqual({
+      x: 0.3,
+      y: 0,
+      w: 0.7,
+      h: 1,
+    });
+  });
+
+  it('올바르지 않은 영역은 보내지 않는다', () => {
+    expect(toCropRequest(null)).toBeUndefined();
+    expect(toCropRequest({ x: 0, y: 0, w: 0, h: 1 })).toBeUndefined();
+    expect(toCropRequest({ x: 0.5, y: 0, w: 0.6, h: 1 })).toBeUndefined();
+    // 허용 오차로 통과해도 내림한 뒤 너비가 0 이면 보내지 않는다
+    expect(toCropRequest({ x: 0.99999999999, y: 0, w: 1e-12, h: 1 })).toBeUndefined();
   });
 });

@@ -8,7 +8,6 @@ import {
   buildUpdateArtworkRequest,
   resolveQaHandlerUserIds,
   splitArtworkImages,
-  toArtworkCropRequest,
   toArtworkImageRequests,
   toArtworkRegisterValues,
 } from './artworkRequest';
@@ -226,29 +225,6 @@ describe('artworkCrop', () => {
     expect(
       buildUpdateArtworkRequest({ ...base, images: { ...images, artworkFit: null } }),
     ).not.toHaveProperty('artworkFit');
-  });
-
-  it('소수점 10자리까지 내림하고 x + w · y + h 가 1 을 넘지 않게 한다', () => {
-    expect(toArtworkCropRequest({ x: 1 / 3, y: 0.1, w: 2 / 3, h: 0.9 })).toEqual({
-      x: 0.3333333333,
-      y: 0.1,
-      w: 0.6666666666,
-      h: 0.9,
-    });
-    expect(toArtworkCropRequest({ x: 0.3, y: 0, w: 0.7000005, h: 1 })).toEqual({
-      x: 0.3,
-      y: 0,
-      w: 0.7,
-      h: 1,
-    });
-  });
-
-  it('올바르지 않은 영역은 보내지 않는다', () => {
-    expect(toArtworkCropRequest(null)).toBeUndefined();
-    expect(toArtworkCropRequest({ x: 0, y: 0, w: 0, h: 1 })).toBeUndefined();
-    expect(toArtworkCropRequest({ x: 0.5, y: 0, w: 0.6, h: 1 })).toBeUndefined();
-    // 허용 오차로 통과해도 내림한 뒤 너비가 0 이면 보내지 않는다
-    expect(toArtworkCropRequest({ x: 0.99999999999, y: 0, w: 1e-12, h: 1 })).toBeUndefined();
   });
 });
 
