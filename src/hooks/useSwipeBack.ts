@@ -54,10 +54,11 @@ function isInHorizontalScroller(target: EventTarget | null) {
 
 /**
  * 뒤로가기 버튼이 없는 화면에서 터치 화면을 오른쪽으로 쓸면 본문이 손가락을 따라오고,
- * 충분히 쓸고 놓으면 이전 화면으로, 덜 쓸고 놓으면 제자리로 돌아간다.
+ * 충분히 쓸고 놓으면 이전 화면으로(onBack 을 주면 그 동작으로), 덜 쓸고 놓으면 제자리로 돌아간다.
  */
-export function useSwipeBack() {
-  const goBack = useFlowBack();
+export function useSwipeBack(onBack?: () => void) {
+  const flowBack = useFlowBack();
+  const goBack = onBack ?? flowBack;
   const { key } = useLocation();
 
   const swipedBackRef = useRef(false);
