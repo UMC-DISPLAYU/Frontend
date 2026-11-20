@@ -27,6 +27,7 @@ import { useArtworkDetail } from '@/hooks/queries/useArtworkDetail';
 import { useDisplayDetail } from '@/hooks/queries/useDisplayDetail';
 import { useUserMe } from '@/hooks/queries/useUserProfile';
 import { useSkeleton } from '@/hooks/useSkeleton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import type { ArtworkDetail } from '@/types/exhibition';
 import { getExhibitionArtistName } from '@/utils/artist';
 import { isVideoMedia, toDisplayImageCardUrl } from '@/utils/displayMedia';
@@ -40,6 +41,7 @@ type ArtworkDetailPageProps = {
 };
 
 export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps = {}) {
+  useSwipeBack();
   const { artworkId: artworkIdParam } = useParams<{ artworkId: string }>();
   const artworkId = Number(artworkIdParam ?? 0);
 
