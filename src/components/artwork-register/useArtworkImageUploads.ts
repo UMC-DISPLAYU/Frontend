@@ -46,7 +46,7 @@ export type AddArtworkImagesResult = {
   overLimit: boolean;
   /** 형식 · 용량이 맞지 않아 올리지 않은 파일 수 */
   rejectedCount: number;
-  /** 영상을 받지 않는 칸에서 영상을 골랐을 때 토스트로 알릴 안내 */
+  /** 토스트로 알릴 안내(영상을 받지 않는 칸에서 영상을 골랐을 때 · 사진 용량을 넘었을 때) */
   message?: string;
 };
 
@@ -58,9 +58,11 @@ const revokeItemUrls = (item: ArtworkImageItem) => {
   if (isLocalUrl(item.videoSrc)) URL.revokeObjectURL(item.videoSrc);
 };
 
+const isArtworkImageType = (file: Pick<File, 'type' | 'name'>) =>
+  (ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) || isHeicFile(file);
+
 export const isAcceptableArtworkImage = (file: Pick<File, 'type' | 'size' | 'name'>) =>
-  ((ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) || isHeicFile(file)) &&
-  file.size <= MAX_ARTWORK_IMAGE_MB * 1024 * 1024;
+  isArtworkImageType(file) && file.size <= MAX_ARTWORK_IMAGE_MB * 1024 * 1024;
 
 export const isArtworkVideoFile = (file: Pick<File, 'type' | 'name'>) =>
   (ARTWORK_VIDEO_ACCEPT_TYPES as readonly string[]).includes(file.type) ||
@@ -116,8 +118,15 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
       continue;
     }
 
-    if (isAcceptableArtworkImage(file)) accepted.push(file);
-    else rejectedCount += 1;
+    if (isAcceptableArtworkImage(file)) {
+      accepted.push(file);
+      continue;
+    }
+
+    rejectedCount += 1;
+    // 형식 · 용량 안내를 미리 보여 주지 않으므로, 용량만 넘은 사진은 무엇이 틀렸는지 알려 준다
+    if (isArtworkImageType(file))
+      message = `사진은 장당 ${MAX_ARTWORK_IMAGE_MB}MB 이하로 올려주세요`;
   }
 
   return { accepted, rejectedCount, overLimit, message, videoLimitMessage };

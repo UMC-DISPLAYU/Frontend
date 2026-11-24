@@ -20,14 +20,11 @@ import { ArtworkFieldChips } from './ArtworkFieldChips';
 import { ArtworkImageField } from './ArtworkImageField';
 import {
   MAX_ARTWORK_FIELDS,
-  MAX_ARTWORK_IMAGE_MB,
   MAX_ARTWORK_IMAGES,
   MAX_ARTWORK_INTRO_LENGTH,
   MAX_ARTWORK_MATERIAL_LENGTH,
   MAX_ARTWORK_SIZE_LENGTH,
   MAX_ARTWORK_TITLE_LENGTH,
-  MAX_ARTWORK_VIDEO_DURATION_LABEL,
-  MAX_ARTWORK_VIDEO_MB,
   MAX_PROCESS_IMAGES,
 } from './artworkRegister.constants';
 import {
@@ -37,7 +34,6 @@ import {
 } from './artworkRegister.schema';
 import {
   BIG_BUTTON_CLASS,
-  HELP_CLASS,
   INPUT_CLASS,
   LABEL_CLASS,
   OPTIONAL_CLASS,
@@ -224,7 +220,7 @@ export function ArtworkRegisterForm({
               className="mt-4"
               label="작품 이미지"
               required
-              help={`첫 번째 사진이 대표 이미지예요\nJPG, PNG, WEBP, HEIC · 장당 최대 ${MAX_ARTWORK_IMAGE_MB}MB${allowVideo ? `\n영상은 1개까지 · MP4, MOV, WEBM · ${MAX_ARTWORK_VIDEO_DURATION_LABEL} 이내 · ${MAX_ARTWORK_VIDEO_MB}MB 이하` : ''}`}
+              help="첫 번째 사진이 대표 이미지예요"
               addLabel={allowVideo ? '사진·영상 추가' : '사진 추가'}
               uploads={artworkImages}
               representative
@@ -253,7 +249,6 @@ export function ArtworkRegisterForm({
               <label htmlFor={`${formId}-intro`} className={LABEL_CLASS}>
                 <span>작품 설명 {OPTIONAL_MARK}</span>
               </label>
-              <p className={HELP_CLASS}>작품의 주제나 제작 의도를 소개해주세요</p>
               <textarea
                 id={`${formId}-intro`}
                 maxLength={MAX_ARTWORK_INTRO_LENGTH}
