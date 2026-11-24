@@ -72,7 +72,7 @@ function StackImage({ src, alt, eager }: { src: string; alt: string; eager: bool
       loading={eager ? 'eager' : 'lazy'}
       onLoad={() => setIsLoaded(true)}
       className={cn(
-        'block w-full bg-secondary select-none desktop:max-h-[calc(var(--W)*4/3)] desktop:object-contain',
+        'block w-full bg-secondary select-none',
         STACK_SCROLL_MARGIN,
         isLoaded ? 'h-auto' : 'aspect-4/5',
       )}
@@ -428,7 +428,7 @@ export function ArtworkViewer({
                       poster={src}
                       label={`${altOf(index)} 영상`}
                       onError={handleVideoError}
-                      className="block h-auto w-full bg-secondary desktop:max-h-[calc(var(--W)*4/3)] desktop:object-contain"
+                      className="block h-auto w-full bg-secondary"
                     />
                   ) : (
                     <>
