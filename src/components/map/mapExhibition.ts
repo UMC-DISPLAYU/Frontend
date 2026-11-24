@@ -35,6 +35,15 @@ export function getMapExhibitionStatus(
   return 'live';
 }
 
+/** 그날 열려 있는 전시인지. 시작일 · 종료일 당일도 열린 날로 센다 */
+export function isOpenOn(
+  exhibition: Pick<NearbyDisplay, 'startDate' | 'endDate'>,
+  day: Date,
+): boolean {
+  const target = startOfDay(day).getTime();
+  return dayIndex(exhibition.startDate) <= target && dayIndex(exhibition.endDate) >= target;
+}
+
 export function getDaysUntilOpen(startDate: string, now: Date = new Date()) {
   return Math.max(0, Math.round((dayIndex(startDate) - startOfDay(now).getTime()) / DAY_MS));
 }
