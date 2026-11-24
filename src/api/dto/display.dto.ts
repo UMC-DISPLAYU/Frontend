@@ -465,7 +465,7 @@ export interface CreateDisplayRequestDto {
   websiteUrl?: string;
   /* 생략하면 조정 없이 만든다 */
   posterCrop?: PosterCropDto;
-  /* 생략하면 FILL 로 저장한다. 화면은 대표 포스터가 사진이면 항상 보낸다 */
+  /* 생략하면 FILL 로 저장한다. 화면은 항상 보낸다(영상 대표는 FILL) */
   posterFit?: ImageFitDto;
   posterEdgeColor?: string;
   departmentOrClubValid?: boolean;
@@ -506,7 +506,7 @@ export interface UpdateDisplayRequestDto {
   region?: CreateDisplayRequestDto['region'] | null;
   /* 대표 포스터 주소가 바뀌면 서버가 초기화한다 */
   posterCrop?: PosterCropDto | null;
-  /* 생략하거나 null 이면 기존 값을 유지한다. 대표 포스터 주소가 바뀌어도 초기화하지 않으니 사진이면 항상 보낸다 */
+  /* 생략하거나 null 이면 기존 값을 유지한다. 대표 포스터 주소가 바뀌어도 초기화하지 않으니 항상 보낸다(영상 대표는 FILL) */
   posterFit?: ImageFitDto | null;
   posterEdgeColor?: string | null;
 }

@@ -163,6 +163,20 @@ test.describe('작품 대표 사진', () => {
     await expectFitLook(uploadedImages(page).first(), { objectFit: 'cover' });
   });
 
+  test('대표가 영상인 작품을 수정하면 꽉 채우기를 보낸다', async ({ page }) => {
+    // 목 1099번: 대표가 영상인 작품(videoSamples.ts)
+    await page.goto('/exhibition/101/artworks/1099/edit');
+    await expect(page.getByLabel('영상 썸네일 변경')).toBeAttached();
+
+    const request = page.waitForRequest(
+      (req) =>
+        req.method() === 'PATCH' && /\/v1\/artworks\/1099$/.test(new URL(req.url()).pathname),
+    );
+    await page.getByRole('button', { name: '수정 완료', exact: true }).click();
+    const body = (await request).postDataJSON() as { artworkFit?: string };
+    expect(body.artworkFit).toBe('FILL');
+  });
+
   test('수정에서 대표 사진을 가로 사진으로 바꾸면 새 사진 기준 보이는 방식을 보낸다', async ({
     page,
   }) => {

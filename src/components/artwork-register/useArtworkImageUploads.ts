@@ -127,6 +127,15 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
   return { accepted, rejectedCount, overLimit, message, videoLimitMessage };
 }
 
+/**
+ * 요청에 보낼 대표 사진 보이는 방식. 영상 대표는 꽉 채우기를 보낸다
+ * (생략하면 서버가 이전 대표 사진의 값을 남겨 카드가 영상 썸네일을 전체 보이기로 그린다)
+ */
+export function toRepresentativeArtworkFit(item: ArtworkImageItem | undefined): ImageFitDto | null {
+  if (!item) return null;
+  return item.mediaType === 'VIDEO' ? 'FILL' : (item.fit ?? null);
+}
+
 const toInitialItems = (
   urls: string[],
   videos: Record<string, ArtworkVideoMeta>,
@@ -504,8 +513,8 @@ export function useArtworkImageUploads({
           { thumbnailUrl: item.thumbnailUrl!, width: item.width, height: item.height },
         ]),
     ) as Record<string, ArtworkVideoMeta>,
-    /** 대표 사진의 보이는 방식. 영상 대표는 보내지 않는다(목록은 꽉 채우기로 그린다) */
-    representativeFit: representative?.mediaType === 'IMAGE' ? (representative.fit ?? null) : null,
+    /** 대표 사진의 보이는 방식. 영상 대표는 꽉 채우기 */
+    representativeFit: toRepresentativeArtworkFit(representative),
     addFiles,
     retry,
     remove,

@@ -69,6 +69,7 @@ function DisplayRegisterIntroForm() {
       fit: draft.posterFit,
       edgeColor: draft.posterEdgeColor,
     },
+    initialImageInfo: draft.posterImageInfo,
   });
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
   const [isTitleHelpShown, setIsTitleHelpShown] = useState(false);
@@ -165,6 +166,7 @@ function DisplayRegisterIntroForm() {
       posterCrop: posters.posterCrop,
       posterFit: posters.posterFit,
       posterEdgeColor: posters.posterEdgeColor,
+      posterImageInfo: posters.posterImageInfo,
       title: data.title,
       intro: data.intro,
       type: data.type,
