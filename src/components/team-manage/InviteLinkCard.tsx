@@ -6,7 +6,17 @@ import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/error';
 
+import { getInviteLinkStatus, type InviteLinkStatus } from './inviteLinkStatus';
 import { CopyIcon } from './TeamIcons';
+
+const STATUS_LABEL: Record<
+  Exclude<InviteLinkStatus, 'loading'>,
+  { text: string; className: string }
+> = {
+  active: { text: '링크 활성화', className: 'text-[#00c758]' },
+  error: { text: '불러오기 실패', className: 'text-error' },
+  off: { text: '초대 링크 꺼짐', className: 'text-[#71717b]' },
+};
 
 interface InviteLinkCardProps {
   displayId: number;
@@ -20,12 +30,19 @@ export function InviteLinkCard({
   invitationDisabledAt,
 }: InviteLinkCardProps) {
   const toggle = useToggleDisplayInvitationLink(displayId);
-  const { data: invitationUrl } = useDisplayInvitationUrl(displayId);
+  const { data: invitationUrl, isError: isUrlError } = useDisplayInvitationUrl(displayId);
   const savedEnabled = Boolean(invitationToken) && !invitationDisabledAt;
   // 요청 중에는 누른 쪽으로 먼저 보여준다. 실패하면 서버 값으로 돌아간다
   const enabled = toggle.isPending ? toggle.variables : savedEnabled;
   const link = savedEnabled ? (invitationUrl ?? '') : '';
-  const canCopy = enabled && link !== '';
+  const status = getInviteLinkStatus({
+    enabled,
+    link,
+    isLinkError: isUrlError,
+    isToggling: toggle.isPending,
+  });
+  const statusLabel = status === 'loading' ? null : STATUS_LABEL[status];
+  const canCopy = status === 'active';
 
   const changeEnabled = () => {
     toggle.mutate(!enabled, {
@@ -53,11 +70,11 @@ export function InviteLinkCard({
     >
       <div className="flex items-center gap-2">
         <h3 className="text-[14px] font-semibold">링크로 초대</h3>
-        <span
-          className={cn('text-[10px] font-semibold', enabled ? 'text-[#00c758]' : 'text-[#71717b]')}
-        >
-          {enabled ? '링크 활성화' : '초대 링크 꺼짐'}
-        </span>
+        {statusLabel && (
+          <span className={cn('text-[10px] font-semibold', statusLabel.className)}>
+            {statusLabel.text}
+          </span>
+        )}
         <button
           type="button"
           role="switch"
