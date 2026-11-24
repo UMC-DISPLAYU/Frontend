@@ -13,12 +13,14 @@ import {
   getSnapOptions,
   getSnapPx,
   getViewInsets,
+  isSameDay,
   type LatLng,
   MapCanvas,
   MapControls,
   type MapExhibition,
   MapExhibitionList,
   type MapExhibitionStatus,
+  type MapFilters,
   MapSelectedExhibition,
   MapSheet,
   MapSheetMessage,
@@ -104,6 +106,7 @@ export function MapPage() {
   const [snapshot, setSnapshot] = useState<MapSnapshot | null>(null);
   const [query, setQuery] = useState('');
   const [statusFilters, setStatusFilters] = useState<MapExhibitionStatus[]>([]);
+  const [pickedDate, setPickedDate] = useState<Date | null>(null);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [requestedSnap, setSnap] = useState<SheetSnap>('mid');
   const [isPanelFolded, setIsPanelFolded] = useState(readPanelFolded);
@@ -111,9 +114,13 @@ export function MapPage() {
   const idleTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const didInitialFitRef = useRef(savedView !== null);
 
+  const filters = useMemo<MapFilters>(
+    () => ({ query, statusFilters, date: pickedDate }),
+    [query, statusFilters, pickedDate],
+  );
+
   // 선택한 전시가 지도 밖으로 나가도 시트에는 남도록 선택 당시 값을 쓰고, 필터에서 빠지면 선택을 푼다
-  const selected =
-    selection && matchesMapFilters(selection.exhibition, query, statusFilters) ? selection : null;
+  const selected = selection && matchesMapFilters(selection.exhibition, filters) ? selection : null;
   const isPinMode = selected?.via === 'pin';
   const snap = !isPinMode && requestedSnap === 'one' ? 'mid' : requestedSnap;
   const isSheetLowered = !isDesktop && snap === 'peek';
@@ -151,14 +158,23 @@ export function MapPage() {
     onError: (message) => toast(message),
   });
 
-  const { exhibitions, matched, inView, statusCounts, hasData, isLoading, error, refetch } =
-    useMapExhibitions({
-      snapshot,
-      insets: listInsets,
-      query,
-      statusFilters,
-      myLocation: myLocation.location,
-    });
+  const {
+    exhibitions,
+    queried,
+    matched,
+    inView,
+    statusCounts,
+    dateCount,
+    hasData,
+    isLoading,
+    error,
+    refetch,
+  } = useMapExhibitions({
+    snapshot,
+    insets: listInsets,
+    filters,
+    myLocation: myLocation.location,
+  });
 
   const pins = useMemo(() => {
     if (!selected || matched.some((exhibition) => exhibition.id === selected.exhibition.id)) {
@@ -259,14 +275,26 @@ export function MapPage() {
     }
   };
 
+  const fitToFilters = (nextFilters: MapFilters) =>
+    fitToMatches(exhibitions.filter((exhibition) => matchesMapFilters(exhibition, nextFilters)));
+
+  // 날짜와 전시 상태는 한쪽만 걸린다: 상태 칩을 누르면 고른 날이 풀린다
   const handleToggleStatus = (status: MapExhibitionStatus) => {
-    const nextFilters = statusFilters.includes(status)
+    const nextStatusFilters = statusFilters.includes(status)
       ? statusFilters.filter((value) => value !== status)
       : [...statusFilters, status];
-    setStatusFilters(nextFilters);
-    fitToMatches(
-      exhibitions.filter((exhibition) => matchesMapFilters(exhibition, query, nextFilters)),
-    );
+    setStatusFilters(nextStatusFilters);
+    setPickedDate(null);
+    fitToFilters({ query, statusFilters: nextStatusFilters, date: null });
+  };
+
+  // 같은 날을 다시 고르면 풀린다. 날을 고르면 상태 칩은 꺼진다
+  const handlePickDate = (date: Date) => {
+    const nextDate = pickedDate && isSameDay(pickedDate, date) ? null : date;
+    const nextStatusFilters = nextDate ? [] : statusFilters;
+    setPickedDate(nextDate);
+    setStatusFilters(nextStatusFilters);
+    fitToFilters({ query, statusFilters: nextStatusFilters, date: nextDate });
   };
 
   const handleSearch = (word: string) => {
@@ -274,9 +302,7 @@ export function MapPage() {
     setQuery(nextQuery);
     clearSelection();
     // 검색하면 결과가 다 보이도록 지도를 옮긴다
-    fitToMatches(
-      exhibitions.filter((exhibition) => matchesMapFilters(exhibition, nextQuery, statusFilters)),
-    );
+    fitToFilters({ ...filters, query: nextQuery });
   };
 
   // 검색어를 지울 때는 검색만 풀고 지도는 보던 위치 그대로 둔다
@@ -383,6 +409,10 @@ export function MapPage() {
         statusFilters={statusFilters}
         statusCounts={statusCounts}
         onToggleStatus={handleToggleStatus}
+        calendarExhibitions={queried}
+        pickedDate={pickedDate}
+        pickedCount={dateCount}
+        onPickDate={handlePickDate}
         showLocationNotice={myLocation.isDenied}
         onBack={handleBack}
       />

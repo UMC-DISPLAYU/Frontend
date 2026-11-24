@@ -1,3 +1,4 @@
+export { isSameDay } from './mapCalendar';
 export { MapCanvas, type MapCanvasPin } from './MapCanvas';
 export { MapControls } from './MapControls';
 export type { LatLng, MapExhibitionStatus } from './mapExhibition';
@@ -24,7 +25,12 @@ export {
   zoomBy,
 } from './mapViewport';
 export { useElementHeight } from './useElementHeight';
-export { type MapExhibition, matchesMapFilters, useMapExhibitions } from './useMapExhibitions';
+export {
+  type MapExhibition,
+  type MapFilters,
+  matchesMapFilters,
+  useMapExhibitions,
+} from './useMapExhibitions';
 export { useMapViewport } from './useMapViewport';
 export { useMyLocation } from './useMyLocation';
 export { useSheetDrag } from './useSheetDrag';

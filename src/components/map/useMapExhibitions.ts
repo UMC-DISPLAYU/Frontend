@@ -8,6 +8,7 @@ import {
   getDistanceMeters,
   getMapExhibitionStatus,
   getMapStatusLabel,
+  isOpenOn,
   type LatLng,
   type MapExhibitionStatus,
   matchesMapQuery,
@@ -21,6 +22,8 @@ export interface MapExhibition {
   organization?: string;
   locationName: string;
   period: string;
+  startDate: string;
+  endDate: string;
   position: LatLng;
   status: MapExhibitionStatus;
   statusLabel: string;
@@ -28,12 +31,17 @@ export interface MapExhibition {
   distance?: string;
 }
 
-export const matchesMapFilters = (
-  exhibition: Pick<MapExhibition, 'title' | 'organization' | 'locationName' | 'status'>,
+export interface MapFilters {
+  query: string;
+  statusFilters: MapExhibitionStatus[];
+  /** 고른 날. 날짜와 전시 상태는 한쪽만 걸린다(프로토타입) */
+  date: Date | null;
+}
+
+const matchesQuery = (
+  exhibition: Pick<MapExhibition, 'title' | 'organization' | 'locationName'>,
   query: string,
-  statusFilters: MapExhibitionStatus[],
 ) =>
-  (statusFilters.length === 0 || statusFilters.includes(exhibition.status)) &&
   matchesMapQuery(
     {
       title: exhibition.title,
@@ -43,11 +51,22 @@ export const matchesMapFilters = (
     query,
   );
 
+export const matchesMapFilters = (
+  exhibition: Pick<
+    MapExhibition,
+    'title' | 'organization' | 'locationName' | 'status' | 'startDate' | 'endDate'
+  >,
+  { query, statusFilters, date }: MapFilters,
+) =>
+  (date
+    ? isOpenOn(exhibition, date)
+    : statusFilters.length === 0 || statusFilters.includes(exhibition.status)) &&
+  matchesQuery(exhibition, query);
+
 interface UseMapExhibitionsOptions {
   snapshot: MapSnapshot | null;
   insets: ViewInsets;
-  query: string;
-  statusFilters: MapExhibitionStatus[];
+  filters: MapFilters;
   myLocation: LatLng | null;
 }
 
@@ -58,8 +77,7 @@ interface UseMapExhibitionsOptions {
 export function useMapExhibitions({
   snapshot,
   insets,
-  query,
-  statusFilters,
+  filters,
   myLocation,
 }: UseMapExhibitionsOptions) {
   const { data, isLoading, error, refetch } = useMapDisplays();
@@ -81,6 +99,8 @@ export function useMapExhibitions({
             organization: display.schoolDepartmentName,
             locationName: display.locationName,
             period: `${formatDate(display.startDate)} - ${formatDate(display.endDate)}`,
+            startDate: display.startDate,
+            endDate: display.endDate,
             position,
             status,
             statusLabel: getMapStatusLabel(display),
@@ -92,17 +112,29 @@ export function useMapExhibitions({
     [data, myLocation],
   );
 
-  const statusCounts = useMemo(() => {
-    const queried = exhibitions.filter((exhibition) => matchesMapFilters(exhibition, query, []));
-    return {
+  // 칩 · 달력의 개수는 검색어만 반영한다
+  const queried = useMemo(
+    () => exhibitions.filter((exhibition) => matchesQuery(exhibition, filters.query)),
+    [exhibitions, filters.query],
+  );
+
+  const statusCounts = useMemo(
+    () => ({
       live: queried.filter((exhibition) => exhibition.status === 'live').length,
       soon: queried.filter((exhibition) => exhibition.status === 'soon').length,
-    };
-  }, [exhibitions, query]);
+    }),
+    [queried],
+  );
+
+  const { date } = filters;
+  const dateCount = useMemo(
+    () => (date ? queried.filter((exhibition) => isOpenOn(exhibition, date)).length : 0),
+    [queried, date],
+  );
 
   const matched = useMemo(
-    () => exhibitions.filter((exhibition) => matchesMapFilters(exhibition, query, statusFilters)),
-    [exhibitions, query, statusFilters],
+    () => exhibitions.filter((exhibition) => matchesMapFilters(exhibition, filters)),
+    [exhibitions, filters],
   );
 
   const inView = useMemo(() => {
@@ -124,9 +156,11 @@ export function useMapExhibitions({
 
   return {
     exhibitions,
+    queried,
     matched,
     inView,
     statusCounts,
+    dateCount,
     hasData: data !== undefined,
     isLoading: isLoading || !snapshot,
     error,

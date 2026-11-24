@@ -220,6 +220,40 @@ const DISPLAY_MAP_COORDINATES: Record<number, { latitude: number; longitude: num
   106: { latitude: 37.61029, longitude: 126.99594 },
 };
 
+/*
+ * 목 전시는 날짜가 고정이라 모두 지난 전시가 되어 지도가 빈다. 지도 응답에서만 오늘 기준 기간으로 옮겨
+ * 전시 중 · 예정 칩과 날짜 거르기(오늘 하루, 오늘 끝남, 다음 달까지 등)를 확인할 수 있게 한다
+ */
+const DISPLAY_MAP_PERIOD_OFFSETS: Record<number, [startDays: number, endDays: number]> = {
+  101: [-5, 5],
+  102: [0, 0],
+  103: [-14, 0],
+  104: [1, 3],
+  105: [3, 12],
+  106: [25, 40],
+};
+
+const localDateAfter = (days: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+};
+
+const mapPeriodOf = (display: any) => {
+  const offsets = DISPLAY_MAP_PERIOD_OFFSETS[display.displayId];
+  if (offsets) {
+    return { startDate: localDateAfter(offsets[0]), endDate: localDateAfter(offsets[1]) };
+  }
+  return {
+    startDate: display.period?.startDate ?? display.startedAt,
+    endDate: display.period?.endDate ?? display.endedAt,
+  };
+};
+
 const isInsideBounds = (
   latitude: number,
   longitude: number,
@@ -548,8 +582,7 @@ export const displayHandlers = [
           return {
             displayId: display.displayId,
             title: display.title,
-            startDate: display.period?.startDate ?? display.startedAt,
-            endDate: display.period?.endDate ?? display.endedAt,
+            ...mapPeriodOf(display),
             locationName: display.location?.placeName ?? display.placeName,
             posterImageUrl: display.posterImageUrl,
             ...posterFitFields(display),
