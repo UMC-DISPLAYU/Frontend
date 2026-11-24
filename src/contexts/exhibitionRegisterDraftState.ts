@@ -9,6 +9,17 @@ export type ExhibitionPosterMedia = {
   thumbnailUrl: string | null;
 };
 
+/**
+ * 올릴 때 로컬 파일로 잰 포스터 사진 정보. 대표가 아닌 포스터도 남겨 두어, 나중에 대표가 돼도
+ * 올린 주소(다른 출처)를 다시 재지 않는다
+ */
+export type PosterImageInfo = {
+  width?: number;
+  height?: number;
+  fit?: ImageFitDto | null;
+  edgeColor?: string | null;
+};
+
 export type ExhibitionRegisterDraft = {
   /** 수정 중인 전시 id. 등록 중이면 null */
   editDisplayId: number | null;
@@ -41,9 +52,11 @@ export type ExhibitionRegisterDraft = {
   artistName: string;
   fieldLabels: string[];
   posterCrop: PosterCropRect | null;
-  /* 대표 포스터 보이는 방식 · 가장자리 색. 백엔드 확인 전 필드 */
+  /* 대표 포스터 보이는 방식 · 가장자리 색. 대표가 사진이면 보이는 방식은 항상 값이 있다(사진 비율 자동 결과 또는 고른 값) */
   posterFit: ImageFitDto | null;
   posterEdgeColor: string | null;
+  /** 올라간 포스터 주소 → 잰 사진 정보. 서버에 보내지 않는다 */
+  posterImageInfo: Record<string, PosterImageInfo>;
 };
 
 export type PosterCropRect = { x: number; y: number; w: number; h: number };
@@ -78,6 +91,7 @@ export const INITIAL_EXHIBITION_REGISTER_DRAFT: ExhibitionRegisterDraft = {
   posterCrop: null,
   posterFit: null,
   posterEdgeColor: null,
+  posterImageInfo: {},
 };
 
 export const ExhibitionRegisterDraftContext = createContext<{

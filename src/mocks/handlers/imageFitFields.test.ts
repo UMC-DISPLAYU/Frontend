@@ -101,6 +101,53 @@ describe('보이는 방식 · 주조색 필드(#666)', () => {
     for (const field of POSTER_FIELDS) expect(text).toContain(`"${field}"`);
   });
 
+  it('생성에서 보이는 방식을 생략하면 FILL 로 저장한다', async () => {
+    const display = await call('POST', '/display', DISPLAY_APIS[0][2]);
+    expect(JSON.parse(display.text).success.data).toMatchObject({ posterFit: 'FILL' });
+
+    const artwork = await call('POST', '/artworks', ARTWORK_BODY);
+    expect(JSON.parse(artwork.text).success.data).toMatchObject({ artworkFit: 'FILL' });
+  });
+
+  it('목록 · 상세 응답의 보이는 방식은 null 이 아니다', async () => {
+    const display = await call('GET', '/display/101');
+    expect(JSON.parse(display.text).success.data.posterFit).toMatch(/^(FILL|FIT)$/);
+
+    const artwork = await call('GET', '/artworks/1001');
+    expect(JSON.parse(artwork.text).success.data.artworkFit).toMatch(/^(FILL|FIT)$/);
+  });
+
+  it('대표 포스터를 바꿔도 보이는 방식 · 가장자리 색은 유지하고 범위만 초기화한다', async () => {
+    await call('PATCH', '/display', {
+      displayId: 104,
+      posterFit: 'FIT',
+      posterEdgeColor: '#445566',
+      posterCrop: { x: 0, y: 0, w: 0.5, h: 0.5 },
+    });
+    await call('PATCH', '/display', {
+      displayId: 104,
+      posterMedia: { imageUrl: 'https://x/new-poster.png', mediaType: 'IMAGE' },
+    });
+
+    const { text } = await call('GET', '/display/104');
+    expect(JSON.parse(text).success.data).toMatchObject({
+      posterFit: 'FIT',
+      posterEdgeColor: '#445566',
+      posterCrop: null,
+    });
+  });
+
+  it('대표 사진을 바꿔도 작품 보이는 방식은 유지한다', async () => {
+    await call('PATCH', '/artworks/1002', { ...ARTWORK_BODY, artworkFit: 'FIT' });
+    await call('PATCH', '/artworks/1002', {
+      ...ARTWORK_BODY,
+      images: [{ imageUrl: 'https://x/new-artwork.png', mediaType: 'IMAGE', isThumbnail: true }],
+    });
+
+    const { text } = await call('GET', '/artworks/1002');
+    expect(JSON.parse(text).success.data).toMatchObject({ artworkFit: 'FIT' });
+  });
+
   it('전시 수정에서 필드를 생략하면 기존 값을 유지한다', async () => {
     await call('PATCH', '/display', {
       displayId: 102,

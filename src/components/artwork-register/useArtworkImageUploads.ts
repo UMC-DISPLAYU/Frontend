@@ -5,6 +5,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import type { ImageFitDto, MediaTypeDto } from '@/api/dto';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
 import { type CropRect, isValidCrop } from '@/utils/cropBox';
+import { ARTWORK_FIT_RULE, readImageSize, resolveImageFit } from '@/utils/imageFit';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
 
@@ -29,7 +30,10 @@ export type ArtworkImageItem = {
   uploadedUrl?: string;
   /** 카드에 보이는 부분. 없으면 사진 가운데 */
   crop?: CropRect | null;
-  /** 썸네일 조정에서 고른 보이는 방식. 없으면 사진 비율로 자동 결과를 쓴다 */
+  /**
+   * 대표 사진 보이는 방식. 대표가 되면 사진 크기를 재서 자동 결과로 채우고, 썸네일 조정에서 바꾼다.
+   * 저장된 대표 사진은 서버 값이고, 크기를 재기 전에만 비어 있다
+   */
   fit?: ImageFitDto | null;
   /** 올라간 영상 썸네일 주소 */
   thumbnailUrl?: string;
@@ -123,6 +127,15 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
   return { accepted, rejectedCount, overLimit, message, videoLimitMessage };
 }
 
+/**
+ * 요청에 보낼 대표 사진 보이는 방식. 영상 대표는 꽉 채우기를 보낸다
+ * (생략하면 서버가 이전 대표 사진의 값을 남겨 카드가 영상 썸네일을 전체 보이기로 그린다)
+ */
+export function toRepresentativeArtworkFit(item: ArtworkImageItem | undefined): ImageFitDto | null {
+  if (!item) return null;
+  return item.mediaType === 'VIDEO' ? 'FILL' : (item.fit ?? null);
+}
+
 const toInitialItems = (
   urls: string[],
   videos: Record<string, ArtworkVideoMeta>,
@@ -166,6 +179,7 @@ export function useArtworkImageUploads({
   allowVideo = false,
   videoNotAllowedMessage,
   onUploadError,
+  representative: hasRepresentative = false,
 }: {
   initialUrls: string[];
   /** 첫 장(대표 사진)에 저장돼 있던 썸네일 영역 */
@@ -177,6 +191,8 @@ export function useArtworkImageUploads({
   allowVideo?: boolean;
   videoNotAllowedMessage?: string;
   onUploadError?: () => void;
+  /** 첫 장이 대표 사진인 칸(작품 이미지). 대표 사진의 보이는 방식을 정한다 */
+  representative?: boolean;
 }) {
   const [items, setItems] = useState<ArtworkImageItem[]>(() =>
     toInitialItems(initialUrls, initialVideos, initialCrop, initialFit),
@@ -193,6 +209,8 @@ export function useArtworkImageUploads({
   const abortersRef = useRef(new Map<string, AbortController>());
   /* 썸네일을 연달아 바꿨을 때 늦게 끝난 앞 업로드가 덮어쓰지 않도록 마지막 요청만 반영한다 */
   const thumbnailRequestRef = useRef(new Map<string, number>());
+  /* 크기를 재고 있는 사진. 같은 사진을 두 번 재지 않는다 */
+  const measuringRef = useRef(new Set<string>());
 
   useEffect(() => {
     itemsRef.current = items;
@@ -439,6 +457,43 @@ export function useArtworkImageUploads({
     [isAlive, patchItem, uploadImage],
   );
 
+  const representative = hasRepresentative ? items[0] : undefined;
+  // HEIC 는 JPG 로 바꾼 뒤(미리보기 주소가 생긴 뒤)에 잰다
+  const needsRepresentativeFit =
+    representative?.mediaType === 'IMAGE' && !representative.fit && !!representative.previewUrl;
+
+  // 사진을 올리거나 다른 사진이 대표가 되면 그 사진 비율로 보이는 방식을 채운다. 읽지 못하면 꽉 채우기(서버 기본값)
+  useEffect(() => {
+    if (!needsRepresentativeFit) return;
+
+    const { id, previewUrl } = representative;
+    if (measuringRef.current.has(id)) return;
+    measuringRef.current.add(id);
+
+    void readImageSize(previewUrl).then((size) => {
+      measuringRef.current.delete(id);
+      if (!isAlive(id)) return;
+
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                // 재는 동안 썸네일 조정에서 고른 값은 덮어쓰지 않는다
+                fit:
+                  item.fit ??
+                  resolveImageFit(
+                    { crop: item.crop, width: size?.width, height: size?.height },
+                    ARTWORK_FIT_RULE,
+                  ) ??
+                  'FILL',
+              }
+            : item,
+        ),
+      );
+    });
+  }, [isAlive, needsRepresentativeFit, representative]);
+
   const readyItems = items.filter(isArtworkItemReady);
 
   return {
@@ -447,7 +502,8 @@ export function useArtworkImageUploads({
     allowVideo,
     videoLimitMessage,
     hasUploadError: failedFiles.length > 0 || hasMediaError,
-    isUploading: items.some((item) => !isArtworkItemReady(item)),
+    // 대표 사진의 보이는 방식을 정하기 전에는 등록하지 않는다(요청에 항상 보낸다)
+    isUploading: items.some((item) => !isArtworkItemReady(item)) || needsRepresentativeFit,
     uploadedUrls: readyItems.map((item) => item.uploadedUrl!),
     uploadedVideos: Object.fromEntries(
       readyItems
@@ -457,6 +513,8 @@ export function useArtworkImageUploads({
           { thumbnailUrl: item.thumbnailUrl!, width: item.width, height: item.height },
         ]),
     ) as Record<string, ArtworkVideoMeta>,
+    /** 대표 사진의 보이는 방식. 영상 대표는 꽉 채우기 */
+    representativeFit: toRepresentativeArtworkFit(representative),
     addFiles,
     retry,
     remove,

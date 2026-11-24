@@ -353,7 +353,7 @@ export const mockDb: {
             const me = { userId: 1, name: makeUser().nickname };
             return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
           }
-          // 썸네일 조정에서 '전체 보이기'를 고른 작품(나머지는 저장값 없이 사진 비율로 자동)
+          // 썸네일 조정에서 '전체 보이기'를 고른 작품(나머지는 서버 기본값 FILL)
           if (index === 2) return { ...detail, artworkFit: 'FIT' };
           return detail;
         }),
@@ -433,20 +433,20 @@ mockDb.upcomingDisplay = makeUpcomingDisplay(
     mockDb.displays[0],
 );
 
-/* 서버에 요청한 보이는 방식 · 주조색 필드. 포스터 범위를 내려주는 응답은 모두 함께 내려준다(값이 없으면 null) */
+/* 보이는 방식 · 주조색 필드. 포스터 범위를 내려주는 응답은 모두 함께 내려준다(보이는 방식은 서버처럼 기본 FILL) */
 export const posterFitFields = (display: {
   posterCrop?: unknown;
   posterFit?: unknown;
   posterEdgeColor?: unknown;
 }) => ({
   posterCrop: display.posterCrop ?? null,
-  posterFit: display.posterFit ?? null,
+  posterFit: display.posterFit ?? 'FILL',
   posterEdgeColor: display.posterEdgeColor ?? null,
 });
 
 export const artworkFitFields = (artwork: { artworkCrop?: unknown; artworkFit?: unknown }) => ({
   artworkCrop: artwork.artworkCrop ?? null,
-  artworkFit: artwork.artworkFit ?? null,
+  artworkFit: artwork.artworkFit ?? 'FILL',
 });
 
 /* 목록에 없는 확인용 전시까지 찾는다. 없는 번호면 undefined */

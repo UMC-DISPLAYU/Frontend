@@ -21,7 +21,7 @@ export interface HomeExhibitionDto {
   placeName?: string | null;
   /* 대표 포스터가 영상이면 영상 주소(posterImageUrl 은 썸네일), 아니면 null */
   posterVideoUrl?: string | null;
-  /* 백엔드 확인 전: 대표 포스터 보이는 부분 · 보이는 방식 · 가장자리 색(#rrggbb) */
+  /* 대표 포스터 보이는 부분 · 보이는 방식 · 가장자리 색(#rrggbb) */
   posterCrop?: PosterCropDto | null;
   posterFit?: ImageFitDto | null;
   posterEdgeColor?: string | null;
@@ -182,7 +182,7 @@ export interface DisplayDetailDto {
   currentScreeningId: number | null;
   /* 대표 포스터 표시 범위. null 이면 조정 없음 */
   posterCrop?: PosterCropDto | null;
-  /* 백엔드 확인 전: 대표 포스터 보이는 방식 · 가장자리 색(#rrggbb). 전체 보이기면 상세 남는 곳도 이 색 */
+  /* 대표 포스터 보이는 방식 · 가장자리 색(#rrggbb). 전체 보이기면 상세 남는 곳도 이 색 */
   posterFit?: ImageFitDto | null;
   posterEdgeColor?: string | null;
   invitationToken: string | null;
@@ -465,7 +465,7 @@ export interface CreateDisplayRequestDto {
   websiteUrl?: string;
   /* 생략하면 조정 없이 만든다 */
   posterCrop?: PosterCropDto;
-  /* 백엔드 확인 전. 대표 포스터가 사진일 때만 보낸다 */
+  /* 생략하면 FILL 로 저장한다. 화면은 항상 보낸다(영상 대표는 FILL) */
   posterFit?: ImageFitDto;
   posterEdgeColor?: string;
   departmentOrClubValid?: boolean;
@@ -506,7 +506,7 @@ export interface UpdateDisplayRequestDto {
   region?: CreateDisplayRequestDto['region'] | null;
   /* 대표 포스터 주소가 바뀌면 서버가 초기화한다 */
   posterCrop?: PosterCropDto | null;
-  /* 백엔드 확인 전. posterCrop 과 같이 생략하면 유지하고, 대표 포스터 주소가 바뀌면 초기화한다 */
+  /* 생략하거나 null 이면 기존 값을 유지한다. 대표 포스터 주소가 바뀌어도 초기화하지 않으니 항상 보낸다(영상 대표는 FILL) */
   posterFit?: ImageFitDto | null;
   posterEdgeColor?: string | null;
 }
@@ -562,7 +562,6 @@ export interface MyDisplayDto {
   /* 대표 포스터가 영상이면 영상 주소(postImageUrl 은 썸네일), 아니면 null */
   posterVideoUrl?: string | null;
   posterCrop?: PosterCropDto | null;
-  /* 백엔드 확인 전 */
   posterFit?: ImageFitDto | null;
   posterEdgeColor?: string | null;
   isLeader?: boolean;

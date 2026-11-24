@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { pickArtworkFiles } from './useArtworkImageUploads';
+import { pickArtworkFiles, toRepresentativeArtworkFit } from './useArtworkImageUploads';
 
 const MB = 1024 * 1024;
 const jpg = (name: string, size = MB) => ({ name, type: 'image/jpeg', size });
@@ -103,5 +103,18 @@ describe('pickArtworkFiles', () => {
       videoLimitMessage: undefined,
     });
     expect(pickArtworkFiles([mp4('v')], 0, 10)).toMatchObject({ accepted: [], rejectedCount: 1 });
+  });
+});
+
+describe('toRepresentativeArtworkFit', () => {
+  it('대표가 영상이면 FILL 을 보낸다(서버가 이전 사진의 값을 남기지 않게)', () => {
+    const item = { id: 'v', mediaType: 'VIDEO' as const, previewUrl: '', fit: 'FIT' as const };
+    expect(toRepresentativeArtworkFit(item)).toBe('FILL');
+  });
+
+  it('대표가 사진이면 그 사진의 보이는 방식, 없으면 null', () => {
+    const item = { id: 'a', mediaType: 'IMAGE' as const, previewUrl: '', fit: 'FIT' as const };
+    expect(toRepresentativeArtworkFit(item)).toBe('FIT');
+    expect(toRepresentativeArtworkFit(undefined)).toBeNull();
   });
 });

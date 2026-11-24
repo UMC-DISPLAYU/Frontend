@@ -300,7 +300,7 @@ export interface CreateExhibitionArtworkRequestDto {
   qaHandlerUserIds: number[];
   /* 수정에서 생략하면 대표 사진이 같은 동안 기존 영역을 유지하고, 대표 사진이 바뀌면 지워진다 */
   artworkCrop?: ArtworkCropDto | null;
-  /* 백엔드 확인 전: 대표 사진 보이는 방식. artworkCrop 과 같이 생략하면 유지하고, 대표 사진이 바뀌면 지워진다 */
+  /* 대표 사진 보이는 방식. 생략하면 생성은 FILL, 수정은 기존 값 유지(대표 사진이 바뀌어도 유지)라서 항상 보낸다(영상 대표는 FILL) */
   artworkFit?: ImageFitDto | null;
 }
 

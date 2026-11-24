@@ -7,10 +7,11 @@ import { MAX_POSTER_UPLOAD_IMAGES } from '@/constants/exhibition';
 import type {
   ExhibitionPosterMedia,
   PosterCropRect,
+  PosterImageInfo,
 } from '@/contexts/exhibitionRegisterDraftState';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
 import { toast } from '@/stores/toastStore';
-import { readLocalImageInfo } from '@/utils/imageFit';
+import { POSTER_FIT_RULE, readImageInfo, resolveImageFit } from '@/utils/imageFit';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
 
@@ -40,10 +41,18 @@ export type PosterItem = {
   videoSrc?: string;
   duration?: number;
   crop?: PosterCropRect | null;
-  /** 썸네일 조정에서 고른 보이는 방식. 없으면 사진 비율로 자동 결과를 쓴다 */
+  /**
+   * 보이는 방식. 사진을 재면 사진 비율 자동 결과로 채우고, 썸네일 조정에서 바꾼다.
+   * 저장된 대표 포스터는 서버 값이고, 크기를 재기 전에만 비어 있다
+   */
   fit?: ImageFitDto | null;
-  /** 포스터 가장자리 색(#rrggbb). 새로 고른 파일은 올리기 전에 재고, 저장된 포스터는 서버 값을 쓴다 */
+  /** 포스터 가장자리 색(#rrggbb). 사진을 잴 때 함께 재고, 저장된 대표 포스터는 서버 값을 쓴다 */
   edgeColor?: string | null;
+  /** 잰 사진 크기 */
+  width?: number;
+  height?: number;
+  /** 사진을 재 봤는지. 색을 읽지 못한 사진을 다시 재지 않는다 */
+  measured?: boolean;
 };
 
 /** 대표 포스터(첫 장)에 저장돼 있던 썸네일 조정 값 */
@@ -72,39 +81,88 @@ const isAcceptablePosterImage = (file: File) =>
 export const isPosterReady = (item: PosterItem) =>
   Boolean(item.uploadedUrl) && (item.mediaType === 'IMAGE' || Boolean(item.thumbnailUrl));
 
-const toInitialItem = (
+/**
+ * draft 의 포스터를 칸으로 되돌린다. 대표 포스터는 draft(수정이면 서버)의 썸네일 조정 값을 쓰고,
+ * 값이 빈 곳은 올릴 때 잰 정보로 채운다
+ */
+export function toInitialPosterItem(
   poster: ExhibitionPosterMedia,
   index: number,
   { crop, fit, edgeColor }: PosterFitState,
-) =>
-  poster.mediaType === 'VIDEO'
-    ? {
-        id: poster.url,
-        mediaType: 'VIDEO' as const,
-        previewUrl: poster.thumbnailUrl ?? '',
-        uploadedUrl: poster.url,
-        thumbnailUrl: poster.thumbnailUrl ?? undefined,
-        videoSrc: poster.url,
-      }
-    : {
-        id: poster.url,
-        mediaType: 'IMAGE' as const,
-        previewUrl: poster.url,
-        uploadedUrl: poster.url,
-        crop: index === 0 ? crop : null,
-        fit: index === 0 ? fit : null,
-        edgeColor: index === 0 ? edgeColor : null,
-      };
+  info: PosterImageInfo | undefined,
+): PosterItem {
+  if (poster.mediaType === 'VIDEO') {
+    return {
+      id: poster.url,
+      mediaType: 'VIDEO',
+      previewUrl: poster.thumbnailUrl ?? '',
+      uploadedUrl: poster.url,
+      thumbnailUrl: poster.thumbnailUrl ?? undefined,
+      videoSrc: poster.url,
+    };
+  }
+
+  const itemCrop = index === 0 ? crop : null;
+  const savedFit = (index === 0 ? fit : null) ?? info?.fit ?? null;
+
+  return {
+    id: poster.url,
+    mediaType: 'IMAGE',
+    previewUrl: poster.url,
+    uploadedUrl: poster.url,
+    crop: itemCrop,
+    fit:
+      savedFit ??
+      resolveImageFit(
+        { crop: itemCrop, width: info?.width, height: info?.height },
+        POSTER_FIT_RULE,
+      ),
+    edgeColor: (index === 0 ? edgeColor : null) ?? info?.edgeColor ?? null,
+    width: info?.width,
+    height: info?.height,
+    // 올릴 때 재 둔 사진은 다시 재지 않는다
+    measured: info ? true : undefined,
+  };
+}
+
+/** 대표 사진인데 보이는 방식이나 가장자리 색이 없고 아직 재 보지 않았으면 잰다 */
+export const needsPosterMeasure = (item: PosterItem | undefined): item is PosterItem =>
+  item?.mediaType === 'IMAGE' &&
+  Boolean(item.previewUrl) &&
+  !item.measured &&
+  (!item.fit || !item.edgeColor);
+
+/** 요청에 보낼 대표 포스터 보이는 방식. 영상 대표는 꽉 채우기(서버가 이전 사진의 값을 남기지 않게 보낸다) */
+export function toRepresentativePosterFit(item: PosterItem | undefined): ImageFitDto | null {
+  if (!item) return null;
+  return item.mediaType === 'VIDEO' ? 'FILL' : (item.fit ?? null);
+}
+
+/** 올라간 사진마다 잰 정보. draft 에 남겨 대표가 아닌 포스터도 다시 재지 않게 한다 */
+export const toPosterImageInfo = (items: PosterItem[]): Record<string, PosterImageInfo> =>
+  Object.fromEntries(
+    items
+      .filter((item) => item.mediaType === 'IMAGE' && item.uploadedUrl && item.measured)
+      .map((item) => [
+        item.uploadedUrl!,
+        { width: item.width, height: item.height, fit: item.fit, edgeColor: item.edgeColor },
+      ]),
+  );
 
 export function usePosterUploads({
   initialPosters,
   initialFit,
+  initialImageInfo = {},
 }: {
   initialPosters: ExhibitionPosterMedia[];
   initialFit: PosterFitState;
+  /** 앞에서 올릴 때 잰 사진 정보(올라간 주소 → 정보) */
+  initialImageInfo?: Record<string, PosterImageInfo>;
 }) {
   const [items, setItems] = useState<PosterItem[]>(() =>
-    initialPosters.map((poster, index) => toInitialItem(poster, index, initialFit)),
+    initialPosters.map((poster, index) =>
+      toInitialPosterItem(poster, index, initialFit, initialImageInfo[poster.url]),
+    ),
   );
   const [errorKind, setErrorKind] = useState<PosterErrorKind | null>(null);
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
@@ -118,6 +176,8 @@ export function usePosterUploads({
   const abortersRef = useRef(new Map<string, AbortController>());
   /* 썸네일을 연달아 바꿨을 때 늦게 끝난 앞 업로드가 덮어쓰지 않도록 마지막 요청만 반영한다 */
   const thumbnailRequestRef = useRef(new Map<string, number>());
+  /* 크기를 재고 있는 사진. 같은 사진을 두 번 재지 않는다 */
+  const measuringRef = useRef(new Set<string>());
 
   useEffect(() => {
     itemsRef.current = items;
@@ -182,18 +242,61 @@ export function usePosterUploads({
     [dropItem, isAlive],
   );
 
+  /** 사진 크기 · 가장자리 색을 재서 보이는 방식을 자동 결과로 채운다. 읽지 못하면 꽉 채우기(서버 기본값) */
+  const measureImage = useCallback(
+    ({ id, previewUrl }: PosterItem) => {
+      if (measuringRef.current.has(id)) return;
+      measuringRef.current.add(id);
+
+      void readImageInfo(previewUrl).then((info) => {
+        measuringRef.current.delete(id);
+        if (!isAlive(id)) return;
+
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  // 재는 동안 썸네일 조정에서 고른 값은 덮어쓰지 않는다
+                  fit:
+                    item.fit ??
+                    resolveImageFit(
+                      { crop: item.crop, width: info?.width, height: info?.height },
+                      POSTER_FIT_RULE,
+                    ) ??
+                    'FILL',
+                  edgeColor: item.edgeColor ?? info?.edgeColor ?? null,
+                  width: item.width ?? info?.width,
+                  height: item.height ?? info?.height,
+                  measured: true,
+                }
+              : item,
+          ),
+        );
+      });
+    },
+    [isAlive],
+  );
+
   const startImageUpload = useCallback(
     (item: PosterItem, file: File) => {
-      // 전체 보이기의 남는 곳에 쓸 가장자리 색은 올리기 전 로컬 파일에서 잰다(올린 주소는 다른 출처라 캔버스로 읽지 못할 수 있다)
-      void readLocalImageInfo(item.previewUrl).then((info) => {
-        if (info && isAlive(item.id)) patchItem(item.id, { edgeColor: info.edgeColor });
-      });
+      // 크기 · 가장자리 색은 올리기 전 로컬 파일에서 잰다
+      measureImage(item);
       uploadImage({ file, domain: 'display' })
         .then((uploadedUrl) => patchItem(item.id, { uploadedUrl }))
         .catch(() => failUpload(item.id, file));
     },
-    [failUpload, isAlive, patchItem, uploadImage],
+    [failUpload, measureImage, patchItem, uploadImage],
   );
+
+  const representative = items[0];
+  const needsRepresentativeMeasure = needsPosterMeasure(representative);
+
+  // 올릴 때 잰 정보가 없는 포스터(서버에 저장돼 있던 포스터)가 대표가 되면 그 사진을 잰다.
+  // 저장된 대표 포스터라도 가장자리 색이 없으면 색을 잰다
+  useEffect(() => {
+    if (needsRepresentativeMeasure) measureImage(representative);
+  }, [measureImage, needsRepresentativeMeasure, representative]);
 
   const startVideoUpload = useCallback(
     async (id: string, file: File) => {
@@ -376,7 +479,8 @@ export function usePosterUploads({
     items,
     errorKind,
     videoLimitMessage,
-    isUploading: items.some((item) => !isPosterReady(item)),
+    // 대표 사진을 재기 전에는 다음 단계로 넘어가지 않는다(보이는 방식 · 가장자리 색을 요청에 보낸다)
+    isUploading: items.some((item) => !isPosterReady(item)) || needsRepresentativeMeasure,
     uploadedPosters,
     /** 수정 화면에서 바뀐 게 있는지 비교할 때 쓴다. 올라가는 중인 칸도 하나로 센다 */
     posterSnapshot: items.map((item) => ({
@@ -384,10 +488,11 @@ export function usePosterUploads({
       mediaType: item.mediaType,
       thumbnailUrl: item.thumbnailUrl ?? null,
     })),
-    // 영상 대표는 서버가 crop 을 받지 않는다. 보이는 방식 · 가장자리 색도 대표 사진에만 쓴다
+    // 영상 대표는 서버가 crop 을 받지 않는다. 가장자리 색도 대표 사진에만 쓴다
     posterCrop: items[0]?.mediaType === 'IMAGE' ? (items[0].crop ?? null) : null,
-    posterFit: items[0]?.mediaType === 'IMAGE' ? (items[0].fit ?? null) : null,
+    posterFit: toRepresentativePosterFit(items[0]),
     posterEdgeColor: items[0]?.mediaType === 'IMAGE' ? (items[0].edgeColor ?? null) : null,
+    posterImageInfo: toPosterImageInfo(items),
     addFiles,
     retry,
     remove: dropItem,
