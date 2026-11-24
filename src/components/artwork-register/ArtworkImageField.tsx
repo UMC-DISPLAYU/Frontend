@@ -221,7 +221,7 @@ function ThumbnailPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust
         </figure>
         <figure className="grid content-start justify-items-center gap-1">
           <div
-            className="grid h-20 place-items-center overflow-hidden bg-[#f0f0f3]"
+            className="relative h-20 overflow-hidden bg-[#f0f0f3]"
             style={{ aspectRatio: DETAIL_RATIO }}
           >
             <img
@@ -231,7 +231,7 @@ function ThumbnailPreview({ item, onAdjust }: { item: ArtworkImageItem; onAdjust
                 const { naturalWidth: width, naturalHeight: height } = event.currentTarget;
                 setSize({ src: item.previewUrl, width, height });
               }}
-              className="pointer-events-none block max-h-full max-w-full object-contain"
+              className="pointer-events-none absolute inset-0 size-full object-contain"
             />
           </div>
           <i className="invisible block h-1 w-full" />
