@@ -1,3 +1,5 @@
+import ChevronMoreIcon from '@/assets/home/ChevronMoreIcon.svg';
+
 import { HOME_INNER } from './homeLayout';
 
 export function RegisterCallout({ onRegister }: { onRegister: () => void }) {
@@ -13,21 +15,17 @@ export function RegisterCallout({ onRegister }: { onRegister: () => void }) {
         <button
           type="button"
           onClick={onRegister}
-          className="typography-body-md-semibold relative flex shrink-0 cursor-pointer items-start rounded-4 whitespace-nowrap after:absolute after:inset-x-0 after:-inset-y-3.5 text-secondary underline decoration-from-font [text-underline-position:from-font] transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-focus"
+          className="typography-body-md-semibold group relative flex shrink-0 cursor-pointer items-center gap-0.5 rounded-4 whitespace-nowrap text-secondary after:absolute after:-inset-x-1 after:-inset-y-3 focus-visible:outline-2 focus-visible:outline-focus"
         >
-          전시 등록하기
-          {/* 전시 상세 링크(인스타 · 웹사이트)의 ↗와 같은 모양 */}
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="mt-[3px] size-3 shrink-0"
-          >
-            <path d="M4.125 7.875 7.875 4.125M7.875 4.125h-3M7.875 4.125v3" />
-          </svg>
+          <span className="decoration-1 underline-offset-3 group-hover:underline">
+            전시 등록하기
+          </span>
+          {/* 안쪽 화면으로 이동하므로 더보기와 같은 꺾쇠를 쓴다 */}
+          <img
+            src={ChevronMoreIcon}
+            alt=""
+            className="size-4 shrink-0 transition-transform duration-fast ease-standard group-hover:translate-x-0.5"
+          />
         </button>
       </div>
     </section>

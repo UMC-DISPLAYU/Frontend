@@ -28,10 +28,10 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
   if (!showSkeleton && !artworks?.length) return null;
 
   return (
-    <section aria-labelledby="home-artworks-title" className={cn(HOME_INNER, 'py-5')}>
+    <section aria-labelledby="home-artworks-title" className={cn(HOME_INNER, 'pt-6 pb-5')}>
       <div className="flex items-center justify-between">
         <h2 id="home-artworks-title" className="typography-body-xxl-semibold text-primary">
-          ARTWORKS
+          작품 둘러보기
         </h2>
         <Link
           to="/search?view=artwork"
@@ -43,12 +43,11 @@ export function ArtworkSection({ artworks, isPending }: ArtworkSectionProps) {
           </span>
         </Link>
       </div>
-      <p className="typography-body-md-medium mt-0.5 text-tertiary">전시 속 작품을 만나보세요</p>
 
       {/* 프로토타입 .art-row > a.art 와 같은 구조: 링크가 바로 슬라이드 칸이다 */}
       <div
         {...skeletonProps}
-        className="-mr-(--home-pad) mt-4 flex snap-x snap-proximity gap-3 overflow-x-auto pr-(--home-pad) [scrollbar-width:none] tablet:mr-0 tablet:gap-4 tablet:pr-0 min-[68.75rem]:gap-6 [&::-webkit-scrollbar]:hidden"
+        className="-mr-(--home-pad) mt-3 flex snap-x snap-proximity gap-3 overflow-x-auto pr-(--home-pad) [scrollbar-width:none] tablet:mr-0 tablet:gap-4 tablet:pr-0 min-[68.75rem]:gap-6 [&::-webkit-scrollbar]:hidden"
       >
         {showSkeleton ? (
           <SkeletonList count={4}>
