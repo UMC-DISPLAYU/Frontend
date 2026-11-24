@@ -29,6 +29,11 @@ describe('displayRegisterBasicSchema', () => {
     expect(issuePaths({ ...VALID, placeName: '   ' })).toContain('placeName');
   });
 
+  it('장소명은 70자까지 통과, 71자부터 실패', () => {
+    expect(issuePaths({ ...VALID, placeName: '가'.repeat(70) })).toEqual([]);
+    expect(issuePaths({ ...VALID, placeName: '가'.repeat(71) })).toContain('placeName');
+  });
+
   it('주소를 검색하지 않으면 좌표가 없어 통과하지 않는다', () => {
     expect(issuePaths({ ...VALID, latitude: undefined, longitude: undefined })).toEqual(
       expect.arrayContaining(['latitude', 'longitude']),
