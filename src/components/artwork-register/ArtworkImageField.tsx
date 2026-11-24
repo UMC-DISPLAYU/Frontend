@@ -269,7 +269,6 @@ export function ArtworkImageField({
 }: ArtworkImageFieldProps) {
   const labelId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [hasRejectedFile, setHasRejectedFile] = useState(false);
   const [cropSession, setCropSession] = useState<{ item: ArtworkImageItem; key: number } | null>(
     null,
   );
@@ -291,11 +290,10 @@ export function ArtworkImageField({
   const addFiles = (files: File[]) => {
     const { overLimit, rejectedCount, message } = uploads.addFiles(files);
 
-    // 프로토타입: 작품 이미지는 칸 위 안내로, 작업 과정은 토스트로 알린다
-    setHasRejectedFile(representative && rejectedCount > 0);
+    // 프로토타입: 조건을 어긴 파일은 토스트로 알리고, 칸 위 오류 상자는 업로드 실패에만 띄운다
     if (overLimit) toast(limitMessage);
     else if (message) toast(message);
-    else if (rejectedCount > 0 && !representative) toast('올릴 수 없는 파일이에요');
+    else if (rejectedCount > 0) toast('올릴 수 없는 파일이에요');
   };
 
   const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
@@ -306,7 +304,6 @@ export function ArtworkImageField({
   const { isDragging: isFileOver, dropProps } = useFileDrop(addFiles);
 
   const handleRetry = () => {
-    setHasRejectedFile(false);
     if (!uploads.retry()) openPicker();
   };
 
@@ -361,15 +358,13 @@ export function ArtworkImageField({
           {items.length}/{maxImages}
         </span>
       </div>
-      <p className={cn(HELP_CLASS, 'whitespace-pre-line')}>{help}</p>
+      <p className={HELP_CLASS}>{help}</p>
       {uploads.videoLimitMessage && (
         <p role="alert" className="typography-body-md-medium mt-1 text-error">
           {uploads.videoLimitMessage}
         </p>
       )}
-      {representative && (uploads.hasUploadError || hasRejectedFile) && (
-        <UploadErrorBox onRetry={handleRetry} />
-      )}
+      {representative && uploads.hasUploadError && <UploadErrorBox onRetry={handleRetry} />}
       <DndContext {...contextProps}>
         <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
           <div

@@ -38,16 +38,16 @@ export function ArtworkAuthorSection({
       <h2 id={headingId} className="typography-body-xl-semibold text-primary">
         작가
       </h2>
-      <p className="typography-body-md-medium mt-1 text-secondary">
-        전시작은 관람자에게 작가명으로 표시돼요
-      </p>
-      <div className="mt-3 overflow-hidden rounded-12 border border-primary">
-        <div className="flex items-center gap-3 p-4">
+      <div className="mt-3 border-y border-bg-secondary">
+        <div className="flex items-center gap-3 py-4">
           <ProfileAvatar />
           <PersonText person={author} />
         </div>
         {coAuthors.map((person) => (
-          <div key={person.key} className="flex items-center gap-3 border-t border-primary p-4">
+          <div
+            key={person.key}
+            className="flex items-center gap-3 border-t border-bg-secondary py-4"
+          >
             <ProfileAvatar />
             <PersonText person={person} />
             <button
@@ -66,7 +66,7 @@ export function ArtworkAuthorSection({
         <button
           type="button"
           onClick={onAddCoAuthor}
-          className="typography-body-lg-semibold flex w-full items-center gap-2 border-t border-primary p-4 text-left text-primary transition-colors duration-fast hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+          className="typography-body-lg-semibold flex w-full items-center gap-2 border-t border-bg-secondary py-4 text-left text-primary transition-colors duration-fast hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
         >
           <PlusIcon className="size-5" />
           공동 작가 추가

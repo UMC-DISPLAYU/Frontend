@@ -52,6 +52,15 @@ describe('pickArtworkFiles', () => {
 
     expect(result.accepted.map((file) => file.name)).toEqual(['a']);
     expect(result.rejectedCount).toBe(1);
+    expect(result.message).toBe('사진은 장당 20MB 이하로 올려주세요');
+  });
+
+  it('형식이 맞지 않는 파일에는 용량 안내를 붙이지 않는다', () => {
+    expect(pickArtworkFiles([gif('x')], 0, 10)).toMatchObject({
+      accepted: [],
+      rejectedCount: 1,
+      message: undefined,
+    });
   });
 
   it('이미 가득 차 있으면 아무것도 넣지 않는다', () => {
