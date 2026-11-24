@@ -41,7 +41,7 @@ export type ExhibitionRegisterDraft = {
   artistName: string;
   fieldLabels: string[];
   posterCrop: PosterCropRect | null;
-  /* 대표 포스터 보이는 방식 · 가장자리 색. 백엔드 확인 전 필드 */
+  /* 대표 포스터 보이는 방식 · 가장자리 색. 대표가 사진이면 보이는 방식은 항상 값이 있다(사진 비율 자동 결과 또는 고른 값) */
   posterFit: ImageFitDto | null;
   posterEdgeColor: string | null;
 };

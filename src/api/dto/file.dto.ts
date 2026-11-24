@@ -7,7 +7,7 @@ export type MediaTypeDto = 'IMAGE' | 'VIDEO';
 
 /*
  * 대표 사진 · 포스터가 목록 칸에 보이는 방식. FILL 꽉 채우기(crop 으로 고른 부분), FIT 전체 보이기.
- * 백엔드 확인 전 필드라 실서버 응답에는 없을 수 있다. 없으면 사진 비율로 자동 결과를 쓴다
+ * 서버는 항상 값을 준다(생성 때 생략하면 FILL). 목 · 예전 응답처럼 없으면 사진 비율로 자동 결과를 쓴다
  */
 export type ImageFitDto = 'FILL' | 'FIT';
 

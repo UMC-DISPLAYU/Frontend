@@ -100,6 +100,7 @@ export function ArtworkRegisterForm({
     initialVideos: initialImages.videos,
     maxImages: MAX_ARTWORK_IMAGES,
     allowVideo,
+    representative: true,
   });
   const processImages = useArtworkImageUploads({
     initialUrls: initialImages.processUrls,
@@ -197,7 +198,7 @@ export function ArtworkRegisterForm({
       artworkUrls: artworkImages.uploadedUrls,
       processUrls: processImages.uploadedUrls,
       artworkCrop: artworkImages.items[0]?.crop ?? null,
-      artworkFit: artworkImages.items[0]?.fit ?? null,
+      artworkFit: artworkImages.representativeFit,
       ...(allowVideo && { videos: artworkImages.uploadedVideos }),
     });
   });

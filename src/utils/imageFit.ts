@@ -106,23 +106,35 @@ function readEdgeColor(image: HTMLImageElement): string | null {
   }
 }
 
-export type LocalImageInfo = { width: number; height: number; edgeColor: string | null };
+export type ImageInfo = { width: number; height: number; edgeColor: string | null };
 
-/** 올리기 전 로컬 사진(blob 주소)의 크기와 가장자리 색. 읽지 못하면 null */
-export function readLocalImageInfo(src: string): Promise<LocalImageInfo | null> {
-  return new Promise((resolve) => {
+const loadImage = (src: string, crossOrigin?: 'anonymous') =>
+  new Promise<HTMLImageElement | null>((resolve) => {
     const image = new Image();
-    image.onload = () =>
-      resolve(
-        image.naturalWidth > 0
-          ? {
-              width: image.naturalWidth,
-              height: image.naturalHeight,
-              edgeColor: readEdgeColor(image),
-            }
-          : null,
-      );
+    if (crossOrigin) image.crossOrigin = crossOrigin;
+    image.onload = () => resolve(image.naturalWidth > 0 ? image : null);
     image.onerror = () => resolve(null);
     image.src = src;
   });
+
+/**
+ * 사진의 크기와 가장자리 색. 읽지 못하면 null.
+ * 저장된 사진(다른 출처)은 CORS 로 받아야 캔버스로 색을 읽을 수 있다. CORS 로 못 받으면 크기만 잰다(색은 null)
+ */
+export async function readImageInfo(src: string): Promise<ImageInfo | null> {
+  const isLocal = src.startsWith('blob:') || src.startsWith('data:');
+  const image = (isLocal ? null : await loadImage(src, 'anonymous')) ?? (await loadImage(src));
+  if (!image) return null;
+
+  return {
+    width: image.naturalWidth,
+    height: image.naturalHeight,
+    edgeColor: readEdgeColor(image),
+  };
+}
+
+/** 사진의 크기. 읽지 못하면 null */
+export async function readImageSize(src: string) {
+  const image = await loadImage(src);
+  return image ? { width: image.naturalWidth, height: image.naturalHeight } : null;
 }

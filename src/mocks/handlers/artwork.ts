@@ -126,7 +126,7 @@ export const artworkHandlers = [
             artistUserIds: toArtistUserIds(artwork),
             artists: toArtistList(artwork),
             artworkCrop: artwork.artworkCrop ?? null,
-            artworkFit: artwork.artworkFit ?? null,
+            artworkFit: artwork.artworkFit ?? 'FILL',
           })),
         ),
       );
@@ -162,7 +162,7 @@ export const artworkHandlers = [
         images: body.images ?? [],
         coAuthors: toCoAuthorList(body.coAuthors, Number(body.displayId ?? 101)),
         artworkCrop: body.artworkCrop ?? null,
-        artworkFit: body.artworkFit ?? null,
+        artworkFit: body.artworkFit ?? 'FILL',
         artworkImageUrl: imageUrl,
         artworkVideoUrl,
         thumbnailUrl: imageUrl,
@@ -249,7 +249,7 @@ export const artworkHandlers = [
         exhibitionInfo: artwork.exhibitionInfo,
         artists: artwork.artists ?? [{ userId: null, name: artwork.artistName ?? '' }],
         artworkCrop: artwork.artworkCrop ?? null,
-        artworkFit: artwork.artworkFit ?? null,
+        artworkFit: artwork.artworkFit ?? 'FILL',
       }));
 
       return success('/api/v1/artworks/search', {
@@ -331,7 +331,7 @@ export const artworkHandlers = [
         artistName: artwork.artistName ?? artwork.artist,
         artistUserId: artwork.artistUserId ?? null,
         artworkCrop: artwork.artworkCrop ?? null,
-        artworkFit: artwork.artworkFit ?? null,
+        artworkFit: artwork.artworkFit ?? 'FILL',
         coAuthors: Array.isArray(artwork.coAuthors) ? artwork.coAuthors : [],
         qaHandlerUserIds:
           artwork.qaHandlerUserIds ?? (artwork.artistUserId ? [artwork.artistUserId] : []),
@@ -364,11 +364,11 @@ export const artworkHandlers = [
       );
       const coAuthors = toCoAuthorList(body.coAuthors, artwork.displayId);
       const materialMedia = toMaterialMedia(body.materialMedia);
-      // 영역을 생략하면 대표 사진이 같은 동안 유지하고, 대표 사진이 바뀌면 지운다
+      // 영역을 생략하면 대표 사진이 같은 동안 유지하고, 대표 사진이 바뀌면 지운다.
+      // 보이는 방식은 생략하면 대표 사진이 바뀌어도 유지한다
       const artworkCrop =
         body.artworkCrop ?? (imageUrl === artwork.artworkImageUrl ? artwork.artworkCrop : null);
-      const artworkFit =
-        body.artworkFit ?? (imageUrl === artwork.artworkImageUrl ? artwork.artworkFit : null);
+      const artworkFit = body.artworkFit ?? artwork.artworkFit;
 
       Object.assign(artwork, body, {
         title: body.artworkName ?? artwork.title,
@@ -377,7 +377,7 @@ export const artworkHandlers = [
         materialMedia,
         material: materialMedia,
         artworkCrop: artworkCrop ?? null,
-        artworkFit: artworkFit ?? null,
+        artworkFit: artworkFit ?? 'FILL',
         artworkImageUrl: imageUrl,
         artworkVideoUrl,
         thumbnailUrl: imageUrl,

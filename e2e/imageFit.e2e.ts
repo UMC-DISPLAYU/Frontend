@@ -21,7 +21,7 @@ import { loginAsMockUser } from './support/session';
  * 프로토타입 image-fit/poster(D안 11-16) · image-fit/work(11-17) 규칙을 목 서버에서 확인한다.
  * 포스터: 카드에 15% 넘게 잘리면 처음엔 전체 보이기, 남는 곳은 포스터 주조색(둘레 최빈색)
  * 작품: 3:4 카드에 30% 넘게 잘리면 처음엔 전체 보이기, 남는 곳은 목록 흰색 · 작품 상세 연한 회색
- * 등록에서 고른 방식이 있으면 자동 결과보다 앞선다
+ * 사진을 올리면 보이는 방식은 자동 결과로 채워지고(썸네일 조정에서 바꿀 수 있다) 요청에 항상 실린다
  */
 
 const SQUARE_POSTER_EDGE = '#2a6f97';
@@ -58,7 +58,7 @@ test.describe('전시 포스터', () => {
   test('정사각 포스터는 처음부터 전체 보이기, 남는 곳은 포스터 주조색', async ({ page }) => {
     const { body, displayId } = await registerPoster(page, { poster: SQUARE_POSTER });
 
-    expect(body.posterFit ?? null).toBeNull();
+    expect(body.posterFit).toBe('FIT');
     expect(body.posterEdgeColor).toBe(SQUARE_POSTER_EDGE);
     const look = { objectFit: 'contain', backgroundColor: hexToRgb(SQUARE_POSTER_EDGE) };
     await expectFitLook(uploadedImages(page).first(), look);
@@ -69,8 +69,9 @@ test.describe('전시 포스터', () => {
   });
 
   test('3:4 포스터는 처음부터 꽉 채우기', async ({ page }) => {
-    await registerPoster(page, { poster: POSTER });
+    const { body } = await registerPoster(page, { poster: POSTER });
 
+    expect(body.posterFit).toBe('FILL');
     await expectFitLook(uploadedImages(page).first(), { objectFit: 'cover' });
   });
 
@@ -130,7 +131,8 @@ test.describe('작품 대표 사진', () => {
   test('가로 사진(30% 넘게 잘림)은 처음부터 전체 보이기, 목록은 흰색 · 작품 상세는 연한 회색', async ({
     page,
   }) => {
-    await registerArtwork(page, ARTWORK_WIDE);
+    const body = await registerArtwork(page, ARTWORK_WIDE);
+    expect(body.artworkFit).toBe('FIT');
 
     await navigateInApp(page, '/display/101?tab=works');
     const card = uploadedImages(page).first();
@@ -146,7 +148,8 @@ test.describe('작품 대표 사진', () => {
   });
 
   test('정사각 사진(25% 잘림)은 처음부터 꽉 채우기', async ({ page }) => {
-    await registerArtwork(page, ARTWORK_SQUARE);
+    const body = await registerArtwork(page, ARTWORK_SQUARE);
+    expect(body.artworkFit).toBe('FILL');
 
     await navigateInApp(page, '/display/101?tab=works');
     await expectFitLook(uploadedImages(page).first(), { objectFit: 'cover' });
@@ -158,5 +161,30 @@ test.describe('작품 대표 사진', () => {
     expect(body.artworkFit).toBe('FILL');
     await navigateInApp(page, '/display/101?tab=works');
     await expectFitLook(uploadedImages(page).first(), { objectFit: 'cover' });
+  });
+
+  test('수정에서 대표 사진을 가로 사진으로 바꾸면 새 사진 기준 보이는 방식을 보낸다', async ({
+    page,
+  }) => {
+    await page.goto('/exhibition/101/artworks/1001/edit');
+    const field = page.getByRole('group', { name: /^작품 이미지/ });
+    await expect(field.getByRole('button', { name: '1번째 삭제' })).toBeVisible();
+    const savedCount = await field.getByRole('button', { name: /번째 삭제$/ }).count();
+
+    await page.locator('input[type=file]').first().setInputFiles(ARTWORK_WIDE);
+    await expect(field.getByRole('button', { name: /번째 삭제$/ })).toHaveCount(savedCount + 1);
+    // 저장돼 있던 사진을 모두 지워 새 가로 사진을 대표로 만든다
+    for (let index = 0; index < savedCount; index += 1) {
+      await field.getByRole('button', { name: '1번째 삭제' }).click();
+    }
+    await expect(field.getByRole('button', { name: /번째 삭제$/ })).toHaveCount(1);
+
+    const request = page.waitForRequest(
+      (req) =>
+        req.method() === 'PATCH' && /\/v1\/artworks\/1001$/.test(new URL(req.url()).pathname),
+    );
+    await page.getByRole('button', { name: '수정 완료', exact: true }).click();
+    const body = (await request).postDataJSON() as { artworkFit?: string };
+    expect(body.artworkFit).toBe('FIT');
   });
 });
