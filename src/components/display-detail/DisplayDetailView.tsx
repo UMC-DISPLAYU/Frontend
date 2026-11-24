@@ -36,9 +36,10 @@ import { WorksPanel } from './WorksPanel';
  * 900px 이상 아래 여백 80은 그리드가 아니라 오른쪽 정보 칸에 둔다. 그리드에 두면 포스터가 붙는 범위(그리드 줄)가
  * 페이지 끝보다 80 먼저 끝나, 끝까지 내렸을 때 포스터가 위로 밀려 올라간다
  * 최대 폭 1240 · 좌우 여백 32는 공용 컨테이너(max-w-list · px-gutter)가 아니라 프로토타입 값이다
+ * 900px 이상 @container 는 포스터 열 높이(PosterCarousel)를 그리드 폭으로 계산하려고 둔다
  */
 const LAYOUT =
-  'mx-auto w-full max-w-310 desktop:grid desktop:grid-cols-[minmax(320px,40%)_minmax(0,1fr)] desktop:items-start desktop:gap-x-14 desktop:px-8 desktop:pt-8';
+  'mx-auto w-full max-w-310 desktop:@container desktop:grid desktop:grid-cols-[minmax(320px,40%)_minmax(0,1fr)] desktop:items-start desktop:gap-x-14 desktop:px-8 desktop:pt-8';
 const SHEET =
   'min-w-0 min-[37.5rem]:mx-auto min-[37.5rem]:max-w-160 desktop:mx-0 desktop:max-w-170 desktop:pb-20';
 
