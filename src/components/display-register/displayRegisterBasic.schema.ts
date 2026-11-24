@@ -4,7 +4,7 @@ import { parseInstagramId, parseWebsiteUrl } from '@/utils/linkInput';
 
 import { isValidTimeRange } from './displaySchedule';
 
-export const MAX_PLACE_NAME_LENGTH = 60;
+export const MAX_PLACE_NAME_LENGTH = 70;
 
 export const displayRegisterBasicSchema = z
   .object({
