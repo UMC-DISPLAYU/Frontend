@@ -1,3 +1,11 @@
+import {
+  drawImageToJpegFile,
+  getResizedImageSize,
+  RESIZED_JPEG_QUALITY,
+  runImageTask,
+} from '@/utils/imageResize';
+
+const HEIC_JPEG_QUALITY = 0.92;
 const HEIC_TYPES = ['image/heic', 'image/heif'];
 const HEIC_EXTENSIONS = ['.heic', '.heif'];
 const HEIC_EXTENSION = /\.hei[cf]$/i;
@@ -25,15 +33,26 @@ export const heicAcceptTokens = (): string[] =>
 
 /**
  * 서버는 HEIC 를 변환하지 않고, 사파리 밖 브라우저는 HEIC 를 보여 주지 못한다.
- * 그래서 올리기 전에 JPG 로 바꿔 어디서나 보이게 한다. 라이브러리가 커서 HEIC 를 골랐을 때만 불러온다
+ * 그래서 올리기 전에 JPG 로 바꿔 어디서나 보이게 한다. 라이브러리가 커서 HEIC 를 골랐을 때만 불러온다.
+ * 긴 변이 3,200px 을 넘으면 JPG 로 한 번 만든 뒤 다시 줄이지 않도록, 풀어낸 사진을 바로 줄인 크기로 그린다
  */
-export async function convertHeicToJpeg(file: File): Promise<File> {
-  // unsafe-eval 없이 동작하는 빌드
-  const { heicTo } = await import('heic-to/csp');
-  const blob = await heicTo({ blob: file, type: 'image/jpeg', quality: 0.92 });
+export function convertHeicToJpeg(file: File): Promise<File> {
+  return runImageTask(async () => {
+    // unsafe-eval 없이 동작하는 빌드
+    const { heicTo } = await import('heic-to/csp');
+    const bitmap = await heicTo({ blob: file, type: 'bitmap' });
 
-  return new File([blob], `${file.name.replace(HEIC_EXTENSION, '')}.jpg`, {
-    type: 'image/jpeg',
-    lastModified: file.lastModified,
+    try {
+      const original = { width: bitmap.width, height: bitmap.height };
+      const resized = getResizedImageSize(original);
+
+      return await drawImageToJpegFile(bitmap, resized ?? original, {
+        name: file.name,
+        lastModified: file.lastModified,
+        quality: resized ? RESIZED_JPEG_QUALITY : HEIC_JPEG_QUALITY,
+      });
+    } finally {
+      bitmap.close();
+    }
   });
 }

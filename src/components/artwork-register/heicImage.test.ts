@@ -2,11 +2,24 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { convertHeicToJpeg, heicAcceptTokens, isHeicFile } from './heicImage';
 
-const { heicTo } = vi.hoisted(() => ({
-  heicTo: vi.fn(async () => new Blob(['jpg'], { type: 'image/jpeg' })),
-}));
+const { bitmap, heicTo, drawImageToJpegFile } = vi.hoisted(() => {
+  const bitmap = { width: 4032, height: 3024, close: vi.fn() };
+
+  return {
+    bitmap,
+    heicTo: vi.fn(async () => bitmap),
+    drawImageToJpegFile: vi.fn(
+      async (_source: unknown, _size: unknown, { name }: { name: string }) =>
+        new File(['jpg'], name.replace(/\.[^.]*$/, '.jpg'), { type: 'image/jpeg' }),
+    ),
+  };
+});
 
 vi.mock('heic-to/csp', () => ({ heicTo }));
+vi.mock('@/utils/imageResize', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/utils/imageResize')>()),
+  drawImageToJpegFile,
+}));
 
 describe('isHeicFile', () => {
   it('형식이 HEIC · HEIF 이거나, 형식이 비어 있어도 확장자가 .heic · .heif 면 HEIC 로 본다', () => {
@@ -49,13 +62,31 @@ describe('heicAcceptTokens', () => {
 });
 
 describe('convertHeicToJpeg', () => {
-  it('JPG 로 바꾸고 이름의 확장자도 .jpg 로 바꾼다', async () => {
-    const file = new File(['heic'], 'IMG_0001.HEIC', { type: 'image/heic' });
+  const file = new File(['heic'], 'IMG_0001.HEIC', { type: 'image/heic', lastModified: 1 });
 
+  it('긴 변이 3,200px 을 넘으면 한 번에 긴 변 3,200px · 품질 0.9 JPG 로 그린다', async () => {
     const converted = await convertHeicToJpeg(file);
 
-    expect(heicTo).toHaveBeenCalledWith({ blob: file, type: 'image/jpeg', quality: 0.92 });
+    expect(heicTo).toHaveBeenCalledWith({ blob: file, type: 'bitmap' });
+    expect(drawImageToJpegFile).toHaveBeenCalledWith(
+      bitmap,
+      { width: 3200, height: 2400 },
+      { name: 'IMG_0001.HEIC', lastModified: 1, quality: 0.9 },
+    );
+    expect(bitmap.close).toHaveBeenCalled();
     expect(converted.type).toBe('image/jpeg');
     expect(converted.name).toBe('IMG_0001.jpg');
+  });
+
+  it('3,200px 이하는 크기를 그대로 두고 지금처럼 품질 0.92 로 바꾼다', async () => {
+    heicTo.mockResolvedValueOnce({ ...bitmap, width: 3024, height: 3200 });
+
+    await convertHeicToJpeg(file);
+
+    expect(drawImageToJpegFile).toHaveBeenLastCalledWith(
+      expect.anything(),
+      { width: 3024, height: 3200 },
+      { name: 'IMG_0001.HEIC', lastModified: 1, quality: 0.92 },
+    );
   });
 });
