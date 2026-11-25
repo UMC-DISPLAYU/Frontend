@@ -25,8 +25,6 @@ const toMonth = (isoDate: string | null) => {
 interface DisplayPeriodSheetProps {
   open: boolean;
   initialRange: DateRange;
-  /** 수정할 때는 이미 시작한 전시도 있어 지난 날짜를 고를 수 있게 한다 */
-  allowPast?: boolean;
   onClose: () => void;
   onConfirm: (range: { start: string; end: string }) => void;
 }
@@ -34,13 +32,11 @@ interface DisplayPeriodSheetProps {
 export function DisplayPeriodSheet({
   open,
   initialRange,
-  allowPast = false,
   onClose,
   onConfirm,
 }: DisplayPeriodSheetProps) {
   const [range, setRange] = useState(initialRange);
   const [view, setView] = useState(() => toMonth(initialRange.start));
-  const today = toIsoDate(new Date());
 
   const moveMonth = (delta: number) =>
     setView(({ year, month }) => toMonth(toIsoDate(new Date(year, month + delta, 1))));
@@ -137,17 +133,16 @@ export function DisplayPeriodSheet({
               <button
                 key={date}
                 type="button"
-                disabled={!allowPast && date < today}
                 aria-pressed={isEdge}
                 aria-label={`${view.month + 1}월 ${day}일${date === range.start ? ', 시작일' : ''}${date === range.end ? ', 종료일' : ''}`}
                 onClick={() => setRange((prev) => pickRangeDate(prev, date))}
                 className={cn(
-                  'grid h-11 place-items-center tabular-nums transition-colors duration-[150ms] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-default disabled:text-disable',
+                  'grid h-11 place-items-center tabular-nums transition-colors duration-[150ms] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                   isEdge
                     ? 'typography-body-lg-semibold relative z-1 rounded-[10px] bg-[#18181b] text-base-white'
                     : 'typography-body-lg-medium text-primary',
                   isBetween && 'bg-secondary',
-                  !isEdge && 'enabled:hover:rounded-[10px] enabled:hover:bg-[#f0f0f3]',
+                  !isEdge && 'hover:rounded-[10px] hover:bg-[#f0f0f3]',
                 )}
               >
                 {day}
