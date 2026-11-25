@@ -19,7 +19,6 @@ import {
   MAX_ARTWORK_VIDEO_DURATION_LABEL,
   MAX_ARTWORK_VIDEO_MB,
   MAX_ARTWORK_VIDEO_SECONDS,
-  MAX_ARTWORK_VIDEOS,
 } from './artworkRegister.constants';
 import type { ArtworkVideoMeta } from './artworkRequest';
 import { convertHeicToJpeg, isHeicFile } from './heicImage';
@@ -81,8 +80,6 @@ export const isArtworkItemReady = (item: ArtworkImageItem) =>
 interface PickOptions {
   /** 영상을 받는 칸(전시 작품 이미지)인지 */
   allowVideo?: boolean;
-  /** 이미 올린 영상 수 */
-  currentVideoCount?: number;
   /** 영상을 받지 않는 칸에서 영상을 고르면 띄울 안내. 없으면 올릴 수 없는 파일로 센다 */
   videoNotAllowedMessage?: string;
 }
@@ -95,12 +92,11 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
   files: readonly TFile[],
   currentCount: number,
   maxImages: number,
-  { allowVideo = false, currentVideoCount = 0, videoNotAllowedMessage }: PickOptions = {},
+  { allowVideo = false, videoNotAllowedMessage }: PickOptions = {},
 ) {
   const accepted: TFile[] = [];
   let rejectedCount = 0;
   let overLimit = false;
-  let videoCount = currentVideoCount;
   let message: string | undefined;
   let videoLimitMessage: string | undefined;
 
@@ -114,12 +110,9 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
       if (!allowVideo) {
         if (videoNotAllowedMessage) message = videoNotAllowedMessage;
         else rejectedCount += 1;
-      } else if (videoCount >= MAX_ARTWORK_VIDEOS) {
-        videoLimitMessage = `영상은 ${MAX_ARTWORK_VIDEOS}개만 올릴 수 있어요`;
       } else if (file.size > MAX_ARTWORK_VIDEO_BYTES) {
         videoLimitMessage = `영상은 ${MAX_ARTWORK_VIDEO_MB}MB 이하로 올려주세요`;
       } else {
-        videoCount += 1;
         accepted.push(file);
       }
       continue;
@@ -209,7 +202,7 @@ export function useArtworkImageUploads({
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
   /* 읽을 수 없거나 바꿀 수 없는 영상. 작품 이미지 칸 위 안내로 알린다 */
   const [hasMediaError, setHasMediaError] = useState(false);
-  /* 영상 개수 · 길이 · 용량 한도를 넘어 빼 둔 영상 안내. 다른 사진은 올릴 수 있어 등록을 막지 않는다 */
+  /* 영상 길이 · 용량 한도를 넘어 빼 둔 영상 안내. 다른 사진은 올릴 수 있어 등록을 막지 않는다 */
   const [videoLimitMessage, setVideoLimitMessage] = useState<string | null>(null);
   const { mutateAsync: uploadImage } = useUploadImage();
   const { mutateAsync: uploadVideo } = useUploadVideo();
@@ -384,11 +377,7 @@ export function useArtworkImageUploads({
         files,
         itemsRef.current.length,
         maxImages,
-        {
-          allowVideo,
-          currentVideoCount: itemsRef.current.filter((item) => item.mediaType === 'VIDEO').length,
-          videoNotAllowedMessage,
-        },
+        { allowVideo, videoNotAllowedMessage },
       );
       setVideoLimitMessage(picked.videoLimitMessage ?? null);
       const added = accepted.map((file) => {
