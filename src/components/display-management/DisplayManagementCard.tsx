@@ -96,10 +96,10 @@ export function DisplayManagementCard({
         {ex.hasVideoPoster && <VideoPosterBadge />}
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-7 wrap-break-word">
+      <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-8">
         <p className="flex items-center gap-1.5 text-[12px] leading-[1.4] font-medium text-[#3f3f47]">
           <DisplayPublishStatusLabel status={status} className="shrink-0" />
-          <span className="min-w-0">
+          <span className="min-w-0 truncate">
             · {role}
             {artistName ? `(${artistName})` : ''}
           </span>
@@ -114,17 +114,21 @@ export function DisplayManagementCard({
               isLeader ? 'cursor-pointer' : 'cursor-default',
             )}
           >
-            <span className="line-clamp-2">{ex.title}</span>
+            <span className="block truncate">{ex.title}</span>
           </button>
         </h3>
-        {ex.org && <p className="text-[14px] leading-[1.4] font-medium text-[#3f3f47]">{ex.org}</p>}
+        {ex.org && (
+          <p className="truncate text-[14px] leading-[1.4] font-medium text-[#3f3f47]">{ex.org}</p>
+        )}
         {period && (
-          <p className="mt-0.5 text-[14px] leading-[1.4] font-medium text-[#3f3f47]">{period}</p>
+          <p className="mt-0.5 truncate text-[14px] leading-[1.4] font-medium text-[#3f3f47]">
+            {period}
+          </p>
         )}
         {ex.place && (
           <p
             className={cn(
-              'text-[14px] leading-[1.4] font-medium text-[#3f3f47]',
+              'truncate text-[14px] leading-[1.4] font-medium text-[#3f3f47]',
               period ? 'mt-[3px]' : 'mt-0.5',
             )}
           >
