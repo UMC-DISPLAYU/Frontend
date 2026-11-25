@@ -6,8 +6,6 @@ export const MAX_ARTWORK_IMAGE_MB = 20;
 // HEIC · HEIF 도 받고, 올리기 전에 JPG 로 바꾼다(heicImage.ts)
 export const ARTWORK_IMAGE_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export const ARTWORK_VIDEO_ACCEPT_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'] as const;
-/** 작품 이미지 10개 중 영상은 1개까지. 작업 과정은 사진만 받는다 */
-export const MAX_ARTWORK_VIDEOS = 1;
 export const MAX_ARTWORK_VIDEO_SECONDS = 180;
 export const MAX_ARTWORK_VIDEO_DURATION_LABEL = `${MAX_ARTWORK_VIDEO_SECONDS / 60}분`;
 /** 서버가 10진 바이트(500,000,000)로 검사해 MB 표시와 같은 기준을 쓴다 */
