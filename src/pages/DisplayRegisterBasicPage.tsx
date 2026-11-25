@@ -378,7 +378,6 @@ function DisplayRegisterBasicForm() {
               key={`period-${sheet.key}`}
               open={isSheetOpen && sheet.kind === 'period'}
               initialRange={{ start: values.startDate || null, end: values.endDate || null }}
-              allowPast={isEdit}
               onClose={() => setIsSheetOpen(false)}
               onConfirm={({ start, end }) => {
                 setValue('startDate', start, { shouldValidate: true, shouldDirty: true });
