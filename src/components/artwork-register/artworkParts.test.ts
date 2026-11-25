@@ -63,6 +63,16 @@ describe('연작 사진 · 영상 세기', () => {
     });
   });
 
+  it('한 작품에 영상이 여러 개여도 모두 보내고, 개수는 사진과 합쳐 센다', () => {
+    const parts = [{ media: [photo('a'), video('v1', 'v1.jpg'), video('v2', 'v2.jpg')] }];
+
+    expect(countPartMedia(parts)).toBe(3);
+    expect(toPartUploads(parts).partUrls).toEqual([
+      ['https://cdn/a.jpg', 'https://cdn/v1.mp4', 'https://cdn/v2.mp4'],
+    ]);
+    expect(Object.keys(toPartUploads(parts).videos)).toHaveLength(2);
+  });
+
   it('새 작품 칸은 작품 1 연도로 채우고 칸마다 다른 구분 값을 둔다', () => {
     const first = createArtworkPartValues('2026');
     const second = createArtworkPartValues('2026');
