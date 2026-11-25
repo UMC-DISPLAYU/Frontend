@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn';
 
 import { DisplayHubIcon } from './DisplayHubIcon';
 import { formatDisplayHubMonthDay } from './displayHubStatus';
+import { hasDisplayStartedInKorea } from './publishTiming';
 
 const OPTIONS: { label: string; value: DisplayContentOpenType }[] = [
   { label: '심사 승인 시', value: 'IMMEDIATELY' },
@@ -17,16 +18,29 @@ interface VisibilityFieldProps {
   label: string;
   value: DisplayContentOpenType;
   startDate: string;
+  hasStarted: boolean;
   disabled: boolean;
   onChange: (value: DisplayContentOpenType) => void;
 }
 
-function VisibilityField({ label, value, startDate, disabled, onChange }: VisibilityFieldProps) {
+const TRIGGER_CLASS =
+  'typography-body-xl-regular mt-1 flex h-11 w-full items-center justify-between border-b text-left text-primary';
+
+function VisibilityField({
+  label,
+  value: savedValue,
+  startDate,
+  hasStarted,
+  disabled,
+  onChange,
+}: VisibilityFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const labelId = useId();
   const valueId = useId();
+  // 시작일이 지나면 두 선택지의 결과가 같아 "심사 승인 시"만 보인다. 시작일을 미래로 고치면 저장된 값이 다시 의미를 가지므로 바꾸지 않는다
+  const value: DisplayContentOpenType = hasStarted ? 'IMMEDIATELY' : savedValue;
   const selected = OPTIONS.find((option) => option.value === value) ?? OPTIONS[1];
 
   useEffect(() => {
@@ -54,33 +68,40 @@ function VisibilityField({ label, value, startDate, disabled, onChange }: Visibi
       <span id={labelId} className="typography-body-md-semibold text-primary">
         {label}
       </span>
-      {/* disabled 는 저장 중 포커스를 잃게 하므로 aria-disabled 로 막는다 */}
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-expanded={isOpen}
-        aria-labelledby={`${labelId} ${valueId}`}
-        aria-disabled={disabled}
-        onClick={() => {
-          if (!disabled) setIsOpen((prev) => !prev);
-        }}
-        className={cn(
-          'typography-body-xl-regular mt-1 flex h-11 w-full items-center justify-between border-b text-left text-primary transition-colors duration-fast ease-standard focus-visible:rounded-6 focus-visible:border-interactive-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus aria-disabled:cursor-default',
-          isOpen ? 'border-interactive-primary' : 'border-primary',
-        )}
-      >
-        <span id={valueId} className="min-w-0 truncate">
-          {selected.label}
-        </span>
-        <DisplayHubIcon name="selector" className="size-5" />
-      </button>
+      {hasStarted ? (
+        <div className={cn(TRIGGER_CLASS, 'border-primary')}>
+          <span className="min-w-0 truncate">{selected.label}</span>
+        </div>
+      ) : (
+        // disabled 는 저장 중 포커스를 잃게 하므로 aria-disabled 로 막는다
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-expanded={isOpen}
+          aria-labelledby={`${labelId} ${valueId}`}
+          aria-disabled={disabled}
+          onClick={() => {
+            if (!disabled) setIsOpen((prev) => !prev);
+          }}
+          className={cn(
+            TRIGGER_CLASS,
+            'transition-colors duration-fast ease-standard focus-visible:rounded-6 focus-visible:border-interactive-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus aria-disabled:cursor-default',
+            isOpen ? 'border-interactive-primary' : 'border-primary',
+          )}
+        >
+          <span id={valueId} className="min-w-0 truncate">
+            {selected.label}
+          </span>
+          <DisplayHubIcon name="selector" className="size-5" />
+        </button>
+      )}
       <p className="typography-body-md-medium mt-1.5 text-secondary">
         {value === 'IMMEDIATELY'
           ? '승인되면 바로 노출돼요'
           : `${formatDisplayHubMonthDay(startDate)}부터 노출돼요`}
       </p>
 
-      {isOpen && (
+      {isOpen && !hasStarted && (
         <ul
           aria-labelledby={labelId}
           className="absolute top-[calc(100%+4px)] right-0 left-0 z-10 animate-[display-hub-pop_200ms_cubic-bezier(0.16,1,0.3,1)] rounded-12 border border-primary bg-primary-white py-1 shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
@@ -137,6 +158,7 @@ export function DisplayHubVisibility({
   onChange,
 }: DisplayHubVisibilityProps) {
   const headingId = useId();
+  const hasStarted = hasDisplayStartedInKorea(startDate);
 
   return (
     <section aria-labelledby={headingId} className={className}>
@@ -148,6 +170,7 @@ export function DisplayHubVisibility({
           label="작품"
           value={artworkContentOpen}
           startDate={startDate}
+          hasStarted={hasStarted}
           disabled={disabled}
           onChange={(value) => onChange({ artworkContentOpen: value, exhibitionContentOpen })}
         />
@@ -155,6 +178,7 @@ export function DisplayHubVisibility({
           label="전시 콘텐츠"
           value={exhibitionContentOpen}
           startDate={startDate}
+          hasStarted={hasStarted}
           disabled={disabled}
           onChange={(value) => onChange({ artworkContentOpen, exhibitionContentOpen: value })}
         />
