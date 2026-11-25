@@ -103,7 +103,6 @@ export function buildUpdateDisplayRequest(
     type &&
     visibleFields.length > 0 &&
     title &&
-    schoolOrOrganization &&
     draft.startDate &&
     draft.endDate &&
     draft.startTime &&
@@ -122,8 +121,9 @@ export function buildUpdateDisplayRequest(
     ...posterMedia,
     type,
     fields,
+    // 소속은 비어도 빈 문자열로 보낸다. 생략 · null 은 기존 값(예: 바꾸기 전 단체명)을 남길 수 있다
     schoolOrOrganization,
-    departmentOrClub: departmentOrClub || null,
+    departmentOrClub,
     description: draft.intro.trim() || null,
     startDate: draft.startDate,
     endDate: draft.endDate,

@@ -159,11 +159,29 @@ describe('buildUpdateDisplayRequest', () => {
     ).toMatchObject({ displayMedia: [] });
   });
 
-  it('비운 학과 · 소개는 null 로 보내 지운다', () => {
+  it('비운 학과는 빈 문자열, 소개는 null 로 보내 지운다', () => {
     const draft = { ...toEditDraft(DETAIL), department: '', intro: ' ' };
     expect(buildUpdateDisplayRequest(draft)).toMatchObject({
-      departmentOrClub: null,
+      departmentOrClub: '',
       description: null,
+    });
+  });
+
+  it('저장된 학교가 비어도 저장을 막지 않고, 학교는 빈 문자열 · 학과는 학과로 보낸다', () => {
+    const draft = toEditDraft({ ...DETAIL, organization: null });
+    expect(buildUpdateDisplayRequest(draft)).toMatchObject({
+      schoolOrOrganization: '',
+      departmentOrClub: '시각디자인과',
+    });
+  });
+
+  it('기타 단체 전시에서 다른 유형으로 바꿔도 학과를 학교 자리로 옮기지 않는다', () => {
+    const original = toEditDraft({ ...DETAIL, displayType: 'OTHERS', organization: '디유 연합' });
+    const draft = { ...original, type: '졸업 전시', organizer: '', department: '시각디자인과' };
+    expect(buildUpdateDisplayRequest(draft)).toMatchObject({
+      type: 'GRADUATION',
+      schoolOrOrganization: '',
+      departmentOrClub: '시각디자인과',
     });
   });
 

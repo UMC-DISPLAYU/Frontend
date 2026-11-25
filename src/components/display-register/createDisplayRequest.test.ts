@@ -75,14 +75,24 @@ describe('buildCreateDisplayRequest', () => {
     expect(request).not.toHaveProperty('displayImageUrl');
   });
 
-  it('기타 단체 전시는 단체명을 소속으로 보내고 학과는 보내지 않는다', () => {
+  it('기타 단체 전시는 단체명을 소속으로 보내고 학과는 빈 값으로 보낸다', () => {
     const request = buildCreateDisplayRequest(
       { ...DRAFT, type: '기타 단체 전시', school: '', department: '', organizer: '디유 연합' },
       '김디유',
     );
 
-    expect(request).toMatchObject({ type: 'OTHERS', schoolOrOrganization: '디유 연합' });
-    expect(request).not.toHaveProperty('departmentOrClub');
+    expect(request).toMatchObject({
+      type: 'OTHERS',
+      schoolOrOrganization: '디유 연합',
+      departmentOrClub: '',
+    });
+  });
+
+  it('학교가 없어도 학과를 학교 자리로 옮기지 않고, 빈 학교를 그대로 보낸다', () => {
+    expect(buildCreateDisplayRequest({ ...DRAFT, school: ' ' }, '김디유')).toMatchObject({
+      schoolOrOrganization: '',
+      departmentOrClub: '시각디자인과',
+    });
   });
 
   it('링크는 있을 때만 전체 주소로 보낸다', () => {
