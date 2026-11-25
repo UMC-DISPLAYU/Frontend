@@ -92,6 +92,46 @@ const invalidArtworkTypes = (path: string) =>
 const toMaterialMedia = (value: unknown) =>
   typeof value === 'string' && value.trim() ? value.trim() : null;
 
+const MAX_ARTWORK_MEDIA = 10;
+
+/*
+ * 서버처럼 연작을 검사한다: 사진 · 영상은 모든 작품 합쳐 10개, 작품 2부터는 작품명과 사진(IMAGE) 1장 이상.
+ * partIndex 는 0(또는 생략) = 작품 1, k = parts[k - 1] 이다. 맞지 않으면 안내 문구, 맞으면 null
+ */
+const validateArtworkParts = (images: any[] | undefined, parts: any[] | undefined) => {
+  const artworkImages = (images ?? []).filter((image) => image.imageType !== 'WORK_PROCESS');
+  const partList = parts ?? [];
+  if (artworkImages.length > MAX_ARTWORK_MEDIA) {
+    return `작품 사진과 영상은 합쳐서 최대 ${MAX_ARTWORK_MEDIA}개까지 등록할 수 있습니다.`;
+  }
+  if (
+    artworkImages.some((image) => {
+      const partIndex = image.partIndex ?? 0;
+      return !Number.isInteger(partIndex) || partIndex < 0 || partIndex > partList.length;
+    })
+  ) {
+    return '작품 이미지의 partIndex가 올바르지 않습니다.';
+  }
+  for (let index = 1; index <= partList.length; index += 1) {
+    if (!String(partList[index - 1]?.artworkName ?? '').trim())
+      return '추가 작품명을 입력해주세요.';
+    const hasPhoto = artworkImages.some(
+      (image) => image.partIndex === index && (image.mediaType ?? 'IMAGE') === 'IMAGE',
+    );
+    if (!hasPhoto) return '추가 작품마다 사진이 1장 이상 필요합니다.';
+  }
+  return null;
+};
+
+const invalidArtworkParts = (path: string, message: string) =>
+  fail(path, 400, 'INVALID_ARTWORK_PART', message);
+
+/* 응답의 이미지에 partIndex 를 채운다. 작업 과정에는 두지 않는다 */
+const withPartIndex = (images: any[] | undefined) =>
+  (images ?? []).map((image) =>
+    image.imageType === 'WORK_PROCESS' ? image : { ...image, partIndex: image.partIndex ?? 0 },
+  );
+
 /* 대표 · 공동 작가 중 계정이 있는 사람의 id(중복 없이) */
 const toArtistUserIds = (artwork: any): number[] => [
   ...new Set(
@@ -137,6 +177,8 @@ export const artworkHandlers = [
       const body = await readJson<Record<string, any>>(request);
       const types = resolveArtworkTypes(body);
       if (!types) return invalidArtworkTypes('/api/v1/artworks');
+      const partError = validateArtworkParts(body.images, body.parts);
+      if (partError) return invalidArtworkParts('/api/v1/artworks', partError);
       // 요청 데이터로만 구성합니다. 기존 작품을 템플릿으로 복사하면
       // 이미지 등 덮어쓰지 않은 필드가 그대로 남아 다른 작품 정보가 노출됩니다.
       const { artworkImageUrl: imageUrl, artworkVideoUrl } = toArtworkCard(body.images);
@@ -159,7 +201,8 @@ export const artworkHandlers = [
         material: toMaterialMedia(body.materialMedia),
         size: body.size ?? '',
         point: body.point ?? '',
-        images: body.images ?? [],
+        images: withPartIndex(body.images),
+        parts: body.parts ?? [],
         coAuthors: toCoAuthorList(body.coAuthors, Number(body.displayId ?? 101)),
         artworkCrop: body.artworkCrop ?? null,
         artworkFit: body.artworkFit ?? 'FILL',
@@ -307,7 +350,10 @@ export const artworkHandlers = [
     http.get(path, ({ params }) =>
       success(
         '/api/v1/artworks/{artworkId}',
-        withArtworkFit(findArtwork(toNumber(params.artworkId, 1001))),
+        (() => {
+          const artwork = withArtworkFit(findArtwork(toNumber(params.artworkId, 1001)));
+          return { ...artwork, images: withPartIndex(artwork.images), parts: artwork.parts ?? [] };
+        })(),
       ),
     ),
   ),
@@ -327,7 +373,8 @@ export const artworkHandlers = [
         materialMedia: artwork.materialMedia ?? artwork.material ?? null,
         size: artwork.size ?? '',
         point: artwork.point ?? '',
-        images: artwork.images ?? [],
+        images: withPartIndex(artwork.images),
+        parts: artwork.parts ?? [],
         artistName: artwork.artistName ?? artwork.artist,
         artistUserId: artwork.artistUserId ?? null,
         artworkCrop: artwork.artworkCrop ?? null,
@@ -358,6 +405,10 @@ export const artworkHandlers = [
         artwork.types ?? (artwork.type ? [artwork.type] : []),
       );
       if (!types) return invalidArtworkTypes('/api/v1/artworks/{artworkId}');
+      // parts 를 생략하면 기존 작품을 유지하고, 빈 배열이면 모두 지운다
+      const parts = body.parts ?? artwork.parts ?? [];
+      const partError = validateArtworkParts(body.images ?? artwork.images, parts);
+      if (partError) return invalidArtworkParts('/api/v1/artworks/{artworkId}', partError);
       const { artworkImageUrl: imageUrl, artworkVideoUrl } = toArtworkCard(
         body.images,
         artwork.artworkImageUrl,
@@ -371,6 +422,8 @@ export const artworkHandlers = [
       const artworkFit = body.artworkFit ?? artwork.artworkFit;
 
       Object.assign(artwork, body, {
+        images: withPartIndex(body.images ?? artwork.images),
+        parts,
         title: body.artworkName ?? artwork.title,
         type: types[0],
         types,

@@ -9,15 +9,24 @@ import {
 } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { type BlockerFunction, useBlocker } from 'react-router-dom';
 
 import { ConfirmDialog } from '@/components/common';
 import { PageContainer } from '@/components/layout';
 import { toast } from '@/stores/toastStore';
+import { cn } from '@/utils/cn';
 
 import { ArtworkFieldChips } from './ArtworkFieldChips';
 import { ArtworkImageField } from './ArtworkImageField';
+import { ArtworkPartFields } from './ArtworkPartFields';
+import {
+  countPartMedia,
+  createArtworkPartValues,
+  getPartMediaLimit,
+  isAnyPartUploading,
+  toPartUploads,
+} from './artworkParts';
 import {
   MAX_ARTWORK_FIELDS,
   MAX_ARTWORK_IMAGES,
@@ -34,6 +43,7 @@ import {
 } from './artworkRegister.schema';
 import {
   BIG_BUTTON_CLASS,
+  HELP_CLASS,
   INPUT_CLASS,
   LABEL_CLASS,
   OPTIONAL_CLASS,
@@ -42,6 +52,7 @@ import {
 } from './artworkRegister.styles';
 import { ArtworkRegisterCta } from './ArtworkRegisterCta';
 import { ArtworkRegisterHeader } from './ArtworkRegisterHeader';
+import { PlusIcon } from './ArtworkRegisterIcons';
 import type { ArtworkImageUrls } from './artworkRequest';
 import { useArtworkImageUploads } from './useArtworkImageUploads';
 import { useLeaveArtworkRegister } from './useLeaveArtworkRegister';
@@ -69,6 +80,8 @@ export interface ArtworkRegisterFormProps {
   leaveFallback: string;
   /** 작품 이미지에 영상을 받는지. 전시 작품만 받는다(개인 작품 API 는 영상 필드가 없다) */
   allowVideo?: boolean;
+  /** 작품 추가(연작)를 받는지. 전시 작품만 받는다(개인 작품 API 는 parts 가 없다) */
+  allowParts?: boolean;
 }
 
 export function ArtworkRegisterForm({
@@ -82,6 +95,7 @@ export function ArtworkRegisterForm({
   onSubmit,
   leaveFallback,
   allowVideo = false,
+  allowParts = false,
 }: ArtworkRegisterFormProps) {
   const leave = useLeaveArtworkRegister();
   const formId = useId();
@@ -89,15 +103,40 @@ export function ArtworkRegisterForm({
   const fieldLabelId = useId();
   const isEdit = mode === 'edit';
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    formState: { isValid },
+  } = useForm<ArtworkRegisterValues>({
+    resolver: zodResolver(artworkRegisterSchema),
+    mode: 'onChange',
+    defaultValues,
+  });
+  const values = useWatch({ control });
+  const partFields = useFieldArray({ control, name: 'parts' });
+  const parts = useWatch({ control, name: 'parts' });
+  const partMediaCount = countPartMedia(parts);
+
+  // 사진 · 영상은 모든 작품을 합쳐 10개라서, 작품 1 칸도 다른 작품에 올린 수만큼 덜 받는다
   const artworkImages = useArtworkImageUploads({
     initialUrls: initialImages.artworkUrls,
     initialCrop: initialImages.artworkCrop,
     initialFit: initialImages.artworkFit,
     initialVideos: initialImages.videos,
-    maxImages: MAX_ARTWORK_IMAGES,
+    maxImages: MAX_ARTWORK_IMAGES - partMediaCount,
     allowVideo,
     representative: true,
   });
+  const mediaCount = artworkImages.items.length + partMediaCount;
+  const mediaCountLabel = { current: mediaCount, max: MAX_ARTWORK_IMAGES };
+  const isMultiPart = partFields.fields.length > 0;
+  // 저장된 작품 칸만 처음 사진을 불러오고, 작품 추가로 만든 칸은 나타날 때 그 칸으로 스크롤한다
+  const savedPartUrls = new Map(
+    defaultValues.parts.map((part, index) => [part.key, initialImages.partUrls?.[index] ?? []]),
+  );
   const processImages = useArtworkImageUploads({
     initialUrls: initialImages.processUrls,
     maxImages: MAX_PROCESS_IMAGES,
@@ -106,21 +145,10 @@ export function ArtworkRegisterForm({
     onUploadError: () => toast('작업 과정 사진을 올리지 못했어요. 다시 시도해주세요.'),
   });
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { isValid },
-  } = useForm<ArtworkRegisterValues>({
-    resolver: zodResolver(artworkRegisterSchema),
-    mode: 'onChange',
-    defaultValues,
-  });
-  const values = useWatch({ control });
-
   const hasInput =
     artworkImages.items.length > 0 ||
     processImages.items.length > 0 ||
+    parts.length > 0 ||
     hasExtraChanges ||
     Boolean(
       values.title ||
@@ -130,7 +158,8 @@ export function ArtworkRegisterForm({
       values.material ||
       values.size,
     );
-  const isUploading = artworkImages.isUploading || processImages.isUploading;
+  const isUploading =
+    artworkImages.isUploading || processImages.isUploading || isAnyPartUploading(parts);
   const canSubmit =
     isReady && isValid && artworkImages.uploadedUrls.length > 0 && !isUploading && !isSubmitting;
 
@@ -187,15 +216,27 @@ export function ArtworkRegisterForm({
 
   const yearInput = register('year');
 
+  const addPart = () => {
+    // 사진 없이는 작품을 올릴 수 없어서, 다 찼으면 새 칸을 만들지 않는다(프로토타입)
+    if (mediaCount >= MAX_ARTWORK_IMAGES) {
+      toast(`작품 이미지는 최대 ${MAX_ARTWORK_IMAGES}장까지 올릴 수 있어요`);
+      return;
+    }
+    partFields.append(createArtworkPartValues(values.year ?? ''), { shouldFocus: false });
+  };
+
   const submit = handleSubmit((data) => {
     if (!canSubmit) return;
+
+    const partUploads = toPartUploads(data.parts);
 
     onSubmit(data, {
       artworkUrls: artworkImages.uploadedUrls,
       processUrls: processImages.uploadedUrls,
       artworkCrop: artworkImages.items[0]?.crop ?? null,
       artworkFit: artworkImages.representativeFit,
-      ...(allowVideo && { videos: artworkImages.uploadedVideos }),
+      ...(allowVideo && { videos: { ...artworkImages.uploadedVideos, ...partUploads.videos } }),
+      ...(allowParts && { partUrls: partUploads.partUrls }),
     });
   });
 
@@ -217,14 +258,19 @@ export function ArtworkRegisterForm({
             <h2 id={infoHeadingId} className="typography-body-xl-semibold text-primary">
               작품 정보
             </h2>
+            {/* 프로토타입 U-191: 작품을 더했을 때만 "작품 1" 제목을 둔다 */}
+            {isMultiPart && (
+              <h3 className="typography-body-xl-semibold mt-4 text-primary">작품 1</h3>
+            )}
             <ArtworkImageField
-              className="mt-4"
+              className={isMultiPart ? 'mt-3' : 'mt-4'}
               label="작품 이미지"
               required
               help="첫 번째 사진이 대표 이미지예요"
               addLabel={allowVideo ? '사진·영상 추가' : '사진 추가'}
               uploads={artworkImages}
               representative
+              count={mediaCountLabel}
               limitMessage={`작품 이미지는 최대 ${MAX_ARTWORK_IMAGES}장까지 올릴 수 있어요`}
             />
 
@@ -250,6 +296,7 @@ export function ArtworkRegisterForm({
               <label htmlFor={`${formId}-intro`} className={LABEL_CLASS}>
                 <span>작품 설명 {OPTIONAL_MARK}</span>
               </label>
+              {isMultiPart && <p className={HELP_CLASS}>모든 작품에 함께 보여요</p>}
               <textarea
                 id={`${formId}-intro`}
                 maxLength={MAX_ARTWORK_INTRO_LENGTH}
@@ -275,6 +322,7 @@ export function ArtworkRegisterForm({
                   {values.fieldLabels?.length ?? 0}/{MAX_ARTWORK_FIELDS}
                 </span>
               </div>
+              {isMultiPart && <p className={cn(HELP_CLASS, 'mt-0')}>모든 작품에 함께 적용돼요</p>}
               <Controller
                 control={control}
                 name="fieldLabels"
@@ -345,6 +393,44 @@ export function ArtworkRegisterForm({
                 />
               </div>
             </div>
+
+            {allowParts && (
+              <>
+                {partFields.fields.map((field, index) => (
+                  <ArtworkPartFields
+                    key={field.id}
+                    index={index}
+                    register={register}
+                    setValue={setValue}
+                    initialUrls={savedPartUrls.get(field.key) ?? []}
+                    initialVideos={initialImages.videos}
+                    maxImages={getPartMediaLimit(
+                      parts[index]?.media?.length ?? 0,
+                      mediaCount,
+                      MAX_ARTWORK_IMAGES,
+                    )}
+                    totalCount={mediaCount}
+                    allowVideo={allowVideo}
+                    scrollOnMount={!savedPartUrls.has(field.key)}
+                    onRemove={() => partFields.remove(index)}
+                  />
+                ))}
+                <button
+                  type="button"
+                  onClick={addPart}
+                  className="typography-body-lg-semibold mt-6 flex w-full items-center gap-2 border-t border-bg-secondary py-4 text-left text-primary transition-colors duration-fast hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+                >
+                  <PlusIcon className="size-5" />
+                  작품 추가
+                  <span className={OPTIONAL_CLASS}>· 선택</span>
+                </button>
+                <p className={cn(HELP_CLASS, 'mt-0')}>
+                  작가와 작품 설명이 같은 작품을 한 페이지에 함께 올려요
+                  <br />
+                  검색과 작품 카드에는 첫 번째 작품의 작품명이 보여요
+                </p>
+              </>
+            )}
 
             <ArtworkImageField
               className="mt-6"

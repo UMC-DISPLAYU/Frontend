@@ -5,6 +5,27 @@ export interface ArtworkImageDto extends ImageResponseDto {
   isThumbnail: boolean;
 }
 
+/* 전시 작품 사진 · 영상 응답. 연작이면 어느 작품의 사진인지 partIndex 로 나눈다 */
+export interface DisplayArtworkImageResponseDto extends ImageResponseDto {
+  /* ARTWORK 만 내려준다. 0(또는 없음)은 작품 1, 1 은 parts[0] 이다 */
+  partIndex?: number | null;
+}
+
+/* 연작의 작품 2부터. 작가 · 작품 설명 · 분야 · 작업 과정은 작품 1과 함께 쓴다 */
+export interface ArtworkPartDto {
+  artworkName: string;
+  productionYear?: number | null;
+  materialMedia?: string | null;
+  size?: string | null;
+}
+
+export interface ArtworkPartRequestDto {
+  artworkName: string;
+  productionYear?: number;
+  materialMedia?: string;
+  size?: string;
+}
+
 export interface ArtworkGuestbookUserDto {
   userId: number;
   nickname: string;
@@ -43,7 +64,9 @@ export interface GetArtworkDetailResponseDataDto {
   materialMedia: string | null;
   size: string;
   point: string;
-  images: ImageResponseDto[];
+  images: DisplayArtworkImageResponseDto[];
+  /* 작품 2부터(표시 순서). 목록 카드 · 검색은 작품 1 이름(artworkName)을 쓴다 */
+  parts?: ArtworkPartDto[] | null;
   artistName: string;
   artistUserId: number;
   qaHandlers?: ArtworkQaHandlerDto[];
@@ -278,6 +301,8 @@ export interface ArtworkImageRequestDto {
   mediaType?: MediaTypeDto;
   /* VIDEO 일 때 필수인 썸네일 이미지 주소 */
   thumbnailUrl?: string;
+  /* 전시 작품 연작만. ARTWORK 가 몇 번째 작품의 것인지(생략 = 작품 1, 1 = parts[0]) */
+  partIndex?: number;
 }
 
 export interface CreateExhibitionArtworkRequestDto {
@@ -302,6 +327,8 @@ export interface CreateExhibitionArtworkRequestDto {
   artworkCrop?: ArtworkCropDto | null;
   /* 대표 사진 보이는 방식. 생략하면 생성은 FILL, 수정은 기존 값 유지(대표 사진이 바뀌어도 유지)라서 항상 보낸다(영상 대표는 FILL) */
   artworkFit?: ImageFitDto | null;
+  /* 작품 2부터 표시 순서대로. 수정에서 생략하면 기존 작품을 유지하고, 빈 배열이면 모두 지운다 */
+  parts?: ArtworkPartRequestDto[];
 }
 
 export type UpdateExhibitionArtworkRequestDto = Omit<
@@ -321,13 +348,14 @@ export interface CreateExhibitionArtworkResponseDataDto {
   size: string;
   point: string;
   workSortOrder: number;
-  images: ImageResponseDto[];
+  images: DisplayArtworkImageResponseDto[];
   artistName: string;
   artistUserId: number;
   coAuthorCount: number;
   qaHandlerUserIds: number[];
   artworkCrop?: ArtworkCropDto | null;
   artworkFit?: ImageFitDto | null;
+  parts?: ArtworkPartDto[] | null;
 }
 
 /* 수정 화면 진입 시 등록 당시 상태(공동 작가 · Q&A 담당자 포함)를 복원하는 응답 */
@@ -342,13 +370,15 @@ export interface DisplayArtworkEditResponseDataDto {
   materialMedia: string | null;
   size?: string | null;
   point?: string | null;
-  images: ImageResponseDto[];
+  images: DisplayArtworkImageResponseDto[];
   artistName: string;
   artistUserId?: number | null;
   coAuthors?: ArtworkCoAuthorDto[] | null;
   qaHandlerUserIds?: number[] | null;
   artworkCrop?: ArtworkCropDto | null;
   artworkFit?: ImageFitDto | null;
+  /* 작품 2부터 등록 순서대로. 이미지의 partIndex 1 이 parts[0] 이다 */
+  parts?: ArtworkPartDto[] | null;
 }
 
 export type CreateExhibitionArtworkResponseDto =

@@ -13,7 +13,11 @@ import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
 import { ArtworkBigView } from './ArtworkBigView';
-import { getStackPhotoIndex, STACK_READING_LINE } from './artworkDetail.utils';
+import {
+  type ArtworkPhotoCaption,
+  getStackPhotoIndex,
+  STACK_READING_LINE,
+} from './artworkDetail.utils';
 import { InlineVideo, PlayMark, VideoPlayButton } from './ArtworkVideo';
 import type { ViewerChrome } from './useViewerChromeFade';
 import type { ViewMode } from './useViewMode';
@@ -29,6 +33,12 @@ type Props = {
   onModeChange: (mode: ViewMode) => void;
   stageRef: RefObject<HTMLDivElement>;
   chrome: ViewerChrome;
+  /* 연작: images 와 같은 순서로 사진이 속한 작품의 작품명(대체 텍스트 · 크게 보기 위 띠) */
+  photoTitles?: string[];
+  /* 연작: 작품마다 마지막 사진 아래 캡션(이어서 보기 · 크게 보기) */
+  photoCaptions?: (ArtworkPhotoCaption | undefined)[];
+  /* 이름표에 보일 사진이 바뀌면 알린다 */
+  onPhotoChange?: (index: number) => void;
 };
 
 const STAGE_IMAGE_WIDTH = 1080;
@@ -58,6 +68,15 @@ const VIEW_ICON_CLASS =
 const VIEW_BUTTON_CLASS =
   'grid h-8 w-9 cursor-pointer place-items-center rounded-circle text-[#d4d4d8] transition-[background-color,color,scale] duration-fast ease-standard hover:text-white active:scale-94 aria-pressed:bg-[#18181b] aria-pressed:text-[#fafafa]';
 const scrollBehavior = (): ScrollBehavior => (prefersReducedMotion() ? 'auto' : 'smooth');
+
+function StackCaption({ caption }: { caption: ArtworkPhotoCaption }) {
+  return (
+    <p className="typography-body-md-medium px-gutter pt-2 pb-6 text-pretty text-tertiary desktop:px-0">
+      <b className="typography-body-md-semibold text-primary">{caption.title}</b>
+      {caption.spec && ` · ${caption.spec}`}
+    </p>
+  );
+}
 
 function StackImage({ src, alt, eager }: { src: string; alt: string; eager: boolean }) {
   // 이미지가 뜨기 전에도 자리를 잡아 두어 장 사이 이동 위치가 틀어지지 않게 한다
@@ -89,6 +108,9 @@ export function ArtworkViewer({
   onModeChange,
   stageRef,
   chrome,
+  photoTitles,
+  photoCaptions,
+  onPhotoChange,
 }: Props) {
   const photoCount = images.length;
   const hasMultiple = photoCount > 1;
@@ -117,12 +139,19 @@ export function ArtworkViewer({
   // 썸네일 · 보기 방식 전환으로 옮긴 장. 페이지 끝이라 사진이 위까지 못 올라와도 고른 장을 유지한다
   const isStackPinnedRef = useRef(false);
 
+  const onPhotoChangeRef = useRef(onPhotoChange);
+
+  useEffect(() => {
+    onPhotoChangeRef.current = onPhotoChange;
+  });
+
   const { isControlsDimmed, isChipHidden, peekChip, holdProps } = chrome;
 
   const showPhoto = (index: number) => {
     if (index !== currentRef.current) peekChip();
     currentRef.current = index;
     setCurrent(index);
+    onPhotoChangeRef.current?.(index);
   };
 
   const scrollToStackImage = (index: number, behavior: ScrollBehavior) => {
@@ -158,6 +187,8 @@ export function ArtworkViewer({
   useLayoutEffect(() => {
     const track = trackRef.current;
     if (track) track.scrollLeft = currentRef.current * track.clientWidth;
+    // 900px 미만 이어서 보기에서 내려 본 장은 이름표에 알리지 않았으므로 한 장씩 보기로 돌아오면 맞춘다
+    if (!isStack) onPhotoChangeRef.current?.(currentRef.current);
 
     if (!shouldAlignAfterModeChange.current) return;
     shouldAlignAfterModeChange.current = false;
@@ -201,6 +232,9 @@ export function ArtworkViewer({
         if (index !== currentRef.current) {
           currentRef.current = index;
           setCurrent(index);
+          // 프로토타입: 900px 이상은 사진 열을 내리면 이름표도 그 작품으로 바뀐다.
+          // 900px 미만은 이름표가 사진들 아래에 있어 바꾸지 않고, 작품마다 사진 아래 캡션으로 알린다
+          if (pane) onPhotoChangeRef.current?.(index);
         }
       });
     };
@@ -234,7 +268,7 @@ export function ArtworkViewer({
     }
   };
 
-  const altOf = (index: number) => `${title} ${index + 1}/${photoCount}`;
+  const altOf = (index: number) => `${photoTitles?.[index] ?? title} ${index + 1}/${photoCount}`;
 
   // 크게 보기를 닫으면 마지막으로 보던 사진으로 상세를 맞춘다
   const closeBig = (index: number) => {
@@ -409,6 +443,7 @@ export function ArtworkViewer({
           >
             {images.map((src, index) => {
               const videoSrc = videoSrcs[index];
+              const caption = photoCaptions?.[index];
               const image = (
                 <StackImage
                   key={`${src}-${index}`}
@@ -417,10 +452,7 @@ export function ArtworkViewer({
                   eager={index === 0}
                 />
               );
-
-              if (!videoSrc) return image;
-
-              return (
+              const media = videoSrc ? (
                 <div key={`${src}-${index}`} className={cn('relative', STACK_SCROLL_MARGIN)}>
                   {isStack && playingIndex === index ? (
                     <InlineVideo
@@ -436,6 +468,18 @@ export function ArtworkViewer({
                       <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
                     </>
                   )}
+                </div>
+              ) : (
+                image
+              );
+
+              if (!caption) return media;
+
+              // 사진 한 장과 캡션을 한 칸으로 감싸 사진 번호와 칸 번호를 맞춘다(현재 장 계산 · 썸네일 이동)
+              return (
+                <div key={`${src}-${index}`} className={STACK_SCROLL_MARGIN}>
+                  {media}
+                  <StackCaption caption={caption} />
                 </div>
               );
             })}
@@ -540,6 +584,8 @@ export function ArtworkViewer({
         images={images}
         videoSrcs={videoSrcs}
         title={title}
+        titles={photoTitles}
+        captions={photoCaptions}
         subtitle={subtitle}
         onClose={closeBig}
       />

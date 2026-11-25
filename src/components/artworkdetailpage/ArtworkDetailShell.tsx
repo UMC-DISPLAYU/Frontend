@@ -1,4 +1,4 @@
-import { type ReactNode, useRef } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 
 import {
   DetailPreviewBanner,
@@ -10,7 +10,12 @@ import {
 import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
 import { cn } from '@/utils/cn';
 
-import { type ArtworkDetailTabKey, artworkPanelId, artworkTabId } from './artworkDetail.utils';
+import {
+  type ArtworkDetailTabKey,
+  artworkPanelId,
+  type ArtworkPhotoCaption,
+  artworkTabId,
+} from './artworkDetail.utils';
 import { ArtworkViewer } from './ArtworkViewer';
 import { useDisablePageBounce } from './useDisablePageBounce';
 import { useViewerChromeFade } from './useViewerChromeFade';
@@ -25,7 +30,14 @@ type Props = {
   subtitle?: string;
   /* 공개 전 전시의 작품. 위에 미리보기 띠를 둔다 */
   isPreview?: boolean;
-  label: ReactNode;
+  /* 연작이면 보고 있는 사진이 속한 작품 순서(0 = 작품 1)를 받아 그 작품의 이름표를 그린다 */
+  label: ReactNode | ((partIndex: number) => ReactNode);
+  /* 연작: images 와 같은 순서로 사진이 속한 작품 순서 */
+  photoParts?: number[];
+  /* 연작: 사진마다 속한 작품명 */
+  photoTitles?: string[];
+  /* 연작: 작품마다 마지막 사진 아래 캡션 */
+  photoCaptions?: (ArtworkPhotoCaption | undefined)[];
   hasIntro: boolean;
   intro: ReactNode;
   guestbook: ReactNode;
@@ -65,6 +77,9 @@ export function ArtworkDetailShell({
   subtitle,
   isPreview = false,
   label,
+  photoParts,
+  photoTitles,
+  photoCaptions,
   hasIntro,
   intro,
   guestbook,
@@ -89,6 +104,7 @@ export function ArtworkDetailShell({
   const [mode, changeMode] = useViewMode();
   const stageRef = useRef<HTMLDivElement>(null);
   const chrome = useViewerChromeFade(stageRef, mode === 'stack');
+  const [partIndex, setPartIndex] = useState(0);
 
   return (
     <div
@@ -117,11 +133,16 @@ export function ArtworkDetailShell({
           onModeChange={changeMode}
           stageRef={stageRef}
           chrome={chrome}
+          photoTitles={photoTitles}
+          photoCaptions={photoCaptions}
+          onPhotoChange={(index) => setPartIndex(photoParts?.[index] ?? 0)}
         />
 
         <div ref={infoRef} className={cn(INFO_COLUMN, WIDE_TAB_TEXT)}>
           {/* 위 32 여백은 칸 안쪽 여백 대신 이름표에 둔다. 탭 줄이 칸 맨 위(0)에 붙게 */}
-          <div className="desktop:pt-8">{label}</div>
+          <div className="desktop:pt-8">
+            {typeof label === 'function' ? label(partIndex) : label}
+          </div>
 
           <DetailTabNav
             tabs={tabs}

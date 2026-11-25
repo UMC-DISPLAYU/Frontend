@@ -149,6 +149,7 @@ function ArtworkRegisterContent({
       onSubmit={handleSubmit}
       leaveFallback={workPath}
       allowVideo
+      allowParts
       authorSection={
         <>
           <ArtworkAuthorSection
@@ -283,7 +284,8 @@ function ArtworkRegisterRoute() {
         )}
         defaultValues={toArtworkRegisterValues(previous)}
         initialImages={{
-          ...splitArtworkImages(detailQuery.data.images),
+          // 연작 사진은 수정 화면 조회의 parts 순서(partIndex)로 작품 칸에 나눈다
+          ...splitArtworkImages(detailQuery.data.images, previous.parts?.length ?? 0),
           artworkCrop: previous.artworkCrop,
           artworkFit: previous.artworkFit,
         }}

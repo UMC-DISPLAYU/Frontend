@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getArtworkArtists,
+  getArtworkPhotoCaptions,
   getArtworkSpecText,
+  getArtworkViewerImages,
   getExhibitionOrganizerText,
   getProcessImages,
   getStackPhotoIndex,
@@ -152,5 +154,62 @@ describe('getExhibitionOrganizerText', () => {
     expect(getExhibitionOrganizerText({ organization: ' ', department: '' }, '홍익대학교')).toBe(
       '홍익대학교',
     );
+  });
+});
+
+describe('연작 뷰어', () => {
+  const image = (id: string, extra: Record<string, unknown> = {}) => ({
+    id,
+    imageType: 'ARTWORK',
+    isThumbnail: false,
+    ...extra,
+  });
+
+  it('작품 1(대표 사진 먼저) → 작품 2 … 순서로 잇고 작업 과정은 뺀다', () => {
+    const items = getArtworkViewerImages(
+      [
+        image('b1', { partIndex: 1 }),
+        image('a1'),
+        image('c1', { partIndex: 2 }),
+        image('a2', { partIndex: 0, isThumbnail: true }),
+        image('p', { imageType: 'WORK_PROCESS' }),
+        image('b2', { partIndex: 1 }),
+      ],
+      2,
+    );
+
+    expect(items.map((item) => [item.image.id, item.partIndex])).toEqual([
+      ['a2', 0],
+      ['a1', 0],
+      ['b1', 1],
+      ['b2', 1],
+      ['c1', 2],
+    ]);
+  });
+
+  it('partIndex 가 작품 수를 넘거나 없으면 작품 1로 본다', () => {
+    const items = getArtworkViewerImages([image('a'), image('x', { partIndex: 3 })], 1);
+    expect(items.map((item) => item.partIndex)).toEqual([0, 0]);
+    // 연작이 아니면 partIndex 를 보지 않는다
+    expect(
+      getArtworkViewerImages([image('y', { partIndex: 1 })]).map((item) => item.partIndex),
+    ).toEqual([0]);
+  });
+
+  it('작품마다 마지막 사진에만 작품명 · 정보 줄 캡션을 단다', () => {
+    const works = [
+      { artworkName: '지도', productionYear: 2026, materialMedia: '리소', size: '42 cm' },
+      { artworkName: 'WALK', productionYear: 2025 },
+    ];
+
+    expect(getArtworkPhotoCaptions([0, 0, 1], works)).toEqual([
+      undefined,
+      { title: '지도', spec: '2026 · 42 cm · 리소' },
+      { title: 'WALK', spec: '2025' },
+    ]);
+  });
+
+  it('작품이 하나면 캡션을 달지 않는다', () => {
+    expect(getArtworkPhotoCaptions([0, 0], [{ artworkName: '지도' }])).toBeUndefined();
   });
 });
