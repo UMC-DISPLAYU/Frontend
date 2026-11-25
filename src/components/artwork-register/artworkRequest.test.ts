@@ -9,6 +9,7 @@ import {
   resolveQaHandlerUserIds,
   splitArtworkImages,
   toArtworkImageRequests,
+  toArtworkPartRequests,
   toArtworkRegisterValues,
 } from './artworkRequest';
 
@@ -19,6 +20,7 @@ const values: ArtworkRegisterValues = {
   year: '2026',
   material: '아크릴',
   size: '',
+  parts: [],
 };
 const images = { artworkUrls: ['a1', 'a2'], processUrls: ['p1'] };
 const me: ArtworkPerson = { key: 'author', name: '김디유', caption: '작가 · 나', userId: 1 };
@@ -296,6 +298,143 @@ describe('toArtworkRegisterValues', () => {
       year: '2025',
       material: 'Mixed media',
       size: '',
+      parts: [],
     });
+  });
+
+  it('연작은 작품 2부터를 저장된 칸 구분 값과 함께 채우고, 사진은 비워 둔다', () => {
+    expect(
+      toArtworkRegisterValues({
+        artworkName: '접으면 달라지는 지도',
+        type: 'GRAPHIC',
+        productionYear: 2026,
+        materialMedia: null,
+        size: null,
+        parts: [
+          { artworkName: 'WALK', productionYear: 2025, materialMedia: '리소', size: null },
+          { artworkName: '세 지점의 수첩', productionYear: null },
+        ],
+      }).parts,
+    ).toEqual([
+      { key: 'saved-0', title: 'WALK', year: '2025', material: '리소', size: '', media: [] },
+      { key: 'saved-1', title: '세 지점의 수첩', year: '', material: '', size: '', media: [] },
+    ]);
+  });
+});
+
+const part = (title: string, year = '') => ({ title, year, material: ' 종이 ', size: '' });
+
+describe('연작 요청', () => {
+  it('splitArtworkImages 는 partIndex 로 작품 칸을 나누고, 범위 밖 partIndex 는 작품 1로 본다', () => {
+    const split = splitArtworkImages(
+      [
+        { imageUrl: 'b1', sortOrder: 4, imageType: 'ARTWORK', partIndex: 1 },
+        { imageUrl: 'a2', sortOrder: 2, imageType: 'ARTWORK', partIndex: 0 },
+        { imageUrl: 'a1', sortOrder: 1, imageType: 'ARTWORK', isThumbnail: true },
+        { imageUrl: 'c1', sortOrder: 5, imageType: 'ARTWORK', partIndex: 2 },
+        { imageUrl: 'x', sortOrder: 6, imageType: 'ARTWORK', partIndex: 3 },
+        {
+          imageUrl: 'v',
+          sortOrder: 3,
+          imageType: 'ARTWORK',
+          partIndex: 1,
+          mediaType: 'VIDEO',
+          thumbnailUrl: 'v.jpg',
+        },
+        { imageUrl: 'p1', sortOrder: 1, imageType: 'WORK_PROCESS' },
+      ],
+      2,
+    );
+
+    expect(split.artworkUrls).toEqual(['a1', 'a2', 'x']);
+    expect(split.partUrls).toEqual([['v', 'b1'], ['c1']]);
+    expect(split.processUrls).toEqual(['p1']);
+    // 작품 2부터의 영상도 썸네일을 찾을 수 있다
+    expect(split.videos).toHaveProperty('v');
+  });
+
+  it('연작이 아니면 partUrls 를 두지 않는다', () => {
+    expect(
+      splitArtworkImages([{ imageUrl: 'a', sortOrder: 1, imageType: 'ARTWORK', partIndex: 1 }]),
+    ).toEqual({ artworkUrls: ['a'], processUrls: [] });
+  });
+
+  it('작품 1 → 작품 2 … 순서로 sortOrder 를 잇고, 작품 2부터만 partIndex 를 보낸다', () => {
+    const requests = toArtworkImageRequests({
+      artworkUrls: ['a1'],
+      processUrls: ['p1'],
+      partUrls: [['b1', 'b2'], ['c1']],
+    });
+
+    expect(
+      requests.map(({ imageUrl, imageType, sortOrder, partIndex, isThumbnail }) => ({
+        imageUrl,
+        imageType,
+        sortOrder,
+        partIndex,
+        isThumbnail,
+      })),
+    ).toEqual([
+      {
+        imageUrl: 'a1',
+        imageType: 'ARTWORK',
+        sortOrder: 1,
+        partIndex: undefined,
+        isThumbnail: true,
+      },
+      { imageUrl: 'b1', imageType: 'ARTWORK', sortOrder: 2, partIndex: 1, isThumbnail: false },
+      { imageUrl: 'b2', imageType: 'ARTWORK', sortOrder: 3, partIndex: 1, isThumbnail: false },
+      { imageUrl: 'c1', imageType: 'ARTWORK', sortOrder: 4, partIndex: 2, isThumbnail: false },
+      {
+        imageUrl: 'p1',
+        imageType: 'WORK_PROCESS',
+        sortOrder: 1,
+        partIndex: undefined,
+        isThumbnail: false,
+      },
+    ]);
+    expect(requests[0]).not.toHaveProperty('partIndex');
+  });
+
+  it('앞 작품을 지우면 뒤 작품의 partIndex 가 남은 순서대로 당겨진다', () => {
+    // 작품 2(b)를 지운 뒤 남은 작품 3(c)이 parts[0] 이 된다
+    const requests = toArtworkImageRequests({
+      artworkUrls: ['a1'],
+      processUrls: [],
+      partUrls: [['c1', 'c2']],
+    });
+
+    expect(
+      requests.filter((image) => image.partIndex === 1).map((image) => image.imageUrl),
+    ).toEqual(['c1', 'c2']);
+    expect(requests.some((image) => (image.partIndex ?? 0) > 1)).toBe(false);
+  });
+
+  it('작품 2부터 요청은 이름 · 재료의 공백을 지우고, 제작 연도를 비웠으면 작품 1 연도를 보낸다', () => {
+    expect(toArtworkPartRequests([part(' WALK ', '2025'), part('수첩')], '2026')).toEqual([
+      { artworkName: 'WALK', productionYear: 2025, materialMedia: '종이', size: '' },
+      { artworkName: '수첩', productionYear: 2026, materialMedia: '종이', size: '' },
+    ]);
+  });
+
+  it('등록은 작품을 더했을 때만 parts 를 보낸다', () => {
+    const base = { images, author: me, coAuthors: [] };
+    const withParts = { ...values, parts: [{ ...part('WALK'), key: 'k', media: [] }] };
+
+    expect(buildCreateArtworkRequest(7, { ...base, values })).not.toHaveProperty('parts');
+    expect(buildCreateArtworkRequest(7, { ...base, values: withParts }).parts).toEqual([
+      { artworkName: 'WALK', productionYear: 2026, materialMedia: '종이', size: '' },
+    ]);
+  });
+
+  it('수정은 작품을 모두 지우면 빈 parts 를 보내고, 조회에 parts 가 없었으면 생략해 기존 작품을 지킨다', () => {
+    const base = { values, images, author: me, coAuthors: [] };
+
+    expect(
+      buildUpdateArtworkRequest({ ...base, previous: { qaHandlerUserIds: [1], parts: [] } }).parts,
+    ).toEqual([]);
+    expect(
+      buildUpdateArtworkRequest({ ...base, previous: { qaHandlerUserIds: [1] } }),
+    ).not.toHaveProperty('parts');
   });
 });

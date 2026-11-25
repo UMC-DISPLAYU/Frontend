@@ -7,6 +7,7 @@ import {
   MOCK_PERSONAL_ARTWORK_FEELINGS,
   MOCK_PERSONAL_ARTWORKS,
 } from '@/mocks/data/personalArtwork';
+import { withArtworkSeriesSample } from '@/mocks/data/seriesSample';
 import {
   MOCK_POSTER_THUMBNAIL_URL,
   MOCK_VIDEO_DISPLAY_ID,
@@ -342,21 +343,23 @@ export const mockDb: {
     // 103번: 대표 포스터를 '전체 보이기'로 고른 전시. 가장자리 색이 없는 예전 포스터라 남는 곳은 연한 회색
     .map((display) => (display.displayId === 103 ? { ...display, posterFit: 'FIT' } : display)),
   artworks: withManyCoAuthorsSample(
-    withArtworkVideoSample(
-      MOCK_DISPLAY_DETAILS.flatMap((display) =>
-        display.artworkSection.artworks.map((artwork, index) => {
-          const detail = artworkToDetail(artwork, display.displayId === 101 && index === 0);
-          if (display.displayId !== 101) return detail;
-          // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로 둔다
-          if (index === 0) return { ...detail, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } };
-          if (index === 1) {
-            const me = { userId: 1, name: makeUser().nickname };
-            return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
-          }
-          // 썸네일 조정에서 '전체 보이기'를 고른 작품(나머지는 서버 기본값 FILL)
-          if (index === 2) return { ...detail, artworkFit: 'FIT' };
-          return detail;
-        }),
+    withArtworkSeriesSample(
+      withArtworkVideoSample(
+        MOCK_DISPLAY_DETAILS.flatMap((display) =>
+          display.artworkSection.artworks.map((artwork, index) => {
+            const detail = artworkToDetail(artwork, display.displayId === 101 && index === 0);
+            if (display.displayId !== 101) return detail;
+            // 101번 전시: 첫 작품은 썸네일 영역(오른쪽 3:4)을, 두 번째 작품은 목 로그인 사용자(1)를 공동 작가로 둔다
+            if (index === 0) return { ...detail, artworkCrop: { x: 0.25, y: 0, w: 0.75, h: 1 } };
+            if (index === 1) {
+              const me = { userId: 1, name: makeUser().nickname };
+              return { ...detail, artists: [...detail.artists, me], coAuthors: [me] };
+            }
+            // 썸네일 조정에서 '전체 보이기'를 고른 작품(나머지는 서버 기본값 FILL)
+            if (index === 2) return { ...detail, artworkFit: 'FIT' };
+            return detail;
+          }),
+        ),
       ),
     ),
   ),

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { toArtworkFieldLabels, toArtworkTypes } from './artworkRegister.constants';
 import {
+  type ArtworkPartValues,
   artworkRegisterSchema,
   type ArtworkRegisterValues,
   sanitizeArtworkYearInput,
@@ -14,6 +15,7 @@ const valid: ArtworkRegisterValues = {
   year: '2026',
   material: '아크릴, 캔버스',
   size: '',
+  parts: [],
 };
 
 const firstMessage = (values: Partial<ArtworkRegisterValues>) => {
@@ -106,5 +108,46 @@ describe('작품분야 변환', () => {
     expect(toArtworkFieldLabels(['VIDEO', 'OTHERS'])).toEqual(['영상', '기타']);
     expect(toArtworkFieldLabels(['PAINTING', 'DESIGN'])).toEqual(['회화']);
     expect(toArtworkFieldLabels(['FASHION', 'MEDIA', 'ETC'])).toEqual([]);
+  });
+});
+
+describe('artworkRegisterSchema 연작(작품 2부터)', () => {
+  const ready = {
+    id: 'p',
+    mediaType: 'IMAGE' as const,
+    previewUrl: 'blob:p',
+    uploadedUrl: 'p.jpg',
+  };
+  const clip = { id: 'v', mediaType: 'VIDEO' as const, previewUrl: 'blob:v', uploadedUrl: 'v.mp4' };
+  const part: ArtworkPartValues = {
+    key: 'k',
+    title: 'WALK',
+    year: '',
+    material: '',
+    size: '',
+    media: [ready],
+  };
+  const partMessage = (values: Partial<ArtworkPartValues>) =>
+    firstMessage({ parts: [{ ...part, ...values }] });
+
+  it('작품명과 사진이 있으면 통과하고, 제작 연도는 비워도 된다', () => {
+    expect(partMessage({})).toBeNull();
+    expect(partMessage({ year: '2025' })).toBeNull();
+  });
+
+  it('작품 2부터도 작품명이 공백뿐이면 막는다', () => {
+    expect(partMessage({ title: '  ' })).toBe('작품명을 입력해주세요.');
+  });
+
+  it('사진(IMAGE)이 없으면 영상만 있어도 막는다', () => {
+    expect(partMessage({ media: [] })).toBe('작품 사진을 1장 이상 올려주세요.');
+    expect(partMessage({ media: [clip] })).toBe('작품 사진을 1장 이상 올려주세요.');
+    expect(partMessage({ media: [clip, ready] })).toBeNull();
+  });
+
+  it('제작 연도를 넣었으면 4자리 · 1000 이상이어야 한다', () => {
+    expect(partMessage({ year: '202' })).toBe('제작 연도는 4자리 숫자로 입력해주세요.');
+    expect(partMessage({ year: '0999' })).toBe('제작 연도를 확인해주세요.');
+    expect(partMessage({ year: '1000' })).toBeNull();
   });
 });

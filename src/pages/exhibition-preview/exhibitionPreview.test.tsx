@@ -244,7 +244,7 @@ describe('작품 미리보기', () => {
     expect(page.type).toBe(ArtworkDetailShell);
     expect(page.props.isPreview).toBe(true);
     expect(asElement(page.props.guestbook as ReactNode).type).toBe(ArtworkPreviewGuestbook);
-    const meta = asElement(page.props.label as ReactNode);
+    const meta = asElement((page.props.label as (partIndex: number) => ReactNode)(0));
     expect(meta.type).toBe(ArtworkMeta);
     expect(meta.props.previewMode).toBe(true);
     const bottomBar = nodes(page.props.bottomBar as ReactNode)[0];
@@ -303,7 +303,7 @@ describe('작품 미리보기', () => {
     const page = asElement(ArtworkDetailPage());
     expect(page.type).toBe(ArtworkDetailShell);
     expect(page.props.isPreview).toBe(false);
-    const meta = asElement(page.props.label as ReactNode);
+    const meta = asElement((page.props.label as (partIndex: number) => ReactNode)(0));
     expect(meta.props.previewMode).toBe(false);
   });
 });

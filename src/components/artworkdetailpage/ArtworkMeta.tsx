@@ -7,7 +7,7 @@ import { hasPermission } from '@/utils/hasPermission';
 
 import { ArtworkInlineActions } from './ArtworkActions';
 import type { ArtworkArtist } from './ArtworkArtists';
-import { getArtworkSpecText } from './artworkDetail.utils';
+import { type ArtworkPartInfo, getArtworkSpecText } from './artworkDetail.utils';
 import { ArtworkExhibitionRow } from './ArtworkExhibitionRow';
 import { ArtworkLabel } from './ArtworkLabel';
 import { ArtworkSaveButton } from './ArtworkSaveButton';
@@ -19,6 +19,8 @@ type Props = {
   isPreview: boolean;
   /* 작품 미리보기: 소속 전시 줄을 두지 않고, 작가 이름을 눌러도 프로필로 가지 않는다(사용자 결정) */
   previewMode?: boolean;
+  /* 연작에서 보고 있는 작품. 작품명 · 정보 줄만 이 작품으로 바꾼다(공유 제목은 작품 1) */
+  part?: ArtworkPartInfo;
 };
 
 export function ArtworkMeta({
@@ -27,6 +29,7 @@ export function ArtworkMeta({
   exhibitionState,
   isPreview,
   previewMode = false,
+  part,
 }: Props) {
   const { loginModal, openLoginModal } = useLoginRequiredModal();
   const archivePolicy = useArchivePolicy();
@@ -49,9 +52,9 @@ export function ArtworkMeta({
   return (
     <>
       <ArtworkLabel
-        title={artwork.artworkName}
+        title={part?.artworkName ?? artwork.artworkName}
         artists={artists}
-        spec={getArtworkSpecText(artwork)}
+        spec={getArtworkSpecText(part ?? artwork)}
         liked={liked}
         likeCount={likeCount}
         onToggleLike={handleLike}

@@ -1,4 +1,4 @@
-import type { ImageResponseDto } from '@/api/dto';
+import type { ArtworkPartDto, ImageResponseDto } from '@/api/dto';
 
 export type ArtworkDetailTabKey = 'intro' | 'guest';
 
@@ -100,4 +100,66 @@ export function getExhibitionOrganizerText(
     .filter(Boolean)
     .join(' ');
   return text || fallback;
+}
+
+/* 연작에서 한 작품의 이름표 정보. 작품 1은 상세 응답 본문, 작품 2부터는 parts 다 */
+export type ArtworkPartInfo = ArtworkPartDto;
+
+/* 연작 사진 아래 캡션(이어서 보기 · 크게 보기) */
+export type ArtworkPhotoCaption = { title: string; spec: string };
+
+type ViewerImageLike = { imageType?: string | null; isThumbnail?: boolean | null } & {
+  partIndex?: number | null;
+};
+
+/* 범위 밖 partIndex(작품 수보다 크거나 음수 등)는 작품 1로 본다 */
+const toPartIndex = (partIndex: number | null | undefined, partCount: number) =>
+  typeof partIndex === 'number' &&
+  Number.isInteger(partIndex) &&
+  partIndex >= 1 &&
+  partIndex <= partCount
+    ? partIndex
+    : 0;
+
+/*
+ * 뷰어에 보일 작품 이미지(작업 과정 제외)와 각 사진이 속한 작품 순서(0 = 작품 1).
+ * 작품 1 → 작품 2 … 순서로 잇고(프로토타입 U-191), 작품 1은 대표 사진(isThumbnail)을 맨 앞에 둔다.
+ * 같은 작품 안에서는 응답 순서를 지킨다
+ */
+export function getArtworkViewerImages<T extends ViewerImageLike>(
+  images: readonly T[],
+  partCount = 0,
+) {
+  const artworkImages = images
+    .filter((image) => image.imageType !== 'WORK_PROCESS')
+    .map((image) => ({ image, partIndex: toPartIndex(image.partIndex, partCount) }));
+  const firstWork = artworkImages.filter((item) => item.partIndex === 0);
+  const thumbnail = firstWork.find((item) => item.image.isThumbnail);
+  const ordered = thumbnail
+    ? [thumbnail, ...firstWork.filter((item) => item !== thumbnail)]
+    : firstWork;
+
+  return [
+    ...ordered,
+    ...Array.from({ length: partCount }, (_, index) =>
+      artworkImages.filter((item) => item.partIndex === index + 1),
+    ).flat(),
+  ];
+}
+
+/*
+ * 연작이면 작품마다 마지막 사진 아래에 그 작품의 작품명 · 정보 줄을 단다(같은 작품의 여러 컷에는 달지 않는다).
+ * works 는 작품 1부터의 정보, photoParts 는 사진마다 속한 작품 순서다. 작품이 하나면 캡션이 없다
+ */
+export function getArtworkPhotoCaptions(
+  photoParts: readonly number[],
+  works: readonly ArtworkPartInfo[],
+): (ArtworkPhotoCaption | undefined)[] | undefined {
+  if (works.length < 2) return undefined;
+
+  return photoParts.map((partIndex, index) => {
+    const work = works[partIndex];
+    if (!work || photoParts[index + 1] === partIndex) return undefined;
+    return { title: work.artworkName, spec: getArtworkSpecText(work) };
+  });
 }

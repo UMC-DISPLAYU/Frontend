@@ -41,11 +41,13 @@ const CHIP_BUTTON_CLASS = cn(
 interface ArtworkImageFieldProps {
   label: string;
   required?: boolean;
-  help: string;
+  help?: string;
   addLabel: string;
   uploads: ArtworkImageUploads;
-  /** 작품 이미지: 첫 장을 대표 사진으로 표시하고, 카드 미리보기 · 실패 안내를 보여준다 */
+  /** 작품 이미지: 첫 장을 대표 사진으로 표시하고, 카드 미리보기를 보여준다 */
   representative?: boolean;
+  /** 장수 표시. 연작은 모든 작품을 합친 수를 보인다. 없으면 이 칸의 장수 */
+  count?: { current: number; max: number };
   limitMessage: string;
   className?: string;
 }
@@ -264,6 +266,7 @@ export function ArtworkImageField({
   addLabel,
   uploads,
   representative = false,
+  count,
   limitMessage,
   className,
 }: ArtworkImageFieldProps) {
@@ -355,16 +358,17 @@ export function ArtworkImageField({
           aria-live="polite"
           className="typography-body-md-medium ml-auto text-secondary tabular-nums"
         >
-          {items.length}/{maxImages}
+          {count?.current ?? items.length}/{count?.max ?? maxImages}
         </span>
       </div>
-      <p className={HELP_CLASS}>{help}</p>
+      {help && <p className={HELP_CLASS}>{help}</p>}
       {uploads.videoLimitMessage && (
         <p role="alert" className="typography-body-md-medium mt-1 text-error">
           {uploads.videoLimitMessage}
         </p>
       )}
-      {representative && uploads.hasUploadError && <UploadErrorBox onRetry={handleRetry} />}
+      {/* 실패를 토스트로 알리는 칸(작업 과정)은 hasUploadError 가 서지 않는다 */}
+      {uploads.hasUploadError && <UploadErrorBox onRetry={handleRetry} />}
       <DndContext {...contextProps}>
         <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
           <div

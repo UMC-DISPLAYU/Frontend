@@ -76,6 +76,7 @@ const values: ArtworkRegisterValues = {
   year: '2026',
   material: '캔버스에 유채',
   size: '',
+  parts: [],
 };
 const images: ArtworkImageUrls = { artworkUrls: ['a.jpg'], processUrls: ['p.jpg'] };
 const previous = {

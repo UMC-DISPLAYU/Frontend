@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { OptimizedImage } from '@/components/common/OptimizedImage';
@@ -7,6 +7,7 @@ import { useScrollLock } from '@/hooks/useScrollLock';
 import { toast } from '@/stores/toastStore';
 import { cn } from '@/utils/cn';
 
+import type { ArtworkPhotoCaption } from './artworkDetail.utils';
 import { InlineVideo, VideoPlayButton } from './ArtworkVideo';
 
 type Props = {
@@ -17,6 +18,10 @@ type Props = {
   /* images 와 같은 순서. 영상인 칸은 영상 주소(images 는 썸네일) */
   videoSrcs?: (string | undefined)[];
   title: string;
+  /* 연작: 사진마다 속한 작품의 작품명. 위 띠 제목이 보고 있는 작품으로 바뀐다 */
+  titles?: string[];
+  /* 연작: 작품마다 마지막 사진 아래 캡션 */
+  captions?: (ArtworkPhotoCaption | undefined)[];
   /* 작가 이름들. 제목 아래 작은 글자 */
   subtitle?: string;
   /* 닫을 때 마지막으로 보던 사진을 상세에 맞춘다 */
@@ -49,6 +54,8 @@ export function ArtworkBigView({
   images,
   videoSrcs = [],
   title,
+  titles,
+  captions,
   subtitle,
   onClose,
 }: Props) {
@@ -153,7 +160,9 @@ export function ArtworkBigView({
       />
       <div className="sticky top-0 z-2 -mb-8 flex h-24 items-start gap-4 bg-[linear-gradient(to_bottom,rgba(11,11,12,0.92)_0%,rgba(11,11,12,0.72)_45%,rgba(11,11,12,0)_100%)] pt-2.5 pr-5 pl-8">
         <div className="grid min-w-0 flex-1 gap-0.5 pt-0.5">
-          <b className="truncate text-[16px] font-semibold tracking-[-0.03em]">{title}</b>
+          <b className="truncate text-[16px] font-semibold tracking-[-0.03em]">
+            {titles?.[current] ?? title}
+          </b>
           {subtitle && (
             <span className="truncate text-[12px] font-medium tracking-[-0.03em] text-[#a1a1aa]">
               {subtitle}
@@ -188,8 +197,9 @@ export function ArtworkBigView({
         className="relative z-0 mx-auto grid w-[min(1200px,calc(100vw-192px))] pt-8 pb-24"
       >
         {images.map((src, index) => {
-          const alt = `${title} ${index + 1}/${images.length}`;
+          const alt = `${titles?.[index] ?? title} ${index + 1}/${images.length}`;
           const videoSrc = videoSrcs[index];
+          const caption = captions?.[index];
           const image = (
             <OptimizedImage
               key={`${src}-${index}`}
@@ -201,10 +211,23 @@ export function ArtworkBigView({
               className="block h-auto w-full bg-[#27272a] select-none"
             />
           );
-          if (!videoSrc) return image;
+          // 연작은 작품마다 마지막 사진 아래 캡션을 단다. 사진 한 장과 캡션을 한 칸으로 감싸 사진 번호를 맞춘다
+          const withCaption = (media: ReactNode) =>
+            caption ? (
+              <div key={`${src}-${index}`}>
+                {media}
+                <p className="typography-body-lg-medium pt-3 pb-10 text-zinc-400">
+                  <b className="typography-body-lg-semibold text-base-white">{caption.title}</b>
+                  {caption.spec && ` · ${caption.spec}`}
+                </p>
+              </div>
+            ) : (
+              media
+            );
+          if (!videoSrc) return withCaption(image);
 
           // 영상은 썸네일 위 ▶ 를 누르면 그 자리에서 재생한다(상세 뷰어와 같다)
-          return (
+          return withCaption(
             <div key={`${src}-${index}`} className="relative">
               {playingIndex === index ? (
                 <InlineVideo
@@ -223,7 +246,7 @@ export function ArtworkBigView({
                   <VideoPlayButton src={videoSrc} onPlay={() => setPlayingIndex(index)} />
                 </>
               )}
-            </div>
+            </div>,
           );
         })}
       </div>

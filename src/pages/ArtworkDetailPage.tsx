@@ -4,7 +4,10 @@ import type { DisplayDetailDto } from '@/api/dto';
 import { ArtworkBottomBar } from '@/components/artworkdetailpage/ArtworkActions';
 import type { ArtworkArtist } from '@/components/artworkdetailpage/ArtworkArtists';
 import {
+  type ArtworkPartInfo,
   getArtworkArtists,
+  getArtworkPhotoCaptions,
+  getArtworkViewerImages,
   getExhibitionOrganizerText,
   getProcessImages,
   hasArtworkIntro,
@@ -127,15 +130,26 @@ export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps =
 
   /*
    * 뷰어는 작품 이미지만 씁니다. 썸네일로 지정된 이미지를 앞에 두고, 없으면 등록 순서대로 보여줍니다.
+   * 연작은 작품 1 → 작품 2 … 순서로 잇고, 보고 있는 사진이 속한 작품의 작품명 · 정보 줄을 보여줍니다.
    * 영상은 칸에 썸네일을 보이고, 누르면 플레이어 창에서 재생합니다
    */
-  const artworkImages = (detail.images ?? []).filter(
-    (image) => image.imageType !== 'WORK_PROCESS' && toDisplayImageCardUrl(image),
+  const parts = detail.parts ?? [];
+  const works: ArtworkPartInfo[] = [
+    {
+      artworkName: detail.artworkName,
+      productionYear: detail.productionYear,
+      materialMedia: detail.materialMedia,
+      size: detail.size,
+    },
+    ...parts,
+  ];
+  const viewerItems = getArtworkViewerImages(
+    (detail.images ?? []).filter((image) => toDisplayImageCardUrl(image)),
+    parts.length,
   );
-  const thumbnailImage = artworkImages.find((image) => image.isThumbnail);
-  const orderedImages = thumbnailImage
-    ? [thumbnailImage, ...artworkImages.filter((image) => image !== thumbnailImage)]
-    : artworkImages;
+  const orderedImages = viewerItems.map((item) => item.image);
+  const photoParts = viewerItems.map((item) => item.partIndex);
+  const isSeries = parts.length > 0 && orderedImages.length > 0;
   const viewerImages =
     orderedImages.length > 0 ? orderedImages.map(toDisplayImageCardUrl) : [FALLBACK_POSTER_IMAGE];
   const viewerVideoSrcs = orderedImages.map((image) =>
@@ -152,15 +166,21 @@ export function ArtworkDetailPage({ previewDisplayId }: ArtworkDetailPageProps =
       title={detail.artworkName}
       subtitle={artists.map((artist) => artist.name).join(', ')}
       isPreview={isPreview}
-      label={
+      {...(isSeries && {
+        photoParts,
+        photoTitles: photoParts.map((partIndex) => works[partIndex].artworkName),
+        photoCaptions: getArtworkPhotoCaptions(photoParts, works),
+      })}
+      label={(partIndex) => (
         <ArtworkMeta
           artwork={artwork}
           artists={artists}
           exhibitionState={getExhibitionState(display?.period)}
           isPreview={isPreview}
           previewMode={previewDisplayId !== undefined}
+          part={isSeries ? works[partIndex] : undefined}
         />
-      }
+      )}
       hasIntro={hasArtworkIntro({
         content: detail.content,
         processImageCount: processImageUrls.length,

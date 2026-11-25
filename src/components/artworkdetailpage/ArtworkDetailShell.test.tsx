@@ -10,6 +10,7 @@ import { ArtworkViewer } from './ArtworkViewer';
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
   useRef: () => ({ current: null }),
+  useState: (initial: unknown) => [initial, () => {}],
 }));
 vi.mock('@/components/common/detail', () => ({
   DetailBackButton: () => null,
