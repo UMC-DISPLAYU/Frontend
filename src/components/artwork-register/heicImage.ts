@@ -2,6 +2,7 @@ import {
   drawImageToJpegFile,
   getResizedImageSize,
   RESIZED_JPEG_QUALITY,
+  runImageTask,
 } from '@/utils/imageResize';
 
 const HEIC_JPEG_QUALITY = 0.92;
@@ -35,21 +36,23 @@ export const heicAcceptTokens = (): string[] =>
  * 그래서 올리기 전에 JPG 로 바꿔 어디서나 보이게 한다. 라이브러리가 커서 HEIC 를 골랐을 때만 불러온다.
  * 긴 변이 3,200px 을 넘으면 JPG 로 한 번 만든 뒤 다시 줄이지 않도록, 풀어낸 사진을 바로 줄인 크기로 그린다
  */
-export async function convertHeicToJpeg(file: File): Promise<File> {
-  // unsafe-eval 없이 동작하는 빌드
-  const { heicTo } = await import('heic-to/csp');
-  const bitmap = await heicTo({ blob: file, type: 'bitmap' });
+export function convertHeicToJpeg(file: File): Promise<File> {
+  return runImageTask(async () => {
+    // unsafe-eval 없이 동작하는 빌드
+    const { heicTo } = await import('heic-to/csp');
+    const bitmap = await heicTo({ blob: file, type: 'bitmap' });
 
-  try {
-    const original = { width: bitmap.width, height: bitmap.height };
-    const resized = getResizedImageSize(original);
+    try {
+      const original = { width: bitmap.width, height: bitmap.height };
+      const resized = getResizedImageSize(original);
 
-    return await drawImageToJpegFile(bitmap, resized ?? original, {
-      name: file.name,
-      lastModified: file.lastModified,
-      quality: resized ? RESIZED_JPEG_QUALITY : HEIC_JPEG_QUALITY,
-    });
-  } finally {
-    bitmap.close();
-  }
+      return await drawImageToJpegFile(bitmap, resized ?? original, {
+        name: file.name,
+        lastModified: file.lastModified,
+        quality: resized ? RESIZED_JPEG_QUALITY : HEIC_JPEG_QUALITY,
+      });
+    } finally {
+      bitmap.close();
+    }
+  });
 }

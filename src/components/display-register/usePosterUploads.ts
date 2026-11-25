@@ -192,6 +192,8 @@ export function usePosterUploads({
     return () => {
       itemsRef.current.forEach(revokeItemUrls);
       aborters.forEach((aborter) => aborter.abort());
+      // 화면을 떠난 뒤 끝난 사진 줄이기가 미리보기를 만들거나 올리지 않게 비운다
+      itemsRef.current = [];
     };
   }, []);
 
@@ -283,15 +285,7 @@ export function usePosterUploads({
 
   const startImageUpload = useCallback(
     async (id: string, file: File) => {
-      let uploadFile: File;
-      try {
-        uploadFile = await shrinkImageForUpload(file);
-      } catch {
-        if (!isAlive(id)) return;
-        dropItem(id);
-        setErrorKind('file');
-        return;
-      }
+      const uploadFile = await shrinkImageForUpload(file);
       if (!isAlive(id)) return;
 
       if (uploadFile.size > MAX_POSTER_FILE_BYTES) {
