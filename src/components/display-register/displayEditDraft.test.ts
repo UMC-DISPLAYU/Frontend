@@ -210,4 +210,31 @@ describe('isEditDraftChanged', () => {
     );
     expect(isEditDraftChanged(original, { ...original, websiteUrl: '' })).toBe(true);
   });
+
+  it('썸네일 조정(범위 · 보이는 방식)만 바꿔도 true, 처음 값으로 되돌리면 false', () => {
+    const original = toEditDraft({ ...DETAIL, posterFit: 'FILL' });
+    expect(isEditDraftChanged(original, { ...original, posterFit: 'FIT' })).toBe(true);
+    expect(
+      isEditDraftChanged(original, { ...original, posterCrop: { x: 0, y: 0, w: 0.8, h: 1 } }),
+    ).toBe(true);
+    expect(isEditDraftChanged(original, { ...original, posterCrop: null })).toBe(true);
+    expect(
+      isEditDraftChanged(original, {
+        ...original,
+        posterCrop: { x: 0.1, y: 0, w: 0.8, h: 1 },
+        posterFit: 'FILL',
+      }),
+    ).toBe(false);
+  });
+
+  it('서버에 보이는 방식이 없으면 화면이 자동으로 채운 값은 바꾼 것으로 보지 않는다', () => {
+    const original = toEditDraft(DETAIL);
+    expect(original.posterFit).toBeNull();
+    expect(isEditDraftChanged(original, { ...original, posterFit: 'FIT' })).toBe(false);
+  });
+
+  it('가장자리 색은 사진을 재서 정하므로 비교하지 않는다', () => {
+    const original = toEditDraft({ ...DETAIL, posterFit: 'FILL' });
+    expect(isEditDraftChanged(original, { ...original, posterEdgeColor: '#000000' })).toBe(false);
+  });
 });

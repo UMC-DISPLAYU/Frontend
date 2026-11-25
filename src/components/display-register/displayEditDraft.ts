@@ -169,7 +169,9 @@ export function isEditDraftChanged(
   original: ExhibitionRegisterDraft,
   current: ExhibitionRegisterDraft,
 ) {
-  return EDITABLE_KEYS.some(
-    (key) => JSON.stringify(original[key]) !== JSON.stringify(current[key]),
-  );
+  return EDITABLE_KEYS.some((key) => {
+    // 서버에 보이는 방식이 없으면 화면이 사진을 재서 자동으로 채우므로, 그 값은 바꾼 것으로 보지 않는다
+    if (key === 'posterFit' && original.posterFit === null) return false;
+    return JSON.stringify(original[key]) !== JSON.stringify(current[key]);
+  });
 }
