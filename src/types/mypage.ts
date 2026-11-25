@@ -17,6 +17,8 @@ export interface ExhibitionItem {
   isLeader?: boolean;
   role?: DisplayMemberRole;
   publishStatus?: DisplayPublishStatus;
+  /* 전시 기간 상태 원래 값(UPCOMING/DISPLAYING/ENDED). status 는 이 값의 한글 라벨이다 */
+  displayStatus?: string;
   status: string;
   title: string;
   org: string;

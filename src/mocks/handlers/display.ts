@@ -2,6 +2,7 @@
 import { delay, http } from 'msw';
 
 import { isContentHiddenBeforeOpen } from '@/mocks/data/contentOpen';
+import { displayStatusOn } from '@/mocks/data/displayStatus';
 import { findMockDisplay, mockDb, okStatus, posterFitFields } from '@/mocks/data/repository';
 import { teamOf } from '@/mocks/handlers/displayMember';
 import { created, fail, noContent, paths, readJson, success, toNumber } from '@/mocks/response';
@@ -166,23 +167,34 @@ const MY_DISPLAY_PUBLISH_STATUSES = [
   'PUBLISHED',
 ] as const;
 
-const myDisplayItem = (display: any) => ({
-  displayId: display.displayId,
-  title: display.title,
-  displayStatus: display.status === 'ONGOING' ? 'DISPLAYING' : display.status,
-  startDate: display.startDate ?? display.startedAt,
-  endDate: display.endDate ?? display.endedAt,
-  school: display.organization,
-  department: display.department,
-  placeName: display.placeName,
-  postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
-  posterVideoUrl: display.posterVideoUrl ?? null,
-  posterCrop: display.posterCrop ?? null,
-  posterFit: display.posterFit ?? 'FILL',
-  posterEdgeColor: display.posterEdgeColor ?? null,
-  displayNickname: display.displayNickname ?? display.artistName ?? '작가명',
-  artistName: display.displayNickname ?? display.artistName ?? '작가명',
-});
+const myDisplayItem = (display: any) => {
+  const startDate = display.startDate ?? display.startedAt;
+  const endDate = display.endDate ?? display.endedAt;
+
+  return {
+    displayId: display.displayId,
+    title: display.title,
+    // 실서버처럼 전시 기간으로 정해, 지난 날짜로 등록한 전시도 종료로 내려간다
+    displayStatus:
+      startDate && endDate
+        ? displayStatusOn(startDate, endDate, localDateAfter(0))
+        : display.status === 'ONGOING'
+          ? 'DISPLAYING'
+          : display.status,
+    startDate,
+    endDate,
+    school: display.organization,
+    department: display.department,
+    placeName: display.placeName,
+    postImageUrl: display.posterImageUrl ?? display.posterImages?.[0]?.imageUrl ?? '',
+    posterVideoUrl: display.posterVideoUrl ?? null,
+    posterCrop: display.posterCrop ?? null,
+    posterFit: display.posterFit ?? 'FILL',
+    posterEdgeColor: display.posterEdgeColor ?? null,
+    displayNickname: display.displayNickname ?? display.artistName ?? '작가명',
+    artistName: display.displayNickname ?? display.artistName ?? '작가명',
+  };
+};
 
 const displayInvitationItem = (displayId: number, invitationId = displayId) => {
   const display = findDisplay(displayId);
@@ -241,6 +253,22 @@ const localDateAfter = (days: number) => {
     String(date.getMonth() + 1).padStart(2, '0'),
     String(date.getDate()).padStart(2, '0'),
   ].join('-');
+};
+
+/*
+ * 목 전시는 날짜가 고정이라 모두 종료 전시가 된다. 내 전시 관리에서만 일부를 오늘 기준 기간으로 옮겨
+ * 전시 중 · 예정 카드에는 종료 표시가 없는 것을 확인한다. 102 · 104 · 106 은 원래 날짜(종료)를 쓴다
+ */
+const MY_DISPLAY_PERIOD_OFFSETS: Record<number, [startDays: number, endDays: number]> = {
+  101: [-5, 5],
+  103: [3, 12],
+  105: [-14, 0],
+};
+
+const withMyDisplayPeriod = (display: any) => {
+  const offsets = MY_DISPLAY_PERIOD_OFFSETS[display.displayId];
+  if (!offsets) return display;
+  return { ...display, startDate: localDateAfter(offsets[0]), endDate: localDateAfter(offsets[1]) };
 };
 
 const mapPeriodOf = (display: any) => {
@@ -624,7 +652,7 @@ export const displayHandlers = [
         createdDisplays: listDisplays()
           .slice(0, 3)
           .map((display: any, index: number) => ({
-            ...myDisplayItem(display),
+            ...myDisplayItem(withMyDisplayPeriod(display)),
             isLeader: true,
             role: 'TEAM_LEADER',
             publishStatus: MY_DISPLAY_PUBLISH_STATUSES[index],
@@ -632,7 +660,7 @@ export const displayHandlers = [
         participatedDisplays: listDisplays()
           .slice(3, 6)
           .map((display: any, index: number) => ({
-            ...myDisplayItem(display),
+            ...myDisplayItem(withMyDisplayPeriod(display)),
             isLeader: false,
             // 참여한 전시 중 첫 번째는 관리자로 지정된 전시
             role: index === 0 ? 'MANAGER' : 'TEAM_MEM',

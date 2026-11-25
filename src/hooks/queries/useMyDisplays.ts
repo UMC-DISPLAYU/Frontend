@@ -27,6 +27,7 @@ const toExhibitionItem = (display: ArtistDisplayDto, isOwner: boolean): Exhibiti
   isLeader: display.isLeader ?? isOwner,
   role: display.role,
   publishStatus: display.publishStatus ?? 'PUBLISHED',
+  displayStatus: display.displayStatus,
   status: getDisplayStatusLabel(display.displayStatus),
   title: display.title,
   /* 학과·학회 등 소속 전시는 학교/기관명+세부소속을, 연합 전시는 주최/소속명만 저장하므로

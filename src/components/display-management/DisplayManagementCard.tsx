@@ -51,9 +51,10 @@ export function DisplayManagementCard({
 
   const isLeader = ex.isLeader ?? ex.isOwner ?? false;
   const role = isLeader ? '대표자' : ex.role === 'MANAGER' ? '관리자' : '팀원';
-  // 전시 관리에서는 공개 여부만 보여주고, 기간에 따른 전시 예정 · 종료는 보여주지 않는다(PM 확인).
   // 예전 응답처럼 publishStatus 가 없으면 공개된 전시로 본다
   const status = isDisplayPublishStatus(ex.publishStatus) ? ex.publishStatus : 'PUBLISHED';
+  // 종료일이 지난 전시도 등록할 수 있어 기간 상태는 종료만 함께 보인다(예정 · 전시 중은 보이지 않는다)
+  const isEnded = ex.displayStatus === 'ENDED';
 
   const actions: DisplayCardAction[] = [];
   if (canEditArtistName) {
@@ -99,6 +100,7 @@ export function DisplayManagementCard({
       <div className="grid min-w-0 grid-cols-1 content-start gap-0.5 pr-7 wrap-break-word">
         <p className="flex items-center gap-1.5 text-[12px] leading-[1.4] font-medium text-[#3f3f47]">
           <DisplayPublishStatusLabel status={status} className="shrink-0" />
+          {isEnded && <span className="shrink-0">· 전시 종료</span>}
           <span className="min-w-0">
             · {role}
             {artistName ? `(${artistName})` : ''}
