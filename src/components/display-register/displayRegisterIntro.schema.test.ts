@@ -70,10 +70,24 @@ describe('displayRegisterIntroSchema', () => {
     ).toBe(false);
   });
 
-  it('소속 정보에 띄어쓰기 · 이스케이프 문자가 있으면 실패한다', () => {
+  it('소속 정보는 띄어쓰기를 허용하고 제출할 때 앞뒤 공백만 지운다', () => {
+    const result = displayRegisterIntroSchema.safeParse({
+      ...valid,
+      department: '  시각 디자인학과 사진 동아리 ',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.department).toBe('시각 디자인학과 사진 동아리');
+  });
+
+  it('소속 정보가 공백뿐이면 실패한다', () => {
+    expect(displayRegisterIntroSchema.safeParse({ ...valid, department: '   ' }).success).toBe(
+      false,
+    );
+  });
+
+  it('소속 정보에 띄어쓰기가 아닌 공백 · 이스케이프 문자가 있으면 실패한다', () => {
     for (const department of [
-      '시각 디자인학과',
-      '시각디자인학과 ',
       '시각\t디자인',
       '시각\n디자인',
       '시각\u3000디자인',
@@ -93,8 +107,8 @@ describe('displayRegisterIntroSchema', () => {
 });
 
 describe('stripAffiliationBlockedChars', () => {
-  it('공백 · 제어 문자 · 이스케이프 문자만 지운다', () => {
-    expect(stripAffiliationBlockedChars(' 시각 디자인\t학과\n')).toBe('시각디자인학과');
+  it('띄어쓰기는 남기고 다른 공백 · 제어 문자 · 이스케이프 문자만 지운다', () => {
+    expect(stripAffiliationBlockedChars(' 시각 디자인\t학과\n')).toBe(' 시각 디자인학과');
     expect(stripAffiliationBlockedChars('a\\b\'c"d`e\u0000f')).toBe('abcdef');
     expect(stripAffiliationBlockedChars('학과(학부)명,학회-동아리_1·A')).toBe(
       '학과(학부)명,학회-동아리_1·A',

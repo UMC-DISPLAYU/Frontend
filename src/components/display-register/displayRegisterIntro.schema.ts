@@ -4,8 +4,8 @@ import { EXHIBITION_TYPE_LABELS } from '@/constants/exhibition';
 
 import { MAX_DISPLAY_FIELDS } from './displayRegister.constants';
 
-// 공백(띄어쓰기 · 탭 · 줄바꿈 등), 제어 · 서식 문자, 이스케이프 문자로 쓰이는 \ ' " `
-const AFFILIATION_BLOCKED_PATTERN = /[\s\p{Cc}\p{Cf}\\'"`]/gu;
+// 띄어쓰기를 뺀 공백(탭 · 줄바꿈 등), 제어 · 서식 문자, 이스케이프 문자로 쓰이는 \ ' " `
+const AFFILIATION_BLOCKED_PATTERN = /[^\S ]|[\p{Cc}\p{Cf}\\'"`]/gu;
 
 export const stripAffiliationBlockedChars = (value: string) =>
   value.replace(AFFILIATION_BLOCKED_PATTERN, '');
@@ -24,10 +24,11 @@ export const displayRegisterIntroSchema = z.object({
     .max(MAX_DISPLAY_FIELDS, { message: '전시 분야는 최대 3개까지 선택할 수 있어요.' }),
   department: z
     .string()
+    .trim()
     .min(1, { message: '소속 정보를 입력해주세요.' })
     .max(40, { message: '소속 정보는 40자 이하로 입력해주세요.' })
     .refine((value) => stripAffiliationBlockedChars(value) === value, {
-      message: '소속 정보에는 띄어쓰기와 특수 기호를 쓸 수 없어요.',
+      message: '소속 정보에는 특수 기호를 쓸 수 없어요.',
     }),
 });
 
