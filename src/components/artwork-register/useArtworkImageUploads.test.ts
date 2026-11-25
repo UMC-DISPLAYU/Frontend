@@ -24,10 +24,10 @@ describe('pickArtworkFiles', () => {
   });
 
   it('올릴 수 없는 파일은 건너뛰고 장수에 세지 않는다', () => {
-    const result = pickArtworkFiles([gif('x'), jpg('a', 21 * MB), jpg('b')], 9, 10);
+    const result = pickArtworkFiles([gif('x'), jpg('b')], 9, 10);
 
     expect(result.accepted.map((file) => file.name)).toEqual(['b']);
-    expect(result.rejectedCount).toBe(2);
+    expect(result.rejectedCount).toBe(1);
     expect(result.overLimit).toBe(false);
   });
 
@@ -47,15 +47,15 @@ describe('pickArtworkFiles', () => {
     expect(result.rejectedCount).toBe(1);
   });
 
-  it('장당 20MB 는 올리고 넘으면 올리지 않는다', () => {
-    const result = pickArtworkFiles([jpg('a', 20 * MB), jpg('b', 20 * MB + 1)], 0, 10);
+  it('20MB 가 넘는 사진도 고른다(용량은 줄인 결과로 본다)', () => {
+    const result = pickArtworkFiles([jpg('a', 20 * MB), jpg('b', 60 * MB)], 0, 10);
 
-    expect(result.accepted.map((file) => file.name)).toEqual(['a']);
-    expect(result.rejectedCount).toBe(1);
-    expect(result.message).toBe('사진은 장당 20MB 이하로 올려주세요');
+    expect(result.accepted.map((file) => file.name)).toEqual(['a', 'b']);
+    expect(result.rejectedCount).toBe(0);
+    expect(result.message).toBeUndefined();
   });
 
-  it('형식이 맞지 않는 파일에는 용량 안내를 붙이지 않는다', () => {
+  it('형식이 맞지 않는 파일에는 안내를 붙이지 않는다', () => {
     expect(pickArtworkFiles([gif('x')], 0, 10)).toMatchObject({
       accepted: [],
       rejectedCount: 1,

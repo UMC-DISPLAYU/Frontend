@@ -12,6 +12,7 @@ import type {
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
 import { toast } from '@/stores/toastStore';
 import { POSTER_FIT_RULE, readImageInfo, resolveImageFit } from '@/utils/imageFit';
+import { shrinkImageForUpload } from '@/utils/imageResize';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
 
@@ -31,7 +32,7 @@ export type PosterErrorKind = 'file' | 'upload';
 export type PosterItem = {
   id: string;
   mediaType: MediaTypeDto;
-  /** 칸에 보일 이미지. 영상이면 썸네일이고, 영상을 읽는 동안은 비어 있다 */
+  /** 칸에 보일 이미지. 영상이면 썸네일이고, 영상을 읽는 동안 · 사진을 줄이는 동안은 비어 있다 */
   previewUrl: string;
   /** 올라간 이미지 · 영상 주소 */
   uploadedUrl?: string;
@@ -74,9 +75,11 @@ export const isPosterVideoFile = (file: File) =>
   (POSTER_VIDEO_ACCEPT_TYPES as readonly string[]).includes(file.type) ||
   /\.(mp4|mov|m4v|webm)$/i.test(file.name);
 
+const MAX_POSTER_FILE_BYTES = MAX_POSTER_FILE_MB * 1024 * 1024;
+
+/** 용량은 올리기 전에 줄인 결과로 본다(startImageUpload) */
 const isAcceptablePosterImage = (file: File) =>
-  (POSTER_ACCEPT_TYPES as readonly string[]).includes(file.type) &&
-  file.size <= MAX_POSTER_FILE_MB * 1024 * 1024;
+  (POSTER_ACCEPT_TYPES as readonly string[]).includes(file.type);
 
 export const isPosterReady = (item: PosterItem) =>
   Boolean(item.uploadedUrl) && (item.mediaType === 'IMAGE' || Boolean(item.thumbnailUrl));
@@ -279,14 +282,43 @@ export function usePosterUploads({
   );
 
   const startImageUpload = useCallback(
-    (item: PosterItem, file: File) => {
-      // 크기 · 가장자리 색은 올리기 전 로컬 파일에서 잰다
-      measureImage(item);
-      uploadImage({ file, domain: 'display' })
-        .then((uploadedUrl) => patchItem(item.id, { uploadedUrl }))
-        .catch(() => failUpload(item.id, file));
+    async (id: string, file: File) => {
+      let uploadFile: File;
+      try {
+        uploadFile = await shrinkImageForUpload(file);
+      } catch {
+        if (!isAlive(id)) return;
+        dropItem(id);
+        setErrorKind('file');
+        return;
+      }
+      if (!isAlive(id)) return;
+
+      if (uploadFile.size > MAX_POSTER_FILE_BYTES) {
+        dropItem(id);
+        setErrorKind('file');
+        return;
+      }
+
+      const previewUrl = URL.createObjectURL(uploadFile);
+      // 바로 지워도 dropItem 이 이 주소를 해제하도록 ref 에도 넣어 둔다
+      itemsRef.current = itemsRef.current.map((item) =>
+        item.id === id ? { ...item, previewUrl } : item,
+      );
+      patchItem(id, { previewUrl });
+
+      // 크기 · 가장자리 색은 올리기 전 줄인 로컬 파일에서 잰다
+      const item = itemsRef.current.find((image) => image.id === id);
+      if (item) measureImage(item);
+
+      try {
+        const uploadedUrl = await uploadImage({ file: uploadFile, domain: 'display' });
+        patchItem(id, { uploadedUrl });
+      } catch {
+        failUpload(id, file);
+      }
     },
-    [failUpload, measureImage, patchItem, uploadImage],
+    [dropItem, failUpload, isAlive, measureImage, patchItem, uploadImage],
   );
 
   const representative = items[0];
@@ -389,10 +421,8 @@ export function usePosterUploads({
           return;
         }
 
-        added.push({
-          file,
-          item: { id: createPosterId(), mediaType: 'IMAGE', previewUrl: URL.createObjectURL(file) },
-        });
+        // 줄인 파일로 미리보기 · 크기 재기를 하도록 다 줄인 뒤에 채운다
+        added.push({ file, item: { id: createPosterId(), mediaType: 'IMAGE', previewUrl: '' } });
       });
 
       if (hasBadFile) setErrorKind('file');
@@ -404,7 +434,7 @@ export function usePosterUploads({
       setItems((prev) => [...prev, ...added.map(({ item }) => item)]);
       added.forEach(({ item, file }) => {
         if (item.mediaType === 'VIDEO') void startVideoUpload(item.id, file);
-        else startImageUpload(item, file);
+        else void startImageUpload(item.id, file);
       });
     },
     [startImageUpload, startVideoUpload],

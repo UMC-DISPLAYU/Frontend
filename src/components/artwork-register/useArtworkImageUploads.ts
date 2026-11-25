@@ -4,8 +4,10 @@ import { arrayMove } from '@dnd-kit/sortable';
 
 import type { ImageFitDto, MediaTypeDto } from '@/api/dto';
 import { useUploadImage, useUploadVideo } from '@/hooks/queries/useFile';
+import { toast } from '@/stores/toastStore';
 import { type CropRect, isValidCrop } from '@/utils/cropBox';
 import { ARTWORK_FIT_RULE, readImageSize, resolveImageFit } from '@/utils/imageFit';
+import { shrinkImageForUpload } from '@/utils/imageResize';
 import { readVideoDuration, readVideoFile } from '@/utils/videoFile';
 import { prepareVideoForUpload, VideoPrepareError } from '@/utils/videoTranscode';
 
@@ -25,7 +27,7 @@ import { convertHeicToJpeg, isHeicFile } from './heicImage';
 export type ArtworkImageItem = {
   id: string;
   mediaType: MediaTypeDto;
-  /** 칸에 보일 이미지. 영상이면 썸네일이고, 영상을 읽는 동안 · HEIC 를 JPG 로 바꾸는 동안은 비어 있다 */
+  /** 칸에 보일 이미지. 영상이면 썸네일이고, 영상을 읽는 동안 · 사진을 줄이거나 HEIC 를 JPG 로 바꾸는 동안은 비어 있다 */
   previewUrl: string;
   uploadedUrl?: string;
   /** 카드에 보이는 부분. 없으면 사진 가운데 */
@@ -48,9 +50,9 @@ export type ArtworkImageItem = {
 export type AddArtworkImagesResult = {
   /** 장수 제한에 걸려 고르지 못한 파일이 있다 */
   overLimit: boolean;
-  /** 형식 · 용량이 맞지 않아 올리지 않은 파일 수 */
+  /** 형식이 맞지 않아 올리지 않은 파일 수 */
   rejectedCount: number;
-  /** 토스트로 알릴 안내(영상을 받지 않는 칸에서 영상을 골랐을 때 · 사진 용량을 넘었을 때) */
+  /** 토스트로 알릴 안내(영상을 받지 않는 칸에서 영상을 골랐을 때) */
   message?: string;
 };
 
@@ -62,11 +64,12 @@ const revokeItemUrls = (item: ArtworkImageItem) => {
   if (isLocalUrl(item.videoSrc)) URL.revokeObjectURL(item.videoSrc);
 };
 
-const isArtworkImageType = (file: Pick<File, 'type' | 'name'>) =>
-  (ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) || isHeicFile(file);
+const MAX_ARTWORK_IMAGE_BYTES = MAX_ARTWORK_IMAGE_MB * 1024 * 1024;
+const ARTWORK_IMAGE_SIZE_MESSAGE = `사진은 장당 ${MAX_ARTWORK_IMAGE_MB}MB 이하로 올려주세요`;
 
-export const isAcceptableArtworkImage = (file: Pick<File, 'type' | 'size' | 'name'>) =>
-  isArtworkImageType(file) && file.size <= MAX_ARTWORK_IMAGE_MB * 1024 * 1024;
+/** 용량은 올리기 전에 줄인 결과로 본다(startImageUpload) */
+export const isAcceptableArtworkImage = (file: Pick<File, 'type' | 'name'>) =>
+  (ARTWORK_IMAGE_ACCEPT_TYPES as readonly string[]).includes(file.type) || isHeicFile(file);
 
 export const isArtworkVideoFile = (file: Pick<File, 'type' | 'name'>) =>
   (ARTWORK_VIDEO_ACCEPT_TYPES as readonly string[]).includes(file.type) ||
@@ -128,9 +131,6 @@ export function pickArtworkFiles<TFile extends Pick<File, 'type' | 'size' | 'nam
     }
 
     rejectedCount += 1;
-    // 형식 · 용량 안내를 미리 보여 주지 않으므로, 용량만 넘은 사진은 무엇이 틀렸는지 알려 준다
-    if (isArtworkImageType(file))
-      message = `사진은 장당 ${MAX_ARTWORK_IMAGE_MB}MB 이하로 올려주세요`;
   }
 
   return { accepted, rejectedCount, overLimit, message, videoLimitMessage };
@@ -235,7 +235,7 @@ export function useArtworkImageUploads({
     return () => {
       itemsRef.current.forEach(revokeItemUrls);
       aborters.forEach((aborter) => aborter.abort());
-      // 화면을 떠난 뒤 끝난 HEIC 변환이 미리보기를 만들지 않게 비운다
+      // 화면을 떠난 뒤 끝난 사진 줄이기 · HEIC 변환이 미리보기를 만들지 않게 비운다
       itemsRef.current = [];
     };
   }, []);
@@ -292,18 +292,23 @@ export function useArtworkImageUploads({
   const startImageUpload = useCallback(
     async (item: ArtworkImageItem, file: File) => {
       try {
-        let uploadFile = file;
-        if (isHeicFile(file)) {
-          uploadFile = await convertHeicToJpeg(file);
-          if (!isAlive(item.id)) return;
+        const uploadFile = isHeicFile(file)
+          ? await convertHeicToJpeg(file)
+          : await shrinkImageForUpload(file);
+        if (!isAlive(item.id)) return;
 
-          const previewUrl = URL.createObjectURL(uploadFile);
-          // 바로 지워도 remove 가 이 주소를 해제하도록 ref 에도 넣어 둔다
-          itemsRef.current = itemsRef.current.map((image) =>
-            image.id === item.id ? { ...image, previewUrl } : image,
-          );
-          patchItem(item.id, { previewUrl });
+        if (uploadFile.size > MAX_ARTWORK_IMAGE_BYTES) {
+          remove(item.id);
+          toast(ARTWORK_IMAGE_SIZE_MESSAGE);
+          return;
         }
+
+        const previewUrl = URL.createObjectURL(uploadFile);
+        // 바로 지워도 remove 가 이 주소를 해제하도록 ref 에도 넣어 둔다
+        itemsRef.current = itemsRef.current.map((image) =>
+          image.id === item.id ? { ...image, previewUrl } : image,
+        );
+        patchItem(item.id, { previewUrl });
 
         const uploadedUrl = await uploadImage({ file: uploadFile, domain: 'artwork' });
         patchItem(item.id, { uploadedUrl });
@@ -311,7 +316,7 @@ export function useArtworkImageUploads({
         failUpload(item.id, file);
       }
     },
-    [failUpload, isAlive, patchItem, uploadImage],
+    [failUpload, isAlive, patchItem, remove, uploadImage],
   );
 
   const startVideoUpload = useCallback(
@@ -391,7 +396,8 @@ export function useArtworkImageUploads({
         const item: ArtworkImageItem = {
           id: createImageId(),
           mediaType: isVideo ? 'VIDEO' : 'IMAGE',
-          previewUrl: isVideo || isHeicFile(file) ? '' : URL.createObjectURL(file),
+          // 사진은 줄인 파일로 미리보기 · 크기 재기를 하도록 다 줄인 뒤에 채운다
+          previewUrl: '',
         };
         return { file, item };
       });
@@ -467,7 +473,7 @@ export function useArtworkImageUploads({
   );
 
   const representative = hasRepresentative ? items[0] : undefined;
-  // HEIC 는 JPG 로 바꾼 뒤(미리보기 주소가 생긴 뒤)에 잰다
+  // 사진은 줄이거나 JPG 로 바꾼 뒤(미리보기 주소가 생긴 뒤)에 잰다
   const needsRepresentativeFit =
     representative?.mediaType === 'IMAGE' && !representative.fit && !!representative.previewUrl;
 
