@@ -37,16 +37,13 @@ export const toDisplayFields = (draft: ExhibitionRegisterDraft) => [
   ...new Set(draft.field.map(toDisplayFieldValue)),
 ];
 
-/** 기타 단체 전시는 단체명만, 그 외는 학교 + 학과. 학교가 없으면 학과를 소속으로 쓴다 */
+/** 화면 칸과 1:1. 기타 단체 전시는 단체명만, 그 외는 학교 + 학과. 학교가 비어도 학과를 학교 자리로 옮기지 않는다 */
 export function toDisplayAffiliation(draft: ExhibitionRegisterDraft) {
-  const department = draft.department.trim();
-
   if (draft.type === OTHER_GROUP_DISPLAY_TYPE) {
     return { schoolOrOrganization: draft.organizer.trim(), departmentOrClub: '' };
   }
 
-  const school = draft.school.trim();
-  return { schoolOrOrganization: school || department, departmentOrClub: school ? department : '' };
+  return { schoolOrOrganization: draft.school.trim(), departmentOrClub: draft.department.trim() };
 }
 
 /** 1/2 · 2/2 에서 모은 draft 로 전시 생성 요청을 만든다. 필수값이 빠졌으면 null */
@@ -65,7 +62,6 @@ export function buildCreateDisplayRequest(
     type &&
     fields.length > 0 &&
     draft.title.trim() &&
-    schoolOrOrganization &&
     draft.startDate &&
     draft.endDate &&
     draft.startTime &&
@@ -88,7 +84,7 @@ export function buildCreateDisplayRequest(
     fields,
     region: toDisplayRegion(draft.address),
     schoolOrOrganization,
-    ...(departmentOrClub ? { departmentOrClub } : {}),
+    departmentOrClub,
     ...(description ? { description } : {}),
     startDate: draft.startDate,
     endDate: draft.endDate,
