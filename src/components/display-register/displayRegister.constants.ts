@@ -5,7 +5,7 @@ export const MAX_POSTER_FILE_MB = 20;
 export const POSTER_CARD_RATIO = 402 / 568;
 export const POSTER_ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export const POSTER_VIDEO_ACCEPT_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'] as const;
-/** 포스터 5장 중 영상은 1개까지 */
+/** 포스터 중 영상은 1개까지 */
 export const MAX_POSTER_VIDEOS = 1;
 export const MAX_POSTER_VIDEO_SECONDS = 30;
 /** 서버가 10진 바이트(200,000,000)로 검사해 MB 표시와 같은 기준을 쓴다 */

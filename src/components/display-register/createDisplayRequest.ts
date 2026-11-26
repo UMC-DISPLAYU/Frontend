@@ -1,5 +1,9 @@
 import type { CreateDisplayRequestDto, DisplayMediaRequestDto } from '@/api/dto';
-import { DISPLAY_TYPE_MAP, toDisplayFieldValue } from '@/constants/exhibition';
+import {
+  DISPLAY_TYPE_MAP,
+  MAX_POSTER_UPLOAD_IMAGES,
+  toDisplayFieldValue,
+} from '@/constants/exhibition';
 import type {
   ExhibitionPosterMedia,
   ExhibitionRegisterDraft,
@@ -8,8 +12,8 @@ import { toCropRequest } from '@/utils/cropBox';
 
 import { OTHER_GROUP_DISPLAY_TYPE } from './displayRegister.constants';
 
-/* 서버는 대표 포스터 외에 최대 4장을 받는다 */
-const MAX_EXTRA_POSTERS = 4;
+/* 서버는 대표 포스터와 추가 포스터를 따로 받는다 */
+const MAX_EXTRA_POSTERS = MAX_POSTER_UPLOAD_IMAGES - 1;
 
 const toDisplayMedia = (poster: ExhibitionPosterMedia): DisplayMediaRequestDto =>
   poster.mediaType === 'VIDEO'

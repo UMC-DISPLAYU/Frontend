@@ -135,6 +135,28 @@ describe('buildCreateDisplayRequest', () => {
     ).toMatchObject({ posterFit: 'FIT', posterEdgeColor: '#ffffff' });
   });
 
+  it('포스터는 대표 포함 10장까지 보낸다(대표 1 + 추가 9)', () => {
+    const posters = Array.from({ length: 11 }, (_, index) => ({
+      url: `p${index}`,
+      mediaType: 'IMAGE' as const,
+      thumbnailUrl: null,
+    }));
+    const request = buildCreateDisplayRequest({ ...DRAFT, posters }, '김디유');
+
+    expect(request?.posterMedia?.imageUrl).toBe('p0');
+    expect(request?.displayMedia?.map(({ imageUrl }) => imageUrl)).toEqual([
+      'p1',
+      'p2',
+      'p3',
+      'p4',
+      'p5',
+      'p6',
+      'p7',
+      'p8',
+      'p9',
+    ]);
+  });
+
   it('필수값이 빠지면 null', () => {
     expect(buildCreateDisplayRequest({ ...DRAFT, posters: [] }, '김디유')).toBeNull();
     expect(buildCreateDisplayRequest({ ...DRAFT, latitude: null }, '김디유')).toBeNull();
