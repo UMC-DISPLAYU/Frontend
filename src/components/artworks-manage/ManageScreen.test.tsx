@@ -77,8 +77,8 @@ it.each([
 );
 
 it.each([
-  [49, true],
-  [50, false],
+  [99, true],
+  [100, false],
 ])('전시작 %i개일 때 전시작 추가 버튼 노출 %s', (count, visible) => {
   const many: Work[] = Array.from({ length: count }, (_, index) => ({
     ...works[1],
