@@ -18,7 +18,6 @@ import { formatVideoDuration } from '@/utils/videoFile';
 
 import {
   MAX_POSTER_FILE_MB,
-  MAX_POSTER_VIDEO_MB,
   MAX_POSTER_VIDEO_SECONDS,
   POSTER_ACCEPT_TYPES,
   POSTER_VIDEO_ACCEPT_TYPES,
@@ -46,11 +45,9 @@ function PosterHelp({ videoLimitMessage }: { videoLimitMessage: string | null })
   return (
     <>
       <p className="typography-body-md-medium mt-1 text-secondary">
-        JPG, PNG, WEBP, HEIC · 장당 최대 {MAX_POSTER_FILE_MB}MB
-        <br />큰 그래픽은 JPG 고화질로 내보내 주세요
+        JPG, PNG, WEBP, HEIC
         <br />
-        영상은 1개까지 · MP4, MOV, WEBM · {MAX_POSTER_VIDEO_SECONDS}초 이내 · {MAX_POSTER_VIDEO_MB}
-        MB 이하
+        (영상은 1개까지 · MP4, MOV, WEBM · {MAX_POSTER_VIDEO_SECONDS}초 이내)
       </p>
       {videoLimitMessage && (
         <p role="alert" className="typography-body-md-medium mt-1 text-error">
