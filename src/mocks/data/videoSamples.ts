@@ -27,7 +27,7 @@ export const withPosterVideoSample = (display: any) => {
     mediaType: 'VIDEO',
     thumbnailUrl: posterThumbnailUrl,
   };
-  const extras = (display.posterImages ?? []).slice(0, 4).map((image: any, index: number) => ({
+  const extras = (display.posterImages ?? []).slice(0, 9).map((image: any, index: number) => ({
     ...image,
     isThumbnail: false,
     imageType: 'DETAIL',
